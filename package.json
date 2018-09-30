@@ -1,0 +1,33 @@
+{
+  "name": "rrweb-snapshot",
+  "version": "0.1.0",
+  "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register src/**/*.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb-snapshot.git"
+  },
+  "keywords": [
+    "rrweb",
+    "snapshot",
+    "DOM"
+  ],
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb-snapshot/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb-snapshot#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^4.5.1",
+    "typescript": "^3.0.3"
+  }
+}
