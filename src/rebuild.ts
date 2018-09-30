@@ -14,7 +14,11 @@ function buildNode(n: serializedNodeWithId): Node | null {
       const node = document.createElement(n.tagName);
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
-          node.setAttribute(name, n.attributes[name]);
+          try {
+            node.setAttribute(name, n.attributes[name]);
+          } catch (error) {
+            // skip invalid attribute
+          }
         }
       }
       return node;

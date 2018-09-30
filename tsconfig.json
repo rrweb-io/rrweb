@@ -9,5 +9,7 @@
     "outDir": "build",
     "lib": ["es6", "dom"]
   },
-  "compileOnSave": true
+  "compileOnSave": true,
+  "exclude": ["test"],
+  "include": ["index.d.ts"]
 }
