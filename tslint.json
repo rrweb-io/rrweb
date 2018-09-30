@@ -8,7 +8,8 @@
     "ordered-imports": false,
     "object-literal-sort-keys": false,
     "no-unused-variable": true,
-    "object-literal-key-quotes": false
+    "object-literal-key-quotes": false,
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
   },
   "rulesDirectory": []
 }

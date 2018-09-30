@@ -6,7 +6,8 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "rootDir": "src",
-    "outDir": "build"
+    "outDir": "build",
+    "lib": ["es6", "dom"]
   },
   "compileOnSave": true
 }
