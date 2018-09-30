@@ -11,11 +11,20 @@ function buildNode(n: serializedNodeWithId): Node | null {
         n.systemId,
       );
     case NodeType.Element:
-      const node = document.createElement(n.tagName);
+      const tagName = n.tagName === 'script' ? 'noscript' : n.tagName;
+      const node = document.createElement(tagName);
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
+          let value = n.attributes[name];
+          value = typeof value === 'boolean' ? '' : value;
+          // textarea hack
+          if (n.tagName === 'textarea' && name === 'value') {
+            const child = document.createTextNode(value);
+            node.appendChild(child);
+            continue;
+          }
           try {
-            node.setAttribute(name, n.attributes[name]);
+            node.setAttribute(name, value);
           } catch (error) {
             // skip invalid attribute
           }

@@ -11,6 +11,10 @@ function genId(): number {
   return _id++;
 }
 
+function resetId() {
+  _id = 1;
+}
+
 function serializeNode(n: Node): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -30,6 +34,28 @@ function serializeNode(n: Node): serializedNode | false {
       const attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
         attributes[name] = value;
+      }
+      if (
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        tagName === 'select'
+      ) {
+        const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
+        if (
+          attributes.type !== 'radio' &&
+          attributes.type !== 'checkbox' &&
+          value
+        ) {
+          attributes.value = value;
+        } else if ((n as HTMLInputElement).checked) {
+          attributes.checked = (n as HTMLInputElement).checked;
+        }
+      }
+      if (tagName === 'option') {
+        const selectValue = (n as HTMLOptionElement).parentElement;
+        if (attributes.value === (selectValue as HTMLSelectElement).value) {
+          attributes.selected = (n as HTMLOptionElement).selected;
+        }
       }
       return {
         type: NodeType.Element,
@@ -65,7 +91,7 @@ function serializeNode(n: Node): serializedNode | false {
   }
 }
 
-function snapshot(n: Node): serializedNodeWithId | null {
+function _snapshot(n: Node): serializedNodeWithId | null {
   const _serializedNode = serializeNode(n);
   if (!_serializedNode) {
     // TODO: dev only
@@ -80,10 +106,15 @@ function snapshot(n: Node): serializedNodeWithId | null {
     serializedNode.type === NodeType.Element
   ) {
     for (const childN of Array.from(n.childNodes)) {
-      serializedNode.childNodes.push(snapshot(childN));
+      serializedNode.childNodes.push(_snapshot(childN));
     }
   }
   return serializedNode;
+}
+
+function snapshot(n: Node): serializedNodeWithId | null {
+  resetId();
+  return _snapshot(n);
 }
 
 export default snapshot;
