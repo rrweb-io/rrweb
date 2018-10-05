@@ -1,10 +1,12 @@
-import 'mocha';
-import mochaDom = require('mocha-jsdom');
-import { expect } from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import { JSDOM } from 'jsdom';
-import { snapshot, rebuild } from '../src';
+import * as http from 'http';
+import * as url from 'url';
+import 'mocha';
+import * as puppeteer from 'puppeteer';
+import * as rollup from 'rollup';
+import typescript = require('rollup-plugin-typescript');
+import { expect } from 'chai';
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map(filePath => {
@@ -24,65 +26,86 @@ const htmls = fs.readdirSync(htmlFolder).map(filePath => {
   };
 });
 
-describe('integration tests', () => {
-  mochaDom({ url: 'http://localhost' });
+interface IMimeType {
+  [key: string]: string;
+}
 
-  for (const html of htmls) {
-    it('[html file]: ' + html.filePath, done => {
-      const srcDom = new JSDOM(html.src, { runScripts: 'dangerously' });
-      const destDom = new JSDOM(html.dest);
-      srcDom.window.document.addEventListener('DOMContentLoaded', () => {
-        const snap = snapshot(srcDom.window.document);
-        const rebuildDom = rebuild(snap);
-        const htmlStr = destDom.window.document.documentElement.outerHTML.replace(
-          /\n\n/g,
-          '',
-        );
-        const rebuildStr = (rebuildDom as Document).documentElement.outerHTML.replace(
-          /\n\n/g,
-          '',
-        );
-        try {
-          expect(rebuildStr).to.equal(htmlStr);
-          done();
-        } catch (error) {
-          done(error);
-        }
-      });
+const server = () =>
+  new Promise(resolve => {
+    const mimeType: IMimeType = {
+      '.html': 'text/html',
+      '.js': 'text/javascript',
+      '.css': 'text/css',
+    };
+    const s = http.createServer((req, res) => {
+      const parsedUrl = url.parse(req.url);
+      const sanitizePath = path
+        .normalize(parsedUrl.pathname)
+        .replace(/^(\.\.[\/\\])+/, '');
+      let pathname = path.join(__dirname, sanitizePath);
+      try {
+        const data = fs.readFileSync(pathname);
+        const ext = path.parse(pathname).ext;
+        res.setHeader('Content-type', mimeType[ext] || 'text/plain');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-type');
+        res.end(data);
+      } catch (error) {
+        res.end();
+      }
     });
-  }
-
-  it('will snapshot document type', () => {
-    const raw = '<html></html>';
-    const dom = new JSDOM(raw);
-    const snap = snapshot(dom.window.document);
-    expect(snap).to.deep.equal({
-      type: 0,
-      childNodes: [
-        {
-          type: 2,
-          tagName: 'html',
-          attributes: {},
-          childNodes: [
-            {
-              type: 2,
-              tagName: 'head',
-              attributes: {},
-              childNodes: [],
-              id: 3,
-            },
-            {
-              type: 2,
-              tagName: 'body',
-              attributes: {},
-              childNodes: [],
-              id: 4,
-            },
-          ],
-          id: 2,
-        },
-      ],
-      id: 1,
+    s.listen(3030).on('listening', () => {
+      resolve(s);
     });
   });
+
+describe('integration tests', () => {
+  before(async () => {
+    this.server = await server();
+    this.browser = await puppeteer.launch({
+      headless: false,
+      executablePath: '/home/yanzhen/Desktop/chrome-linux/chrome',
+    });
+
+    const bundle = await rollup.rollup({
+      input: path.resolve(__dirname, '../src/index.ts'),
+      plugins: [typescript()],
+    });
+    const { code } = await bundle.generate({
+      name: 'rrweb',
+      format: 'iife',
+    });
+    this.code = code;
+  });
+
+  after(() => {
+    this.browser.close();
+    this.server.close();
+  });
+
+  for (const html of htmls) {
+    it('[html file]: ' + html.filePath, async () => {
+      const page: puppeteer.Page = await this.browser.newPage();
+      await page.goto(`http://localhost:3030/html/${html.filePath}`);
+      await page.setContent(html.src);
+      page.once('load', async () => {
+        await page.evaluate(() => {
+          const x = new XMLSerializer();
+          return x.serializeToString(document);
+        });
+        const rebuildHtml = (await page.evaluate(`${this.code}
+          const x = new XMLSerializer();
+          const snap = rrweb.snapshot(document);
+          x.serializeToString(rrweb.rebuild(snap));
+        `)).replace(/\n\n/g, '');
+        await page.goto(`data:text/html,${html.dest}`);
+        const destHtml = (await page.evaluate(() => {
+          const x = new XMLSerializer();
+          return x.serializeToString(document);
+        })).replace(/\n\n/g, '');
+        expect(rebuildHtml).to.equal(destHtml);
+      });
+    }).timeout(5000);
+  }
 });

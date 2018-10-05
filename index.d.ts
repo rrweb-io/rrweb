@@ -1,4 +1,4 @@
-declare module 'mocha-jsdom' {
-  function mochaDom(options: any): void;
-  export = mochaDom;
+declare module 'rollup-plugin-typescript' {
+  function typescript(): any;
+  export = typescript;
 }
