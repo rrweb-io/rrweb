@@ -53,3 +53,7 @@ export type serializedNode =
   | commentNode;
 
 export type serializedNodeWithId = serializedNode & { id: number };
+
+export type tagMap = {
+  [key: string]: string;
+};

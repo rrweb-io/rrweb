@@ -15,7 +15,18 @@ function resetId() {
   _id = 1;
 }
 
-function serializeNode(n: Node): serializedNode | false {
+function getCssRulesString(s: CSSStyleSheet): string | null {
+  try {
+    const rules = s.rules || s.cssRules;
+    return rules
+      ? Array.from(rules).reduce((prev, cur) => (prev += cur.cssText), '')
+      : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function serializeNode(n: Node, doc: Document): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
       return {
@@ -31,10 +42,23 @@ function serializeNode(n: Node): serializedNode | false {
       };
     case n.ELEMENT_NODE:
       const tagName = (n as HTMLElement).tagName.toLowerCase();
-      const attributes: attributes = {};
+      let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
         attributes[name] = value;
       }
+      // remote css
+      if (tagName === 'link' && attributes.hasOwnProperty('href')) {
+        const stylesheet = Array.from(doc.styleSheets).find(
+          s => s.href === attributes.href,
+        );
+        const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        if (cssText) {
+          attributes = {
+            _cssText: cssText,
+          };
+        }
+      }
+      // form fields
       if (
         tagName === 'input' ||
         tagName === 'textarea' ||
@@ -91,8 +115,8 @@ function serializeNode(n: Node): serializedNode | false {
   }
 }
 
-function _snapshot(n: Node): serializedNodeWithId | null {
-  const _serializedNode = serializeNode(n);
+function _snapshot(n: Node, doc: Document): serializedNodeWithId | null {
+  const _serializedNode = serializeNode(n, doc);
   if (!_serializedNode) {
     // TODO: dev only
     console.warn(n, 'not serialized');
@@ -106,15 +130,15 @@ function _snapshot(n: Node): serializedNodeWithId | null {
     serializedNode.type === NodeType.Element
   ) {
     for (const childN of Array.from(n.childNodes)) {
-      serializedNode.childNodes.push(_snapshot(childN));
+      serializedNode.childNodes.push(_snapshot(childN, doc));
     }
   }
   return serializedNode;
 }
 
-function snapshot(n: Node): serializedNodeWithId | null {
+function snapshot(n: Document): serializedNodeWithId | null {
   resetId();
-  return _snapshot(n);
+  return _snapshot(n, n);
 }
 
 export default snapshot;

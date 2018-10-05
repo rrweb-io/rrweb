@@ -1,4 +1,15 @@
-import { serializedNodeWithId, NodeType } from './types';
+import { serializedNodeWithId, NodeType, tagMap, elementNode } from './types';
+
+const tagMap: tagMap = {
+  script: 'noscript',
+};
+function getTagName(n: elementNode): string {
+  let tagName = tagMap[n.tagName] ? tagMap[n.tagName] : n.tagName;
+  if (tagName === 'link' && n.attributes._cssText) {
+    tagName = 'style';
+  }
+  return tagName;
+}
 
 function buildNode(n: serializedNodeWithId): Node | null {
   switch (n.type) {
@@ -11,14 +22,15 @@ function buildNode(n: serializedNodeWithId): Node | null {
         n.systemId,
       );
     case NodeType.Element:
-      const tagName = n.tagName === 'script' ? 'noscript' : n.tagName;
+      const tagName = getTagName(n);
       const node = document.createElement(tagName);
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
           let value = n.attributes[name];
           value = typeof value === 'boolean' ? '' : value;
-          // textarea hack
-          if (n.tagName === 'textarea' && name === 'value') {
+          const isTextarea = tagName === 'textarea' && name === 'value';
+          const isRemoteCss = tagName === 'style' && name === '_cssText';
+          if (isTextarea || isRemoteCss) {
             const child = document.createTextNode(value);
             node.appendChild(child);
             continue;

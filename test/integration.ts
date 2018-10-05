@@ -64,7 +64,7 @@ describe('integration tests', () => {
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
-      headless: false,
+      // headless: false,
       executablePath: '/home/yanzhen/Desktop/chrome-linux/chrome',
     });
 
@@ -79,33 +79,35 @@ describe('integration tests', () => {
     this.code = code;
   });
 
-  after(() => {
-    this.browser.close();
-    this.server.close();
+  after(async () => {
+    await this.browser.close();
+    await this.server.close();
   });
 
-  for (const html of htmls) {
+  for (const html of htmls.slice(0, 10)) {
     it('[html file]: ' + html.filePath, async () => {
       const page: puppeteer.Page = await this.browser.newPage();
-      await page.goto(`http://localhost:3030/html/${html.filePath}`);
+      // console for debug
+      // tslint:disable-next-line: no-console
+      page.on('console', msg => console.log(msg.text()));
+      await page.goto(`http://localhost:3030/html`);
       await page.setContent(html.src);
-      page.once('load', async () => {
-        await page.evaluate(() => {
-          const x = new XMLSerializer();
-          return x.serializeToString(document);
-        });
-        const rebuildHtml = (await page.evaluate(`${this.code}
-          const x = new XMLSerializer();
-          const snap = rrweb.snapshot(document);
-          x.serializeToString(rrweb.rebuild(snap));
-        `)).replace(/\n\n/g, '');
-        await page.goto(`data:text/html,${html.dest}`);
-        const destHtml = (await page.evaluate(() => {
-          const x = new XMLSerializer();
-          return x.serializeToString(document);
-        })).replace(/\n\n/g, '');
-        expect(rebuildHtml).to.equal(destHtml);
+      await page.evaluate(() => {
+        const x = new XMLSerializer();
+        return x.serializeToString(document);
       });
+      const rebuildHtml = (await page.evaluate(`${this.code}
+        const x = new XMLSerializer();
+        const snap = rrweb.snapshot(document);
+        x.serializeToString(rrweb.rebuild(snap));
+      `)).replace(/\n\n/g, '');
+      await page.goto(`http://localhost:3030/html`);
+      await page.setContent(html.dest);
+      const destHtml = (await page.evaluate(() => {
+        const x = new XMLSerializer();
+        return x.serializeToString(document);
+      })).replace(/\n\n/g, '');
+      expect(rebuildHtml).to.equal(destHtml);
     }).timeout(5000);
   }
 });
