@@ -11,5 +11,5 @@
   },
   "compileOnSave": true,
   "exclude": ["test"],
-  "include": ["src", "index.d.ts"]
+  "include": ["src", "test.d.ts"]
 }

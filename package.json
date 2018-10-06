@@ -4,7 +4,7 @@
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "main": "index.js",
   "scripts": {
-    "test": "TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
+    "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
     "compile": "rollup --config"
   },
   "repository": {
