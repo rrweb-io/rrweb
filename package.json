@@ -1,0 +1,29 @@
+{
+  "name": "rrweb",
+  "version": "0.1.0",
+  "description": "record and replay the web",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "tslint": "^4.5.1",
+    "typescript": "^3.1.1"
+  },
+  "dependencies": {
+    "rrweb-snapshot": "file:../snapshot"
+  }
+}
