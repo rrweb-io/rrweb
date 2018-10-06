@@ -47,10 +47,10 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         attributes[name] = value;
       }
       // remote css
-      if (tagName === 'link' && attributes.hasOwnProperty('href')) {
-        const stylesheet = Array.from(doc.styleSheets).find(
-          s => s.href === attributes.href,
-        );
+      if (tagName === 'link') {
+        const stylesheet = Array.from(doc.styleSheets).find(s => {
+          return s.href === (n as HTMLLinkElement).href;
+        });
         const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
         if (cssText) {
           attributes = {
