@@ -70,6 +70,16 @@ function record(options: recordOptions) {
               },
             }),
           ),
+        mouseInteractionCb: d =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseInteraction,
+                ...d,
+              },
+            }),
+          ),
       });
     });
   } catch (error) {

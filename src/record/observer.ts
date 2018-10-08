@@ -9,6 +9,9 @@ import {
   observerParam,
   mousemoveCallBack,
   mousePosition,
+  handlerMap,
+  mouseInteractionCallBack,
+  MouseInteractions,
 } from '../types';
 
 function initMutationObserver(cb: mutationCallBack): MutationObserver {
@@ -139,11 +142,46 @@ function initMousemoveObserver(cb: mousemoveCallBack): () => void {
   };
 }
 
+function initMouseInteractionObserver(
+  cb: mouseInteractionCallBack,
+): () => void {
+  const handlers: handlerMap = {};
+  const getHandler = (eventKey: keyof typeof MouseInteractions) => {
+    return (event: MouseEvent) => {
+      const id = mirror.getId(event.target as INode);
+      const { clientX, clientY } = event;
+      cb({
+        type: MouseInteractions[eventKey],
+        id,
+        x: clientX,
+        y: clientY,
+      });
+    };
+  };
+  Object.keys(MouseInteractions)
+    .filter(key => Number.isNaN(Number(key)))
+    .forEach((eventKey: keyof typeof MouseInteractions) => {
+      const eventName = eventKey.toLowerCase();
+      const handler = getHandler(eventKey);
+      handlers[eventName] = handler;
+      document.addEventListener(eventName, handler);
+    });
+  return () => {
+    Object.keys(handlers).forEach(eventName => {
+      document.removeEventListener(eventName, handlers[eventName]);
+    });
+  };
+}
+
 export default function initObservers(o: observerParam) {
   const mutationObserver = initMutationObserver(o.mutationCb);
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
+  const mouseInteractionHandler = initMouseInteractionObserver(
+    o.mouseInteractionCb,
+  );
   return {
     mutationObserver,
     mousemoveHandler,
+    mouseInteractionHandler,
   };
 }

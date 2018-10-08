@@ -34,6 +34,7 @@ export type incrementalSnapshotEvent = {
 export enum IncrementalSource {
   Mutation,
   MouseMove,
+  MouseInteraction,
 }
 
 export type mutationData = {
@@ -45,7 +46,14 @@ export type mousemoveData = {
   positions: mousePosition[];
 };
 
-export type incrementalData = mutationData | mousemoveData;
+export type mouseInteractionData = {
+  source: IncrementalSource.MouseInteraction;
+} & mouseInteractionParam;
+
+export type incrementalData =
+  | mutationData
+  | mousemoveData
+  | mouseInteractionData;
 
 export type event =
   | domContentLoadedEvent
@@ -64,6 +72,7 @@ export type recordOptions = {
 export type observerParam = {
   mutationCb: mutationCallBack;
   mousemoveCb: mousemoveCallBack;
+  mouseInteractionCb: mouseInteractionCallBack;
 };
 
 export type textMutation = {
@@ -99,13 +108,39 @@ type mutationCallbackParam = {
 
 export type mutationCallBack = (m: mutationCallbackParam) => void;
 
-export type mousemoveCallBack = (m: mousePosition[]) => void;
+export type mousemoveCallBack = (p: mousePosition[]) => void;
 
 export type mousePosition = {
   x: number;
   y: number;
   timeOffset: number;
 };
+
+export type handlerMap = {
+  [key: string]: EventListener;
+};
+
+export enum MouseInteractions {
+  MouseUp,
+  MouseDown,
+  Click,
+  ContextMenu,
+  DblClick,
+  Focus,
+  Blur,
+  TouchStart,
+  TouchMove,
+  TouchEnd,
+}
+
+type mouseInteractionParam = {
+  type: MouseInteractions;
+  id: number;
+  x: number;
+  y: number;
+};
+
+export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
 
 export type Mirror = {
   map: idNodeMap;
