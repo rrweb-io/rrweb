@@ -26,20 +26,26 @@ export type fullSnapshotEvent = {
   };
 };
 
-export enum IncrementalSource {
-  Mutation,
-}
-
 export type incrementalSnapshotEvent = {
   type: EventType.IncrementalSnapshot;
   data: incrementalData;
 };
 
+export enum IncrementalSource {
+  Mutation,
+  MouseMove,
+}
+
 export type mutationData = {
   source: IncrementalSource.Mutation;
 } & mutationCallbackParam;
 
-export type incrementalData = mutationData;
+export type mousemoveData = {
+  source: IncrementalSource.MouseMove;
+  positions: mousePosition[];
+};
+
+export type incrementalData = mutationData | mousemoveData;
 
 export type event =
   | domContentLoadedEvent
@@ -57,6 +63,7 @@ export type recordOptions = {
 
 export type observerParam = {
   mutationCb: mutationCallBack;
+  mousemoveCb: mousemoveCallBack;
 };
 
 export type textMutation = {
@@ -92,8 +99,21 @@ type mutationCallbackParam = {
 
 export type mutationCallBack = (m: mutationCallbackParam) => void;
 
+export type mousemoveCallBack = (m: mousePosition[]) => void;
+
+export type mousePosition = {
+  x: number;
+  y: number;
+  timeOffset: number;
+};
+
 export type Mirror = {
   map: idNodeMap;
   getId: (n: INode) => number;
   getNode: (id: number) => INode;
+};
+
+export type throttleOptions = {
+  leading?: boolean;
+  trailing?: boolean;
 };

@@ -60,6 +60,16 @@ function record(options: recordOptions) {
               },
             }),
           ),
+        mousemoveCb: positions =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseMove,
+                positions,
+              },
+            }),
+          ),
       });
     });
   } catch (error) {

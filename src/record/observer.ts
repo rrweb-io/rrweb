@@ -1,5 +1,5 @@
 import { INode } from 'rrweb-snapshot';
-import { mirror } from '../utils';
+import { mirror, throttle } from '../utils';
 import {
   mutationCallBack,
   textMutation,
@@ -7,6 +7,8 @@ import {
   removedNodeMutation,
   addedNodeMutation,
   observerParam,
+  mousemoveCallBack,
+  mousePosition,
 } from '../types';
 
 function initMutationObserver(cb: mutationCallBack): MutationObserver {
@@ -99,9 +101,49 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
   return observer;
 }
 
+function initMousemoveObserver(cb: mousemoveCallBack): () => void {
+  let positions: mousePosition[] = [];
+  let timeBaseline: number | null;
+  const wrappedCb = throttle(() => {
+    const totalOffset = Date.now() - timeBaseline!;
+    cb(
+      positions.map(p => {
+        p.timeOffset -= totalOffset;
+        return p;
+      }),
+    );
+    positions = [];
+    timeBaseline = null;
+  }, 500);
+  const updatePosition = throttle<MouseEvent>(
+    evt => {
+      const { clientX, clientY } = evt;
+      if (!timeBaseline) {
+        timeBaseline = Date.now();
+      }
+      positions.push({
+        x: clientX,
+        y: clientY,
+        timeOffset: Date.now() - timeBaseline,
+      });
+      wrappedCb();
+    },
+    20,
+    {
+      trailing: false,
+    },
+  );
+  document.addEventListener('mousemove', updatePosition);
+  return () => {
+    document.removeEventListener('mousemove', updatePosition);
+  };
+}
+
 export default function initObservers(o: observerParam) {
   const mutationObserver = initMutationObserver(o.mutationCb);
+  const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
   return {
     mutationObserver,
+    mousemoveHandler,
   };
 }
