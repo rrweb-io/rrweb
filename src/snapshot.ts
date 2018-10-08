@@ -98,7 +98,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
       }
       return {
         type: NodeType.Text,
-        textContent,
+        textContent: textContent || '',
       };
     case n.CDATA_SECTION_NODE:
       return {
@@ -108,7 +108,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
     case n.COMMENT_NODE:
       return {
         type: NodeType.Comment,
-        textContent: (n as Comment).textContent,
+        textContent: (n as Comment).textContent || '',
       };
     default:
       return false;
@@ -130,7 +130,10 @@ function _snapshot(n: Node, doc: Document): serializedNodeWithId | null {
     serializedNode.type === NodeType.Element
   ) {
     for (const childN of Array.from(n.childNodes)) {
-      serializedNode.childNodes.push(_snapshot(childN, doc));
+      const serializedChildNode = _snapshot(childN, doc);
+      if (serializedChildNode) {
+        serializedNode.childNodes.push(serializedChildNode);
+      }
     }
   }
   return serializedNode;

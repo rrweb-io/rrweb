@@ -62,7 +62,11 @@ function rebuild(n: serializedNodeWithId): Node | null {
   if (n.type === NodeType.Document || n.type === NodeType.Element) {
     for (const childN of n.childNodes) {
       const childNode = rebuild(childN);
-      root.appendChild(childNode);
+      if (!childNode) {
+        console.warn('Failed to rebuild', childN);
+      } else {
+        root.appendChild(childNode);
+      }
     }
   }
   return root;
