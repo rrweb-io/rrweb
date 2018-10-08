@@ -3,6 +3,8 @@ import {
   serializedNodeWithId,
   NodeType,
   attributes,
+  INode,
+  idNodeMap,
 } from './types';
 
 let _id = 1;
@@ -115,22 +117,38 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
   }
 }
 
-function _snapshot(n: Node, doc: Document): serializedNodeWithId | null {
+function serializeNodeWithId(
+  n: Node,
+  doc: Document,
+): serializedNodeWithId | null {
   const _serializedNode = serializeNode(n, doc);
   if (!_serializedNode) {
     // TODO: dev only
     console.warn(n, 'not serialized');
     return null;
   }
-  const serializedNode: serializedNodeWithId = Object.assign(_serializedNode, {
+  return Object.assign(_serializedNode, {
     id: genId(),
   });
+}
+
+function _snapshot(
+  n: Node,
+  doc: Document,
+  map: idNodeMap,
+): serializedNodeWithId | null {
+  const serializedNode = serializeNodeWithId(n, doc);
+  if (!serializedNode) {
+    return null;
+  }
+  (n as INode).__sn = serializedNode;
+  map[serializedNode.id] = n as INode;
   if (
     serializedNode.type === NodeType.Document ||
     serializedNode.type === NodeType.Element
   ) {
     for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = _snapshot(childN, doc);
+      const serializedChildNode = _snapshot(childN, doc, map);
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
@@ -139,9 +157,10 @@ function _snapshot(n: Node, doc: Document): serializedNodeWithId | null {
   return serializedNode;
 }
 
-function snapshot(n: Document): serializedNodeWithId | null {
+function snapshot(n: Document): [serializedNodeWithId | null, idNodeMap] {
   resetId();
-  return _snapshot(n, n);
+  const idNodeMap: idNodeMap = {};
+  return [_snapshot(n, n, idNodeMap), idNodeMap];
 }
 
 export default snapshot;

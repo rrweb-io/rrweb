@@ -38,9 +38,9 @@ const server = () =>
       '.css': 'text/css',
     };
     const s = http.createServer((req, res) => {
-      const parsedUrl = url.parse(req.url);
+      const parsedUrl = url.parse(req.url!);
       const sanitizePath = path
-        .normalize(parsedUrl.pathname)
+        .normalize(parsedUrl.pathname!)
         .replace(/^(\.\.[\/\\])+/, '');
       let pathname = path.join(__dirname, sanitizePath);
       try {
@@ -98,7 +98,7 @@ describe('integration tests', () => {
       });
       const rebuildHtml = (await page.evaluate(`${this.code}
         const x = new XMLSerializer();
-        const snap = rrweb.snapshot(document);
+        const [snap] = rrweb.snapshot(document);
         x.serializeToString(rrweb.rebuild(snap));
       `)).replace(/\n\n/g, '');
       await page.goto(`http://localhost:3030/html`);
