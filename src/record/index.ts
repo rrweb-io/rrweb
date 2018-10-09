@@ -1,6 +1,6 @@
 import { snapshot } from 'rrweb-snapshot';
 import initObservers from './observer';
-import { mirror } from '../utils';
+import { mirror, on } from '../utils';
 import {
   EventType,
   event,
@@ -8,14 +8,6 @@ import {
   recordOptions,
   IncrementalSource,
 } from '../types';
-
-function on(
-  type: string,
-  fn: EventListenerOrEventListenerObject,
-  target = document,
-) {
-  target.addEventListener(type, fn, { capture: true, passive: true });
-}
 
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -76,6 +68,26 @@ function record(options: recordOptions) {
               type: EventType.IncrementalSnapshot,
               data: {
                 source: IncrementalSource.MouseInteraction,
+                ...d,
+              },
+            }),
+          ),
+        scrollCb: p =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Scroll,
+                ...p,
+              },
+            }),
+          ),
+        viewportResizeCb: d =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.ViewportResize,
                 ...d,
               },
             }),

@@ -1,5 +1,5 @@
 import { INode } from 'rrweb-snapshot';
-import { mirror, throttle } from '../utils';
+import { mirror, throttle, on } from '../utils';
 import {
   mutationCallBack,
   textMutation,
@@ -9,9 +9,11 @@ import {
   observerParam,
   mousemoveCallBack,
   mousePosition,
-  handlerMap,
   mouseInteractionCallBack,
   MouseInteractions,
+  listenerHandler,
+  scrollCallback,
+  viewportResizeCallback,
 } from '../types';
 
 function initMutationObserver(cb: mutationCallBack): MutationObserver {
@@ -68,6 +70,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
               id: mirror.getId(n as INode),
             });
           });
+          // TODO: init new nodes to be INode
           addedNodes.forEach(n => {
             adds.push({
               parentId: id,
@@ -104,7 +107,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
   return observer;
 }
 
-function initMousemoveObserver(cb: mousemoveCallBack): () => void {
+function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle(() => {
@@ -136,16 +139,13 @@ function initMousemoveObserver(cb: mousemoveCallBack): () => void {
       trailing: false,
     },
   );
-  document.addEventListener('mousemove', updatePosition);
-  return () => {
-    document.removeEventListener('mousemove', updatePosition);
-  };
+  return on('mousemove', updatePosition);
 }
 
 function initMouseInteractionObserver(
   cb: mouseInteractionCallBack,
-): () => void {
-  const handlers: handlerMap = {};
+): listenerHandler {
+  const handlers: listenerHandler[] = [];
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent) => {
       const id = mirror.getId(event.target as INode);
@@ -163,14 +163,54 @@ function initMouseInteractionObserver(
     .forEach((eventKey: keyof typeof MouseInteractions) => {
       const eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
-      handlers[eventName] = handler;
-      document.addEventListener(eventName, handler);
+      handlers.push(on(eventName, handler));
     });
   return () => {
-    Object.keys(handlers).forEach(eventName => {
-      document.removeEventListener(eventName, handlers[eventName]);
-    });
+    handlers.forEach(h => h());
   };
+}
+
+function initScrollObserver(cb: scrollCallback): listenerHandler {
+  const updatePosition = throttle<UIEvent>(evt => {
+    if (!evt.target) {
+      return;
+    }
+    const id = mirror.getId(evt.target as INode);
+    if (evt.target === document) {
+      cb({
+        id,
+        x: document.documentElement.scrollTop,
+        y: document.documentElement.scrollLeft,
+      });
+    } else {
+      cb({
+        id,
+        x: (evt.target as HTMLElement).scrollTop,
+        y: (evt.target as HTMLElement).scrollLeft,
+      });
+    }
+  }, 100);
+  return on('scroll', updatePosition);
+}
+
+function initViewportResizeObserver(
+  cb: viewportResizeCallback,
+): listenerHandler {
+  const updateDimension = throttle(() => {
+    const height =
+      window.innerHeight ||
+      (document.documentElement && document.documentElement.clientHeight) ||
+      (document.body && document.body.clientHeight);
+    const width =
+      window.innerWidth ||
+      (document.documentElement && document.documentElement.clientWidth) ||
+      (document.body && document.body.clientWidth);
+    cb({
+      width: Number(width),
+      height: Number(height),
+    });
+  }, 200);
+  return on('resize', updateDimension, window);
 }
 
 export default function initObservers(o: observerParam) {
@@ -179,9 +219,13 @@ export default function initObservers(o: observerParam) {
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
   );
+  const scrollHandler = initScrollObserver(o.scrollCb);
+  const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
   return {
     mutationObserver,
     mousemoveHandler,
     mouseInteractionHandler,
+    scrollHandler,
+    viewportResizeHandler,
   };
 }

@@ -35,6 +35,8 @@ export enum IncrementalSource {
   Mutation,
   MouseMove,
   MouseInteraction,
+  Scroll,
+  ViewportResize,
 }
 
 export type mutationData = {
@@ -50,10 +52,20 @@ export type mouseInteractionData = {
   source: IncrementalSource.MouseInteraction;
 } & mouseInteractionParam;
 
+export type scrollData = {
+  source: IncrementalSource.Scroll;
+} & scrollPosition;
+
+export type viewportResizeData = {
+  source: IncrementalSource.ViewportResize;
+} & viewportResizeDimention;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
-  | mouseInteractionData;
+  | mouseInteractionData
+  | scrollData
+  | viewportResizeData;
 
 export type event =
   | domContentLoadedEvent
@@ -73,6 +85,8 @@ export type observerParam = {
   mutationCb: mutationCallBack;
   mousemoveCb: mousemoveCallBack;
   mouseInteractionCb: mouseInteractionCallBack;
+  scrollCb: scrollCallback;
+  viewportResizeCb: viewportResizeCallback;
 };
 
 export type textMutation = {
@@ -116,10 +130,6 @@ export type mousePosition = {
   timeOffset: number;
 };
 
-export type handlerMap = {
-  [key: string]: EventListener;
-};
-
 export enum MouseInteractions {
   MouseUp,
   MouseDown,
@@ -142,6 +152,21 @@ type mouseInteractionParam = {
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
 
+export type scrollPosition = {
+  id: number;
+  x: number;
+  y: number;
+};
+
+export type scrollCallback = (p: scrollPosition) => void;
+
+export type viewportResizeDimention = {
+  width: number;
+  height: number;
+};
+
+export type viewportResizeCallback = (d: viewportResizeDimention) => void;
+
 export type Mirror = {
   map: idNodeMap;
   getId: (n: INode) => number;
@@ -152,3 +177,5 @@ export type throttleOptions = {
   leading?: boolean;
   trailing?: boolean;
 };
+
+export type listenerHandler = () => void;

@@ -1,4 +1,13 @@
-import { Mirror, throttleOptions } from './types';
+import { Mirror, throttleOptions, listenerHandler } from './types';
+
+export function on(
+  type: string,
+  fn: EventListenerOrEventListenerObject,
+  target: Document | Window = document,
+): listenerHandler {
+  target.addEventListener(type, fn, { capture: true, passive: true });
+  return () => target.removeEventListener(type, fn);
+}
 
 export const mirror: Mirror = {
   map: {},
