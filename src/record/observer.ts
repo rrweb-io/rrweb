@@ -1,4 +1,4 @@
-import { INode } from 'rrweb-snapshot';
+import { INode, serializeNodeWithId } from 'rrweb-snapshot';
 import { mirror, throttle, on } from '../utils';
 import {
   mutationCallBack,
@@ -69,8 +69,8 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
               parentId: id,
               id: mirror.getId(n as INode),
             });
+            mirror.removeNodeFromMap(n as INode);
           });
-          // TODO: init new nodes to be INode
           addedNodes.forEach(n => {
             adds.push({
               parentId: id,
@@ -82,6 +82,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
                 : mirror.getId(nextSibling as INode),
               id: mirror.getId(n as INode),
             });
+            serializeNodeWithId(n as INode, document, mirror.map);
           });
           break;
         }

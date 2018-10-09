@@ -17,6 +17,10 @@ export const mirror: Mirror = {
   getNode(id) {
     return mirror.map[id];
   },
+  removeNodeFromMap(n) {
+    const id = n.__sn && n.__sn.id;
+    delete mirror.map[id];
+  },
 };
 
 // copy from underscore

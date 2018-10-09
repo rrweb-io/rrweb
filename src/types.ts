@@ -171,6 +171,7 @@ export type Mirror = {
   map: idNodeMap;
   getId: (n: INode) => number;
   getNode: (id: number) => INode;
+  removeNodeFromMap: (n: INode) => void;
 };
 
 export type throttleOptions = {
