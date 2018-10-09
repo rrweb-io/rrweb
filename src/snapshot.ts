@@ -117,9 +117,10 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
   }
 }
 
-function serializeNodeWithId(
+export function serializeNodeWithId(
   n: Node,
   doc: Document,
+  map: idNodeMap,
 ): serializedNodeWithId | null {
   const _serializedNode = serializeNode(n, doc);
   if (!_serializedNode) {
@@ -127,9 +128,12 @@ function serializeNodeWithId(
     console.warn(n, 'not serialized');
     return null;
   }
-  return Object.assign(_serializedNode, {
+  const serializedNode = Object.assign(_serializedNode, {
     id: genId(),
   });
+  (n as INode).__sn = serializedNode;
+  map[serializedNode.id] = n as INode;
+  return serializedNode;
 }
 
 function _snapshot(
@@ -137,12 +141,10 @@ function _snapshot(
   doc: Document,
   map: idNodeMap,
 ): serializedNodeWithId | null {
-  const serializedNode = serializeNodeWithId(n, doc);
+  const serializedNode = serializeNodeWithId(n, doc, map);
   if (!serializedNode) {
     return null;
   }
-  (n as INode).__sn = serializedNode;
-  map[serializedNode.id] = n as INode;
   if (
     serializedNode.type === NodeType.Document ||
     serializedNode.type === NodeType.Element
