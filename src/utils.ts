@@ -48,13 +48,13 @@ export function throttle<T>(
     let args = arguments;
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
-        clearTimeout(timeout);
+        window.clearTimeout(timeout);
         timeout = null;
       }
       previous = now;
       func.apply(context, args);
     } else if (!timeout && options.trailing !== false) {
-      timeout = setTimeout(() => {
+      timeout = window.setTimeout(() => {
         previous = options.leading === false ? 0 : Date.now();
         timeout = null;
         func.apply(context, args);
