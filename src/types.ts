@@ -85,7 +85,7 @@ export type eventWithTime = event & {
 };
 
 export type recordOptions = {
-  emit: (e: eventWithTime) => void;
+  emit?: (e: eventWithTime) => void;
 };
 
 export type observerParam = {

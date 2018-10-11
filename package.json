@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "record and replay the web",
   "main": "index.js",
   "scripts": {
