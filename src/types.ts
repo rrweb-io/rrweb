@@ -37,6 +37,7 @@ export enum IncrementalSource {
   MouseInteraction,
   Scroll,
   ViewportResize,
+  Input,
 }
 
 export type mutationData = {
@@ -60,12 +61,18 @@ export type viewportResizeData = {
   source: IncrementalSource.ViewportResize;
 } & viewportResizeDimention;
 
+export type inputData = {
+  source: IncrementalSource.Input;
+  id: number;
+} & inputValue;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
   | mouseInteractionData
   | scrollData
-  | viewportResizeData;
+  | viewportResizeData
+  | inputData;
 
 export type event =
   | domContentLoadedEvent
@@ -87,6 +94,7 @@ export type observerParam = {
   mouseInteractionCb: mouseInteractionCallBack;
   scrollCb: scrollCallback;
   viewportResizeCb: viewportResizeCallback;
+  inputCb: inputCallback;
 };
 
 export type textMutation = {
@@ -167,6 +175,13 @@ export type viewportResizeDimention = {
 
 export type viewportResizeCallback = (d: viewportResizeDimention) => void;
 
+export type inputValue = {
+  text: string;
+  isChecked: boolean;
+};
+
+export type inputCallback = (v: inputValue & { id: number }) => void;
+
 export type Mirror = {
   map: idNodeMap;
   getId: (n: INode) => number;
@@ -180,3 +195,4 @@ export type throttleOptions = {
 };
 
 export type listenerHandler = () => void;
+export type hookResetter = () => void;

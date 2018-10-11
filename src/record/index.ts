@@ -92,6 +92,16 @@ function record(options: recordOptions) {
               },
             }),
           ),
+        inputCb: v =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Input,
+                ...v,
+              },
+            }),
+          ),
       });
     });
   } catch (error) {

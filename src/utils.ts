@@ -1,4 +1,9 @@
-import { Mirror, throttleOptions, listenerHandler } from './types';
+import {
+  Mirror,
+  throttleOptions,
+  listenerHandler,
+  hookResetter,
+} from './types';
 
 export function on(
   type: string,
@@ -17,13 +22,14 @@ export const mirror: Mirror = {
   getNode(id) {
     return mirror.map[id];
   },
+  // TODO: use a weakmap to get rid of manually memory management
   removeNodeFromMap(n) {
     const id = n.__sn && n.__sn.id;
     delete mirror.map[id];
   },
 };
 
-// copy from underscore
+// copy from underscore and modified
 export function throttle<T>(
   func: (arg: T) => void,
   wait: number,
@@ -55,4 +61,21 @@ export function throttle<T>(
       }, remaining);
     }
   };
+}
+
+export function hookSetter<T>(
+  target: T,
+  key: string | number | symbol,
+  d: PropertyDescriptor,
+): hookResetter {
+  const original = Object.getOwnPropertyDescriptor(target, key);
+  Object.defineProperty(target, key, {
+    set(value) {
+      d.set!.call(this, value);
+      if (original && original.set) {
+        original.set.call(this, value);
+      }
+    },
+  });
+  return () => hookSetter(target, key, original || {});
 }

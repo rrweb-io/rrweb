@@ -1,5 +1,5 @@
 import { INode, serializeNodeWithId } from 'rrweb-snapshot';
-import { mirror, throttle, on } from '../utils';
+import { mirror, throttle, on, hookSetter } from '../utils';
 import {
   mutationCallBack,
   textMutation,
@@ -14,6 +14,9 @@ import {
   listenerHandler,
   scrollCallback,
   viewportResizeCallback,
+  inputValue,
+  inputCallback,
+  hookResetter,
 } from '../types';
 
 function initMutationObserver(cb: mutationCallBack): MutationObserver {
@@ -214,6 +217,87 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, window);
 }
 
+const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
+const HOOK_PROPERTIES: Array<[HTMLElement, string]> = [
+  [HTMLInputElement.prototype, 'value'],
+  [HTMLInputElement.prototype, 'checked'],
+  [HTMLSelectElement.prototype, 'value'],
+  [HTMLTextAreaElement.prototype, 'value'],
+];
+const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
+function initInputObserver(cb: inputCallback): listenerHandler {
+  function eventHandler(event: Event) {
+    const { target } = event;
+    if (
+      !target ||
+      !(target as Element).tagName ||
+      INPUT_TAGS.indexOf((target as Element).tagName) < 0
+    ) {
+      return;
+    }
+    const type: string | undefined = (target as HTMLInputElement).type;
+    const text = (target as HTMLInputElement).value;
+    let isChecked = false;
+    if (type === 'radio' || type === 'checkbox') {
+      isChecked = (target as HTMLInputElement).checked;
+    }
+    cbWithDedup(target, { text, isChecked });
+    // if a radio was checked
+    // the other radios with the same name attribute will be unchecked.
+    const name: string | undefined = (target as HTMLInputElement).name;
+    if (type === 'radio' && name && isChecked) {
+      document
+        .querySelectorAll(`input[type="radio"][name="${name}"]`)
+        .forEach(el => {
+          if (el !== target) {
+            cbWithDedup(el, {
+              text: (el as HTMLInputElement).value,
+              isChecked: !isChecked,
+            });
+          }
+        });
+    }
+  }
+  function cbWithDedup(target: EventTarget, v: inputValue) {
+    const lastInputValue = lastInputValueMap.get(target);
+    if (
+      !lastInputValue ||
+      lastInputValue.text !== v.text ||
+      lastInputValue.isChecked !== v.isChecked
+    ) {
+      lastInputValueMap.set(target, v);
+      const id = mirror.getId(target as INode);
+      cb({
+        ...v,
+        id,
+      });
+    }
+  }
+  const handlers: Array<listenerHandler | hookResetter> = [
+    'input',
+    'change',
+  ].map(eventName => on(eventName, eventHandler));
+  const propertyDescriptor = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    'value',
+  );
+  if (propertyDescriptor && propertyDescriptor.set) {
+    handlers.push(
+      ...HOOK_PROPERTIES.map(p =>
+        hookSetter<HTMLElement>(p[0], p[1], {
+          set() {
+            // mock to a normal event
+            eventHandler({ target: this } as Event);
+          },
+        }),
+      ),
+    );
+  }
+  return () => {
+    handlers.forEach(h => h());
+  };
+}
+
 export default function initObservers(o: observerParam) {
   const mutationObserver = initMutationObserver(o.mutationCb);
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
@@ -222,11 +306,13 @@ export default function initObservers(o: observerParam) {
   );
   const scrollHandler = initScrollObserver(o.scrollCb);
   const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
+  const inputHandler = initInputObserver(o.inputCb);
   return {
     mutationObserver,
     mousemoveHandler,
     mouseInteractionHandler,
     scrollHandler,
     viewportResizeHandler,
+    inputHandler,
   };
 }
