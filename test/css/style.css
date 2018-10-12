@@ -4,3 +4,6 @@ body {
 p {
   color: red;
 }
+body > p {
+  color: yellow;
+}

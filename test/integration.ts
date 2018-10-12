@@ -99,7 +99,7 @@ describe('integration tests', () => {
       const rebuildHtml = (await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap));
+        x.serializeToString(rrweb.rebuild(snap)[0]);
       `)).replace(/\n\n/g, '');
       await page.goto(`http://localhost:3030/html`);
       await page.setContent(html.dest);
