@@ -3,8 +3,16 @@
 }
 .replayer-mouse {
   position: absolute;
+  width: 1px;
+  height: 1px;
+}
+.replayer-mouse::after {
+  content: '';
+  display: inline-block;
   width: 20px;
   height: 20px;
   border-radius: 10px;
   background: thistle;
+  transform: translate(-10px, -10px);
+  opacity: 0.5;
 }

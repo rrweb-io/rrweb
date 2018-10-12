@@ -1,10 +1,10 @@
 const FRAME_MS = 16;
 
-function later(cb: () => void, delayMs: number) {
+function later(cb: () => void, delayMs: number, speed = 1) {
   const now = performance.now();
 
   function check(step: number) {
-    if (step - now > delayMs - FRAME_MS) {
+    if (step - now > delayMs / speed - FRAME_MS) {
       cb();
     } else {
       requestAnimationFrame(check);

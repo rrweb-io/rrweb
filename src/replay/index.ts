@@ -1,5 +1,4 @@
 import { rebuild } from 'rrweb-snapshot';
-import { mirror } from '../utils';
 import later from './timer';
 import {
   EventType,
@@ -63,6 +62,8 @@ class Replayer {
   }
 
   private getDelay(event: eventWithTime): number {
+    // Mouse move events was recorded in a throttle function,
+    // so we need to find the real timestamp by traverse the time offsets.
     if (
       event.type === EventType.IncrementalSnapshot &&
       event.data.source === IncrementalSource.MouseMove
@@ -82,8 +83,7 @@ class Replayer {
   }
 
   private rebuildFullSnapshot(event: fullSnapshotEvent) {
-    const [doc, map] = rebuild(event.data.node);
-    mirror.map = map;
+    const doc = rebuild(event.data.node);
     if (doc) {
       this.iframe.contentDocument!.open();
       // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
@@ -120,7 +120,19 @@ class Replayer {
         });
         break;
       case IncrementalSource.ViewportResize:
-      case IncrementalSource.Input:
+        this.iframe.width = `${d.width}px`;
+        this.iframe.height = `${d.height}px`;
+        break;
+      case IncrementalSource.Input: {
+        const target: HTMLInputElement | null = this.iframe.contentDocument!.querySelector(
+          `[data-rrid="${d.id}"]`,
+        );
+        if (target) {
+          target.checked = d.isChecked;
+          target.value = d.text;
+        }
+        break;
+      }
       default:
     }
   }
