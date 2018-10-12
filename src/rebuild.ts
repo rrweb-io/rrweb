@@ -1,11 +1,4 @@
-import {
-  serializedNodeWithId,
-  NodeType,
-  tagMap,
-  elementNode,
-  idNodeMap,
-  INode,
-} from './types';
+import { serializedNodeWithId, NodeType, tagMap, elementNode } from './types';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -61,16 +54,17 @@ function buildNode(n: serializedNodeWithId): Node | null {
   }
 }
 
-function _rebuild(n: serializedNodeWithId, map: idNodeMap): Node | null {
+function rebuild(n: serializedNodeWithId): Node | null {
   const root = buildNode(n);
   if (!root) {
     return null;
   }
-  (root as INode).__sn = n;
-  map[n.id] = root as INode;
+  if (n.type === NodeType.Element) {
+    (root as HTMLElement).setAttribute('data-rrid', String(n.id));
+  }
   if (n.type === NodeType.Document || n.type === NodeType.Element) {
     for (const childN of n.childNodes) {
-      const childNode = _rebuild(childN, map);
+      const childNode = rebuild(childN);
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
       } else {
@@ -79,11 +73,6 @@ function _rebuild(n: serializedNodeWithId, map: idNodeMap): Node | null {
     }
   }
   return root;
-}
-
-function rebuild(n: serializedNodeWithId): [Node | null, idNodeMap] {
-  const idNodeMap: idNodeMap = {};
-  return [_rebuild(n, idNodeMap), idNodeMap];
 }
 
 export default rebuild;
