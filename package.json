@@ -32,6 +32,7 @@
     "@types/node": "^10.11.3",
     "@types/puppeteer": "^1.8.0",
     "chai": "^4.1.2",
+    "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
     "puppeteer": "^1.9.0",
     "rollup": "^0.66.4",

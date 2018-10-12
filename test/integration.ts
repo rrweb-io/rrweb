@@ -6,23 +6,15 @@ import 'mocha';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import typescript = require('rollup-plugin-typescript');
-import { expect } from 'chai';
+import { assert } from 'chai';
+import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map(filePath => {
   const raw = fs.readFileSync(path.resolve(htmlFolder, filePath), 'utf-8');
-  if (/<!-- TEST_DIVIDER -->/.test(raw)) {
-    const [src, dest] = raw.split('<!-- TEST_DIVIDER -->');
-    return {
-      filePath,
-      src,
-      dest,
-    };
-  }
   return {
     filePath,
     src: raw,
-    dest: raw,
   };
 });
 
@@ -60,6 +52,20 @@ const server = () =>
     });
   });
 
+function matchSnapshot(actual: string, testFile: string, testTitle: string) {
+  const snapshotState = new SnapshotState(testFile, {
+    updateSnapshot: process.env.SNAPSHOT_UPDATE ? 'all' : 'new',
+  });
+
+  const matcher = toMatchSnapshot.bind({
+    snapshotState,
+    currentTestName: testTitle,
+  });
+  const result = matcher(actual);
+  snapshotState.save();
+  return result;
+}
+
 describe('integration tests', () => {
   before(async () => {
     this.server = await server();
@@ -85,29 +91,21 @@ describe('integration tests', () => {
   });
 
   for (const html of htmls.slice(0, 10)) {
-    it('[html file]: ' + html.filePath, async () => {
+    const title = '[html file]: ' + html.filePath;
+    it(title, async () => {
       const page: puppeteer.Page = await this.browser.newPage();
       // console for debug
       // tslint:disable-next-line: no-console
       page.on('console', msg => console.log(msg.text()));
       await page.goto(`http://localhost:3030/html`);
       await page.setContent(html.src);
-      await page.evaluate(() => {
-        const x = new XMLSerializer();
-        return x.serializeToString(document);
-      });
       const rebuildHtml = (await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap)[0]);
+        x.serializeToString(rrweb.rebuild(snap));
       `)).replace(/\n\n/g, '');
-      await page.goto(`http://localhost:3030/html`);
-      await page.setContent(html.dest);
-      const destHtml = (await page.evaluate(() => {
-        const x = new XMLSerializer();
-        return x.serializeToString(document);
-      })).replace(/\n\n/g, '');
-      expect(rebuildHtml).to.equal(destHtml);
+      const result = matchSnapshot(rebuildHtml, __filename, title);
+      assert(result.pass, result.pass ? '' : result.report());
     }).timeout(5000);
   }
 });
