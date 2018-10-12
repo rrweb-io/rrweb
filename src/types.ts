@@ -16,7 +16,10 @@ export type domContentLoadedEvent = {
 
 export type loadedEvent = {
   type: EventType.Load;
-  data: {};
+  data: {
+    width: number;
+    height: number;
+  };
 };
 
 export type fullSnapshotEvent = {

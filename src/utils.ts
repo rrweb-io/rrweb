@@ -79,3 +79,19 @@ export function hookSetter<T>(
   });
   return () => hookSetter(target, key, original || {});
 }
+
+export function getWindowHeight(): number {
+  return (
+    window.innerHeight ||
+    (document.documentElement && document.documentElement.clientHeight) ||
+    (document.body && document.body.clientHeight)
+  );
+}
+
+export function getWindowWidth(): number {
+  return (
+    window.innerWidth ||
+    (document.documentElement && document.documentElement.clientWidth) ||
+    (document.body && document.body.clientWidth)
+  );
+}

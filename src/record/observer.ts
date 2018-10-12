@@ -1,5 +1,12 @@
 import { INode, serializeNodeWithId } from 'rrweb-snapshot';
-import { mirror, throttle, on, hookSetter } from '../utils';
+import {
+  mirror,
+  throttle,
+  on,
+  hookSetter,
+  getWindowHeight,
+  getWindowWidth,
+} from '../utils';
 import {
   mutationCallBack,
   textMutation,
@@ -183,14 +190,14 @@ function initScrollObserver(cb: scrollCallback): listenerHandler {
     if (evt.target === document) {
       cb({
         id,
-        x: document.documentElement.scrollTop,
-        y: document.documentElement.scrollLeft,
+        x: document.documentElement.scrollLeft,
+        y: document.documentElement.scrollTop,
       });
     } else {
       cb({
         id,
-        x: (evt.target as HTMLElement).scrollTop,
-        y: (evt.target as HTMLElement).scrollLeft,
+        x: (evt.target as HTMLElement).scrollLeft,
+        y: (evt.target as HTMLElement).scrollTop,
       });
     }
   }, 100);
@@ -201,14 +208,8 @@ function initViewportResizeObserver(
   cb: viewportResizeCallback,
 ): listenerHandler {
   const updateDimension = throttle(() => {
-    const height =
-      window.innerHeight ||
-      (document.documentElement && document.documentElement.clientHeight) ||
-      (document.body && document.body.clientHeight);
-    const width =
-      window.innerWidth ||
-      (document.documentElement && document.documentElement.clientWidth) ||
-      (document.body && document.body.clientWidth);
+    const height = getWindowHeight();
+    const width = getWindowWidth();
     cb({
       width: Number(width),
       height: Number(height),

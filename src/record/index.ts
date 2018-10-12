@@ -1,6 +1,6 @@
 import { snapshot } from 'rrweb-snapshot';
 import initObservers from './observer';
-import { mirror, on } from '../utils';
+import { mirror, on, getWindowWidth, getWindowHeight } from '../utils';
 import {
   EventType,
   event,
@@ -36,7 +36,12 @@ function record(options: recordOptions = {}) {
     on(
       'load',
       () => {
-        emit(wrapEvent({ type: EventType.Load, data: {} }));
+        emit(
+          wrapEvent({
+            type: EventType.Load,
+            data: { width: getWindowWidth(), height: getWindowHeight() },
+          }),
+        );
         const [node, idNodeMap] = snapshot(document);
         if (!node) {
           return console.warn('Failed to snapshot the document');
