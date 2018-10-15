@@ -1,3 +1,4 @@
+import { idNodeMap, NodeType, serializeNodeWithId } from 'rrweb-snapshot';
 import {
   Mirror,
   throttleOptions,
@@ -28,6 +29,26 @@ export const mirror: Mirror = {
     delete mirror.map[id];
   },
 };
+
+// TODO: transform this into the snapshot repo
+export function getIdNodeMap(doc: Document) {
+  const map: idNodeMap = {};
+
+  function walk(n: Node) {
+    const node = serializeNodeWithId(n, doc, map);
+    if (!node) {
+      return null;
+    }
+    if (node.type === NodeType.Document || node.type === NodeType.Element) {
+      for (const _n of Array.from(n.childNodes)) {
+        walk(_n);
+      }
+    }
+  }
+
+  walk(doc);
+  return map;
+}
 
 // copy from underscore and modified
 export function throttle<T>(

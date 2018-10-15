@@ -6,8 +6,10 @@ import {
   IncrementalSource,
   fullSnapshotEvent,
   eventWithTime,
+  MouseInteractions,
 } from '../types';
 import eventsStr from './events';
+import { mirror, getIdNodeMap } from '../utils';
 
 const _events: eventWithTime[] = JSON.parse(eventsStr);
 
@@ -94,13 +96,57 @@ class Replayer {
           .replace(/&gt;/g, '>'),
       );
       this.iframe.contentDocument!.close();
+      mirror.map = getIdNodeMap(this.iframe.contentDocument!);
+      // avoid form submit to refresh the iframe
+      this.iframe.contentDocument!.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', evt => evt.preventDefault());
+      });
     }
   }
 
   private applyIncremental(d: incrementalData) {
     switch (d.source) {
-      case IncrementalSource.Mutation:
+      case IncrementalSource.Mutation: {
+        d.texts.forEach(mutation => {
+          const target = (mirror.getNode(mutation.id) as Node) as Text;
+          target.textContent = mutation.value;
+        });
+        d.attributes.forEach(mutation => {
+          const target = (mirror.getNode(mutation.id) as Node) as Element;
+          for (const attributeName in mutation.attributes) {
+            if (typeof attributeName === 'string') {
+              const value = mutation.attributes[attributeName];
+              if (value) {
+                target.setAttribute(attributeName, value);
+              } else {
+                target.removeAttribute(attributeName);
+              }
+            }
+          }
+        });
+        // TODO: update id node map
+        d.removes.forEach(mutation => {
+          const target = (mirror.getNode(mutation.id) as Node) as Element;
+          const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
+          parent.removeChild(target);
+        });
+        d.adds.forEach(mutation => {
+          const target = (mirror.getNode(mutation.id) as Node) as Element;
+          const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
+          if (mutation.nextId) {
+            const next = (mirror.getNode(mutation.nextId) as Node) as Element;
+            parent.insertBefore(target, next);
+          } else if (mutation.previousId) {
+            const previous = (mirror.getNode(
+              mutation.previousId,
+            ) as Node) as Element;
+            parent.insertBefore(target, previous.nextSibling);
+          } else {
+            parent.appendChild(target);
+          }
+        });
         break;
+      }
       case IncrementalSource.MouseMove:
         d.positions.forEach(p => {
           later(() => {
@@ -109,8 +155,19 @@ class Replayer {
           }, p.timeOffset);
         });
         break;
-      case IncrementalSource.MouseInteraction:
+      case IncrementalSource.MouseInteraction: {
+        const event = new Event(MouseInteractions[d.type].toLowerCase());
+        const target = (mirror.getNode(d.id) as Node) as HTMLElement;
+        target.dispatchEvent(event);
+        if (d.type === MouseInteractions.Blur) {
+          target.blur();
+        } else if (d.type === MouseInteractions.Click) {
+          target.click();
+        } else if (d.type === MouseInteractions.Focus) {
+          target.focus();
+        }
         break;
+      }
       case IncrementalSource.Scroll:
         // TODO: maybe element
         this.iframe.contentWindow!.scrollTo({
@@ -124,13 +181,11 @@ class Replayer {
         this.iframe.height = `${d.height}px`;
         break;
       case IncrementalSource.Input: {
-        const target: HTMLInputElement | null = this.iframe.contentDocument!.querySelector(
-          `[data-rrid="${d.id}"]`,
-        );
-        if (target) {
-          target.checked = d.isChecked;
-          target.value = d.text;
-        }
+        const target: HTMLInputElement = (mirror.getNode(
+          d.id,
+        ) as Node) as HTMLInputElement;
+        target.checked = d.isChecked;
+        target.value = d.text;
         break;
       }
       default:
