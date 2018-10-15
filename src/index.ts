@@ -1,5 +1,5 @@
 import record from './record';
-import replay from './replay';
+import { Replayer } from './replay';
 import { mirror } from './utils';
 
-export { record, replay, mirror };
+export { record, Replayer, mirror };

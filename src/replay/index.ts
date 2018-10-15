@@ -1,4 +1,4 @@
-import { rebuild } from 'rrweb-snapshot';
+import { rebuild, serializeNodeWithId } from 'rrweb-snapshot';
 import later from './timer';
 import {
   EventType,
@@ -8,12 +8,9 @@ import {
   eventWithTime,
   MouseInteractions,
 } from '../types';
-import eventsStr from './events';
 import { mirror, getIdNodeMap } from '../utils';
 
-const _events: eventWithTime[] = JSON.parse(eventsStr);
-
-class Replayer {
+export class Replayer {
   private events: eventWithTime[] = [];
   private wrapper: HTMLDivElement;
   private iframe: HTMLIFrameElement;
@@ -90,7 +87,8 @@ class Replayer {
       this.iframe.contentDocument!.open();
       // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
       this.iframe.contentDocument!.write(
-        (doc as Document).documentElement.outerHTML
+        new XMLSerializer()
+          .serializeToString(doc as Document)
           .replace(/&amp;/g, '&')
           .replace(/&lt;/g, '<')
           .replace(/&gt;/g, '>'),
@@ -124,11 +122,11 @@ class Replayer {
             }
           }
         });
-        // TODO: update id node map
         d.removes.forEach(mutation => {
           const target = (mirror.getNode(mutation.id) as Node) as Element;
           const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
           parent.removeChild(target);
+          delete mirror.map[mutation.id];
         });
         d.adds.forEach(mutation => {
           const target = (mirror.getNode(mutation.id) as Node) as Element;
@@ -144,6 +142,11 @@ class Replayer {
           } else {
             parent.appendChild(target);
           }
+          serializeNodeWithId(
+            mirror.getNode(mutation.id),
+            this.iframe.contentDocument!,
+            mirror.map,
+          );
         });
         break;
       }
@@ -168,14 +171,20 @@ class Replayer {
         }
         break;
       }
-      case IncrementalSource.Scroll:
-        // TODO: maybe element
-        this.iframe.contentWindow!.scrollTo({
-          top: d.y,
-          left: d.x,
-          behavior: 'smooth',
-        });
+      case IncrementalSource.Scroll: {
+        const target = mirror.getNode(d.id) as Node;
+        if (target === this.iframe.contentDocument) {
+          this.iframe.contentWindow!.scrollTo({
+            top: d.y,
+            left: d.x,
+            behavior: 'smooth',
+          });
+        } else {
+          (target as Element).scrollTop = d.y;
+          (target as Element).scrollLeft = d.x;
+        }
         break;
+      }
       case IncrementalSource.ViewportResize:
         this.iframe.width = `${d.width}px`;
         this.iframe.height = `${d.height}px`;
@@ -192,7 +201,3 @@ class Replayer {
     }
   }
 }
-
-const replayer = new Replayer(_events);
-
-export default replayer;
