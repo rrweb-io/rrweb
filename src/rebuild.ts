@@ -24,6 +24,7 @@ function buildNode(n: serializedNodeWithId): Node | null {
     case NodeType.Element:
       const tagName = getTagName(n);
       const node = document.createElement(tagName);
+      const extraChildIndexes: number[] = [];
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
           let value = n.attributes[name];
@@ -32,6 +33,8 @@ function buildNode(n: serializedNodeWithId): Node | null {
           const isRemoteCss = tagName === 'style' && name === '_cssText';
           if (isTextarea || isRemoteCss) {
             const child = document.createTextNode(value);
+            // identify the extra child DOM we added when rebuild
+            extraChildIndexes.push(node.childNodes.length);
             node.appendChild(child);
             continue;
           }
@@ -41,6 +44,12 @@ function buildNode(n: serializedNodeWithId): Node | null {
             // skip invalid attribute
           }
         }
+      }
+      if (extraChildIndexes.length) {
+        node.setAttribute(
+          'data-extra-child-index',
+          JSON.stringify(extraChildIndexes),
+        );
       }
       return node;
     case NodeType.Text:

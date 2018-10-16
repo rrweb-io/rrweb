@@ -52,7 +52,7 @@ function absoluteToDoc(doc: Document, attributeValue: string): string {
   if (!RELATIVE_PATH.test(attributeValue)) {
     return attributeValue;
   }
-  const a: HTMLAnchorElement = document.createElement('a');
+  const a: HTMLAnchorElement = doc.createElement('a');
   a.href = attributeValue;
   return a.href;
 }
@@ -130,7 +130,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         n.parentNode && (n.parentNode as HTMLElement).tagName;
       let textContent = (n as Text).textContent;
       if (parentTagName === 'SCRIPT') {
-        textContent = '';
+        textContent = 'SCRIPT_PLACEHOLDER';
       }
       return {
         type: NodeType.Text,
