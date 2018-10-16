@@ -96,7 +96,7 @@ exports[`[html file]: iframe.html 1`] = `
   <title data-rrid=\\"12\\">iframe</title>
 </head>
 <body data-rrid=\\"16\\">
-  <iframe src=\\"/html/iframe-inner.html\\" width=\\"100\\" height=\\"50\\" data-rrid=\\"18\\"></iframe>
+  <iframe src=\\"http://localhost:3030/html/iframe-inner.html\\" width=\\"100\\" height=\\"50\\" data-rrid=\\"18\\"></iframe>
 </body></html>"
 `;
 
@@ -110,6 +110,18 @@ exports[`[html file]: invalid-attribute.html 1`] = `
 </body></html>"
 `;
 
+exports[`[html file]: with-relative-res.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
+  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
+  <title data-rrid=\\"12\\">Document</title>
+</head>
+<body data-rrid=\\"16\\">
+  <a href=\\"http://localhost:3030/basic.html\\" data-rrid=\\"18\\"></a>
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"\\" data-rrid=\\"20\\" /></body></html>"
+`;
+
 exports[`[html file]: with-script.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
   <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
@@ -117,7 +129,7 @@ exports[`[html file]: with-script.html 1`] = `
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
   <title data-rrid=\\"12\\">with script</title>
 </head><body data-rrid=\\"16\\">
-  <noscript src=\\"/js/a.js\\" data-rrid=\\"18\\"></noscript>
+  <noscript src=\\"http://localhost:3030/js/a.js\\" data-rrid=\\"18\\"></noscript>
   <noscript data-rrid=\\"20\\"></noscript></body></html>"
 `;
 
@@ -127,7 +139,7 @@ exports[`[html file]: with-style-sheet.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
   <title data-rrid=\\"12\\">with style sheet</title>
-  <style data-rrid=\\"15\\">body { margin: 0px; }p { color: red; }body &gt; p { color: yellow; }</style>
+  <style data-rrid=\\"15\\">body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }</style>
 </head><body data-rrid=\\"18\\">
 </body></html>"
 `;

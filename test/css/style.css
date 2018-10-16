@@ -1,8 +1,10 @@
 body {
   margin: 0;
+  background: url('../a.jpg');
 }
 p {
   color: red;
+  background: url('./b.jpg');
 }
 body > p {
   color: yellow;

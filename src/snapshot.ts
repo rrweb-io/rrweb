@@ -28,6 +28,35 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
   }
 }
 
+const URL_IN_CSS_REF = /url\((['"])([^'"]*)\1\)/gm;
+function absoluteToStylesheet(cssText: string, href: string): string {
+  return cssText.replace(URL_IN_CSS_REF, (_1, _2, filePath) => {
+    const stack = href.split('/');
+    const parts = filePath.split('/');
+    stack.pop();
+    for (const part of parts) {
+      if (part === '.') {
+        continue;
+      } else if (part === '..') {
+        stack.pop();
+      } else {
+        stack.push(part);
+      }
+    }
+    return `url('${stack.join('/')}')`;
+  });
+}
+
+const RELATIVE_PATH = /^(\.\.|\.|)\//;
+function absoluteToDoc(doc: Document, attributeValue: string): string {
+  if (!RELATIVE_PATH.test(attributeValue)) {
+    return attributeValue;
+  }
+  const a: HTMLAnchorElement = document.createElement('a');
+  a.href = attributeValue;
+  return a.href;
+}
+
 function serializeNode(n: Node, doc: Document): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -46,7 +75,12 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
       const tagName = (n as HTMLElement).tagName.toLowerCase();
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
-        attributes[name] = value;
+        // relative path in attribute
+        if (name === 'src' || name === 'href') {
+          attributes[name] = absoluteToDoc(doc, value);
+        } else {
+          attributes[name] = value;
+        }
       }
       // remote css
       if (tagName === 'link') {
@@ -56,7 +90,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
         if (cssText) {
           attributes = {
-            _cssText: cssText,
+            _cssText: absoluteToStylesheet(cssText, stylesheet!.href!),
           };
         }
       }
