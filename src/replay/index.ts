@@ -1,5 +1,5 @@
 import { rebuild, serializeNodeWithId } from 'rrweb-snapshot';
-import later from './timer';
+import { later, clear } from './timer';
 import {
   EventType,
   incrementalData,
@@ -7,18 +7,35 @@ import {
   fullSnapshotEvent,
   eventWithTime,
   MouseInteractions,
+  playerConfig,
 } from '../types';
 import { mirror, getIdNodeMap } from '../utils';
 
+const defaultConfig: playerConfig = {
+  speed: 1,
+};
+
 export class Replayer {
   private events: eventWithTime[] = [];
+  private config: playerConfig;
+
   private wrapper: HTMLDivElement;
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
   private startTime: number = 0;
 
-  constructor(events: eventWithTime[]) {
+  private timerIds: number[] = [];
+
+  constructor(events: eventWithTime[], config: playerConfig = defaultConfig) {
     this.events = events;
+    this.config = config;
+  }
+
+  public setConfig(config: Partial<playerConfig>) {
+    this.config = {
+      ...this.config,
+      ...config,
+    };
   }
 
   public play() {
@@ -33,18 +50,23 @@ export class Replayer {
           this.iframe.height = `${event.data.height}px`;
           break;
         case EventType.FullSnapshot:
-          later(() => {
+          this.later(() => {
             this.rebuildFullSnapshot(event);
+            this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
           }, this.getDelay(event));
           break;
         case EventType.IncrementalSnapshot:
-          later(() => {
+          this.later(() => {
             this.applyIncremental(event.data);
           }, this.getDelay(event));
           break;
         default:
       }
     }
+  }
+
+  public pause() {
+    this.timerIds.forEach(clear);
   }
 
   private setupDom() {
@@ -58,6 +80,11 @@ export class Replayer {
 
     this.iframe = document.createElement('iframe');
     this.wrapper.appendChild(this.iframe);
+  }
+
+  private later(cb: () => void, delayMs: number) {
+    const id = later(cb, delayMs, this.config.speed);
+    this.timerIds.push(id);
   }
 
   private getDelay(event: eventWithTime): number {
@@ -152,7 +179,7 @@ export class Replayer {
       }
       case IncrementalSource.MouseMove:
         d.positions.forEach(p => {
-          later(() => {
+          this.later(() => {
             this.mouse.style.left = `${p.x}px`;
             this.mouse.style.top = `${p.y}px`;
           }, p.timeOffset);
