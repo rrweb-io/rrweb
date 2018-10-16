@@ -26,6 +26,10 @@ export type fullSnapshotEvent = {
   type: EventType.FullSnapshot;
   data: {
     node: serializedNodeWithId;
+    initialOffset: {
+      top: number;
+      left: number;
+    };
   };
 };
 
@@ -199,3 +203,7 @@ export type throttleOptions = {
 
 export type listenerHandler = () => void;
 export type hookResetter = () => void;
+
+export type playerConfig = {
+  speed: number;
+};

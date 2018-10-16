@@ -40,9 +40,20 @@ export function getIdNodeMap(doc: Document) {
       return null;
     }
     if (node.type === NodeType.Document || node.type === NodeType.Element) {
-      for (const _n of Array.from(n.childNodes)) {
-        walk(_n);
+      let dataStr: string | null = null;
+      let extraChildIndexes: number[] = [];
+      if (node.type === NodeType.Element) {
+        dataStr = (n as Element).getAttribute('data-extra-child-index');
       }
+      if (dataStr) {
+        extraChildIndexes = JSON.parse(dataStr);
+      }
+      n.childNodes.forEach((childNode, index) => {
+        // skip extra DOM created when rebuild
+        if (extraChildIndexes.indexOf(index) < 0) {
+          walk(childNode);
+        }
+      });
     }
   }
 
@@ -92,7 +103,10 @@ export function hookSetter<T>(
   const original = Object.getOwnPropertyDescriptor(target, key);
   Object.defineProperty(target, key, {
     set(value) {
-      d.set!.call(this, value);
+      // put hooked setter into event loop to avoid of set latency
+      setTimeout(() => {
+        d.set!.call(this, value);
+      }, 0);
       if (original && original.set) {
         original.set.call(this, value);
       }

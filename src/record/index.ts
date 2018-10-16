@@ -39,7 +39,10 @@ function record(options: recordOptions = {}) {
         emit(
           wrapEvent({
             type: EventType.Load,
-            data: { width: getWindowWidth(), height: getWindowHeight() },
+            data: {
+              width: getWindowWidth(),
+              height: getWindowHeight(),
+            },
           }),
         );
         const [node, idNodeMap] = snapshot(document);
@@ -47,7 +50,18 @@ function record(options: recordOptions = {}) {
           return console.warn('Failed to snapshot the document');
         }
         mirror.map = idNodeMap;
-        emit(wrapEvent({ type: EventType.FullSnapshot, data: { node } }));
+        emit(
+          wrapEvent({
+            type: EventType.FullSnapshot,
+            data: {
+              node,
+              initialOffset: {
+                left: document.documentElement.scrollLeft,
+                top: document.documentElement.scrollTop,
+              },
+            },
+          }),
+        );
         initObservers({
           mutationCb: m =>
             emit(
