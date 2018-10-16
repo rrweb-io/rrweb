@@ -71,7 +71,6 @@ describe('integration tests', () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
       // headless: false,
-      executablePath: '/home/yanzhen/Desktop/chrome-linux/chrome',
     });
 
     const bundle = await rollup.rollup({
