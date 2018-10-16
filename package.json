@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "main": "dist/index.js",
   "module": "dist/module.js",
@@ -18,7 +18,9 @@
     "DOM"
   ],
   "files": [
-    "dist"
+    "dist",
+    "index.d.ts",
+    "src/types.ts"
   ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
