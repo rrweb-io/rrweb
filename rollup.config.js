@@ -22,21 +22,21 @@ export default [
     ],
   },
   {
-    input: './src/replay/index.ts',
+    input: './src/index.ts',
     plugins: [typescript(), resolve()],
     output: [
       {
         format: 'cjs',
-        file: './dist/replay/index.js',
+        file: './dist/index.js',
       },
       {
         format: 'esm',
-        file: './dist/replay/module.js',
+        file: './dist/module.js',
       },
       {
-        name: 'replay',
+        name: 'rrweb',
         format: 'iife',
-        file: './dist/replay/browser.js',
+        file: './dist/browser.js',
       },
     ],
   },

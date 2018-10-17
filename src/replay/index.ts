@@ -1,4 +1,5 @@
 import { rebuild, serializeNodeWithId } from 'rrweb-snapshot';
+import * as mittProxy from 'mitt';
 import { later, clear } from './timer';
 import {
   EventType,
@@ -8,27 +9,44 @@ import {
   eventWithTime,
   MouseInteractions,
   playerConfig,
+  playerMetaData,
+  viewportResizeDimention,
 } from '../types';
 import { mirror, getIdNodeMap } from '../utils';
 
+// https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
+// tslint:disable-next-line
+const mitt = (mittProxy as any).default || mittProxy;
+
 const defaultConfig: playerConfig = {
   speed: 1,
+  root: document.body,
 };
 
 export class Replayer {
+  public wrapper: HTMLDivElement;
+
   private events: eventWithTime[] = [];
   private config: playerConfig;
 
-  private wrapper: HTMLDivElement;
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
   private startTime: number = 0;
 
   private timerIds: number[] = [];
+  private emitter: mitt.Emitter = mitt();
 
-  constructor(events: eventWithTime[], config: playerConfig = defaultConfig) {
+  constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
     this.events = events;
-    this.config = config;
+    this.handleResize = this.handleResize.bind(this);
+
+    this.setConfig(Object.assign({}, defaultConfig, config));
+    this.setupDom();
+    this.emitter.on('resize', this.handleResize as mitt.Handler);
+  }
+
+  public on(event: string, handler: mitt.Handler) {
+    this.emitter.on(event, handler);
   }
 
   public setConfig(config: Partial<playerConfig>) {
@@ -38,16 +56,30 @@ export class Replayer {
     };
   }
 
+  public getMetaData(): playerMetaData {
+    if (this.events.length < 2) {
+      return {
+        totalTime: 0,
+      };
+    }
+    const firstEvent = this.events[0];
+    const lastEvent = this.events[this.events.length - 1];
+    return {
+      totalTime: lastEvent.timestamp - firstEvent.timestamp,
+    };
+  }
+
   public play() {
-    this.setupDom();
     for (const event of this.events) {
       switch (event.type) {
         case EventType.DomContentLoaded:
           this.startTime = event.timestamp;
           break;
         case EventType.Load:
-          this.iframe.width = `${event.data.width}px`;
-          this.iframe.height = `${event.data.height}px`;
+          this.emitter.emit('resize', {
+            width: event.data.width,
+            height: event.data.height,
+          });
           break;
         case EventType.FullSnapshot:
           this.later(() => {
@@ -72,7 +104,7 @@ export class Replayer {
   private setupDom() {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
-    document.body.appendChild(this.wrapper);
+    this.config.root.appendChild(this.wrapper);
 
     this.mouse = document.createElement('div');
     this.mouse.classList.add('replayer-mouse');
@@ -80,6 +112,11 @@ export class Replayer {
 
     this.iframe = document.createElement('iframe');
     this.wrapper.appendChild(this.iframe);
+  }
+
+  private handleResize(dimension: viewportResizeDimention) {
+    this.iframe.width = `${dimension.width}px`;
+    this.iframe.height = `${dimension.height}px`;
   }
 
   private later(cb: () => void, delayMs: number) {
@@ -213,8 +250,10 @@ export class Replayer {
         break;
       }
       case IncrementalSource.ViewportResize:
-        this.iframe.width = `${d.width}px`;
-        this.iframe.height = `${d.height}px`;
+        this.emitter.emit('resize', {
+          width: d.width,
+          height: d.height,
+        });
         break;
       case IncrementalSource.Input: {
         const target: HTMLInputElement = (mirror.getNode(

@@ -206,4 +206,9 @@ export type hookResetter = () => void;
 
 export type playerConfig = {
   speed: number;
+  root: Element;
+};
+
+export type playerMetaData = {
+  totalTime: number;
 };
