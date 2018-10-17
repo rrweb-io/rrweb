@@ -1,4 +1,4 @@
-<div class="rr-player">
+<div class="rr-player" { style }>
   rrplayer
 </div>
 
@@ -9,9 +9,23 @@
 </style>
 
 <script>
+  import { inlineCss } from '../util.js';
+
   export default {
     data() {
-      return {}
-    }
-  }
+      return {
+        width: 1024,
+        height: 576,
+      };
+    },
+    computed: {
+      style({ width, height }) {
+        return inlineCss({
+          width: `${width}px`,
+          height: `${height}px`,
+        });
+      },
+    },
+  };
+
 </script>
