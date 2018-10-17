@@ -1,0 +1,108 @@
+<div class="rr-controller">
+  <div class="rr-timeline">
+    <span class="rr-timeline__time">{formatTime(currentTime)}</span>
+    <div class="rr-progress">
+      <div class="rr-progress__step" ref:step style="width: {percentage}"></div>
+      <div class="rr-progress__handler" ref:handler style="left: {percentage}"></div>
+    </div>
+    <span class="rr-timeline__time">{formatTime(meta.totalTime)}</span>
+  </div>
+  <button>pause</button>
+</div>
+
+<script>
+  import { formatTime } from './utils.js';
+
+  export default {
+    data() {
+      return {
+        currentTime: 0,
+      };
+    },
+    computed: {
+      meta({ replayer }) {
+        return replayer.getMetaData();
+      },
+      percentage({ currentTime, meta }) {
+        return `${100 * currentTime / meta.totalTime}%`;
+      },
+    },
+    helpers: {
+      formatTime,
+    },
+    methods: {
+      loopTimer() {
+        const now = performance.now();
+        const self = this;
+
+        function update(step) {
+          let { currentTime, meta } = self.get();
+          currentTime = Math.floor(step - now);
+          self.set({ currentTime });
+
+          if (currentTime < meta.totalTime) {
+            requestAnimationFrame(update);
+          }
+        }
+
+        requestAnimationFrame(update);
+      },
+    },
+    onupdate({ changed, current }) {
+      if (changed.replayer) {
+        this.loopTimer();
+        current.replayer.play();
+      }
+    },
+  };
+</script>
+
+<style>
+  .rr-controller {
+    width: 100%;
+    height: 80px;
+    background: rgba(0, 0, 0, .5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .rr-timeline {
+    width: 80%;
+    display: flex;
+    align-items: center
+  }
+
+  .rr-timeline__time {
+    padding: 0 20px;
+    color: white;
+  }
+
+  .rr-progress {
+    width: 100%;
+    height: 4px;
+    background: white;
+    position: relative;
+    border-radius: 3px;
+  }
+
+  .rr-progress__step {
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: orange
+  }
+
+  .rr-progress__handler {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    position: absolute;
+    top: 2px;
+    transform: translate(-50%, -50%);
+    background: orange;
+  }
+</style>

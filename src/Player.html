@@ -1,10 +1,65 @@
 <div class="rr-player">
   <div class="rr-player__frame" ref:frame { style }></div>
+  {#if replayer}
+  <Controller { replayer } />
+  {/if}
 </div>
+
+<script>
+  import { Replayer } from 'rrweb';
+  import { inlineCss } from './utils.js';
+
+  export default {
+    components: {
+      Controller: './Controller.html',
+    },
+    data() {
+      return {
+        width: 1024,
+        height: 576,
+        events: [],
+        replayer: null,
+      };
+    },
+    computed: {
+      style({ width, height }) {
+        return inlineCss({
+          width: `${width}px`,
+          height: `${height}px`,
+        });
+      },
+    },
+    methods: {
+      updateScale(el, frameDimension) {
+        const { width, height } = this.get();
+        const widthScale = (width - 20) / frameDimension.width;
+        const heightScale = (height - 20) / frameDimension.height;
+        el.style.transform =
+          `scale(${Math.min(widthScale, heightScale, 1)})` +
+          'translate(-50%, -50%)';
+      },
+    },
+    oncreate(p) {
+      const { events } = this.get();
+      const replayer = new Replayer(events, {
+        speed: 1,
+        root: this.refs.frame,
+      });
+      replayer.on('resize', (dimension) =>
+        this.updateScale(replayer.wrapper, dimension)
+      );
+      this.set({
+        replayer,
+      });
+    },
+  };
+
+
+</script>
 
 <style>
   .rr-player {
-    border: 3px solid indianred;
+    background: white;
     float: left;
     clear: both;
   }
@@ -17,9 +72,14 @@
     float: left;
     clear: both;
     transform-origin: top left;
-    left: 50%;
-    top: 50%;
-    border: 2px solid grey;
+    left: calc(50% - 10px);
+    top: calc(50% - 10px);
+    margin: 10px;
+    box-shadow: 0 3px 28px rgba(0, 0, 0, 0.25), 0 1px 10px rgba(0, 0, 0, 0.22);
+  }
+
+  :global(.replayer-wrapper > iframe) {
+    border: none;
   }
 
   /* get from rrweb */
@@ -44,47 +104,3 @@
     opacity: 0.5;
   }
 </style>
-
-<script>
-  import { Replayer } from 'rrweb';
-  import { inlineCss } from './util.js';
-
-  export default {
-    data() {
-      return {
-        width: 1024,
-        height: 576,
-        events: [],
-      };
-    },
-    computed: {
-      style({ width, height }) {
-        return inlineCss({
-          width: `${width}px`,
-          height: `${height}px`,
-        });
-      },
-    },
-    methods: {
-      updateScale(el, frameDimension) {
-        const { width, height } = this.get();
-        const widthScale = width / frameDimension.width;
-        const heightScale = height / frameDimension.height;
-        el.style.transform =
-          `scale(${Math.min(widthScale, heightScale, 1)})` +
-          'translate(-50%, -50%)';
-      },
-    },
-    oncreate(p) {
-      const { events } = this.get();
-      const replayer = new Replayer(events, {
-        speed: 1,
-        root: this.refs.frame,
-        onResize: (dimension) => this.updateScale(replayer.wrapper, dimension),
-      });
-      replayer.play();
-    },
-  };
-
-
-</script>
