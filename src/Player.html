@@ -1,21 +1,60 @@
-<div class="rr-player" { style }>
-  rrplayer
+<div class="rr-player">
+  <div class="rr-player__frame" ref:frame { style }></div>
 </div>
 
 <style>
   .rr-player {
-    border: 1px solid indianred;
+    border: 3px solid indianred;
+    float: left;
+    clear: both;
+  }
+
+  .rr-player__frame {
+    overflow: hidden;
+  }
+
+  :global(.replayer-wrapper) {
+    float: left;
+    clear: both;
+    transform-origin: top left;
+    left: 50%;
+    top: 50%;
+    border: 2px solid grey;
+  }
+
+  /* get from rrweb */
+  :global(.replayer-wrapper) {
+    position: relative;
+  }
+
+  :global(.replayer-mouse) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+  }
+
+  :global(.replayer-mouse::after) {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: thistle;
+    transform: translate(-10px, -10px);
+    opacity: 0.5;
   }
 </style>
 
 <script>
-  import { inlineCss } from '../util.js';
+  import { Replayer } from 'rrweb';
+  import { inlineCss } from './util.js';
 
   export default {
     data() {
       return {
         width: 1024,
         height: 576,
+        events: [],
       };
     },
     computed: {
@@ -26,6 +65,26 @@
         });
       },
     },
+    methods: {
+      updateScale(el, frameDimension) {
+        const { width, height } = this.get();
+        const widthScale = width / frameDimension.width;
+        const heightScale = height / frameDimension.height;
+        el.style.transform =
+          `scale(${Math.min(widthScale, heightScale, 1)})` +
+          'translate(-50%, -50%)';
+      },
+    },
+    oncreate(p) {
+      const { events } = this.get();
+      const replayer = new Replayer(events, {
+        speed: 1,
+        root: this.refs.frame,
+        onResize: (dimension) => this.updateScale(replayer.wrapper, dimension),
+      });
+      replayer.play();
+    },
   };
+
 
 </script>

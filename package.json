@@ -14,6 +14,9 @@
     "sirv-cli": "^0.2.2",
     "svelte": "^2.13.5"
   },
+  "dependencies": {
+    "rrweb": "file:../rrweb"
+  },
   "scripts": {
     "build": "rollup -c",
     "autobuild": "rollup -c -w",
