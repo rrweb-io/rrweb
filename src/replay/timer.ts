@@ -1,16 +1,27 @@
+import { playerConfig } from '../types';
+
 const FRAME_MS = 16;
+let _id = 1;
 const timerMap: Map<number, boolean> = new Map();
 
-export function later(cb: () => void, delayMs: number, speed = 1): number {
+export function later(
+  cb: () => void,
+  delayMs: number,
+  config: playerConfig,
+): number {
   const now = performance.now();
-  const id = timerMap.size + 1;
+  let lastStep = now;
+  const id = _id++;
   timerMap.set(id, true);
 
   function check(step: number) {
     if (!timerMap.has(id)) {
       return;
     }
-    if (step - now > delayMs / speed - FRAME_MS) {
+    const stepDiff = step - lastStep;
+    lastStep = step;
+    delayMs -= config.speed * stepDiff;
+    if (delayMs < FRAME_MS) {
       cb();
       clear(id);
     } else {

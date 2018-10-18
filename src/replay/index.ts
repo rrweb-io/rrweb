@@ -27,7 +27,7 @@ export class Replayer {
   public wrapper: HTMLDivElement;
 
   private events: eventWithTime[] = [];
-  private config: playerConfig;
+  private config: playerConfig = defaultConfig;
 
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
@@ -37,10 +37,13 @@ export class Replayer {
   private emitter: mitt.Emitter = mitt();
 
   constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
+    if (events.length < 2) {
+      throw new Error('Replayer need at least 2 events.');
+    }
     this.events = events;
     this.handleResize = this.handleResize.bind(this);
 
-    this.setConfig(Object.assign({}, defaultConfig, config));
+    this.setConfig(Object.assign({}, config));
     this.setupDom();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
   }
@@ -50,18 +53,12 @@ export class Replayer {
   }
 
   public setConfig(config: Partial<playerConfig>) {
-    this.config = {
-      ...this.config,
-      ...config,
-    };
+    Object.keys(config).forEach((key: keyof playerConfig) => {
+      this.config[key] = config[key]!;
+    });
   }
 
   public getMetaData(): playerMetaData {
-    if (this.events.length < 2) {
-      return {
-        totalTime: 0,
-      };
-    }
     const firstEvent = this.events[0];
     const lastEvent = this.events[this.events.length - 1];
     return {
@@ -69,30 +66,50 @@ export class Replayer {
     };
   }
 
-  public play() {
+  /**
+   * This API was designed to be used as play at any time offset.
+   * Since we minimized the data collected from recorder, we do not
+   * have the ability of undo an event.
+   * So the implementation of play at any time offset will always iterate
+   * all of the events, cast event before the offset synchronously
+   * and cast event after the offset asynchronously with timer.
+   * @param timeOffset number
+   */
+  public play(timeOffset = 0) {
+    this.startTime = this.events[0].timestamp + timeOffset;
     for (const event of this.events) {
+      const isSync = event.timestamp < this.startTime;
+      let castFn: undefined | (() => void);
       switch (event.type) {
         case EventType.DomContentLoaded:
-          this.startTime = event.timestamp;
           break;
         case EventType.Load:
-          this.emitter.emit('resize', {
-            width: event.data.width,
-            height: event.data.height,
-          });
+          castFn = () =>
+            this.emitter.emit('resize', {
+              width: event.data.width,
+              height: event.data.height,
+            });
           break;
         case EventType.FullSnapshot:
-          this.later(() => {
+          castFn = () => {
             this.rebuildFullSnapshot(event);
             this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
-          }, this.getDelay(event));
+          };
           break;
         case EventType.IncrementalSnapshot:
-          this.later(() => {
-            this.applyIncremental(event.data);
-          }, this.getDelay(event));
+          castFn = () => {
+            this.applyIncremental(event.data, isSync);
+          };
           break;
         default:
+      }
+      if (!castFn) {
+        continue;
+      }
+      if (isSync) {
+        castFn();
+      } else {
+        this.later(castFn, this.getDelay(event));
       }
     }
   }
@@ -120,7 +137,7 @@ export class Replayer {
   }
 
   private later(cb: () => void, delayMs: number) {
-    const id = later(cb, delayMs, this.config.speed);
+    const id = later(cb, delayMs, this.config);
     this.timerIds.push(id);
   }
 
@@ -166,7 +183,7 @@ export class Replayer {
     }
   }
 
-  private applyIncremental(d: incrementalData) {
+  private applyIncremental(d: incrementalData, isSync: boolean) {
     switch (d.source) {
       case IncrementalSource.Mutation: {
         d.texts.forEach(mutation => {
@@ -215,12 +232,15 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseMove:
-        d.positions.forEach(p => {
-          this.later(() => {
-            this.mouse.style.left = `${p.x}px`;
-            this.mouse.style.top = `${p.y}px`;
-          }, p.timeOffset);
-        });
+        // skip mouse move in sync mode
+        if (!isSync) {
+          d.positions.forEach(p => {
+            this.later(() => {
+              this.mouse.style.left = `${p.x}px`;
+              this.mouse.style.top = `${p.y}px`;
+            }, p.timeOffset);
+          });
+        }
         break;
       case IncrementalSource.MouseInteraction: {
         const event = new Event(MouseInteractions[d.type].toLowerCase());
@@ -241,7 +261,7 @@ export class Replayer {
           this.iframe.contentWindow!.scrollTo({
             top: d.y,
             left: d.x,
-            behavior: 'smooth',
+            behavior: isSync ? 'instant' : 'smooth',
           });
         } else {
           (target as Element).scrollTop = d.y;

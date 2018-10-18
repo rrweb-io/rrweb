@@ -1,4 +1,4 @@
-import { idNodeMap, NodeType, serializeNodeWithId } from 'rrweb-snapshot';
+import { idNodeMap, NodeType, serializeNodeWithId, resetId } from 'rrweb-snapshot';
 import {
   Mirror,
   throttleOptions,
@@ -32,6 +32,7 @@ export const mirror: Mirror = {
 
 // TODO: transform this into the snapshot repo
 export function getIdNodeMap(doc: Document) {
+  resetId();
   const map: idNodeMap = {};
 
   function walk(n: Node) {
