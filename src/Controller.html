@@ -7,7 +7,14 @@
     </div>
     <span class="rr-timeline__time">{formatTime(meta.totalTime)}</span>
   </div>
-  <button>pause</button>
+  <div class="rr-controller__btns">
+    <button on:click="toggle()">
+      {isPlaying ? 'pause' : 'play'}
+    </button>
+    {#each [1, 2, 4, 8] as s}
+    <button class:active="s === speed" on:click="set({ speed: s })">{s}x</button>
+    {/each}
+  </div>
 </div>
 
 <script>
@@ -17,6 +24,8 @@
     data() {
       return {
         currentTime: 0,
+        isPlaying: false,
+        speed: 1,
       };
     },
     computed: {
@@ -24,7 +33,8 @@
         return replayer.getMetaData();
       },
       percentage({ currentTime, meta }) {
-        return `${100 * currentTime / meta.totalTime}%`;
+        const percent = Math.min(1, currentTime / meta.totalTime);
+        return `${100 * percent}%`;
       },
     },
     helpers: {
@@ -33,25 +43,55 @@
     methods: {
       loopTimer() {
         const now = performance.now();
+        let lastStep = now;
         const self = this;
 
         function update(step) {
-          let { currentTime, meta } = self.get();
-          currentTime = Math.floor(step - now);
-          self.set({ currentTime });
+          let { currentTime, meta, isPlaying, speed } = self.get();
+          if (!isPlaying) {
+            return;
+          }
+
+          const stepDiff = Math.floor(step - lastStep);
+          lastStep = step;
+          currentTime += speed * stepDiff;
+          self.set({
+            currentTime: Math.min(currentTime, meta.totalTime),
+          });
 
           if (currentTime < meta.totalTime) {
             requestAnimationFrame(update);
+          } else {
+            self.set({ isPlaying: false, currentTime: 0 });
           }
         }
 
         requestAnimationFrame(update);
       },
-    },
-    onupdate({ changed, current }) {
-      if (changed.replayer) {
+      play() {
+        const { replayer } = this.get();
+        // replayer.play();
         this.loopTimer();
-        current.replayer.play();
+      },
+      pause() {
+        const { replayer } = this.get();
+        replayer.pause();
+      },
+      toggle() {
+        const { isPlaying } = this.get();
+        this.set({ isPlaying: !isPlaying });
+        if (isPlaying) {
+          this.pause();
+        } else {
+          this.play();
+        }
+      },
+    },
+    onupdate({ changed, current, previous }) {
+      if (current.replayer && !previous) {
+        // auto play
+        this.set({ isPlaying: true });
+        this.play();
       }
     },
   };
@@ -104,5 +144,9 @@
     top: 2px;
     transform: translate(-50%, -50%);
     background: orange;
+  }
+
+  .rr-controller__btns button.active {
+    color: orange;
   }
 </style>
