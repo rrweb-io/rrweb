@@ -13,7 +13,7 @@ function genId(): number {
   return _id++;
 }
 
-function resetId() {
+export function resetId() {
   _id = 1;
 }
 

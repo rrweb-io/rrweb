@@ -1,5 +1,5 @@
-import snapshot, { serializeNodeWithId } from './snapshot';
+import snapshot, { serializeNodeWithId, resetId } from './snapshot';
 import rebuild from './rebuild';
 export * from './types';
 
-export { snapshot, serializeNodeWithId, rebuild };
+export { snapshot, serializeNodeWithId, resetId, rebuild };

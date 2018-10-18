@@ -8,3 +8,4 @@ export function serializeNodeWithId(
   doc: Document,
   map: idNodeMap,
 ): serializedNodeWithId | null;
+export function resetId(): void;
