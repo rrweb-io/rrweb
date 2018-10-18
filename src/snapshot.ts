@@ -28,9 +28,29 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
   }
 }
 
+function extractOrigin(url: string): string {
+  let origin;
+  if (url.indexOf('//') > -1) {
+    origin = url
+      .split('/')
+      .slice(0, 3)
+      .join('/');
+  } else {
+    origin = url.split('/')[0];
+  }
+  origin = origin.split('?')[0];
+  return origin;
+}
+
 const URL_IN_CSS_REF = /url\((['"])([^'"]*)\1\)/gm;
-function absoluteToStylesheet(cssText: string, href: string): string {
+export function absoluteToStylesheet(cssText: string, href: string): string {
   return cssText.replace(URL_IN_CSS_REF, (_1, _2, filePath) => {
+    if (!/^[./]/.test(filePath)) {
+      return `url('${filePath}')`;
+    }
+    if (filePath[0] === '/') {
+      return `url('${extractOrigin(href) + filePath}')`;
+    }
     const stack = href.split('/');
     const parts = filePath.split('/');
     stack.pop();
