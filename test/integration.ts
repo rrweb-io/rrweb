@@ -101,7 +101,7 @@ describe('integration tests', () => {
       const rebuildHtml = (await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap));
+        x.serializeToString(rrweb.rebuild(snap, document));
       `)).replace(/\n\n/g, '');
       const result = matchSnapshot(rebuildHtml, __filename, title);
       assert(result.pass, result.pass ? '' : result.report());

@@ -11,19 +11,19 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-function buildNode(n: serializedNodeWithId): Node | null {
+function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
   switch (n.type) {
     case NodeType.Document:
-      return document.implementation.createDocument(null, '', null);
+      return doc.implementation.createDocument(null, '', null);
     case NodeType.DocumentType:
-      return document.implementation.createDocumentType(
+      return doc.implementation.createDocumentType(
         n.name,
         n.publicId,
         n.systemId,
       );
     case NodeType.Element:
       const tagName = getTagName(n);
-      const node = document.createElement(tagName);
+      const node = doc.createElement(tagName);
       const extraChildIndexes: number[] = [];
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
@@ -32,7 +32,7 @@ function buildNode(n: serializedNodeWithId): Node | null {
           const isTextarea = tagName === 'textarea' && name === 'value';
           const isRemoteCss = tagName === 'style' && name === '_cssText';
           if (isTextarea || isRemoteCss) {
-            const child = document.createTextNode(value);
+            const child = doc.createTextNode(value);
             // identify the extra child DOM we added when rebuild
             extraChildIndexes.push(node.childNodes.length);
             node.appendChild(child);
@@ -53,18 +53,18 @@ function buildNode(n: serializedNodeWithId): Node | null {
       }
       return node;
     case NodeType.Text:
-      return document.createTextNode(n.textContent);
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
-      return document.createCDATASection(n.textContent);
+      return doc.createCDATASection(n.textContent);
     case NodeType.Comment:
-      return document.createComment(n.textContent);
+      return doc.createComment(n.textContent);
     default:
       return null;
   }
 }
 
-function rebuild(n: serializedNodeWithId): Node | null {
-  const root = buildNode(n);
+function rebuild(n: serializedNodeWithId, doc: Document): Node | null {
+  const root = buildNode(n, doc);
   if (!root) {
     return null;
   }
@@ -73,7 +73,7 @@ function rebuild(n: serializedNodeWithId): Node | null {
   }
   if (n.type === NodeType.Document || n.type === NodeType.Element) {
     for (const childN of n.childNodes) {
-      const childNode = rebuild(childN);
+      const childNode = rebuild(childN, doc);
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
       } else {
