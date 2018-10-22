@@ -7,7 +7,7 @@ Also provide the ability to rebuild the DOM via snapshot.
 
 ## API
 
-This module export 3 methods:
+This module export following methods:
 
 ### snapshot
 
@@ -34,3 +34,7 @@ There are serveral things will be done during rebuild:
 #### serializeNodeWithId
 
 `serializeNodeWithId` can serialize a node into snapshot format with id.
+
+#### buildNodeWithSN
+
+`buildNodeWithSN` will build DOM from serialized node and store serialized information in `__sn` property.
