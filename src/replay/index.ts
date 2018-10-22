@@ -1,4 +1,4 @@
-import { rebuild, serializeNodeWithId } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { later, clear } from './timer';
 import {
@@ -12,7 +12,7 @@ import {
   playerMetaData,
   viewportResizeDimention,
 } from '../types';
-import { mirror, getIdNodeMap } from '../utils';
+import { mirror } from '../utils';
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 // tslint:disable-next-line
@@ -82,8 +82,9 @@ export class Replayer {
       let castFn: undefined | (() => void);
       switch (event.type) {
         case EventType.DomContentLoaded:
-          break;
         case EventType.Load:
+          break;
+        case EventType.Meta:
           castFn = () =>
             this.emitter.emit('resize', {
               width: event.data.width,
@@ -141,6 +142,7 @@ export class Replayer {
     this.timerIds.push(id);
   }
 
+  // TODO: add speed to mouse move timestamp calculation
   private getDelay(event: eventWithTime): number {
     // Mouse move events was recorded in a throttle function,
     // so we need to find the real timestamp by traverse the time offsets.
@@ -163,29 +165,35 @@ export class Replayer {
   }
 
   private rebuildFullSnapshot(event: fullSnapshotEvent) {
-    const doc = rebuild(event.data.node);
-    if (doc) {
-      this.iframe.contentDocument!.open();
-      // https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
-      this.iframe.contentDocument!.write(
-        new XMLSerializer()
-          .serializeToString(doc as Document)
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>'),
-      );
-      this.iframe.contentDocument!.close();
-      mirror.map = getIdNodeMap(this.iframe.contentDocument!);
-      // avoid form submit to refresh the iframe
-      this.iframe.contentDocument!.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', evt => evt.preventDefault());
-      });
-    }
+    mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
+    // avoid form submit to refresh the iframe
+    this.iframe.contentDocument!.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', evt => evt.preventDefault());
+    });
   }
 
   private applyIncremental(d: incrementalData, isSync: boolean) {
     switch (d.source) {
       case IncrementalSource.Mutation: {
+        d.adds.forEach(mutation => {
+          const target = buildNodeWithSN(
+            mutation.node,
+            this.iframe.contentDocument!,
+            mirror.map,
+          ) as Node;
+          const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
+          if (mutation.nextId) {
+            const next = (mirror.getNode(mutation.nextId) as Node) as Element;
+            parent.insertBefore(target, next);
+          } else if (mutation.previousId) {
+            const previous = (mirror.getNode(
+              mutation.previousId,
+            ) as Node) as Element;
+            parent.insertBefore(target, previous.nextSibling);
+          } else {
+            parent.appendChild(target);
+          }
+        });
         d.texts.forEach(mutation => {
           const target = (mirror.getNode(mutation.id) as Node) as Text;
           target.textContent = mutation.value;
@@ -208,26 +216,6 @@ export class Replayer {
           const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
           parent.removeChild(target);
           delete mirror.map[mutation.id];
-        });
-        d.adds.forEach(mutation => {
-          const target = (mirror.getNode(mutation.id) as Node) as Element;
-          const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
-          if (mutation.nextId) {
-            const next = (mirror.getNode(mutation.nextId) as Node) as Element;
-            parent.insertBefore(target, next);
-          } else if (mutation.previousId) {
-            const previous = (mirror.getNode(
-              mutation.previousId,
-            ) as Node) as Element;
-            parent.insertBefore(target, previous.nextSibling);
-          } else {
-            parent.appendChild(target);
-          }
-          serializeNodeWithId(
-            mirror.getNode(mutation.id),
-            this.iframe.contentDocument!,
-            mirror.map,
-          );
         });
         break;
       }

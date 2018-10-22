@@ -74,13 +74,6 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           item.attributes[attributeName!] = value;
         }
         case 'childList': {
-          removedNodes.forEach(n => {
-            removes.push({
-              parentId: id,
-              id: mirror.getId(n as INode),
-            });
-            mirror.removeNodeFromMap(n as INode);
-          });
           addedNodes.forEach(n => {
             adds.push({
               parentId: id,
@@ -90,9 +83,15 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
               nextId: !nextSibling
                 ? nextSibling
                 : mirror.getId(nextSibling as INode),
+              node: serializeNodeWithId(n, document, mirror.map)!,
+            });
+          });
+          removedNodes.forEach(n => {
+            removes.push({
+              parentId: id,
               id: mirror.getId(n as INode),
             });
-            serializeNodeWithId(n as INode, document, mirror.map);
+            mirror.removeNodeFromMap(n as INode);
           });
           break;
         }

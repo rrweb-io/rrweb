@@ -5,21 +5,17 @@ export enum EventType {
   Load,
   FullSnapshot,
   IncrementalSnapshot,
+  Meta,
 }
 
 export type domContentLoadedEvent = {
   type: EventType.DomContentLoaded;
-  data: {
-    href: string;
-  };
+  data: {};
 };
 
 export type loadedEvent = {
   type: EventType.Load;
-  data: {
-    width: number;
-    height: number;
-  };
+  data: {};
 };
 
 export type fullSnapshotEvent = {
@@ -36,6 +32,15 @@ export type fullSnapshotEvent = {
 export type incrementalSnapshotEvent = {
   type: EventType.IncrementalSnapshot;
   data: incrementalData;
+};
+
+export type metaEvent = {
+  type: EventType.Meta;
+  data: {
+    href: string;
+    width: number;
+    height: number;
+  };
 };
 
 export enum IncrementalSource {
@@ -85,7 +90,8 @@ export type event =
   | domContentLoadedEvent
   | loadedEvent
   | fullSnapshotEvent
-  | incrementalSnapshotEvent;
+  | incrementalSnapshotEvent
+  | metaEvent;
 
 export type eventWithTime = event & {
   timestamp: number;
@@ -125,7 +131,7 @@ export type addedNodeMutation = {
   parentId: number;
   previousId: number | null;
   nextId: number | null;
-  id: number;
+  node: serializedNodeWithId;
 };
 
 type mutationCallbackParam = {

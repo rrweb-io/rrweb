@@ -1,4 +1,3 @@
-import { idNodeMap, NodeType, serializeNodeWithId, resetId } from 'rrweb-snapshot';
 import {
   Mirror,
   throttleOptions,
@@ -29,38 +28,6 @@ export const mirror: Mirror = {
     delete mirror.map[id];
   },
 };
-
-// TODO: transform this into the snapshot repo
-export function getIdNodeMap(doc: Document) {
-  resetId();
-  const map: idNodeMap = {};
-
-  function walk(n: Node) {
-    const node = serializeNodeWithId(n, doc, map);
-    if (!node) {
-      return null;
-    }
-    if (node.type === NodeType.Document || node.type === NodeType.Element) {
-      let dataStr: string | null = null;
-      let extraChildIndexes: number[] = [];
-      if (node.type === NodeType.Element) {
-        dataStr = (n as Element).getAttribute('data-extra-child-index');
-      }
-      if (dataStr) {
-        extraChildIndexes = JSON.parse(dataStr);
-      }
-      n.childNodes.forEach((childNode, index) => {
-        // skip extra DOM created when rebuild
-        if (extraChildIndexes.indexOf(index) < 0) {
-          walk(childNode);
-        }
-      });
-    }
-  }
-
-  walk(doc);
-  return map;
-}
 
 // copy from underscore and modified
 export function throttle<T>(

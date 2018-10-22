@@ -15,7 +15,7 @@ export default [
         file: './dist/record/module.js',
       },
       {
-        name: 'record',
+        name: 'record1',
         format: 'iife',
         file: './dist/record/browser.js',
       },

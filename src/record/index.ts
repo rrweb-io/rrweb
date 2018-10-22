@@ -27,106 +27,121 @@ function record(options: recordOptions = {}) {
       emit(
         wrapEvent({
           type: EventType.DomContentLoaded,
-          data: {
-            href: window.location.href,
-          },
+          data: {},
         }),
       );
     });
-    on(
-      'load',
-      () => {
-        emit(
-          wrapEvent({
-            type: EventType.Load,
-            data: {
-              width: getWindowWidth(),
-              height: getWindowHeight(),
+    const init = () => {
+      emit(
+        wrapEvent({
+          type: EventType.Meta,
+          data: {
+            href: window.location.href,
+            width: getWindowWidth(),
+            height: getWindowHeight(),
+          },
+        }),
+      );
+      const [node, idNodeMap] = snapshot(document);
+      if (!node) {
+        return console.warn('Failed to snapshot the document');
+      }
+      mirror.map = idNodeMap;
+      emit(
+        wrapEvent({
+          type: EventType.FullSnapshot,
+          data: {
+            node,
+            initialOffset: {
+              left: document.documentElement.scrollLeft,
+              top: document.documentElement.scrollTop,
             },
-          }),
-        );
-        const [node, idNodeMap] = snapshot(document);
-        if (!node) {
-          return console.warn('Failed to snapshot the document');
-        }
-        mirror.map = idNodeMap;
-        emit(
-          wrapEvent({
-            type: EventType.FullSnapshot,
-            data: {
-              node,
-              initialOffset: {
-                left: document.documentElement.scrollLeft,
-                top: document.documentElement.scrollTop,
+          },
+        }),
+      );
+      initObservers({
+        mutationCb: m =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Mutation,
+                ...m,
               },
-            },
-          }),
-        );
-        initObservers({
-          mutationCb: m =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Mutation,
-                  ...m,
-                },
-              }),
-            ),
-          mousemoveCb: positions =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseMove,
-                  positions,
-                },
-              }),
-            ),
-          mouseInteractionCb: d =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseInteraction,
-                  ...d,
-                },
-              }),
-            ),
-          scrollCb: p =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Scroll,
-                  ...p,
-                },
-              }),
-            ),
-          viewportResizeCb: d =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.ViewportResize,
-                  ...d,
-                },
-              }),
-            ),
-          inputCb: v =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Input,
-                  ...v,
-                },
-              }),
-            ),
-        });
-      },
-      window,
-    );
+            }),
+          ),
+        mousemoveCb: positions =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseMove,
+                positions,
+              },
+            }),
+          ),
+        mouseInteractionCb: d =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseInteraction,
+                ...d,
+              },
+            }),
+          ),
+        scrollCb: p =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Scroll,
+                ...p,
+              },
+            }),
+          ),
+        viewportResizeCb: d =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.ViewportResize,
+                ...d,
+              },
+            }),
+          ),
+        inputCb: v =>
+          emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Input,
+                ...v,
+              },
+            }),
+          ),
+      });
+    };
+    if (
+      document.readyState === 'interactive' ||
+      document.readyState === 'complete'
+    ) {
+      init();
+    } else {
+      on(
+        'load',
+        () => {
+          emit(
+            wrapEvent({
+              type: EventType.Load,
+              data: {},
+            }),
+          );
+          init();
+        },
+        window,
+      );
+    }
   } catch (error) {
     // TODO: handle internal error
     console.warn(error);
