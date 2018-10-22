@@ -10,10 +10,12 @@ export function serializeNodeWithId(
   n: Node,
   doc: Document,
   map: idNodeMap,
+  skipChild?: boolean,
 ): serializedNodeWithId | null;
 export function resetId(): void;
 export function buildNodeWithSN(
   n: serializedNodeWithId,
   doc: Document,
   map: idNodeMap,
+  skipChild?: boolean,
 ): INode | null;

@@ -175,6 +175,7 @@ export function serializeNodeWithId(
   n: Node,
   doc: Document,
   map: idNodeMap,
+  skipChild = false,
 ): serializedNodeWithId | null {
   const _serializedNode = serializeNode(n, doc);
   if (!_serializedNode) {
@@ -188,8 +189,9 @@ export function serializeNodeWithId(
   (n as INode).__sn = serializedNode;
   map[serializedNode.id] = n as INode;
   if (
-    serializedNode.type === NodeType.Document ||
-    serializedNode.type === NodeType.Element
+    (serializedNode.type === NodeType.Document ||
+      serializedNode.type === NodeType.Element) &&
+    !skipChild
   ) {
     for (const childN of Array.from(n.childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, doc, map);

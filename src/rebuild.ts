@@ -166,6 +166,7 @@ export function buildNodeWithSN(
   n: serializedNodeWithId,
   doc: Document,
   map: idNodeMap,
+  skipChild = false,
 ): INode | null {
   let node = buildNode(n, doc);
   if (!node) {
@@ -179,7 +180,10 @@ export function buildNodeWithSN(
 
   (node as INode).__sn = n;
   map[n.id] = node as INode;
-  if (n.type === NodeType.Document || n.type === NodeType.Element) {
+  if (
+    (n.type === NodeType.Document || n.type === NodeType.Element) &&
+    !skipChild
+  ) {
     for (const childN of n.childNodes) {
       const childNode = buildNodeWithSN(childN, doc, map);
       if (!childNode) {
