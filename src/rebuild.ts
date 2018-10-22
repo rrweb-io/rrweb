@@ -1,4 +1,108 @@
-import { serializedNodeWithId, NodeType, tagMap, elementNode } from './types';
+import {
+  serializedNodeWithId,
+  NodeType,
+  tagMap,
+  elementNode,
+  idNodeMap,
+  INode,
+} from './types';
+
+// TODO: need a more accurate list
+const svgTags = [
+  'altGlyph',
+  'altGlyphDef',
+  'altGlyphItem',
+  'animate',
+  'animateColor',
+  'animateMotion',
+  'animateTransform',
+  'animation',
+  'circle',
+  'clipPath',
+  'color-profile',
+  'cursor',
+  'defs',
+  'desc',
+  'discard',
+  'ellipse',
+  'feBlend',
+  'feColorMatrix',
+  'feComponentTransfer',
+  'feComposite',
+  'feConvolveMatrix',
+  'feDiffuseLighting',
+  'feDisplacementMap',
+  'feDistantLight',
+  'feDropShadow',
+  'feFlood',
+  'feFuncA',
+  'feFuncB',
+  'feFuncG',
+  'feFuncR',
+  'feGaussianBlur',
+  'feImage',
+  'feMerge',
+  'feMergeNode',
+  'feMorphology',
+  'feOffset',
+  'fePointLight',
+  'feSpecularLighting',
+  'feSpotLight',
+  'feTile',
+  'feTurbulence',
+  'filter',
+  'font',
+  'font-face',
+  'font-face-format',
+  'font-face-name',
+  'font-face-src',
+  'font-face-uri',
+  'foreignObject',
+  'g',
+  'glyph',
+  'glyphRef',
+  'handler',
+  'hatch',
+  'hatchpath',
+  'hkern',
+  'image',
+  'line',
+  'linearGradient',
+  'listener',
+  'marker',
+  'mask',
+  'mesh',
+  'meshgradient',
+  'meshpatch',
+  'meshrow',
+  'metadata',
+  'missing-glyph',
+  'mpath',
+  'path',
+  'pattern',
+  'polygon',
+  'polyline',
+  'prefetch',
+  'radialGradient',
+  'rect',
+  'set',
+  'solidColor',
+  'solidcolor',
+  'stop',
+  'svg',
+  'switch',
+  'symbol',
+  'tbreak',
+  'text',
+  'textArea',
+  'textPath',
+  'tref',
+  'tspan',
+  'unknown',
+  'use',
+  'view',
+  'vkern',
+];
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -23,8 +127,12 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
       );
     case NodeType.Element:
       const tagName = getTagName(n);
-      const node = doc.createElement(tagName);
-      const extraChildIndexes: number[] = [];
+      let node: Element;
+      if (svgTags.indexOf(tagName) < 0) {
+        node = doc.createElement(tagName);
+      } else {
+        node = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
+      }
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
           let value = n.attributes[name];
@@ -33,10 +141,7 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
           const isRemoteCss = tagName === 'style' && name === '_cssText';
           if (isTextarea || isRemoteCss) {
             const child = doc.createTextNode(value);
-            // identify the extra child DOM we added when rebuild
-            extraChildIndexes.push(node.childNodes.length);
             node.appendChild(child);
-            continue;
           }
           try {
             node.setAttribute(name, value);
@@ -44,12 +149,6 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
             // skip invalid attribute
           }
         }
-      }
-      if (extraChildIndexes.length) {
-        node.setAttribute(
-          'data-extra-child-index',
-          JSON.stringify(extraChildIndexes),
-        );
       }
       return node;
     case NodeType.Text:
@@ -63,25 +162,42 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
   }
 }
 
-function rebuild(n: serializedNodeWithId, doc: Document): Node | null {
-  const root = buildNode(n, doc);
-  if (!root) {
+export function buildNodeWithSN(
+  n: serializedNodeWithId,
+  doc: Document,
+  map: idNodeMap,
+): INode | null {
+  let node = buildNode(n, doc);
+  if (!node) {
     return null;
   }
-  if (n.type === NodeType.Element) {
-    (root as HTMLElement).setAttribute('data-rrid', String(n.id));
+  // use target document as root document
+  if (n.type === NodeType.Document) {
+    doc.open();
+    node = doc;
   }
+
+  (node as INode).__sn = n;
+  map[n.id] = node as INode;
   if (n.type === NodeType.Document || n.type === NodeType.Element) {
     for (const childN of n.childNodes) {
-      const childNode = rebuild(childN, doc);
+      const childNode = buildNodeWithSN(childN, doc, map);
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
       } else {
-        root.appendChild(childNode);
+        node.appendChild(childNode);
       }
     }
   }
-  return root;
+  return node as INode;
+}
+
+function rebuild(
+  n: serializedNodeWithId,
+  doc: Document,
+): [Node | null, idNodeMap] {
+  const idNodeMap: idNodeMap = {};
+  return [buildNodeWithSN(n, doc, idNodeMap), idNodeMap];
 }
 
 export default rebuild;

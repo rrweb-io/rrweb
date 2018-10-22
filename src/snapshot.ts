@@ -187,24 +187,12 @@ export function serializeNodeWithId(
   });
   (n as INode).__sn = serializedNode;
   map[serializedNode.id] = n as INode;
-  return serializedNode;
-}
-
-function _snapshot(
-  n: Node,
-  doc: Document,
-  map: idNodeMap,
-): serializedNodeWithId | null {
-  const serializedNode = serializeNodeWithId(n, doc, map);
-  if (!serializedNode) {
-    return null;
-  }
   if (
     serializedNode.type === NodeType.Document ||
     serializedNode.type === NodeType.Element
   ) {
     for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = _snapshot(childN, doc, map);
+      const serializedChildNode = serializeNodeWithId(childN, doc, map);
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
@@ -216,7 +204,7 @@ function _snapshot(
 function snapshot(n: Document): [serializedNodeWithId | null, idNodeMap] {
   resetId();
   const idNodeMap: idNodeMap = {};
-  return [_snapshot(n, n, idNodeMap), idNodeMap];
+  return [serializeNodeWithId(n, n, idNodeMap), idNodeMap];
 }
 
 export default snapshot;

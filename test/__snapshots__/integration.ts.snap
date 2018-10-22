@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`[html file]: about-mozilla.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <title data-rrid=\\"6\\">The Book of Mozilla, 11:9</title>
-  <style type=\\"text/css\\" data-rrid=\\"9\\">
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head>
+  <title>The Book of Mozilla, 11:9</title>
+  <style type=\\"text/css\\">
     html {
       background: maroon;
       color: white;
@@ -26,120 +26,120 @@ exports[`[html file]: about-mozilla.html 1`] = `
       color: white;
     }
   </style>
-</head><body data-rrid=\\"13\\">  <p id=\\"moztext\\" data-rrid=\\"15\\">
-    Mammon slept. And the <em data-rrid=\\"17\\">beast reborn</em> spread over the earth and its numbers
-    grew legion. And they proclaimed the times and <em data-rrid=\\"20\\">sacrificed</em> crops unto the
-    fire, with the <em data-rrid=\\"23\\">cunning of foxes</em>. And they built a new world in their own
-    image as promised by the <em data-rrid=\\"26\\"><a href=\\"http://www.mozilla.org/about/mozilla-manifesto.html\\" data-rrid=\\"27\\">
-        sacred words</a></em>, and <em data-rrid=\\"30\\"><a href=\\"http://wiki.mozilla.org/About:mozilla\\" data-rrid=\\"31\\">spoke
+</head><body>  <p id=\\"moztext\\">
+    Mammon slept. And the <em>beast reborn</em> spread over the earth and its numbers
+    grew legion. And they proclaimed the times and <em>sacrificed</em> crops unto the
+    fire, with the <em>cunning of foxes</em>. And they built a new world in their own
+    image as promised by the <em><a href=\\"http://www.mozilla.org/about/mozilla-manifesto.html\\">
+        sacred words</a></em>, and <em><a href=\\"http://wiki.mozilla.org/About:mozilla\\">spoke
       </a></em> of the beast with their children. Mammon awoke, and lo! it was
-    <em data-rrid=\\"34\\">naught</em> but a follower.
-  </p>  <p id=\\"from\\" data-rrid=\\"38\\">
-    from <strong data-rrid=\\"40\\">The Book of Mozilla,</strong> 11:9<br data-rrid=\\"43\\" /><small data-rrid=\\"44\\">(10th Edition)</small>
+    <em>naught</em> but a follower.
+  </p>  <p id=\\"from\\">
+    from <strong>The Book of Mozilla,</strong> 11:9<br /><small>(10th Edition)</small>
   </p></body></html>"
 `;
 
 exports[`[html file]: basic.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">Document</title>
-</head><body data-rrid=\\"16\\"></body></html>"
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>Document</title>
+</head><body></body></html>"
 `;
 
 exports[`[html file]: cors-style-sheet.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">with style sheet</title>
-  <link rel=\\"stylesheet\\" href=\\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\" data-rrid=\\"15\\" />
-</head><body data-rrid=\\"18\\"></body></html>"
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>with style sheet</title>
+  <link rel=\\"stylesheet\\" href=\\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\" />
+</head><body></body></html>"
 `;
 
 exports[`[html file]: form-fields.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">form fields</title>
-</head><body data-rrid=\\"16\\">
-  <form data-rrid=\\"18\\">
-    <label for=\\"text\\" data-rrid=\\"20\\">
-      <input type=\\"text\\" value=\\"1\\" data-rrid=\\"22\\" />
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>form fields</title>
+</head><body>
+  <form>
+    <label for=\\"text\\">
+      <input type=\\"text\\" value=\\"1\\" />
     </label>
-    <label for=\\"radio\\" data-rrid=\\"25\\">
-      <input type=\\"radio\\" checked=\\"\\" data-rrid=\\"27\\" />
+    <label for=\\"radio\\">
+      <input type=\\"radio\\" checked=\\"\\" />
     </label>
-    <label for=\\"checkbox\\" data-rrid=\\"30\\">
-      <input type=\\"checkbox\\" checked=\\"\\" data-rrid=\\"32\\" />
+    <label for=\\"checkbox\\">
+      <input type=\\"checkbox\\" checked=\\"\\" />
     </label>
-    <label for=\\"textarea\\" data-rrid=\\"35\\">
-      <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\" data-extra-child-index=\\"[0]\\" data-rrid=\\"37\\">1234</textarea>
+    <label for=\\"textarea\\">
+      <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\" value=\\"1234\\">1234</textarea>
     </label>
-    <label for=\\"select\\" data-rrid=\\"40\\">
-      <select name=\\"\\" id=\\"\\" value=\\"2\\" data-rrid=\\"42\\">
-        <option value=\\"1\\" data-rrid=\\"44\\">1</option>
-        <option value=\\"2\\" selected=\\"\\" data-rrid=\\"47\\">2</option>
+    <label for=\\"select\\">
+      <select name=\\"\\" id=\\"\\" value=\\"2\\">
+        <option value=\\"1\\">1</option>
+        <option value=\\"2\\" selected=\\"\\">2</option>
       </select>
     </label>
-  </form><noscript data-rrid=\\"53\\">SCRIPT_PLACEHOLDER</noscript>
+  </form><noscript>SCRIPT_PLACEHOLDER</noscript>
 </body></html>"
 `;
 
 exports[`[html file]: iframe.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">iframe</title>
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>iframe</title>
 </head>
-<body data-rrid=\\"16\\">
-  <iframe src=\\"http://localhost:3030/html/iframe-inner.html\\" width=\\"100\\" height=\\"50\\" data-rrid=\\"18\\"></iframe>
+<body>
+  <iframe src=\\"http://localhost:3030/html/iframe-inner.html\\" width=\\"100\\" height=\\"50\\"></iframe>
 </body></html>"
 `;
 
 exports[`[html file]: iframe-inner.html 1`] = `
-"<html xmlns=\\"http://www.w3.org/1999/xhtml\\" data-rrid=\\"2\\"><head data-rrid=\\"3\\"></head><body data-rrid=\\"4\\"><button data-rrid=\\"5\\">inner iframe button</button>
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body><button>inner iframe button</button>
 </body></html>"
 `;
 
 exports[`[html file]: invalid-attribute.html 1`] = `
-"<html xmlns=\\"http://www.w3.org/1999/xhtml\\" foo=\\"bar\\" data-rrid=\\"2\\"><head data-rrid=\\"3\\"></head><body data-rrid=\\"4\\">
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\" foo=\\"bar\\"><head></head><body>
 </body></html>"
 `;
 
 exports[`[html file]: with-relative-res.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">Document</title>
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>Document</title>
 </head>
-<body data-rrid=\\"16\\">
-  <a href=\\"http://localhost:3030/basic.html\\" data-rrid=\\"18\\"></a>
-  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"\\" data-rrid=\\"20\\" /></body></html>"
+<body>
+  <a href=\\"http://localhost:3030/basic.html\\"></a>
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"\\" /></body></html>"
 `;
 
 exports[`[html file]: with-script.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">with script</title>
-</head><body data-rrid=\\"16\\">
-  <noscript src=\\"http://localhost:3030/js/a.js\\" data-rrid=\\"18\\"></noscript>
-  <noscript data-rrid=\\"20\\">SCRIPT_PLACEHOLDER</noscript></body></html>"
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>with script</title>
+</head><body>
+  <noscript src=\\"http://localhost:3030/js/a.js\\"></noscript>
+  <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
 exports[`[html file]: with-style-sheet.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\" data-rrid=\\"3\\"><head data-rrid=\\"4\\">
-  <meta charset=\\"UTF-8\\" data-rrid=\\"6\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" data-rrid=\\"8\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" data-rrid=\\"10\\" />
-  <title data-rrid=\\"12\\">with style sheet</title>
-  <style data-extra-child-index=\\"[0]\\" data-rrid=\\"15\\">body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }</style>
-</head><body data-rrid=\\"18\\">
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>with style sheet</title>
+  <style _csstext=\\"body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }\\">body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }</style>
+</head><body>
 </body></html>"
 `;

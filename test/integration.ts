@@ -70,6 +70,7 @@ describe('integration tests', () => {
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
+      executablePath: '/home/yanzhen/Desktop/chrome-linux/chrome',
       // headless: false,
     });
 
@@ -101,7 +102,7 @@ describe('integration tests', () => {
       const rebuildHtml = (await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap, document));
+        x.serializeToString(rrweb.rebuild(snap, document)[0]);
       `)).replace(/\n\n/g, '');
       const result = matchSnapshot(rebuildHtml, __filename, title);
       assert(result.pass, result.pass ? '' : result.report());
