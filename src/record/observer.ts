@@ -9,8 +9,6 @@ import {
 } from '../utils';
 import {
   mutationCallBack,
-  textMutation,
-  attributeMutation,
   removedNodeMutation,
   addedNodeMutation,
   observerParam,
@@ -24,14 +22,40 @@ import {
   inputValue,
   inputCallback,
   hookResetter,
+  textCursor,
+  attributeCursor,
 } from '../types';
 
+/**
+ * Mutation observer will merge several mutations into an array and pass
+ * it to the callback function, this may make tracing added nodes hard.
+ * For example, if we append an element el_1 into body, and then append
+ * another element el_2 into el_1, these two mutations may be passed to the
+ * callback function together when the two operations were done.
+ * Generally we need trace child nodes of newly added node, but in this
+ * case if we count el_2 as el_1's child node in the first mutation record,
+ * then we will count el_2 again in the secoond mutation record which was
+ * duplicated.
+ * To avoid of duplicate counting added nodes, we will use a Set to store
+ * added nodes and its child nodes during iterate mutation records. Then
+ * collect added nodes from the Set which will has no duplicate copy. But
+ * this also cause newly added node will not be serialized with id ASAP,
+ * which means all the id related calculation should be lazy too.
+ * @param cb mutationCallBack
+ */
 function initMutationObserver(cb: mutationCallBack): MutationObserver {
   const observer = new MutationObserver(mutations => {
-    const texts: textMutation[] = [];
-    const attributes: attributeMutation[] = [];
+    const texts: textCursor[] = [];
+    const attributes: attributeCursor[] = [];
     const removes: removedNodeMutation[] = [];
     const adds: addedNodeMutation[] = [];
+    const dropped: Node[] = [];
+
+    const addsSet = new Set<Node>();
+    const genAdds = (n: Node) => {
+      addsSet.add(n);
+      n.childNodes.forEach(childN => genAdds(childN));
+    };
     mutations.forEach(mutation => {
       const {
         type,
@@ -40,17 +64,14 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
         addedNodes,
         removedNodes,
         attributeName,
-        nextSibling,
-        previousSibling,
       } = mutation;
-      const id = mirror.getId(target as INode);
       switch (type) {
         case 'characterData': {
           const value = target.textContent;
           if (value !== oldValue) {
             texts.push({
-              id,
               value,
+              node: target,
             });
           }
           break;
@@ -60,12 +81,12 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           if (value === oldValue) {
             return;
           }
-          let item: attributeMutation | undefined = attributes.find(
-            a => a.id === id,
+          let item: attributeCursor | undefined = attributes.find(
+            a => a.node === target,
           );
           if (!item) {
             item = {
-              id,
+              node: target,
               attributes: {},
             };
             attributes.push(item);
@@ -74,23 +95,25 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           item.attributes[attributeName!] = value;
         }
         case 'childList': {
-          addedNodes.forEach(n => {
-            adds.push({
-              parentId: id,
-              previousId: !previousSibling
-                ? previousSibling
-                : mirror.getId(previousSibling as INode),
-              nextId: !nextSibling
-                ? nextSibling
-                : mirror.getId(nextSibling as INode),
-              node: serializeNodeWithId(n, document, mirror.map)!,
-            });
-          });
+          addedNodes.forEach(n => genAdds(n));
           removedNodes.forEach(n => {
-            removes.push({
-              parentId: id,
-              id: mirror.getId(n as INode),
-            });
+            // removed node has not been serialized yet, just remove it from the Set
+            if (addsSet.has(n)) {
+              addsSet.delete(n);
+              dropped.push(n);
+            } else if (addsSet.has(target) && !mirror.getId(n as INode)) {
+              /**
+               * If target was newly added and removed child node was
+               * not serialized, it means the child node has been removed
+               * before callback fired, so we can ignore it.
+               * TODO: verify this
+               */
+            } else {
+              removes.push({
+                parentId: mirror.getId(target as INode),
+                id: mirror.getId(n as INode),
+              });
+            }
             mirror.removeNodeFromMap(n as INode);
           });
           break;
@@ -99,10 +122,40 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           break;
       }
     });
+
+    Array.from(addsSet).forEach(n => {
+      if (n.parentNode && dropped.indexOf(n.parentNode) < 0) {
+        adds.push({
+          parentId: mirror.getId(n.parentNode as INode),
+          previousId: !n.previousSibling
+            ? n.previousSibling
+            : mirror.getId(n.previousSibling as INode),
+          nextId: !n.nextSibling
+            ? n.nextSibling
+            : mirror.getId(n.nextSibling as INode),
+          node: serializeNodeWithId(n, document, mirror.map, true)!,
+        });
+      } else {
+        dropped.push(n);
+      }
+    });
+
     cb({
-      texts,
-      attributes,
-      removes,
+      texts: texts.map(text => ({
+        id: mirror.getId(text.node as INode),
+        value: text.value,
+      })),
+      attributes: attributes.map(attribute => ({
+        id: mirror.getId(attribute.node as INode),
+        attributes: attribute.attributes,
+      })),
+      removes: removes.map(remove => {
+        if (remove.parentNode) {
+          remove.parentId = mirror.getId(remove.parentNode as INode);
+          delete remove.parentNode;
+        }
+        return remove;
+      }),
       adds,
     });
   });

@@ -180,6 +180,7 @@ export class Replayer {
             mutation.node,
             this.iframe.contentDocument!,
             mirror.map,
+            true,
           ) as Node;
           const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
           if (mutation.nextId) {
@@ -213,8 +214,13 @@ export class Replayer {
         });
         d.removes.forEach(mutation => {
           const target = (mirror.getNode(mutation.id) as Node) as Element;
-          const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
-          parent.removeChild(target);
+          const parent = (mirror.getNode(
+            mutation.parentId!,
+          ) as Node) as Element;
+          // target may be removed with its parents before
+          if (parent) {
+            parent.removeChild(target);
+          }
           delete mirror.map[mutation.id];
         });
         break;

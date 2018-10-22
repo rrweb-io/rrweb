@@ -4,6 +4,7 @@ import {
   listenerHandler,
   hookResetter,
 } from './types';
+import { INode } from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -26,6 +27,11 @@ export const mirror: Mirror = {
   removeNodeFromMap(n) {
     const id = n.__sn && n.__sn.id;
     delete mirror.map[id];
+    if (n.childNodes) {
+      n.childNodes.forEach(child =>
+        mirror.removeNodeFromMap((child as Node) as INode),
+      );
+    }
   },
 };
 

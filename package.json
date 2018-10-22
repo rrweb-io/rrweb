@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "record and replay the web",
   "main": "dist/index.js",
   "module": "dist/module.js",
@@ -40,6 +40,6 @@
   },
   "dependencies": {
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.5.2"
+    "rrweb-snapshot": "0.5.3"
   }
 }

@@ -110,11 +110,21 @@ export type observerParam = {
   inputCb: inputCallback;
 };
 
+export type textCursor = {
+  node: Node;
+  value: string | null;
+};
 export type textMutation = {
   id: number;
   value: string | null;
 };
 
+export type attributeCursor = {
+  node: Node;
+  attributes: {
+    [key: string]: string | null;
+  };
+};
 export type attributeMutation = {
   id: number;
   attributes: {
@@ -123,7 +133,8 @@ export type attributeMutation = {
 };
 
 export type removedNodeMutation = {
-  parentId: number;
+  parentId?: number;
+  parentNode?: Node;
   id: number;
 };
 
