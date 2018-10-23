@@ -47,7 +47,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
   const observer = new MutationObserver(mutations => {
     const texts: textCursor[] = [];
     const attributes: attributeCursor[] = [];
-    const removes: removedNodeMutation[] = [];
+    let removes: removedNodeMutation[] = [];
     const adds: addedNodeMutation[] = [];
     const dropped: Node[] = [];
 
@@ -123,8 +123,21 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
       }
     });
 
+    removes = removes.map(remove => {
+      if (remove.parentNode) {
+        remove.parentId = mirror.getId(remove.parentNode as INode);
+        delete remove.parentNode;
+      }
+      return remove;
+    });
+
     Array.from(addsSet).forEach(n => {
-      if (n.parentNode && dropped.indexOf(n.parentNode) < 0) {
+      const parentId = mirror.getId(n.parentNode as INode);
+      if (
+        parentId &&
+        !dropped.some(d => d === n.parentNode) &&
+        !removes.some(r => r.id === parentId)
+      ) {
         adds.push({
           parentId: mirror.getId(n.parentNode as INode),
           previousId: !n.previousSibling
@@ -149,13 +162,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
         id: mirror.getId(attribute.node as INode),
         attributes: attribute.attributes,
       })),
-      removes: removes.map(remove => {
-        if (remove.parentNode) {
-          remove.parentId = mirror.getId(remove.parentNode as INode);
-          delete remove.parentNode;
-        }
-        return remove;
-      }),
+      removes,
       adds,
     });
   });

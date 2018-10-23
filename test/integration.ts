@@ -77,7 +77,32 @@ describe('record integration tests', () => {
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(JSON.stringify(snapshots), __filename, 'form');
+    const result = matchSnapshot(
+      JSON.stringify(snapshots, null, 2),
+      __filename,
+      'form',
+    );
+    assert(result.pass, result.pass ? '' : result.report());
+  }).timeout(5000);
+
+  it('can record childList mutations', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'child-list.html'));
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      ul.appendChild(li);
+      document.body.removeChild(ul);
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    const result = matchSnapshot(
+      JSON.stringify(snapshots, null, 2),
+      __filename,
+      'child-list',
+    );
     assert(result.pass, result.pass ? '' : result.report());
   }).timeout(5000);
 });
