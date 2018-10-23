@@ -1,7 +1,7 @@
 <div class="rr-player">
   <div class="rr-player__frame" ref:frame { style }></div>
   {#if replayer}
-  <Controller { replayer } />
+  <Controller { replayer } {showController} />
   {/if}
 </div>
 
@@ -15,6 +15,7 @@
     },
     data() {
       return {
+        showController: true,
         width: 1024,
         height: 576,
         events: [],

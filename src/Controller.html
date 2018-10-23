@@ -1,3 +1,4 @@
+{#if showController}
 <div class="rr-controller">
   <div class="rr-timeline">
     <span class="rr-timeline__time">{formatTime(currentTime)}</span>
@@ -12,10 +13,11 @@
       {isPlaying ? 'pause' : 'play'}
     </button>
     {#each [1, 2, 4, 8] as s}
-    <button class:active="s === speed" on:click="set({ speed: s })">{s}x</button>
+    <button class:active="s === speed" on:click="setSpeed(s)">{s}x</button>
     {/each}
   </div>
 </div>
+{/if}
 
 <script>
   import { formatTime } from './utils.js';
@@ -69,8 +71,8 @@
         requestAnimationFrame(update);
       },
       play() {
-        const { replayer } = this.get();
-        // replayer.play();
+        const { replayer, currentTime } = this.get();
+        replayer.play(currentTime);
         this.loopTimer();
       },
       pause() {
@@ -86,12 +88,23 @@
           this.play();
         }
       },
+      setSpeed(speed) {
+        const { replayer } = this.get();
+        replayer.setConfig({ speed });
+        this.set({ speed });
+      },
     },
     onupdate({ changed, current, previous }) {
       if (current.replayer && !previous) {
         // auto play
         this.set({ isPlaying: true });
         this.play();
+      }
+    },
+    ondestroy() {
+      const { isPlaying } = this.get();
+      if (isPlaying) {
+        this.pause();
       }
     },
   };
