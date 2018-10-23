@@ -6,6 +6,7 @@ import * as rollup from 'rollup';
 import typescript = require('rollup-plugin-typescript');
 import resolve = require('rollup-plugin-node-resolve');
 import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
+import { incrementalSnapshotEvent } from '../src/types';
 
 function matchSnapshot(actual: string, testFile: string, testTitle: string) {
   const snapshotState = new SnapshotState(testFile, {
@@ -19,6 +20,24 @@ function matchSnapshot(actual: string, testFile: string, testTitle: string) {
   const result = matcher(actual);
   snapshotState.save();
   return result;
+}
+
+/**
+ * Puppeteer may cast random mouse move which make our tests flaky.
+ * So we only do snapshot test with filtered events.
+ * @param snapshots incrementalSnapshotEvent[]
+ */
+function stringifySnapshots(snapshots: incrementalSnapshotEvent[]): string {
+  return JSON.stringify(
+    snapshots.filter(s => {
+      if (s.type === 3 && s.data.source === 1) {
+        return false;
+      }
+      return true;
+    }),
+    null,
+    2,
+  );
 }
 
 describe('record integration tests', () => {
@@ -78,7 +97,7 @@ describe('record integration tests', () => {
 
     const snapshots = await page.evaluate('window.snapshots');
     const result = matchSnapshot(
-      JSON.stringify(snapshots, null, 2),
+      stringifySnapshots(snapshots),
       __filename,
       'form',
     );
@@ -88,21 +107,71 @@ describe('record integration tests', () => {
   it('can record childList mutations', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'child-list.html'));
+    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
     await page.evaluate(() => {
       const li = document.createElement('li');
       const ul = document.querySelector('ul') as HTMLUListElement;
       ul.appendChild(li);
       document.body.removeChild(ul);
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      p.appendChild(document.createElement('span'));
     });
 
     const snapshots = await page.evaluate('window.snapshots');
     const result = matchSnapshot(
-      JSON.stringify(snapshots, null, 2),
+      stringifySnapshots(snapshots),
       __filename,
       'child-list',
     );
     assert(result.pass, result.pass ? '' : result.report());
   }).timeout(5000);
+
+  it('can record character data muatations', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      ul.appendChild(li);
+      li.innerText = 'new list item';
+      li.innerText = 'new list item edit';
+      document.body.removeChild(ul);
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      p.innerText = 'mutated';
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    const result = matchSnapshot(
+      stringifySnapshots(snapshots),
+      __filename,
+      'character-data',
+    );
+    assert(result.pass, result.pass ? '' : result.report());
+  });
+
+  it('can record attribute mutation', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      ul.appendChild(li);
+      li.setAttribute('foo', 'bar');
+      document.body.removeChild(ul);
+      document.body.setAttribute('test', 'true');
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    const result = matchSnapshot(
+      stringifySnapshots(snapshots),
+      __filename,
+      'attributes',
+    );
+    assert(result.pass, result.pass ? '' : result.report());
+  });
 });
