@@ -1,6 +1,6 @@
 {
   "name": "rrweb-player",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "devDependencies": {
     "eslint": "^5.7.0",
     "eslint-config-google": "^0.11.0",
@@ -19,9 +19,29 @@
   },
   "scripts": {
     "build": "rollup -c",
+    "prepublishOnly": "npm run build",
     "autobuild": "rollup -c -w",
     "dev": "run-p start:dev autobuild",
     "start": "sirv public",
     "start:dev": "sirv public --dev"
-  }
+  },
+  "description": "rrweb's replayer UI",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb-player.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb-player/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb-player#readme"
 }

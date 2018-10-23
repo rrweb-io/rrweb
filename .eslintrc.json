@@ -1,13 +1,14 @@
 {
   "extends": "google",
   "parserOptions": {
-    "ecmaVersion": 7,
+    "ecmaVersion": 8,
     "sourceType": "module"
   },
   "rules": {
     "require-jsdoc": "off",
     "arrow-parens": "off",
-    "object-curly-spacing": "off"
+    "object-curly-spacing": "off",
+    "indent": "off"
   },
   "plugins": ["html"]
 }

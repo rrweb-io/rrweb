@@ -6,3 +6,5 @@ yarn.lock
 
 .vscode
 temp
+
+dist
