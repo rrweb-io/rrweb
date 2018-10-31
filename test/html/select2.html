@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Select2 3.5</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css">
+</head>
+<body>
+  <blockquote>
+    Select2 is a jQuery replacement for select boxes.
+    <br>
+    In the 3.5 version it use a quite complicated DOM generation strategy which is a good battle-test for rrweb's recorder.
+  </blockquote>
+  <select id="el">
+    <option value="a">A</option>
+    <option value="b">B</option>
+  </select>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@3.5.2-browserify/select2.min.js"></script>
+  <script>
+    $('#el').select2();
+  </script>
+</body>
+</html>

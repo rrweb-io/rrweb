@@ -174,4 +174,23 @@ describe('record integration tests', () => {
     );
     assert(result.pass, result.pass ? '' : result.report());
   });
+
+  it('can record node mutations', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto(`data:text/html,${getHtml.call(this, 'select2.html')}`, {
+      waitUntil: 'networkidle0',
+    });
+
+    // toggle the select box
+    await page.click('.select2-container');
+    await page.click('.select2-container');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    const result = matchSnapshot(
+      stringifySnapshots(snapshots),
+      __filename,
+      'select2',
+    );
+    assert(result.pass, result.pass ? '' : result.report());
+  }).timeout(5000);
 });
