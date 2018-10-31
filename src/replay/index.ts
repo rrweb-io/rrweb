@@ -31,10 +31,13 @@ export class Replayer {
 
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
-  private startTime: number = 0;
+  private baselineTime: number = 0;
 
   private timerIds: number[] = [];
   private emitter: mitt.Emitter = mitt();
+
+  // record last played event timestamp when paused
+  private lastPlayedEvent: eventWithTime;
 
   constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
     if (events.length < 2) {
@@ -76,37 +79,10 @@ export class Replayer {
    * @param timeOffset number
    */
   public play(timeOffset = 0) {
-    this.startTime = this.events[0].timestamp + timeOffset;
+    this.baselineTime = this.events[0].timestamp + timeOffset;
     for (const event of this.events) {
-      const isSync = event.timestamp < this.startTime;
-      let castFn: undefined | (() => void);
-      switch (event.type) {
-        case EventType.DomContentLoaded:
-        case EventType.Load:
-          break;
-        case EventType.Meta:
-          castFn = () =>
-            this.emitter.emit('resize', {
-              width: event.data.width,
-              height: event.data.height,
-            });
-          break;
-        case EventType.FullSnapshot:
-          castFn = () => {
-            this.rebuildFullSnapshot(event);
-            this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
-          };
-          break;
-        case EventType.IncrementalSnapshot:
-          castFn = () => {
-            this.applyIncremental(event.data, isSync);
-          };
-          break;
-        default:
-      }
-      if (!castFn) {
-        continue;
-      }
+      const isSync = event.timestamp < this.baselineTime;
+      const castFn = this.getCastFn(event, isSync);
       if (isSync) {
         castFn();
       } else {
@@ -117,6 +93,20 @@ export class Replayer {
 
   public pause() {
     this.timerIds.forEach(clear);
+  }
+
+  public resume(timeOffset = 0) {
+    for (const event of this.events) {
+      if (
+        event.timestamp < this.lastPlayedEvent.timestamp ||
+        event === this.lastPlayedEvent
+      ) {
+        continue;
+      }
+      const delayToBaseline = this.getDelay(event);
+      const castFn = this.getCastFn(event);
+      this.later(castFn, delayToBaseline - timeOffset);
+    }
   }
 
   private setupDom() {
@@ -151,7 +141,7 @@ export class Replayer {
       event.data.source === IncrementalSource.MouseMove
     ) {
       const firstOffset = event.data.positions[0].timeOffset;
-      // timeoffset is a negative offset to event.timestamp
+      // timeOffset is a negative offset to event.timestamp
       const firstTimestamp = event.timestamp + firstOffset;
       event.data.positions = event.data.positions.map(p => {
         return {
@@ -159,12 +149,49 @@ export class Replayer {
           timeOffset: p.timeOffset - firstOffset,
         };
       });
-      return firstTimestamp - this.startTime;
+      return firstTimestamp - this.baselineTime;
     }
-    return event.timestamp - this.startTime;
+    return event.timestamp - this.baselineTime;
   }
 
-  private rebuildFullSnapshot(event: fullSnapshotEvent) {
+  private getCastFn(event: eventWithTime, isSync = false) {
+    let castFn: undefined | (() => void);
+    switch (event.type) {
+      case EventType.DomContentLoaded:
+      case EventType.Load:
+        break;
+      case EventType.Meta:
+        castFn = () =>
+          this.emitter.emit('resize', {
+            width: event.data.width,
+            height: event.data.height,
+          });
+        break;
+      case EventType.FullSnapshot:
+        castFn = () => {
+          this.rebuildFullSnapshot(event);
+          this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
+        };
+        break;
+      case EventType.IncrementalSnapshot:
+        castFn = () => {
+          this.applyIncremental(event.data, isSync);
+        };
+        break;
+      default:
+    }
+    const wrappedCastFn = () => {
+      if (castFn) {
+        castFn();
+      }
+      this.lastPlayedEvent = event;
+    };
+    return wrappedCastFn;
+  }
+
+  private rebuildFullSnapshot(
+    event: fullSnapshotEvent & { timestamp: number },
+  ) {
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     // avoid form submit to refresh the iframe
     this.iframe.contentDocument!.querySelectorAll('form').forEach(form => {
