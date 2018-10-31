@@ -88,6 +88,29 @@ exports[`[html file]: form-fields.html 1`] = `
 </body></html>"
 `;
 
+exports[`[html file]: hover.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>hover selector</title>
+  <style>    div:hover, div.\\\\:hover {
+      background: orange;
+    }    div:hover::after, div.\\\\:hover::after {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      content: 'dropdown';
+      width: 100px;
+      height: 200px;
+      background: lightblue;
+    }
+  </style>
+</head><body>
+  <div>hover me</div>
+</body></html>"
+`;
+
 exports[`[html file]: iframe.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
