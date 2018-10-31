@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "main": "dist/index.js",
   "module": "dist/module.js",
