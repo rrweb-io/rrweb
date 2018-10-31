@@ -175,6 +175,20 @@ export class Replayer {
   private applyIncremental(d: incrementalData, isSync: boolean) {
     switch (d.source) {
       case IncrementalSource.Mutation: {
+        d.removes.forEach(mutation => {
+          const target = mirror.getNode(mutation.id);
+          if (!target) {
+            return;
+          }
+          const parent = (mirror.getNode(
+            mutation.parentId!,
+          ) as Node) as Element;
+          // target may be removed with its parents before
+          mirror.removeNodeFromMap(target);
+          if (parent) {
+            parent.removeChild(target);
+          }
+        });
         d.adds.forEach(mutation => {
           const target = buildNodeWithSN(
             mutation.node,
@@ -184,12 +198,10 @@ export class Replayer {
           ) as Node;
           const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
           if (mutation.nextId) {
-            const next = (mirror.getNode(mutation.nextId) as Node) as Element;
+            const next = mirror.getNode(mutation.nextId) as Node;
             parent.insertBefore(target, next);
           } else if (mutation.previousId) {
-            const previous = (mirror.getNode(
-              mutation.previousId,
-            ) as Node) as Element;
+            const previous = mirror.getNode(mutation.previousId) as Node;
             parent.insertBefore(target, previous.nextSibling);
           } else {
             parent.appendChild(target);
@@ -211,17 +223,6 @@ export class Replayer {
               }
             }
           }
-        });
-        d.removes.forEach(mutation => {
-          const target = (mirror.getNode(mutation.id) as Node) as Element;
-          const parent = (mirror.getNode(
-            mutation.parentId!,
-          ) as Node) as Element;
-          // target may be removed with its parents before
-          if (parent) {
-            parent.removeChild(target);
-          }
-          delete mirror.map[mutation.id];
         });
         break;
       }

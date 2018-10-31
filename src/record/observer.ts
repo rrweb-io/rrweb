@@ -159,15 +159,15 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           id: mirror.getId(text.node as INode),
           value: text.value,
         }))
-        // text mutation without ID means the target node has been removed
-        .filter(text => text.id),
+        // text mutation's id was not in the mirror map means the target node has been removed
+        .filter(text => mirror.has(text.id)),
       attributes: attributes
         .map(attribute => ({
           id: mirror.getId(attribute.node as INode),
           attributes: attribute.attributes,
         }))
-        // attribute mutation without ID means the target node has been removed
-        .filter(attribute => attribute.id),
+        // attribute mutation's id was not in the mirror map means the target node has been removed
+        .filter(attribute => mirror.has(attribute.id)),
       removes,
       adds,
     });
