@@ -209,8 +209,9 @@ export type inputCallback = (v: inputValue & { id: number }) => void;
 export type Mirror = {
   map: idNodeMap;
   getId: (n: INode) => number;
-  getNode: (id: number) => INode;
+  getNode: (id: number) => INode | null;
   removeNodeFromMap: (n: INode) => void;
+  has: (id: number) => boolean;
 };
 
 export type throttleOptions = {

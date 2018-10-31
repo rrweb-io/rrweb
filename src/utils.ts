@@ -21,7 +21,7 @@ export const mirror: Mirror = {
     return n.__sn && n.__sn.id;
   },
   getNode(id) {
-    return mirror.map[id];
+    return mirror.map[id] || null;
   },
   // TODO: use a weakmap to get rid of manually memory management
   removeNodeFromMap(n) {
@@ -32,6 +32,9 @@ export const mirror: Mirror = {
         mirror.removeNodeFromMap((child as Node) as INode),
       );
     }
+  },
+  has(id) {
+    return mirror.map.hasOwnProperty(id);
   },
 };
 
