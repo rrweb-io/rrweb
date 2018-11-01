@@ -199,13 +199,14 @@ function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
   }, 500);
   const updatePosition = throttle<MouseEvent>(
     evt => {
-      const { clientX, clientY } = evt;
+      const { clientX, clientY, target } = evt;
       if (!timeBaseline) {
         timeBaseline = Date.now();
       }
       positions.push({
         x: clientX,
         y: clientY,
+        id: mirror.getId(target as INode),
         timeOffset: Date.now() - timeBaseline,
       });
       wrappedCb();

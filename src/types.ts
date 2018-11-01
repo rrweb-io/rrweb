@@ -159,6 +159,7 @@ export type mousemoveCallBack = (p: mousePosition[]) => void;
 export type mousePosition = {
   x: number;
   y: number;
+  id: number;
   timeOffset: number;
 };
 

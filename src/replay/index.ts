@@ -31,11 +31,11 @@ export class Replayer {
 
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
-  private baselineTime: number = 0;
 
   private timerIds: number[] = [];
   private emitter: mitt.Emitter = mitt();
 
+  private baselineTime: number = 0;
   // record last played event timestamp when paused
   private lastPlayedEvent: eventWithTime;
 
@@ -260,6 +260,10 @@ export class Replayer {
             this.later(() => {
               this.mouse.style.left = `${p.x}px`;
               this.mouse.style.top = `${p.y}px`;
+              const target = mirror.getNode(p.id);
+              if (target) {
+                this.hoverElements((target as Node) as Element);
+              }
             }, p.timeOffset);
           });
         }
@@ -306,6 +310,19 @@ export class Replayer {
         break;
       }
       default:
+    }
+  }
+
+  private hoverElements(el: Element) {
+    this.iframe
+      .contentDocument!.querySelectorAll('.\\:hover')
+      .forEach(hoveredEl => {
+        hoveredEl.classList.remove(':hover');
+      });
+    let currentEl: Element | null = el;
+    while (currentEl) {
+      currentEl.classList.add(':hover');
+      currentEl = currentEl.parentElement;
     }
   }
 }
