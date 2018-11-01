@@ -224,12 +224,16 @@ export class Replayer {
             true,
           ) as Node;
           const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
-          if (mutation.nextId) {
-            const next = mirror.getNode(mutation.nextId) as Node;
-            parent.insertBefore(target, next);
-          } else if (mutation.previousId) {
+          if (mutation.previousId) {
             const previous = mirror.getNode(mutation.previousId) as Node;
-            parent.insertBefore(target, previous.nextSibling);
+            if (previous) {
+              parent.insertBefore(target, previous.nextSibling);
+            }
+          } else if (mutation.nextId) {
+            const next = mirror.getNode(mutation.nextId) as Node;
+            if (next) {
+              parent.insertBefore(target, next);
+            }
           } else {
             parent.appendChild(target);
           }
