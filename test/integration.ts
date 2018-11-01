@@ -65,8 +65,12 @@ describe('record integration tests', () => {
 
   before(async () => {
     this.browser = await puppeteer.launch({
-      // headless: false,
-      executablePath: '/home/yanzhen/Desktop/chrome-linux/chrome',
+      defaultViewport: {
+        width: 1920,
+        height: 1080,
+      },
+      headless: false,
+      args: ['--no-sandbox'],
     });
 
     const bundle = await rollup.rollup({
@@ -192,5 +196,5 @@ describe('record integration tests', () => {
       'select2',
     );
     assert(result.pass, result.pass ? '' : result.report());
-  }).timeout(5000);
+  }).timeout(10000);
 });

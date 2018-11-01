@@ -1,0 +1,10 @@
+language: node_js
+
+node_js:
+  - 10
+
+install:
+  - npm install
+
+script:
+  - xvfb-run --server-args="-screen 0 1920x1080x24" npm test
