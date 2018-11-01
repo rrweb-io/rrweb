@@ -934,9 +934,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27,
-      \\"x\\": 204,
-      \\"y\\": 157
+      \\"id\\": 27
     },
     \\"timestamp\\": 1542268800000
   },
@@ -963,9 +961,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27,
-      \\"x\\": 204,
-      \\"y\\": 157
+      \\"id\\": 27
     },
     \\"timestamp\\": 1542268800000
   },
@@ -974,9 +970,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 27,
-      \\"x\\": 204,
-      \\"y\\": 157
+      \\"id\\": 27
     },
     \\"timestamp\\": 1542268800000
   },
@@ -995,9 +989,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 32,
-      \\"x\\": 228,
-      \\"y\\": 157
+      \\"id\\": 32
     },
     \\"timestamp\\": 1542268800000
   },
@@ -1024,9 +1016,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 32,
-      \\"x\\": 228,
-      \\"y\\": 157
+      \\"id\\": 32
     },
     \\"timestamp\\": 1542268800000
   },
@@ -1035,9 +1025,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 32,
-      \\"x\\": 228,
-      \\"y\\": 157
+      \\"id\\": 32
     },
     \\"timestamp\\": 1542268800000
   },
@@ -1743,9 +1731,7 @@ exports[`select2 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 26,
-      \\"x\\": 31,
-      \\"y\\": 78
+      \\"id\\": 26
     },
     \\"timestamp\\": 1542268800000
   },
@@ -1774,7 +1760,6 @@ exports[`select2 1`] = `
           \\"id\\": 75,
           \\"attributes\\": {
             \\"id\\": \\"select2-drop\\",
-            \\"style\\": \\"left: 8px; width: 47.5625px; top: 92px; bottom: auto; display: block;\\",
             \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
           }
         },
@@ -1931,8 +1916,7 @@ exports[`select2 1`] = `
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {
               \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\",
-              \\"id\\": \\"select2-drop\\",
-              \\"style\\": \\"left: 8px; width: 47.5625px; top: 92px; bottom: auto; display: block;\\"
+              \\"id\\": \\"select2-drop\\"
             },
             \\"childNodes\\": [],
             \\"id\\": 75
@@ -2201,9 +2185,7 @@ exports[`select2 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 93,
-      \\"x\\": 31,
-      \\"y\\": 78
+      \\"id\\": 93
     },
     \\"timestamp\\": 1542268800000
   },
@@ -2232,9 +2214,7 @@ exports[`select2 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 93,
-      \\"x\\": 31,
-      \\"y\\": 78
+      \\"id\\": 93
     },
     \\"timestamp\\": 1542268800000
   },
@@ -2271,8 +2251,7 @@ exports[`select2 1`] = `
         {
           \\"id\\": 75,
           \\"attributes\\": {
-            \\"id\\": null,
-            \\"style\\": \\"left: 8px; width: 47.5625px; top: 92px; bottom: auto; display: none;\\"
+            \\"id\\": null
           }
         },
         {
@@ -2334,9 +2313,7 @@ exports[`select2 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 67,
-      \\"x\\": 31,
-      \\"y\\": 78
+      \\"id\\": 67
     },
     \\"timestamp\\": 1542268800000
   }

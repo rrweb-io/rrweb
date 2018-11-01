@@ -6,7 +6,12 @@ import * as rollup from 'rollup';
 import typescript = require('rollup-plugin-typescript');
 import resolve = require('rollup-plugin-node-resolve');
 import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
-import { incrementalSnapshotEvent } from '../src/types';
+import {
+  incrementalSnapshotEvent,
+  EventType,
+  IncrementalSource,
+} from '../src/types';
+import { NodeType } from 'rrweb-snapshot';
 
 function matchSnapshot(actual: string, testFile: string, testTitle: string) {
   const snapshotState = new SnapshotState(testFile, {
@@ -29,12 +34,51 @@ function matchSnapshot(actual: string, testFile: string, testTitle: string) {
  */
 function stringifySnapshots(snapshots: incrementalSnapshotEvent[]): string {
   return JSON.stringify(
-    snapshots.filter(s => {
-      if (s.type === 3 && s.data.source === 1) {
-        return false;
-      }
-      return true;
-    }),
+    snapshots
+      .filter(s => {
+        if (
+          s.type === EventType.IncrementalSnapshot &&
+          s.data.source === IncrementalSource.MouseMove
+        ) {
+          return false;
+        }
+        return true;
+      })
+      // FIXME: travis coordinates seems different with my laptop
+      .map(s => {
+        const coordinatesReg = /(bottom|top|left|right)/;
+        if (
+          s.type === EventType.IncrementalSnapshot &&
+          s.data.source === IncrementalSource.MouseInteraction
+        ) {
+          delete s.data.x;
+          delete s.data.y;
+        }
+        if (
+          s.type === EventType.IncrementalSnapshot &&
+          s.data.source === IncrementalSource.Mutation
+        ) {
+          s.data.attributes.forEach(a => {
+            if (
+              'style' in a.attributes &&
+              coordinatesReg.test(a.attributes.style!)
+            ) {
+              delete a.attributes.style;
+            }
+          });
+          s.data.adds.forEach(add => {
+            if (
+              add.node.type === NodeType.Element &&
+              'style' in add.node.attributes &&
+              typeof add.node.attributes.style === 'string' &&
+              coordinatesReg.test(add.node.attributes.style)
+            ) {
+              delete add.node.attributes.style;
+            }
+          });
+        }
+        return s;
+      }),
     null,
     2,
   );
