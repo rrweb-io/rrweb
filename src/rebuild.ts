@@ -115,6 +115,22 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
+const CSS_SELECTOR = /([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g;
+const HOVER_SELECTOR = /([^\\]):hover/g;
+export function addHoverClass(cssText: string): string {
+  return cssText.replace(CSS_SELECTOR, (match, p1: string, p2: string) => {
+    if (HOVER_SELECTOR.test(p1)) {
+      const newSelector = p1.replace(HOVER_SELECTOR, '$1.\\:hover');
+      return `${p1.replace(/\s*$/, '')}, ${newSelector.replace(
+        /^\s*/,
+        '',
+      )}${p2}`;
+    } else {
+      return match;
+    }
+  });
+}
+
 function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
   switch (n.type) {
     case NodeType.Document:
@@ -139,6 +155,9 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
           value = typeof value === 'boolean' ? '' : value;
           const isTextarea = tagName === 'textarea' && name === 'value';
           const isRemoteCss = tagName === 'style' && name === '_cssText';
+          if (isRemoteCss) {
+            value = addHoverClass(value);
+          }
           if (isTextarea || isRemoteCss) {
             const child = doc.createTextNode(value);
             node.appendChild(child);
@@ -152,7 +171,9 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
       }
       return node;
     case NodeType.Text:
-      return doc.createTextNode(n.textContent);
+      return doc.createTextNode(
+        n.isStyle ? addHoverClass(n.textContent) : n.textContent,
+      );
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:

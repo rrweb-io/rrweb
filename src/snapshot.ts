@@ -17,36 +17,11 @@ export function resetId() {
   _id = 1;
 }
 
-const CSS_RULE = /(([#|\.]{0,1}[a-z0-9\[\]=:]+[\s|,]*)+)\s(\{[\s\S]?[^}]*})/;
-const CSS_RULE_GLOBAL = /(([#|\.]{0,1}[a-z0-9\[\]=:]+[\s|,]*)+)\s(\{[\s\S]?[^}]*})/g;
-const HOVER_SELECTOR = /([^\\]):hover/g;
-export function addHoverClass(cssText: string): string {
-  const matches = cssText.match(CSS_RULE_GLOBAL) || [];
-  for (const match of matches) {
-    const [, selectorText = '', , rules = ''] = match.match(CSS_RULE) || [];
-    const selectors = selectorText
-      .split(',')
-      .map(selector => selector.trim())
-      .map(selector => {
-        if (HOVER_SELECTOR.test(selector)) {
-          const newSelector = selector.replace(HOVER_SELECTOR, '$1.\\:hover');
-          selector += `, ${newSelector}`;
-        }
-        return selector;
-      });
-    cssText = cssText.replace(match, selectors.join(', ') + ' ' + rules);
-  }
-  return cssText;
-}
-
 function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     return rules
-      ? Array.from(rules).reduce(
-          (prev, cur) => (prev += addHoverClass(cur.cssText)),
-          '',
-        )
+      ? Array.from(rules).reduce((prev, cur) => (prev += cur.cssText), '')
       : null;
   } catch (error) {
     return null;
@@ -177,12 +152,10 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
       if (parentTagName === 'SCRIPT') {
         textContent = 'SCRIPT_PLACEHOLDER';
       }
-      if (parentTagName === 'STYLE') {
-        textContent = addHoverClass(textContent || '');
-      }
       return {
         type: NodeType.Text,
         textContent: textContent || '',
+        isStyle: parentTagName === 'STYLE' ? true : undefined,
       };
     case n.CDATA_SECTION_NODE:
       return {

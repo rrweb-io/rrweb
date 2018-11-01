@@ -70,6 +70,7 @@ describe('integration tests', () => {
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
+      executablePath: '/home/yanzhen/Desktop/chrome-linux/chrome',
       // headless: false,
     });
 

@@ -32,6 +32,7 @@ export type elementNode = {
 export type textNode = {
   type: NodeType.Text;
   textContent: string;
+  isStyle?: true;
 };
 
 export type cdataNode = {
