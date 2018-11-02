@@ -29,5 +29,5 @@ export function formatTime(ms) {
   if (hour) {
     return `${padZero(hour)}:${padZero(minute)}:${padZero(minute)}`;
   }
-  return `${padZero(hour)}:${padZero(second)}`;
+  return `${padZero(minute)}:${padZero(second)}`;
 }

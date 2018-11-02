@@ -72,7 +72,11 @@
       },
       play() {
         const { replayer, currentTime } = this.get();
-        replayer.play(currentTime);
+        if (currentTime > 0) {
+          replayer.resume(currentTime);
+        } else {
+          replayer.play(currentTime);
+        }
         this.loopTimer();
       },
       pause() {

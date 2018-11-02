@@ -15,12 +15,24 @@
   <script src="./bundle.js"></script>
   <script src="./bundle.events.js"></script>
   <script>
-    const player = new rrwebPlayer({
-      target: document.body,
-      data: {
-        events,
-      },
+    const queryObj = {
+      sessionId: 'e2c7cfe8-d868-4f11-b561-5a969da26334',
+    };
+    let query = '';
+    Object.keys(queryObj).forEach(key => {
+      query += `${key}=${queryObj[key]}&`;
     });
+    fetch(`http://192.168.17.205:9090/api/events?${query}`)
+      .then(res => res.json())
+      .then(data => {
+        // eslint-disable-next-line
+        new rrwebPlayer({
+          target: document.body,
+          data: {
+            events: data.events,
+          },
+        });
+      });
   </script>
 </body>
 
