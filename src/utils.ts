@@ -18,7 +18,11 @@ export function on(
 export const mirror: Mirror = {
   map: {},
   getId(n) {
-    return n.__sn && n.__sn.id;
+    // if n is not a serialized INode, use -1 as its id.
+    if (!n.__sn) {
+      return -1;
+    }
+    return n.__sn.id;
   },
   getNode(id) {
     return mirror.map[id] || null;

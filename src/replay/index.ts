@@ -11,6 +11,7 @@ import {
   playerConfig,
   playerMetaData,
   viewportResizeDimention,
+  missingNextNodeMap,
 } from '../types';
 import { mirror } from '../utils';
 
@@ -216,6 +217,8 @@ export class Replayer {
             parent.removeChild(target);
           }
         });
+
+        const missingNextNodeMap: missingNextNodeMap = {};
         d.adds.forEach(mutation => {
           const target = buildNodeWithSN(
             mutation.node,
@@ -233,6 +236,14 @@ export class Replayer {
             next = mirror.getNode(mutation.nextId) as Node;
           }
 
+          if (mutation.nextId === -1) {
+            missingNextNodeMap[mutation.node.id] = {
+              node: target,
+              mutation,
+            };
+            return;
+          }
+
           if (previous && previous.nextSibling) {
             parent.insertBefore(target, previous.nextSibling);
           } else if (next) {
@@ -240,7 +251,18 @@ export class Replayer {
           } else {
             parent.appendChild(target);
           }
+
+          if (mutation.previousId) {
+            this.resolveMissingNode(
+              missingNextNodeMap,
+              parent,
+              target,
+              mutation.previousId,
+            );
+          }
         });
+        // TODO: assert missingNextNodeMap has no key after resolve
+
         d.texts.forEach(mutation => {
           const target = (mirror.getNode(mutation.id) as Node) as Text;
           target.textContent = mutation.value;
@@ -317,6 +339,22 @@ export class Replayer {
         break;
       }
       default:
+    }
+  }
+
+  private resolveMissingNode(
+    map: missingNextNodeMap,
+    parent: Node,
+    target: Node,
+    previousId: number,
+  ) {
+    if (map[previousId]) {
+      const { node, mutation } = map[previousId];
+      parent.insertBefore(node, target);
+      delete map[mutation.node.id];
+      if (mutation.previousId) {
+        this.resolveMissingNode(map, parent, node as Node, mutation.previousId);
+      }
     }
   }
 

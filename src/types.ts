@@ -231,3 +231,10 @@ export type playerConfig = {
 export type playerMetaData = {
   totalTime: number;
 };
+
+export type missingNextNodeMap = {
+  [id: number]: {
+    node: Node;
+    mutation: addedNodeMutation;
+  };
+};
