@@ -232,9 +232,10 @@ export type playerMetaData = {
   totalTime: number;
 };
 
-export type missingNextNodeMap = {
-  [id: number]: {
-    node: Node;
-    mutation: addedNodeMutation;
-  };
+export type missingNode = {
+  node: Node;
+  mutation: addedNodeMutation;
+};
+export type missingNodeMap = {
+  [id: number]: missingNode;
 };

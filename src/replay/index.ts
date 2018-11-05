@@ -11,7 +11,9 @@ import {
   playerConfig,
   playerMetaData,
   viewportResizeDimention,
-  missingNextNodeMap,
+  missingNodeMap,
+  addedNodeMutation,
+  missingNode,
 } from '../types';
 import { mirror } from '../utils';
 
@@ -218,7 +220,7 @@ export class Replayer {
           }
         });
 
-        const missingNextNodeMap: missingNextNodeMap = {};
+        const missingNodeMap: missingNodeMap = {};
         d.adds.forEach(mutation => {
           const target = buildNodeWithSN(
             mutation.node,
@@ -236,8 +238,8 @@ export class Replayer {
             next = mirror.getNode(mutation.nextId) as Node;
           }
 
-          if (mutation.nextId === -1) {
-            missingNextNodeMap[mutation.node.id] = {
+          if (mutation.previousId === -1 || mutation.nextId === -1) {
+            missingNodeMap[mutation.node.id] = {
               node: target,
               mutation,
             };
@@ -252,16 +254,13 @@ export class Replayer {
             parent.appendChild(target);
           }
 
-          if (mutation.previousId) {
-            this.resolveMissingNode(
-              missingNextNodeMap,
-              parent,
-              target,
-              mutation.previousId,
-            );
+          if (mutation.previousId || mutation.nextId) {
+            this.resolveMissingNode(missingNodeMap, parent, target, mutation);
           }
         });
-        // TODO: assert missingNextNodeMap has no key after resolve
+        if (Object.keys(missingNodeMap).length) {
+          console.warn('Found unresolved missing node map', missingNodeMap);
+        }
 
         d.texts.forEach(mutation => {
           const target = (mirror.getNode(mutation.id) as Node) as Text;
@@ -343,17 +342,24 @@ export class Replayer {
   }
 
   private resolveMissingNode(
-    map: missingNextNodeMap,
+    map: missingNodeMap,
     parent: Node,
     target: Node,
-    previousId: number,
+    targetMutation: addedNodeMutation,
   ) {
-    if (map[previousId]) {
-      const { node, mutation } = map[previousId];
-      parent.insertBefore(node, target);
+    const { previousId, nextId } = targetMutation;
+    const previousInMap = previousId && map[previousId];
+    const nextInMap = nextId && map[nextId];
+    if (previousInMap || nextInMap) {
+      const { node, mutation } = (previousInMap || nextInMap) as missingNode;
+      if (previousInMap) {
+        parent.insertBefore(node, target);
+      } else {
+        parent.insertBefore(node, target.nextSibling);
+      }
       delete map[mutation.node.id];
-      if (mutation.previousId) {
-        this.resolveMissingNode(map, parent, node as Node, mutation.previousId);
+      if (mutation.previousId || mutation.nextId) {
+        this.resolveMissingNode(map, parent, node as Node, mutation);
       }
     }
   }
