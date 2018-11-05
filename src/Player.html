@@ -33,8 +33,8 @@
     methods: {
       updateScale(el, frameDimension) {
         const { width, height } = this.get();
-        const widthScale = (width - 20) / frameDimension.width;
-        const heightScale = (height - 20) / frameDimension.height;
+        const widthScale = width / frameDimension.width;
+        const heightScale = height / frameDimension.height;
         el.style.transform =
           `scale(${Math.min(widthScale, heightScale, 1)})` +
           'translate(-50%, -50%)';
@@ -60,9 +60,23 @@
 
 <style>
   .rr-player {
+    position: relative;
     background: white;
     float: left;
     clear: both;
+    border-radius: 5px;
+  }
+
+  .rr-player::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-shadow: 0 24px 48px rgba(17, 16, 62, 0.12);
+    mix-blend-mode: multiply;
+    z-index: -1;
   }
 
   .rr-player__frame {
@@ -73,10 +87,8 @@
     float: left;
     clear: both;
     transform-origin: top left;
-    left: calc(50% - 10px);
-    top: calc(50% - 10px);
-    margin: 10px;
-    box-shadow: 0 3px 28px rgba(0, 0, 0, 0.25), 0 1px 10px rgba(0, 0, 0, 0.22);
+    left: 50%;
+    top: 50%;
   }
 
   :global(.replayer-wrapper > iframe) {

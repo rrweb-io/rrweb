@@ -10,7 +10,17 @@
   </div>
   <div class="rr-controller__btns">
     <button on:click="toggle()">
-      {isPlaying ? 'pause' : 'play'}
+      {#if isPlaying}
+      <svg t="1541411313529" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16">
+        <path d="M682.65984 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0 512q0 53.00224-37.49888 90.50112t-90.50112 37.49888-90.50112-37.49888-37.49888-90.50112l0-512q0-53.00224 37.49888-90.50112t90.50112-37.49888zM341.34016 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0 512q0 53.00224-37.49888 90.50112t-90.50112 37.49888-90.50112-37.49888-37.49888-90.50112l0-512q0-53.00224 37.49888-90.50112t90.50112-37.49888zM341.34016 213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0 17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928 12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928zM682.65984 213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0 17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928 12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928z"></path>
+      </svg>
+      {:else}
+      <svg t="1541410561137" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16">
+        <path d="M170.65984 896l0-768 640 384zM644.66944 512l-388.66944-233.32864 0 466.65728z"></path>
+      </svg>
+      {/if}
     </button>
     {#each [1, 2, 4, 8] as s}
     <button class:active="s === speed" on:click="setSpeed(s)">{s}x</button>
@@ -118,12 +128,12 @@
   .rr-controller {
     width: 100%;
     height: 80px;
-    background: rgba(0, 0, 0, .5);
+    background: #fff;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    padding: 10px;
+    border-radius: 0 0 5px 5px;
   }
 
   .rr-timeline {
@@ -134,13 +144,13 @@
 
   .rr-timeline__time {
     padding: 0 20px;
-    color: white;
+    color: #11103e;
   }
 
   .rr-progress {
     width: 100%;
     height: 4px;
-    background: white;
+    background: #eee;
     position: relative;
     border-radius: 3px;
   }
@@ -150,7 +160,7 @@
     position: absolute;
     left: 0;
     top: 0;
-    background: orange
+    background: #E0E1FE;
   }
 
   .rr-progress__handler {
@@ -160,10 +170,32 @@
     position: absolute;
     top: 2px;
     transform: translate(-50%, -50%);
-    background: orange;
+    background: rgb(73, 80, 246);
+  }
+
+  .rr-controller__btns {
+    display: flex;
+  }
+
+  .rr-controller__btns button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .rr-controller__btns button:active {
+    background: #E0E1FE;
   }
 
   .rr-controller__btns button.active {
-    color: orange;
+    color: #fff;
+    background: rgb(73, 80, 246);
   }
 </style>
