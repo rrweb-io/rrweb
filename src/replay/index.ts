@@ -197,8 +197,16 @@ export class Replayer {
   ) {
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     // avoid form submit to refresh the iframe
-    this.iframe.contentDocument!.querySelectorAll('form').forEach(form => {
-      form.addEventListener('submit', evt => evt.preventDefault());
+    this.iframe.contentDocument!.addEventListener('submit', evt => {
+      if (evt.target && (evt.target as Element).tagName === 'FORM') {
+        evt.preventDefault();
+      }
+    });
+    // avoid a link click to refresh the iframe
+    this.iframe.contentDocument!.addEventListener('click', evt => {
+      if (evt.target && (evt.target as Element).tagName === 'A') {
+        evt.preventDefault();
+      }
     });
   }
 
