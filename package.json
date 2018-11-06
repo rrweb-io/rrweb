@@ -6,6 +6,7 @@
   "module": "dist/module.js",
   "scripts": {
     "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
+    "repl": "TS_NODE_CACHE=false TS_NODE_FILES=true ts-node test/repl.ts",
     "bundle": "rollup --config"
   },
   "repository": {

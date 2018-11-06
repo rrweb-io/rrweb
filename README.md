@@ -18,6 +18,7 @@ rrweb 主要由 3 部分组成：
   - 避免 mutation observer 异步回调导致的时序问题
   - 处理跨域请求错误
   - 实现更高效的高精度定时器
+  - 转移至 web worker 中执行
   - 实现传输数据压缩
   - 移除 inline script
   - 验证移动端录制效果
@@ -32,3 +33,31 @@ rrweb 主要由 3 部分组成：
 - 测试
   - 补充更多单元测试
   - 随机在更多网站上运行集成测试
+
+## Contribute Guide
+
+1. Fork 需要修改的 rrweb 组件仓库
+2. `npm install` 安装所需依赖
+3. 修改代码并通过测试
+4. 提交代码，创建 pull request
+
+除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
+
+运行 `npm rnu repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
+
+```
+Enter the url you want to record, e.g https://react-redux.realworld.io:
+```
+
+输入后等待浏览器打开指定页面，并在命令行中出现以下提示信息：
+
+```
+Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
+Going to open https://github.com...
+Ready to record. You can do any interaction on the page.
+Once you want to finish the recording, enter 'y' to start replay:
+```
+
+此时可以在页面中进行交互，待所需录制操作完成后，在命令行输入 y，测试工具就会将刚刚的操作进行回放，用于验证录制是否成功。
+
+_注意，当页面发生跳转时，rrweb 将停止录制，但仍可以回放跳转前的操作。_
