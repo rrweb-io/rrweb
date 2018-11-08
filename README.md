@@ -34,7 +34,17 @@ rrweb 主要由 3 部分组成：
   - 补充更多单元测试
   - 随机在更多网站上运行集成测试
 
+## Internal Design
+
+[序列化](./docs/serialization.md)
+[增量快照](./docs/observer.md)
+[回放](./docs/replay.md)
+
 ## Contribute Guide
+
+为了保证录制和回放时可以对应到一致的数据结构，rrweb 采用 typescript 开发以提供更强的类型支持。
+
+[Typescript 手册](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
 1. Fork 需要修改的 rrweb 组件仓库
 2. `npm install` 安装所需依赖
@@ -43,7 +53,7 @@ rrweb 主要由 3 部分组成：
 
 除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
 
-运行 `npm rnu repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
+运行 `npm run repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io:
