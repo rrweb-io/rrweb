@@ -132,14 +132,14 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
     });
 
     Array.from(addsSet).forEach(n => {
-      const parentId = mirror.getId(n.parentNode as INode);
+      const parentId = mirror.getId((n.parentNode as Node) as INode);
       if (
         parentId &&
         !dropped.some(d => d === n.parentNode) &&
         !removes.some(r => r.id === parentId)
       ) {
         adds.push({
-          parentId: mirror.getId(n.parentNode as INode),
+          parentId: mirror.getId((n.parentNode as Node) as INode),
           previousId: !n.previousSibling
             ? n.previousSibling
             : mirror.getId(n.previousSibling as INode),
@@ -256,8 +256,8 @@ function initScrollObserver(cb: scrollCallback): listenerHandler {
     if (evt.target === document) {
       cb({
         id,
-        x: document.documentElement.scrollLeft,
-        y: document.documentElement.scrollTop,
+        x: document.documentElement!.scrollLeft,
+        y: document.documentElement!.scrollTop,
       });
     } else {
       cb({

@@ -44,10 +44,10 @@
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "tslint": "^4.5.1",
-    "typescript": "^3.1.1"
+    "typescript": "^3.1.6"
   },
   "dependencies": {
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.5.6"
+    "rrweb-snapshot": "^0.6.0"
   }
 }
