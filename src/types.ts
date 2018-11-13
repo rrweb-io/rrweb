@@ -27,6 +27,7 @@ export type elementNode = {
   tagName: string;
   attributes: attributes;
   childNodes: serializedNodeWithId[];
+  isSVG?: true;
 };
 
 export type textNode = {

@@ -77,6 +77,10 @@ function absoluteToDoc(doc: Document, attributeValue: string): string {
   return a.href;
 }
 
+function isSVGElement(el: Element): boolean {
+  return el.tagName === 'svg' || el instanceof SVGElement;
+}
+
 function serializeNode(n: Node, doc: Document): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -142,6 +146,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         tagName,
         attributes,
         childNodes: [],
+        isSVG: isSVGElement(n as Element) || undefined,
       };
     case n.TEXT_NODE:
       // The parent node may not be a html element which has a tagName attribute.

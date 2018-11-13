@@ -7,103 +7,6 @@ import {
   INode,
 } from './types';
 
-// TODO: need a more accurate list
-const svgTags = [
-  'altGlyph',
-  'altGlyphDef',
-  'altGlyphItem',
-  'animate',
-  'animateColor',
-  'animateMotion',
-  'animateTransform',
-  'animation',
-  'circle',
-  'clipPath',
-  'color-profile',
-  'cursor',
-  'defs',
-  'desc',
-  'discard',
-  'ellipse',
-  'feBlend',
-  'feColorMatrix',
-  'feComponentTransfer',
-  'feComposite',
-  'feConvolveMatrix',
-  'feDiffuseLighting',
-  'feDisplacementMap',
-  'feDistantLight',
-  'feDropShadow',
-  'feFlood',
-  'feFuncA',
-  'feFuncB',
-  'feFuncG',
-  'feFuncR',
-  'feGaussianBlur',
-  'feImage',
-  'feMerge',
-  'feMergeNode',
-  'feMorphology',
-  'feOffset',
-  'fePointLight',
-  'feSpecularLighting',
-  'feSpotLight',
-  'feTile',
-  'feTurbulence',
-  'filter',
-  'font',
-  'font-face',
-  'font-face-format',
-  'font-face-name',
-  'font-face-src',
-  'font-face-uri',
-  'foreignObject',
-  'g',
-  'glyph',
-  'glyphRef',
-  'handler',
-  'hatch',
-  'hatchpath',
-  'hkern',
-  'image',
-  'line',
-  'linearGradient',
-  'listener',
-  'marker',
-  'mask',
-  'mesh',
-  'meshgradient',
-  'meshpatch',
-  'meshrow',
-  'metadata',
-  'missing-glyph',
-  'mpath',
-  'path',
-  'pattern',
-  'polygon',
-  'polyline',
-  'prefetch',
-  'radialGradient',
-  'rect',
-  'set',
-  'solidColor',
-  'solidcolor',
-  'stop',
-  'svg',
-  'switch',
-  'symbol',
-  'tbreak',
-  'text',
-  'textArea',
-  'textPath',
-  'tref',
-  'tspan',
-  'unknown',
-  'use',
-  'view',
-  'vkern',
-];
-
 const tagMap: tagMap = {
   script: 'noscript',
 };
@@ -144,10 +47,10 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
     case NodeType.Element:
       const tagName = getTagName(n);
       let node: Element;
-      if (svgTags.indexOf(tagName) < 0) {
-        node = doc.createElement(tagName);
-      } else {
+      if (n.isSVG) {
         node = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
+      } else {
+        node = doc.createElement(tagName);
       }
       for (const name in n.attributes) {
         if (n.attributes.hasOwnProperty(name)) {
