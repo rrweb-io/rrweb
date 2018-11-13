@@ -2,8 +2,6 @@
   "name": "rrweb-snapshot",
   "version": "0.6.0",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
-  "main": "dist/index.js",
-  "module": "dist/module.js",
   "scripts": {
     "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
     "bundle": "rollup --config"
@@ -17,8 +15,14 @@
     "snapshot",
     "DOM"
   ],
+  "main": "lib/rrweb-snapshot.js",
+  "module": "es/rrweb-snapshot.js",
+  "unpkg": "dist/rrweb-snapshot.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
+    "lib",
+    "es",
     "index.d.ts",
     "src/types.ts"
   ],
@@ -38,6 +42,7 @@
     "mocha": "^5.2.0",
     "puppeteer": "^1.9.0",
     "rollup": "^0.66.4",
+    "rollup-plugin-terser": "^3.0.0",
     "rollup-plugin-typescript": "^1.0.0",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
