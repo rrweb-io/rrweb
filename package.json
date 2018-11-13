@@ -2,8 +2,6 @@
   "name": "rrweb",
   "version": "0.6.0",
   "description": "record and replay the web",
-  "main": "dist/index.js",
-  "module": "dist/module.js",
   "scripts": {
     "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
     "repl": "TS_NODE_CACHE=false TS_NODE_FILES=true ts-node test/repl.ts",
@@ -16,8 +14,14 @@
   "keywords": [
     "rrweb"
   ],
+  "main": "lib/rrweb.js",
+  "module": "es/rrweb.js",
+  "unpkg": "dist/rrweb.js",
+  "typings": "./index.d.ts",
   "files": [
     "dist",
+    "lib",
+    "es",
     "index.d.ts",
     "src/types.ts"
   ],
@@ -37,9 +41,9 @@
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
     "puppeteer": "^1.9.0",
-    "rewire": "^4.0.1",
     "rollup": "^0.66.6",
     "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-terser": "^3.0.0",
     "rollup-plugin-typescript": "^1.0.0",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
@@ -48,6 +52,6 @@
   },
   "dependencies": {
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.6.0"
+    "rrweb-snapshot": "^0.6.1"
   }
 }
