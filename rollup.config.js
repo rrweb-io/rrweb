@@ -1,6 +1,7 @@
 import typescript from 'rollup-plugin-typescript';
 import resolve from 'rollup-plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
+import postcss from 'rollup-plugin-postcss';
 import pkg from './package.json';
 
 function toRecordPath(path) {
@@ -72,7 +73,13 @@ export default [
   // browser
   {
     input: './src/index.ts',
-    plugins: [typescript(), resolve()],
+    plugins: [
+      typescript(),
+      resolve(),
+      postcss({
+        extract: false,
+      }),
+    ],
     output: [
       {
         name: 'rrweb',
@@ -83,7 +90,16 @@ export default [
   },
   {
     input: './src/index.ts',
-    plugins: [typescript(), resolve(), terser()],
+    plugins: [
+      typescript(),
+      resolve(),
+      postcss({
+        extract: true,
+        minimize: true,
+        sourceMap: 'inline',
+      }),
+      terser(),
+    ],
     output: [
       {
         name: 'rrweb',
@@ -95,7 +111,13 @@ export default [
   // CommonJS
   {
     input: './src/index.ts',
-    plugins: [typescript(), resolve()],
+    plugins: [
+      typescript(),
+      resolve(),
+      postcss({
+        extract: false,
+      }),
+    ],
     output: [
       {
         format: 'cjs',
@@ -106,7 +128,13 @@ export default [
   // ES module
   {
     input: './src/index.ts',
-    plugins: [typescript(), resolve()],
+    plugins: [
+      typescript(),
+      resolve(),
+      postcss({
+        extract: false,
+      }),
+    ],
     output: [
       {
         format: 'esm',
@@ -116,7 +144,14 @@ export default [
   },
   {
     input: './src/index.ts',
-    plugins: [typescript(), resolve(), terser()],
+    plugins: [
+      typescript(),
+      resolve(),
+      postcss({
+        extract: false,
+      }),
+      terser(),
+    ],
     output: [
       {
         format: 'esm',

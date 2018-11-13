@@ -16,6 +16,7 @@ import {
   missingNode,
 } from '../types';
 import { mirror } from '../utils';
+import './styles/style.css';
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 // tslint:disable-next-line

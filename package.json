@@ -43,6 +43,7 @@
     "puppeteer": "^1.9.0",
     "rollup": "^0.66.6",
     "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-postcss": "^1.6.2",
     "rollup-plugin-terser": "^3.0.0",
     "rollup-plugin-typescript": "^1.0.0",
     "ts-node": "^7.0.1",
