@@ -6,11 +6,7 @@ import * as rollup from 'rollup';
 import typescript = require('rollup-plugin-typescript');
 import resolve = require('rollup-plugin-node-resolve');
 import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
-import {
-  incrementalSnapshotEvent,
-  EventType,
-  IncrementalSource,
-} from '../src/types';
+import { EventType, IncrementalSource, eventWithTime } from '../src/types';
 import { NodeType } from 'rrweb-snapshot';
 
 function matchSnapshot(actual: string, testFile: string, testTitle: string) {
@@ -32,7 +28,7 @@ function matchSnapshot(actual: string, testFile: string, testTitle: string) {
  * So we only do snapshot test with filtered events.
  * @param snapshots incrementalSnapshotEvent[]
  */
-function stringifySnapshots(snapshots: incrementalSnapshotEvent[]): string {
+function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
       .filter(s => {
@@ -44,8 +40,11 @@ function stringifySnapshots(snapshots: incrementalSnapshotEvent[]): string {
         }
         return true;
       })
-      // FIXME: travis coordinates seems different with my laptop
       .map(s => {
+        if (s.type === EventType.Meta) {
+          s.data.href = 'about:blank';
+        }
+        // FIXME: travis coordinates seems different with my laptop
         const coordinatesReg = /(bottom|top|left|right)/;
         if (
           s.type === EventType.IncrementalSnapshot &&
