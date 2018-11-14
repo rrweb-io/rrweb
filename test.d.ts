@@ -8,6 +8,11 @@ declare module 'rollup-plugin-node-resolve' {
   export = resolve;
 }
 
+declare module 'rollup-plugin-postcss' {
+  function postcss(options: any): any;
+  export = postcss;
+}
+
 declare module 'jest-snapshot' {
   export class SnapshotState {
     constructor(testFile: string, options: any);

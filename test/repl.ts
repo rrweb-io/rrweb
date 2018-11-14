@@ -7,6 +7,7 @@ import * as readline from 'readline';
 import * as rollup from 'rollup';
 import typescript = require('rollup-plugin-typescript');
 import resolve = require('rollup-plugin-node-resolve');
+import postcss = require('rollup-plugin-postcss');
 import * as puppeteer from 'puppeteer';
 import { eventWithTime } from '../src/types';
 
@@ -15,7 +16,7 @@ const emitter = new EventEmitter();
 async function getCode(): Promise<string> {
   const bundle = await rollup.rollup({
     input: path.resolve(__dirname, '../src/index.ts'),
-    plugins: [typescript(), resolve()],
+    plugins: [typescript(), resolve(), postcss({ extract: false })],
   });
   const { code } = await bundle.generate({
     name: 'rrweb',
