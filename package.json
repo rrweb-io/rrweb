@@ -5,7 +5,8 @@
   "scripts": {
     "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
     "repl": "TS_NODE_CACHE=false TS_NODE_FILES=true ts-node test/repl.ts",
-    "bundle": "rollup --config"
+    "bundle": "rollup --config",
+    "bundle:watch": "rollup --config -w"
   },
   "repository": {
     "type": "git",
