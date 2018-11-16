@@ -1,6 +1,6 @@
 import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
-import { later, clear } from './timer';
+import Timer from './timer';
 import {
   EventType,
   incrementalData,
@@ -14,6 +14,7 @@ import {
   missingNodeMap,
   addedNodeMutation,
   missingNode,
+  actionWithDelay,
 } from '../types';
 import { mirror } from '../utils';
 import './styles/style.css';
@@ -36,12 +37,13 @@ export class Replayer {
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
 
-  private timerIds: number[] = [];
   private emitter: mitt.Emitter = mitt();
 
   private baselineTime: number = 0;
   // record last played event timestamp when paused
   private lastPlayedEvent: eventWithTime;
+
+  private timer: Timer;
 
   constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
     if (events.length < 2) {
@@ -50,6 +52,7 @@ export class Replayer {
     this.events = events;
     this.handleResize = this.handleResize.bind(this);
 
+    this.timer = new Timer(this.config);
     this.setConfig(Object.assign({}, config));
     this.setupDom();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
@@ -84,22 +87,27 @@ export class Replayer {
    */
   public play(timeOffset = 0) {
     this.baselineTime = this.events[0].timestamp + timeOffset;
+    const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
       const isSync = event.timestamp < this.baselineTime;
       const castFn = this.getCastFn(event, isSync);
       if (isSync) {
         castFn();
       } else {
-        this.later(castFn, this.getDelay(event));
+        actions.push({ doAction: castFn, delay: this.getDelay(event) });
       }
     }
+    this.timer.addActions(actions);
+    this.timer.start();
   }
 
   public pause() {
-    this.timerIds.forEach(clear);
+    this.timer.clear();
   }
 
   public resume(timeOffset = 0) {
+    this.timer.clear();
+    const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
       if (
         event.timestamp < this.lastPlayedEvent.timestamp ||
@@ -109,8 +117,13 @@ export class Replayer {
       }
       const delayToBaseline = this.getDelay(event);
       const castFn = this.getCastFn(event);
-      this.later(castFn, delayToBaseline - timeOffset);
+      actions.push({
+        doAction: castFn,
+        delay: delayToBaseline - timeOffset,
+      });
     }
+    this.timer.addActions(actions);
+    this.timer.start();
   }
 
   private setupDom() {
@@ -131,11 +144,6 @@ export class Replayer {
     this.iframe.height = `${dimension.height}px`;
   }
 
-  private later(cb: () => void, delayMs: number) {
-    const id = later(cb, delayMs, this.config);
-    this.timerIds.push(id);
-  }
-
   // TODO: add speed to mouse move timestamp calculation
   private getDelay(event: eventWithTime): number {
     // Mouse move events was recorded in a throttle function,
@@ -147,13 +155,14 @@ export class Replayer {
       const firstOffset = event.data.positions[0].timeOffset;
       // timeOffset is a negative offset to event.timestamp
       const firstTimestamp = event.timestamp + firstOffset;
+      const delay = firstTimestamp - this.baselineTime
       event.data.positions = event.data.positions.map(p => {
         return {
           ...p,
-          timeOffset: p.timeOffset - firstOffset,
+          timeOffset: p.timeOffset - firstOffset + delay,
         };
       });
-      return firstTimestamp - this.baselineTime;
+      return delay;
     }
     return event.timestamp - this.baselineTime;
   }
@@ -294,14 +303,18 @@ export class Replayer {
         // skip mouse move in sync mode
         if (!isSync) {
           d.positions.forEach(p => {
-            this.later(() => {
-              this.mouse.style.left = `${p.x}px`;
-              this.mouse.style.top = `${p.y}px`;
-              const target = mirror.getNode(p.id);
-              if (target) {
-                this.hoverElements((target as Node) as Element);
-              }
-            }, p.timeOffset);
+            const action = {
+              doAction: () => {
+                this.mouse.style.left = `${p.x}px`;
+                this.mouse.style.top = `${p.y}px`;
+                const target = mirror.getNode(p.id);
+                if (target) {
+                  this.hoverElements((target as Node) as Element);
+                }
+              },
+              delay: p.timeOffset,
+            };
+            this.timer.addAction(action);
           });
         }
         break;
