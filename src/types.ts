@@ -239,3 +239,8 @@ export type missingNode = {
 export type missingNodeMap = {
   [id: number]: missingNode;
 };
+
+export type actionWithDelay = {
+  doAction: () => void;
+  delay: number;
+};
