@@ -78,6 +78,7 @@ export default [
       resolve(),
       postcss({
         extract: false,
+        inject: false,
       }),
     ],
     output: [
@@ -116,6 +117,7 @@ export default [
       resolve(),
       postcss({
         extract: false,
+        inject: false,
       }),
     ],
     output: [
@@ -133,6 +135,7 @@ export default [
       resolve(),
       postcss({
         extract: false,
+        inject: false,
       }),
     ],
     output: [
@@ -149,6 +152,7 @@ export default [
       resolve(),
       postcss({
         extract: false,
+        inject: false,
       }),
       terser(),
     ],
