@@ -136,7 +136,7 @@ function getCode(): string {
     <link rel="stylesheet" href="../dist/rrweb.min.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.js"></script>
+    <script src="../dist/rrweb.min.js"></script>
     <script>
       const data = ${JSON.stringify({ events })}
       const replayer = new rrweb.Replayer(data.events);

@@ -35,6 +35,7 @@ let configs = [
         name: 'record',
         format: 'iife',
         file: toMinPath(toRecordPath(pkg.unpkg)),
+        sourcemap: true,
       },
     ],
   },
@@ -67,6 +68,7 @@ let configs = [
       {
         format: 'esm',
         file: toMinPath(toRecordPath(pkg.module)),
+        sourcemap: true,
       },
     ],
   },
@@ -106,6 +108,7 @@ let configs = [
         name: 'rrweb',
         format: 'iife',
         file: toMinPath(pkg.unpkg),
+        sourcemap: true,
       },
     ],
   },
@@ -160,6 +163,7 @@ let configs = [
       {
         format: 'esm',
         file: toMinPath(pkg.module),
+        sourcemap: true,
       },
     ],
   },
@@ -183,6 +187,7 @@ if (process.env.BROWSER_ONLY) {
         name: 'rrweb',
         format: 'iife',
         file: toMinPath(pkg.unpkg),
+        sourcemap: true,
       },
     ],
   };
