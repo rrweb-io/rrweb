@@ -102,6 +102,7 @@ function getCode(): string {
         width: 1600,
         height: 900,
       },
+      args: ['--start-maximized'],
     });
     const page = await browser.newPage();
     await page.goto('about:blank');
