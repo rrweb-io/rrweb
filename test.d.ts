@@ -8,8 +8,12 @@ declare module 'rollup-plugin-node-resolve' {
   export = resolve;
 }
 
+declare module 'rollup-plugin-terser' {
+  export function terser(options?: any): any;
+}
+
 declare module 'rollup-plugin-postcss' {
-  function postcss(options: any): any;
+  function postcss(options?: any): any;
   export = postcss;
 }
 

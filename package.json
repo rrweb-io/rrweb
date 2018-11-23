@@ -3,10 +3,10 @@
   "version": "0.6.1",
   "description": "record and replay the web",
   "scripts": {
-    "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
-    "repl": "TS_NODE_CACHE=false TS_NODE_FILES=true ts-node test/repl.ts",
-    "bundle": "rollup --config",
-    "bundle:watch": "rollup --config -w"
+    "test": "npm run bundle:browser && TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
+    "repl": "npm run bundle:browser && TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
+    "bundle:browser": "BROWSER_ONLY=true rollup --config",
+    "bundle": "rollup --config"
   },
   "repository": {
     "type": "git",

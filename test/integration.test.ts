@@ -2,9 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { assert } from 'chai';
-import * as rollup from 'rollup';
-import typescript = require('rollup-plugin-typescript');
-import resolve = require('rollup-plugin-node-resolve');
 import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
 import { EventType, IncrementalSource, eventWithTime } from '../src/types';
 import { NodeType } from 'rrweb-snapshot';
@@ -94,7 +91,7 @@ describe('record integration tests', () => {
       ${this.code}
       window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();
       window.snapshots = [];
-      record({
+      rrweb.record({
         emit: event => {
           console.log(event);
           window.snapshots.push(event);
@@ -116,15 +113,8 @@ describe('record integration tests', () => {
       args: ['--no-sandbox'],
     });
 
-    const bundle = await rollup.rollup({
-      input: path.resolve(__dirname, '../src/record/index.ts'),
-      plugins: [typescript(), resolve()],
-    });
-    const { code } = await bundle.generate({
-      name: 'record',
-      format: 'iife',
-    });
-    this.code = code;
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    this.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   after(async () => {

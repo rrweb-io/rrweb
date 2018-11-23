@@ -14,7 +14,7 @@ function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
 
-export default [
+let configs = [
   // browser(record only)
   {
     input: './src/record/index.ts',
@@ -22,7 +22,7 @@ export default [
     output: [
       {
         name: 'record',
-        format: 'umd',
+        format: 'iife',
         file: toRecordPath(pkg.unpkg),
       },
     ],
@@ -33,7 +33,7 @@ export default [
     output: [
       {
         name: 'record',
-        format: 'umd',
+        format: 'iife',
         file: toMinPath(toRecordPath(pkg.unpkg)),
       },
     ],
@@ -84,7 +84,7 @@ export default [
     output: [
       {
         name: 'rrweb',
-        format: 'umd',
+        format: 'iife',
         file: pkg.unpkg,
       },
     ],
@@ -104,7 +104,7 @@ export default [
     output: [
       {
         name: 'rrweb',
-        format: 'umd',
+        format: 'iife',
         file: toMinPath(pkg.unpkg),
       },
     ],
@@ -164,3 +164,28 @@ export default [
     ],
   },
 ];
+
+if (process.env.BROWSER_ONLY) {
+  configs = {
+    input: './src/index.ts',
+    plugins: [
+      typescript(),
+      resolve(),
+      postcss({
+        extract: true,
+        minimize: true,
+        sourceMap: 'inline',
+      }),
+      terser(),
+    ],
+    output: [
+      {
+        name: 'rrweb',
+        format: 'iife',
+        file: toMinPath(pkg.unpkg),
+      },
+    ],
+  };
+}
+
+export default configs;
