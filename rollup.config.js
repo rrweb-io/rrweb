@@ -14,7 +14,7 @@ export default [
     output: [
       {
         name: 'rrwebSnapshot',
-        format: 'umd',
+        format: 'iife',
         file: pkg.unpkg,
       },
     ],
@@ -25,8 +25,9 @@ export default [
     output: [
       {
         name: 'rrwebSnapshot',
-        format: 'umd',
+        format: 'iife',
         file: toMinPath(pkg.unpkg),
+        sourcemap: true,
       },
     ],
   },
@@ -59,6 +60,7 @@ export default [
       {
         format: 'esm',
         file: toMinPath(pkg.module),
+        sourcemap: true,
       },
     ],
   },
