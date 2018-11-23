@@ -67,11 +67,7 @@ export function absoluteToStylesheet(cssText: string, href: string): string {
   });
 }
 
-const RELATIVE_PATH = /^(\.\.|\.|)\//;
 function absoluteToDoc(doc: Document, attributeValue: string): string {
-  if (!RELATIVE_PATH.test(attributeValue)) {
-    return attributeValue;
-  }
   const a: HTMLAnchorElement = doc.createElement('a');
   a.href = attributeValue;
   return a.href;
