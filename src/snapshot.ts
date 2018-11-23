@@ -154,13 +154,17 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
       const parentTagName =
         n.parentNode && (n.parentNode as HTMLElement).tagName;
       let textContent = (n as Text).textContent;
+      const isStyle = parentTagName === 'STYLE' ? true : undefined;
+      if (isStyle && textContent) {
+        textContent = absoluteToStylesheet(textContent, location.href);
+      }
       if (parentTagName === 'SCRIPT') {
         textContent = 'SCRIPT_PLACEHOLDER';
       }
       return {
         type: NodeType.Text,
         textContent: textContent || '',
-        isStyle: parentTagName === 'STYLE' ? true : undefined,
+        isStyle,
       };
     case n.CDATA_SECTION_NODE:
       return {
