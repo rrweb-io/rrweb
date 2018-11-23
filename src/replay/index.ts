@@ -1,5 +1,6 @@
 import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
+import { on, off } from 'delegated-events';
 import Timer from './timer';
 import {
   EventType,
@@ -155,7 +156,7 @@ export class Replayer {
       const firstOffset = event.data.positions[0].timeOffset;
       // timeOffset is a negative offset to event.timestamp
       const firstTimestamp = event.timestamp + firstOffset;
-      const delay = firstTimestamp - this.baselineTime
+      const delay = firstTimestamp - this.baselineTime;
       event.data.positions = event.data.positions.map(p => {
         return {
           ...p,
@@ -207,17 +208,23 @@ export class Replayer {
   ) {
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     // avoid form submit to refresh the iframe
-    this.iframe.contentDocument!.addEventListener('submit', evt => {
-      if (evt.target && (evt.target as Element).tagName === 'FORM') {
-        evt.preventDefault();
-      }
+    off('submit', 'form', this.preventDefault, {
+      document: this.iframe.contentDocument!,
+    });
+    on('submit', 'form', this.preventDefault, {
+      document: this.iframe.contentDocument!,
     });
     // avoid a link click to refresh the iframe
-    this.iframe.contentDocument!.addEventListener('click', evt => {
-      if (evt.target && (evt.target as Element).tagName === 'A') {
-        evt.preventDefault();
-      }
+    off('click', 'a', this.preventDefault, {
+      document: this.iframe.contentDocument!,
     });
+    on('click', 'a', this.preventDefault, {
+      document: this.iframe.contentDocument!,
+    });
+  }
+
+  private preventDefault(evt: Event) {
+    evt.preventDefault();
   }
 
   private applyIncremental(d: incrementalData, isSync: boolean) {

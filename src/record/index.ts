@@ -53,8 +53,8 @@ function record(options: recordOptions = {}) {
           data: {
             node,
             initialOffset: {
-              left: document.documentElement.scrollLeft,
-              top: document.documentElement.scrollTop,
+              left: document.documentElement!.scrollLeft,
+              top: document.documentElement!.scrollTop,
             },
           },
         }),
