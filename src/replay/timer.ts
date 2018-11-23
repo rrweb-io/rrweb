@@ -49,7 +49,7 @@ export default class Timer {
   }
 
   public clear() {
-    this.actions = [];
+    this.actions.length = 0;
   }
 
   private findActionIndex(action: actionWithDelay): number {
