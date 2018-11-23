@@ -271,9 +271,13 @@ export class Replayer {
             return;
           }
 
-          if (previous && previous.nextSibling) {
+          if (
+            previous &&
+            previous.nextSibling &&
+            previous.nextSibling.parentNode
+          ) {
             parent.insertBefore(target, previous.nextSibling);
-          } else if (next) {
+          } else if (next && next.parentNode) {
             parent.insertBefore(target, next);
           } else {
             parent.appendChild(target);
