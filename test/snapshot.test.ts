@@ -28,4 +28,16 @@ describe('absolute url to stylesheet', () => {
       absoluteToStylesheet('url("http://localhost/a.jpg")', href),
     ).to.equal(`url('http://localhost/a.jpg')`);
   });
+
+  it('can handle single quote path', () => {
+    expect(absoluteToStylesheet(`url('./a.jpg')`, href)).to.equal(
+      `url('http://localhost/css/a.jpg')`,
+    );
+  });
+
+  it('can handle no quote path', () => {
+    expect(absoluteToStylesheet('url(./a.jpg)', href)).to.equal(
+      `url('http://localhost/css/a.jpg')`,
+    );
+  });
 });

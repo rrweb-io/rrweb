@@ -42,7 +42,7 @@ function extractOrigin(url: string): string {
   return origin;
 }
 
-const URL_IN_CSS_REF = /url\((['"])([^'"]*)\1\)/gm;
+const URL_IN_CSS_REF = /url\((['"]|)([^'"]*)\1\)/gm;
 export function absoluteToStylesheet(cssText: string, href: string): string {
   return cssText.replace(URL_IN_CSS_REF, (_1, _2, filePath) => {
     if (!/^[./]/.test(filePath)) {
