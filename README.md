@@ -15,9 +15,7 @@ rrweb 主要由 3 部分组成：
 ## Roadmap
 
 - rrweb
-  - 避免 mutation observer 异步回调导致的时序问题
   - 处理跨域请求错误
-  - 实现更高效的高精度定时器
   - 转移至 web worker 中执行
   - 实现传输数据压缩
   - 移除 inline script

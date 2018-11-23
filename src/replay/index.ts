@@ -330,6 +330,12 @@ export class Replayer {
         }
         break;
       case IncrementalSource.MouseInteraction: {
+        /**
+         * Same as the situation of missing input target.
+         */
+        if (d.id === -1) {
+          break;
+        }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
         const target = (mirror.getNode(d.id) as Node) as HTMLElement;
         target.dispatchEvent(event);
@@ -343,6 +349,12 @@ export class Replayer {
         break;
       }
       case IncrementalSource.Scroll: {
+        /**
+         * Same as the situation of missing input target.
+         */
+        if (d.id === -1) {
+          break;
+        }
         const target = mirror.getNode(d.id) as Node;
         if (target === this.iframe.contentDocument) {
           this.iframe.contentWindow!.scrollTo({
@@ -363,6 +375,15 @@ export class Replayer {
         });
         break;
       case IncrementalSource.Input: {
+        /**
+         * Input event on an unserialized node usually means the event
+         * was synchrony triggered programmatically after the node was
+         * created. This means there was not an user observable interaction
+         * and we do not need to replay it.
+         */
+        if (d.id === -1) {
+          break;
+        }
         const target: HTMLInputElement = (mirror.getNode(
           d.id,
         ) as Node) as HTMLInputElement;
