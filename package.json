@@ -40,7 +40,7 @@
     "chai": "^4.1.2",
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
-    "puppeteer": "^1.9.0",
+    "puppeteer": "^1.10.0",
     "rollup": "^0.66.4",
     "rollup-plugin-terser": "^3.0.0",
     "rollup-plugin-typescript": "^1.0.0",
