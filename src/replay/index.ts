@@ -27,6 +27,7 @@ const mitt = (mittProxy as any).default || mittProxy;
 const defaultConfig: playerConfig = {
   speed: 1,
   root: document.body,
+  loadTimeout: 10 * 1000,
 };
 
 export class Replayer {
@@ -207,6 +208,7 @@ export class Replayer {
     event: fullSnapshotEvent & { timestamp: number },
   ) {
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
+    this.waitForStylesheetLoad();
     // avoid form submit to refresh the iframe
     off('submit', 'form', this.preventDefault, {
       document: this.iframe.contentDocument!,
@@ -221,6 +223,43 @@ export class Replayer {
     on('click', 'a', this.preventDefault, {
       document: this.iframe.contentDocument!,
     });
+  }
+
+  /**
+   * pause when loading style sheet, resume when loaded all timeout exceed
+   */
+  private waitForStylesheetLoad() {
+    const { head } = this.iframe.contentDocument!;
+    if (head) {
+      const unloadSheets: Set<HTMLLinkElement> = new Set();
+      let timer: number;
+      head
+        .querySelectorAll('link[rel="stylesheet"]')
+        .forEach((css: HTMLLinkElement) => {
+          if (!css.sheet) {
+            if (unloadSheets.size === 0) {
+              this.pause();
+              this.emitter.emit('wait-stylesheet');
+              timer = window.setTimeout(() => {
+                this.resume();
+                // mark timer was called
+                timer = -1;
+              }, this.config.loadTimeout);
+            }
+            unloadSheets.add(css);
+            css.addEventListener('load', () => {
+              unloadSheets.delete(css);
+              if (unloadSheets.size === 0 && timer !== -1) {
+                this.resume();
+                this.emitter.emit('stylesheet-loaded');
+                if (timer) {
+                  window.clearTimeout(timer);
+                }
+              }
+            });
+          }
+        });
+    }
   }
 
   private preventDefault(evt: Event) {

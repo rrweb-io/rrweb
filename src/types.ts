@@ -226,6 +226,7 @@ export type hookResetter = () => void;
 export type playerConfig = {
   speed: number;
   root: Element;
+  loadTimeout: number;
 };
 
 export type playerMetaData = {

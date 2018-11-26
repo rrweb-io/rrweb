@@ -14,6 +14,13 @@ function getCode(): string {
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
+function safeStringify(obj: Object): string {
+  return JSON.stringify(obj)
+    .replace(/&/g, '&amp')
+    .replace(/</g, '&lt')
+    .replace(/>/g, '&gt');
+}
+
 (async () => {
   const code = getCode();
 
@@ -110,7 +117,7 @@ function getCode(): string {
       path: path.resolve(__dirname, '../dist/rrweb.min.css'),
     });
     await page.evaluate(`${code}
-      const events = ${JSON.stringify(events)};
+      const events = ${safeStringify(events)};
       const replayer = new rrweb.Replayer(events);
       replayer.play();
     `);
@@ -139,7 +146,7 @@ function getCode(): string {
   <body>
     <script src="../dist/rrweb.min.js"></script>
     <script>
-      const data = ${JSON.stringify({ events })}
+      const data = ${safeStringify({ events })}
       const replayer = new rrweb.Replayer(data.events);
       replayer.play();
     </script>
