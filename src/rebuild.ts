@@ -64,6 +64,7 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
           if (isTextarea || isRemoteCss) {
             const child = doc.createTextNode(value);
             node.appendChild(child);
+            continue;
           }
           if (tagName === 'iframe' && name === 'src') {
             continue;

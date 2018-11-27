@@ -89,7 +89,7 @@ describe('integration tests', () => {
     await this.server.close();
   });
 
-  for (const html of htmls.slice(0, 10)) {
+  for (const html of htmls) {
     const title = '[html file]: ' + html.filePath;
     it(title, async () => {
       const page: puppeteer.Page = await this.browser.newPage();
