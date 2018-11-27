@@ -119,7 +119,7 @@ exports[`[html file]: iframe.html 1`] = `
   <title>iframe</title>
 </head>
 <body>
-  <iframe src=\\"http://localhost:3030/html/iframe-inner.html\\" width=\\"100\\" height=\\"50\\"></iframe>
+  <iframe width=\\"100\\" height=\\"50\\"></iframe>
 </body></html>"
 `;
 

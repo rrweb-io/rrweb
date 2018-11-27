@@ -65,6 +65,9 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
             const child = doc.createTextNode(value);
             node.appendChild(child);
           }
+          if (tagName === 'iframe' && name === 'src') {
+            continue;
+          }
           try {
             node.setAttribute(name, value);
           } catch (error) {
