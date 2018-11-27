@@ -1,6 +1,5 @@
 import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
-import { on, off } from 'delegated-events';
 import Timer from './timer';
 import {
   EventType,
@@ -18,6 +17,7 @@ import {
   actionWithDelay,
 } from '../types';
 import { mirror } from '../utils';
+import injectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
@@ -138,6 +138,7 @@ export class Replayer {
     this.wrapper.appendChild(this.mouse);
 
     this.iframe = document.createElement('iframe');
+    this.iframe.setAttribute('sandbox', 'allow-same-origin');
     this.wrapper.appendChild(this.iframe);
   }
 
@@ -208,21 +209,13 @@ export class Replayer {
     event: fullSnapshotEvent & { timestamp: number },
   ) {
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
+    const styleEl = document.createElement('style');
+    const { documentElement, head } = this.iframe.contentDocument!;
+    documentElement!.insertBefore(styleEl, head);
+    for (let idx = 0; idx < injectStyleRules.length; idx++) {
+      (styleEl.sheet! as CSSStyleSheet).insertRule(injectStyleRules[idx], idx);
+    }
     this.waitForStylesheetLoad();
-    // avoid form submit to refresh the iframe
-    off('submit', 'form', this.preventDefault, {
-      document: this.iframe.contentDocument!,
-    });
-    on('submit', 'form', this.preventDefault, {
-      document: this.iframe.contentDocument!,
-    });
-    // avoid a link click to refresh the iframe
-    off('click', 'a', this.preventDefault, {
-      document: this.iframe.contentDocument!,
-    });
-    on('click', 'a', this.preventDefault, {
-      document: this.iframe.contentDocument!,
-    });
   }
 
   /**
@@ -260,10 +253,6 @@ export class Replayer {
           }
         });
     }
-  }
-
-  private preventDefault(evt: Event) {
-    evt.preventDefault();
   }
 
   private applyIncremental(d: incrementalData, isSync: boolean) {
@@ -377,13 +366,24 @@ export class Replayer {
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
         const target = (mirror.getNode(d.id) as Node) as HTMLElement;
-        target.dispatchEvent(event);
         if (d.type === MouseInteractions.Blur) {
           target.blur();
         } else if (d.type === MouseInteractions.Click) {
-          target.click();
+          /**
+           * Click has no visual impact when replaying and may
+           * trigger navigation when apply to an <a> link.
+           * So we will not call click(), instead we add an
+           * animation to the mouse element which indicate user
+           * clicked at this moment.
+           */
+          this.mouse.classList.remove('active');
+          // tslint:disable-next-line
+          void this.mouse.offsetWidth;
+          this.mouse.classList.add('active');
         } else if (d.type === MouseInteractions.Focus) {
           target.focus();
+        } else {
+          target.dispatchEvent(event);
         }
         break;
       }

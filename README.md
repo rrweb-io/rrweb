@@ -18,7 +18,6 @@ rrweb 主要由 3 部分组成：
   - 处理跨域请求错误
   - 转移至 web worker 中执行
   - 实现传输数据压缩
-  - 移除 inline script
   - 验证移动端录制效果
 - rrweb-player
   - 改进播放器 UI 样式
@@ -37,6 +36,7 @@ rrweb 主要由 3 部分组成：
 - [序列化](./docs/serialization.md)
 - [增量快照](./docs/observer.md)
 - [回放](./docs/replay.md)
+- [沙盒](./docs/sandbox.md)
 
 ## Contribute Guide
 
