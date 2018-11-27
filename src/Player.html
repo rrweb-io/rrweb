@@ -7,6 +7,7 @@
 
 <script>
   import { Replayer } from 'rrweb';
+  import 'rrweb/dist/rrweb.min.css';
   import { inlineCss } from './utils.js';
 
   export default {
@@ -93,27 +94,5 @@
 
   :global(.replayer-wrapper > iframe) {
     border: none;
-  }
-
-  /* get from rrweb */
-  :global(.replayer-wrapper) {
-    position: relative;
-  }
-
-  :global(.replayer-mouse) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-  }
-
-  :global(.replayer-mouse::after) {
-    content: '';
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 10px;
-    background: thistle;
-    transform: translate(-10px, -10px);
-    opacity: 0.5;
   }
 </style>
