@@ -1,7 +1,4 @@
 {
   "non-interactive": true,
-  "buildCommand": "npm run bundle",
-  "src": {
-    "tag": "false"
-  }
+  "buildCommand": "npm run bundle"
 }

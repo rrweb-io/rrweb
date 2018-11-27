@@ -14,13 +14,6 @@ function getCode(): string {
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
-function safeStringify(obj: Object): string {
-  return JSON.stringify(obj)
-    .replace(/&/g, '&amp')
-    .replace(/</g, '&lt')
-    .replace(/>/g, '&gt');
-}
-
 (async () => {
   const code = getCode();
 
@@ -117,7 +110,7 @@ function safeStringify(obj: Object): string {
       path: path.resolve(__dirname, '../dist/rrweb.min.css'),
     });
     await page.evaluate(`${code}
-      const events = ${safeStringify(events)};
+      const events = ${JSON.stringify(events)};
       const replayer = new rrweb.Replayer(events);
       replayer.play();
     `);
@@ -146,8 +139,13 @@ function safeStringify(obj: Object): string {
   <body>
     <script src="../dist/rrweb.min.js"></script>
     <script>
-      const data = ${safeStringify({ events })}
-      const replayer = new rrweb.Replayer(data.events);
+      /*<!--*/
+      const events = ${JSON.stringify(events).replace(
+        /<\/script>/g,
+        '<\\/script>',
+      )};
+      /*-->*/
+      const replayer = new rrweb.Replayer(events);
       replayer.play();
     </script>
   </body>
