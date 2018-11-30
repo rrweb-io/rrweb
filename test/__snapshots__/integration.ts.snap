@@ -76,7 +76,7 @@ exports[`[html file]: form-fields.html 1`] = `
       <input type=\\"checkbox\\" checked=\\"\\" />
     </label>
     <label for=\\"textarea\\">
-      <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\" value=\\"1234\\">1234</textarea>
+      <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
     </label>
     <label for=\\"select\\">
       <select name=\\"\\" id=\\"\\" value=\\"2\\">
@@ -162,7 +162,7 @@ exports[`[html file]: with-style-sheet.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet</title>
-  <style _csstext=\\"body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }\\">body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }</style>
+  <style>body { margin: 0px; background: url('http://localhost:3030/a.jpg'); }p { color: red; background: url('http://localhost:3030/css/b.jpg'); }body &gt; p { color: yellow; }</style>
 </head><body>
 </body></html>"
 `;
