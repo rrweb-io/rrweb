@@ -7,6 +7,7 @@ import {
   eventWithTime,
   recordOptions,
   IncrementalSource,
+  listenerHandler,
 } from '../types';
 
 function wrapEvent(e: event): eventWithTime {
@@ -16,21 +17,24 @@ function wrapEvent(e: event): eventWithTime {
   };
 }
 
-function record(options: recordOptions = {}) {
+function record(options: recordOptions = {}): listenerHandler | undefined {
   const { emit } = options;
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
   }
   try {
-    on('DOMContentLoaded', () => {
-      emit(
-        wrapEvent({
-          type: EventType.DomContentLoaded,
-          data: {},
-        }),
-      );
-    });
+    const handlers: listenerHandler[] = [];
+    handlers.push(
+      on('DOMContentLoaded', () => {
+        emit(
+          wrapEvent({
+            type: EventType.DomContentLoaded,
+            data: {},
+          }),
+        );
+      }),
+    );
     const init = () => {
       emit(
         wrapEvent({
@@ -59,68 +63,70 @@ function record(options: recordOptions = {}) {
           },
         }),
       );
-      initObservers({
-        mutationCb: m =>
-          emit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.Mutation,
-                ...m,
-              },
-            }),
-          ),
-        mousemoveCb: positions =>
-          emit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.MouseMove,
-                positions,
-              },
-            }),
-          ),
-        mouseInteractionCb: d =>
-          emit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.MouseInteraction,
-                ...d,
-              },
-            }),
-          ),
-        scrollCb: p =>
-          emit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.Scroll,
-                ...p,
-              },
-            }),
-          ),
-        viewportResizeCb: d =>
-          emit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.ViewportResize,
-                ...d,
-              },
-            }),
-          ),
-        inputCb: v =>
-          emit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.Input,
-                ...v,
-              },
-            }),
-          ),
-      });
+      handlers.push(
+        initObservers({
+          mutationCb: m =>
+            emit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.Mutation,
+                  ...m,
+                },
+              }),
+            ),
+          mousemoveCb: positions =>
+            emit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.MouseMove,
+                  positions,
+                },
+              }),
+            ),
+          mouseInteractionCb: d =>
+            emit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.MouseInteraction,
+                  ...d,
+                },
+              }),
+            ),
+          scrollCb: p =>
+            emit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.Scroll,
+                  ...p,
+                },
+              }),
+            ),
+          viewportResizeCb: d =>
+            emit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.ViewportResize,
+                  ...d,
+                },
+              }),
+            ),
+          inputCb: v =>
+            emit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.Input,
+                  ...v,
+                },
+              }),
+            ),
+        }),
+      );
     };
     if (
       document.readyState === 'interactive' ||
@@ -128,20 +134,25 @@ function record(options: recordOptions = {}) {
     ) {
       init();
     } else {
-      on(
-        'load',
-        () => {
-          emit(
-            wrapEvent({
-              type: EventType.Load,
-              data: {},
-            }),
-          );
-          init();
-        },
-        window,
+      handlers.push(
+        on(
+          'load',
+          () => {
+            emit(
+              wrapEvent({
+                type: EventType.Load,
+                data: {},
+              }),
+            );
+            init();
+          },
+          window,
+        ),
       );
     }
+    return () => {
+      handlers.forEach(h => h());
+    };
   } catch (error) {
     // TODO: handle internal error
     console.warn(error);

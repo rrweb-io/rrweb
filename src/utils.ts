@@ -11,8 +11,9 @@ export function on(
   fn: EventListenerOrEventListenerObject,
   target: Document | Window = document,
 ): listenerHandler {
-  target.addEventListener(type, fn, { capture: true, passive: true });
-  return () => target.removeEventListener(type, fn);
+  const options = { capture: true, passive: true };
+  target.addEventListener(type, fn, options);
+  return () => target.removeEventListener(type, fn, options);
 }
 
 export const mirror: Mirror = {

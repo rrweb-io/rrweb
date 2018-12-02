@@ -365,7 +365,7 @@ function initInputObserver(cb: inputCallback): listenerHandler {
   };
 }
 
-export default function initObservers(o: observerParam) {
+export default function initObservers(o: observerParam): listenerHandler {
   const mutationObserver = initMutationObserver(o.mutationCb);
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
   const mouseInteractionHandler = initMouseInteractionObserver(
@@ -374,12 +374,12 @@ export default function initObservers(o: observerParam) {
   const scrollHandler = initScrollObserver(o.scrollCb);
   const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
   const inputHandler = initInputObserver(o.inputCb);
-  return {
-    mutationObserver,
-    mousemoveHandler,
-    mouseInteractionHandler,
-    scrollHandler,
-    viewportResizeHandler,
-    inputHandler,
+  return () => {
+    mutationObserver.disconnect();
+    mousemoveHandler();
+    mouseInteractionHandler();
+    scrollHandler();
+    viewportResizeHandler();
+    inputHandler();
   };
 }
