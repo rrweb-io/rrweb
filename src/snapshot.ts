@@ -206,6 +206,8 @@ export function serializeNodeWithId(
   let recordChild = !skipChild;
   if (serializedNode.type === NodeType.Element) {
     recordChild = recordChild && !serializedNode.needBlock;
+    // this property was not needed in replay side
+    delete serializedNode.needBlock;
   }
   if (
     (serializedNode.type === NodeType.Document ||
