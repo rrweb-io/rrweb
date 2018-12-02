@@ -230,4 +230,21 @@ describe('record integration tests', () => {
     );
     assert(result.pass, result.pass ? '' : result.report());
   }).timeout(10000);
+
+  it('should not record input events on ignored elements', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'ignore.html'));
+
+    await page.type('input[type="password"]', 'password');
+    await page.type('.rr-ignore', 'secret');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    const result = matchSnapshot(
+      stringifySnapshots(snapshots),
+      __filename,
+      'ignore',
+    );
+    assert(result.pass, result.pass ? '' : result.report());
+  });
 });

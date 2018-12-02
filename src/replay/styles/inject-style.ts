@@ -1,5 +1,5 @@
 const rules: string[] = [
-  'iframe { background: #ccc }',
+  'iframe, .rr-block { background: #ccc }',
   'noscript { display: none !important; }',
 ];
 

@@ -291,6 +291,7 @@ const HOOK_PROPERTIES: Array<[HTMLElement, string]> = [
   [HTMLSelectElement.prototype, 'value'],
   [HTMLTextAreaElement.prototype, 'value'],
 ];
+const IGNORE_CLASS = 'rr-ignore';
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(cb: inputCallback): listenerHandler {
   function eventHandler(event: Event) {
@@ -303,6 +304,12 @@ function initInputObserver(cb: inputCallback): listenerHandler {
       return;
     }
     const type: string | undefined = (target as HTMLInputElement).type;
+    if (
+      type === 'password' ||
+      (target as HTMLElement).classList.contains(IGNORE_CLASS)
+    ) {
+      return;
+    }
     const text = (target as HTMLInputElement).value;
     let isChecked = false;
     if (type === 'radio' || type === 'checkbox') {

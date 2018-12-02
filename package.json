@@ -54,6 +54,6 @@
   },
   "dependencies": {
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.6.8"
+    "rrweb-snapshot": "^0.6.10"
   }
 }
