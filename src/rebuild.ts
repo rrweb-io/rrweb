@@ -53,7 +53,8 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
         node = doc.createElement(tagName);
       }
       for (const name in n.attributes) {
-        if (n.attributes.hasOwnProperty(name)) {
+        // attribute names start with rr_ are internal attributes added by rrweb
+        if (n.attributes.hasOwnProperty(name) && !name.startsWith('rr_')) {
           let value = n.attributes[name];
           value = typeof value === 'boolean' ? '' : value;
           const isTextarea = tagName === 'textarea' && name === 'value';
@@ -73,6 +74,15 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
             node.setAttribute(name, value);
           } catch (error) {
             // skip invalid attribute
+          }
+        } else {
+          // handle internal attributes
+          if (n.attributes.rr_width) {
+            (node as HTMLElement).style.width = n.attributes.rr_width as string;
+          }
+          if (n.attributes.rr_height) {
+            (node as HTMLElement).style.height = n.attributes
+              .rr_height as string;
           }
         }
       }

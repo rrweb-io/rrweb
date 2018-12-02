@@ -48,6 +48,31 @@ exports[`[html file]: basic.html 1`] = `
 </head><body></body></html>"
 `;
 
+exports[`[html file]: block-element.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>Document</title>
+    <style>
+      .big {
+        width: 50px;
+        height: 50px;
+      }
+      .small {
+        width: 50px;
+        height: 100px;
+        float: left;
+      }
+    </style>
+  </head>  <body>
+    <div class=\\"rr-block big\\" style=\\"width: 50px; height: 50px;\\"></div>
+    <div>record 2</div>
+    <div class=\\"rr-block small\\" style=\\"width: 50px; height: 100px;\\"></div>
+    <div class=\\"rr-block\\" style=\\"height: 200px; width: 100px\\"></div>
+  </body></html>"
+`;
+
 exports[`[html file]: cors-style-sheet.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />

@@ -78,6 +78,7 @@ function isSVGElement(el: Element): boolean {
   return el.tagName === 'svg' || el instanceof SVGElement;
 }
 
+const BLOCK_CLASS = 'rr-block';
 function serializeNode(n: Node, doc: Document): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -93,6 +94,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         systemId: (n as DocumentType).systemId,
       };
     case n.ELEMENT_NODE:
+      const needBlock = (n as HTMLElement).classList.contains(BLOCK_CLASS);
       const tagName = (n as HTMLElement).tagName.toLowerCase();
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
@@ -138,12 +140,18 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
           attributes.selected = (n as HTMLOptionElement).selected;
         }
       }
+      if (needBlock) {
+        const { width, height } = (n as HTMLElement).getBoundingClientRect();
+        attributes.rr_width = `${width}px`;
+        attributes.rr_height = `${height}px`;
+      }
       return {
         type: NodeType.Element,
         tagName,
         attributes,
         childNodes: [],
         isSVG: isSVGElement(n as Element) || undefined,
+        needBlock,
       };
     case n.TEXT_NODE:
       // The parent node may not be a html element which has a tagName attribute.
@@ -195,10 +203,14 @@ export function serializeNodeWithId(
   });
   (n as INode).__sn = serializedNode;
   map[serializedNode.id] = n as INode;
+  let recordChild = !skipChild;
+  if (serializedNode.type === NodeType.Element) {
+    recordChild = recordChild && !serializedNode.needBlock;
+  }
   if (
     (serializedNode.type === NodeType.Document ||
       serializedNode.type === NodeType.Element) &&
-    !skipChild
+    recordChild
   ) {
     for (const childN of Array.from(n.childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, doc, map);
