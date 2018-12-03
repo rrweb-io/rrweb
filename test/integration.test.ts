@@ -214,7 +214,12 @@ describe('record integration tests', () => {
 
   it('can record node mutations', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
-    await page.goto(`data:text/html,${getHtml.call(this, 'select2.html')}`, {
+    await page.goto('about:blank');
+    // FIXME: use setContent directly when @types/puppeteer update
+    const setContent = async (html: string, options: any) => {
+      return page.setContent.call(page, html, options);
+    };
+    await setContent(getHtml.call(this, 'select2.html'), {
       waitUntil: 'networkidle0',
     });
 
