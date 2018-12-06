@@ -3,7 +3,6 @@ import * as mittProxy from 'mitt';
 import Timer from './timer';
 import {
   EventType,
-  incrementalData,
   IncrementalSource,
   fullSnapshotEvent,
   eventWithTime,
@@ -15,6 +14,7 @@ import {
   addedNodeMutation,
   missingNode,
   actionWithDelay,
+  incrementalSnapshotEvent,
 } from '../types';
 import { mirror } from '../utils';
 import injectStyleRules from './styles/inject-style';
@@ -27,7 +27,7 @@ const mitt = (mittProxy as any).default || mittProxy;
 const defaultConfig: playerConfig = {
   speed: 1,
   root: document.body,
-  loadTimeout: 10 * 1000,
+  loadTimeout: 0,
 };
 
 export class Replayer {
@@ -158,14 +158,7 @@ export class Replayer {
       const firstOffset = event.data.positions[0].timeOffset;
       // timeOffset is a negative offset to event.timestamp
       const firstTimestamp = event.timestamp + firstOffset;
-      const delay = firstTimestamp - this.baselineTime;
-      event.data.positions = event.data.positions.map(p => {
-        return {
-          ...p,
-          timeOffset: p.timeOffset - firstOffset + delay,
-        };
-      });
-      return delay;
+      return firstTimestamp - this.baselineTime;
     }
     return event.timestamp - this.baselineTime;
   }
@@ -191,7 +184,7 @@ export class Replayer {
         break;
       case EventType.IncrementalSnapshot:
         castFn = () => {
-          this.applyIncremental(event.data, isSync);
+          this.applyIncremental(event, isSync);
         };
         break;
       default:
@@ -255,7 +248,11 @@ export class Replayer {
     }
   }
 
-  private applyIncremental(d: incrementalData, isSync: boolean) {
+  private applyIncremental(
+    e: incrementalSnapshotEvent & { timestamp: number },
+    isSync: boolean,
+  ) {
+    const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
         d.removes.forEach(mutation => {
@@ -351,7 +348,7 @@ export class Replayer {
                   this.hoverElements((target as Node) as Element);
                 }
               },
-              delay: p.timeOffset,
+              delay: p.timeOffset + e.timestamp - this.baselineTime,
             };
             this.timer.addAction(action);
           });
