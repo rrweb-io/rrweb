@@ -21,7 +21,7 @@
   opacity: 0.3;
 }
 .replayer-mouse.active::after {
-  animation: click 0.3s ease-in-out 1;
+  animation: click 0.2s ease-in-out 1;
 }
 
 @keyframes click {

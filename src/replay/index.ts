@@ -105,6 +105,7 @@ export class Replayer {
 
   public pause() {
     this.timer.clear();
+    this.emitter.emit('pause');
   }
 
   public resume(timeOffset = 0) {
@@ -126,6 +127,7 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
+    this.emitter.emit('resume');
   }
 
   private setupDom() {
