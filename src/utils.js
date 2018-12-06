@@ -25,7 +25,7 @@ export function formatTime(ms) {
   ms = ms % HOUR;
   const minute = Math.floor(ms / MINUTE);
   ms = ms % MINUTE;
-  const second = Math.floor(ms / SECOND);
+  const second = Math.round(ms / SECOND);
   if (hour) {
     return `${padZero(hour)}:${padZero(minute)}:${padZero(minute)}`;
   }

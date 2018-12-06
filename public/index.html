@@ -1,39 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="width=device-width" />
 
-<head>
-  <meta charset='utf8'>
-  <meta name='viewport' content='width=device-width'>
+    <title>dev panel</title>
 
-  <title>dev panel</title>
+    <link rel="stylesheet" href="./global.css" />
+    <link rel="stylesheet" href="./bundle.css" />
+  </head>
 
-  <link rel='stylesheet' href='./global.css'>
-  <link rel="stylesheet" href="./bundle.css">
-</head>
-
-<body>
-  <script src="./bundle.js"></script>
-  <script src="./bundle.events.js"></script>
-  <script>
-    const queryObj = {
-      sessionId: 'e2c7cfe8-d868-4f11-b561-5a969da26334',
-    };
-    let query = '';
-    Object.keys(queryObj).forEach(key => {
-      query += `${key}=${queryObj[key]}&`;
-    });
-    fetch(`http://192.168.17.205:9090/api/events?${query}`)
-      .then(res => res.json())
-      .then(data => {
-        // eslint-disable-next-line
-        new rrwebPlayer({
-          target: document.body,
-          data: {
-            events: data.events,
-          },
-        });
+  <body>
+    <script src="./bundle.js"></script>
+    <script src="./bundle.events.js"></script>
+    <script>
+      const queryObj = {
+        sessionId: '8874be03-bf8f-411e-862a-64ea7f950026',
+      };
+      let query = '';
+      Object.keys(queryObj).forEach(key => {
+        query += `${key}=${queryObj[key]}&`;
       });
-  </script>
-</body>
-
+      fetch(`http://192.168.17.205:9090/api/events?${query}`)
+        .then(res => res.json())
+        .then(data => {
+          // eslint-disable-next-line
+          new rrwebPlayer({
+            target: document.body,
+            data: {
+              events: data.events,
+            },
+          });
+        });
+    </script>
+  </body>
 </html>

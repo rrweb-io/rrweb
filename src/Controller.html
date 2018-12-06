@@ -4,21 +4,47 @@
     <span class="rr-timeline__time">{formatTime(currentTime)}</span>
     <div class="rr-progress">
       <div class="rr-progress__step" ref:step style="width: {percentage}"></div>
-      <div class="rr-progress__handler" ref:handler style="left: {percentage}"></div>
+      <div
+        class="rr-progress__handler"
+        ref:handler
+        style="left: {percentage}"
+      ></div>
     </div>
     <span class="rr-timeline__time">{formatTime(meta.totalTime)}</span>
   </div>
   <div class="rr-controller__btns">
     <button on:click="toggle()">
       {#if isPlaying}
-      <svg t="1541411313529" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16">
-        <path d="M682.65984 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0 512q0 53.00224-37.49888 90.50112t-90.50112 37.49888-90.50112-37.49888-37.49888-90.50112l0-512q0-53.00224 37.49888-90.50112t90.50112-37.49888zM341.34016 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0 512q0 53.00224-37.49888 90.50112t-90.50112 37.49888-90.50112-37.49888-37.49888-90.50112l0-512q0-53.00224 37.49888-90.50112t90.50112-37.49888zM341.34016 213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0 17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928 12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928zM682.65984 213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0 17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928 12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928z"></path>
+      <svg
+        t="1541411313529"
+        class="icon"
+        style=""
+        viewBox="0 0 1024 1024"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        width="16"
+        height="16"
+      >
+        <path
+          d="M682.65984 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0 512q0 53.00224-37.49888 90.50112t-90.50112 37.49888-90.50112-37.49888-37.49888-90.50112l0-512q0-53.00224 37.49888-90.50112t90.50112-37.49888zM341.34016 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0 512q0 53.00224-37.49888 90.50112t-90.50112 37.49888-90.50112-37.49888-37.49888-90.50112l0-512q0-53.00224 37.49888-90.50112t90.50112-37.49888zM341.34016 213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0 17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928 12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928zM682.65984 213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0 17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928 12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928z"
+        ></path>
       </svg>
       {:else}
-      <svg t="1541410561137" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="16">
-        <path d="M170.65984 896l0-768 640 384zM644.66944 512l-388.66944-233.32864 0 466.65728z"></path>
+      <svg
+        t="1541410561137"
+        class="icon"
+        style=""
+        viewBox="0 0 1024 1024"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        width="16"
+        height="16"
+      >
+        <path
+          d="M170.65984 896l0-768 640 384zM644.66944 512l-388.66944-233.32864 0 466.65728z"
+        ></path>
       </svg>
       {/if}
     </button>
@@ -87,7 +113,6 @@
         } else {
           replayer.play(currentTime);
         }
-        this.loopTimer();
       },
       pause() {
         const { replayer } = this.get();
@@ -95,7 +120,6 @@
       },
       toggle() {
         const { isPlaying } = this.get();
-        this.set({ isPlaying: !isPlaying });
         if (isPlaying) {
           this.pause();
         } else {
@@ -113,6 +137,17 @@
         // auto play
         this.set({ isPlaying: true });
         this.play();
+        current.replayer.on('pause', () => {
+          this.set({ isPlaying: false });
+        });
+        current.replayer.on('resume', () => {
+          this.set({ isPlaying: true });
+        });
+      }
+      if (changed.isPlaying) {
+        if (current.isPlaying) {
+          this.loopTimer();
+        }
       }
     },
     ondestroy() {
@@ -139,7 +174,7 @@
   .rr-timeline {
     width: 80%;
     display: flex;
-    align-items: center
+    align-items: center;
   }
 
   .rr-timeline__time {
@@ -160,7 +195,7 @@
     position: absolute;
     left: 0;
     top: 0;
-    background: #E0E1FE;
+    background: #e0e1fe;
   }
 
   .rr-progress__handler {
@@ -191,7 +226,7 @@
   }
 
   .rr-controller__btns button:active {
-    background: #E0E1FE;
+    background: #e0e1fe;
   }
 
   .rr-controller__btns button.active {
