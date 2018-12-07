@@ -111,6 +111,7 @@
         if (currentTime > 0) {
           replayer.resume(currentTime);
         } else {
+          this.set({ isPlaying: true });
           replayer.play(currentTime);
         }
       },
@@ -135,8 +136,10 @@
     onupdate({ changed, current, previous }) {
       if (current.replayer && !previous) {
         // auto play
-        this.set({ isPlaying: true });
-        this.play();
+        setTimeout(() => {
+          this.set({ isPlaying: true });
+        }, 0);
+        current.replayer.play(0);
         current.replayer.on('pause', () => {
           this.set({ isPlaying: false });
         });

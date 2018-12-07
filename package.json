@@ -16,7 +16,7 @@
     "svelte": "^2.13.5"
   },
   "dependencies": {
-    "rrweb": "file:../rrweb"
+    "rrweb": "^0.6.5"
   },
   "scripts": {
     "build": "rollup -c",
