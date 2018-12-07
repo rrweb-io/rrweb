@@ -380,7 +380,9 @@ export class Replayer {
           void this.mouse.offsetWidth;
           this.mouse.classList.add('active');
         } else if (d.type === MouseInteractions.Focus) {
-          target.focus();
+          target.focus({
+            preventScroll: true,
+          });
         } else {
           target.dispatchEvent(event);
         }
