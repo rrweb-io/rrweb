@@ -87,6 +87,7 @@
         function update(step) {
           let { currentTime, meta, isPlaying, speed } = self.get();
           if (!isPlaying) {
+            self.timer = null;
             return;
           }
 
@@ -100,11 +101,12 @@
           if (currentTime < meta.totalTime) {
             requestAnimationFrame(update);
           } else {
+            self.timer = null;
             self.set({ isPlaying: false, currentTime: 0 });
           }
         }
 
-        requestAnimationFrame(update);
+        this.timer = requestAnimationFrame(update);
       },
       play() {
         const { replayer, currentTime } = this.get();
@@ -148,7 +150,7 @@
         });
       }
       if (changed.isPlaying) {
-        if (current.isPlaying) {
+        if (current.isPlaying && !this.timer) {
           this.loopTimer();
         }
       }
