@@ -111,6 +111,7 @@ export class Replayer {
 
   public resume(timeOffset = 0) {
     this.timer.clear();
+    this.baselineTime = this.events[0].timestamp + timeOffset;
     const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
       if (
@@ -119,11 +120,10 @@ export class Replayer {
       ) {
         continue;
       }
-      const delayToBaseline = this.getDelay(event);
       const castFn = this.getCastFn(event);
       actions.push({
         doAction: castFn,
-        delay: delayToBaseline - timeOffset,
+        delay: this.getDelay(event),
       });
     }
     this.timer.addActions(actions);
