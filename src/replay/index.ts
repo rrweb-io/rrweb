@@ -366,26 +366,32 @@ export class Replayer {
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
         const target = (mirror.getNode(d.id) as Node) as HTMLElement;
-        if (d.type === MouseInteractions.Blur) {
-          target.blur();
-        } else if (d.type === MouseInteractions.Click) {
-          /**
-           * Click has no visual impact when replaying and may
-           * trigger navigation when apply to an <a> link.
-           * So we will not call click(), instead we add an
-           * animation to the mouse element which indicate user
-           * clicked at this moment.
-           */
-          this.mouse.classList.remove('active');
-          // tslint:disable-next-line
-          void this.mouse.offsetWidth;
-          this.mouse.classList.add('active');
-        } else if (d.type === MouseInteractions.Focus) {
-          target.focus({
-            preventScroll: true,
-          });
-        } else {
-          target.dispatchEvent(event);
+        switch (d.type) {
+          case MouseInteractions.Blur:
+            target.blur();
+            break;
+          case MouseInteractions.Focus:
+            target.focus({
+              preventScroll: true,
+            });
+            break;
+          case MouseInteractions.Click:
+            /**
+             * Click has no visual impact when replaying and may
+             * trigger navigation when apply to an <a> link.
+             * So we will not call click(), instead we add an
+             * animation to the mouse element which indicate user
+             * clicked at this moment.
+             */
+            if (!isSync) {
+              this.mouse.classList.remove('active');
+              // tslint:disable-next-line
+              void this.mouse.offsetWidth;
+              this.mouse.classList.add('active');
+            }
+            break;
+          default:
+            target.dispatchEvent(event);
         }
         break;
       }
