@@ -2,7 +2,7 @@
 <div class="rr-controller">
   <div class="rr-timeline">
     <span class="rr-timeline__time">{formatTime(currentTime)}</span>
-    <div class="rr-progress">
+    <div class="rr-progress" ref:progress on:click="handleProgressClick(event)">
       <div class="rr-progress__step" ref:step style="width: {percentage}"></div>
       <div
         class="rr-progress__handler"
@@ -134,6 +134,23 @@
         replayer.setConfig({ speed });
         this.set({ speed });
       },
+      handleProgressClick(event) {
+        const progressRect = this.refs.progress.getBoundingClientRect();
+        const x = event.clientX - progressRect.left;
+        let percent = x / progressRect.width;
+        if (percent < 0) {
+          percent = 0;
+        } else if (percent > 1) {
+          percent = 1;
+        }
+        const { meta, replayer, isPlaying } = this.get();
+        const timeOffset = meta.totalTime * percent;
+        this.set({ currentTime: timeOffset });
+        replayer.play(timeOffset);
+        if (!isPlaying) {
+          replayer.pause();
+        }
+      },
     },
     onupdate({ changed, current, previous }) {
       if (current.replayer && !previous) {
@@ -193,6 +210,7 @@
     background: #eee;
     position: relative;
     border-radius: 3px;
+    cursor: pointer;
   }
 
   .rr-progress__step {
