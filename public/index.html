@@ -12,26 +12,15 @@
 
   <body>
     <script src="./bundle.js"></script>
-    <script src="./bundle.events.js"></script>
+    <script src="./events.js"></script>
     <script>
-      const queryObj = {
-        sessionId: '8874be03-bf8f-411e-862a-64ea7f950026',
-      };
-      let query = '';
-      Object.keys(queryObj).forEach(key => {
-        query += `${key}=${queryObj[key]}&`;
+      // eslint-disable-next-line
+      new rrwebPlayer({
+        target: document.body,
+        data: {
+          events,
+        },
       });
-      fetch(`http://192.168.17.205:9090/api/events?${query}`)
-        .then(res => res.json())
-        .then(data => {
-          // eslint-disable-next-line
-          new rrwebPlayer({
-            target: document.body,
-            data: {
-              events: data.events,
-            },
-          });
-        });
     </script>
   </body>
 </html>
