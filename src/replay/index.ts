@@ -88,6 +88,7 @@ export class Replayer {
    * @param timeOffset number
    */
   public play(timeOffset = 0) {
+    this.timer.clear();
     this.baselineTime = this.events[0].timestamp + timeOffset;
     const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
@@ -113,7 +114,7 @@ export class Replayer {
     const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
       if (
-        event.timestamp < this.lastPlayedEvent.timestamp ||
+        event.timestamp <= this.lastPlayedEvent.timestamp ||
         event === this.lastPlayedEvent
       ) {
         continue;
