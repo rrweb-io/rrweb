@@ -3,6 +3,7 @@ import { playerConfig, actionWithDelay } from '../types';
 export default class Timer {
   private actions: actionWithDelay[];
   private config: playerConfig;
+  private raf: number;
 
   constructor(config: playerConfig, actions: actionWithDelay[] = []) {
     this.actions = actions;
@@ -29,6 +30,7 @@ export default class Timer {
     let delayed = 0;
     const start = performance.now();
     const { actions, config } = this;
+    const self = this;
     function check(time: number) {
       delayed = time - start;
       while (actions.length) {
@@ -42,13 +44,16 @@ export default class Timer {
         }
       }
       if (actions.length > 0) {
-        requestAnimationFrame(check);
+        self.raf = requestAnimationFrame(check);
       }
     }
-    requestAnimationFrame(check);
+    this.raf = requestAnimationFrame(check);
   }
 
   public clear() {
+    if (this.raf) {
+      cancelAnimationFrame(this.raf);
+    }
     this.actions.length = 0;
   }
 
