@@ -1,63 +1,63 @@
 # rrweb
 
-rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
+[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 
-**目前 rrweb 已经解决了许多录制与回放中的难点问题，但在 1.0 版本 release 之前数据结构仍有可能发生变化，请谨慎用于生产环境中。**
+[中文文档](./README.zh_CN.md)
 
-## 项目结构
+rrweb means 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
-rrweb 主要由 3 部分组成：
+**Currently, rrweb has already solved many difficult problems in recording and replaying, but the data structure may still be changed before the release of version 1.0. So please be cautious to use rrweb in the production environment.**
 
-- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb-snapshot)**，包含 snapshot 和 rebuild 两个功能。snapshot 用于将 DOM 及其状态转化为可序列化的数据结构并添加唯一标识；rebuild 则是将 snapshot 记录的数据结构重建为对应的 DOM。
-- **[rrweb](https://github.com/rrweb-io/rrweb)**，包含 record 和 replay 两个功能。record 用于记录 DOM 中的所有变更（mutation）；replay 则是将记录的变更按照对应的时间一一重放。
-- **[rrweb-player](https://github.com/rrweb-io/rrweb-player)**，为 rrweb player 提供一套 UI 控件，提供基于 GUI 的暂停、快进、拖拽至任意时间点播放等功能。
+## Project structure
+
+rrweb is mainly composed of 3 parts:
+
+- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb-snapshot)**, including both snapshot and rebuild features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuild is to rebuild the snapshot into corresponding DOM.
+- **[rrweb](https://github.com/rrweb-io/rrweb)**, including two functions, record and replay. The record function is used to record all the mutations in the DOM; the replay is to replay the recorded mutations one by one according to the corresponding timestamp.
+- **[rrweb-player](https://github.com/rrweb-io/rrweb-player)**, is a player UI for rrweb, providing GUI-based functions like pause, fast-forward, drag and drop to play at any time.
 
 ## Roadmap
 
 - rrweb
-  - 处理跨域请求错误
-  - 转移至 web worker 中执行
-  - 实现传输数据压缩
-  - 验证移动端录制效果
+  - handling cross-domain request errors
+  - record in web worker
+  - implement transmission data compression
+  - verify recording in mobile browser
 - rrweb-player
-  - 改进播放器 UI 样式
-  - 实现高效的进度条拖拽功能
-  - 增加全屏模式
+  - implement efficient progress bar drag and drop control
+  - add full screen mode
 - extensions
-  - 劫持 console API，记录对应的事件
-  - 劫持 Ajax/fetch API，记录请求事件
-  - 封装 TraceKit，记录异常事件
-- 测试
-  - 补充更多单元测试
-  - 随机在更多网站上运行集成测试
+  - hijack the console API and record corresponding events
+  - hijack Ajax/fetch API and record request events
+  - use TraceKit to log exception events
 
 ## Internal Design
 
-- [序列化](./docs/serialization.md)
-- [增量快照](./docs/observer.md)
-- [回放](./docs/replay.md)
-- [沙盒](./docs/sandbox.md)
+- [serialization](./docs/serialization.md)
+- [incremental snapshot](./docs/observer.md)
+- [replay](./docs/replay.md)
+- [sandbox](./docs/sandbox.md)
 
 ## Contribute Guide
 
-为了保证录制和回放时可以对应到一致的数据结构，rrweb 采用 typescript 开发以提供更强的类型支持。
+Since we want the record and replay sides can share a strongly typed data structure, rrweb is developed with typescript which provide stronger type support.
 
-[Typescript 手册](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
+[Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
-1. Fork 需要修改的 rrweb 组件仓库
-2. `npm install` 安装所需依赖
-3. 修改代码并通过测试
-4. 提交代码，创建 pull request
+1. Fork the rrweb component repository you want to patch.
+2. Run `npm install` to install required dependencies.
+3. Patch the code and pass all the tests.
+4. Push the code and create a pull request.
 
-除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
+In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
-运行 `npm run repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
+Run `npm run repl` will launch a browser and ask for a URL you want to test on the CLI:
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io:
 ```
 
-输入后等待浏览器打开指定页面，并在命令行中出现以下提示信息：
+Waiting for the browser to open the specified page and print following messages on the CLI:
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
@@ -66,18 +66,18 @@ Ready to record. You can do any interaction on the page.
 Once you want to finish the recording, enter 'y' to start replay:
 ```
 
-此时可以在页面中进行交互，待所需录制操作完成后，在命令行输入 y，测试工具就会将刚刚的操作进行回放，用于验证录制是否成功。
+At this point, you can interact in the web page. After the desired operations has been recorded, enter 'y' on the CLI, and the test tool will replay the operations to verify whether the recording was successful.
 
-回放时命令行中将出现以下提示信息：
+The following messages will be printed on the CLI during replay:
 
 ```
 Enter 'y' to persistently store these recorded events:
 ```
 
-此时可以再次在命令行中输入 y，测试工具将把已录制的内容存入一个静态 HTML 文件中，并提示存放位置：
+At this point, you can enter 'y' again on the CLI. The test tool will save the recorded session into a static HTML file and prompt for the location:
 
 ```
 Saved at PATH_TO_YOUR_REPO/temp/replay_2018_11_23T07_53_30.html
 ```
 
-该文件默认使用最新 bundle 的 rrweb 代码，所以我们可以在修改代码后运行 `npm run bundle:browser`，之后刷新静态文件就可以查看最新代码对回放的影响并进行调试。
+This file use the latest rrweb bundle code, so we can run `npm run bundle:browser` after patching the code, then refresh the static file to see and debug the impact of the latest code on replay.
