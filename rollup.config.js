@@ -21,7 +21,7 @@ let configs = [
     plugins: [typescript(), resolve()],
     output: [
       {
-        name: 'record',
+        name: 'rrwebRecord',
         format: 'iife',
         file: toRecordPath(pkg.unpkg),
       },
@@ -32,7 +32,7 @@ let configs = [
     plugins: [typescript(), resolve(), terser()],
     output: [
       {
-        name: 'record',
+        name: 'rrwebRecord',
         format: 'iife',
         file: toMinPath(toRecordPath(pkg.unpkg)),
         sourcemap: true,
