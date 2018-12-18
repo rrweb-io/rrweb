@@ -52,33 +52,4 @@ rrweb 主要由 3 部分组成：
 
 除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
 
-运行 `npm run repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
-
-```
-Enter the url you want to record, e.g https://react-redux.realworld.io:
-```
-
-输入后等待浏览器打开指定页面，并在命令行中出现以下提示信息：
-
-```
-Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
-Going to open https://github.com...
-Ready to record. You can do any interaction on the page.
-Once you want to finish the recording, enter 'y' to start replay:
-```
-
-此时可以在页面中进行交互，待所需录制操作完成后，在命令行输入 y，测试工具就会将刚刚的操作进行回放，用于验证录制是否成功。
-
-回放时命令行中将出现以下提示信息：
-
-```
-Enter 'y' to persistently store these recorded events:
-```
-
-此时可以再次在命令行中输入 y，测试工具将把已录制的内容存入一个静态 HTML 文件中，并提示存放位置：
-
-```
-Saved at PATH_TO_YOUR_REPO/temp/replay_2018_11_23T07_53_30.html
-```
-
-该文件默认使用最新 bundle 的 rrweb 代码，所以我们可以在修改代码后运行 `npm run bundle:browser`，之后刷新静态文件就可以查看最新代码对回放的影响并进行调试。
+[使用 REPL 工具](./guide.zh_CN.md#REPL-工具)
