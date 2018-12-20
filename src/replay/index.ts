@@ -47,6 +47,8 @@ export class Replayer {
 
   private timer: Timer;
 
+  private missingNodeRetryMap: missingNodeMap = {};
+
   constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
     if (events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
@@ -197,6 +199,9 @@ export class Replayer {
         castFn();
       }
       this.lastPlayedEvent = event;
+      if (event === this.events[this.events.length - 1]) {
+        this.emitter.emit('finish');
+      }
     };
     return wrappedCastFn;
   }
@@ -204,6 +209,13 @@ export class Replayer {
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
   ) {
+    if (Object.keys(this.missingNodeRetryMap).length) {
+      console.warn(
+        'Found unresolved missing node map',
+        this.missingNodeRetryMap,
+      );
+    }
+    this.missingNodeRetryMap = {};
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
@@ -273,7 +285,7 @@ export class Replayer {
           }
         });
 
-        const missingNodeMap: missingNodeMap = {};
+        const missingNodeMap: missingNodeMap = { ...this.missingNodeRetryMap };
         d.adds.forEach(mutation => {
           const target = buildNodeWithSN(
             mutation.node,
@@ -316,7 +328,7 @@ export class Replayer {
           }
         });
         if (Object.keys(missingNodeMap).length) {
-          console.warn('Found unresolved missing node map', missingNodeMap);
+          Object.assign(this.missingNodeRetryMap, missingNodeMap);
         }
 
         d.texts.forEach(mutation => {
@@ -459,6 +471,7 @@ export class Replayer {
         parent.insertBefore(node, target.nextSibling);
       }
       delete map[mutation.node.id];
+      delete this.missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
         this.resolveMissingNode(map, parent, node as Node, mutation);
       }
