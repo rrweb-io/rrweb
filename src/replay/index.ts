@@ -463,13 +463,18 @@ export class Replayer {
     const { previousId, nextId } = targetMutation;
     const previousInMap = previousId && map[previousId];
     const nextInMap = nextId && map[nextId];
-    if (previousInMap || nextInMap) {
-      const { node, mutation } = (previousInMap || nextInMap) as missingNode;
-      if (previousInMap) {
-        parent.insertBefore(node, target);
-      } else {
-        parent.insertBefore(node, target.nextSibling);
+    if (previousInMap) {
+      const { node, mutation } = previousInMap as missingNode;
+      parent.insertBefore(node, target);
+      delete map[mutation.node.id];
+      delete this.missingNodeRetryMap[mutation.node.id];
+      if (mutation.previousId || mutation.nextId) {
+        this.resolveMissingNode(map, parent, node as Node, mutation);
       }
+    }
+    if (nextInMap) {
+      const { node, mutation } = nextInMap as missingNode;
+      parent.insertBefore(node, target.nextSibling);
       delete map[mutation.node.id];
       delete this.missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
