@@ -131,13 +131,31 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
       return remove;
     });
 
+    const isDropped = (n: Node): boolean => {
+      const { parentNode } = n;
+      if (!parentNode) {
+        return false;
+      }
+      if (dropped.some(d => d === parentNode)) {
+        return true;
+      }
+      return isDropped(parentNode);
+    };
+
+    const isRemoved = (n: Node): boolean => {
+      const { parentNode } = n;
+      if (!parentNode) {
+        return false;
+      }
+      const parentId = mirror.getId((parentNode as Node) as INode);
+      if (removes.some(r => r.id === parentId)) {
+        return true;
+      }
+      return isRemoved(parentNode);
+    };
+
     Array.from(addsSet).forEach(n => {
-      const parentId = mirror.getId((n.parentNode as Node) as INode);
-      if (
-        parentId &&
-        !dropped.some(d => d === n.parentNode) &&
-        !removes.some(r => r.id === parentId)
-      ) {
+      if (!isDropped(n) && !isRemoved(n)) {
         adds.push({
           parentId: mirror.getId((n.parentNode as Node) as INode),
           previousId: !n.previousSibling
