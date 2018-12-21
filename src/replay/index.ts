@@ -1,4 +1,4 @@
-import { rebuild, buildNodeWithSN, INode } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import Timer from './timer';
 import {
