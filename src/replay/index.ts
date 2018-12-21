@@ -1,4 +1,4 @@
-import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN, INode } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import Timer from './timer';
 import {
@@ -422,8 +422,15 @@ export class Replayer {
             behavior: isSync ? 'instant' : 'smooth',
           });
         } else {
-          (target as Element).scrollTop = d.y;
-          (target as Element).scrollLeft = d.x;
+          try {
+            (target as Element).scrollTop = d.y;
+            (target as Element).scrollLeft = d.x;
+          } catch (error) {
+            /**
+             * Seldomly we may found scroll target was removed before
+             * its last scroll event.
+             */
+          }
         }
         break;
       }
