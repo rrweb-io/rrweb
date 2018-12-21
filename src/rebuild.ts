@@ -112,6 +112,8 @@ export function buildNodeWithSN(
   }
   // use target document as root document
   if (n.type === NodeType.Document) {
+    // close before open to make sure document was closed
+    doc.close();
     doc.open();
     node = doc;
   }
