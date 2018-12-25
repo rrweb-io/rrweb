@@ -1,5 +1,6 @@
 import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
+import * as smoothscroll from 'smoothscroll-polyfill';
 import Timer from './timer';
 import {
   EventType,
@@ -19,6 +20,8 @@ import {
 import { mirror } from '../utils';
 import injectStyleRules from './styles/inject-style';
 import './styles/style.css';
+
+smoothscroll.polyfill();
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 // tslint:disable-next-line
@@ -144,6 +147,7 @@ export class Replayer {
 
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('sandbox', 'allow-same-origin');
+    this.iframe.setAttribute('scrolling', 'no');
     this.wrapper.appendChild(this.iframe);
   }
 

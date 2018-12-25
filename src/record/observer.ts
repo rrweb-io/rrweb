@@ -272,10 +272,11 @@ function initScrollObserver(cb: scrollCallback): listenerHandler {
     }
     const id = mirror.getId(evt.target as INode);
     if (evt.target === document) {
+      const scrollEl = (document.scrollingElement || document.documentElement)!;
       cb({
         id,
-        x: document.documentElement!.scrollLeft,
-        y: document.documentElement!.scrollTop,
+        x: scrollEl.scrollLeft,
+        y: scrollEl.scrollTop,
       });
     } else {
       cb({
