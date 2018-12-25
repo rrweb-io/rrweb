@@ -1,4 +1,5 @@
 import typescript from 'rollup-plugin-typescript';
+import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
@@ -18,7 +19,7 @@ let configs = [
   // browser(record only)
   {
     input: './src/record/index.ts',
-    plugins: [typescript(), resolve()],
+    plugins: [resolve(), commonjs(), typescript()],
     output: [
       {
         name: 'rrwebRecord',
@@ -29,7 +30,7 @@ let configs = [
   },
   {
     input: './src/record/index.ts',
-    plugins: [typescript(), resolve(), terser()],
+    plugins: [resolve(), commonjs(), typescript(), terser()],
     output: [
       {
         name: 'rrwebRecord',
@@ -42,7 +43,7 @@ let configs = [
   // CommonJS(record only)
   {
     input: './src/record/index.ts',
-    plugins: [typescript(), resolve()],
+    plugins: [resolve(), commonjs(), typescript()],
     output: [
       {
         format: 'cjs',
@@ -53,7 +54,7 @@ let configs = [
   // ES module(record only)
   {
     input: './src/record/index.ts',
-    plugins: [typescript(), resolve()],
+    plugins: [resolve(), commonjs(), typescript()],
     output: [
       {
         format: 'esm',
@@ -63,7 +64,7 @@ let configs = [
   },
   {
     input: './src/record/index.ts',
-    plugins: [typescript(), resolve(), terser()],
+    plugins: [resolve(), commonjs(), typescript(), terser()],
     output: [
       {
         format: 'esm',
@@ -76,8 +77,9 @@ let configs = [
   {
     input: './src/index.ts',
     plugins: [
-      typescript(),
       resolve(),
+      commonjs(),
+      typescript(),
       postcss({
         extract: false,
         inject: false,
@@ -94,8 +96,9 @@ let configs = [
   {
     input: './src/index.ts',
     plugins: [
-      typescript(),
       resolve(),
+      commonjs(),
+      typescript(),
       postcss({
         extract: true,
         minimize: true,
@@ -116,8 +119,9 @@ let configs = [
   {
     input: './src/index.ts',
     plugins: [
-      typescript(),
       resolve(),
+      commonjs(),
+      typescript(),
       postcss({
         extract: false,
         inject: false,
@@ -134,8 +138,9 @@ let configs = [
   {
     input: './src/index.ts',
     plugins: [
-      typescript(),
       resolve(),
+      commonjs(),
+      typescript(),
       postcss({
         extract: false,
         inject: false,
@@ -151,8 +156,9 @@ let configs = [
   {
     input: './src/index.ts',
     plugins: [
-      typescript(),
       resolve(),
+      commonjs(),
+      typescript(),
       postcss({
         extract: false,
         inject: false,
@@ -173,8 +179,9 @@ if (process.env.BROWSER_ONLY) {
   configs = {
     input: './src/index.ts',
     plugins: [
-      typescript(),
       resolve(),
+      commonjs(),
+      typescript(),
       postcss({
         extract: true,
         minimize: true,
