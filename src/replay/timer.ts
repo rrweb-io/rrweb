@@ -1,6 +1,8 @@
 import { playerConfig, actionWithDelay } from '../types';
 
 export default class Timer {
+  public timeOffset: number = 0;
+
   private actions: actionWithDelay[];
   private config: playerConfig;
   private raf: number;
@@ -27,16 +29,16 @@ export default class Timer {
 
   public start() {
     this.actions.sort((a1, a2) => a1.delay - a2.delay);
-    let delayed = 0;
+    this.timeOffset = 0;
     let lastTimestamp = performance.now();
     const { actions, config } = this;
     const self = this;
     function check(time: number) {
-      delayed += (time - lastTimestamp) * config.speed;
+      self.timeOffset += (time - lastTimestamp) * config.speed;
       lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
-        if (delayed >= action.delay) {
+        if (self.timeOffset >= action.delay) {
           actions.shift();
           action.doAction();
         } else {

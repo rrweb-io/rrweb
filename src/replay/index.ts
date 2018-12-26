@@ -40,6 +40,8 @@ const defaultConfig: playerConfig = {
 export class Replayer {
   public wrapper: HTMLDivElement;
 
+  public timer: Timer;
+
   private events: eventWithTime[] = [];
   private config: playerConfig = defaultConfig;
 
@@ -54,8 +56,6 @@ export class Replayer {
 
   private nextUserInteractionEvent: eventWithTime | null;
   private noramlSpeed: number;
-
-  private timer: Timer;
 
   private missingNodeRetryMap: missingNodeMap = {};
 
@@ -88,6 +88,10 @@ export class Replayer {
     return {
       totalTime: lastEvent.timestamp - firstEvent.timestamp,
     };
+  }
+
+  public getTimeOffset(): number {
+    return this.baselineTime - this.events[0].timestamp;
   }
 
   /**
