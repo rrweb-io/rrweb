@@ -205,8 +205,9 @@ export class Replayer {
           this.applyIncremental(event, isSync);
           if (event === this.nextUserInteractionEvent) {
             this.nextUserInteractionEvent = null;
-            this.setConfig({ speed: this.noramlSpeed });
-            this.emitter.emit('skip-end');
+            const payload = { speed: this.noramlSpeed };
+            this.setConfig(payload);
+            this.emitter.emit('skip-end', payload);
           }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
             for (const _event of this.events) {
@@ -227,10 +228,11 @@ export class Replayer {
               this.noramlSpeed = this.config.speed;
               const skipTime =
                 this.nextUserInteractionEvent.delay! - event.delay!;
-              this.setConfig({
+              const payload = {
                 speed: Math.round(skipTime / SKIP_TIME_INTERVAL),
-              });
-              this.emitter.emit('skip-start');
+              };
+              this.setConfig(payload);
+              this.emitter.emit('skip-start', payload);
             }
           }
         };
