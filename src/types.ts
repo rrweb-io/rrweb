@@ -95,6 +95,7 @@ export type event =
 
 export type eventWithTime = event & {
   timestamp: number;
+  delay?: number;
 };
 
 export type recordOptions = {
@@ -227,6 +228,7 @@ export type playerConfig = {
   speed: number;
   root: Element;
   loadTimeout: number;
+  skipInactive: Boolean;
 };
 
 export type playerMetaData = {

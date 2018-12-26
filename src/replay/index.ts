@@ -21,6 +21,9 @@ import { mirror } from '../utils';
 import injectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
+const SKIP_TIME_THRESHOLD = 10 * 1000;
+const SKIP_TIME_INTERVAL = 5 * 1000;
+
 smoothscroll.polyfill();
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
@@ -31,6 +34,7 @@ const defaultConfig: playerConfig = {
   speed: 1,
   root: document.body,
   loadTimeout: 0,
+  skipInactive: false,
 };
 
 export class Replayer {
@@ -47,6 +51,9 @@ export class Replayer {
   private baselineTime: number = 0;
   // record last played event timestamp when paused
   private lastPlayedEvent: eventWithTime;
+
+  private nextUserInteractionEvent: eventWithTime | null;
+  private noramlSpeed: number;
 
   private timer: Timer;
 
@@ -167,8 +174,10 @@ export class Replayer {
       const firstOffset = event.data.positions[0].timeOffset;
       // timeOffset is a negative offset to event.timestamp
       const firstTimestamp = event.timestamp + firstOffset;
+      event.delay = firstTimestamp - this.baselineTime;
       return firstTimestamp - this.baselineTime;
     }
+    event.delay = event.timestamp - this.baselineTime;
     return event.timestamp - this.baselineTime;
   }
 
@@ -194,6 +203,36 @@ export class Replayer {
       case EventType.IncrementalSnapshot:
         castFn = () => {
           this.applyIncremental(event, isSync);
+          if (event === this.nextUserInteractionEvent) {
+            this.nextUserInteractionEvent = null;
+            this.setConfig({ speed: this.noramlSpeed });
+            this.emitter.emit('skip-end');
+          }
+          if (this.config.skipInactive && !this.nextUserInteractionEvent) {
+            for (const _event of this.events) {
+              if (_event.delay! <= event.delay!) {
+                continue;
+              }
+              if (this.isUserInteraction(_event)) {
+                if (
+                  _event.delay! - event.delay! >
+                  SKIP_TIME_THRESHOLD * this.config.speed
+                ) {
+                  this.nextUserInteractionEvent = _event;
+                }
+                break;
+              }
+            }
+            if (this.nextUserInteractionEvent) {
+              this.noramlSpeed = this.config.speed;
+              const skipTime =
+                this.nextUserInteractionEvent.delay! - event.delay!;
+              this.setConfig({
+                speed: Math.round(skipTime / SKIP_TIME_INTERVAL),
+              });
+              this.emitter.emit('skip-start');
+            }
+          }
         };
         break;
       default:
@@ -457,8 +496,12 @@ export class Replayer {
         const target: HTMLInputElement = (mirror.getNode(
           d.id,
         ) as Node) as HTMLInputElement;
-        target.checked = d.isChecked;
-        target.value = d.text;
+        try {
+          target.checked = d.isChecked;
+          target.value = d.text;
+        } catch (error) {
+          // for safe
+        }
         break;
       }
       default:
@@ -505,5 +548,15 @@ export class Replayer {
       currentEl.classList.add(':hover');
       currentEl = currentEl.parentElement;
     }
+  }
+
+  private isUserInteraction(event: eventWithTime): boolean {
+    if (event.type !== EventType.IncrementalSnapshot) {
+      return false;
+    }
+    return (
+      event.data.source > IncrementalSource.Mutation &&
+      event.data.source <= IncrementalSource.Input
+    );
   }
 }

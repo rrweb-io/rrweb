@@ -28,15 +28,15 @@ export default class Timer {
   public start() {
     this.actions.sort((a1, a2) => a1.delay - a2.delay);
     let delayed = 0;
-    const start = performance.now();
+    let lastTimestamp = performance.now();
     const { actions, config } = this;
     const self = this;
     function check(time: number) {
-      delayed = time - start;
+      delayed += (time - lastTimestamp) * config.speed;
+      lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
-        const delayNeeded = action.delay / config.speed;
-        if (delayed >= delayNeeded) {
+        if (delayed >= action.delay) {
           actions.shift();
           action.doAction();
         } else {
