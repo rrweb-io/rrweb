@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "0.6.11",
+  "version": "0.7.0",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "test": "TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
