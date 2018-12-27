@@ -233,7 +233,7 @@ export class Replayer {
               const skipTime =
                 this.nextUserInteractionEvent.delay! - event.delay!;
               const payload = {
-                speed: Math.round(skipTime / SKIP_TIME_INTERVAL),
+                speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),
               };
               this.setConfig(payload);
               this.emitter.emit('skip-start', payload);

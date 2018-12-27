@@ -17,7 +17,7 @@
 也可以在 URL 中指定具体的版本号，例如：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@0.6.7/dist/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@0.7.0/dist/rrweb.min.js"></script>
 ```
 
 #### 仅引入录制部分
