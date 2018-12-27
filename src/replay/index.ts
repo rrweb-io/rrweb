@@ -55,7 +55,7 @@ export class Replayer {
   private lastPlayedEvent: eventWithTime;
 
   private nextUserInteractionEvent: eventWithTime | null;
-  private noramlSpeed: number;
+  private noramlSpeed: number = -1;
 
   private missingNodeRetryMap: missingNodeMap = {};
 
@@ -70,7 +70,6 @@ export class Replayer {
     this.setConfig(Object.assign({}, config));
     this.setupDom();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
-    this.noramlSpeed = this.config.speed;
   }
 
   public on(event: string, handler: mitt.Handler) {
@@ -81,6 +80,9 @@ export class Replayer {
     Object.keys(config).forEach((key: keyof playerConfig) => {
       this.config[key] = config[key]!;
     });
+    if (!this.config.skipInactive) {
+      this.noramlSpeed = -1;
+    }
   }
 
   public getMetaData(): playerMetaData {
@@ -214,7 +216,7 @@ export class Replayer {
           }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
             for (const _event of this.events) {
-              if (_event.delay! <= event.delay!) {
+              if (_event.timestamp! <= event.timestamp!) {
                 continue;
               }
               if (this.isUserInteraction(_event)) {
@@ -567,8 +569,12 @@ export class Replayer {
   }
 
   private restoreSpeed() {
+    if (this.noramlSpeed === -1) {
+      return;
+    }
     const payload = { speed: this.noramlSpeed };
     this.setConfig(payload);
     this.emitter.emit('skip-end', payload);
+    this.noramlSpeed = -1;
   }
 }
