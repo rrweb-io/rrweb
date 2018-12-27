@@ -2,7 +2,7 @@
 <div class="rr-controller">
   <div class="rr-timeline">
     <span class="rr-timeline__time">{formatTime(currentTime)}</span>
-    <div class="rr-progress" ref:progress on:click="handleProgressClick(event)">
+    <div class="rr-progress" ref:progress>
       <div class="rr-progress__step" ref:step style="width: {percentage}"></div>
       <div
         class="rr-progress__handler"
@@ -233,7 +233,7 @@
     background: #eee;
     position: relative;
     border-radius: 3px;
-    cursor: pointer;
+    /* cursor: pointer; */
   }
 
   .rr-progress__step {
