@@ -136,11 +136,14 @@
         }
       },
       setSpeed(speed) {
-        const { replayer, currentTime } = this.get();
+        const { replayer, currentTime, isPlaying } = this.get();
+        // freeze before set speed, and resume if is playing before freeze
         replayer.pause();
         replayer.setConfig({ speed });
         this.set({ speed });
-        replayer.resume(currentTime);
+        if (isPlaying) {
+          replayer.resume(currentTime);
+        }
       },
       handleProgressClick(event) {
         const progressRect = this.refs.progress.getBoundingClientRect();
@@ -162,6 +165,7 @@
     },
     onupdate({ changed, current, previous }) {
       if (current.replayer && !previous) {
+        window.replayer = current.replayer;
         // auto play
         setTimeout(() => {
           this.set({ isPlaying: true });
@@ -192,7 +196,7 @@
         }
       }
       if (changed.skipInactive) {
-        current.replayer.setConfig({ skipInactive: changed.skipInactive });
+        current.replayer.setConfig({ skipInactive: current.skipInactive });
       }
     },
     ondestroy() {
