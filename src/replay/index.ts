@@ -70,6 +70,7 @@ export class Replayer {
     this.setConfig(Object.assign({}, config));
     this.setupDom();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
+    this.noramlSpeed = this.config.speed;
   }
 
   public on(event: string, handler: mitt.Handler) {
@@ -209,9 +210,7 @@ export class Replayer {
           this.applyIncremental(event, isSync);
           if (event === this.nextUserInteractionEvent) {
             this.nextUserInteractionEvent = null;
-            const payload = { speed: this.noramlSpeed };
-            this.setConfig(payload);
-            this.emitter.emit('skip-end', payload);
+            this.restoreSpeed();
           }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
             for (const _event of this.events) {
@@ -249,6 +248,7 @@ export class Replayer {
       }
       this.lastPlayedEvent = event;
       if (event === this.events[this.events.length - 1]) {
+        this.restoreSpeed();
         this.emitter.emit('finish');
       }
     };
@@ -564,5 +564,11 @@ export class Replayer {
       event.data.source > IncrementalSource.Mutation &&
       event.data.source <= IncrementalSource.Input
     );
+  }
+
+  private restoreSpeed() {
+    const payload = { speed: this.noramlSpeed };
+    this.setConfig(payload);
+    this.emitter.emit('skip-end', payload);
   }
 }
