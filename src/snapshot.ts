@@ -44,10 +44,14 @@ function extractOrigin(url: string): string {
 
 const URL_IN_CSS_REF = /url\((['"]|)([^'"]*)\1\)/gm;
 const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/).*/;
+const DATA_URI = /^(data:)([\w\/\+]+);(charset=[\w-]+|base64).*,(.*)/gi;
 export function absoluteToStylesheet(cssText: string, href: string): string {
   return cssText.replace(URL_IN_CSS_REF, (_1, _2, filePath) => {
     if (!RELATIVE_PATH.test(filePath)) {
       return `url('${filePath}')`;
+    }
+    if (DATA_URI.test(filePath)) {
+      return `url(${filePath})`;
     }
     if (filePath[0] === '/') {
       return `url('${extractOrigin(href) + filePath}')`;

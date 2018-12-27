@@ -46,4 +46,10 @@ describe('absolute url to stylesheet', () => {
       `url('http://localhost/css/a.jpg')`,
     );
   });
+
+  it('can handle data url image', () => {
+    expect(
+      absoluteToStylesheet('url(data:image/gif;base64,ABC)', href),
+    ).to.equal('url(data:image/gif;base64,ABC)');
+  });
 });
