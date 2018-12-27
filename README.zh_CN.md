@@ -1,3 +1,10 @@
+<p align="center">
+  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
+</p>
+<p align="center">
+  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
+</p>
+
 # rrweb
 
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
@@ -5,6 +12,10 @@
 rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
 
 **目前 rrweb 已经解决了许多录制与回放中的难点问题，但在 1.0 版本 release 之前数据结构仍有可能发生变化，请谨慎用于生产环境中。**
+
+## 指南
+
+[**📚 rrweb 使用指南 📚**](./guide.zh_CN.md)
 
 ## 项目结构
 

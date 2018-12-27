@@ -1,3 +1,10 @@
+<p align="center">
+  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
+</p>
+<p align="center">
+  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
+</p>
+
 # rrweb
 
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
@@ -7,6 +14,10 @@
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
 **Currently, rrweb has already solved many difficult problems in recording and replaying, but the data structure may still be changed before the release of Version 1.0. So please be cautious to use rrweb in the production environment.**
+
+## Guide
+
+[**📚 Read the rrweb guide here. 📚**](./guide.md)
 
 ## Project Structure
 
@@ -31,12 +42,12 @@ rrweb is mainly composed of 3 parts:
   - hijack Ajax/fetch API and record request events
   - use TraceKit to log exception events
 
-## Internal Design
+<!-- ## Internal Design
 
 - [serialization](./docs/serialization.md)
 - [incremental snapshot](./docs/observer.md)
 - [replay](./docs/replay.md)
-- [sandbox](./docs/sandbox.md)
+- [sandbox](./docs/sandbox.md) -->
 
 ## Contribute Guide
 
@@ -51,33 +62,4 @@ Since we want the record and replay sides to share a strongly typed data structu
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
-Run `npm run repl` to launch a browser and ask for a URL you want to test on the CLI:
-
-```
-Enter the url you want to record, e.g https://react-redux.realworld.io:
-```
-
-Waiting for the browser to open the specified page and print following messages on the CLI:
-
-```
-Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
-Going to open https://github.com...
-Ready to record. You can do any interaction on the page.
-Once you want to finish the recording, enter 'y' to start replay:
-```
-
-At this point, you can interact in the web page. After the desired operations have been recorded, enter 'y' on the CLI, and the test tool will replay the operations to verify whether the recording was successful.
-
-The following messages will be printed on the CLI during replay:
-
-```
-Enter 'y' to persistently store these recorded events:
-```
-
-At this point, you can enter 'y' again on the CLI. The test tool will save the recorded session into a static HTML file and prompt for the location:
-
-```
-Saved at PATH_TO_YOUR_REPO/temp/replay_2018_11_23T07_53_30.html
-```
-
-This file uses the latest rrweb bundle code, so we can run `npm run bundle:browser` after patching the code, then refresh the static file to see and debug the impact of the latest code on replay.
+[Using the REPL tool](./guide.md#REPL-tool)

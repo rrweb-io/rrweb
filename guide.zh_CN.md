@@ -81,6 +81,14 @@ function save() {
 setInterval(save, 10 * 1000);
 ```
 
+#### 隐私
+
+页面中可能存在一些隐私相关的内容不希望被录制，rrweb 为此做了以下支持：
+
+- 在 HTML 元素中添加类名 `.rr-block` 将会避免该元素及其子元素被录制，回放时取而代之的是一个同等宽高的占位元素。
+- 在 HTML 元素中添加类名 `.rr-ignore` 将会避免录制该元素的输入事件。
+- `input[type="password"]` 类型的密码输入框默认不会录制输入事件。
+
 ### 回放
 
 回放时需要引入对应的 CSS 文件：
@@ -100,6 +108,17 @@ const events = YOUR_EVENTS;
 const replayer = new rrweb.Replayer(events);
 replayer.play();
 ```
+
+#### 配置参数
+
+可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
+
+| key   | 默认值        | 功能     |
+| ----- | ------------- | -------- |
+| speed | 1             | 回放倍速 |
+| root  | document.body | 回放时使用的 HTML 元素 |
+| loadTimeout | 0 | 加载异步样式表的超时时长 |
+| skipInactive | false | 是否快速跳过无用户操作的阶段 |
 
 #### 使用 rrweb-player
 
@@ -132,6 +151,50 @@ new rrwebPlayer({
     events,
   },
 });
+```
+
+## API
+
+### rrweb
+
+#### rrweb.record
+
+```typescript
+type record = (options: recordOptions) => listenerHandler;
+
+type recordOptions = {
+  emit: (e: eventWithTime) => void;
+};
+type listenerHandler = () => void;
+```
+
+#### rrweb.Replayer
+
+```typescript
+class Replayer {
+  public wrapper: HTMLDivElement;
+
+  constructor(events: eventWithTime[], config?: Partial<playerConfig>);
+
+  public on(event: string, handler: mitt.Handler): void;
+  public setConfig(config: Partial<playerConfig>): void;
+  public getMetaData(): playerMetaData;
+  public getTimeOffset(): number;
+  public play(timeOffset?: number): void;
+  public pause(): void;
+  public resume(timeOffset?: number): void;
+}
+
+type playerConfig = {
+  speed: number;
+  root: Element;
+  loadTimeout: number;
+  skipInactive: Boolean;
+};
+
+type playerMetaData = {
+  totalTime: number;
+};
 ```
 
 ## REPL 工具
