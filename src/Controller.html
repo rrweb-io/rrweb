@@ -49,8 +49,15 @@
       {/if}
     </button>
     {#each [1, 2, 4, 8] as s}
-    <button class:active="s === speed" on:click="setSpeed(s)">{s}x</button>
+    <button
+      class:active="s === speed && !isSkipping"
+      on:click="setSpeed(s)"
+      disabled="{isSkipping}"
+    >
+      {s}x
+    </button>
     {/each}
+    <Switch id="skip" bind:checked="skipInactive" disabled="{isSkipping}" label="skip inactive" />
   </div>
 </div>
 {/if}
@@ -59,10 +66,15 @@
   import { formatTime } from './utils.js';
 
   export default {
+    components: {
+      Switch: './components/Switch.html',
+    },
     data() {
       return {
         currentTime: 0,
         isPlaying: false,
+        isSkipping: false,
+        skipInactive: true,
         speed: 1,
       };
     },
@@ -80,29 +92,23 @@
     },
     methods: {
       loopTimer() {
-        const now = performance.now();
-        let lastStep = now;
         const self = this;
 
-        function update(step) {
-          let { currentTime, meta, isPlaying, speed } = self.get();
+        function update() {
+          const { meta, isPlaying, replayer } = self.get();
           if (!isPlaying) {
             self.timer = null;
             return;
           }
 
-          const stepDiff = Math.floor(step - lastStep);
-          lastStep = step;
-          currentTime += speed * stepDiff;
+          const currentTime =
+            replayer.timer.timeOffset + replayer.getTimeOffset();
           self.set({
-            currentTime: Math.min(currentTime, meta.totalTime),
+            currentTime,
           });
 
           if (currentTime < meta.totalTime) {
             requestAnimationFrame(update);
-          } else {
-            self.timer = null;
-            self.set({ isPlaying: false, currentTime: 0 });
           }
         }
 
@@ -130,9 +136,11 @@
         }
       },
       setSpeed(speed) {
-        const { replayer } = this.get();
+        const { replayer, currentTime } = this.get();
+        replayer.pause();
         replayer.setConfig({ speed });
         this.set({ speed });
+        replayer.resume(currentTime);
       },
       handleProgressClick(event) {
         const progressRect = this.refs.progress.getBoundingClientRect();
@@ -165,11 +173,26 @@
         current.replayer.on('resume', () => {
           this.set({ isPlaying: true });
         });
+        current.replayer.on('finish', () => {
+          this.timer = null;
+          this.set({ isPlaying: false, currentTime: 0 });
+        });
+        current.replayer.on('skip-start', payload => {
+          payload.isSkipping = true;
+          this.set(payload);
+        });
+        current.replayer.on('skip-end', payload => {
+          payload.isSkipping = false;
+          this.set(payload);
+        });
       }
       if (changed.isPlaying) {
         if (current.isPlaying && !this.timer) {
           this.loopTimer();
         }
+      }
+      if (changed.skipInactive) {
+        current.replayer.setConfig({ skipInactive: changed.skipInactive });
       }
     },
     ondestroy() {
@@ -233,6 +256,9 @@
 
   .rr-controller__btns {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
   }
 
   .rr-controller__btns button {
@@ -255,5 +281,9 @@
   .rr-controller__btns button.active {
     color: #fff;
     background: rgb(73, 80, 246);
+  }
+
+  .rr-controller__btns button:disabled {
+    cursor: not-allowed;
   }
 </style>

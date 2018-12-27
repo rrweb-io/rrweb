@@ -46,6 +46,7 @@
       const replayer = new Replayer(events, {
         speed: 1,
         root: this.refs.frame,
+        skipInactive: true,
       });
       replayer.on('resize', (dimension) =>
         this.updateScale(replayer.wrapper, dimension)
