@@ -36,6 +36,10 @@ npm install --save rrweb
 
 rrweb 同时提供 commonJS 和 ES modules 两种格式的打包文件，易于和常见的打包工具配合使用。
 
+### 兼容性
+
+由于使用 `MutationObserver` API，rrweb 不支持 IE11 以下的浏览器。可以从[这里](https://caniuse.com/#feat=mutationobserver)找到兼容的浏览器列表。
+
 ## 快速开始
 
 ### 录制

@@ -42,12 +42,14 @@ rrweb is mainly composed of 3 parts:
   - hijack Ajax/fetch API and record request events
   - use TraceKit to log exception events
 
-<!-- ## Internal Design
+## Internal Design
+
+*Since the design docs were originally written in Chinese, we do not have the English version yet, but it would be available as soon as possible.*
 
 - [serialization](./docs/serialization.md)
 - [incremental snapshot](./docs/observer.md)
 - [replay](./docs/replay.md)
-- [sandbox](./docs/sandbox.md) -->
+- [sandbox](./docs/sandbox.md)
 
 ## Contribute Guide
 

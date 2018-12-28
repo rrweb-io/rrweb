@@ -24,7 +24,7 @@ Also, you can link to a specific version number that you can update manually:
 
 #### Only include the recorder code
 
-rrweb's code includes both the record and the replay parts. Most of the time you only need include the record part into your target web Apps.
+rrweb's code includes both the record and the replay parts. Most of the time you only need to include the record part into your targeted web Apps.
 This also can be done by using the CDN service:
 
 ```html
@@ -39,12 +39,16 @@ npm install --save rrweb
 
 rrweb provides both commonJS and ES modules bundles, which is easy to use with the popular bundlers.
 
+### Compatibility Note
+
+rrweb does **not** support IE11 and below, because it uses the `MutationObserver` API which was supoorted by [these browsers](https://caniuse.com/#feat=mutationobserver).
+
 ## Getting Started
 
 ### Record
 
 If you only include record code with `<script>`, then you can use the global variable `rrwebRecord` which is the same as `rrweb.record`.
-The following sample codes will use `rrweb` variable the default exporter of this library.
+The following sample codes will use the variable `rrweb` which is the default exporter of this library.
 
 ```js
 rrweb.record({
@@ -87,7 +91,7 @@ setInterval(save, 10 * 1000);
 
 #### Privacy
 
-You may found some contents on the webpage were not willing to be recorded, then you can use the following approaches:
+You may find some contents on the webpage which are not willing to be recorded, then you can use the following approaches:
 
 - An element with the class name `.rr-block` will not be recorded. Instead, it will replay as a placeholder with the same dimension.
 - An element with the class name `.rr-ignore` will not record its input events.
@@ -126,7 +130,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 
 #### Use rrweb-player
 
-Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which was based on rrweb's public APIs but has a feature-rich replayer UI.
+Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
 
 ##### Installation
 
@@ -211,7 +215,7 @@ Run `npm run repl` to launch a browser and ask for a URL you want to test on the
 Enter the url you want to record, e.g https://react-redux.realworld.io:
 ```
 
-Waiting for the browser to open the specified page and print following messages on the CLI:
+Waiting for the browser to open the specified page and print the following messages on the CLI:
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
