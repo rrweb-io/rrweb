@@ -41,7 +41,7 @@ rrweb provides both commonJS and ES modules bundles, which is easy to use with t
 
 ### Compatibility Note
 
-rrweb does **not** support IE11 and below, because it uses the `MutationObserver` API which was supoorted by [these browsers](https://caniuse.com/#feat=mutationobserver).
+rrweb does **not** support IE11 and below, because it uses the `MutationObserver` API which was supported by [these browsers](https://caniuse.com/#feat=mutationobserver).
 
 ## Getting Started
 
