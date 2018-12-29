@@ -14,7 +14,7 @@ rrweb 的设计原则是尽量少的在录制端进行处理，最大程度减�
 
 ## 补全缺失节点
 
-在[增量快照设计](./observer.md)中提到了 rrweb 使用 MutationObserver 时的延迟序列化策略，这一策略可能导致以下场景中我们不能记录完整的增量快照：
+在[增量快照设计](./observer.zh_CN.md)中提到了 rrweb 使用 MutationObserver 时的延迟序列化策略，这一策略可能导致以下场景中我们不能记录完整的增量快照：
 
 ```
 parent
