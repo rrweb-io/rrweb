@@ -470,7 +470,7 @@ export class Replayer {
           this.iframe.contentWindow!.scrollTo({
             top: d.y,
             left: d.x,
-            behavior: isSync ? 'instant' : 'smooth',
+            behavior: isSync ? 'auto' : 'smooth',
           });
         } else {
           try {
