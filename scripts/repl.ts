@@ -154,6 +154,7 @@ function getCode(): string {
     const savePath = path.resolve(tempFolder, fileName);
     fs.writeFileSync(savePath, content);
     console.log(`Saved at ${savePath}`);
+    process.exit();
   }
 
   process
