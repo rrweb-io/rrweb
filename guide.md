@@ -48,7 +48,7 @@ rrweb does **not** support IE11 and below, because it uses the `MutationObserver
 ### Record
 
 If you only include record code with `<script>`, then you can use the global variable `rrwebRecord` which is the same as `rrweb.record`.
-The following sample codes will use the variable `rrweb` which is the default exporter of this library.
+The following sample code will use the variable `rrweb` which is the default exporter of this library.
 
 ```js
 rrweb.record({
@@ -58,15 +58,18 @@ rrweb.record({
 });
 ```
 
-During recording, the recorder will emit when there is some event incurred, all you need to do is to store the emitted events in any way you like.
+During recording, the recorder will emit when there is some event incurred, all you need to do is to store the emitted events in any way you like.  `record` returns a function which when called will stop recording.
 
 A more real-world usage may looks like this:
 
 ```js
 let events = [];
 
-rrweb.record({
+let stopFn = rrweb.record({
   emit(event) {
+    if(events.length > 100){  //stop after 100 events
+      stopFn();
+    }
     // push event into the events array
     events.push(event);
   },
@@ -74,6 +77,7 @@ rrweb.record({
 
 // this function will send events to the backend and reset the events array
 function save() {
+    
   const body = JSON.stringify({ events });
   events = [];
   fetch('http://YOUR_BACKEND_API', {
@@ -87,6 +91,7 @@ function save() {
 
 // save events every 10 seconds
 setInterval(save, 10 * 1000);
+
 ```
 
 #### Privacy
