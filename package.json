@@ -3,9 +3,9 @@
   "version": "0.7.2",
   "description": "record and replay the web",
   "scripts": {
-    "test": "npm run bundle:browser && TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
-    "repl": "npm run bundle:browser && TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
-    "bundle:browser": "BROWSER_ONLY=true rollup --config",
+    "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
+    "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
+    "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config"
   },
   "repository": {
@@ -38,6 +38,7 @@
     "@types/node": "^10.11.7",
     "@types/puppeteer": "^1.9.0",
     "chai": "^4.2.0",
+    "cross-env": "^5.2.0",
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
     "puppeteer": "^1.9.0",
@@ -55,7 +56,7 @@
   "dependencies": {
     "@types/smoothscroll-polyfill": "^0.3.0",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.7.0",
+    "rrweb-snapshot": "^0.7.1",
     "smoothscroll-polyfill": "^0.4.3"
   }
 }
