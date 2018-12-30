@@ -44,7 +44,10 @@ import {
  * which means all the id related calculation should be lazy too.
  * @param cb mutationCallBack
  */
-function initMutationObserver(cb: mutationCallBack): MutationObserver {
+function initMutationObserver(
+  cb: mutationCallBack,
+  blockClass: string,
+): MutationObserver {
   const observer = new MutationObserver(mutations => {
     const texts: textCursor[] = [];
     const attributes: attributeCursor[] = [];
@@ -172,7 +175,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           nextId: !n.nextSibling
             ? n.nextSibling
             : mirror.getId(n.nextSibling as INode),
-          node: serializeNodeWithId(n, document, mirror.map, true)!,
+          node: serializeNodeWithId(n, document, mirror.map, blockClass, true)!,
         });
       } else {
         dropped.push(n);
@@ -419,8 +422,9 @@ function initInputObserver(
 export default function initObservers(
   o: observerParam,
   ignoreClass?: string,
+  blockClass?: string,
 ): listenerHandler {
-  const mutationObserver = initMutationObserver(o.mutationCb);
+  const mutationObserver = initMutationObserver(o.mutationCb, blockClass);
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,

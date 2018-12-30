@@ -46,7 +46,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
           },
         }),
       );
-      const [node, idNodeMap] = snapshot(document);
+      const [node, idNodeMap] = snapshot(document, blockClass);
       if (!node) {
         return console.warn('Failed to snapshot the document');
       }
@@ -128,6 +128,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
               ),
           },
           ignoreClass,
+          blockClass,
         ),
       );
     };
