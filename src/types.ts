@@ -100,6 +100,8 @@ export type eventWithTime = event & {
 
 export type recordOptions = {
   emit?: (e: eventWithTime) => void;
+  blockClass?: string;
+  ignoreClass?: string;
 };
 
 export type observerParam = {

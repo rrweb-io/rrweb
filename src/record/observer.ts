@@ -331,9 +331,12 @@ const HOOK_PROPERTIES: Array<[HTMLElement, string]> = [
   [HTMLSelectElement.prototype, 'value'],
   [HTMLTextAreaElement.prototype, 'value'],
 ];
-const IGNORE_CLASS = 'rr-ignore';
+
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
-function initInputObserver(cb: inputCallback): listenerHandler {
+function initInputObserver(
+  cb: inputCallback,
+  ignoreClass = 'rr-ignore',
+): listenerHandler {
   function eventHandler(event: Event) {
     const { target } = event;
     if (
@@ -347,7 +350,7 @@ function initInputObserver(cb: inputCallback): listenerHandler {
     const type: string | undefined = (target as HTMLInputElement).type;
     if (
       type === 'password' ||
-      (target as HTMLElement).classList.contains(IGNORE_CLASS)
+      (target as HTMLElement).classList.contains(ignoreClass)
     ) {
       return;
     }
@@ -413,7 +416,10 @@ function initInputObserver(cb: inputCallback): listenerHandler {
   };
 }
 
-export default function initObservers(o: observerParam): listenerHandler {
+export default function initObservers(
+  o: observerParam,
+  ignoreClass?: string,
+): listenerHandler {
   const mutationObserver = initMutationObserver(o.mutationCb);
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
   const mouseInteractionHandler = initMouseInteractionObserver(
@@ -421,7 +427,7 @@ export default function initObservers(o: observerParam): listenerHandler {
   );
   const scrollHandler = initScrollObserver(o.scrollCb);
   const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
-  const inputHandler = initInputObserver(o.inputCb);
+  const inputHandler = initInputObserver(o.inputCb, ignoreClass);
   return () => {
     mutationObserver.disconnect();
     mousemoveHandler();

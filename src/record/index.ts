@@ -18,7 +18,7 @@ function wrapEvent(e: event): eventWithTime {
 }
 
 function record(options: recordOptions = {}): listenerHandler | undefined {
-  const { emit } = options;
+  const { emit, blockClass, ignoreClass } = options;
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
@@ -64,68 +64,71 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
         }),
       );
       handlers.push(
-        initObservers({
-          mutationCb: m =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Mutation,
-                  ...m,
-                },
-              }),
-            ),
-          mousemoveCb: positions =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseMove,
-                  positions,
-                },
-              }),
-            ),
-          mouseInteractionCb: d =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseInteraction,
-                  ...d,
-                },
-              }),
-            ),
-          scrollCb: p =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Scroll,
-                  ...p,
-                },
-              }),
-            ),
-          viewportResizeCb: d =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.ViewportResize,
-                  ...d,
-                },
-              }),
-            ),
-          inputCb: v =>
-            emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Input,
-                  ...v,
-                },
-              }),
-            ),
-        }),
+        initObservers(
+          {
+            mutationCb: m =>
+              emit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Mutation,
+                    ...m,
+                  },
+                }),
+              ),
+            mousemoveCb: positions =>
+              emit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.MouseMove,
+                    positions,
+                  },
+                }),
+              ),
+            mouseInteractionCb: d =>
+              emit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.MouseInteraction,
+                    ...d,
+                  },
+                }),
+              ),
+            scrollCb: p =>
+              emit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Scroll,
+                    ...p,
+                  },
+                }),
+              ),
+            viewportResizeCb: d =>
+              emit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.ViewportResize,
+                    ...d,
+                  },
+                }),
+              ),
+            inputCb: v =>
+              emit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Input,
+                    ...v,
+                  },
+                }),
+              ),
+          },
+          ignoreClass,
+        ),
       );
     };
     if (
