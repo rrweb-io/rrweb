@@ -252,4 +252,22 @@ describe('record integration tests', () => {
     );
     assert(result.pass, result.pass ? '' : result.report());
   });
+
+  it('should not record blocked elements and its child nodes', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'block.html'));
+
+    await page.type('input', 'should not be record');
+    await page.evaluate(`document.getElementById('text').innerText = '1'`);
+    await page.click('#text');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    const result = matchSnapshot(
+      stringifySnapshots(snapshots),
+      __filename,
+      'block',
+    );
+    assert(result.pass, result.pass ? '' : result.report());
+  });
 });

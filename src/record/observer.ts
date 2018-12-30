@@ -6,6 +6,7 @@ import {
   hookSetter,
   getWindowHeight,
   getWindowWidth,
+  isBlocked,
 } from '../utils';
 import {
   mutationCallBack,
@@ -53,6 +54,9 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
 
     const addsSet = new Set<Node>();
     const genAdds = (n: Node) => {
+      if (isBlocked(n)) {
+        return;
+      }
       addsSet.add(n);
       n.childNodes.forEach(childN => genAdds(childN));
     };
@@ -68,7 +72,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
       switch (type) {
         case 'characterData': {
           const value = target.textContent;
-          if (value !== oldValue) {
+          if (!isBlocked(target) && value !== oldValue) {
             texts.push({
               value,
               node: target,
@@ -78,7 +82,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
         }
         case 'attributes': {
           const value = (target as HTMLElement).getAttribute(attributeName!);
-          if (value === oldValue) {
+          if (isBlocked(target) || value === oldValue) {
             return;
           }
           let item: attributeCursor | undefined = attributes.find(
@@ -93,10 +97,14 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           }
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName!] = value;
+          break;
         }
         case 'childList': {
           addedNodes.forEach(n => genAdds(n));
           removedNodes.forEach(n => {
+            if (isBlocked(n)) {
+              return;
+            }
             // removed node has not been serialized yet, just remove it from the Set
             if (addsSet.has(n)) {
               addsSet.delete(n);
@@ -171,7 +179,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
       }
     });
 
-    cb({
+    const payload = {
       texts: texts
         .map(text => ({
           id: mirror.getId(text.node as INode),
@@ -188,7 +196,17 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
         .filter(attribute => mirror.has(attribute.id)),
       removes,
       adds,
-    });
+    };
+    // payload may be empty if the mutations happened in some blocked elements
+    if (
+      !payload.texts.length &&
+      !payload.attributes.length &&
+      !payload.removes.length &&
+      !payload.adds.length
+    ) {
+      return;
+    }
+    cb(payload);
   });
   observer.observe(document, {
     attributes: true,
@@ -243,6 +261,9 @@ function initMouseInteractionObserver(
   const handlers: listenerHandler[] = [];
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent) => {
+      if (isBlocked(event.target as Node)) {
+        return;
+      }
       const id = mirror.getId(event.target as INode);
       const { clientX, clientY } = event;
       cb({
@@ -267,7 +288,7 @@ function initMouseInteractionObserver(
 
 function initScrollObserver(cb: scrollCallback): listenerHandler {
   const updatePosition = throttle<UIEvent>(evt => {
-    if (!evt.target) {
+    if (!evt.target || isBlocked(evt.target as Node)) {
       return;
     }
     const id = mirror.getId(evt.target as INode);
@@ -318,7 +339,8 @@ function initInputObserver(cb: inputCallback): listenerHandler {
     if (
       !target ||
       !(target as Element).tagName ||
-      INPUT_TAGS.indexOf((target as Element).tagName) < 0
+      INPUT_TAGS.indexOf((target as Element).tagName) < 0 ||
+      isBlocked(target as Node)
     ) {
       return;
     }

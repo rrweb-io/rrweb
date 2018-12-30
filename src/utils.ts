@@ -112,3 +112,17 @@ export function getWindowWidth(): number {
     (document.body && document.body.clientWidth)
   );
 }
+
+const BLOCK_CLASS = 'rr-block';
+export function isBlocked(node: Node | null): boolean {
+  if (!node) {
+    return false;
+  }
+  if (node.nodeType === node.ELEMENT_NODE) {
+    return (
+      (node as HTMLElement).classList.contains(BLOCK_CLASS) ||
+      isBlocked(node.parentNode)
+    );
+  }
+  return isBlocked(node.parentNode);
+}
