@@ -47,6 +47,12 @@ describe('absolute url to stylesheet', () => {
     );
   });
 
+  it('can handle multiple no quote paths', () => {
+    expect(absoluteToStylesheet('background-image: url(images/b.jpg); background: #aabbcc url(images/a.jpg) 50% 50% repeat;', href)).to.equal(
+      `background-image: url('http://localhost/css/images/b.jpg'); background: #aabbcc url('http://localhost/css/images/a.jpg') 50% 50% repeat;`,
+    );
+  });
+
   it('can handle data url image', () => {
     expect(
       absoluteToStylesheet('url(data:image/gif;base64,ABC)', href),
