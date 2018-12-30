@@ -107,7 +107,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         if (name === 'src' || name === 'href') {
           attributes[name] = absoluteToDoc(doc, value);
         } else if (name === 'style') {
-          attributes[name] = absoluteToStylesheet(value, doc.location.href);
+          attributes[name] = absoluteToStylesheet(value, location.href);
         } else {
           attributes[name] = value;
         }
