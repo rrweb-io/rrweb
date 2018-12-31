@@ -56,6 +56,19 @@ rrweb.record({
 
 rweb 在录制时会不断将各类 event 传递给配置的 emit 方法，你可以使用任何方式存储这些 event 以便之后回放。
 
+调用 `record` 方法将返回一个函数，调用该函数可以终止录制：
+
+```js
+let stopFn = rrweb.record({
+  emit(event) {
+    if (events.length > 100) {
+      // 当事件数量大于 100 时停止录制
+      stopFn();
+    }
+  },
+});
+```
+
 一个更接近实际真实使用场景的示例如下：
 
 ```js
@@ -117,12 +130,12 @@ replayer.play();
 
 可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
 
-| key   | 默认值        | 功能     |
-| ----- | ------------- | -------- |
-| speed | 1             | 回放倍速 |
-| root  | document.body | 回放时使用的 HTML 元素 |
-| loadTimeout | 0 | 加载异步样式表的超时时长 |
-| skipInactive | false | 是否快速跳过无用户操作的阶段 |
+| key          | 默认值        | 功能                         |
+| ------------ | ------------- | ---------------------------- |
+| speed        | 1             | 回放倍速                     |
+| root         | document.body | 回放时使用的 HTML 元素       |
+| loadTimeout  | 0             | 加载异步样式表的超时时长     |
+| skipInactive | false         | 是否快速跳过无用户操作的阶段 |
 
 #### 使用 rrweb-player
 

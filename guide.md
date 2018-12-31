@@ -58,17 +58,18 @@ rrweb.record({
 });
 ```
 
-During recording, the recorder will emit when there is some event incurred, all you need to do is to store the emitted events in any way you like.  
+During recording, the recorder will emit when there is some event incurred, all you need to do is to store the emitted events in any way you like.
 
 The `record` method returns a function which can be called to stop events from firing:
 
 ```js
 let stopFn = rrweb.record({
   emit(event) {
-    if(events.length > 100){  //stop after 100 events
+    if (events.length > 100) {
+      // stop after 100 events
       stopFn();
     }
-  }
+  },
 });
 ```
 
