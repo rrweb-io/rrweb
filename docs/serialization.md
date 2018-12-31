@@ -1,6 +1,5 @@
-# 序列化
-
-如果仅仅需要在本地录制和回放浏览器内的变化，那么我们可以简单地通过深拷贝 DOM 来实现当前视图的保存。例如通过以下的代码实现（使用 jQuery 简化示例，仅保存 body 部分）：
+# Serialization
+If you only need to record and replay changes within the browser locally, then we can simply save the current view by deep copying the DOM object. For example, the following code implementation (simplified example with jQuery, saves only the body part):
 
 ```javascript
 // record
@@ -9,27 +8,27 @@ const snapshot = $('body').clone();
 $('body').replaceWith(snapshot);
 ```
 
-我们通过将 DOM 对象整体保存在内存中实现了快照。
+We now implemented a snapshot by saving the whole DOM object in memory.
 
-但是这个对象本身并不是**可序列化**的，因此我们不能将其保存为特定的文本格式（例如 JSON）进行传输，也就无法做到远程录制，所以我们首先需要实现将 DOM 及其视图状态序列化的方法。在这里我们不使用一些开源方案例如 [parse5](https://github.com/inikulin/parse5) 的原因包含两个方面：
+But the object itself is not **serializable**, meaning we can't save it to a specific text format (such as JSON) for transmission. We need that to do remote recording, and thus we need to implement a method for serializing the DOM data.
 
-1. 我们需要实现一个“非标准”的序列化方法，下文会详细展开。
-2. 此部分代码需要运行在被录制的页面中，要尽可能的控制代码量，只保留必要功能。
+We do not use an existing open source solutions such as [parse5](https://github.com/inikulin/parse5) for two reasons:
 
-## 序列化中的特殊处理
+1. We need to implement a "non-standard" serialization method, which will be discussed in detail below.
+2. This part of the code needs to run on the recorded page, and we want to control the amount of code as much as possible, only retaining the necessary functions.
 
-之所以说我们的序列化方法是非标准的是因为我们还需要做以下几部分的处理：
+## Special handling in serialization
+The reason why our serialization method is non-standard is because we still need to do the following parts:
 
-1. 去脚本化。被录制页面中的所有 JavaScript 都不应该被执行，例如我们会在重建快照时将 `script` 标签改为 `noscript` 标签，此时 script 内部的内容就不再重要，录制时可以简单记录一个标记值而不需要将可能存在的大量脚本内容全部记录。
-2. 记录没有反映在 HTML 中的视图状态。例如 `<input type="text" />` 输入后的值不会反映在其 HTML 中，而是通过 `value` 属性记录，我们在序列化时就需要读出该值并且以属性的形式回放成 `<input type="text" value="recordValue" />`。
-3. 相对路径转换为绝对路径。回放时我们会将被录制的页面放置在一个 `<iframe>` 中，此时的页面 URL为重放页面的地址，如果被录制页面中有一些相对路径就会产生错误，所以在录制时就要将相对路径进行转换，同样的 CSS 样式表中的相对路径也需要转换。
-4. 尽量记录 CSS 样式表的内容。如果被录制页面加载了一些同源的 样式表，我们则可以获取到解析好的 CSS rules，录制时将能获取到的样式都 inline 化，这样可以让一些内网环境（如 localhost）的录制也有比较好的效果。
+1. Output needs to be descriptive. All JavaScript in the original recorded page should not be executed on replay. In rrweb we do this by replacing `script` tags with placeholder `noscript` tags in snapshots. The content inside the script is no longer important. We instead record any changes to the DOM that scripts cause, and we ​​do not need to fully record large amounts of script content that may be present on the original web page.
+2. Recording view state that is not reflected in the HTML. For example, the value of `<input type="text" />` will not be reflected in its HTML, but will be recorded by the `value` attribute. We need to read the value and store it as a property when serializing. So it will look like `<input type="text" value="recordValue" />`.
+3. Relative paths are converted to absolute paths. During replay, we will place the recorded page in an `<iframe>`. The page URL at this time is the address of the replay page. If there are some relative paths in the recorded page, an error will occur when the user tries to open them, so when recording we need to convert relative paths. Relative paths in the CSS style sheet also need to be converted.
+4. We want to record the contents of the CSS style sheet. If the recorded page links to external style sheets, we can get its parsed CSS rules from the browser, generate an inline style sheet containing all these rules. This way stylesheets that are not always accessible (for example, because they are located on an intranet or localhost) are included in the recording and can be replayed correctly.
 
-## 唯一标识
+## Uniquely identifies
+At the same time, our serialization should also include both full and incremental types. Full serialization can transform a DOM tree into a corresponding tree data structure.
 
-同时，我们的序列化还应该包含全量和增量两种类型，全量序列化可以将一个 DOM 树转化为对应的树状数据结构。
-
-例如以下的 DOM 树：
+For example, the following DOM tree:
 
 ```html
 <html>
@@ -40,7 +39,7 @@ $('body').replaceWith(snapshot);
 </html>
 ```
 
-会被序列化成类似这样的数据结构：
+Will be serialized into a data structure like this:
 
 ```json
 {
@@ -92,12 +91,12 @@ $('body').replaceWith(snapshot);
 }
 ```
 
-这个序列化的结果中有两点需要注意：
+There are two things to note in this serialization result:
 
-1. 我们遍历 DOM 树时是以 Node 为单位，因此除了场景的元素类型节点以为，还包括 Text Node、Comment Node 等所有 Node 的记录。
-2. 我们给每一个 Node 都添加了唯一标识 `id`，这是为之后的增量快照做准备。
+1. When we traverse the DOM tree, we use Node as the unit. Therefore, in addition to the "element type" nodes in the DOM, we also include records of all other types of Nodes such as Text Node and Comment Node.
+2. We add a unique identifier `id` to each Node, which is used for subsequent incremental snapshots.
 
-想象一下如果我们在同页面中记录一次点击按钮的操作并回放，我们可以用以下格式记录该操作（也就是我们所说的一次增量快照）：
+Imagine if we recorded the click of a button on the same page and played it back, we can record the operation in the following format (that is what we call an incremental snapshot):
 
 ```javascript
 type clickSnapshot = {
@@ -107,13 +106,13 @@ type clickSnapshot = {
 }
 ```
 
-再通过 `snapshot.node.click()` 就能将操作再执行一次。
+The operation can be executed again by `snapshot.node.click()`.
 
-但是在实际场景中，虽然我们已经重建出了完整的 DOM，但是却没有办法将增量快照中被交互的 DOM 节点和已存在的 DOM 关联在一起。
+However, in the actual scenario, although we have reconstructed the complete DOM, there is no way to associate the interacting DOM nodes in the incremental snapshot with the existing DOM.
 
-这就是唯一标识 `id` 的作用，我们在录制端和回放端维护随时间变化完全一致的 `id -> Node` 映射，并随着 DOM 节点的创建和销毁进行同样的更新，保证我们在增量快照中只需要记录 `id` 就可以在回放时找到对应的 DOM 节点。
+This is the reason for the identifier `id`. We maintain the `id -> Node` mapping that is exactly the same over time on both the recording and replay sides, and they both are updated when DOM nodes are created and destroyed, ensuring that we use unique increasing numbers in the snapshots, and only the `id` needs to be recorded to find the corresponding DOM node during replay.
 
-上述示例中的数据结构相应的变为：
+The data structure in the above example becomes correspondingly:
 
 ```typescript
 type clickSnapshot = {
@@ -122,4 +121,3 @@ type clickSnapshot = {
   id: Number;
 }
 ```
-

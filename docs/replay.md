@@ -1,47 +1,42 @@
-# 回放
+# Replay
+A design principle of rrweb is to process as little as possible on the recording side, minimizing the impact on the recorded page. This means we need to do some special processing on the replay side.
 
-rrweb 的设计原则是尽量少的在录制端进行处理，最大程度减少对被录制页面的影响，因此在回放端我们需要做一些特殊的处理。
+## High precision timer
+During replay, we will get the complete snapshot chain at one time. If all the snapshots are executed in sequence, we can directly get the last state of the recorded page, but what we need is to synchronously initialize the first full snapshot, and then apply the remaining incremental snapshots asynchronously. Using a time interval we replay each incremental snapshot one after the other, which requires a high-precision timer.
 
-## 高精度计时器
+The reason why **high precision** is emphasized is because the native `setTimeout` does not guarantee accurate execution after the set delay time, for example, when the main thread is blocked.
 
-在回放时我们会一次性拿到完整的快照链，如果将所有快照依次同步执行我们可以直接获取被录制页面最后的状态，但是我们需要的是同步初始化第一个全量快照，再异步地按照正确的时间间隔依次重放每一个增量快照，这就需要一个高精度的计时器。
+For our replay function, this inprecise delay is unacceptable and can lead to various weird phenomena, so we implement a constantly calibrated timer with `requestAnimationFrame` to ensure that in most cases incremental snapshots have a replay delay of no more than one frame.
 
-之所以强调**高精度**，是因为原生的 `setTimeout` 并不能保证在设置的延迟时间之后准确执行，例如主线程阻塞时就会被推迟。
+At the same time, the custom timer is also the basis for our "fast forward" function.
 
-对于我们的回放功能而言，这种不确定的推迟是不可接受的，可能会导致各种怪异现象的发生，因此我们通过 `requestAnimationFrame` 来实现一个不断校准的定时器，确保绝大部分情况下增量快照的重放延迟不超过一帧。
-
-同时自定义的计时器也是我们实现“快进”功能的基础。
-
-## 补全缺失节点
-
-在[增量快照设计](./observer.md)中提到了 rrweb 使用 MutationObserver 时的延迟序列化策略，这一策略可能导致以下场景中我们不能记录完整的增量快照：
+## Completing missing nodes
+The delay serialization strategy when rrweb uses MutationObserver is mentioned in the [incremental snapshot design](./observer.md), which may result in the following scenarios where we cannot record a full incremental snapshot:
 
 ```
 parent
-  child2
-  child1
+    node bar
+    node foo
 ```
 
-1. parent 节点插入子节点 child1
-2. parent 节点在 child1 之前插入子节点 child2
+1. Node `foo` is added as a child of the parent
+2. Node `bar` is added before existing child `foo`
 
-按照实际执行顺序 child1 会被 rrweb 先序列化，但是在序列化新增节点时我们除了记录父节点之外还需要记录相邻节点，从而保证回放时可以把新增节点放置在正确的位置。但是此时 child 1 相邻节点 child2 已经存在但是还未被序列化，我们会将其记录为 `id: -1`（不存在相邻节点时 id 为 null）。
+According to the actual execution order, `foo` will be serialized by rrweb first, but when serializing new nodes, we need to record adjacent nodes in addition to the parent node, to ensure that the newly added nodes can be placed in the correct position during replay. At this point `bar` already exists but has not been serialized, so we will record it as `id: -1` (or, if there are no neighbors `null` as the id to indicate it doesn't exist).
 
-重放时当我们处理到新增 child1 的增量快照时，我们可以通过其相邻节点 id 为 -1 这一特征知道帮助它定位的节点还未生成，然后将它临时放入”缺失节点池“中暂不插入 DOM 树中。
+During replay, when we process the incremental snapshot of the new `foo`, we know that its neighbor hasn't been inserted yet because it has an id of -1, and then temporarily put it into the "missing node pool". It is not inserted into the DOM tree.
 
-之后在处理到新增 child2 的增量快照时，我们正常处理并插入 child2，完成重放之后检查 child2 的相邻节点 id 是否指向缺失节点池中的某个待添加节点，如果吻合则将其从池中取出插入对应位置。
+After processing the incremental snapshot of the new n1, we normally process and insert `bar`. After the replay is completed, we check whether the neighbor node id of `foo` points to a node which is in the missing node pool. If it matches, then it will be removed from the pool and be inserted into the DOM tree.
 
-## 模拟 Hover
+## Simulation Hover
+CSS styles for the `:hover` selector are present in many web pages, but we can't trigger the hover state via JavaScript. So when playing back we need to simulate the hover state to make the style display correctly.
 
-在许多前端页面中都会存在 `:hover` 选择器对应的 CSS 样式，但是我们并不能通过 JavaScript 触发 hover 事件。因此回放时我们需要模拟 hover 事件让样式正确显示。
+The specific method includes two parts:
 
-具体方式包括两部分：
+1. Traverse the CSS stylesheet, adding the CSS rules for the `:hover` selector just like in the original, but with an additional special selector class, such as `.:hover`.
+2. When playing back the mouse up mouse interaction event, add the `.:hover` class name to the event target and all its ancestors, and remove it when the mouse moves away again.
 
-1. 遍历 CSS 样式表，对于 `:hover` 选择器相关 CSS 规则增加一条完全一致的规则，但是选择器为一个特殊的 class，例如 `.:hover`。
-2. 当回放 mouse up 鼠标交互事件时，为事件目标及其所有祖先节点都添加 `.:hover` 类名，mouse down 时再对应移除。
+## Play from any point in time
+In addition to the basic replay features, we also want players like `rrweb-player` to provide similar functionality to video players, such as dragging and dropping to the progress bar to any point in time.
 
-## 从任意时间点开始播放
-
-除了基础的回放功能之外，我们还希望 `rrweb-player` 这样的播放器可以提供和视频播放器类似的功能，如拖拽到进度条至任意时间点播放。
-
-实际实现时我们通过给定的起始时间点将快照链分为两部分，分别是时间点之前和之后的部分。然后同步执行之前的快照链，再正常异步执行之后的快照链就可以做到从任意时间点开始播放的效果。
+In actual implementation, we pass a start time to the method. We can then divide the snapshot chain into two parts: The parts before and the part after the start time. Then, the snapshot chain before the start time is executed synchronously, and then the snapshot chain after the starting times uses the normal asynchronous execution. This way we can achieve starting replay from any point in time.

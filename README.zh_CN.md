@@ -45,10 +45,10 @@ rrweb 主要由 3 部分组成：
 
 ## Internal Design
 
-- [序列化](./docs/serialization.md)
-- [增量快照](./docs/observer.md)
-- [回放](./docs/replay.md)
-- [沙盒](./docs/sandbox.md)
+- [序列化](./docs/serialization.zh_CN.md)
+- [增量快照](./docs/observer.zh_CN.md)
+- [回放](./docs/replay.zh_CN.md)
+- [沙盒](./docs/sandbox.zh_CN.md)
 
 ## Contribute Guide
 
