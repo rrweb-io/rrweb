@@ -58,18 +58,27 @@ rrweb.record({
 });
 ```
 
-During recording, the recorder will emit when there is some event incurred, all you need to do is to store the emitted events in any way you like.  `record` returns a function which when called will stop recording.
+During recording, the recorder will emit when there is some event incurred, all you need to do is to store the emitted events in any way you like.  
+
+The `record` method returns a function which can be called to stop events from firing:
+
+```js
+let stopFn = rrweb.record({
+  emit(event) {
+    if(events.length > 100){  //stop after 100 events
+      stopFn();
+    }
+  }
+});
+```
 
 A more real-world usage may looks like this:
 
 ```js
 let events = [];
 
-let stopFn = rrweb.record({
+rrweb.record({
   emit(event) {
-    if(events.length > 100){  //stop after 100 events
-      stopFn();
-    }
     // push event into the events array
     events.push(event);
   },
@@ -77,7 +86,6 @@ let stopFn = rrweb.record({
 
 // this function will send events to the backend and reset the events array
 function save() {
-    
   const body = JSON.stringify({ events });
   events = [];
   fetch('http://YOUR_BACKEND_API', {
@@ -91,7 +99,6 @@ function save() {
 
 // save events every 10 seconds
 setInterval(save, 10 * 1000);
-
 ```
 
 #### Privacy
