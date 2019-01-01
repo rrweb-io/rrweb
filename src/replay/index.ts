@@ -30,20 +30,13 @@ smoothscroll.polyfill();
 // tslint:disable-next-line
 const mitt = (mittProxy as any).default || mittProxy;
 
-const defaultConfig: playerConfig = {
-  speed: 1,
-  root: document.body,
-  loadTimeout: 0,
-  skipInactive: false,
-};
-
 export class Replayer {
   public wrapper: HTMLDivElement;
 
   public timer: Timer;
 
   private events: eventWithTime[] = [];
-  private config: playerConfig = defaultConfig;
+  private config: playerConfig;
 
   private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
@@ -66,8 +59,15 @@ export class Replayer {
     this.events = events;
     this.handleResize = this.handleResize.bind(this);
 
+    const defaultConfig: playerConfig = {
+      speed: 1,
+      root: document.body,
+      loadTimeout: 0,
+      skipInactive: false,
+    };
+    this.config = Object.assign({}, defaultConfig, config);
+
     this.timer = new Timer(this.config);
-    this.setConfig(Object.assign({}, config));
     this.setupDom();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
   }
