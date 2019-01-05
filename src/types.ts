@@ -229,6 +229,7 @@ export type playerConfig = {
   root: Element;
   loadTimeout: number;
   skipInactive: Boolean;
+  showWarning: Boolean;
 };
 
 export type playerMetaData = {

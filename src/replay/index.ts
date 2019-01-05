@@ -16,6 +16,7 @@ import {
   missingNode,
   actionWithDelay,
   incrementalSnapshotEvent,
+  incrementalData,
 } from '../types';
 import { mirror } from '../utils';
 import injectStyleRules from './styles/inject-style';
@@ -29,6 +30,8 @@ smoothscroll.polyfill();
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 // tslint:disable-next-line
 const mitt = (mittProxy as any).default || mittProxy;
+
+const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -64,6 +67,7 @@ export class Replayer {
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
+      showWarning: true,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -324,7 +328,7 @@ export class Replayer {
         d.removes.forEach(mutation => {
           const target = mirror.getNode(mutation.id);
           if (!target) {
-            return;
+            return this.warnTargetNotFound(d, mutation.id);
           }
           const parent = (mirror.getNode(
             mutation.parentId!,
@@ -410,9 +414,10 @@ export class Replayer {
                 this.mouse.style.left = `${p.x}px`;
                 this.mouse.style.top = `${p.y}px`;
                 const target = mirror.getNode(p.id);
-                if (target) {
-                  this.hoverElements((target as Node) as Element);
+                if (!target) {
+                  return this.warnTargetNotFound(d, p.id);
                 }
+                this.hoverElements((target as Node) as Element);
               },
               delay: p.timeOffset + e.timestamp - this.baselineTime,
             };
@@ -428,13 +433,16 @@ export class Replayer {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
-        const target = (mirror.getNode(d.id) as Node) as HTMLElement;
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.warnTargetNotFound(d, d.id);
+        }
         switch (d.type) {
           case MouseInteractions.Blur:
-            target.blur();
+            ((target as Node) as HTMLElement).blur();
             break;
           case MouseInteractions.Focus:
-            target.focus({
+            ((target as Node) as HTMLElement).focus({
               preventScroll: true,
             });
             break;
@@ -465,8 +473,11 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const target = mirror.getNode(d.id) as Node;
-        if (target === this.iframe.contentDocument) {
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.warnTargetNotFound(d, d.id);
+        }
+        if ((target as Node) === this.iframe.contentDocument) {
           this.iframe.contentWindow!.scrollTo({
             top: d.y,
             left: d.x,
@@ -474,8 +485,8 @@ export class Replayer {
           });
         } else {
           try {
-            (target as Element).scrollTop = d.y;
-            (target as Element).scrollLeft = d.x;
+            ((target as Node) as Element).scrollTop = d.y;
+            ((target as Node) as Element).scrollLeft = d.x;
           } catch (error) {
             /**
              * Seldomly we may found scroll target was removed before
@@ -501,12 +512,13 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const target: HTMLInputElement = (mirror.getNode(
-          d.id,
-        ) as Node) as HTMLInputElement;
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.warnTargetNotFound(d, d.id);
+        }
         try {
-          target.checked = d.isChecked;
-          target.value = d.text;
+          ((target as Node) as HTMLInputElement).checked = d.isChecked;
+          ((target as Node) as HTMLInputElement).value = d.text;
         } catch (error) {
           // for safe
         }
@@ -576,5 +588,16 @@ export class Replayer {
     this.setConfig(payload);
     this.emitter.emit('skip-end', payload);
     this.noramlSpeed = -1;
+  }
+
+  private warnTargetNotFound(d: incrementalData, id: number) {
+    if (!this.config.showWarning) {
+      return;
+    }
+    console.warn(
+      REPLAY_CONSOLE_PREFIX,
+      `target with id '${id}' not found in`,
+      d,
+    );
   }
 }

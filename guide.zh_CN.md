@@ -136,6 +136,7 @@ replayer.play();
 | root         | document.body | 回放时使用的 HTML 元素       |
 | loadTimeout  | 0             | 加载异步样式表的超时时长     |
 | skipInactive | false         | 是否快速跳过无用户操作的阶段 |
+| showWarning  | true          | 是否在回放过程中打印警告信息 |
 
 #### 使用 rrweb-player
 

@@ -134,12 +134,13 @@ replayer.play();
 
 The replayer accepts options as its constructor's second parameter, and it has the following options:
 
-| key          | default       | description                           |
-| ------------ | ------------- | ------------------------------------- |
-| speed        | 1             | replay speed ratio                    |
-| root         | document.body | the root element of replayer          |
-| loadTimeout  | 0             | timeout of loading remote style sheet |
-| skipInactive | false         | whether to skip inactive time         |
+| key          | default       | description                                     |
+| ------------ | ------------- | ----------------------------------------------- |
+| speed        | 1             | replay speed ratio                              |
+| root         | document.body | the root element of replayer                    |
+| loadTimeout  | 0             | timeout of loading remote style sheet           |
+| skipInactive | false         | whether to skip inactive time                   |
+| showWarning  | true          | whether to print warning messages during replay |
 
 #### Use rrweb-player
 
