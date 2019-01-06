@@ -7,7 +7,7 @@
 
 # rrweb
 
-[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
+[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb) [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [中文文档](./README.zh_CN.md)
 
