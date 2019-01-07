@@ -35,13 +35,13 @@ const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
 export class Replayer {
   public wrapper: HTMLDivElement;
+  public iframe: HTMLIFrameElement;
 
   public timer: Timer;
 
   private events: eventWithTime[] = [];
   private config: playerConfig;
 
-  private iframe: HTMLIFrameElement;
   private mouse: HTMLDivElement;
 
   private emitter: mitt.Emitter = mitt();
