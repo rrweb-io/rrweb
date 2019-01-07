@@ -1,14 +1,22 @@
-<div class="rr-player">
+<div class="rr-player" ref:player style="{playerStyle}">
   <div class="rr-player__frame" ref:frame { style }></div>
   {#if replayer}
-  <Controller { replayer } {showController} />
+  <Controller { replayer } {showController} on:fullscreen="fullscreen()" />
   {/if}
 </div>
 
 <script>
   import { Replayer } from 'rrweb';
   import 'rrweb/dist/rrweb.min.css';
-  import { inlineCss } from './utils.js';
+  import {
+    inlineCss,
+    openFullscreen,
+    exitFullscreen,
+    isFullscreen,
+    onFullscreenChange,
+  } from './utils.js';
+
+  const controllerHeight = 80;
 
   export default {
     components: {
@@ -30,6 +38,12 @@
           height: `${height}px`,
         });
       },
+      playerStyle({ width, height }) {
+        return inlineCss({
+          width: `${width}px`,
+          height: `${height + controllerHeight}px`,
+        });
+      },
     },
     methods: {
       updateScale(el, frameDimension) {
@@ -40,8 +54,13 @@
           `scale(${Math.min(widthScale, heightScale, 1)})` +
           'translate(-50%, -50%)';
       },
+      fullscreen() {
+        if (this.refs.player) {
+          isFullscreen() ? exitFullscreen() : openFullscreen(this.refs.player);
+        }
+      },
     },
-    oncreate(p) {
+    oncreate() {
       const { events } = this.get();
       const replayer = new Replayer(events, {
         speed: 1,
@@ -54,6 +73,39 @@
       this.set({
         replayer,
       });
+      this.fullscreenListener = onFullscreenChange(() => {
+        if (isFullscreen()) {
+          setTimeout(() => {
+            const { width, height } = this.get();
+            // store the original dimension which do not need to be reactive
+            this._width = width;
+            this._height = height;
+            const dimension = {
+              width: document.body.offsetWidth,
+              height: document.body.offsetHeight - controllerHeight,
+            };
+            this.set(dimension);
+            this.updateScale(replayer.wrapper, {
+              width: replayer.iframe.offsetWidth,
+              height: replayer.iframe.offsetHeight,
+            });
+          }, 0);
+        } else {
+          this.set({
+            width: this._width,
+            height: this._height,
+          });
+          this.updateScale(replayer.wrapper, {
+            width: replayer.iframe.offsetWidth,
+            height: replayer.iframe.offsetHeight,
+          });
+        }
+      });
+    },
+    ondestroy() {
+      if (this.fullscreenListener) {
+        this.fullscreenListener();
+      }
     },
   };
 
