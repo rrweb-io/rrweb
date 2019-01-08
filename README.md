@@ -63,3 +63,12 @@ Since we want the record and replay sides to share a strongly typed data structu
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
 [Using the REPL tool](./guide.md#REPL-tool)
+
+### Code Visualization:
+
+Here is a cool visualization of the code evolution
+
+ [![Watch the video](https://img.youtube.com/vi/zXXcECxNoHY/0.jpg)](https://www.youtube.com/watch?v=zXXcECxNoHY)
+
+ [https://www.youtube.com/watch?v=zXXcECxNoHY](https://www.youtube.com/watch?v=zXXcECxNoHY)
+
