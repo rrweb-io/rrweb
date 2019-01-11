@@ -1,6 +1,13 @@
-import { snapshot } from 'rrweb-snapshot';
+import { snapshot, NodeType } from 'rrweb-snapshot';
 import initObservers from './observer';
-import { mirror, on, getWindowWidth, getWindowHeight } from '../utils';
+import {
+  mirror,
+  on,
+  getWindowWidth,
+  getWindowHeight,
+  getIframeDimensions,
+  initDimension,
+} from '../utils';
 import {
   EventType,
   event,
@@ -8,6 +15,7 @@ import {
   recordOptions,
   IncrementalSource,
   listenerHandler,
+  documentDimension,
 } from '../types';
 
 function wrapEvent(e: event): eventWithTime {
@@ -50,6 +58,8 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
     }
   };
 
+  const iframes: HTMLIFrameElement[] = [];
+
   function takeFullSnapshot(isCheckout = false) {
     wrappedEmit(
       wrapEvent({
@@ -62,7 +72,14 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       }),
       isCheckout,
     );
-    const [node, idNodeMap] = snapshot(document, blockClass);
+    const [node, idNodeMap] = snapshot(document, {
+      blockClass,
+      onVisit: n => {
+        if (n.__sn.type === NodeType.Element && n.__sn.tagName === 'iframe') {
+          iframes.push((n as unknown) as HTMLIFrameElement);
+        }
+      },
+    });
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
@@ -93,73 +110,83 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
         );
       }),
     );
+    const observe = (doc: Document, dimension: documentDimension) => {
+      return initObservers({
+        mutationCb: m =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Mutation,
+                ...m,
+              },
+            }),
+          ),
+        mousemoveCb: positions =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseMove,
+                positions,
+              },
+            }),
+          ),
+        mouseInteractionCb: d =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseInteraction,
+                ...d,
+              },
+            }),
+          ),
+        scrollCb: p =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Scroll,
+                ...p,
+              },
+            }),
+          ),
+        viewportResizeCb: d =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.ViewportResize,
+                ...d,
+              },
+            }),
+          ),
+        inputCb: v =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Input,
+                ...v,
+              },
+            }),
+          ),
+        blockClass,
+        ignoreClass,
+        doc,
+        dimension,
+      });
+    };
     const init = () => {
       takeFullSnapshot();
-
+      const iframeMap = getIframeDimensions();
       handlers.push(
-        initObservers({
-          mutationCb: m =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Mutation,
-                  ...m,
-                },
-              }),
-            ),
-          mousemoveCb: positions =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseMove,
-                  positions,
-                },
-              }),
-            ),
-          mouseInteractionCb: d =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseInteraction,
-                  ...d,
-                },
-              }),
-            ),
-          scrollCb: p =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Scroll,
-                  ...p,
-                },
-              }),
-            ),
-          viewportResizeCb: d =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.ViewportResize,
-                  ...d,
-                },
-              }),
-            ),
-          inputCb: v =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Input,
-                  ...v,
-                },
-              }),
-            ),
-          blockClass,
-          ignoreClass,
+        observe(document, initDimension),
+        ...iframes.map(iframe => {
+          const dimension = iframeMap.get(iframe);
+          console.assert(dimension, 'iframe not found in the dimension map');
+          return observe(iframe.contentDocument!, dimension || initDimension);
         }),
       );
     };

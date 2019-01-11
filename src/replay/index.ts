@@ -1,4 +1,4 @@
-import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN, callbackArray } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import * as smoothscroll from 'smoothscroll-polyfill';
 import Timer from './timer';
@@ -10,7 +10,7 @@ import {
   MouseInteractions,
   playerConfig,
   playerMetaData,
-  viewportResizeDimention,
+  viewportResizeDimension,
   missingNodeMap,
   addedNodeMutation,
   missingNode,
@@ -172,7 +172,7 @@ export class Replayer {
     this.wrapper.appendChild(this.iframe);
   }
 
-  private handleResize(dimension: viewportResizeDimention) {
+  private handleResize(dimension: viewportResizeDimension) {
     this.iframe.width = `${dimension.width}px`;
     this.iframe.height = `${dimension.height}px`;
   }
@@ -348,12 +348,15 @@ export class Replayer {
 
         const missingNodeMap: missingNodeMap = { ...this.missingNodeRetryMap };
         d.adds.forEach(mutation => {
+          const cbs: callbackArray = [];
           const target = buildNodeWithSN(
             mutation.node,
             this.iframe.contentDocument!,
             mirror.map,
+            cbs,
             true,
-          ) as Node;
+          )[0] as Node;
+          cbs.forEach(f => f());
           const parent = mirror.getNode(mutation.parentId);
           if (!parent) {
             return this.warnNodeNotFound(d, mutation.parentId);
