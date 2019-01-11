@@ -4,13 +4,11 @@ exports[`attributes 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -18,8 +16,7 @@ exports[`attributes 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -128,8 +125,7 @@ exports[`attributes 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -151,8 +147,7 @@ exports[`attributes 1`] = `
         }
       ],
       \\"adds\\": []
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;
@@ -161,13 +156,11 @@ exports[`block 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -175,8 +168,7 @@ exports[`block 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -335,8 +327,7 @@ exports[`block 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;
@@ -345,13 +336,11 @@ exports[`character-data 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -359,8 +348,7 @@ exports[`character-data 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -469,8 +457,7 @@ exports[`character-data 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -490,8 +477,7 @@ exports[`character-data 1`] = `
         }
       ],
       \\"adds\\": []
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;
@@ -500,13 +486,11 @@ exports[`child-list 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -514,8 +498,7 @@ exports[`child-list 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -624,8 +607,7 @@ exports[`child-list 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -653,8 +635,7 @@ exports[`child-list 1`] = `
           }
         }
       ]
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;
@@ -663,13 +644,11 @@ exports[`form 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -677,8 +656,7 @@ exports[`form 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -1061,8 +1039,7 @@ exports[`form 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1070,8 +1047,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1080,8 +1056,7 @@ exports[`form 1`] = `
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1090,8 +1065,7 @@ exports[`form 1`] = `
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1100,8 +1074,7 @@ exports[`form 1`] = `
       \\"text\\": \\"tes\\",
       \\"isChecked\\": false,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1110,8 +1083,7 @@ exports[`form 1`] = `
       \\"text\\": \\"test\\",
       \\"isChecked\\": false,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1119,8 +1091,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 1,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1128,8 +1099,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1137,8 +1107,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1146,8 +1115,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 0,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1155,8 +1123,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 2,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1165,8 +1132,7 @@ exports[`form 1`] = `
       \\"text\\": \\"on\\",
       \\"isChecked\\": true,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1174,8 +1140,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 1,
       \\"id\\": 32
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1183,8 +1148,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1192,8 +1156,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 32
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1201,8 +1164,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 0,
       \\"id\\": 32
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1210,8 +1172,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 2,
       \\"id\\": 32
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1220,8 +1181,7 @@ exports[`form 1`] = `
       \\"text\\": \\"on\\",
       \\"isChecked\\": true,
       \\"id\\": 32
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1229,8 +1189,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 32
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1238,8 +1197,7 @@ exports[`form 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1248,8 +1206,7 @@ exports[`form 1`] = `
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1258,8 +1215,7 @@ exports[`form 1`] = `
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1268,8 +1224,7 @@ exports[`form 1`] = `
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1278,8 +1233,7 @@ exports[`form 1`] = `
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1288,8 +1242,7 @@ exports[`form 1`] = `
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1298,8 +1251,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1308,8 +1260,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1318,8 +1269,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1328,8 +1278,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1338,8 +1287,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1348,8 +1296,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1358,8 +1305,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1368,8 +1314,7 @@ exports[`form 1`] = `
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
       \\"id\\": 37
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1378,8 +1323,7 @@ exports[`form 1`] = `
       \\"text\\": \\"1\\",
       \\"isChecked\\": false,
       \\"id\\": 42
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;
@@ -1388,13 +1332,11 @@ exports[`ignore 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -1402,8 +1344,7 @@ exports[`ignore 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -1633,8 +1574,7 @@ exports[`ignore 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1642,8 +1582,7 @@ exports[`ignore 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1651,8 +1590,7 @@ exports[`ignore 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 22
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -1660,8 +1598,7 @@ exports[`ignore 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 27
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;
@@ -1670,13 +1607,11 @@ exports[`select2 1`] = `
 "[
   {
     \\"type\\": 0,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 1,
-    \\"data\\": {},
-    \\"timestamp\\": 1542268800000
+    \\"data\\": {}
   },
   {
     \\"type\\": 4,
@@ -1684,8 +1619,7 @@ exports[`select2 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 2,
@@ -2189,8 +2123,7 @@ exports[`select2 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2198,8 +2131,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 1,
       \\"id\\": 26
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2207,8 +2139,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 42
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2647,8 +2578,7 @@ exports[`select2 1`] = `
           }
         }
       ]
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2656,8 +2586,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 0,
       \\"id\\": 93
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2666,8 +2595,7 @@ exports[`select2 1`] = `
       \\"text\\": \\"\\",
       \\"isChecked\\": false,
       \\"id\\": 81
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2676,8 +2604,7 @@ exports[`select2 1`] = `
       \\"text\\": \\"\\",
       \\"isChecked\\": false,
       \\"id\\": 35
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2685,8 +2612,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 1,
       \\"id\\": 93
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2694,8 +2620,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 81
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2703,8 +2628,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 35
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2775,8 +2699,7 @@ exports[`select2 1`] = `
           }
         }
       ]
-    },
-    \\"timestamp\\": 1542268800000
+    }
   },
   {
     \\"type\\": 3,
@@ -2784,8 +2707,7 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 0,
       \\"id\\": 67
-    },
-    \\"timestamp\\": 1542268800000
+    }
   }
 ]"
 `;

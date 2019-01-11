@@ -10,6 +10,7 @@ import {
   eventWithTime,
   EventType,
 } from '../src/types';
+import { assertSnapshot } from './utils';
 
 interface IWindow extends Window {
   rrweb: {
@@ -60,7 +61,7 @@ describe('record', () => {
     await this.browser.close();
   });
 
-  it('can will only have one full snapshot without checkout config', async () => {
+  it('will only have one full snapshot without checkout config', async () => {
     await this.page.evaluate(() => {
       const { record } = (window as IWindow).rrweb;
       record({
@@ -110,9 +111,9 @@ describe('record', () => {
       ).length,
     ).to.equal(4);
     expect(this.events[1].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[12].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[24].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[36].type).to.equal(EventType.FullSnapshot);
+    expect(this.events[13].type).to.equal(EventType.FullSnapshot);
+    expect(this.events[25].type).to.equal(EventType.FullSnapshot);
+    expect(this.events[37].type).to.equal(EventType.FullSnapshot);
   });
 
   it('can checkout full snapshot by time', async () => {
@@ -143,6 +144,32 @@ describe('record', () => {
       ).length,
     ).to.equal(2);
     expect(this.events[1].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[34].type).to.equal(EventType.FullSnapshot);
+    expect(this.events[35].type).to.equal(EventType.FullSnapshot);
+  });
+
+  it('is safe to checkout during async callbacks', async () => {
+    await this.page.evaluate(() => {
+      const { record } = (window as IWindow).rrweb;
+      record({
+        emit: (window as IWindow).emit,
+        checkoutEveryNth: 2,
+      });
+      const p = document.createElement('p');
+      const span = document.createElement('span');
+      setTimeout(() => {
+        document.body.appendChild(p);
+        p.appendChild(span);
+        document.body.removeChild(document.querySelector('input')!);
+      }, 0);
+      setTimeout(() => {
+        span.innerText = 'test';
+      }, 10);
+      setTimeout(() => {
+        p.removeChild(span);
+        document.body.appendChild(span);
+      }, 10);
+    });
+    await this.page.waitFor(50);
+    assertSnapshot(this.events, __filename, 'async-checkout');
   });
 });
