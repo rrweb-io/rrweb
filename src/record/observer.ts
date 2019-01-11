@@ -40,6 +40,7 @@ import {
   LogRecordOptions,
   Logger,
   LogLevel,
+  DocumentDimension,
 } from '../types';
 import MutationBuffer from './mutation';
 import { stringify } from './stringify';
@@ -57,6 +58,7 @@ export const mutationBuffer = new MutationBuffer();
 
 function initMutationObserver(
   cb: mutationCallBack,
+  doc: Document,
   blockClass: blockClass,
   blockSelector: string | null,
   inlineStylesheet: boolean,
@@ -116,6 +118,8 @@ function initMutationObserver(
 function initMoveObserver(
   cb: mousemoveCallBack,
   sampling: SamplingStrategy,
+  doc: Document,
+  dimension: DocumentDimension,
 ): listenerHandler {
   if (sampling.mousemove === false) {
     return () => {};
@@ -148,8 +152,8 @@ function initMoveObserver(
         timeBaseline = Date.now();
       }
       positions.push({
-        x: clientX,
-        y: clientY,
+        x: dimension.x + clientX,
+        y: dimension.y + clientY,
         id: mirror.getId(target as INode),
         timeOffset: Date.now() - timeBaseline,
       });
@@ -161,8 +165,8 @@ function initMoveObserver(
     },
   );
   const handlers = [
-    on('mousemove', updatePosition),
-    on('touchmove', updatePosition),
+    on('mousemove', updatePosition, doc),
+    on('touchmove', updatePosition, doc),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -171,6 +175,8 @@ function initMoveObserver(
 
 function initMouseInteractionObserver(
   cb: mouseInteractionCallBack,
+  doc: Document,
+  dimension: DocumentDimension,
   blockClass: blockClass,
   sampling: SamplingStrategy,
 ): listenerHandler {
@@ -196,8 +202,8 @@ function initMouseInteractionObserver(
       cb({
         type: MouseInteractions[eventKey],
         id,
-        x: clientX,
-        y: clientY,
+        x: dimension.x + clientX,
+        y: dimension.y + clientY,
       });
     };
   };
@@ -211,7 +217,7 @@ function initMouseInteractionObserver(
     .forEach((eventKey: keyof typeof MouseInteractions) => {
       const eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
-      handlers.push(on(eventName, handler));
+      handlers.push(on(eventName, handler, doc));
     });
   return () => {
     handlers.forEach((h) => h());
@@ -220,6 +226,7 @@ function initMouseInteractionObserver(
 
 function initScrollObserver(
   cb: scrollCallback,
+  doc: Document,
   blockClass: blockClass,
   sampling: SamplingStrategy,
 ): listenerHandler {
@@ -228,8 +235,8 @@ function initScrollObserver(
       return;
     }
     const id = mirror.getId(evt.target as INode);
-    if (evt.target === document) {
-      const scrollEl = (document.scrollingElement || document.documentElement)!;
+    if (evt.target === doc) {
+      const scrollEl = (doc.scrollingElement || doc.documentElement)!;
       cb({
         id,
         x: scrollEl.scrollLeft,
@@ -270,6 +277,7 @@ export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
+  doc: Document,
   blockClass: blockClass,
   ignoreClass: string,
   maskInputOptions: MaskInputOptions,
@@ -314,7 +322,7 @@ function initInputObserver(
     // the other radios with the same name attribute will be unchecked.
     const name: string | undefined = (target as HTMLInputElement).name;
     if (type === 'radio' && name && isChecked) {
-      document
+      doc
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
@@ -727,6 +735,7 @@ export function initObservers(
   mergeHooks(o, hooks);
   const mutationObserver = initMutationObserver(
     o.mutationCb,
+    o.doc,
     o.blockClass,
     o.blockSelector,
     o.inlineStylesheet,
@@ -734,20 +743,29 @@ export function initObservers(
     o.recordCanvas,
     o.slimDOMOptions,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
+  const mousemoveHandler = initMoveObserver(
+    o.mousemoveCb,
+    o.sampling,
+    o.doc,
+    o.dimension,
+  );
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
+    o.doc,
+    o.dimension,
     o.blockClass,
     o.sampling,
   );
   const scrollHandler = initScrollObserver(
     o.scrollCb,
+    o.doc,
     o.blockClass,
     o.sampling,
   );
   const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
   const inputHandler = initInputObserver(
     o.inputCb,
+    o.doc,
     o.blockClass,
     o.ignoreClass,
     o.maskInputOptions,

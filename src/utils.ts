@@ -14,6 +14,7 @@ import {
   mutationData,
   scrollData,
   inputData,
+  documentDimension,
 } from './types';
 import { INode, IGNORED_NODE } from 'rrweb-snapshot';
 
@@ -526,4 +527,30 @@ export function iterateResolveTree(
   for (let i = tree.children.length - 1; i >= 0; i--) {
     iterateResolveTree(tree.children[i], cb);
   }
+}
+
+export const initDimension = { x: 0, y: 0 };
+
+export function getIframeDimensions(): WeakMap<
+  HTMLIFrameElement,
+  documentDimension
+> {
+  let x = 0;
+  let y = 0;
+  const wmap: WeakMap<HTMLIFrameElement, documentDimension> = new WeakMap();
+  function matchIframe(doc: Document) {
+    doc.querySelectorAll('iframe').forEach((iframe) => {
+      x += iframe.offsetLeft;
+      y += iframe.offsetTop;
+      wmap.set(iframe, {
+        x,
+        y,
+      });
+      if (iframe.contentDocument) {
+        matchIframe(iframe.contentDocument);
+      }
+    });
+  }
+  matchIframe(document);
+  return wmap;
 }

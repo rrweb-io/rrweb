@@ -101,7 +101,7 @@ export type scrollData = {
 
 export type viewportResizeData = {
   source: IncrementalSource.ViewportResize;
-} & viewportResizeDimention;
+} & viewportResizeDimension;
 
 export type inputData = {
   source: IncrementalSource.Input;
@@ -224,6 +224,8 @@ export type observerParam = {
   recordCanvas: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
+  doc: Document;
+  dimension: DocumentDimension;
 };
 
 export type hooksParam = {
@@ -430,12 +432,12 @@ export type fontCallback = (p: fontParam) => void;
 
 export type logCallback = (p: LogParam) => void;
 
-export type viewportResizeDimention = {
+export type viewportResizeDimension = {
   width: number;
   height: number;
 };
 
-export type viewportResizeCallback = (d: viewportResizeDimention) => void;
+export type viewportResizeCallback = (d: viewportResizeDimension) => void;
 
 export type inputValue = {
   text: string;
@@ -455,6 +457,11 @@ export type mediaInteractionParam = {
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;
+
+export type DocumentDimension = {
+  x: number;
+  y: number;
+};
 
 export type Mirror = {
   map: idNodeMap;

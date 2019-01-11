@@ -1,4 +1,12 @@
-import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
+import {
+  rebuild,
+  buildNodeWithSN,
+  CallbackArray,
+  INode,
+  NodeType,
+  idNodeMap,
+  serializedNodeWithId,
+} from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -11,7 +19,7 @@ import {
   MouseInteractions,
   playerConfig,
   playerMetaData,
-  viewportResizeDimention,
+  viewportResizeDimension,
   missingNodeMap,
   addedNodeMutation,
   missingNode,
@@ -81,6 +89,25 @@ const defaultLogConfig: LogReplayConfig = {
   ],
   replayLogger: undefined,
 };
+
+function buildIframe(
+  iframe: HTMLIFrameElement,
+  childNodes: serializedNodeWithId[],
+  map: idNodeMap,
+  cbs: CallbackArray,
+  hackCss: boolean,
+) {
+  const targetDoc = iframe.contentDocument!;
+  for (const childN of childNodes) {
+    buildNodeWithSN(childN, {
+      doc: targetDoc,
+      map,
+      cbs,
+      skipChild: false,
+      hackCss,
+    });
+  }
+}
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -406,7 +433,7 @@ export class Replayer {
     }
   }
 
-  private handleResize(dimension: viewportResizeDimention) {
+  private handleResize(dimension: viewportResizeDimension) {
     this.iframe.style.display = 'inherit';
     for (const el of [this.mouseTail, this.iframe]) {
       if (!el) {
@@ -1064,7 +1091,8 @@ export class Replayer {
         map: mirror.map,
         skipChild: true,
         hackCss: true,
-      }) as Node;
+        cbs,
+      })[0] as Node;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {

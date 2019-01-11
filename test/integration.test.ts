@@ -367,4 +367,10 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'log');
   });
+
+  it('should nest record iframe', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'iframe.html'));
+  });
 });
