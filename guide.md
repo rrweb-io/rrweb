@@ -110,6 +110,80 @@ You may find some contents on the webpage which are not willing to be recorded, 
 - An element with the class name `.rr-ignore` will not record its input events.
 - `input[type="password"]` will be ignored as default.
 
+#### Checkout
+
+By default, all the emitted events are required to replay a session and if you do not want to store all the events, you can use the checkout config.
+
+**Most of the time you do not need to configure this**. But if you want to do something like capturing just the last N events from when an error has occurred, here is an example:
+
+```js
+// We use a two-dimensional array to store multiple events array
+const eventsMatrix = [[]];
+
+rrweb.record({
+  emit(event, isCheckout) {
+    // isCheckout is a flag to tell you the events has been checkout
+    if (isCheckout) {
+      eventsMatrix.push([]);
+    }
+    const lastEvents = eventsMatrix[eventsMatrix.length - 1];
+    lastEvents.push(event);
+  },
+  checkoutEveryNth: 200, // checkout every 200 events
+});
+
+// send last two events array to the backend
+window.onerror = function() {
+  const len = eventsMatrix.length;
+  const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
+  const body = JSON.stringify({ events });
+  fetch('http://YOUR_BACKEND_API', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body,
+  });
+};
+```
+
+Due to the incremental-snapshot-chain mechanism rrweb used, we can not capture the last N events accurately. With the sample code above, you will finally get the last 200 to 400 events been sent to your backend.
+
+Similarly, you can also configure `checkoutEveryNms` to capture the last N minutes events:
+
+```js
+// We use a two-dimensional array to store multiple events array
+const eventsMatrix = [[]];
+
+rrweb.record({
+  emit(event, isCheckout) {
+    // isCheckout is a flag to tell you the events has been checkout
+    if (isCheckout) {
+      eventsMatrix.push([]);
+    }
+    const lastEvents = eventsMatrix[eventsMatrix.length - 1];
+    lastEvents.push(event);
+  },
+  checkoutEveryNms: 5 * 60 * 1000, // checkout every 5 minutes
+});
+
+// send last two events array to the backend
+window.onerror = function() {
+  const len = eventsMatrix.length;
+  const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
+  const body = JSON.stringify({ events });
+  fetch('http://YOUR_BACKEND_API', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body,
+  });
+};
+```
+
+With the sample code above, you will finally get the last 5 to 10 minutes of events been sent to your backend.
+
 ### Replay
 
 You need to include the style sheet before replay:

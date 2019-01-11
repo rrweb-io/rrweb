@@ -1,4 +1,4 @@
-/* tslint:disable no-string-literal */
+/* tslint:disable no-string-literal no-console */
 
 import * as fs from 'fs';
 import * as path from 'path';

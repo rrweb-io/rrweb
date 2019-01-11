@@ -1,84 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { assert } from 'chai';
-import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
-import { EventType, IncrementalSource, eventWithTime } from '../src/types';
-import { NodeType } from 'rrweb-snapshot';
-
-function matchSnapshot(actual: string, testFile: string, testTitle: string) {
-  const snapshotState = new SnapshotState(testFile, {
-    updateSnapshot: process.env.SNAPSHOT_UPDATE ? 'all' : 'new',
-  });
-
-  const matcher = toMatchSnapshot.bind({
-    snapshotState,
-    currentTestName: testTitle,
-  });
-  const result = matcher(actual);
-  snapshotState.save();
-  return result;
-}
-
-/**
- * Puppeteer may cast random mouse move which make our tests flaky.
- * So we only do snapshot test with filtered events.
- * @param snapshots incrementalSnapshotEvent[]
- */
-function stringifySnapshots(snapshots: eventWithTime[]): string {
-  return JSON.stringify(
-    snapshots
-      .filter(s => {
-        if (
-          s.type === EventType.IncrementalSnapshot &&
-          s.data.source === IncrementalSource.MouseMove
-        ) {
-          return false;
-        }
-        return true;
-      })
-      .map(s => {
-        if (s.type === EventType.Meta) {
-          s.data.href = 'about:blank';
-        }
-        // FIXME: travis coordinates seems different with my laptop
-        const coordinatesReg = /(bottom|top|left|right)/;
-        if (
-          s.type === EventType.IncrementalSnapshot &&
-          s.data.source === IncrementalSource.MouseInteraction
-        ) {
-          delete s.data.x;
-          delete s.data.y;
-        }
-        if (
-          s.type === EventType.IncrementalSnapshot &&
-          s.data.source === IncrementalSource.Mutation
-        ) {
-          s.data.attributes.forEach(a => {
-            if (
-              'style' in a.attributes &&
-              coordinatesReg.test(a.attributes.style!)
-            ) {
-              delete a.attributes.style;
-            }
-          });
-          s.data.adds.forEach(add => {
-            if (
-              add.node.type === NodeType.Element &&
-              'style' in add.node.attributes &&
-              typeof add.node.attributes.style === 'string' &&
-              coordinatesReg.test(add.node.attributes.style)
-            ) {
-              delete add.node.attributes.style;
-            }
-          });
-        }
-        return s;
-      }),
-    null,
-    2,
-  );
-}
+import { assertSnapshot } from './utils';
 
 describe('record integration tests', () => {
   function getHtml(fileName: string): string {
@@ -133,12 +56,7 @@ describe('record integration tests', () => {
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'form',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'form');
   }).timeout(5000);
 
   it('can record childList mutations', async () => {
@@ -156,12 +74,7 @@ describe('record integration tests', () => {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'child-list',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'child-list');
   }).timeout(5000);
 
   it('can record character data muatations', async () => {
@@ -181,12 +94,7 @@ describe('record integration tests', () => {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'character-data',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'character-data');
   });
 
   it('can record attribute mutation', async () => {
@@ -204,12 +112,7 @@ describe('record integration tests', () => {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'attributes',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'attributes');
   });
 
   it('can record node mutations', async () => {
@@ -228,12 +131,7 @@ describe('record integration tests', () => {
     await page.click('.select2-container');
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'select2',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'select2');
   }).timeout(10000);
 
   it('should not record input events on ignored elements', async () => {
@@ -245,12 +143,7 @@ describe('record integration tests', () => {
     await page.type('.rr-ignore', 'secret');
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'ignore',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'ignore');
   });
 
   it('should not record blocked elements and its child nodes', async () => {
@@ -263,11 +156,6 @@ describe('record integration tests', () => {
     await page.click('#text');
 
     const snapshots = await page.evaluate('window.snapshots');
-    const result = matchSnapshot(
-      stringifySnapshots(snapshots),
-      __filename,
-      'block',
-    );
-    assert(result.pass, result.pass ? '' : result.report());
+    assertSnapshot(snapshots, __filename, 'block');
   });
 });
