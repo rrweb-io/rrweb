@@ -18,65 +18,56 @@ function getCode(): string {
   const code = getCode();
   let events: eventWithTime[] = [];
 
-  const { url } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'url',
-      message:
-        'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
-    },
-  ]);
+  start();
 
-  console.log(`Going to open ${url}...`);
-  await record(url);
-  console.log('Ready to record. You can do any interaction on the page.');
-
-  const { shouldReplay } = await inquirer.prompt([
-    {
-      type: 'expand',
-      name: 'shouldReplay',
-      choices: [
-        {
-          key: 'y',
-          name: 'Replay',
-          value: 'replay',
-        },
-        {
-          key: 'n',
-          name: 'Exit',
-          value: 'exit',
-        },
-      ],
-      default: 'y',
-      message: `Once you want to finish the recording, enter 'y' to start replay: `,
-    },
-  ]);
-
-  if (shouldReplay === 'replay') {
-    emitter.emit('done');
-    const { shouldStore } = await inquirer.prompt([
+  async function start() {
+    const { url } = await inquirer.prompt([
       {
-        type: 'expand',
-        name: 'shouldStore',
-        choices: [
-          {
-            key: 'y',
-            name: 'Store',
-            value: 'store',
-          },
-          {
-            key: 'n',
-            name: 'Exit',
-            value: 'exit',
-          },
-        ],
-        default: 'y',
-        message: `Enter 'y' to persistently store these recorded events: `,
+        type: 'input',
+        name: 'url',
+        message:
+          'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
       },
     ]);
 
-    if (shouldStore === 'store') {
+    console.log(`Going to open ${url}...`);
+    await record(url);
+    console.log('Ready to record. You can do any interaction on the page.');
+
+    const { shouldReplay } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'shouldReplay',
+        message: `Once you want to finish the recording, enter 'y' to start replay: `,
+      },
+    ]);
+
+    emitter.emit('done', shouldReplay);
+
+    const { shouldStore } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'shouldStore',
+        message: `Persistently store these recorded events?`,
+      },
+    ]);
+
+    if (shouldStore) {
       saveEvents();
+    }
+
+    const { shouldRecordAnother } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'shouldRecordAnother',
+        message: 'Record another one?',
+      },
+    ]);
+
+    if (shouldRecordAnother) {
+      start();
+    } else {
+      process.exit();
     }
   }
 
@@ -115,10 +106,12 @@ function getCode(): string {
       }
     });
 
-    emitter.once('done', async () => {
-      await browser.close();
+    emitter.once('done', async shouldReplay => {
       console.log(`Recorded ${events.length} events`);
-      replay();
+      await browser.close();
+      if (shouldReplay) {
+        await replay();
+      }
     });
   }
 
@@ -183,7 +176,6 @@ function getCode(): string {
     const savePath = path.resolve(tempFolder, fileName);
     fs.writeFileSync(savePath, content);
     console.log(`Saved at ${savePath}`);
-    process.exit();
   }
 
   process
