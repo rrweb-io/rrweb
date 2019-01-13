@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as EventEmitter from 'events';
-import * as readline from 'readline';
+import * as inquirer from 'inquirer';
 import * as puppeteer from 'puppeteer';
 import { eventWithTime } from '../src/types';
 
@@ -16,42 +16,60 @@ function getCode(): string {
 
 (async () => {
   const code = getCode();
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
   let events: eventWithTime[] = [];
 
-  rl.question(
-    'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
-    async url => {
-      console.log(`Going to open ${url}...`);
-      await record(url);
-      console.log('Ready to record. You can do any interaction on the page.');
-      rl.question(
-        `Once you want to finish the recording, enter 'y' to start replay: `,
-        async answer => {
-          if (answer.toLowerCase() === 'y') {
-            emitter.emit('done');
-          }
-        },
-      );
-      rl.write('y');
-    },
-  );
+  start();
 
-  emitter.once('done', async () => {
-    rl.question(
-      `Enter 'y' to persistently store these recorded events: `,
-      async answer => {
-        if (answer.toLowerCase() === 'y') {
-          saveEvents();
-        }
+  async function start() {
+    const { url } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'url',
+        message:
+          'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
       },
-    );
-  });
+    ]);
+
+    console.log(`Going to open ${url}...`);
+    await record(url);
+    console.log('Ready to record. You can do any interaction on the page.');
+
+    const { shouldReplay } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'shouldReplay',
+        message: `Once you want to finish the recording, enter 'y' to start replay: `,
+      },
+    ]);
+
+    emitter.emit('done', shouldReplay);
+
+    const { shouldStore } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'shouldStore',
+        message: `Persistently store these recorded events?`,
+      },
+    ]);
+
+    if (shouldStore) {
+      saveEvents();
+    }
+
+    const { shouldRecordAnother } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'shouldRecordAnother',
+        message: 'Record another one?',
+      },
+    ]);
+
+    if (shouldRecordAnother) {
+      start();
+    } else {
+      process.exit();
+    }
+  }
 
   async function record(url: string) {
     const browser = await puppeteer.launch({
@@ -88,10 +106,12 @@ function getCode(): string {
       }
     });
 
-    emitter.once('done', async () => {
-      await browser.close();
+    emitter.once('done', async shouldReplay => {
       console.log(`Recorded ${events.length} events`);
-      replay();
+      await browser.close();
+      if (shouldReplay) {
+        await replay();
+      }
     });
   }
 
@@ -116,8 +136,10 @@ function getCode(): string {
     `);
   }
 
-  const tempFolder = path.join(__dirname, '../temp');
   function saveEvents() {
+    const tempFolder = path.join(__dirname, '../temp');
+    console.log(tempFolder);
+
     if (!fs.existsSync(tempFolder)) {
       fs.mkdirSync(tempFolder);
     }
