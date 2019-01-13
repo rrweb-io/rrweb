@@ -21,7 +21,8 @@ function getCode(): string {
   start();
 
   async function start() {
-    const { url } = await inquirer.prompt([
+    events = [];
+    const { url } = await inquirer.prompt<{ url: string }>([
       {
         type: 'input',
         name: 'url',
@@ -34,7 +35,7 @@ function getCode(): string {
     await record(url);
     console.log('Ready to record. You can do any interaction on the page.');
 
-    const { shouldReplay } = await inquirer.prompt([
+    const { shouldReplay } = await inquirer.prompt<{ shouldReplay: boolean }>([
       {
         type: 'confirm',
         name: 'shouldReplay',
@@ -44,7 +45,7 @@ function getCode(): string {
 
     emitter.emit('done', shouldReplay);
 
-    const { shouldStore } = await inquirer.prompt([
+    const { shouldStore } = await inquirer.prompt<{ shouldStore: boolean }>([
       {
         type: 'confirm',
         name: 'shouldStore',
@@ -56,7 +57,9 @@ function getCode(): string {
       saveEvents();
     }
 
-    const { shouldRecordAnother } = await inquirer.prompt([
+    const { shouldRecordAnother } = await inquirer.prompt<{
+      shouldRecordAnother: boolean;
+    }>([
       {
         type: 'confirm',
         name: 'shouldRecordAnother',
