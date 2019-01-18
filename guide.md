@@ -47,7 +47,7 @@ rrweb does **not** support IE11 and below, because it uses the `MutationObserver
 
 ### Record
 
-**If you only included the record code with `<script>`**, then you must the global variable `rrwebRecord` instead of `rrweb.record`.
+**If you only included the record code with `<script>`**, then you must use the global variable `rrwebRecord` instead of `rrweb.record`.
 The following sample code will use the variable `rrweb` which is the default exporter of this library.
 
 ```js
