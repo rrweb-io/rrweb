@@ -214,7 +214,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | root         | document.body | the root element of replayer                    |
 | loadTimeout  | 0             | timeout of loading remote style sheet           |
 | skipInactive | false         | whether to skip inactive time                   |
-| showWarning  | true          | whether to print warning messages during replay |
+| showWarning  | false         | whether to print warning messages during replay |
 
 #### Use rrweb-player
 

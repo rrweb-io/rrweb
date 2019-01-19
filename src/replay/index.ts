@@ -1,7 +1,8 @@
-import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN, INode } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import * as smoothscroll from 'smoothscroll-polyfill';
 import Timer from './timer';
+import { calcCheckpoints, findCheckpoint } from './checkpoint';
 import {
   EventType,
   IncrementalSource,
@@ -17,6 +18,7 @@ import {
   actionWithDelay,
   incrementalSnapshotEvent,
   incrementalData,
+  checkpointList,
 } from '../types';
 import { mirror } from '../utils';
 import injectStyleRules from './styles/inject-style';
@@ -55,11 +57,13 @@ export class Replayer {
 
   private missingNodeRetryMap: missingNodeMap = {};
 
+  private checkpointList: checkpointList = [];
+
   constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
     if (events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
-    this.events = events;
+    this.events = events.sort((e1, e2) => e1.timestamp - e2.timestamp);
     this.handleResize = this.handleResize.bind(this);
 
     const defaultConfig: playerConfig = {
@@ -67,12 +71,13 @@ export class Replayer {
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
-      showWarning: true,
+      showWarning: false,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
     this.timer = new Timer(this.config);
     this.setupDom();
+    this.prepareCheckpoints();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
   }
 
@@ -113,12 +118,13 @@ export class Replayer {
   public play(timeOffset = 0) {
     this.timer.clear();
     this.baselineTime = this.events[0].timestamp + timeOffset;
+    this.rollback(this.baselineTime);
     const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
       const isSync = event.timestamp < this.baselineTime;
       const castFn = this.getCastFn(event, isSync);
       if (isSync) {
-        castFn();
+        // castFn();
       } else {
         actions.push({ doAction: castFn, delay: this.getDelay(event) });
       }
@@ -152,6 +158,18 @@ export class Replayer {
     this.timer.addActions(actions);
     this.timer.start();
     this.emitter.emit('resume');
+  }
+
+  private prepareCheckpoints() {
+    const checkpointIndexes = calcCheckpoints(this.events);
+    for (let idx = 0; idx < this.events.length; idx++) {
+      const event = this.events[idx];
+      const castFn = this.getCastFn(event, true);
+      castFn();
+      if (checkpointIndexes.indexOf(idx) !== -1) {
+        this.makeCheckpoint(event.timestamp);
+      }
+    }
   }
 
   private setupDom() {
@@ -599,5 +617,53 @@ export class Replayer {
       `target with id '${id}' not found in`,
       d,
     );
+  }
+
+  private makeCheckpoint(timestamp: number) {
+    const nodes: INode[] = [];
+    this.iframe.contentDocument!.childNodes.forEach(node => {
+      nodes.push((node as unknown) as INode);
+    });
+    const { doctype, documentElement } = this.iframe.contentDocument!;
+    this.checkpointList.push({
+      timestamp,
+      doctype,
+      documentElement,
+      mirrorMap: Object.assign({}, mirror.map),
+      mouse: {
+        left: this.mouse.style.left,
+        top: this.mouse.style.top,
+      },
+    });
+  }
+
+  private rollback(timestamp: number) {
+    const checkpoint = findCheckpoint(this.checkpointList, timestamp);
+    if (checkpoint.doctype) {
+      if (this.iframe.contentDocument!.doctype) {
+        this.iframe.contentDocument!.replaceChild(
+          checkpoint.doctype,
+          this.iframe.contentDocument!.doctype!,
+        );
+      } else {
+        this.iframe.contentDocument!.insertBefore(
+          checkpoint.doctype,
+          this.iframe.contentDocument!.firstChild,
+        );
+      }
+    }
+    if (checkpoint.documentElement) {
+      if (this.iframe.contentDocument!.documentElement) {
+        this.iframe.contentDocument!.replaceChild(
+          checkpoint.documentElement,
+          this.iframe.contentDocument!.documentElement!,
+        );
+      } else {
+        this.iframe.contentDocument!.appendChild(checkpoint.documentElement);
+      }
+    }
+    mirror.map = checkpoint.mirrorMap;
+    this.mouse.style.left = checkpoint.mouse.left;
+    this.mouse.style.top = checkpoint.mouse.top;
   }
 }

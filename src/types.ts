@@ -250,3 +250,15 @@ export type actionWithDelay = {
   doAction: () => void;
   delay: number;
 };
+
+export type checkpoint = {
+  doctype: DocumentType | null;
+  documentElement: HTMLElement | null;
+  mirrorMap: idNodeMap;
+  mouse: {
+    left: string | null;
+    top: string | null;
+  };
+};
+
+export type checkpointList = Array<{ timestamp: number } & checkpoint>;
