@@ -328,11 +328,12 @@ export class Replayer {
         d.removes.forEach(mutation => {
           const target = mirror.getNode(mutation.id);
           if (!target) {
-            return this.warnTargetNotFound(d, mutation.id);
+            return this.warnNodeNotFound(d, mutation.id);
           }
-          const parent = (mirror.getNode(
-            mutation.parentId!,
-          ) as Node) as Element;
+          const parent = mirror.getNode(mutation.parentId);
+          if (!parent) {
+            return this.warnNodeNotFound(d, mutation.parentId);
+          }
           // target may be removed with its parents before
           mirror.removeNodeFromMap(target);
           if (parent) {
@@ -348,7 +349,10 @@ export class Replayer {
             mirror.map,
             true,
           ) as Node;
-          const parent = (mirror.getNode(mutation.parentId) as Node) as Element;
+          const parent = mirror.getNode(mutation.parentId);
+          if (!parent) {
+            return this.warnNodeNotFound(d, mutation.parentId);
+          }
           let previous: Node | null = null;
           let next: Node | null = null;
           if (mutation.previousId) {
@@ -387,18 +391,27 @@ export class Replayer {
         }
 
         d.texts.forEach(mutation => {
-          const target = (mirror.getNode(mutation.id) as Node) as Text;
+          const target = mirror.getNode(mutation.id);
+          if (!target) {
+            return this.warnNodeNotFound(d, mutation.id);
+          }
           target.textContent = mutation.value;
         });
         d.attributes.forEach(mutation => {
-          const target = (mirror.getNode(mutation.id) as Node) as Element;
+          const target = mirror.getNode(mutation.id);
+          if (!target) {
+            return this.warnNodeNotFound(d, mutation.id);
+          }
           for (const attributeName in mutation.attributes) {
             if (typeof attributeName === 'string') {
               const value = mutation.attributes[attributeName];
               if (value) {
-                target.setAttribute(attributeName, value);
+                ((target as Node) as Element).setAttribute(
+                  attributeName,
+                  value,
+                );
               } else {
-                target.removeAttribute(attributeName);
+                ((target as Node) as Element).removeAttribute(attributeName);
               }
             }
           }
@@ -415,7 +428,7 @@ export class Replayer {
                 this.mouse.style.top = `${p.y}px`;
                 const target = mirror.getNode(p.id);
                 if (!target) {
-                  return this.warnTargetNotFound(d, p.id);
+                  return this.warnNodeNotFound(d, p.id);
                 }
                 this.hoverElements((target as Node) as Element);
               },
@@ -435,7 +448,7 @@ export class Replayer {
         const event = new Event(MouseInteractions[d.type].toLowerCase());
         const target = mirror.getNode(d.id);
         if (!target) {
-          return this.warnTargetNotFound(d, d.id);
+          return this.warnNodeNotFound(d, d.id);
         }
         switch (d.type) {
           case MouseInteractions.Blur:
@@ -475,7 +488,7 @@ export class Replayer {
         }
         const target = mirror.getNode(d.id);
         if (!target) {
-          return this.warnTargetNotFound(d, d.id);
+          return this.warnNodeNotFound(d, d.id);
         }
         if ((target as Node) === this.iframe.contentDocument) {
           this.iframe.contentWindow!.scrollTo({
@@ -514,7 +527,7 @@ export class Replayer {
         }
         const target = mirror.getNode(d.id);
         if (!target) {
-          return this.warnTargetNotFound(d, d.id);
+          return this.warnNodeNotFound(d, d.id);
         }
         try {
           ((target as Node) as HTMLInputElement).checked = d.isChecked;
@@ -590,14 +603,10 @@ export class Replayer {
     this.noramlSpeed = -1;
   }
 
-  private warnTargetNotFound(d: incrementalData, id: number) {
+  private warnNodeNotFound(d: incrementalData, id: number) {
     if (!this.config.showWarning) {
       return;
     }
-    console.warn(
-      REPLAY_CONSOLE_PREFIX,
-      `target with id '${id}' not found in`,
-      d,
-    );
+    console.warn(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
   }
 }
