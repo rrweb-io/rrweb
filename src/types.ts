@@ -136,8 +136,7 @@ export type attributeMutation = {
 };
 
 export type removedNodeMutation = {
-  parentId?: number;
-  parentNode?: Node;
+  parentId: number;
   id: number;
 };
 

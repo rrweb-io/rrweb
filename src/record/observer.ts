@@ -102,6 +102,8 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
         case 'childList': {
           addedNodes.forEach(n => genAdds(n));
           removedNodes.forEach(n => {
+            const nodeId = mirror.getId(n as INode);
+            const parentId = mirror.getId(target as INode);
             if (isBlocked(n)) {
               return;
             }
@@ -109,17 +111,24 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
             if (addsSet.has(n)) {
               addsSet.delete(n);
               dropped.push(n);
-            } else if (addsSet.has(target) && !mirror.getId(n as INode)) {
+            } else if (addsSet.has(target) && nodeId === -1) {
               /**
                * If target was newly added and removed child node was
                * not serialized, it means the child node has been removed
                * before callback fired, so we can ignore it.
                * TODO: verify this
                */
+            } else if (!mirror.has(parentId)) {
+              /**
+               * If parent id was not in the mirror map any more, it
+               * means the parent node has already been removed. So
+               * the node is also removed which we do not need to track
+               * and replay.
+               */
             } else {
               removes.push({
-                parentId: mirror.getId(target as INode),
-                id: mirror.getId(n as INode),
+                parentId,
+                id: nodeId,
               });
             }
             mirror.removeNodeFromMap(n as INode);
@@ -129,14 +138,6 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
         default:
           break;
       }
-    });
-
-    removes = removes.map(remove => {
-      if (remove.parentNode) {
-        remove.parentId = mirror.getId(remove.parentNode as INode);
-        delete remove.parentNode;
-      }
-      return remove;
     });
 
     const isDropped = (n: Node): boolean => {
