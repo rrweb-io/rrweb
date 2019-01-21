@@ -6,7 +6,8 @@
     "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
-    "bundle": "rollup --config"
+    "bundle": "rollup --config",
+    "typings": "tsc -d --declarationDir typings"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,7 @@
   "main": "lib/rrweb.js",
   "module": "es/rrweb.js",
   "unpkg": "dist/rrweb.js",
-  "typings": "./index.d.ts",
+  "typings": "typings/index.d.ts",
   "files": [
     "dist",
     "lib",
@@ -37,13 +38,13 @@
     "@types/inquirer": "0.0.43",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.11.7",
-    "@types/puppeteer": "^1.9.0",
+    "@types/puppeteer": "^1.11.1",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
     "inquirer": "^6.2.1",
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
-    "puppeteer": "^1.9.0",
+    "puppeteer": "^1.11.0",
     "rollup": "^0.66.6",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^3.4.0",
@@ -53,7 +54,7 @@
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "tslint": "^4.5.1",
-    "typescript": "^3.1.6"
+    "typescript": "^3.2.4"
   },
   "dependencies": {
     "@types/smoothscroll-polyfill": "^0.3.0",
