@@ -1,0 +1,37 @@
+import Timer from './timer';
+import { eventWithTime, playerConfig, playerMetaData } from '../types';
+import './styles/style.css';
+export declare class Replayer {
+    wrapper: HTMLDivElement;
+    iframe: HTMLIFrameElement;
+    timer: Timer;
+    private events;
+    private config;
+    private mouse;
+    private emitter;
+    private baselineTime;
+    private lastPlayedEvent;
+    private nextUserInteractionEvent;
+    private noramlSpeed;
+    private missingNodeRetryMap;
+    constructor(events: eventWithTime[], config?: Partial<playerConfig>);
+    on(event: string, handler: mitt.Handler): void;
+    setConfig(config: Partial<playerConfig>): void;
+    getMetaData(): playerMetaData;
+    getTimeOffset(): number;
+    play(timeOffset?: number): void;
+    pause(): void;
+    resume(timeOffset?: number): void;
+    private setupDom;
+    private handleResize;
+    private getDelay;
+    private getCastFn;
+    private rebuildFullSnapshot;
+    private waitForStylesheetLoad;
+    private applyIncremental;
+    private resolveMissingNode;
+    private hoverElements;
+    private isUserInteraction;
+    private restoreSpeed;
+    private warnNodeNotFound;
+}
