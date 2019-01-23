@@ -446,18 +446,22 @@ export class Replayer {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
-        const target = mirror.getNode(d.id);
+        let target = mirror.getNode(d.id);
         if (!target) {
           return this.warnNodeNotFound(d, d.id);
         }
         switch (d.type) {
           case MouseInteractions.Blur:
-            ((target as Node) as HTMLElement).blur();
+            if (((target as Node) as HTMLElement).blur) {
+              ((target as Node) as HTMLElement).blur();
+            }
             break;
           case MouseInteractions.Focus:
-            ((target as Node) as HTMLElement).focus({
-              preventScroll: true,
-            });
+            if (((target as Node) as HTMLElement).focus) {
+              ((target as Node) as HTMLElement).focus({
+                preventScroll: true,
+              });
+            }
             break;
           case MouseInteractions.Click:
             /**
