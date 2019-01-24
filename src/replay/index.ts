@@ -446,7 +446,7 @@ export class Replayer {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
-        let target = mirror.getNode(d.id);
+        const target = mirror.getNode(d.id);
         if (!target) {
           return this.warnNodeNotFound(d, d.id);
         }
