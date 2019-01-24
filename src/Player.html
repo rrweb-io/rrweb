@@ -1,7 +1,7 @@
 <div class="rr-player" ref:player style="{playerStyle}">
   <div class="rr-player__frame" ref:frame { style }></div>
   {#if replayer}
-  <Controller { replayer } {showController} on:fullscreen="fullscreen()" />
+  <Controller { replayer } {showController} {autoPlay} on:fullscreen="fullscreen()" />
   {/if}
 </div>
 
@@ -28,6 +28,7 @@
         width: 1024,
         height: 576,
         events: [],
+        autoPlay: true,
         replayer: null,
       };
     },
@@ -66,6 +67,7 @@
         speed: 1,
         root: this.refs.frame,
         skipInactive: true,
+        showWarning: true,
       });
       replayer.on('resize', (dimension) =>
         this.updateScale(replayer.wrapper, dimension)

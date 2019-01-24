@@ -21,6 +21,9 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 export function formatTime(ms) {
+  if (ms <= 0) {
+    return '00:00';
+  }
   const hour = Math.floor(ms / HOUR);
   ms = ms % HOUR;
   const minute = Math.floor(ms / MINUTE);

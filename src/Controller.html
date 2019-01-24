@@ -175,11 +175,19 @@
     onupdate({ changed, current, previous }) {
       if (current.replayer && !previous) {
         window.replayer = current.replayer;
-        // auto play
         setTimeout(() => {
           this.set({ isPlaying: true });
         }, 0);
         current.replayer.play(0);
+        if (!current.autoPlay) {
+          let firstFullSnapshotRebuilded = false;
+          current.replayer.on('fullsnapshot-rebuilded', () => {
+            if (!firstFullSnapshotRebuilded) {
+              firstFullSnapshotRebuilded = true;
+              current.replayer.pause();
+            }
+          });
+        }
         current.replayer.on('pause', () => {
           this.set({ isPlaying: false });
         });
