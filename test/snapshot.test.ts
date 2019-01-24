@@ -54,7 +54,7 @@ describe('absolute url to stylesheet', () => {
         href,
       ),
     ).to.equal(
-      `background-image: url('http://localhost/css/images/b.jpg');` +
+      `background-image: url('http://localhost/css/images/b.jpg'); ` +
         `background: #aabbcc url('http://localhost/css/images/a.jpg') 50% 50% repeat;`,
     );
   });
@@ -63,5 +63,9 @@ describe('absolute url to stylesheet', () => {
     expect(
       absoluteToStylesheet('url(data:image/gif;base64,ABC)', href),
     ).to.equal('url(data:image/gif;base64,ABC)');
+  });
+
+  it('can handle empty path', () => {
+    expect(absoluteToStylesheet(`url('')`, href)).to.equal(`url('')`);
   });
 });
