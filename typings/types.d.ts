@@ -199,6 +199,7 @@ export declare type actionWithDelay = {
     delay: number;
 };
 export declare enum ReplayerEvents {
+    Start = "start",
     Pause = "pause",
     Resume = "resume",
     Resize = "resize",
