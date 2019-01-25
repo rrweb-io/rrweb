@@ -15,13 +15,13 @@
     <script src="./events.js"></script>
     <script>
       // eslint-disable-next-line
-      new rrwebPlayer({
+      const component = new rrwebPlayer({
         target: document.body,
         data: {
           events,
-          autoPlay: false,
         },
       });
+      component.addEventListener('finish', () => console.log('finish'));
     </script>
   </body>
 </html>

@@ -60,6 +60,10 @@
           isFullscreen() ? exitFullscreen() : openFullscreen(this.refs.player);
         }
       },
+      addEventListener(event, handler) {
+        const { replayer } = this.get();
+        replayer.on(event, handler);
+      },
     },
     oncreate() {
       const { events } = this.get();
