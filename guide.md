@@ -245,6 +245,7 @@ new rrwebPlayer({
   target: document.body, // customizable root element
   data: {
     events,
+    autoPlay: true,
   },
 });
 ```
@@ -266,7 +267,7 @@ So rrweb expose a public API `on` which allow developers listen to the events an
 | skip-start             | started to skip inactive time      |
 | skip-end               | skipped inactive time              |
 
-The rrweb-replayer also re-expose the event listener via  a `component.addEventListener` API.
+The rrweb-replayer also re-expose the event listener via a `component.addEventListener` API.
 
 ## API
 
