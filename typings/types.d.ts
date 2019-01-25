@@ -198,4 +198,15 @@ export declare type actionWithDelay = {
     doAction: () => void;
     delay: number;
 };
+export declare enum ReplayerEvents {
+    Pause = "pause",
+    Resume = "resume",
+    Resize = "resize",
+    Finish = "finish",
+    FullsnapshotRebuilded = "fullsnapshot-rebuilded",
+    LoadStylesheetStart = "load-stylesheet-start",
+    LoadStylesheetEnd = "load-stylesheet-end",
+    SkipStart = "skip-start",
+    SkipEnd = "skip-end"
+}
 export {};

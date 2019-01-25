@@ -17,6 +17,7 @@ import {
   actionWithDelay,
   incrementalSnapshotEvent,
   incrementalData,
+  ReplayerEvents,
 } from '../types';
 import { mirror } from '../utils';
 import injectStyleRules from './styles/inject-style';
@@ -125,11 +126,12 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
+    this.emitter.emit(ReplayerEvents.Start);
   }
 
   public pause() {
     this.timer.clear();
-    this.emitter.emit('pause');
+    this.emitter.emit(ReplayerEvents.Pause);
   }
 
   public resume(timeOffset = 0) {
@@ -151,7 +153,7 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
-    this.emitter.emit('resume');
+    this.emitter.emit(ReplayerEvents.Resume);
   }
 
   private setupDom() {
@@ -200,7 +202,7 @@ export class Replayer {
         break;
       case EventType.Meta:
         castFn = () =>
-          this.emitter.emit('resize', {
+          this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
           });
@@ -241,7 +243,7 @@ export class Replayer {
                 speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),
               };
               this.setConfig(payload);
-              this.emitter.emit('skip-start', payload);
+              this.emitter.emit(ReplayerEvents.SkipStart, payload);
             }
           }
         };
@@ -255,7 +257,7 @@ export class Replayer {
       this.lastPlayedEvent = event;
       if (event === this.events[this.events.length - 1]) {
         this.restoreSpeed();
-        this.emitter.emit('finish');
+        this.emitter.emit(ReplayerEvents.Finish);
       }
     };
     return wrappedCastFn;
@@ -278,6 +280,7 @@ export class Replayer {
     for (let idx = 0; idx < injectStyleRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStyleRules[idx], idx);
     }
+    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded);
     this.waitForStylesheetLoad();
   }
 
@@ -295,7 +298,7 @@ export class Replayer {
           if (!css.sheet) {
             if (unloadSheets.size === 0) {
               this.pause();
-              this.emitter.emit('wait-stylesheet');
+              this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
               timer = window.setTimeout(() => {
                 this.resume();
                 // mark timer was called
@@ -307,7 +310,7 @@ export class Replayer {
               unloadSheets.delete(css);
               if (unloadSheets.size === 0 && timer !== -1) {
                 this.resume();
-                this.emitter.emit('stylesheet-loaded');
+                this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
                   window.clearTimeout(timer);
                 }
@@ -514,7 +517,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.ViewportResize:
-        this.emitter.emit('resize', {
+        this.emitter.emit(ReplayerEvents.Resize, {
           width: d.width,
           height: d.height,
         });
@@ -603,7 +606,7 @@ export class Replayer {
     }
     const payload = { speed: this.noramlSpeed };
     this.setConfig(payload);
-    this.emitter.emit('skip-end', payload);
+    this.emitter.emit(ReplayerEvents.SkipEnd, payload);
     this.noramlSpeed = -1;
   }
 
