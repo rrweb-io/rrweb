@@ -427,13 +427,7 @@ export class Replayer {
           d.positions.forEach(p => {
             const action = {
               doAction: () => {
-                this.mouse.style.left = `${p.x}px`;
-                this.mouse.style.top = `${p.y}px`;
-                const target = mirror.getNode(p.id);
-                if (!target) {
-                  return this.warnNodeNotFound(d, p.id);
-                }
-                this.hoverElements((target as Node) as Element);
+                this.moveAndHover(d, p.x, p.y, p.id);
               },
               delay: p.timeOffset + e.timestamp - this.baselineTime,
             };
@@ -475,6 +469,7 @@ export class Replayer {
              * clicked at this moment.
              */
             if (!isSync) {
+              this.moveAndHover(d, d.x, d.y, d.id);
               this.mouse.classList.remove('active');
               // tslint:disable-next-line
               void this.mouse.offsetWidth;
@@ -575,6 +570,16 @@ export class Replayer {
         this.resolveMissingNode(map, parent, node as Node, mutation);
       }
     }
+  }
+
+  private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
+    this.mouse.style.left = `${x}px`;
+    this.mouse.style.top = `${y}px`;
+    const target = mirror.getNode(id);
+    if (!target) {
+      return this.warnNodeNotFound(d, id);
+    }
+    this.hoverElements((target as Node) as Element);
   }
 
   private hoverElements(el: Element) {

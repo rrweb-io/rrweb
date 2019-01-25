@@ -5,6 +5,7 @@
   position: absolute;
   width: 20px;
   height: 20px;
+  transition: 0.05s linear;
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
