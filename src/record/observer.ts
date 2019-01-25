@@ -248,7 +248,7 @@ function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
       });
       wrappedCb();
     },
-    20,
+    50,
     {
       trailing: false,
     },
