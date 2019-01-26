@@ -64,3 +64,11 @@ rrweb 主要由 3 部分组成：
 除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
 
 [使用 REPL 工具](./guide.zh_CN.md#REPL-工具)
+
+## Who's using rrweb
+
+<p align="center">
+  <a href="http://www.smartx.com/" target="_blank">
+    <img width="260px" src="https://www.rrweb.io/logos/smartx.png">
+  </a>
+</p>

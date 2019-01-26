@@ -63,3 +63,11 @@ Since we want the record and replay sides to share a strongly typed data structu
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
 [Using the REPL tool](./guide.md#REPL-tool)
+
+## Who's using rrweb
+
+<p align="center">
+  <a href="http://www.smartx.com/" target="_blank">
+    <img width="260px" src="https://www.rrweb.io/logos/smartx.png">
+  </a>
+</p>
