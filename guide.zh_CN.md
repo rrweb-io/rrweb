@@ -130,13 +130,14 @@ replayer.play();
 
 可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
 
-| key          | 默认值        | 功能                         |
-| ------------ | ------------- | ---------------------------- |
-| speed        | 1             | 回放倍速                     |
-| root         | document.body | 回放时使用的 HTML 元素       |
-| loadTimeout  | 0             | 加载异步样式表的超时时长     |
-| skipInactive | false         | 是否快速跳过无用户操作的阶段 |
-| showWarning  | true          | 是否在回放过程中打印警告信息 |
+| key          | 默认值        | 功能                            |
+| ------------ | ------------- | ------------------------------- |
+| speed        | 1             | 回放倍速                        |
+| root         | document.body | 回放时使用的 HTML 元素          |
+| loadTimeout  | 0             | 加载异步样式表的超时时长        |
+| skipInactive | false         | 是否快速跳过无用户操作的阶段    |
+| showWarning  | true          | 是否在回放过程中打印警告信息    |
+| showDebug    | false         | 是否在回放过程中打印 debug 信息 |
 
 #### 使用 rrweb-player
 
