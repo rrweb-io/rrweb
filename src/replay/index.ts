@@ -625,7 +625,7 @@ export class Replayer {
 
   private debugNodeNotFound(d: incrementalData, id: number) {
     /**
-     * There may me some valid scenes of node not being found.
+     * There maybe some valid scenes of node not being found.
      * Because DOM events are macrotask and MutationObserver callback
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.

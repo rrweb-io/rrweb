@@ -126,3 +126,21 @@ export function isBlocked(node: Node | null): boolean {
   }
   return isBlocked(node.parentNode);
 }
+
+export function isAncestorRemoved(target: INode): boolean {
+  const id = mirror.getId(target);
+  if (!mirror.has(id)) {
+    return true;
+  }
+  if (
+    target.parentNode &&
+    target.parentNode.nodeType === target.DOCUMENT_NODE
+  ) {
+    return false;
+  }
+  // if the root is not document, it means the node is not in the DOM tree anymore
+  if (!target.parentNode) {
+    return true;
+  }
+  return isAncestorRemoved((target.parentNode as unknown) as INode);
+}

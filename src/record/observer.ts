@@ -7,6 +7,7 @@ import {
   getWindowHeight,
   getWindowWidth,
   isBlocked,
+  isAncestorRemoved,
 } from '../utils';
 import {
   mutationCallBack,
@@ -118,7 +119,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
                * before callback fired, so we can ignore it.
                * TODO: verify this
                */
-            } else if (!mirror.has(parentId)) {
+            } else if (isAncestorRemoved(target as INode)) {
               /**
                * If parent id was not in the mirror map any more, it
                * means the parent node has already been removed. So
