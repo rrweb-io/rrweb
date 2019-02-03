@@ -154,4 +154,22 @@ describe('record integration tests', () => {
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'block');
   });
+
+  it('should record DOM node movement', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'move-node.html'));
+
+    await page.evaluate(() => {
+      const div = document.querySelector('div')!;
+      const p = document.querySelector('p')!;
+      const span = document.querySelector('span')!;
+      document.body.removeChild(span);
+      p.appendChild(span);
+      p.removeChild(span);
+      div.appendChild(span);
+    });
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'move-node');
+  });
 });

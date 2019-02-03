@@ -27,6 +27,7 @@ import {
   textCursor,
   attributeCursor,
 } from '../types';
+import { deepDelete, isParentRemoved, isParentDropped } from './collection';
 
 /**
  * Mutation observer will merge several mutations into an array and pass
@@ -49,16 +50,18 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
   const observer = new MutationObserver(mutations => {
     const texts: textCursor[] = [];
     const attributes: attributeCursor[] = [];
-    let removes: removedNodeMutation[] = [];
+    const removes: removedNodeMutation[] = [];
     const adds: addedNodeMutation[] = [];
-    const dropped: Node[] = [];
 
     const addsSet = new Set<Node>();
+    const droppedSet = new Set<Node>();
+
     const genAdds = (n: Node) => {
       if (isBlocked(n)) {
         return;
       }
       addsSet.add(n);
+      droppedSet.delete(n);
       n.childNodes.forEach(childN => genAdds(childN));
     };
     mutations.forEach(mutation => {
@@ -110,8 +113,8 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
             }
             // removed node has not been serialized yet, just remove it from the Set
             if (addsSet.has(n)) {
-              addsSet.delete(n);
-              dropped.push(n);
+              deepDelete(addsSet, n);
+              droppedSet.add(n);
             } else if (addsSet.has(target) && nodeId === -1) {
               /**
                * If target was newly added and removed child node was
@@ -141,31 +144,8 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
       }
     });
 
-    const isDropped = (n: Node): boolean => {
-      const { parentNode } = n;
-      if (!parentNode) {
-        return false;
-      }
-      if (dropped.some(d => d === parentNode)) {
-        return true;
-      }
-      return isDropped(parentNode);
-    };
-
-    const isRemoved = (n: Node): boolean => {
-      const { parentNode } = n;
-      if (!parentNode) {
-        return false;
-      }
-      const parentId = mirror.getId((parentNode as Node) as INode);
-      if (removes.some(r => r.id === parentId)) {
-        return true;
-      }
-      return isRemoved(parentNode);
-    };
-
     Array.from(addsSet).forEach(n => {
-      if (!isDropped(n) && !isRemoved(n)) {
+      if (!isParentDropped(droppedSet, n) && !isParentRemoved(removes, n)) {
         adds.push({
           parentId: mirror.getId((n.parentNode as Node) as INode),
           previousId: !n.previousSibling
@@ -177,7 +157,7 @@ function initMutationObserver(cb: mutationCallBack): MutationObserver {
           node: serializeNodeWithId(n, document, mirror.map, true)!,
         });
       } else {
-        dropped.push(n);
+        droppedSet.add(n);
       }
     });
 

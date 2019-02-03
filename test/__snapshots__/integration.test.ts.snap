@@ -1603,6 +1603,274 @@ exports[`ignore 1`] = `
 ]"
 `;
 
+exports[`move-node 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 7
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"p\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 8
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 9
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"span\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 12
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"i\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 14
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"b\\",
+                            \\"attributes\\": {},
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"1\\",
+                                \\"id\\": 16
+                              }
+                            ],
+                            \\"id\\": 15
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 17
+                          }
+                        ],
+                        \\"id\\": 13
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 18
+                      }
+                    ],
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 21
+                      }
+                    ],
+                    \\"id\\": 20
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 22
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 4,
+          \\"id\\": 11
+        }
+      ],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 6,
+          \\"previousId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 23
+          }
+        },
+        {
+          \\"parentId\\": 23,
+          \\"previousId\\": null,
+          \\"nextId\\": 13,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n      \\",
+            \\"id\\": 24
+          }
+        },
+        {
+          \\"parentId\\": 23,
+          \\"previousId\\": 24,
+          \\"nextId\\": 18,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"i\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 25
+          }
+        },
+        {
+          \\"parentId\\": 25,
+          \\"previousId\\": null,
+          \\"nextId\\": 15,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n        \\",
+            \\"id\\": 26
+          }
+        },
+        {
+          \\"parentId\\": 25,
+          \\"previousId\\": 26,
+          \\"nextId\\": 17,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"b\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 27
+          }
+        },
+        {
+          \\"parentId\\": 27,
+          \\"previousId\\": null,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"1\\",
+            \\"id\\": 28
+          }
+        },
+        {
+          \\"parentId\\": 25,
+          \\"previousId\\": 27,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n      \\",
+            \\"id\\": 29
+          }
+        },
+        {
+          \\"parentId\\": 23,
+          \\"previousId\\": 25,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n    \\",
+            \\"id\\": 30
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`select2 1`] = `
 "[
   {
