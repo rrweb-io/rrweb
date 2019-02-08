@@ -35,4 +35,5 @@ export declare class Replayer {
     private isUserInteraction;
     private restoreSpeed;
     private warnNodeNotFound;
+    private debugNodeNotFound;
 }

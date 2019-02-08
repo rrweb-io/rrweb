@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "record and replay the web",
   "scripts": {
     "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",

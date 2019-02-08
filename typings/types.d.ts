@@ -183,6 +183,7 @@ export declare type playerConfig = {
     loadTimeout: number;
     skipInactive: Boolean;
     showWarning: Boolean;
+    showDebug: Boolean;
 };
 export declare type playerMetaData = {
     totalTime: number;
