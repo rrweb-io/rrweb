@@ -83,6 +83,20 @@ exports[`[html file]: cors-style-sheet.html 1`] = `
 </head><body></body></html>"
 `;
 
+exports[`[html file]: dynamic-stylesheet.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>dynamic stylesheet</title>
+    <style>body { margin: 0px; }p { background: lightpink; }</style>
+    <noscript>SCRIPT_PLACEHOLDER</noscript>
+  </head>
+  <body>
+    <p>p tag</p>
+  </body></html>"
+`;
+
 exports[`[html file]: form-fields.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />

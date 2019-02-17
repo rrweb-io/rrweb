@@ -95,11 +95,12 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
           let value = n.attributes[name];
           value = typeof value === 'boolean' ? '' : value;
           const isTextarea = tagName === 'textarea' && name === 'value';
-          const isRemoteCss = tagName === 'style' && name === '_cssText';
-          if (isRemoteCss) {
+          const isRemoteOrDynamicCss =
+            tagName === 'style' && name === '_cssText';
+          if (isRemoteOrDynamicCss) {
             value = addHoverClass(value);
           }
-          if (isTextarea || isRemoteCss) {
+          if (isTextarea || isRemoteOrDynamicCss) {
             const child = doc.createTextNode(value);
             node.appendChild(child);
             continue;

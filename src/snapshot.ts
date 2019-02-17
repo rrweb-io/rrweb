@@ -122,9 +122,25 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         });
         const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
         if (cssText) {
-          attributes = {
-            _cssText: absoluteToStylesheet(cssText, stylesheet!.href!),
-          };
+          delete attributes.rel;
+          delete attributes.href;
+          attributes._cssText = absoluteToStylesheet(
+            cssText,
+            stylesheet!.href!,
+          );
+        }
+      }
+      // dynamic stylesheet
+      if (
+        tagName === 'style' &&
+        (n as HTMLStyleElement).sheet &&
+        // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
+        !(n as HTMLElement).innerText.trim().length
+      ) {
+        const cssText = getCssRulesString((n as HTMLStyleElement)
+          .sheet as CSSStyleSheet);
+        if (cssText) {
+          attributes._cssText = absoluteToStylesheet(cssText, location.href);
         }
       }
       // form fields
