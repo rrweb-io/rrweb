@@ -50,7 +50,7 @@ describe('absolute url to stylesheet', () => {
   it('can handle multiple no quote paths', () => {
     expect(
       absoluteToStylesheet(
-        'background-image: url(images/b.jpg); background: #aabbcc url(images/a.jpg) 50% 50% repeat;',
+        'background-image: url(images/b.jpg);background: #aabbcc url(images/a.jpg) 50% 50% repeat;',
         href,
       ),
     ).to.equal(

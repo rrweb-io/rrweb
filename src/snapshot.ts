@@ -86,8 +86,11 @@ function isSVGElement(el: Element): boolean {
   return el.tagName === 'svg' || el instanceof SVGElement;
 }
 
-const BLOCK_CLASS = 'rr-block';
-function serializeNode(n: Node, doc: Document): serializedNode | false {
+function serializeNode(
+  n: Node,
+  doc: Document,
+  blockClass: string,
+): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
       return {
@@ -102,7 +105,7 @@ function serializeNode(n: Node, doc: Document): serializedNode | false {
         systemId: (n as DocumentType).systemId,
       };
     case n.ELEMENT_NODE:
-      const needBlock = (n as HTMLElement).classList.contains(BLOCK_CLASS);
+      const needBlock = (n as HTMLElement).classList.contains(blockClass);
       const tagName = (n as HTMLElement).tagName.toLowerCase();
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
@@ -216,9 +219,10 @@ export function serializeNodeWithId(
   n: Node,
   doc: Document,
   map: idNodeMap,
+  blockClass: string,
   skipChild = false,
 ): serializedNodeWithId | null {
-  const _serializedNode = serializeNode(n, doc);
+  const _serializedNode = serializeNode(n, doc, blockClass);
   if (!_serializedNode) {
     // TODO: dev only
     console.warn(n, 'not serialized');
@@ -241,7 +245,12 @@ export function serializeNodeWithId(
     recordChild
   ) {
     for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = serializeNodeWithId(childN, doc, map);
+      const serializedChildNode = serializeNodeWithId(
+        childN,
+        doc,
+        map,
+        blockClass,
+      );
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
@@ -250,10 +259,13 @@ export function serializeNodeWithId(
   return serializedNode;
 }
 
-function snapshot(n: Document): [serializedNodeWithId | null, idNodeMap] {
+function snapshot(
+  n: Document,
+  blockClass = 'rr-block',
+): [serializedNodeWithId | null, idNodeMap] {
   resetId();
   const idNodeMap: idNodeMap = {};
-  return [serializeNodeWithId(n, n, idNodeMap), idNodeMap];
+  return [serializeNodeWithId(n, n, idNodeMap, blockClass), idNodeMap];
 }
 
 export default snapshot;
