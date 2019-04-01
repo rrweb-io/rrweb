@@ -24,8 +24,7 @@
     "dist",
     "lib",
     "es",
-    "index.d.ts",
-    "src/types.ts"
+    "typings"
   ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
