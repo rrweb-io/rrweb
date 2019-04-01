@@ -4,7 +4,8 @@
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "test": "cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
-    "bundle": "rollup --config"
+    "bundle": "rollup --config",
+    "typings": "tsc -d --declarationDir typings"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,7 @@
   "main": "lib/rrweb-snapshot.js",
   "module": "es/rrweb-snapshot.js",
   "unpkg": "dist/rrweb-snapshot.js",
-  "typings": "./index.d.ts",
+  "typings": "typings/index.d.ts",
   "files": [
     "dist",
     "lib",
