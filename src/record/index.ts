@@ -18,7 +18,13 @@ function wrapEvent(e: event): eventWithTime {
 }
 
 function record(options: recordOptions = {}): listenerHandler | undefined {
-  const { emit, checkoutEveryNms, checkoutEveryNth } = options;
+  const {
+    emit,
+    checkoutEveryNms,
+    checkoutEveryNth,
+    blockClass = 'rr-block',
+    ignoreClass = 'rr-ignore',
+  } = options;
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
@@ -56,7 +62,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       }),
       isCheckout,
     );
-    const [node, idNodeMap] = snapshot(document);
+    const [node, idNodeMap] = snapshot(document, blockClass);
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
@@ -152,6 +158,8 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                 },
               }),
             ),
+          blockClass,
+          ignoreClass,
         }),
       );
     };

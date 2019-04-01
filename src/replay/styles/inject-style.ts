@@ -1,5 +1,5 @@
-const rules: string[] = [
-  'iframe, .rr-block { background: #ccc }',
+const rules: (blockClass: string) => string[] = (blockClass: string) => [
+  `iframe, .${blockClass} { background: #ccc }`,
   'noscript { display: none !important; }',
 ];
 

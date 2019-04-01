@@ -113,18 +113,17 @@ export function getWindowWidth(): number {
   );
 }
 
-const BLOCK_CLASS = 'rr-block';
-export function isBlocked(node: Node | null): boolean {
+export function isBlocked(node: Node | null, blockClass: string): boolean {
   if (!node) {
     return false;
   }
   if (node.nodeType === node.ELEMENT_NODE) {
     return (
-      (node as HTMLElement).classList.contains(BLOCK_CLASS) ||
-      isBlocked(node.parentNode)
+      (node as HTMLElement).classList.contains(blockClass) ||
+      isBlocked(node.parentNode, blockClass)
     );
   }
-  return isBlocked(node.parentNode);
+  return isBlocked(node.parentNode, blockClass);
 }
 
 export function isAncestorRemoved(target: INode): boolean {

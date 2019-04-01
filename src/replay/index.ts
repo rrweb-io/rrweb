@@ -20,7 +20,7 @@ import {
   ReplayerEvents,
 } from '../types';
 import { mirror } from '../utils';
-import injectStyleRules from './styles/inject-style';
+import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
@@ -70,6 +70,7 @@ export class Replayer {
       skipInactive: false,
       showWarning: true,
       showDebug: false,
+      blockClass: 'rr-block',
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -278,6 +279,7 @@ export class Replayer {
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
     documentElement!.insertBefore(styleEl, head);
+    const injectStyleRules = getInjectStyleRules(this.config.blockClass);
     for (let idx = 0; idx < injectStyleRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStyleRules[idx], idx);
     }
