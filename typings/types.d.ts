@@ -74,6 +74,8 @@ export declare type recordOptions = {
     emit?: (e: eventWithTime, isCheckout?: boolean) => void;
     checkoutEveryNth?: number;
     checkoutEveryNms?: number;
+    blockClass?: string;
+    ignoreClass?: string;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -82,6 +84,8 @@ export declare type observerParam = {
     scrollCb: scrollCallback;
     viewportResizeCb: viewportResizeCallback;
     inputCb: inputCallback;
+    blockClass: string;
+    ignoreClass: string;
 };
 export declare type textCursor = {
     node: Node;
@@ -181,9 +185,10 @@ export declare type playerConfig = {
     speed: number;
     root: Element;
     loadTimeout: number;
-    skipInactive: Boolean;
-    showWarning: Boolean;
-    showDebug: Boolean;
+    skipInactive: boolean;
+    showWarning: boolean;
+    showDebug: boolean;
+    blockClass: string;
 };
 export declare type playerMetaData = {
     totalTime: number;
