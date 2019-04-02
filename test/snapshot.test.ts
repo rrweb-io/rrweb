@@ -54,7 +54,7 @@ describe('absolute url to stylesheet', () => {
         href,
       ),
     ).to.equal(
-      `background-image: url('http://localhost/css/images/b.jpg'); ` +
+      `background-image: url('http://localhost/css/images/b.jpg');` +
         `background: #aabbcc url('http://localhost/css/images/a.jpg') 50% 50% repeat;`,
     );
   });

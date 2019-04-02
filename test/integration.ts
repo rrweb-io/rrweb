@@ -8,6 +8,7 @@ import * as rollup from 'rollup';
 import typescript = require('rollup-plugin-typescript');
 import { assert } from 'chai';
 import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
+import { Suite } from 'mocha';
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map(filePath => {
@@ -23,7 +24,7 @@ interface IMimeType {
 }
 
 const server = () =>
-  new Promise(resolve => {
+  new Promise<http.Server>(resolve => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
       '.js': 'text/javascript',
@@ -66,7 +67,13 @@ function matchSnapshot(actual: string, testFile: string, testTitle: string) {
   return result;
 }
 
-describe('integration tests', () => {
+interface ISuite extends Suite {
+  server: http.Server;
+  browser: puppeteer.Browser;
+  code: string;
+}
+
+describe('integration tests', function(this: ISuite) {
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
