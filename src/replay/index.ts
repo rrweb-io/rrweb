@@ -26,8 +26,6 @@ import './styles/style.css';
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
-smoothscroll.polyfill();
-
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 // tslint:disable-next-line
 const mitt = (mittProxy as any).default || mittProxy;
@@ -75,6 +73,7 @@ export class Replayer {
     this.config = Object.assign({}, defaultConfig, config);
 
     this.timer = new Timer(this.config);
+    smoothscroll.polyfill();
     this.setupDom();
     this.emitter.on('resize', this.handleResize as mitt.Handler);
   }

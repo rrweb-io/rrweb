@@ -314,12 +314,6 @@ function initViewportResizeObserver(
 }
 
 const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
-const HOOK_PROPERTIES: Array<[HTMLElement, string]> = [
-  [HTMLInputElement.prototype, 'value'],
-  [HTMLInputElement.prototype, 'checked'],
-  [HTMLSelectElement.prototype, 'value'],
-  [HTMLTextAreaElement.prototype, 'value'],
-];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
@@ -388,9 +382,15 @@ function initInputObserver(
     HTMLInputElement.prototype,
     'value',
   );
+  const hookProperties: Array<[HTMLElement, string]> = [
+    [HTMLInputElement.prototype, 'value'],
+    [HTMLInputElement.prototype, 'checked'],
+    [HTMLSelectElement.prototype, 'value'],
+    [HTMLTextAreaElement.prototype, 'value'],
+  ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
-      ...HOOK_PROPERTIES.map(p =>
+      ...hookProperties.map(p =>
         hookSetter<HTMLElement>(p[0], p[1], {
           set() {
             // mock to a normal event
