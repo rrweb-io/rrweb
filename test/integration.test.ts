@@ -2,9 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { assertSnapshot } from './utils';
+import { Suite } from 'mocha';
 
-describe('record integration tests', () => {
-  function getHtml(fileName: string): string {
+interface ISuite extends Suite {
+  code: string;
+  browser: puppeteer.Browser;
+}
+
+describe('record integration tests', function(this: ISuite) {
+  const getHtml = (fileName: string): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return html.replace(
@@ -24,7 +30,7 @@ describe('record integration tests', () => {
     </body>
     `,
     );
-  }
+  };
 
   before(async () => {
     this.browser = await puppeteer.launch({

@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
+import { Suite } from 'mocha';
 import {
   EventType,
   eventWithTime,
@@ -113,7 +114,13 @@ interface IWindow extends Window {
   };
 }
 
-describe('replayer', () => {
+interface ISuite extends Suite {
+  code: string;
+  browser: puppeteer.Browser;
+  page: puppeteer.Page;
+}
+
+describe('replayer', function(this: ISuite) {
   before(async () => {
     this.browser = await puppeteer.launch({
       headless: false,

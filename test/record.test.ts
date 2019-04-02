@@ -11,6 +11,14 @@ import {
   EventType,
 } from '../src/types';
 import { assertSnapshot } from './utils';
+import { Suite } from 'mocha';
+
+interface ISuite extends Suite {
+  code: string;
+  browser: puppeteer.Browser;
+  page: puppeteer.Page;
+  events: eventWithTime[];
+}
 
 interface IWindow extends Window {
   rrweb: {
@@ -19,7 +27,7 @@ interface IWindow extends Window {
   emit: (e: eventWithTime) => undefined;
 }
 
-describe('record', () => {
+describe('record', function(this: ISuite) {
   before(async () => {
     this.browser = await puppeteer.launch({
       headless: false,
