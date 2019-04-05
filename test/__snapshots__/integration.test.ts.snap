@@ -463,20 +463,30 @@ exports[`character-data 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
-      \\"texts\\": [
-        {
-          \\"id\\": 7,
-          \\"value\\": \\"mutated\\"
-        }
-      ],
+      \\"texts\\": [],
       \\"attributes\\": [],
       \\"removes\\": [
         {
           \\"parentId\\": 4,
           \\"id\\": 9
+        },
+        {
+          \\"parentId\\": 6,
+          \\"id\\": 7
         }
       ],
-      \\"adds\\": []
+      \\"adds\\": [
+        {
+          \\"parentId\\": 6,
+          \\"previousId\\": null,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"mutated\\",
+            \\"id\\": 17
+          }
+        }
+      ]
     }
   }
 ]"
