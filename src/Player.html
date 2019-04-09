@@ -64,6 +64,9 @@
         const { replayer } = this.get();
         replayer.on(event, handler);
       },
+      addEvent(event) {
+        replayer.addEvent(event);
+      },
     },
     oncreate() {
       const { events } = this.get();
