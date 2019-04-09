@@ -214,6 +214,7 @@ export declare enum ReplayerEvents {
     LoadStylesheetStart = "load-stylesheet-start",
     LoadStylesheetEnd = "load-stylesheet-end",
     SkipStart = "skip-start",
-    SkipEnd = "skip-end"
+    SkipEnd = "skip-end",
+    MouseInteraction = "mouse-interaction"
 }
 export {};

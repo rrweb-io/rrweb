@@ -302,7 +302,7 @@ export class Replayer {
               this.pause();
               this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
               timer = window.setTimeout(() => {
-                this.resume();
+                this.resume(this.timer.timeOffset);
                 // mark timer was called
                 timer = -1;
               }, this.config.loadTimeout);
@@ -311,7 +311,7 @@ export class Replayer {
             css.addEventListener('load', () => {
               unloadSheets.delete(css);
               if (unloadSheets.size === 0 && timer !== -1) {
-                this.resume();
+                this.resume(this.timer.timeOffset);
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
                   window.clearTimeout(timer);

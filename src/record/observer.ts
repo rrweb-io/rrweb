@@ -156,7 +156,7 @@ function initMutationObserver(
             : mirror.getId(n.previousSibling as INode),
           nextId: !n.nextSibling
             ? n.nextSibling
-            : mirror.getId(n.nextSibling as INode),
+            : mirror.getId((n.nextSibling as unknown) as INode),
           node: serializeNodeWithId(n, document, mirror.map, blockClass, true)!,
         });
       } else {
