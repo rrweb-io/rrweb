@@ -70,11 +70,12 @@ export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;
 };
+export declare type blockClass = string | RegExp;
 export declare type recordOptions = {
     emit?: (e: eventWithTime, isCheckout?: boolean) => void;
     checkoutEveryNth?: number;
     checkoutEveryNms?: number;
-    blockClass?: string;
+    blockClass?: blockClass;
     ignoreClass?: string;
 };
 export declare type observerParam = {
@@ -84,7 +85,7 @@ export declare type observerParam = {
     scrollCb: scrollCallback;
     viewportResizeCb: viewportResizeCallback;
     inputCb: inputCallback;
-    blockClass: string;
+    blockClass: blockClass;
     ignoreClass: string;
 };
 export declare type textCursor = {

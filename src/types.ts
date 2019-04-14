@@ -98,11 +98,13 @@ export type eventWithTime = event & {
   delay?: number;
 };
 
+export type blockClass = string | RegExp;
+
 export type recordOptions = {
   emit?: (e: eventWithTime, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
-  blockClass?: string;
+  blockClass?: blockClass;
   ignoreClass?: string;
 };
 
@@ -113,7 +115,7 @@ export type observerParam = {
   scrollCb: scrollCallback;
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
-  blockClass: string;
+  blockClass: blockClass;
   ignoreClass: string;
 };
 

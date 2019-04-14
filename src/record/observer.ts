@@ -26,6 +26,7 @@ import {
   hookResetter,
   textCursor,
   attributeCursor,
+  blockClass,
 } from '../types';
 import { deepDelete, isParentRemoved, isParentDropped } from './collection';
 
@@ -48,7 +49,7 @@ import { deepDelete, isParentRemoved, isParentDropped } from './collection';
  */
 function initMutationObserver(
   cb: mutationCallBack,
-  blockClass: string,
+  blockClass: blockClass,
 ): MutationObserver {
   const observer = new MutationObserver(mutations => {
     const texts: textCursor[] = [];
@@ -242,7 +243,7 @@ function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
 
 function initMouseInteractionObserver(
   cb: mouseInteractionCallBack,
-  blockClass: string,
+  blockClass: blockClass,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
@@ -274,7 +275,7 @@ function initMouseInteractionObserver(
 
 function initScrollObserver(
   cb: scrollCallback,
-  blockClass: string,
+  blockClass: blockClass,
 ): listenerHandler {
   const updatePosition = throttle<UIEvent>(evt => {
     if (!evt.target || isBlocked(evt.target as Node, blockClass)) {
@@ -317,7 +318,7 @@ const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
-  blockClass: string,
+  blockClass: blockClass,
   ignoreClass: string,
 ): listenerHandler {
   function eventHandler(event: Event) {
