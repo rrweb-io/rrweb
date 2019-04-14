@@ -270,7 +270,7 @@ export function serializeNodeWithId(
 
 function snapshot(
   n: Document,
-  blockClass = 'rr-block',
+  blockClass: string | RegExp = 'rr-block',
 ): [serializedNodeWithId | null, idNodeMap] {
   resetId();
   const idNodeMap: idNodeMap = {};
