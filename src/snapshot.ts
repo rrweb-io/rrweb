@@ -89,7 +89,7 @@ function isSVGElement(el: Element): boolean {
 function serializeNode(
   n: Node,
   doc: Document,
-  blockClass: string,
+  blockClass: string | RegExp,
 ): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -105,7 +105,16 @@ function serializeNode(
         systemId: (n as DocumentType).systemId,
       };
     case n.ELEMENT_NODE:
-      const needBlock = (n as HTMLElement).classList.contains(blockClass);
+      let needBlock = false;
+      if (typeof blockClass === 'string') {
+        needBlock = (n as HTMLElement).classList.contains(blockClass);
+      } else {
+        (n as HTMLElement).classList.forEach(className => {
+          if (blockClass.test(className)) {
+            needBlock = true;
+          }
+        });
+      }
       const tagName = (n as HTMLElement).tagName.toLowerCase();
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
@@ -219,7 +228,7 @@ export function serializeNodeWithId(
   n: Node,
   doc: Document,
   map: idNodeMap,
-  blockClass: string,
+  blockClass: string | RegExp,
   skipChild = false,
 ): serializedNodeWithId | null {
   const _serializedNode = serializeNode(n, doc, blockClass);
