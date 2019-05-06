@@ -21,11 +21,19 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     return rules
-      ? Array.from(rules).reduce((prev, cur) => (prev += cur.cssText), '')
+      ? Array.from(rules).reduce((prev, cur) => prev + getCssRuleString(cur), '')
       : null;
   } catch (error) {
     return null;
   }
+}
+
+function getCssRuleString(rule: CSSRule): string {
+  return isCSSImportRule(rule) ? getCssRulesString(rule.styleSheet) || '' : rule.cssText;
+}
+
+function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
+  return 'styleSheet' in rule;
 }
 
 function extractOrigin(url: string): string {
