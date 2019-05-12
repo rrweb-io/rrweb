@@ -21,7 +21,10 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     return rules
-      ? Array.from(rules).reduce((prev, cur) => prev + getCssRuleString(cur), '')
+      ? Array.from(rules).reduce(
+          (prev, cur) => prev + getCssRuleString(cur),
+          '',
+        )
       : null;
   } catch (error) {
     return null;
@@ -29,7 +32,9 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
 }
 
 function getCssRuleString(rule: CSSRule): string {
-  return isCSSImportRule(rule) ? getCssRulesString(rule.styleSheet) || '' : rule.cssText;
+  return isCSSImportRule(rule)
+    ? getCssRulesString(rule.styleSheet) || ''
+    : rule.cssText;
 }
 
 function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
@@ -98,6 +103,7 @@ function serializeNode(
   n: Node,
   doc: Document,
   blockClass: string | RegExp,
+  inlineStylesheet: boolean,
 ): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -136,7 +142,7 @@ function serializeNode(
         }
       }
       // remote css
-      if (tagName === 'link') {
+      if (tagName === 'link' && inlineStylesheet) {
         const stylesheet = Array.from(doc.styleSheets).find(s => {
           return s.href === (n as HTMLLinkElement).href;
         });
@@ -238,8 +244,9 @@ export function serializeNodeWithId(
   map: idNodeMap,
   blockClass: string | RegExp,
   skipChild = false,
+  inlineStylesheet = true,
 ): serializedNodeWithId | null {
-  const _serializedNode = serializeNode(n, doc, blockClass);
+  const _serializedNode = serializeNode(n, doc, blockClass, inlineStylesheet);
   if (!_serializedNode) {
     // TODO: dev only
     console.warn(n, 'not serialized');
@@ -279,10 +286,14 @@ export function serializeNodeWithId(
 function snapshot(
   n: Document,
   blockClass: string | RegExp = 'rr-block',
+  inlineStylesheet = true,
 ): [serializedNodeWithId | null, idNodeMap] {
   resetId();
   const idNodeMap: idNodeMap = {};
-  return [serializeNodeWithId(n, n, idNodeMap, blockClass), idNodeMap];
+  return [
+    serializeNodeWithId(n, n, idNodeMap, blockClass, false, inlineStylesheet),
+    idNodeMap,
+  ];
 }
 
 export default snapshot;

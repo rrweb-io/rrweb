@@ -104,7 +104,9 @@ describe('integration tests', function(this: ISuite) {
       // tslint:disable-next-line: no-console
       page.on('console', msg => console.log(msg.text()));
       await page.goto(`http://localhost:3030/html`);
-      await page.setContent(html.src);
+      await page.setContent(html.src, {
+        waitUntil: 'load',
+      });
       const rebuildHtml = (await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
