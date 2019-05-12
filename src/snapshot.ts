@@ -274,6 +274,8 @@ export function serializeNodeWithId(
         doc,
         map,
         blockClass,
+        skipChild,
+        inlineStylesheet,
       );
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
