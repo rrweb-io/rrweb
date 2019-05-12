@@ -77,6 +77,7 @@ export declare type recordOptions = {
     checkoutEveryNms?: number;
     blockClass?: blockClass;
     ignoreClass?: string;
+    inlineStylesheet?: boolean;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -87,6 +88,7 @@ export declare type observerParam = {
     inputCb: inputCallback;
     blockClass: blockClass;
     ignoreClass: string;
+    inlineStylesheet: boolean;
 };
 export declare type textCursor = {
     node: Node;
