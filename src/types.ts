@@ -106,6 +106,7 @@ export type recordOptions = {
   checkoutEveryNms?: number;
   blockClass?: blockClass;
   ignoreClass?: string;
+  inlineStylesheet?: boolean;
 };
 
 export type observerParam = {
@@ -117,6 +118,7 @@ export type observerParam = {
   inputCb: inputCallback;
   blockClass: blockClass;
   ignoreClass: string;
+  inlineStylesheet: boolean;
 };
 
 export type textCursor = {

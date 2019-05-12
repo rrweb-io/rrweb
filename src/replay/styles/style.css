@@ -1,3 +1,6 @@
+body {
+  margin: 0;
+}
 .replayer-wrapper {
   position: relative;
 }

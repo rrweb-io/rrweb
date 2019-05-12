@@ -50,6 +50,7 @@ import { deepDelete, isParentRemoved, isParentDropped } from './collection';
 function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
+  inlineStylesheet: boolean,
 ): MutationObserver {
   const observer = new MutationObserver(mutations => {
     const texts: textCursor[] = [];
@@ -407,7 +408,11 @@ function initInputObserver(
 }
 
 export default function initObservers(o: observerParam): listenerHandler {
-  const mutationObserver = initMutationObserver(o.mutationCb, o.blockClass);
+  const mutationObserver = initMutationObserver(
+    o.mutationCb,
+    o.blockClass,
+    o.inlineStylesheet,
+  );
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
