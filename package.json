@@ -24,7 +24,8 @@
     "dist",
     "lib",
     "es",
-    "typings"
+    "typings",
+    "index.d.ts"
   ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
@@ -58,7 +59,7 @@
   "dependencies": {
     "@types/smoothscroll-polyfill": "^0.3.0",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.7.8",
+    "rrweb-snapshot": "^0.7.9",
     "smoothscroll-polyfill": "^0.4.3"
   }
 }
