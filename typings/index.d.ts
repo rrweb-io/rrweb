@@ -1,4 +1,4 @@
-import snapshot, { serializeNodeWithId, resetId } from './snapshot';
+import snapshot, { serializeNodeWithId } from './snapshot';
 import rebuild, { buildNodeWithSN } from './rebuild';
 export * from './types';
-export { snapshot, serializeNodeWithId, resetId, rebuild, buildNodeWithSN };
+export { snapshot, serializeNodeWithId, rebuild, buildNodeWithSN };

@@ -13,10 +13,6 @@ function genId(): number {
   return _id++;
 }
 
-export function resetId() {
-  _id = 1;
-}
-
 function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
@@ -239,7 +235,7 @@ function serializeNode(
 }
 
 export function serializeNodeWithId(
-  n: Node,
+  n: Node | INode,
   doc: Document,
   map: idNodeMap,
   blockClass: string | RegExp,
@@ -252,11 +248,16 @@ export function serializeNodeWithId(
     console.warn(n, 'not serialized');
     return null;
   }
-  const serializedNode = Object.assign(_serializedNode, {
-    id: genId(),
-  });
+  let id
+  // Try to reuse the previous id
+  if ('__sn' in n) {
+    id = n.__sn.id
+  } else {
+    id = genId()
+  }
+  const serializedNode = Object.assign(_serializedNode, { id });
   (n as INode).__sn = serializedNode;
-  map[serializedNode.id] = n as INode;
+  map[id] = (n as INode);
   let recordChild = !skipChild;
   if (serializedNode.type === NodeType.Element) {
     recordChild = recordChild && !serializedNode.needBlock;
@@ -290,7 +291,6 @@ function snapshot(
   blockClass: string | RegExp = 'rr-block',
   inlineStylesheet = true,
 ): [serializedNodeWithId | null, idNodeMap] {
-  resetId();
   const idNodeMap: idNodeMap = {};
   return [
     serializeNodeWithId(n, n, idNodeMap, blockClass, false, inlineStylesheet),
