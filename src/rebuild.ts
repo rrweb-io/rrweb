@@ -109,7 +109,11 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
             continue;
           }
           try {
-            node.setAttribute(name, value);
+            if (n.isSVG && name === 'xlink:href') {
+              node.setAttributeNS('http://www.w3.org/1999/xlink', name, value);
+            } else {
+              node.setAttribute(name, value);
+            }
           } catch (error) {
             // skip invalid attribute
           }
