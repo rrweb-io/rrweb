@@ -69,6 +69,7 @@ export class Replayer {
       showWarning: true,
       showDebug: false,
       blockClass: 'rr-block',
+      liveMode: false,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -155,6 +156,11 @@ export class Replayer {
     this.timer.addActions(actions);
     this.timer.start();
     this.emitter.emit(ReplayerEvents.Resume);
+  }
+
+  public addEvent(event: eventWithTime) {
+    const castFn = this.getCastFn(event, true);
+    castFn();
   }
 
   private setupDom() {
@@ -424,8 +430,10 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseMove:
-        // skip mouse move in sync mode
-        if (!isSync) {
+        if (isSync) {
+          const lastPosition = d.positions[d.positions.length - 1];
+          this.moveAndHover(d, lastPosition.x, lastPosition.y, lastPosition.id);
+        } else {
           d.positions.forEach(p => {
             const action = {
               doAction: () => {

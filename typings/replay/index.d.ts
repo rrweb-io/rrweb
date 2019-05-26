@@ -22,6 +22,7 @@ export declare class Replayer {
     play(timeOffset?: number): void;
     pause(): void;
     resume(timeOffset?: number): void;
+    addEvent(event: eventWithTime): void;
     private setupDom;
     private handleResize;
     private getDelay;

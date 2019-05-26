@@ -241,6 +241,7 @@ export type playerConfig = {
   showWarning: boolean;
   showDebug: boolean;
   blockClass: string;
+  liveMode: boolean;
 };
 
 export type playerMetaData = {
