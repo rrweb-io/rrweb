@@ -248,16 +248,16 @@ export function serializeNodeWithId(
     console.warn(n, 'not serialized');
     return null;
   }
-  let id
+  let id;
   // Try to reuse the previous id
   if ('__sn' in n) {
-    id = n.__sn.id
+    id = n.__sn.id;
   } else {
-    id = genId()
+    id = genId();
   }
   const serializedNode = Object.assign(_serializedNode, { id });
   (n as INode).__sn = serializedNode;
-  map[id] = (n as INode);
+  map[id] = n as INode;
   let recordChild = !skipChild;
   if (serializedNode.type === NodeType.Element) {
     recordChild = recordChild && !serializedNode.needBlock;
