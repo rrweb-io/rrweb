@@ -457,6 +457,10 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
+        this.emitter.emit(ReplayerEvents.MouseInteraction, {
+          type: d.type,
+          target,
+        });
         switch (d.type) {
           case MouseInteractions.Blur:
             if (((target as Node) as HTMLElement).blur) {
