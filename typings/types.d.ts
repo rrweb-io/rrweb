@@ -208,6 +208,11 @@ export declare type actionWithDelay = {
     doAction: () => void;
     delay: number;
 };
+export declare type Handler = (event?: unknown) => void;
+export declare type Emitter = {
+    on(type: string, handler: Handler): void;
+    emit(type: string, event?: unknown): void;
+};
 export declare enum ReplayerEvents {
     Start = "start",
     Pause = "pause",

@@ -18,6 +18,8 @@ import {
   incrementalSnapshotEvent,
   incrementalData,
   ReplayerEvents,
+  Handler,
+  Emitter,
 } from '../types';
 import { mirror } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
@@ -43,7 +45,7 @@ export class Replayer {
 
   private mouse: HTMLDivElement;
 
-  private emitter: mitt.Emitter = mitt();
+  private emitter: Emitter = mitt();
 
   private baselineTime: number = 0;
   // record last played event timestamp when paused
@@ -76,10 +78,10 @@ export class Replayer {
     this.timer = new Timer(this.config);
     smoothscroll.polyfill();
     this.setupDom();
-    this.emitter.on('resize', this.handleResize as mitt.Handler);
+    this.emitter.on('resize', this.handleResize as Handler);
   }
 
-  public on(event: string, handler: mitt.Handler) {
+  public on(event: string, handler: Handler) {
     this.emitter.on(event, handler);
   }
 

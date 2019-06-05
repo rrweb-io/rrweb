@@ -261,6 +261,13 @@ export type actionWithDelay = {
   delay: number;
 };
 
+export type Handler = (event?: unknown) => void;
+
+export type Emitter = {
+  on(type: string, handler: Handler): void;
+  emit(type: string, event?: unknown): void;
+};
+
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',

@@ -1,5 +1,5 @@
 import Timer from './timer';
-import { eventWithTime, playerConfig, playerMetaData } from '../types';
+import { eventWithTime, playerConfig, playerMetaData, Handler } from '../types';
 import './styles/style.css';
 export declare class Replayer {
     wrapper: HTMLDivElement;
@@ -15,7 +15,7 @@ export declare class Replayer {
     private noramlSpeed;
     private missingNodeRetryMap;
     constructor(events: eventWithTime[], config?: Partial<playerConfig>);
-    on(event: string, handler: mitt.Handler): void;
+    on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
     getMetaData(): playerMetaData;
     getTimeOffset(): number;
