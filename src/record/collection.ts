@@ -29,13 +29,13 @@ export function isParentRemoved(
   return isParentRemoved(removes, parentNode);
 }
 
-export function isParentDropped(droppedSet: Set<Node>, n: Node): boolean {
+export function isAncestorInSet(set: Set<Node>, n: Node): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
   }
-  if (droppedSet.has(parentNode)) {
+  if (set.has(parentNode)) {
     return true;
   }
-  return isParentDropped(droppedSet, parentNode);
+  return isAncestorInSet(set, parentNode);
 }

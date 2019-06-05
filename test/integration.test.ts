@@ -161,7 +161,7 @@ describe('record integration tests', function(this: ISuite) {
     assertSnapshot(snapshots, __filename, 'block');
   });
 
-  it('should record DOM node movement', async () => {
+  it('should record DOM node movement 1', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'move-node.html'));
@@ -176,6 +176,21 @@ describe('record integration tests', function(this: ISuite) {
       div.appendChild(span);
     });
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'move-node');
+    assertSnapshot(snapshots, __filename, 'move-node-1');
+  });
+
+  it('should record DOM node movement 2', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'move-node.html'));
+
+    await page.evaluate(() => {
+      const div = document.createElement('div');
+      const span = document.querySelector('span')!;
+      document.body.appendChild(div);
+      div.appendChild(span);
+    });
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'move-node-2');
   });
 });

@@ -353,17 +353,19 @@ export class Replayer {
         });
 
         const missingNodeMap: missingNodeMap = { ...this.missingNodeRetryMap };
-        d.adds.forEach(mutation => {
+        const queue: addedNodeMutation[] = [];
+
+        const appendNode = (mutation: addedNodeMutation) => {
+          const parent = mirror.getNode(mutation.parentId);
+          if (!parent) {
+            return queue.push(mutation);
+          }
           const target = buildNodeWithSN(
             mutation.node,
             this.iframe.contentDocument!,
             mirror.map,
             true,
           ) as Node;
-          const parent = mirror.getNode(mutation.parentId);
-          if (!parent) {
-            return this.warnNodeNotFound(d, mutation.parentId);
-          }
           let previous: Node | null = null;
           let next: Node | null = null;
           if (mutation.previousId) {
@@ -396,7 +398,20 @@ export class Replayer {
           if (mutation.previousId || mutation.nextId) {
             this.resolveMissingNode(missingNodeMap, parent, target, mutation);
           }
+        };
+
+        d.adds.forEach(mutation => {
+          appendNode(mutation);
         });
+
+        while (queue.length) {
+          if (queue.every(m => !Boolean(mirror.getNode(m.parentId)))) {
+            return queue.forEach(m => this.warnNodeNotFound(d, m.node.id));
+          }
+          const mutation = queue.shift()!;
+          appendNode(mutation);
+        }
+
         if (Object.keys(missingNodeMap).length) {
           Object.assign(this.missingNodeRetryMap, missingNodeMap);
         }
