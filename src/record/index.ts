@@ -25,6 +25,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
     blockClass = 'rr-block',
     ignoreClass = 'rr-ignore',
     inlineStylesheet = true,
+    maskAllInputs = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -161,6 +162,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
             ),
           blockClass,
           ignoreClass,
+          maskAllInputs,
           inlineStylesheet,
         }),
       );
