@@ -10,7 +10,7 @@ interface ISuite extends Suite {
 }
 
 describe('record integration tests', function(this: ISuite) {
-  const getHtml = (fileName: string): string => {
+  const getHtml = (fileName: string, maskAllInputs: boolean = false): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return html.replace(
@@ -24,7 +24,8 @@ describe('record integration tests', function(this: ISuite) {
         emit: event => {
           console.log(event);
           window.snapshots.push(event);
-        }
+        },
+        maskAllInputs: ${maskAllInputs}
       });
     </script>
     </body>
@@ -146,6 +147,21 @@ describe('record integration tests', function(this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'ignore');
+  });
+
+  it('should not record input values if maskAllInputs is enabled', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'form.html', true));
+
+    await page.type('input[type="text"]', 'test');
+    await page.click('input[type="radio"]');
+    await page.click('input[type="checkbox"]');
+    await page.type('textarea', 'textarea test');
+    await page.select('select', '1');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'mask');
   });
 
   it('should not record blocked elements and its child nodes', async () => {

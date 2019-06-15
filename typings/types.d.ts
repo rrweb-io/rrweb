@@ -77,6 +77,7 @@ export declare type recordOptions = {
     checkoutEveryNms?: number;
     blockClass?: blockClass;
     ignoreClass?: string;
+    maskAllInputs?: boolean;
     inlineStylesheet?: boolean;
 };
 export declare type observerParam = {
@@ -88,6 +89,7 @@ export declare type observerParam = {
     inputCb: inputCallback;
     blockClass: blockClass;
     ignoreClass: string;
+    maskAllInputs: boolean;
     inlineStylesheet: boolean;
 };
 export declare type textCursor = {

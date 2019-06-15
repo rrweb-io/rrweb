@@ -379,11 +379,13 @@ function initViewportResizeObserver(
 }
 
 const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
+const MASK_TYPES = ['color', 'date', 'datetime-local', 'email', 'month', 'number', 'range', 'search', 'tel', 'text', 'time', 'url', 'week']
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
   blockClass: blockClass,
   ignoreClass: string,
+  maskAllInputs: boolean,
 ): listenerHandler {
   function eventHandler(event: Event) {
     const { target } = event;
@@ -402,10 +404,12 @@ function initInputObserver(
     ) {
       return;
     }
-    const text = (target as HTMLInputElement).value;
+    let text = (target as HTMLInputElement).value;
     let isChecked = false;
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
+    } else if ((MASK_TYPES.indexOf(type) >= 0 || (target as Element).tagName == 'TEXTAREA') && maskAllInputs) {
+      text = Array(text.length+1).join('*')
     }
     cbWithDedup(target, { text, isChecked });
     // if a radio was checked
@@ -487,6 +491,7 @@ export default function initObservers(o: observerParam): listenerHandler {
     o.inputCb,
     o.blockClass,
     o.ignoreClass,
+    o.maskAllInputs,
   );
   return () => {
     mutationObserver.disconnect();
