@@ -100,6 +100,7 @@ function serializeNode(
   doc: Document,
   blockClass: string | RegExp,
   inlineStylesheet: boolean,
+  maskAllInputs: boolean,
 ): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -177,7 +178,7 @@ function serializeNode(
           attributes.type !== 'checkbox' &&
           value
         ) {
-          attributes.value = value;
+          attributes.value = maskAllInputs ? '*'.repeat(value.length) : value;
         } else if ((n as HTMLInputElement).checked) {
           attributes.checked = (n as HTMLInputElement).checked;
         }
@@ -241,8 +242,15 @@ export function serializeNodeWithId(
   blockClass: string | RegExp,
   skipChild = false,
   inlineStylesheet = true,
+  maskAllInputs = false,
 ): serializedNodeWithId | null {
-  const _serializedNode = serializeNode(n, doc, blockClass, inlineStylesheet);
+  const _serializedNode = serializeNode(
+    n,
+    doc,
+    blockClass,
+    inlineStylesheet,
+    maskAllInputs,
+  );
   if (!_serializedNode) {
     // TODO: dev only
     console.warn(n, 'not serialized');
@@ -290,10 +298,19 @@ function snapshot(
   n: Document,
   blockClass: string | RegExp = 'rr-block',
   inlineStylesheet = true,
+  maskAllInputs = false,
 ): [serializedNodeWithId | null, idNodeMap] {
   const idNodeMap: idNodeMap = {};
   return [
-    serializeNodeWithId(n, n, idNodeMap, blockClass, false, inlineStylesheet),
+    serializeNodeWithId(
+      n,
+      n,
+      idNodeMap,
+      blockClass,
+      false,
+      inlineStylesheet,
+      maskAllInputs,
+    ),
     idNodeMap,
   ];
 }
