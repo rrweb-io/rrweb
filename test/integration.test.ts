@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { assertSnapshot } from './utils';
 import { Suite } from 'mocha';
+import { recordOptions } from '../src/types';
 
 interface ISuite extends Suite {
   code: string;
@@ -10,7 +11,7 @@ interface ISuite extends Suite {
 }
 
 describe('record integration tests', function(this: ISuite) {
-  const getHtml = (fileName: string, maskAllInputs: boolean = false): string => {
+  const getHtml = (fileName: string, options: recordOptions = {}): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return html.replace(
@@ -25,7 +26,7 @@ describe('record integration tests', function(this: ISuite) {
           console.log(event);
           window.snapshots.push(event);
         },
-        maskAllInputs: ${maskAllInputs}
+        maskAllInputs: ${options.maskAllInputs}
       });
     </script>
     </body>
@@ -152,7 +153,9 @@ describe('record integration tests', function(this: ISuite) {
   it('should not record input values if maskAllInputs is enabled', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'form.html', true));
+    await page.setContent(
+      getHtml.call(this, 'form.html', { maskAllInputs: true }),
+    );
 
     await page.type('input[type="text"]', 'test');
     await page.click('input[type="radio"]');
