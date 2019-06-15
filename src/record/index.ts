@@ -64,7 +64,12 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       }),
       isCheckout,
     );
-    const [node, idNodeMap] = snapshot(document, blockClass, inlineStylesheet);
+    const [node, idNodeMap] = snapshot(
+      document,
+      blockClass,
+      inlineStylesheet,
+      maskAllInputs,
+    );
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }

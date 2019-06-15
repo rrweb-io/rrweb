@@ -56,6 +56,7 @@ function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
   inlineStylesheet: boolean,
+  maskAllInputs: boolean,
 ): MutationObserver {
   const observer = new MutationObserver(mutations => {
     const texts: textCursor[] = [];
@@ -197,6 +198,7 @@ function initMutationObserver(
           blockClass,
           true,
           inlineStylesheet,
+          maskAllInputs,
         )!,
       });
     };
@@ -495,6 +497,7 @@ export default function initObservers(o: observerParam): listenerHandler {
     o.mutationCb,
     o.blockClass,
     o.inlineStylesheet,
+    o.maskAllInputs,
   );
   const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
   const mouseInteractionHandler = initMouseInteractionObserver(
