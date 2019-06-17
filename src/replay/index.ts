@@ -492,6 +492,8 @@ export class Replayer {
             }
             break;
           case MouseInteractions.Click:
+          case MouseInteractions.TouchStart:
+          case MouseInteractions.TouchEnd:
             /**
              * Click has no visual impact when replaying and may
              * trigger navigation when apply to an <a> link.

@@ -184,7 +184,7 @@ export enum MouseInteractions {
   Focus,
   Blur,
   TouchStart,
-  TouchMove,
+  TouchMove_Departed, // we will start a separate observer for touch move event
   TouchEnd,
 }
 

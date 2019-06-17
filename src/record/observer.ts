@@ -8,6 +8,7 @@ import {
   getWindowWidth,
   isBlocked,
   isAncestorRemoved,
+  isTouchEvent,
 } from '../utils';
 import {
   mutationCallBack,
@@ -271,7 +272,7 @@ function initMutationObserver(
   return observer;
 }
 
-function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
+function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle(() => {
@@ -285,9 +286,12 @@ function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
     positions = [];
     timeBaseline = null;
   }, 500);
-  const updatePosition = throttle<MouseEvent>(
+  const updatePosition = throttle<MouseEvent | TouchEvent>(
     evt => {
-      const { clientX, clientY, target } = evt;
+      const { target } = evt;
+      const { clientX, clientY } = isTouchEvent(evt)
+        ? evt.changedTouches[0]
+        : evt;
       if (!timeBaseline) {
         timeBaseline = Date.now();
       }
@@ -304,7 +308,13 @@ function initMousemoveObserver(cb: mousemoveCallBack): listenerHandler {
       trailing: false,
     },
   );
-  return on('mousemove', updatePosition);
+  const handlers = [
+    on('mousemove', updatePosition),
+    on('touchmove', updatePosition),
+  ];
+  return () => {
+    handlers.forEach(h => h());
+  };
 }
 
 function initMouseInteractionObserver(
@@ -313,12 +323,14 @@ function initMouseInteractionObserver(
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
-    return (event: MouseEvent) => {
+    return (event: MouseEvent | TouchEvent) => {
       if (isBlocked(event.target as Node, blockClass)) {
         return;
       }
       const id = mirror.getId(event.target as INode);
-      const { clientX, clientY } = event;
+      const { clientX, clientY } = isTouchEvent(event)
+        ? event.changedTouches[0]
+        : event;
       cb({
         type: MouseInteractions[eventKey],
         id,
@@ -328,7 +340,7 @@ function initMouseInteractionObserver(
     };
   };
   Object.keys(MouseInteractions)
-    .filter(key => Number.isNaN(Number(key)))
+    .filter(key => Number.isNaN(Number(key)) && !key.endsWith('_Departed'))
     .forEach((eventKey: keyof typeof MouseInteractions) => {
       const eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
@@ -499,7 +511,7 @@ export default function initObservers(o: observerParam): listenerHandler {
     o.inlineStylesheet,
     o.maskAllInputs,
   );
-  const mousemoveHandler = initMousemoveObserver(o.mousemoveCb);
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.blockClass,

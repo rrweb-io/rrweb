@@ -151,3 +151,9 @@ export function isAncestorRemoved(target: INode): boolean {
   }
   return isAncestorRemoved((target.parentNode as unknown) as INode);
 }
+
+export function isTouchEvent(
+  event: MouseEvent | TouchEvent,
+): event is TouchEvent {
+  return Boolean((event as TouchEvent).changedTouches);
+}
