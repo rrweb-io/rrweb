@@ -8,3 +8,4 @@ export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
 export declare function isBlocked(node: Node | null, blockClass: blockClass): boolean;
 export declare function isAncestorRemoved(target: INode): boolean;
+export declare function isTouchEvent(event: MouseEvent | TouchEvent): event is TouchEvent;

@@ -145,7 +145,7 @@ export declare enum MouseInteractions {
     Focus = 5,
     Blur = 6,
     TouchStart = 7,
-    TouchMove = 8,
+    TouchMove_Departed = 8,
     TouchEnd = 9
 }
 declare type mouseInteractionParam = {
