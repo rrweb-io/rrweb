@@ -244,6 +244,7 @@ export type playerConfig = {
   showDebug: boolean;
   blockClass: string;
   liveMode: boolean;
+  insertStyleRules: string[];
 };
 
 export type playerMetaData = {
