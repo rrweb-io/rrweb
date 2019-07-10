@@ -195,6 +195,7 @@ export declare type playerConfig = {
     showDebug: boolean;
     blockClass: string;
     liveMode: boolean;
+    insertStyleRules: string[];
 };
 export declare type playerMetaData = {
     totalTime: number;
