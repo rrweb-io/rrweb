@@ -22,7 +22,7 @@ import {
   Emitter,
 } from '../types';
 import { mirror } from '../utils';
-import getBlockStyle from './styles/inject-style';
+import getInjectStyleRules  from './styles/inject-style';
 import './styles/style.css';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
@@ -287,13 +287,9 @@ export class Replayer {
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
     documentElement!.insertBefore(styleEl, head);
-    const blockStyleRules = getBlockStyle(this.config.blockClass);
-    const insertStyleRules = this.config.insertStyleRules;
-    for (let idx = 0; idx < blockStyleRules.length; idx++) {
-      (styleEl.sheet! as CSSStyleSheet).insertRule(blockStyleRules[idx], idx);
-    }
-    for (let count = 0, idx = blockStyleRules.length; count < insertStyleRules.length; count++, idx++) {
-      (styleEl.sheet! as CSSStyleSheet).insertRule(insertStyleRules[count], idx);
+    const injectStylesRules = getInjectStyleRules(this.config.blockClass).concat(this.config.insertStyleRules);
+    for (let idx = 0; idx < injectStylesRules.length; idx++) {
+      (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded);
     this.waitForStylesheetLoad();
