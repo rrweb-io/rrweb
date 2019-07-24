@@ -6,6 +6,7 @@ export enum EventType {
   FullSnapshot,
   IncrementalSnapshot,
   Meta,
+  Custom,
 }
 
 export type domContentLoadedEvent = {
@@ -40,6 +41,14 @@ export type metaEvent = {
     href: string;
     width: number;
     height: number;
+  };
+};
+
+export type customEvent<T = unknown> = {
+  type: EventType.Custom;
+  data: {
+    tag: string;
+    payload: T;
   };
 };
 
@@ -91,7 +100,8 @@ export type event =
   | loadedEvent
   | fullSnapshotEvent
   | incrementalSnapshotEvent
-  | metaEvent;
+  | metaEvent
+  | customEvent;
 
 export type eventWithTime = event & {
   timestamp: number;
