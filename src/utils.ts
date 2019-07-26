@@ -82,9 +82,10 @@ export function hookSetter<T>(
   target: T,
   key: string | number | symbol,
   d: PropertyDescriptor,
+  isRevoked?: boolean,
 ): hookResetter {
   const original = Object.getOwnPropertyDescriptor(target, key);
-  Object.defineProperty(target, key, {
+  Object.defineProperty(target, key, isRevoked ? d : {
     set(value) {
       // put hooked setter into event loop to avoid of set latency
       setTimeout(() => {
@@ -95,7 +96,7 @@ export function hookSetter<T>(
       }
     },
   });
-  return () => hookSetter(target, key, original || {});
+  return () => hookSetter(target, key, original || {}, true);
 }
 
 export function getWindowHeight(): number {
