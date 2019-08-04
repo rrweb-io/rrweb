@@ -158,7 +158,11 @@ function serializeNode(
         tagName === 'style' &&
         (n as HTMLStyleElement).sheet &&
         // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
-        !(n as HTMLElement).innerText.trim().length
+        !(
+          (n as HTMLElement).innerText ||
+          (n as HTMLElement).textContent ||
+          ''
+        ).trim().length
       ) {
         const cssText = getCssRulesString((n as HTMLStyleElement)
           .sheet as CSSStyleSheet);
