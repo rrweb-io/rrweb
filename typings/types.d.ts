@@ -4,7 +4,8 @@ export declare enum EventType {
     Load = 1,
     FullSnapshot = 2,
     IncrementalSnapshot = 3,
-    Meta = 4
+    Meta = 4,
+    Custom = 5
 }
 export declare type domContentLoadedEvent = {
     type: EventType.DomContentLoaded;
@@ -36,6 +37,13 @@ export declare type metaEvent = {
         height: number;
     };
 };
+export declare type customEvent<T = unknown> = {
+    type: EventType.Custom;
+    data: {
+        tag: string;
+        payload: T;
+    };
+};
 export declare enum IncrementalSource {
     Mutation = 0,
     MouseMove = 1,
@@ -65,7 +73,7 @@ export declare type inputData = {
     id: number;
 } & inputValue;
 export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData;
-export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent;
+export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;
