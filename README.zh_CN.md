@@ -7,7 +7,10 @@
 
 # rrweb
 
-[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb) [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
+[![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
+![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
 
 rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
 
