@@ -53,14 +53,13 @@ export function throttle<T>(
   let timeout: number | null = null;
   let previous = 0;
   // tslint:disable-next-line: only-arrow-functions
-  return function() {
+  return function(args: T) {
     let now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
     }
     let remaining = wait - (now - previous);
     let context = this;
-    let args = arguments;
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
         window.clearTimeout(timeout);
@@ -85,17 +84,23 @@ export function hookSetter<T>(
   isRevoked?: boolean,
 ): hookResetter {
   const original = Object.getOwnPropertyDescriptor(target, key);
-  Object.defineProperty(target, key, isRevoked ? d : {
-    set(value) {
-      // put hooked setter into event loop to avoid of set latency
-      setTimeout(() => {
-        d.set!.call(this, value);
-      }, 0);
-      if (original && original.set) {
-        original.set.call(this, value);
-      }
-    },
-  });
+  Object.defineProperty(
+    target,
+    key,
+    isRevoked
+      ? d
+      : {
+          set(value) {
+            // put hooked setter into event loop to avoid of set latency
+            setTimeout(() => {
+              d.set!.call(this, value);
+            }, 0);
+            if (original && original.set) {
+              original.set.call(this, value);
+            }
+          },
+        },
+  );
   return () => hookSetter(target, key, original || {}, true);
 }
 

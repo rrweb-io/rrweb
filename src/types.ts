@@ -59,6 +59,7 @@ export enum IncrementalSource {
   Scroll,
   ViewportResize,
   Input,
+  TouchMove,
 }
 
 export type mutationData = {
@@ -66,7 +67,7 @@ export type mutationData = {
 } & mutationCallbackParam;
 
 export type mousemoveData = {
-  source: IncrementalSource.MouseMove;
+  source: IncrementalSource.MouseMove | IncrementalSource.TouchMove;
   positions: mousePosition[];
 };
 
@@ -176,7 +177,10 @@ type mutationCallbackParam = {
 
 export type mutationCallBack = (m: mutationCallbackParam) => void;
 
-export type mousemoveCallBack = (p: mousePosition[]) => void;
+export type mousemoveCallBack = (
+  p: mousePosition[],
+  source: IncrementalSource.MouseMove | IncrementalSource.TouchMove,
+) => void;
 
 export type mousePosition = {
   x: number;

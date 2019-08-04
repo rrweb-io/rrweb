@@ -132,12 +132,12 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                 },
               }),
             ),
-          mousemoveCb: positions =>
+          mousemoveCb: (positions, source) =>
             wrappedEmit(
               wrapEvent({
                 type: EventType.IncrementalSnapshot,
                 data: {
-                  source: IncrementalSource.MouseMove,
+                  source,
                   positions,
                 },
               }),

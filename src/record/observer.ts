@@ -28,6 +28,7 @@ import {
   textCursor,
   attributeCursor,
   blockClass,
+  IncrementalSource,
 } from '../types';
 import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
 
@@ -275,13 +276,14 @@ function initMutationObserver(
 function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
-  const wrappedCb = throttle(() => {
+  const wrappedCb = throttle((isTouch: boolean) => {
     const totalOffset = Date.now() - timeBaseline!;
     cb(
       positions.map(p => {
         p.timeOffset -= totalOffset;
         return p;
       }),
+      isTouch ? IncrementalSource.TouchMove : IncrementalSource.MouseMove,
     );
     positions = [];
     timeBaseline = null;
@@ -301,7 +303,7 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
         id: mirror.getId(target as INode),
         timeOffset: Date.now() - timeBaseline,
       });
-      wrappedCb();
+      wrappedCb(isTouchEvent(evt));
     },
     50,
     {
