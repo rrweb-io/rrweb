@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import 'mocha';
 import { expect } from 'chai';
 import { addHoverClass } from '../src/rebuild';
@@ -39,5 +41,17 @@ describe('add hover class to hover selector related rules', () => {
   it('will ignore :hover in css value', () => {
     const cssText = '.a::after { content: ":hover" }';
     expect(addHoverClass(cssText)).to.equal(cssText);
+  });
+
+  it('benchmark', () => {
+    const cssText = fs.readFileSync(
+      path.resolve(__dirname, './css/benchmark.css'),
+      'utf8',
+    );
+    const start = process.hrtime();
+    addHoverClass(cssText);
+    const end = process.hrtime(start);
+    const duration = end[0] * 1_000 + end[1] / 1_000_000;
+    expect(duration).to.below(100);
   });
 });

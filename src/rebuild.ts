@@ -1,3 +1,4 @@
+import { parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -55,20 +56,23 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-const CSS_SELECTOR = /([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g;
 const HOVER_SELECTOR = /([^\\]):hover/g;
 export function addHoverClass(cssText: string): string {
-  return cssText.replace(CSS_SELECTOR, (match, p1: string, p2: string) => {
-    if (HOVER_SELECTOR.test(p1)) {
-      const newSelector = p1.replace(HOVER_SELECTOR, '$1.\\:hover');
-      return `${p1.replace(/\s*$/, '')}, ${newSelector.replace(
-        /^\s*/,
-        '',
-      )}${p2}`;
-    } else {
-      return match;
+  const ast = parse(cssText);
+  if (!ast.stylesheet) {
+    return cssText;
+  }
+  ast.stylesheet.rules.forEach(rule => {
+    if ('selectors' in rule) {
+      (rule.selectors || []).forEach((selector: string) => {
+        if (HOVER_SELECTOR.test(selector)) {
+          const newSelector = selector.replace(HOVER_SELECTOR, '$1.\\:hover');
+          cssText = cssText.replace(selector, `${selector}, ${newSelector}`);
+        }
+      });
     }
   });
+  return cssText;
 }
 
 function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
