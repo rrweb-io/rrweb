@@ -106,6 +106,12 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
           }
           if (isTextarea || isRemoteOrDynamicCss) {
             const child = doc.createTextNode(value);
+            // https://github.com/rrweb-io/rrweb/issues/112
+            for (const c of Array.from(node.childNodes)) {
+              if (c.nodeType === node.TEXT_NODE) {
+                node.removeChild(c);
+              }
+            }
             node.appendChild(child);
             continue;
           }
