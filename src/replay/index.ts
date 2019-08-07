@@ -21,8 +21,8 @@ import {
   Handler,
   Emitter,
 } from '../types';
-import { mirror } from '../utils';
-import getInjectStyleRules  from './styles/inject-style';
+import { mirror, polyfill } from '../utils';
+import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
@@ -78,6 +78,7 @@ export class Replayer {
 
     this.timer = new Timer(this.config);
     smoothscroll.polyfill();
+    polyfill();
     this.setupDom();
     this.emitter.on('resize', this.handleResize as Handler);
   }
@@ -288,7 +289,9 @@ export class Replayer {
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
     documentElement!.insertBefore(styleEl, head);
-    const injectStylesRules = getInjectStyleRules(this.config.blockClass).concat(this.config.insertStyleRules);
+    const injectStylesRules = getInjectStyleRules(
+      this.config.blockClass,
+    ).concat(this.config.insertStyleRules);
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }

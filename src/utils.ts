@@ -163,3 +163,10 @@ export function isTouchEvent(
 ): event is TouchEvent {
   return Boolean((event as TouchEvent).changedTouches);
 }
+
+export function polyfill() {
+  if ('NodeList' in window && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = (Array.prototype
+      .forEach as unknown) as NodeList['forEach'];
+  }
+}

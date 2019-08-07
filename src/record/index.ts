@@ -1,6 +1,12 @@
 import { snapshot } from 'rrweb-snapshot';
 import initObservers from './observer';
-import { mirror, on, getWindowWidth, getWindowHeight } from '../utils';
+import {
+  mirror,
+  on,
+  getWindowWidth,
+  getWindowHeight,
+  polyfill,
+} from '../utils';
 import {
   EventType,
   event,
@@ -48,6 +54,8 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
   if (!emit) {
     throw new Error('emit function is required');
   }
+
+  polyfill();
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
