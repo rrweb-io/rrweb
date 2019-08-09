@@ -104,6 +104,10 @@ export class Replayer {
     };
   }
 
+  public getCurrentTime(): number {
+    return this.timer.timeOffset + this.getTimeOffset();
+  }
+
   public getTimeOffset(): number {
     return this.baselineTime - this.events[0].timestamp;
   }
@@ -315,7 +319,7 @@ export class Replayer {
               this.pause();
               this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
               timer = window.setTimeout(() => {
-                this.resume(this.timer.timeOffset);
+                this.resume(this.getCurrentTime());
                 // mark timer was called
                 timer = -1;
               }, this.config.loadTimeout);
@@ -324,7 +328,7 @@ export class Replayer {
             css.addEventListener('load', () => {
               unloadSheets.delete(css);
               if (unloadSheets.size === 0 && timer !== -1) {
-                this.resume(this.timer.timeOffset);
+                this.resume(this.getCurrentTime());
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
                   window.clearTimeout(timer);
