@@ -18,6 +18,7 @@ export declare class Replayer {
     on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
     getMetaData(): playerMetaData;
+    getCurrentTime(): number;
     getTimeOffset(): number;
     play(timeOffset?: number): void;
     pause(): void;
