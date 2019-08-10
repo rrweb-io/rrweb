@@ -297,4 +297,5 @@ export enum ReplayerEvents {
   SkipStart = 'skip-start',
   SkipEnd = 'skip-end',
   MouseInteraction = 'mouse-interaction',
+  Show = 'show',
 }

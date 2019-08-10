@@ -135,6 +135,20 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Start);
   }
 
+  public show(timeOffset: number) {
+    this.timer.clear();
+    this.timer.timeOffset = 0;
+    this.baselineTime = this.events[0].timestamp + timeOffset;
+    for (const event of this.events) {
+      if (event.timestamp < this.baselineTime) {
+        this.getCastFn(event, true)();
+      } else {
+        break;
+      }
+    }
+    this.emitter.emit(ReplayerEvents.Show);
+  }
+
   public pause() {
     this.timer.clear();
     this.emitter.emit(ReplayerEvents.Pause);
