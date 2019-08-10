@@ -58,7 +58,7 @@
   "dependencies": {
     "@types/smoothscroll-polyfill": "^0.3.0",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^0.7.14",
+    "rrweb-snapshot": "^0.7.15",
     "smoothscroll-polyfill": "^0.4.3"
   }
 }
