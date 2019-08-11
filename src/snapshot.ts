@@ -289,6 +289,7 @@ export function serializeNodeWithId(
         blockClass,
         skipChild,
         inlineStylesheet,
+        maskAllInputs,
       );
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
