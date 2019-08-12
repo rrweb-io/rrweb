@@ -23,7 +23,6 @@ interface ISuite extends Suite {
 interface IWindow extends Window {
   rrweb: {
     record: (options: recordOptions) => listenerHandler | undefined;
-    addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
 }
@@ -180,20 +179,5 @@ describe('record', function(this: ISuite) {
     });
     await this.page.waitFor(50);
     assertSnapshot(this.events, __filename, 'async-checkout');
-  });
-
-  it('can add custom event', async () => {
-    await this.page.evaluate(() => {
-      const { record, addCustomEvent } = (window as IWindow).rrweb;
-      record({
-        emit: (window as IWindow).emit,
-      });
-      addCustomEvent<number>('tag1', 1);
-      addCustomEvent<{ a: string }>('tag2', {
-        a: 'b',
-      });
-    });
-    await this.page.waitFor(50);
-    assertSnapshot(this.events, __filename, 'custom-event');
   });
 });
