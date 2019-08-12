@@ -1908,7 +1908,7 @@ exports[`mask 1`] = `
                             \\"attributes\\": {
                               \\"name\\": \\"\\",
                               \\"id\\": \\"\\",
-                              \\"value\\": \\"1\\"
+                              \\"value\\": \\"*\\"
                             },
                             \\"childNodes\\": [
                               {
