@@ -1,4 +1,4 @@
-import record from './record';
+import record, { addCustomEvent } from './record';
 import { Replayer } from './replay';
 import { mirror } from './utils';
 
@@ -8,4 +8,4 @@ export {
   MouseInteractions,
   ReplayerEvents,
 } from './types';
-export { record, Replayer, mirror };
+export { record, addCustomEvent, Replayer, mirror };
