@@ -25,21 +25,6 @@ function wrapEvent(e: event): eventWithTime {
 
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
-export function addCustomEvent<T>(tag: string, payload: T) {
-  if (!wrappedEmit) {
-    throw new Error('please add custom event after start recording');
-  }
-  wrappedEmit(
-    wrapEvent({
-      type: EventType.Custom,
-      data: {
-        tag,
-        payload,
-      },
-    }),
-  );
-}
-
 function record(options: recordOptions = {}): listenerHandler | undefined {
   const {
     emit,
@@ -227,5 +212,20 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
     console.warn(error);
   }
 }
+
+record.addCustomEvent = <T>(tag: string, payload: T) => {
+  if (!wrappedEmit) {
+    throw new Error('please add custom event after start recording');
+  }
+  wrappedEmit(
+    wrapEvent({
+      type: EventType.Custom,
+      data: {
+        tag,
+        payload,
+      },
+    }),
+  );
+};
 
 export default record;
