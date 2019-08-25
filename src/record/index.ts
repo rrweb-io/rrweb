@@ -1,5 +1,5 @@
 import { snapshot } from 'rrweb-snapshot';
-import initObservers from './observer';
+import initObservers, { observeStylesheet } from './observer';
 import {
   mirror,
   on,
@@ -80,9 +80,11 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       inlineStylesheet,
       maskAllInputs,
     );
+
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
+
     mirror.map = idNodeMap;
     wrappedEmit(
       wrapEvent({
@@ -181,6 +183,13 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
           inlineStylesheet,
         }),
       );
+
+      for (var i in mirror.map) {
+        const node = mirror.map[i];
+        if ((node as any).tagName == 'STYLE') {
+          observeStylesheet(node as any);
+        }
+      }
     };
     if (
       document.readyState === 'interactive' ||

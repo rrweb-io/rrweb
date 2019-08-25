@@ -506,6 +506,26 @@ function initInputObserver(
   };
 }
 
+export function observeStylesheet(styleRoot: HTMLLinkElement) {
+  const handler: ProxyHandler<any> = {
+    apply: function apply(target, thisArg, argumentsList) {
+      const result = target.apply(thisArg, argumentsList);
+      styleRoot.innerHTML = Array.from(thisArg.rules, x => x.cssText).join(
+        '\n',
+      );
+
+      const sheet = styleRoot.sheet as CSSStyleSheet;
+      sheet.insertRule = new Proxy(sheet.insertRule, handler);
+      return result;
+    },
+  };
+
+  const sheet = styleRoot.sheet as CSSStyleSheet;
+  const proxy = new Proxy(sheet.insertRule, handler);
+  sheet.insertRule = proxy;
+  sheet.insertRule('.rr_track_on {}');
+}
+
 export default function initObservers(o: observerParam): listenerHandler {
   const mutationObserver = initMutationObserver(
     o.mutationCb,
