@@ -58,7 +58,7 @@ function getTagName(n: elementNode): string {
 
 const HOVER_SELECTOR = /([^\\]):hover/g;
 export function addHoverClass(cssText: string): string {
-  const ast = parse(cssText, {silent: true});
+  const ast = parse(cssText, { silent: true });
   if (!ast.stylesheet) {
     return cssText;
   }
@@ -75,7 +75,11 @@ export function addHoverClass(cssText: string): string {
   return cssText;
 }
 
-function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
+function buildNode(
+  n: serializedNodeWithId,
+  doc: Document,
+  HACK_CSS: boolean,
+): Node | null {
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -101,7 +105,7 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
           const isTextarea = tagName === 'textarea' && name === 'value';
           const isRemoteOrDynamicCss =
             tagName === 'style' && name === '_cssText';
-          if (isRemoteOrDynamicCss) {
+          if (isRemoteOrDynamicCss && HACK_CSS) {
             value = addHoverClass(value);
           }
           if (isTextarea || isRemoteOrDynamicCss) {
@@ -141,7 +145,7 @@ function buildNode(n: serializedNodeWithId, doc: Document): Node | null {
       return node;
     case NodeType.Text:
       return doc.createTextNode(
-        n.isStyle ? addHoverClass(n.textContent) : n.textContent,
+        n.isStyle && HACK_CSS ? addHoverClass(n.textContent) : n.textContent,
       );
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
@@ -157,8 +161,9 @@ export function buildNodeWithSN(
   doc: Document,
   map: idNodeMap,
   skipChild = false,
+  HACK_CSS = true,
 ): INode | null {
-  let node = buildNode(n, doc);
+  let node = buildNode(n, doc, HACK_CSS);
   if (!node) {
     return null;
   }
@@ -177,7 +182,7 @@ export function buildNodeWithSN(
     !skipChild
   ) {
     for (const childN of n.childNodes) {
-      const childNode = buildNodeWithSN(childN, doc, map);
+      const childNode = buildNodeWithSN(childN, doc, map, false, HACK_CSS);
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
       } else {
@@ -191,9 +196,13 @@ export function buildNodeWithSN(
 function rebuild(
   n: serializedNodeWithId,
   doc: Document,
+  /**
+   * This is not a public API yet, just for POC
+   */
+  HACK_CSS: boolean = true,
 ): [Node | null, idNodeMap] {
   const idNodeMap: idNodeMap = {};
-  return [buildNodeWithSN(n, doc, idNodeMap), idNodeMap];
+  return [buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS), idNodeMap];
 }
 
 export default rebuild;
