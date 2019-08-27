@@ -1,7 +1,9 @@
 var isRecording = false;
 
 function StartRecording() {
-  if (isRecording) return;
+  if (isRecording) {
+    return;
+  }
   chrome.tabs.executeScript(
     {
       file: 'dist/rrweb.min.js',
