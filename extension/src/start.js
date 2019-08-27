@@ -8,6 +8,8 @@ function pushEvents(event) {
     events.push(event);
 }
 
-var stopFn = rrweb.record({
-    emit: event => pushEvents(event)
-});
+// var stopFn = rrweb.record({
+    // emit: event => pushEvents(event)
+// });
+
+
