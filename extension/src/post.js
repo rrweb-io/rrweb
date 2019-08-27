@@ -1,6 +1,6 @@
 var backend_url = '';
-var create_session = '';
-const interval_sec = 5;
+var create_session = '/apisession/sessions/create';
+let interval_sec = 5;
 
 // TODO: move this to localStorage
 var syncBlockNumber = 0;
@@ -20,8 +20,7 @@ function parseJson(body) {
 }
 
 function buildURLs(sessionId) {
-  backend_url = `/apisession/sessions/${sessionId}/status`;
-  create_session = `/apisession/sessions/create`;
+  backend_url = `/apisession/sessions/${sessionId}/events`;
 }
 
 // createSessionAndStoreItInLocationStorage
@@ -31,12 +30,12 @@ function createSession() {
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then(data => {
+  }).then(data => data.json()).then(data => {
     // clear the existing localstorage
     window.localStorage.clear();
     window.localStorage.setItem('sessionId', parseJson(data).sessionId);
     buildURLs(window.localStorage.getItem('sessionId'));
-    return;
+    return data;
   });
 }
 
@@ -60,20 +59,12 @@ function postToBackend_v1() {
     },
     body,
   });
-  nextBackendScheduleCall = setTimeout(save, interval_sec * 1000);
+  nextBackendScheduleCall = setTimeout(postToBackend_v1, interval_sec * 1000);
   // blockNumber always exits
-  let currentBlockNumber = window.location.getItem('currentBlockNumber');
+  let currentBlockNumber = window.localStorage.getItem('currentBlockNumber');
   currentBlockNumber++;
   window.localStorage.setItem('currentBlockNumber', currentBlockNumber);
 }
-
-var stopFn;
-createSession().then(() => {
-  stopFn = rrweb.record({
-    emit: event => pushEvents(event),
-  });
-  postToBackend_v1();
-});
 
 // using indexedDB
 // observerAPI for indexedDB supported by dixieJS

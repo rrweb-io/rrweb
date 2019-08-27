@@ -1,15 +1,17 @@
-console.log("inside stop.js");
+console.log('inside stop.js');
 
 // stop the rrweb recording and download html
 
 // stop rrweb recording
 
-stopFn();
+if (stopFn && typeof stopFn === 'function') {
+  stopFn();
+}
 
 var time = new Date()
-      .toISOString()
-      .replace(/[-|:]/g, '_')
-      .replace(/\..+/, '');
+  .toISOString()
+  .replace(/[-|:]/g, '_')
+  .replace(/\..+/, '');
 
 var fileName = `replay_${time}.html`;
 var content = `
@@ -45,16 +47,15 @@ var content = `
 </html>
     `;
 
-
-    // const replayer = new rrweb.Replayer(events);
-      // replayer.play();
+// const replayer = new rrweb.Replayer(events);
+// replayer.play();
 
 function download(text, name, type) {
-    var a = document.createElement("a");
-    var file = new Blob([text], { type: type });
-    a.href = URL.createObjectURL(file);
-    a.download = name;
-    a.click();
+  var a = document.createElement('a');
+  var file = new Blob([text], { type: type });
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+  a.click();
 }
 
 download(content, `replay_${time}.html`, 'text/html');

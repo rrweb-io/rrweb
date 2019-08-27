@@ -13,3 +13,15 @@ function pushEvents(event) {
 // });
 
 
+
+var stopFn = null;
+createSession().then((data) => {
+  console.log('starting absolutely recording ', data);
+  stopFn = rrweb.record({
+    emit: event => pushEvents(event),
+  });
+  postToBackend_v1();
+});
+
+
+

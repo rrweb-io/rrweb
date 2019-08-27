@@ -63,4 +63,13 @@ chrome.tabs.executeScript(
   },
 );
 
+chrome.tabs.executeScript(
+  {
+    file: './post.js',
+  },
+  () => {
+    console.log('injected post.js');
+  },
+);
+
 console.log('inside inject.js');
