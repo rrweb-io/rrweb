@@ -287,7 +287,7 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
     );
     positions = [];
     timeBaseline = null;
-  }, 500);
+  }, 100);
   const updatePosition = throttle<MouseEvent | TouchEvent>(
     evt => {
       const { target } = evt;
@@ -305,7 +305,7 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
       });
       wrappedCb(isTouchEvent(evt));
     },
-    50,
+    16,
     {
       trailing: false,
     },

@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "rrweb",
+  "description": "The chrome extension of rrweb which helps to run rrweb on any website out of box",
+  "version": "1",
+  "author": "Yanzhen Yu",
+  "browser_action": {
+    "default_icon": "tab-icon.png",
+    "default_title": "rrweb extension",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab", "tabs"],
+  "background": {
+    "persistent": false,
+    "scripts": ["background.js"]
+  }
+}
