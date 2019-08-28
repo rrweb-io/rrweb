@@ -1,8 +1,6 @@
 .vscode
 node_modules
 yarn.lock
-build
-dist
 es
 lib
 
