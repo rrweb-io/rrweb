@@ -42,6 +42,7 @@ function createSession() {
 function buildPayload() {
   payload_body = {};
   payload_body.events = events;
+  events = [];
   payload_body.blockId = window.localStorage.getItem('currentBlockNumber') || 0;
 }
 
@@ -51,7 +52,6 @@ function postToBackend_v1() {
   }
   buildPayload();
   const body = JSON.stringify(payload_body);
-  events = [];
   fetch(backend_url, {
     method: 'POST',
     headers: {
