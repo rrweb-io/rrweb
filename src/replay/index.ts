@@ -139,6 +139,17 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Start);
   }
 
+  public convertBufferedEventsToActionsAndAddToTimer(
+    bufferedEvents: eventWithTime[],
+  ) {
+    const actions = new Array<actionWithDelay>();
+    for (const event of bufferedEvents) {
+      const castFn = this.getCastFn(event);
+      actions.push({ doAction: castFn, delay: this.getDelay(event) });
+    }
+    this.timer.addActions(actions);
+  }
+
   public pause() {
     this.timer.clear();
     this.emitter.emit(ReplayerEvents.Pause);
