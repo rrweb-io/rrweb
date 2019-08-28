@@ -1,5 +1,6 @@
 var backend_url = '';
 var create_session = '/apisession/sessions/create';
+var update_session = '';
 let interval_sec = 5;
 
 // TODO: move this to localStorage
@@ -21,6 +22,7 @@ function parseJson(body) {
 
 function buildURLs(sessionId) {
   backend_url = `/apisession/sessions/${sessionId}/events`;
+  update_session = `/apisession/sessions/${sessionId}/update`;
 }
 
 // createSessionAndStoreItInLocationStorage
@@ -30,13 +32,15 @@ function createSession() {
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then(data => data.json()).then(data => {
-    // clear the existing localstorage
-    window.localStorage.clear();
-    window.localStorage.setItem('sessionId', parseJson(data).sessionId);
-    buildURLs(window.localStorage.getItem('sessionId'));
-    return data;
-  });
+  })
+    .then(data => data.json())
+    .then(data => {
+      // clear the existing localstorage
+      window.localStorage.clear();
+      window.localStorage.setItem('sessionId', parseJson(data).sessionId);
+      buildURLs(window.localStorage.getItem('sessionId'));
+      return data;
+    });
 }
 
 function buildPayload() {
@@ -46,7 +50,21 @@ function buildPayload() {
   payload_body.blockId = window.localStorage.getItem('currentBlockNumber') || 0;
 }
 
-function postToBackend_v1() {
+function postMetaData() {
+  console.log("post metadata is ");
+  var payloadBody = {};
+  var totalNumberOfBlocks = window.localStorage.getItem('currentBlockNumber');
+  payloadBody.totalNumberOfBlocks = totalNumberOfBlocks;
+  fetch(update_session, {
+    method: 'PUT',
+    body: JSON.stringify(payloadBody),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then(data => data.json());
+}
+
+function postToBackend_v1(isDirectCall = false) {
   if (isDirectCall) {
     clearTimeout(nextBackendScheduleCall);
   }

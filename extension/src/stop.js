@@ -6,6 +6,10 @@ console.log('inside stop.js');
 
 if (stopFn && typeof stopFn === 'function') {
   stopFn();
+  buildPayload(true);
+  // TODO: look why we need setTimeout even in the case of stopping, isDirectCall
+  clearTimeout(nextBackendScheduleCall);
+  postMetaData();
 }
 
 var time = new Date()
