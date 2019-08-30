@@ -43,15 +43,38 @@ function createSession() {
     });
 }
 
+// populates both startTime and endTime
+// calculates eventLengthTime
+//
 function buildPayload() {
   payload_body = {};
   payload_body.events = events;
   events = [];
   payload_body.blockId = window.localStorage.getItem('currentBlockNumber') || 0;
+  // payload --> send offsetStartTime and offsetEndTime
+  // event --> delay, what does event.delay signify...
+
+  // since we cleared events object, setStartTime
+  var eventLengthTime =
+    window.performance.now() - window.localStorage.getItem('startTime');
+  payload_body.eventLengthTime = eventLengthTime;
+  payload_body.offsetTime =
+    parseFloat(window.localStorage.getItem('playerTime')) + eventLengthTime;
+  payload_body.startEventTime = window.localStorage.getItem('startTime');
+  payload_body.endEventTime = window.localStorage.getItem('endTime');
+  // set new payload startTime
+  window.localStorage.setItem(
+    'playerTime',
+    parseFloat(window.localStorage.getItem('playerTime')) +
+      payload_body.eventLengthTime,
+  );
+  window.localStorage.setItem('startTime', performance.now());
+  window.localStorage.setItem('endTime', 0);
+  console.log('payload');
 }
 
 function postMetaData() {
-  console.log("post metadata is ");
+  console.log('post metadata is ');
   var payloadBody = {};
   var totalNumberOfBlocks = window.localStorage.getItem('currentBlockNumber');
   payloadBody.totalNumberOfBlocks = totalNumberOfBlocks;

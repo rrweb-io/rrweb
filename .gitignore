@@ -5,3 +5,4 @@ build
 es
 lib
 temp
+.DS_Store
