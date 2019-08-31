@@ -63,6 +63,12 @@ describe('absolute url to stylesheet', () => {
     expect(
       absoluteToStylesheet('url(data:image/gif;base64,ABC)', href),
     ).to.equal('url(data:image/gif;base64,ABC)');
+    expect(
+      absoluteToStylesheet(
+        'url(data:application/font-woff;base64,d09GMgABAAAAAAm)',
+        href,
+      ),
+    ).to.equal('url(data:application/font-woff;base64,d09GMgABAAAAAAm)');
   });
 
   it('can handle empty path', () => {
