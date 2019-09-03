@@ -9,7 +9,7 @@ import { kickStartSessions, fetchSessionDataByBlockId, dispatchMetaDataAction } 
 class SessionPlayer extends React.Component {
    constructor(props) {
       super(props);
-      
+
       this.sessionId = 'zmjgbrn8qi5ej58j9h6ii';
    }
 
@@ -20,7 +20,7 @@ class SessionPlayer extends React.Component {
 
    componentDidUpdate() {
       // do we have values
-      var totalNumberOfBlocks = this.props.Sessions.totalNumberOfBlocks; 
+      var totalNumberOfBlocks = this.props.totalNumberOfBlocks;
       if (totalNumberOfBlocks) {
          this.props.kickStartFetching({ sessionId: this.sessionId, totalNumberOfBlocks });
       }
@@ -39,10 +39,9 @@ class SessionPlayer extends React.Component {
 // connect to store
 const mapStateToProps = state => {
    const { Sessions } = state;
-   let { sessionData } = Sessions;
    console.log("sessions data is ", state);
    return {
-      sessionData
+     ...Sessions  
    };
 }
 
@@ -50,7 +49,7 @@ const mapDispatchToProps = dispatch => {
    return {
       kickStartFetching: ({ sessionId }) => (dispatch(kickStartSessions({ sessionId }))),
       fetchRemaining: ({ blockId, sessionId }) => (dispatch(fetchSessionDataByBlockId({ blockId, sessionId }))),
-      fetchMetaData: ( { sessionId }) => (dispatch(dispatchMetaDataAction({sessionId}))),
+      fetchMetaData: ({ sessionId }) => (dispatch(dispatchMetaDataAction({ sessionId }))),
    }
 }
 
