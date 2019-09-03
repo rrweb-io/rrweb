@@ -1,0 +1,27 @@
+{
+  "name": "nferx-ui-starter",
+  "version": "3.0.0",
+  "description": "nferx starter react project",
+  "main": "index.js",
+  "scripts": {
+    "start": "PORT=3004 node node_modules/nferx-core-ui/scripts/start.js",
+    "build": "node node_modules/nferx-core-ui/scripts/build.js",
+    "production": "NODE_ENV=production BABEL_ENV=production node node_modules/nferx-core-ui/server/bootstrap.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lumenbiomics/nferx-ui-starter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lumenbiomics/nferx-ui-starter/issues"
+  },
+  "dependencies": {
+    "nferx-core-ui": "git+https://9897275bc47df600289eaeeaaba45142604821af@github.com/lumenbiomics/nferx-core-ui.git#semver:^1.0.273",
+    "node-fetch": "^2.6.0",
+    "react-redux": "^7.1.1",
+    "redux": "^4.0.4",
+    "redux-thunk": "^2.3.0"
+  }
+}
