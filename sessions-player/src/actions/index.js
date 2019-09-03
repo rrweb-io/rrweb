@@ -13,10 +13,25 @@ const getMetaData = (data) => ({
     payload: data
 });
 
-const kickStartSessions = ({ sessionId }) => {
+
+const createReplayerAction = (data) => ({
+    type: CREATE_REPLAYER_OBJ,
+    payload: data
+});
+
+const kickStartSessions = ({ sessionId, totalNumberOfBlocks }) => {
     return (dispatch) => {
-        getEventDataByBlockId({ blockId: 0, sessionId }).then((data) => {
-            dispatch(getSessionData(data));
+        Promise.all([0, 1, 2].map((blockId) => {
+            return getEventDataByBlockId({ blockId, sessionId })
+        })).then((values) => {
+            return values[0].concat(values[1]).concat(values[2]);
+        }).then((data) => {
+            dispatch(createReplayerAction(data));
+            return data;
+        }).then((totalNumberOfBlocks) => {
+            for (var i = 3; i < totalNumberOfBlocks; i++) {
+                fetchSessionDataByBlockId({ blockId: i, sessionId });
+            }
         });
     }
 }
@@ -38,4 +53,4 @@ const dispatchMetaDataAction = ({ sessionId }) => {
 }
 
 
-export { GET_SESSION_DATA, GET_META_DATA, CREATE_REPLAYER_OBJ, getSessionData, kickStartSessions, fetchSessionDataByBlockId, dispatchMetaDataAction, };
+export { GET_SESSION_DATA, GET_META_DATA, CREATE_REPLAYER_OBJ, createReplayerAction, getSessionData, kickStartSessions, fetchSessionDataByBlockId, dispatchMetaDataAction, };

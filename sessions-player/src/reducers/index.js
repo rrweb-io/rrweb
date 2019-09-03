@@ -19,15 +19,18 @@ const Sessions = (state = { sessionData: [], totalNumberOfBlocks: 0, replayer: n
                 totalNumberOfBlocks: action.payload.totalNumberOfBlocks
             }
         case CREATE_REPLAYER_OBJ:
-           // create replayer 
-            return {
+            // create replayer 
+            let tmp = {
                 ...state,
-                replayer: Replayer(action.payload.sessionData) 
+                replayer: Replayer(action.payload.sessionData),
+                sessionData: action.payload.sessionData
             }
+            tmp.replayer.play();
+            return tmp;
     }
-    state = Object.assign( state, sortContinously({
+    state = Object.assign(state, sortContinously({
         globalValues: state.sessionData,
-        replayer: state.replayer  
+        replayer: state.replayer
     }));
     return state;
 }

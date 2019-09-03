@@ -16,7 +16,7 @@ export function sortContinously({ globalValues, replayer }) {
         return true;
     });
     var index = 0;
-    while (globalValues_t.length) {
+    /*while (globalValues_t.length) {
         if (globalValues_t[index].blockId === globalInsertionOrder) {
             globalInsertionOrder++;
             var req_vals = globalValues_t.splice(0, 1);
@@ -28,5 +28,5 @@ export function sortContinously({ globalValues, replayer }) {
             globalValues_t.shift();
             //break;
         }
-    }
+    }*/
 }

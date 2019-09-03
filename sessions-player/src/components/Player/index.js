@@ -4,7 +4,7 @@ import { Replayer } from '../../sessionlibs/rrweb';
 import '../../sessionlibs/rrweb.min.css';
 
 import { connect } from 'react-redux';
-import { kickStartSessions, fetchSessionDataByBlockId } from '../../actions';
+import { kickStartSessions, fetchSessionDataByBlockId, dispatchMetaDataAction } from '../../actions';
 
 class SessionPlayer extends React.Component {
    constructor(props) {
@@ -15,14 +15,14 @@ class SessionPlayer extends React.Component {
 
    componentDidMount() {
       // kick start the fetching of the events
-      this.props.kickStartFetching({ sessionId: this.sessionId });
+      this.props.fetchMetaData({ sessionId: this.sessionId });
    }
 
-   componentDidMount() {
+   componentDidUpdate() {
       // do we have values
-      if (this.props.sessionData.length >= 3) {
-         console.log("length of the sessionData is greater than  3");
-         // fetch remaining suggestion;   
+      var totalNumberOfBlocks = this.props.Sessions.totalNumberOfBlocks; 
+      if (totalNumberOfBlocks) {
+         this.props.kickStartFetching({ sessionId: this.sessionId, totalNumberOfBlocks });
       }
    }
 
@@ -49,7 +49,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
    return {
       kickStartFetching: ({ sessionId }) => (dispatch(kickStartSessions({ sessionId }))),
-      fetchRemaining: ({ blockId, sessionId }) => (dispatch(fetchSessionDataByBlockId({ blockId, sessionId })))
+      fetchRemaining: ({ blockId, sessionId }) => (dispatch(fetchSessionDataByBlockId({ blockId, sessionId }))),
+      fetchMetaData: ( { sessionId }) => (dispatch(dispatchMetaDataAction({sessionId}))),
    }
 }
 
