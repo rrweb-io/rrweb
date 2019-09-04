@@ -1,3 +1,5 @@
+var replayer = null;
+
 export function sortContinously({ globalValues, replayer }) {
   if (!replayer) {
     return null;
@@ -37,7 +39,7 @@ export function concatEventsData(values, initialValue = []) {
   }, initialValue);
 }
 
-export function cleanAndAddData({ globalValues, lastConcatedIndex, replayer }) {
+export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
   var globalValues_t = globalValues.slice();
   globalValues_t = removeDuplicates({ globalValues: globalValues_t });
   globalValues_t = sortByBlockId({ globalValues: globalValues_t });
@@ -45,12 +47,14 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex, replayer }) {
     var nextEvent = globalValues_t.shift();
     if (globalValues_t[0].blockId === lastConcatedIndex) {
       lastConcatedIndex++;
-      if (replayer) {
+      if (!replayer) {
+        replayer = new Replayer(nextEvent.events);
+      } else {
         replayer.convertBufferedEventsToActionsAndAddToTimer(nextEvent.events);
       }
     }
   }
-  return globalValues_t;
+  return { lastConcatedIndex };
 }
 
 export function removeDuplicates({ globalValues }) {

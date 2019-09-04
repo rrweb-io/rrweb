@@ -3,12 +3,11 @@ import {
   GET_SESSION_DATA,
   GET_META_DATA,
   CREATE_REPLAYER_OBJ,
+  UPDATE_LAST_CONCATED_INDEX,
 } from '../actions';
-import { sortContinously } from '../utils';
-import { Replayer } from '../sessionlibs/rrweb';
 
 const Sessions = (
-  state = { sessionData: [], totalNumberOfBlocks: 0, replayer: null },
+  state = { sessionData: [], totalNumberOfBlocks: 0, lastConcatedIndex: 0 },
   action,
 ) => {
   if (typeof action.payload === 'string') {
@@ -18,7 +17,7 @@ const Sessions = (
   switch (action.type) {
     case GET_SESSION_DATA:
       var sessionData_t = state.sessionData.slice();
-      sessionData_t.push(action.payload.sessionData);
+      sessionData_t.push(action.payload.sessionDataUnit);
       return {
         ...state,
         sessionData: sessionData_t,
@@ -34,6 +33,11 @@ const Sessions = (
         sessionData: action.payload.sessionData,
       };
       return tmp;
+    case UPDATE_LAST_CONCATED_INDEX:
+      return {
+        ...state,
+        lastConcatedIndex: action.payload.lastConcatedIndex,
+      };
   }
   return state;
 };

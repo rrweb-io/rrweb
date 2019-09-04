@@ -3,11 +3,14 @@ import React from 'react';
 import { Replayer } from '../../sessionlibs/rrweb';
 import '../../sessionlibs/rrweb.min.css';
 
+import { cleanAndAddData } from '../../utils';
+
 import { connect } from 'react-redux';
 import {
   kickStartSessions,
   fetchSessionDataByBlockId,
   dispatchMetaDataAction,
+  lastConcatedIndex,
 } from '../../actions';
 
 class SessionPlayer extends React.Component {
@@ -27,15 +30,18 @@ class SessionPlayer extends React.Component {
     // do we have values
     var totalNumberOfBlocks = this.props.totalNumberOfBlocks;
     if (totalNumberOfBlocks && !this.kickStartedForGreaterThan3) {
-      console.log(
-        'this.props.totalNumberOfBlocks ',
-        this.props.totalNumberOfBlocks,
-      );
       this.kickStartedForGreaterThan3 = true;
       this.props.kickStartFetching({
         sessionId: this.sessionId,
         totalNumberOfBlocks,
       });
+    }
+    if (this.props.sessionData) {
+      var { lastConcatedIndex } = cleanAndAddData({
+        sessionData: this.props.sessionData,
+        lastConcatedIndex: this.props.lastConcatedIndex,
+      });
+      this.props.updateLastConcatedIndex({ lastConcatedIndex });
     }
   }
 
@@ -62,10 +68,10 @@ const mapDispatchToProps = dispatch => {
   return {
     kickStartFetching: ({ sessionId, totalNumberOfBlocks }) =>
       dispatch(kickStartSessions({ sessionId, totalNumberOfBlocks })),
-    fetchRemaining: ({ blockId, sessionId }) =>
-      dispatch(fetchSessionDataByBlockId({ blockId, sessionId })),
     fetchMetaData: ({ sessionId }) =>
       dispatch(dispatchMetaDataAction({ sessionId })),
+    updateLastConcatedIndex: ({ lastConcatedIndex }) =>
+      dispatch(lastConcatedIndex({ lastConcatedIndex })),
   };
 };
 

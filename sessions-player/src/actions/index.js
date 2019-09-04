@@ -3,6 +3,7 @@ import { concatEventsData } from '../utils';
 const GET_SESSION_DATA = 'GET_SESSION_DATA';
 const GET_META_DATA = 'GET_META_DATA';
 const CREATE_REPLAYER_OBJ = 'CREATE_REPLAYER_OBJ';
+const UPDATE_LAST_CONCATED_INDEX = 'UPDATE_LAST_CONCATED_INDEX';
 
 const getSessionData = data => ({
   type: GET_SESSION_DATA,
@@ -16,6 +17,11 @@ const getMetaData = data => ({
 
 const createReplayerAction = data => ({
   type: CREATE_REPLAYER_OBJ,
+  payload: data,
+});
+
+const lastConcatedIndex = data => ({
+  type: UPDATE_LAST_CONCATED_INDEX,
   payload: data,
 });
 
@@ -35,26 +41,16 @@ const kickStartSessions = ({ sessionId, totalNumberOfBlocks }) => {
         console.log(
           'totalNumberOfBlocks in kickStartSessions ',
           totalNumberOfBlocks,
-          getState()
+          getState(),
         );
         for (var i = 3; i < totalNumberOfBlocks; i++) {
           getEventDataByBlockId({ blockId: i, sessionId }).then(data => {
-            console.log("42data is ", data, getState());
-            dispatch(getSessionData({ sessionData: data}));
+            console.log('42data is ', data, getState());
+            dispatch(getSessionData({ sessionDataUnit: data }));
           });
           // fetchSessionDataByBlockId({ blockId: i, sessionId });
         }
       });
-  };
-};
-
-const fetchSessionDataByBlockId = ({ blockId, sessionId }) => {
-  console.log('fetchSessionDataByBlockId ', blockId, sessionId);
-  return dispatch => {
-    console.log('dispatch in fetchSessionDataByBlockId ', dispatch);
-    getEventDataByBlockId({ blockId, sessionId }).then(data => {
-      dispatch(getSessionData(data));
-    });
   };
 };
 
@@ -75,4 +71,5 @@ export {
   kickStartSessions,
   fetchSessionDataByBlockId,
   dispatchMetaDataAction,
+  lastConcatedIndex,
 };
