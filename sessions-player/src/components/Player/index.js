@@ -57,12 +57,10 @@ class SessionPlayer extends React.Component {
       <div
         id="jankay"
         style={{
-          width: '100%',
-          height: '700px',
+          width: '300px',
+          height: '300px',
         }}
-      >
-        Jankay
-      </div>
+      />
     );
   }
 }
