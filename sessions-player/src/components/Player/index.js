@@ -10,7 +10,7 @@ import {
   kickStartSessions,
   fetchSessionDataByBlockId,
   dispatchMetaDataAction,
-  lastConcatedIndex,
+  lastConcatedIndexAction,
 } from '../../actions';
 
 class SessionPlayer extends React.Component {
@@ -37,8 +37,9 @@ class SessionPlayer extends React.Component {
       });
     }
     if (this.props.sessionData) {
+      console.log('this.props.sessionData 40.js ', this.props.sessionData);
       var { lastConcatedIndex } = cleanAndAddData({
-        sessionData: this.props.sessionData,
+        globalValues: this.props.sessionData,
         lastConcatedIndex: this.props.lastConcatedIndex,
       });
       this.props.updateLastConcatedIndex({ lastConcatedIndex });
@@ -71,7 +72,7 @@ const mapDispatchToProps = dispatch => {
     fetchMetaData: ({ sessionId }) =>
       dispatch(dispatchMetaDataAction({ sessionId })),
     updateLastConcatedIndex: ({ lastConcatedIndex }) =>
-      dispatch(lastConcatedIndex({ lastConcatedIndex })),
+      dispatch(lastConcatedIndexAction({ lastConcatedIndex })),
   };
 };
 

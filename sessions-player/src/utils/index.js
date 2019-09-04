@@ -1,4 +1,6 @@
+import { Replayer } from '../sessionlibs/rrweb.js';
 var replayer = null;
+var rootIframeId = '';
 
 export function sortContinously({ globalValues, replayer }) {
   if (!replayer) {
@@ -45,10 +47,14 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
   globalValues_t = sortByBlockId({ globalValues: globalValues_t });
   while (globalValues_t.length) {
     var nextEvent = globalValues_t.shift();
-    if (globalValues_t[0].blockId === lastConcatedIndex) {
+    console.log('nextEvent is ', nextEvent, lastConcatedIndex);
+    if (nextEvent.blockId === lastConcatedIndex) {
       lastConcatedIndex++;
       if (!replayer) {
-        replayer = new Replayer(nextEvent.events);
+        replayer = new Replayer(nextEvent.events, {
+          showWarning: true,
+          root: document.getElementById(rootIframeId),
+        });
       } else {
         replayer.convertBufferedEventsToActionsAndAddToTimer(nextEvent.events);
       }
@@ -59,7 +65,7 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
 
 export function removeDuplicates({ globalValues }) {
   var uniqueValues = {};
-  return globalValues_t.filter(valObj => {
+  return globalValues.filter(valObj => {
     if (uniqueValues.hasOwnProperty(valObj.blockId)) {
       return false;
     }

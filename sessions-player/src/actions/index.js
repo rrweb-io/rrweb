@@ -20,7 +20,7 @@ const createReplayerAction = data => ({
   payload: data,
 });
 
-const lastConcatedIndex = data => ({
+const lastConcatedIndexAction = data => ({
   type: UPDATE_LAST_CONCATED_INDEX,
   payload: data,
 });
@@ -69,7 +69,6 @@ export {
   createReplayerAction,
   getSessionData,
   kickStartSessions,
-  fetchSessionDataByBlockId,
   dispatchMetaDataAction,
-  lastConcatedIndex,
+  lastConcatedIndexAction,
 };
