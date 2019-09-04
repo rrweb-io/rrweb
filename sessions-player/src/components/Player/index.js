@@ -42,6 +42,7 @@ class SessionPlayer extends React.Component {
         globalValues: this.props.sessionData,
         lastConcatedIndex: this.props.lastConcatedIndex,
       });
+      console.log('45lastConcatedIndex ', lastConcatedIndex);
       this.props.updateLastConcatedIndex({ lastConcatedIndex });
     }
   }
@@ -52,7 +53,17 @@ class SessionPlayer extends React.Component {
     if (!sessionData.length) {
       return null;
     }
-    return <div>Jankay</div>;
+    return (
+      <div
+        id="jankay"
+        style={{
+          width: '100%',
+          height: '700px',
+        }}
+      >
+        Jankay
+      </div>
+    );
   }
 }
 

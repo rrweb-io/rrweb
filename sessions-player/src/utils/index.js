@@ -1,6 +1,7 @@
 import { Replayer } from '../sessionlibs/rrweb.js';
 var replayer = null;
-var rootIframeId = '';
+var rootIframeId = 'jankay';
+var isPlaying = false;
 
 export function sortContinously({ globalValues, replayer }) {
   if (!replayer) {
@@ -56,6 +57,10 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
           root: document.getElementById(rootIframeId),
         });
       } else {
+        if (!isPlaying) {
+          isPlaying = true;
+          replayer.play();
+        }
         replayer.convertBufferedEventsToActionsAndAddToTimer(nextEvent.events);
       }
     }
