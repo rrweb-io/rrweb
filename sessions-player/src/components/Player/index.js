@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Replayer } from '../../sessionlibs/rrweb';
 import '../../sessionlibs/rrweb.min.css';
 
 import { cleanAndAddData } from '../../utils';
@@ -56,10 +55,6 @@ class SessionPlayer extends React.Component {
     return (
       <div
         id="jankay"
-        style={{
-          width: '300px',
-          height: '300px',
-        }}
       />
     );
   }
