@@ -16,8 +16,9 @@ class SessionPlayer extends React.Component {
   constructor(props) {
     super(props);
 
-    this.sessionId = 'zmjgbrn8qi5ej58j9h6ii';
-    this.kickStartedForGreaterThan3 = false;
+    this.sessionId = props.sessionId;
+    // this.sessionId = 'zmjgbrn8qi5ej58j9h6ii';
+    this.kickStartedForGreaterThan2 = false;
   }
 
   componentDidMount() {
@@ -52,11 +53,7 @@ class SessionPlayer extends React.Component {
     if (!sessionData.length) {
       return null;
     }
-    return (
-      <div
-        id="jankay"
-      />
-    );
+    return <div id="jankay" />;
   }
 }
 

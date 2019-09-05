@@ -71,4 +71,5 @@ export {
   kickStartSessions,
   dispatchMetaDataAction,
   lastConcatedIndexAction,
+  UPDATE_LAST_CONCATED_INDEX,
 };

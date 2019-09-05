@@ -1,14 +1,9 @@
-import React, { Component } from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import {
-  AppTitle,
-  ContentRoot,
-  NferxLogo,
-  withQuery,
-} from 'nferx-core-ui'
-import { Redirect } from 'react-router-dom'
-import { config } from '../../Config'
-import Paper from '@material-ui/core/Paper'
+import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core/styles';
+import { AppTitle, ContentRoot, NferxLogo, withQuery } from 'nferx-core-ui';
+import { Redirect } from 'react-router-dom';
+import { config } from '../../Config';
+import Paper from '@material-ui/core/Paper';
 
 import { Player } from '../../components';
 
@@ -40,16 +35,16 @@ const styles = theme => ({
   },
   paper: {
     borderRadius: 100,
-  }
-})
+  },
+});
 
 class HomeRouteContents extends Component {
-  static propTypes = {}
+  static propTypes = {};
 
   render() {
-    const { classes, query } = this.props
-    return (<Player />);
+    const { classes, query, sessionId } = this.props;
+    return <Player sessionId={sessionId} />;
   }
 }
 
-export default withStyles(styles)(withQuery(HomeRouteContents))
+export default withStyles(styles)(withQuery(HomeRouteContents));

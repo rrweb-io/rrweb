@@ -1,19 +1,21 @@
-import React, { Component } from 'react'
-import { Route } from 'react-router-dom'
-import HomeRouteContents from './HomeRouteContents'
+import React, { Component } from 'react';
+import { Route } from 'react-router-dom';
+import HomeRouteContents from './HomeRouteContents';
 
 class HomeRoute extends Component {
-  static propTypes = {}
+  static propTypes = {};
 
   render() {
     return (
       <Route
-        path={'/'}
+        path={'/:sessionId'}
         exact
-        component={HomeRouteContents}
+        render={({ match }) => (
+          <HomeRouteContents sessionId={match.params.sessionId} />
+        )}
       />
-    )
+    );
   }
 }
 
-export default HomeRoute
+export default HomeRoute;
