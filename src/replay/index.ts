@@ -150,6 +150,16 @@ export class Replayer {
     this.timer.addActions(actions);
   }
 
+  public customPause() {
+    // custom pause that calls pause in timer
+    this.timer.pause();
+  }
+
+  public customResume() {
+    // custom resume that calls resume in timer
+    this.timer.resume();
+  }
+
   public pause() {
     this.timer.clear();
     this.emitter.emit(ReplayerEvents.Pause);

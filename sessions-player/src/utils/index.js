@@ -2,6 +2,8 @@ import { Replayer } from '../sessionlibs/rrweb.js';
 var replayer = null;
 var rootIframeId = 'jankay';
 var isPlaying = false;
+var baseLineTime = 0;
+var lastPlayedTime = 0;
 
 export function sortContinously({ globalValues, replayer }) {
   if (!replayer) {
@@ -52,10 +54,11 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
     if (nextEvent.blockId === lastConcatedIndex) {
       lastConcatedIndex++;
       if (!replayer) {
-        replayer = new Replayer(nextEvent.events, {
+        window.replayer = replayer = new Replayer(nextEvent.events, {
           showWarning: true,
           root: document.getElementById(rootIframeId),
         });
+        baseLineTime = nextEvent.events[0].timestamp;
       } else {
         if (!isPlaying) {
           play();
@@ -76,12 +79,25 @@ export function play() {
   return true;
 }
 
+export function resume() {
+  if (!replayer || isPlaying) {
+    return true;
+  }
+  console.log('replayer and isplaying in resume are ', replayer, isPlaying);
+  isPlaying = true;
+  // replayer.resume();
+  replayer.customResume();
+  return true;
+}
+
 export function stop() {
   if (!replayer || !isPlaying) {
     return false;
   }
   isPlaying = false;
-  replayer.pause();
+  // replayer.pause();
+  replayer.customPause();
+  lastPlayedTime = replayer.lastPlayedEvent.timestamp;
   return false;
 }
 

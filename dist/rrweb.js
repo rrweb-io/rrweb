@@ -2132,6 +2132,17 @@ var rrweb = (function (exports) {
             var _a;
             (_a = this.actions).push.apply(_a, actions);
         };
+        Timer.prototype.pause = function () {
+            this.customClear();
+        };
+        Timer.prototype.resume = function () {
+            this.start();
+        };
+        Timer.prototype.customClear = function () {
+            if (this.raf) {
+                cancelAnimationFrame(this.raf);
+            }
+        };
         Timer.prototype.start = function () {
             this.actions.sort(function (a1, a2) { return a1.delay - a2.delay; });
             this.timeOffset = 0;
@@ -2275,6 +2286,12 @@ var rrweb = (function (exports) {
                 actions.push({ doAction: castFn, delay: this.getDelay(event) });
             }
             this.timer.addActions(actions);
+        };
+        Replayer.prototype.customPause = function () {
+            this.timer.pause();
+        };
+        Replayer.prototype.customResume = function () {
+            this.timer.resume();
         };
         Replayer.prototype.pause = function () {
             this.timer.clear();

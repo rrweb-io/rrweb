@@ -2133,15 +2133,30 @@ var Timer = (function () {
         var _a;
         (_a = this.actions).push.apply(_a, actions);
     };
+    Timer.prototype.pause = function () {
+        this.customClear();
+    };
+    Timer.prototype.resume = function () {
+        this.start();
+    };
+    Timer.prototype.customClear = function () {
+        if (this.raf) {
+            console.log('custom clear');
+            cancelAnimationFrame(this.raf);
+        }
+    };
     Timer.prototype.start = function () {
+        console.log("2149 ", performance.now());
         this.actions.sort(function (a1, a2) { return a1.delay - a2.delay; });
-        this.timeOffset = 0;
+        console.log("2151 ", performance.now());
+        // this.timeOffset = 0;
         var lastTimestamp = performance.now();
         var _a = this, actions = _a.actions, config = _a.config;
         var self = this;
         function check(time) {
             self.timeOffset += (time - lastTimestamp) * config.speed;
             lastTimestamp = time;
+            console.log("self.timeOffset ", self.timeOffset);
             while (actions.length) {
                 var action = actions[0];
                 if (self.timeOffset >= action.delay) {
@@ -2276,6 +2291,12 @@ var Replayer = (function () {
             actions.push({ doAction: castFn, delay: this.getDelay(event) });
         }
         this.timer.addActions(actions);
+    };
+    Replayer.prototype.customPause = function () {
+        this.timer.pause();
+    };
+    Replayer.prototype.customResume = function () {
+        this.timer.resume();
     };
     Replayer.prototype.pause = function () {
         this.timer.clear();

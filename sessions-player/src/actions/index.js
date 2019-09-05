@@ -1,11 +1,12 @@
 import { getEventDataByBlockId, getMetaDataBySessionId } from '../api';
-import { concatEventsData, play, stop } from '../utils';
+import { concatEventsData, play, stop, resume } from '../utils';
 const GET_SESSION_DATA = 'GET_SESSION_DATA';
 const GET_META_DATA = 'GET_META_DATA';
 const CREATE_REPLAYER_OBJ = 'CREATE_REPLAYER_OBJ';
 const UPDATE_LAST_CONCATED_INDEX = 'UPDATE_LAST_CONCATED_INDEX';
 const STOP_PLAYING = 'STOP_PLAYING';
 const START_PLAYING = 'START_PLAYING';
+const RESUME_PLAYING = 'RESUME_PLAYING';
 
 const getSessionData = data => ({
   type: GET_SESSION_DATA,
@@ -37,6 +38,11 @@ const stopActionCreater = data => ({
   payload: data,
 });
 
+const resumeActionCreater = data => ({
+  type: RESUME_PLAYING,
+  payload: data,
+});
+
 const startPlayingAction = () => {
   return dispatch => {
     var tmp_play = play();
@@ -48,6 +54,13 @@ const stopPlayingAction = () => {
   return dispatch => {
     var tmp_play = stop();
     dispatch(stopActionCreater({ isPlaying: tmp_play }));
+  };
+};
+
+const resumePlayingAction = () => {
+  return dispatch => {
+    var tmp_play = resume();
+    dispatch(resumeActionCreater({ isPlaying: tmp_play }));
   };
 };
 
@@ -92,6 +105,7 @@ export {
   GET_SESSION_DATA,
   GET_META_DATA,
   CREATE_REPLAYER_OBJ,
+  RESUME_PLAYING,
   createReplayerAction,
   getSessionData,
   kickStartSessions,
@@ -102,4 +116,5 @@ export {
   STOP_PLAYING,
   startPlayingAction,
   stopPlayingAction,
+  resumePlayingAction,
 };

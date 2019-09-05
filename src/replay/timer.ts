@@ -5,6 +5,7 @@ export default class Timer {
 
   private actions: actionWithDelay[];
   private config: playerConfig;
+  private isPlaying: boolean;
   private raf: number;
 
   constructor(config: playerConfig, actions: actionWithDelay[] = []) {
@@ -27,9 +28,26 @@ export default class Timer {
     this.actions.push(...actions);
   }
 
+  public pause() {
+    // custom pause the timer action list
+    this.customClear();
+  }
+
+  public resume() {
+    // custom pause the timer action list
+    this.start();
+  }
+
+  public customClear() {
+    // only clears the animationframe timer
+    if (this.raf) {
+      cancelAnimationFrame(this.raf);
+    }
+  }
+
   public start() {
     this.actions.sort((a1, a2) => a1.delay - a2.delay);
-    this.timeOffset = 0;
+    // this.timeOffset = 0;
     let lastTimestamp = performance.now();
     const { actions, config } = this;
     const self = this;

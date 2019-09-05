@@ -1,7 +1,11 @@
 import React from 'react';
 
 import Button from '@material-ui/core/Button';
-import { startPlayingAction, stopPlayingAction } from '../../actions';
+import {
+  startPlayingAction,
+  stopPlayingAction,
+  resumePlayingAction,
+} from '../../actions';
 
 import { connect } from 'react-redux';
 
@@ -11,15 +15,21 @@ class PlayerControls extends React.Component {
   }
 
   componentDidMount() {
-    // timeStamp
+    // timestamp
   }
 
   handleStartHandler = () => {
-    console.log('handle start handler ');
+    console.log('handle start handler');
+    this.props.start();
+  };
+
+  handleResumeHandler = () => {
+    console.log('handle pause handler');
+    this.props.resume();
   };
 
   handleStopHandler = () => {
-    console.log('handle stop handler ');
+    console.log('handle stop handler');
     this.props.stop();
   };
 
@@ -28,6 +38,9 @@ class PlayerControls extends React.Component {
       <React.Fragment>
         <Button variant="contained" onClick={this.handleStartHandler}>
           Start
+        </Button>
+        <Button variant="contained" onClick={this.handleResumeHandler}>
+          Resume
         </Button>
         <Button variant="contained" onClick={this.handleStopHandler}>
           Stop
@@ -48,6 +61,7 @@ const mapDispatchToProps = dispatch => {
   return {
     start: () => dispatch(startPlayingAction()),
     stop: () => dispatch(stopPlayingAction()),
+    resume: () => dispatch(resumePlayingAction()),
   };
 };
 
