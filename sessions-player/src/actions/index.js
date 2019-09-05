@@ -1,9 +1,11 @@
 import { getEventDataByBlockId, getMetaDataBySessionId } from '../api';
-import { concatEventsData } from '../utils';
+import { concatEventsData, play, stop } from '../utils';
 const GET_SESSION_DATA = 'GET_SESSION_DATA';
 const GET_META_DATA = 'GET_META_DATA';
 const CREATE_REPLAYER_OBJ = 'CREATE_REPLAYER_OBJ';
 const UPDATE_LAST_CONCATED_INDEX = 'UPDATE_LAST_CONCATED_INDEX';
+const STOP_PLAYING = 'STOP_PLAYING';
+const START_PLAYING = 'START_PLAYING';
 
 const getSessionData = data => ({
   type: GET_SESSION_DATA,
@@ -24,6 +26,30 @@ const lastConcatedIndexAction = data => ({
   type: UPDATE_LAST_CONCATED_INDEX,
   payload: data,
 });
+
+const playActionCreater = data => ({
+  type: START_PLAYING,
+  payload: data,
+});
+
+const stopActionCreater = data => ({
+  type: STOP_PLAYING,
+  payload: data,
+});
+
+const startPlayingAction = () => {
+  return dispatch => {
+    var tmp_play = play();
+    dispatch(playActionCreater({ isPlaying: tmp_play }));
+  };
+};
+
+const stopPlayingAction = () => {
+  return dispatch => {
+    var tmp_play = stop();
+    dispatch(stopActionCreater({ isPlaying: tmp_play }));
+  };
+};
 
 const kickStartSessions = ({ sessionId, totalNumberOfBlocks }) => {
   return (dispatch, getState) => {
@@ -72,4 +98,8 @@ export {
   dispatchMetaDataAction,
   lastConcatedIndexAction,
   UPDATE_LAST_CONCATED_INDEX,
+  START_PLAYING,
+  STOP_PLAYING,
+  startPlayingAction,
+  stopPlayingAction,
 };

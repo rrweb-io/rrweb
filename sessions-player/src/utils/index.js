@@ -58,14 +58,31 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
         });
       } else {
         if (!isPlaying) {
-          isPlaying = true;
-          replayer.play();
+          play();
         }
         replayer.convertBufferedEventsToActionsAndAddToTimer(nextEvent.events);
       }
     }
   }
   return { lastConcatedIndex };
+}
+
+export function play() {
+  if (!replayer || isPlaying) {
+    return true;
+  }
+  isPlaying = true;
+  replayer.play();
+  return true;
+}
+
+export function stop() {
+  if (!replayer || !isPlaying) {
+    return false;
+  }
+  isPlaying = false;
+  replayer.pause();
+  return false;
 }
 
 export function removeDuplicates({ globalValues }) {

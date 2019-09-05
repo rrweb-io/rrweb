@@ -5,7 +5,7 @@ import { Redirect } from 'react-router-dom';
 import { config } from '../../Config';
 import Paper from '@material-ui/core/Paper';
 
-import { Player } from '../../components';
+import { Player, PlayerControls } from '../../components';
 
 const styles = theme => ({
   root: {
@@ -43,7 +43,12 @@ class HomeRouteContents extends Component {
 
   render() {
     const { classes, query, sessionId } = this.props;
-    return <Player sessionId={sessionId} />;
+    return (
+      <React.Fragment>
+        <Player sessionId={sessionId} />
+        <PlayerControls />
+      </React.Fragment>
+    );
   }
 }
 
