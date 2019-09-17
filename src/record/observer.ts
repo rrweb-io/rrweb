@@ -29,6 +29,8 @@ import {
   attributeCursor,
   blockClass,
   IncrementalSource,
+  hooksParam,
+  Arguments,
 } from '../types';
 import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
 
@@ -506,7 +508,58 @@ function initInputObserver(
   };
 }
 
-export default function initObservers(o: observerParam): listenerHandler {
+function mergeHooks(o: observerParam, hooks: hooksParam) {
+  const {
+    mutationCb,
+    mousemoveCb,
+    mouseInteractionCb,
+    scrollCb,
+    viewportResizeCb,
+    inputCb,
+  } = o;
+  o.mutationCb = (...p: Arguments<mutationCallBack>) => {
+    if (hooks.mutation) {
+      hooks.mutation(...p);
+    }
+    mutationCb(...p);
+  };
+  o.mousemoveCb = (...p: Arguments<mousemoveCallBack>) => {
+    if (hooks.mousemove) {
+      hooks.mousemove(...p);
+    }
+    mousemoveCb(...p);
+  };
+  o.mouseInteractionCb = (...p: Arguments<mouseInteractionCallBack>) => {
+    if (hooks.mouseInteraction) {
+      hooks.mouseInteraction(...p);
+    }
+    mouseInteractionCb(...p);
+  };
+  o.scrollCb = (...p: Arguments<scrollCallback>) => {
+    if (hooks.scroll) {
+      hooks.scroll(...p);
+    }
+    scrollCb(...p);
+  };
+  o.viewportResizeCb = (...p: Arguments<viewportResizeCallback>) => {
+    if (hooks.viewportResize) {
+      hooks.viewportResize(...p);
+    }
+    viewportResizeCb(...p);
+  };
+  o.inputCb = (...p: Arguments<inputCallback>) => {
+    if (hooks.input) {
+      hooks.input(...p);
+    }
+    inputCb(...p);
+  };
+}
+
+export default function initObservers(
+  o: observerParam,
+  hooks: hooksParam = {},
+): listenerHandler {
+  mergeHooks(o, hooks);
   const mutationObserver = initMutationObserver(
     o.mutationCb,
     o.blockClass,

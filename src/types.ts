@@ -119,6 +119,7 @@ export type recordOptions = {
   ignoreClass?: string;
   maskAllInputs?: boolean;
   inlineStylesheet?: boolean;
+  hooks?: hooksParam;
 };
 
 export type observerParam = {
@@ -132,6 +133,15 @@ export type observerParam = {
   ignoreClass: string;
   maskAllInputs: boolean;
   inlineStylesheet: boolean;
+};
+
+export type hooksParam = {
+  mutation?: mutationCallBack;
+  mousemove?: mousemoveCallBack;
+  mouseInteraction?: mouseInteractionCallBack;
+  scroll?: scrollCallback;
+  viewportResize?: viewportResizeCallback;
+  input?: inputCallback;
 };
 
 export type textCursor = {
@@ -284,6 +294,10 @@ export type Emitter = {
   on(type: string, handler: Handler): void;
   emit(type: string, event?: unknown): void;
 };
+
+export type Arguments<T> = T extends (...payload: infer U) => unknown
+  ? U
+  : unknown;
 
 export enum ReplayerEvents {
   Start = 'start',
