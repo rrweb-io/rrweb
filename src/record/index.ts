@@ -34,6 +34,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
     ignoreClass = 'rr-ignore',
     inlineStylesheet = true,
     maskAllInputs = false,
+    hooks,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -114,72 +115,75 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       takeFullSnapshot();
 
       handlers.push(
-        initObservers({
-          mutationCb: m =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Mutation,
-                  ...m,
-                },
-              }),
-            ),
-          mousemoveCb: (positions, source) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source,
-                  positions,
-                },
-              }),
-            ),
-          mouseInteractionCb: d =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseInteraction,
-                  ...d,
-                },
-              }),
-            ),
-          scrollCb: p =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Scroll,
-                  ...p,
-                },
-              }),
-            ),
-          viewportResizeCb: d =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.ViewportResize,
-                  ...d,
-                },
-              }),
-            ),
-          inputCb: v =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Input,
-                  ...v,
-                },
-              }),
-            ),
-          blockClass,
-          ignoreClass,
-          maskAllInputs,
-          inlineStylesheet,
-        }),
+        initObservers(
+          {
+            mutationCb: m =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Mutation,
+                    ...m,
+                  },
+                }),
+              ),
+            mousemoveCb: (positions, source) =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source,
+                    positions,
+                  },
+                }),
+              ),
+            mouseInteractionCb: d =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.MouseInteraction,
+                    ...d,
+                  },
+                }),
+              ),
+            scrollCb: p =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Scroll,
+                    ...p,
+                  },
+                }),
+              ),
+            viewportResizeCb: d =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.ViewportResize,
+                    ...d,
+                  },
+                }),
+              ),
+            inputCb: v =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Input,
+                    ...v,
+                  },
+                }),
+              ),
+            blockClass,
+            ignoreClass,
+            maskAllInputs,
+            inlineStylesheet,
+          },
+          hooks,
+        ),
       );
     };
     if (
