@@ -5,7 +5,7 @@ import { absoluteToStylesheet } from '../src/snapshot';
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
 
-  it('cam handle relative path', () => {
+  it('can handle relative path', () => {
     expect(absoluteToStylesheet('url(a.jpg)', href)).to.equal(
       `url('http://localhost/css/a.jpg')`,
     );
