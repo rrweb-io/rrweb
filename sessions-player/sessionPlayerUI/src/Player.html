@@ -1,0 +1,149 @@
+<div class="rr-player" ref:player style="{playerStyle}">
+  <div class="rr-player__frame" ref:frame { style }></div>
+  {#if replayer}
+  <Controller { replayer } {showController} {autoPlay} on:fullscreen="fullscreen()" />
+  {/if}
+</div>
+
+<script>
+  import { Replayer } from 'rrweb';
+  import 'rrweb/dist/rrweb.min.css';
+  import {
+    inlineCss,
+    openFullscreen,
+    exitFullscreen,
+    isFullscreen,
+    onFullscreenChange,
+  } from './utils.js';
+
+  const controllerHeight = 80;
+
+  export default {
+    components: {
+      Controller: './Controller.html',
+    },
+    data() {
+      return {
+        showController: true,
+        width: 1024,
+        height: 576,
+        events: [],
+        autoPlay: true,
+        replayer: null,
+      };
+    },
+    computed: {
+      style({ width, height }) {
+        return inlineCss({
+          width: `${width}px`,
+          height: `${height}px`,
+        });
+      },
+      playerStyle({ width, height }) {
+        return inlineCss({
+          width: `${width}px`,
+          height: `${height + controllerHeight}px`,
+        });
+      },
+    },
+    methods: {
+      updateScale(el, frameDimension) {
+        const { width, height } = this.get();
+        const widthScale = width / frameDimension.width;
+        const heightScale = height / frameDimension.height;
+        el.style.transform =
+          `scale(${Math.min(widthScale, heightScale, 1)})` +
+          'translate(-50%, -50%)';
+      },
+      fullscreen() {
+        if (this.refs.player) {
+          isFullscreen() ? exitFullscreen() : openFullscreen(this.refs.player);
+        }
+      },
+      addEventListener(event, handler) {
+        const { replayer } = this.get();
+        replayer.on(event, handler);
+      },
+      addEvent(event) {
+        replayer.addEvent(event);
+      },
+      addBufferedEvents(events) {
+        replayer.convertBufferedEventsToActionsAndAddToTimer(events)
+      }
+    },
+    oncreate() {
+      const { events } = this.get();
+      const replayer = new Replayer(events, {
+        speed: 1,
+        root: this.refs.frame,
+        skipInactive: true,
+        showWarning: true,
+      });
+      replayer.on('resize', (dimension) =>
+        this.updateScale(replayer.wrapper, dimension)
+      );
+      this.set({
+        replayer,
+      });
+      this.fullscreenListener = onFullscreenChange(() => {
+        if (isFullscreen()) {
+          setTimeout(() => {
+            const { width, height } = this.get();
+            // store the original dimension which do not need to be reactive
+            this._width = width;
+            this._height = height;
+            const dimension = {
+              width: document.body.offsetWidth,
+              height: document.body.offsetHeight - controllerHeight,
+            };
+            this.set(dimension);
+            this.updateScale(replayer.wrapper, {
+              width: replayer.iframe.offsetWidth,
+              height: replayer.iframe.offsetHeight,
+            });
+          }, 0);
+        } else {
+          this.set({
+            width: this._width,
+            height: this._height,
+          });
+          this.updateScale(replayer.wrapper, {
+            width: replayer.iframe.offsetWidth,
+            height: replayer.iframe.offsetHeight,
+          });
+        }
+      });
+    },
+    ondestroy() {
+      if (this.fullscreenListener) {
+        this.fullscreenListener();
+      }
+    },
+  };
+</script>
+
+<style>
+  .rr-player {
+    position: relative;
+    background: white;
+    float: left;
+    border-radius: 5px;
+    box-shadow: 0 24px 48px rgba(17, 16, 62, 0.12);
+  }
+
+  .rr-player__frame {
+    overflow: hidden;
+  }
+
+  :global(.replayer-wrapper) {
+    float: left;
+    clear: both;
+    transform-origin: top left;
+    left: 50%;
+    top: 50%;
+  }
+
+  :global(.replayer-wrapper > iframe) {
+    border: none;
+  }
+</style>
