@@ -770,7 +770,7 @@ function addHoverClass(cssText) {
     });
     return cssText;
 }
-function buildNode(n, doc) {
+function buildNode(n, doc, HACK_CSS) {
     switch (n.type) {
         case NodeType.Document:
             return doc.implementation.createDocument(null, '', null);
@@ -791,7 +791,7 @@ function buildNode(n, doc) {
                     value = typeof value === 'boolean' ? '' : value;
                     var isTextarea = tagName === 'textarea' && name === 'value';
                     var isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-                    if (isRemoteOrDynamicCss) {
+                    if (isRemoteOrDynamicCss && HACK_CSS) {
                         value = addHoverClass(value);
                     }
                     if (isTextarea || isRemoteOrDynamicCss) {
@@ -831,7 +831,7 @@ function buildNode(n, doc) {
             }
             return node;
         case NodeType.Text:
-            return doc.createTextNode(n.isStyle ? addHoverClass(n.textContent) : n.textContent);
+            return doc.createTextNode(n.isStyle && HACK_CSS ? addHoverClass(n.textContent) : n.textContent);
         case NodeType.CDATA:
             return doc.createCDATASection(n.textContent);
         case NodeType.Comment:
@@ -840,9 +840,10 @@ function buildNode(n, doc) {
             return null;
     }
 }
-function buildNodeWithSN(n, doc, map, skipChild) {
+function buildNodeWithSN(n, doc, map, skipChild, HACK_CSS) {
     if (skipChild === void 0) { skipChild = false; }
-    var node = buildNode(n, doc);
+    if (HACK_CSS === void 0) { HACK_CSS = true; }
+    var node = buildNode(n, doc, HACK_CSS);
     if (!node) {
         return null;
     }
@@ -857,7 +858,7 @@ function buildNodeWithSN(n, doc, map, skipChild) {
         !skipChild) {
         for (var _i = 0, _a = n.childNodes; _i < _a.length; _i++) {
             var childN = _a[_i];
-            var childNode = buildNodeWithSN(childN, doc, map);
+            var childNode = buildNodeWithSN(childN, doc, map, false, HACK_CSS);
             if (!childNode) {
                 console.warn('Failed to rebuild', childN);
             }
@@ -868,9 +869,10 @@ function buildNodeWithSN(n, doc, map, skipChild) {
     }
     return node;
 }
-function rebuild(n, doc) {
+function rebuild(n, doc, HACK_CSS) {
+    if (HACK_CSS === void 0) { HACK_CSS = true; }
     var idNodeMap = {};
-    return [buildNodeWithSN(n, doc, idNodeMap), idNodeMap];
+    return [buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS), idNodeMap];
 }
 var mirror = {
     map: {},
@@ -1468,15 +1470,30 @@ var Timer = (function () {
         var _a;
         (_a = this.actions).push.apply(_a, actions);
     };
+    Timer.prototype.pause = function () {
+        this.customClear();
+    };
+    Timer.prototype.resume = function () {
+        this.start();
+    };
+    Timer.prototype.customClear = function () {
+        if (this.raf) {
+            console.log('custom clear');
+            cancelAnimationFrame(this.raf);
+        }
+    };
     Timer.prototype.start = function () {
+        console.log("2149 ", performance.now());
         this.actions.sort(function (a1, a2) { return a1.delay - a2.delay; });
-        this.timeOffset = 0;
+        console.log("2151 ", performance.now());
+        // this.timeOffset = 0;
         var lastTimestamp = performance.now();
         var _a = this, actions = _a.actions, config = _a.config;
         var self = this;
         function check(time) {
             self.timeOffset += (time - lastTimestamp) * config.speed;
             lastTimestamp = time;
+            console.log("self.timeOffset ", self.timeOffset);
             while (actions.length) {
                 var action = actions[0];
                 if (self.timeOffset >= action.delay) {
@@ -1602,6 +1619,21 @@ var Replayer = (function () {
         this.timer.addActions(actions);
         this.timer.start();
         this.emitter.emit(ReplayerEvents.Start);
+    };
+    Replayer.prototype.convertBufferedEventsToActionsAndAddToTimer = function (bufferedEvents) {
+        var actions = new Array();
+        for (var _i = 0, bufferedEvents_1 = bufferedEvents; _i < bufferedEvents_1.length; _i++) {
+            var event = bufferedEvents_1[_i];
+            var castFn = this.getCastFn(event);
+            actions.push({ doAction: castFn, delay: this.getDelay(event) });
+        }
+        this.timer.addActions(actions);
+    };
+    Replayer.prototype.customPause = function () {
+        this.timer.pause();
+    };
+    Replayer.prototype.customResume = function () {
+        this.timer.resume();
     };
     Replayer.prototype.pause = function () {
         this.timer.clear();
