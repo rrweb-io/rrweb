@@ -23,11 +23,7 @@ var vis = (function() {
 window.dummyVar = 0;
 vis(() => {
   window.dummyVar++;
-  console.log(
-    'current state of the browser is ',
-    window.location.href,
-    window.dummyVar,
-  );
+  console.log('current state of the browser is ', window.location.href, window.dummyVar);
 });
 
 function confirmExit() {
@@ -37,6 +33,3 @@ function confirmExit() {
 window.onbeforeunload = confirmExit;
 
 // use visibilitychange api for focus
-
-
-

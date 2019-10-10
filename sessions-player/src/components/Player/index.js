@@ -48,7 +48,6 @@ class SessionPlayer extends React.Component {
   }
 
   render() {
-    console.log('this.props in render ', this.props);
     const { sessionData } = this.props;
     if (!sessionData.length) {
       return null;
@@ -70,8 +69,7 @@ const mapDispatchToProps = dispatch => {
   return {
     kickStartFetching: ({ sessionId, totalNumberOfBlocks }) =>
       dispatch(kickStartSessions({ sessionId, totalNumberOfBlocks })),
-    fetchMetaData: ({ sessionId }) =>
-      dispatch(dispatchMetaDataAction({ sessionId })),
+    fetchMetaData: ({ sessionId }) => dispatch(dispatchMetaDataAction({ sessionId })),
     updateLastConcatedIndex: ({ lastConcatedIndex }) =>
       dispatch(lastConcatedIndexAction({ lastConcatedIndex })),
   };

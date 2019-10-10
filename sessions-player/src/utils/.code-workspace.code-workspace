@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "/home/deepcompute/lumenbiomics/rrweb"
+		}
+	],
+	"settings": {
+		"jshint.options": {
+			"esversion": 6,
+		},
+		"javascript.suggest.completeFunctionCalls": true,
+		"typescript.suggest.completeFunctionCalls": true
+	}
+}

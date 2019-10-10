@@ -77,11 +77,7 @@ const kickStartSessions = ({ sessionId, totalNumberOfBlocks }) => {
         return;
       })
       .then(() => {
-        console.log(
-          'totalNumberOfBlocks in kickStartSessions ',
-          totalNumberOfBlocks,
-          getState(),
-        );
+        console.log('totalNumberOfBlocks in kickStartSessions ', totalNumberOfBlocks, getState());
         for (var i = 3; i < totalNumberOfBlocks; i++) {
           getEventDataByBlockId({ blockId: i, sessionId }).then(data => {
             console.log('42data is ', data, getState());

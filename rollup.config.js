@@ -6,9 +6,7 @@ import postcss from 'rollup-plugin-postcss';
 import pkg from './package.json';
 
 function toRecordPath(path) {
-  return path
-    .replace(/^([\w]+)\//, '$1/record/')
-    .replace('rrweb', 'rrweb-record');
+  return path.replace(/^([\w]+)\//, '$1/record/').replace('rrweb', 'rrweb-record');
 }
 
 function toMinPath(path) {

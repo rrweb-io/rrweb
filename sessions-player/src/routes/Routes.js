@@ -1,7 +1,5 @@
-import React, { Component, Fragment } from 'react'
-import {
-  HomeRoute,
-} from './index'
+import React, { Component, Fragment } from 'react';
+import { HomeRoute } from './index';
 
 class Routes extends Component {
   render() {
@@ -9,8 +7,8 @@ class Routes extends Component {
       <Fragment>
         <HomeRoute />
       </Fragment>
-    )
+    );
   }
 }
 
-export default Routes
+export default Routes;

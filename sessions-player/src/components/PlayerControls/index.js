@@ -1,11 +1,7 @@
 import React from 'react';
 
 import Button from '@material-ui/core/Button';
-import {
-  startPlayingAction,
-  stopPlayingAction,
-  resumePlayingAction,
-} from '../../actions';
+import { startPlayingAction, stopPlayingAction, resumePlayingAction } from '../../actions';
 
 import { connect } from 'react-redux';
 

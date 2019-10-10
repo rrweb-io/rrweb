@@ -74,7 +74,7 @@
     },
     oncreate() {
       const { events } = this.get();
-      const replayer = new Replayer(events, {
+      let replayer = this.get().replayer || new Replayer(events, {
         speed: 1,
         root: this.refs.frame,
         skipInactive: true,

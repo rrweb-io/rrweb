@@ -1,3 +1,5 @@
+import sessionPlayerUI from '../../sessionPlayerUI/dist/index.mjs';
+import '../../sessionPlayerUI/dist/style.css';
 import { Replayer } from '../sessionlibs/rrweb.js';
 var replayer = null;
 var rootIframeId = 'jankay';
@@ -5,6 +7,7 @@ var isPlaying = false;
 var baseLineTime = 0;
 var lastPlayedTime = 0;
 
+// TODO: convert this into BST --> binary search tree
 export function sortContinously({ globalValues, replayer }) {
   if (!replayer) {
     return null;
@@ -54,16 +57,26 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
     if (nextEvent.blockId === lastConcatedIndex) {
       lastConcatedIndex++;
       if (!replayer) {
+        /*
         window.replayer = replayer = new Replayer(nextEvent.events, {
           showWarning: true,
           root: document.getElementById(rootIframeId),
         });
+        */
         baseLineTime = nextEvent.events[0].timestamp;
+        window.sessionPlayerUI = replayer = new sessionPlayerUI({
+          target: document.body,
+          data: {
+            events: nextEvent.events,
+            autoPlay: true,
+          },
+        });
       } else {
         if (!isPlaying) {
           play();
         }
-        replayer.convertBufferedEventsToActionsAndAddToTimer(nextEvent.events);
+        //        replayer.convertBufferedEventsToActionsAndAddToTimer(nextEvent.events);
+        replayer.addBufferedEvents(nextEvent.events);
       }
     }
   }
@@ -71,15 +84,18 @@ export function cleanAndAddData({ globalValues, lastConcatedIndex }) {
 }
 
 export function play() {
+  /*
   if (!replayer || isPlaying) {
     return true;
   }
   isPlaying = true;
   replayer.play();
   return true;
+  */
 }
 
 export function resume() {
+  /*
   if (!replayer || isPlaying) {
     return true;
   }
@@ -88,9 +104,11 @@ export function resume() {
   // replayer.resume();
   replayer.customResume();
   return true;
+  */
 }
 
 export function stop() {
+  /*
   if (!replayer || !isPlaying) {
     return false;
   }
@@ -99,6 +117,7 @@ export function stop() {
   replayer.customPause();
   lastPlayedTime = replayer.lastPlayedEvent.timestamp;
   return false;
+  */
 }
 
 export function removeDuplicates({ globalValues }) {

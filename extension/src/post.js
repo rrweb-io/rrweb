@@ -55,18 +55,15 @@ function buildPayload() {
   // event --> delay, what does event.delay signify...
 
   // since we cleared events object, setStartTime
-  var eventLengthTime =
-    window.performance.now() - window.localStorage.getItem('startTime');
+  var eventLengthTime = window.performance.now() - window.localStorage.getItem('startTime');
   payload_body.eventLengthTime = eventLengthTime;
-  payload_body.offsetTime =
-    parseFloat(window.localStorage.getItem('playerTime')) + eventLengthTime;
+  payload_body.offsetTime = parseFloat(window.localStorage.getItem('playerTime')) + eventLengthTime;
   payload_body.startEventTime = window.localStorage.getItem('startTime');
   payload_body.endEventTime = window.localStorage.getItem('endTime');
   // set new payload startTime
   window.localStorage.setItem(
     'playerTime',
-    parseFloat(window.localStorage.getItem('playerTime')) +
-      payload_body.eventLengthTime,
+    parseFloat(window.localStorage.getItem('playerTime')) + payload_body.eventLengthTime,
   );
   window.localStorage.setItem('startTime', performance.now());
   window.localStorage.setItem('endTime', 0);

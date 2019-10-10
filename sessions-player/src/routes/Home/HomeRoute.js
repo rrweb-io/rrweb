@@ -10,9 +10,7 @@ class HomeRoute extends Component {
       <Route
         path={'/:sessionId'}
         exact
-        render={({ match }) => (
-          <HomeRouteContents sessionId={match.params.sessionId} />
-        )}
+        render={({ match }) => <HomeRouteContents sessionId={match.params.sessionId} />}
       />
     );
   }

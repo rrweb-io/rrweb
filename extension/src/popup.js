@@ -45,12 +45,8 @@ function StopRecording() {
   console.log('stop recording');
 }
 
-document
-  .getElementById('startRecording')
-  .addEventListener('click', StartRecording);
-document
-  .getElementById('stopRecording')
-  .addEventListener('click', StopRecording);
+document.getElementById('startRecording').addEventListener('click', StartRecording);
+document.getElementById('stopRecording').addEventListener('click', StopRecording);
 
 // chrome.tabs.execute inject script to detect tab changes
 

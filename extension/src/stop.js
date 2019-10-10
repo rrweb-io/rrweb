@@ -34,10 +34,7 @@ var content = `
     <script src="http://localhost:8887/dist/rrweb.min.js"></script>
     <script>
       /*<!--*/
-      const events = ${JSON.stringify(events).replace(
-        /<\/script>/g,
-        '<\\/script>',
-      )};
+      const events = ${JSON.stringify(events).replace(/<\/script>/g, '<\\/script>')};
       /*-->*/
       new rrwebPlayer({
         target: document.body, // customizable root element
