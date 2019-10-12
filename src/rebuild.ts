@@ -98,10 +98,13 @@ function buildNode(
         node = doc.createElement(tagName);
       }
       for (const name in n.attributes) {
+        if (!n.attributes.hasOwnProperty(name)) {
+          continue
+        }
+        let value = n.attributes[name];
+        value = typeof value === 'boolean' ? '' : value;
         // attribute names start with rr_ are internal attributes added by rrweb
-        if (n.attributes.hasOwnProperty(name) && !name.startsWith('rr_')) {
-          let value = n.attributes[name];
-          value = typeof value === 'boolean' ? '' : value;
+        if (!name.startsWith('rr_')) {
           const isTextarea = tagName === 'textarea' && name === 'value';
           const isRemoteOrDynamicCss =
             tagName === 'style' && name === '_cssText';
@@ -133,12 +136,21 @@ function buildNode(
           }
         } else {
           // handle internal attributes
-          if (n.attributes.rr_width) {
-            (node as HTMLElement).style.width = n.attributes.rr_width as string;
+          if (tagName === 'canvas' && name === 'rr_dataURL') {
+            const image = document.createElement('img')
+            image.src = value
+            image.onload = () => {
+              const ctx = (node as HTMLCanvasElement).getContext('2d')
+              if (ctx) {
+                ctx.drawImage(image, 0, 0, image.width, image.height)
+              }
+            }
           }
-          if (n.attributes.rr_height) {
-            (node as HTMLElement).style.height = n.attributes
-              .rr_height as string;
+          if (name === 'rr_width') {
+            (node as HTMLElement).style.width = value;
+          }
+          if (name === 'rr_height') {
+            (node as HTMLElement).style.height = value;
           }
         }
       }
