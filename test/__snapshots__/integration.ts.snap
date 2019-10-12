@@ -172,6 +172,15 @@ exports[`[html file]: invalid-attribute.html 1`] = `
 </body></html>"
 `;
 
+exports[`[html file]: picture.html 1`] = `
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <picture>
+      <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
+      <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
+    </picture>
+  </body></html>"
+`;
+
 exports[`[html file]: with-relative-res.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
