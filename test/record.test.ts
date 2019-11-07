@@ -72,9 +72,9 @@ describe('record', function(this: ISuite) {
 
   it('will only have one full snapshot without checkout config', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = ((window as unknown) as IWindow).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: ((window as unknown) as IWindow).emit,
       });
     });
     let count = 30;
@@ -97,9 +97,9 @@ describe('record', function(this: ISuite) {
 
   it('can checkout full snapshot by count', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = ((window as unknown) as IWindow).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: ((window as unknown) as IWindow).emit,
         checkoutEveryNth: 10,
       });
     });
@@ -127,9 +127,9 @@ describe('record', function(this: ISuite) {
 
   it('can checkout full snapshot by time', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = ((window as unknown) as IWindow).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: ((window as unknown) as IWindow).emit,
         checkoutEveryNms: 500,
       });
     });
@@ -158,9 +158,9 @@ describe('record', function(this: ISuite) {
 
   it('is safe to checkout during async callbacks', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = ((window as unknown) as IWindow).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: ((window as unknown) as IWindow).emit,
         checkoutEveryNth: 2,
       });
       const p = document.createElement('p');
@@ -184,9 +184,9 @@ describe('record', function(this: ISuite) {
 
   it('can add custom event', async () => {
     await this.page.evaluate(() => {
-      const { record, addCustomEvent } = (window as IWindow).rrweb;
+      const { record, addCustomEvent } = ((window as unknown) as IWindow).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: ((window as unknown) as IWindow).emit,
       });
       addCustomEvent<number>('tag1', 1);
       addCustomEvent<{ a: string }>('tag2', {

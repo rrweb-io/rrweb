@@ -207,11 +207,23 @@ function initMutationObserver(
       });
     };
 
-    for (var it = movedSet.values(), n = null; (n = it.next().value); ) {
-      pushAdd(n);
-    }
+    // for (var it = movedSet.values(), n = null; (n = it.next().value); ) {
+    //   pushAdd(n);
+    // }
 
-    for (var it = addedSet.values(), n = null; (n = it.next().value); ) {
+    // for (var it = addedSet.values(), n = null; (n = it.next().value); ) {
+    //   if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
+    //     pushAdd(n);
+    //   } else if (isAncestorInSet(movedSet, n)) {
+    //     pushAdd(n);
+    //   } else {
+    //     droppedSet.add(n);
+    //   }
+    // }
+
+    Array.from(movedSet).forEach(pushAdd);
+
+    Array.from(addedSet).forEach(n => {
       if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
         pushAdd(n);
       } else if (isAncestorInSet(movedSet, n)) {
@@ -219,7 +231,7 @@ function initMutationObserver(
       } else {
         droppedSet.add(n);
       }
-    }
+    });
 
     while (addQueue.length) {
       if (
