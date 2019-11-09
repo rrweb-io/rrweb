@@ -1,4 +1,4 @@
-import { INode, serializeNodeWithId } from 'rrweb-snapshot';
+import { INode, serializeNodeWithId, transformAttribute } from 'rrweb-snapshot';
 import {
   mirror,
   throttle,
@@ -130,7 +130,11 @@ function initMutationObserver(
             attributes.push(item);
           }
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName!] = value;
+          item.attributes[attributeName!] = transformAttribute(
+            document,
+            attributeName!,
+            value!,
+          );
           break;
         }
         case 'childList': {
