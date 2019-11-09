@@ -146,14 +146,14 @@ var rrweb = (function (exports) {
             case n.DOCUMENT_NODE:
                 return {
                     type: NodeType.Document,
-                    childNodes: []
+                    childNodes: [],
                 };
             case n.DOCUMENT_TYPE_NODE:
                 return {
                     type: NodeType.DocumentType,
                     name: n.name,
                     publicId: n.publicId,
-                    systemId: n.systemId
+                    systemId: n.systemId,
                 };
             case n.ELEMENT_NODE:
                 var needBlock_1 = false;
@@ -225,6 +225,9 @@ var rrweb = (function (exports) {
                         attributes_1.selected = n.selected;
                     }
                 }
+                if (tagName === 'canvas') {
+                    attributes_1.rr_dataURL = n.toDataURL();
+                }
                 if (needBlock_1) {
                     var _c = n.getBoundingClientRect(), width = _c.width, height = _c.height;
                     attributes_1.rr_width = width + "px";
@@ -236,7 +239,7 @@ var rrweb = (function (exports) {
                     attributes: attributes_1,
                     childNodes: [],
                     isSVG: isSVGElement(n) || undefined,
-                    needBlock: needBlock_1
+                    needBlock: needBlock_1,
                 };
             case n.TEXT_NODE:
                 var parentTagName = n.parentNode && n.parentNode.tagName;
@@ -251,17 +254,17 @@ var rrweb = (function (exports) {
                 return {
                     type: NodeType.Text,
                     textContent: textContent || '',
-                    isStyle: isStyle
+                    isStyle: isStyle,
                 };
             case n.CDATA_SECTION_NODE:
                 return {
                     type: NodeType.CDATA,
-                    textContent: ''
+                    textContent: '',
                 };
             case n.COMMENT_NODE:
                 return {
                     type: NodeType.Comment,
-                    textContent: n.textContent || ''
+                    textContent: n.textContent || '',
                 };
             default:
                 return false;
@@ -367,8 +370,8 @@ var rrweb = (function (exports) {
                 stylesheet: {
                     source: options.source,
                     rules: rulesList,
-                    parsingErrors: errorsList
-                }
+                    parsingErrors: errorsList,
+                },
             };
         }
         function open() {
@@ -435,7 +438,7 @@ var rrweb = (function (exports) {
             column += 2;
             return pos({
                 type: 'comment',
-                comment: str
+                comment: str,
             });
         }
         function selector() {
@@ -467,7 +470,7 @@ var rrweb = (function (exports) {
             var ret = pos({
                 type: 'declaration',
                 property: prop.replace(commentre, ''),
-                value: val ? trim(val[0]).replace(commentre, '') : ''
+                value: val ? trim(val[0]).replace(commentre, '') : '',
             });
             match(/^[;\s]*/);
             return ret;
@@ -505,7 +508,7 @@ var rrweb = (function (exports) {
             return pos({
                 type: 'keyframe',
                 values: vals,
-                declarations: declarations()
+                declarations: declarations(),
             });
         }
         function atkeyframes() {
@@ -536,7 +539,7 @@ var rrweb = (function (exports) {
                 type: 'keyframes',
                 name: name,
                 vendor: vendor,
-                keyframes: frames
+                keyframes: frames,
             });
         }
         function atsupports() {
@@ -556,7 +559,7 @@ var rrweb = (function (exports) {
             return pos({
                 type: 'supports',
                 supports: supports,
-                rules: style
+                rules: style,
             });
         }
         function athost() {
@@ -574,7 +577,7 @@ var rrweb = (function (exports) {
             }
             return pos({
                 type: 'host',
-                rules: style
+                rules: style,
             });
         }
         function atmedia() {
@@ -594,7 +597,7 @@ var rrweb = (function (exports) {
             return pos({
                 type: 'media',
                 media: media,
-                rules: style
+                rules: style,
             });
         }
         function atcustommedia() {
@@ -606,7 +609,7 @@ var rrweb = (function (exports) {
             return pos({
                 type: 'custom-media',
                 name: trim(m[1]),
-                media: trim(m[2])
+                media: trim(m[2]),
             });
         }
         function atpage() {
@@ -631,7 +634,7 @@ var rrweb = (function (exports) {
             return pos({
                 type: 'page',
                 selectors: sel,
-                declarations: decls
+                declarations: decls,
             });
         }
         function atdocument() {
@@ -653,7 +656,7 @@ var rrweb = (function (exports) {
                 type: 'document',
                 document: doc,
                 vendor: vendor,
-                rules: style
+                rules: style,
             });
         }
         function atfontface() {
@@ -676,7 +679,7 @@ var rrweb = (function (exports) {
             }
             return pos({
                 type: 'font-face',
-                declarations: decls
+                declarations: decls,
             });
         }
         var atimport = _compileAtrule('import');
@@ -721,7 +724,7 @@ var rrweb = (function (exports) {
             return pos({
                 type: 'rule',
                 selectors: sel,
-                declarations: declarations()
+                declarations: declarations(),
             });
         }
         return addParent(stylesheet());
@@ -749,7 +752,7 @@ var rrweb = (function (exports) {
                 configurable: true,
                 writable: true,
                 enumerable: false,
-                value: parent || null
+                value: parent || null,
             });
         }
         return obj;
@@ -792,7 +795,7 @@ var rrweb = (function (exports) {
         foreignobject: 'foreignObject',
         glyphref: 'glyphRef',
         lineargradient: 'linearGradient',
-        radialgradient: 'radialGradient'
+        radialgradient: 'radialGradient',
     };
     function getTagName(n) {
         var tagName = tagMap[n.tagName] ? tagMap[n.tagName] : n.tagName;
@@ -827,17 +830,20 @@ var rrweb = (function (exports) {
                 return doc.implementation.createDocumentType(n.name, n.publicId, n.systemId);
             case NodeType.Element:
                 var tagName = getTagName(n);
-                var node = void 0;
+                var node_1;
                 if (n.isSVG) {
-                    node = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
+                    node_1 = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
                 }
                 else {
-                    node = doc.createElement(tagName);
+                    node_1 = doc.createElement(tagName);
                 }
-                for (var name in n.attributes) {
-                    if (n.attributes.hasOwnProperty(name) && !name.startsWith('rr_')) {
-                        var value = n.attributes[name];
-                        value = typeof value === 'boolean' ? '' : value;
+                var _loop_1 = function (name) {
+                    if (!n.attributes.hasOwnProperty(name)) {
+                        return "continue";
+                    }
+                    var value = n.attributes[name];
+                    value = typeof value === 'boolean' ? '' : value;
+                    if (!name.startsWith('rr_')) {
                         var isTextarea = tagName === 'textarea' && name === 'value';
                         var isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
                         if (isRemoteOrDynamicCss && HACK_CSS) {
@@ -845,40 +851,52 @@ var rrweb = (function (exports) {
                         }
                         if (isTextarea || isRemoteOrDynamicCss) {
                             var child = doc.createTextNode(value);
-                            for (var _i = 0, _a = Array.from(node.childNodes); _i < _a.length; _i++) {
+                            for (var _i = 0, _a = Array.from(node_1.childNodes); _i < _a.length; _i++) {
                                 var c = _a[_i];
-                                if (c.nodeType === node.TEXT_NODE) {
-                                    node.removeChild(c);
+                                if (c.nodeType === node_1.TEXT_NODE) {
+                                    node_1.removeChild(c);
                                 }
                             }
-                            node.appendChild(child);
-                            continue;
+                            node_1.appendChild(child);
+                            return "continue";
                         }
                         if (tagName === 'iframe' && name === 'src') {
-                            continue;
+                            return "continue";
                         }
                         try {
                             if (n.isSVG && name === 'xlink:href') {
-                                node.setAttributeNS('http://www.w3.org/1999/xlink', name, value);
+                                node_1.setAttributeNS('http://www.w3.org/1999/xlink', name, value);
                             }
                             else {
-                                node.setAttribute(name, value);
+                                node_1.setAttribute(name, value);
                             }
                         }
                         catch (error) {
                         }
                     }
                     else {
-                        if (n.attributes.rr_width) {
-                            node.style.width = n.attributes.rr_width;
+                        if (tagName === 'canvas' && name === 'rr_dataURL') {
+                            var image_1 = document.createElement('img');
+                            image_1.src = value;
+                            image_1.onload = function () {
+                                var ctx = node_1.getContext('2d');
+                                if (ctx) {
+                                    ctx.drawImage(image_1, 0, 0, image_1.width, image_1.height);
+                                }
+                            };
                         }
-                        if (n.attributes.rr_height) {
-                            node.style.height = n.attributes
-                                .rr_height;
+                        if (name === 'rr_width') {
+                            node_1.style.width = value;
+                        }
+                        if (name === 'rr_height') {
+                            node_1.style.height = value;
                         }
                     }
+                };
+                for (var name in n.attributes) {
+                    _loop_1(name);
                 }
-                return node;
+                return node_1;
             case NodeType.Text:
                 return doc.createTextNode(n.isStyle && HACK_CSS ? addHoverClass(n.textContent) : n.textContent);
             case NodeType.CDATA:

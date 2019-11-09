@@ -58,7 +58,7 @@
   "dependencies": {
     "@types/smoothscroll-polyfill": "^0.3.0",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "github:IMFIL/rrweb-snapshot#noibuProd",
+    "rrweb-snapshot": "github:Noibu/rrweb-snapshot#NoibuRRWeb-Snapshot",
     "smoothscroll-polyfill": "^0.4.3"
   }
 }
