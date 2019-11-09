@@ -113,7 +113,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   return resultingSrcsetString;
 }
 
-function absoluteToDoc(doc: Document, attributeValue: string): string {
+export function absoluteToDoc(doc: Document, attributeValue: string): string {
   if (attributeValue.trim() === '') {
     return attributeValue;
   }
@@ -124,6 +124,23 @@ function absoluteToDoc(doc: Document, attributeValue: string): string {
 
 function isSVGElement(el: Element): boolean {
   return el.tagName === 'svg' || el instanceof SVGElement;
+}
+
+export function transformAttribute(
+  doc: Document,
+  name: string,
+  value: string,
+): string {
+  // relative path in attribute
+  if (name === 'src' || name === 'href') {
+    return absoluteToDoc(doc, value);
+  } else if (name === 'srcset') {
+    return getAbsoluteSrcsetString(doc, value);
+  } else if (name === 'style') {
+    return absoluteToStylesheet(value, location.href);
+  } else {
+    return value;
+  }
 }
 
 function serializeNode(
@@ -160,16 +177,7 @@ function serializeNode(
       const tagName = (n as HTMLElement).tagName.toLowerCase();
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
-        // relative path in attribute
-        if (name === 'src' || name === 'href') {
-          attributes[name] = absoluteToDoc(doc, value);
-        } else if (name === 'srcset') {
-          attributes[name] = getAbsoluteSrcsetString(doc, value);
-        } else if (name === 'style') {
-          attributes[name] = absoluteToStylesheet(value, location.href);
-        } else {
-          attributes[name] = value;
-        }
+        attributes[name] = transformAttribute(doc, name, value);
       }
       // remote css
       if (tagName === 'link' && inlineStylesheet) {
