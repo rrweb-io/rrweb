@@ -99,7 +99,7 @@ function buildNode(
       }
       for (const name in n.attributes) {
         if (!n.attributes.hasOwnProperty(name)) {
-          continue
+          continue;
         }
         let value = n.attributes[name];
         value = typeof value === 'boolean' ? '' : value;
@@ -137,14 +137,14 @@ function buildNode(
         } else {
           // handle internal attributes
           if (tagName === 'canvas' && name === 'rr_dataURL') {
-            const image = document.createElement('img')
-            image.src = value
+            const image = document.createElement('img');
+            image.src = value;
             image.onload = () => {
-              const ctx = (node as HTMLCanvasElement).getContext('2d')
+              const ctx = (node as HTMLCanvasElement).getContext('2d');
               if (ctx) {
-                ctx.drawImage(image, 0, 0, image.width, image.height)
+                ctx.drawImage(image, 0, 0, image.width, image.height);
               }
-            }
+            };
           }
           if (name === 'rr_width') {
             (node as HTMLElement).style.width = value;
