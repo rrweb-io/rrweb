@@ -8,3 +8,4 @@ yarn.lock
 temp
 
 dist
+lib

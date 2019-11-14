@@ -1,6 +1,6 @@
 {
   "name": "rrweb-player",
-  "version": "0.3.17",
+  "version": "0.4.0",
   "devDependencies": {
     "eslint": "^5.10.0",
     "eslint-config-google": "^0.11.0",
@@ -27,9 +27,11 @@
     "start:dev": "sirv public --dev"
   },
   "description": "rrweb's replayer UI",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "module": "dist/index.mjs",
+  "unpkg": "dist/index.js",
   "files": [
+    "lib",
     "dist"
   ],
   "repository": {
