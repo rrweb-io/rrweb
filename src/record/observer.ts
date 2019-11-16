@@ -279,7 +279,7 @@ function initMutationObserver(
   return observer;
 }
 
-function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
+function initMoveObserver(cb: mousemoveCallBack, mousemoveWait: number): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle((isTouch: boolean) => {
@@ -311,7 +311,7 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
       });
       wrappedCb(isTouchEvent(evt));
     },
-    50,
+    mousemoveWait,
     {
       trailing: false,
     },
@@ -570,7 +570,7 @@ export default function initObservers(
     o.inlineStylesheet,
     o.maskAllInputs,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb);
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.blockClass,

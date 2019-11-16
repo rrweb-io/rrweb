@@ -120,6 +120,7 @@ export type recordOptions = {
   maskAllInputs?: boolean;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
+  mousemoveWait?: number;
 };
 
 export type observerParam = {
@@ -133,6 +134,7 @@ export type observerParam = {
   ignoreClass: string;
   maskAllInputs: boolean;
   inlineStylesheet: boolean;
+  mousemoveWait: number;
 };
 
 export type hooksParam = {
