@@ -89,6 +89,7 @@ export declare type recordOptions = {
     maskAllInputs?: boolean;
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
+    mousemoveWait?: number;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -101,6 +102,7 @@ export declare type observerParam = {
     ignoreClass: string;
     maskAllInputs: boolean;
     inlineStylesheet: boolean;
+    mousemoveWait: number;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;
