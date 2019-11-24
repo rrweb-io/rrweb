@@ -1,4 +1,4 @@
-import { INode, serializeNodeWithId } from 'rrweb-snapshot';
+import { INode, serializeNodeWithId, transformAttribute } from "rrweb-snapshot";
 import {
   mirror,
   throttle,
@@ -9,7 +9,7 @@ import {
   isBlocked,
   isAncestorRemoved,
   isTouchEvent,
-} from '../utils';
+} from "../utils";
 import {
   mutationCallBack,
   removedNodeMutation,
@@ -31,12 +31,12 @@ import {
   IncrementalSource,
   hooksParam,
   Arguments,
-} from '../types';
-import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
+} from "../types";
+import { deepDelete, isParentRemoved, isAncestorInSet } from "./collection";
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 function isINode(n: Node | INode): n is INode {
-  return '__sn' in n;
+  return "__sn" in n;
 }
 
 /**
@@ -104,7 +104,7 @@ function initMutationObserver(
         attributeName,
       } = mutation;
       switch (type) {
-        case 'characterData': {
+        case "characterData": {
           const value = target.textContent;
           if (!isBlocked(target, blockClass) && value !== oldValue) {
             texts.push({
@@ -114,7 +114,7 @@ function initMutationObserver(
           }
           break;
         }
-        case 'attributes': {
+        case "attributes": {
           const value = (target as HTMLElement).getAttribute(attributeName!);
           if (isBlocked(target, blockClass) || value === oldValue) {
             return;
@@ -130,10 +130,14 @@ function initMutationObserver(
             attributes.push(item);
           }
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName!] = value;
+          item.attributes[attributeName!] = transformAttribute(
+            document,
+            attributeName!,
+            value!,
+          );
           break;
         }
-        case 'childList': {
+        case "childList": {
           addedNodes.forEach(n => genAdds(n, target));
           removedNodes.forEach(n => {
             const nodeId = mirror.getId(n as INode);
@@ -207,11 +211,11 @@ function initMutationObserver(
       });
     };
 
-    for (var it = movedSet.values(), n = null; (n = it.next().value); ) {
+    for (const n of movedSet) {
       pushAdd(n);
     }
 
-    for (var it = addedSet.values(), n = null; (n = it.next().value); ) {
+    for (const n of addedSet) {
       if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
         pushAdd(n);
       } else if (isAncestorInSet(movedSet, n)) {
@@ -277,7 +281,10 @@ function initMutationObserver(
   return observer;
 }
 
-function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
+function initMoveObserver(
+  cb: mousemoveCallBack,
+  mousemoveWait: number,
+): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle((isTouch: boolean) => {
@@ -309,14 +316,14 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
       });
       wrappedCb(isTouchEvent(evt));
     },
-    50,
+    mousemoveWait,
     {
       trailing: false,
     },
   );
   const handlers = [
-    on('mousemove', updatePosition),
-    on('touchmove', updatePosition),
+    on("mousemove", updatePosition),
+    on("touchmove", updatePosition),
   ];
   return () => {
     handlers.forEach(h => h());
@@ -346,7 +353,7 @@ function initMouseInteractionObserver(
     };
   };
   Object.keys(MouseInteractions)
-    .filter(key => Number.isNaN(Number(key)) && !key.endsWith('_Departed'))
+    .filter(key => Number.isNaN(Number(key)) && !key.endsWith("_Departed"))
     .forEach((eventKey: keyof typeof MouseInteractions) => {
       const eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
@@ -381,7 +388,7 @@ function initScrollObserver(
       });
     }
   }, 100);
-  return on('scroll', updatePosition);
+  return on("scroll", updatePosition);
 }
 
 function initViewportResizeObserver(
@@ -395,24 +402,24 @@ function initViewportResizeObserver(
       height: Number(height),
     });
   }, 200);
-  return on('resize', updateDimension, window);
+  return on("resize", updateDimension, window);
 }
 
-const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
+const INPUT_TAGS = ["INPUT", "TEXTAREA", "SELECT"];
 const MASK_TYPES = [
-  'color',
-  'date',
-  'datetime-local',
-  'email',
-  'month',
-  'number',
-  'range',
-  'search',
-  'tel',
-  'text',
-  'time',
-  'url',
-  'week',
+  "color",
+  "date",
+  "datetime-local",
+  "email",
+  "month",
+  "number",
+  "range",
+  "search",
+  "tel",
+  "text",
+  "time",
+  "url",
+  "week",
 ];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
@@ -433,7 +440,7 @@ function initInputObserver(
     }
     const type: string | undefined = (target as HTMLInputElement).type;
     if (
-      type === 'password' ||
+      type === "password" ||
       (target as HTMLElement).classList.contains(ignoreClass)
     ) {
       return;
@@ -441,17 +448,17 @@ function initInputObserver(
     let text = (target as HTMLInputElement).value;
     let isChecked = false;
     const hasTextInput =
-      MASK_TYPES.includes(type) || (target as Element).tagName === 'TEXTAREA';
-    if (type === 'radio' || type === 'checkbox') {
+      MASK_TYPES.includes(type) || (target as Element).tagName === "TEXTAREA";
+    if (type === "radio" || type === "checkbox") {
       isChecked = (target as HTMLInputElement).checked;
     } else if (hasTextInput && maskAllInputs) {
-      text = '*'.repeat(text.length);
+      text = "*".repeat(text.length);
     }
     cbWithDedup(target, { text, isChecked });
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
     const name: string | undefined = (target as HTMLInputElement).name;
-    if (type === 'radio' && name && isChecked) {
+    if (type === "radio" && name && isChecked) {
       document
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach(el => {
@@ -480,18 +487,18 @@ function initInputObserver(
     }
   }
   const handlers: Array<listenerHandler | hookResetter> = [
-    'input',
-    'change',
+    "input",
+    "change",
   ].map(eventName => on(eventName, eventHandler));
   const propertyDescriptor = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
-    'value',
+    "value",
   );
   const hookProperties: Array<[HTMLElement, string]> = [
-    [HTMLInputElement.prototype, 'value'],
-    [HTMLInputElement.prototype, 'checked'],
-    [HTMLSelectElement.prototype, 'value'],
-    [HTMLTextAreaElement.prototype, 'value'],
+    [HTMLInputElement.prototype, "value"],
+    [HTMLInputElement.prototype, "checked"],
+    [HTMLSelectElement.prototype, "value"],
+    [HTMLTextAreaElement.prototype, "value"],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
@@ -568,7 +575,7 @@ export default function initObservers(
     o.inlineStylesheet,
     o.maskAllInputs,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb);
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.blockClass,
