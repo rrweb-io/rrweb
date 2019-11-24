@@ -211,11 +211,11 @@ function initMutationObserver(
       });
     };
 
-    for (var it = movedSet.values(), n = null; (n = it.next().value); ) {
+    for (const n of movedSet) {
       pushAdd(n);
     }
 
-    for (var it = addedSet.values(), n = null; (n = it.next().value); ) {
+    for (const n of addedSet) {
       if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
         pushAdd(n);
       } else if (isAncestorInSet(movedSet, n)) {
@@ -281,7 +281,10 @@ function initMutationObserver(
   return observer;
 }
 
-function initMoveObserver(cb: mousemoveCallBack, mousemoveWait: number): listenerHandler {
+function initMoveObserver(
+  cb: mousemoveCallBack,
+  mousemoveWait: number,
+): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle((isTouch: boolean) => {
