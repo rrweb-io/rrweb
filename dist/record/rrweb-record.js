@@ -27,6 +27,40 @@ var rrwebRecord = (function () {
         return __assign.apply(this, arguments);
     };
 
+    function __values(o) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+        if (m) return m.call(o);
+        return {
+            next: function () {
+                if (o && i >= o.length) o = void 0;
+                return { value: o && o[i++], done: !o };
+            }
+        };
+    }
+
+    function __read(o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    }
+
+    function __spread() {
+        for (var ar = [], i = 0; i < arguments.length; i++)
+            ar = ar.concat(__read(arguments[i]));
+        return ar;
+    }
+
     var NodeType;
     (function (NodeType) {
         NodeType[NodeType["Document"] = 0] = "Document";
@@ -111,13 +145,14 @@ var rrwebRecord = (function () {
         });
     }
     function getAbsoluteSrcsetString(doc, attributeValue) {
-        if (attributeValue.trim() === "") {
+        if (attributeValue.trim() === '') {
             return attributeValue;
         }
-        var srcsetValues = attributeValue.split(",");
-        var resultingSrcsetString = srcsetValues.map(function (srcItem) {
+        var srcsetValues = attributeValue.split(',');
+        var resultingSrcsetString = srcsetValues
+            .map(function (srcItem) {
             var trimmedSrcItem = srcItem.trimLeft().trimRight();
-            var urlAndSize = trimmedSrcItem.split(" ");
+            var urlAndSize = trimmedSrcItem.split(' ');
             if (urlAndSize.length === 2) {
                 var absUrl = absoluteToDoc(doc, urlAndSize[0]);
                 return absUrl + " " + urlAndSize[1];
@@ -126,12 +161,13 @@ var rrwebRecord = (function () {
                 var absUrl = absoluteToDoc(doc, urlAndSize[0]);
                 return "" + absUrl;
             }
-            return "";
-        }).join(',');
+            return '';
+        })
+            .join(',');
         return resultingSrcsetString;
     }
     function absoluteToDoc(doc, attributeValue) {
-        if (attributeValue.trim() === "") {
+        if (attributeValue.trim() === '') {
             return attributeValue;
         }
         var a = doc.createElement('a');
@@ -140,6 +176,20 @@ var rrwebRecord = (function () {
     }
     function isSVGElement(el) {
         return el.tagName === 'svg' || el instanceof SVGElement;
+    }
+    function transformAttribute(doc, name, value) {
+        if (name === 'src' || name === 'href') {
+            return absoluteToDoc(doc, value);
+        }
+        else if (name === 'srcset') {
+            return getAbsoluteSrcsetString(doc, value);
+        }
+        else if (name === 'style') {
+            return absoluteToStylesheet(value, location.href);
+        }
+        else {
+            return value;
+        }
     }
     function serializeNode(n, doc, blockClass, inlineStylesheet, maskAllInputs) {
         switch (n.nodeType) {
@@ -171,18 +221,7 @@ var rrwebRecord = (function () {
                 var attributes_1 = {};
                 for (var _i = 0, _a = Array.from(n.attributes); _i < _a.length; _i++) {
                     var _b = _a[_i], name = _b.name, value = _b.value;
-                    if (name === 'src' || name === 'href') {
-                        attributes_1[name] = absoluteToDoc(doc, value);
-                    }
-                    else if (name == 'srcset') {
-                        attributes_1[name] = getAbsoluteSrcsetString(doc, value);
-                    }
-                    else if (name === 'style') {
-                        attributes_1[name] = absoluteToStylesheet(value, location.href);
-                    }
-                    else {
-                        attributes_1[name] = value;
-                    }
+                    attributes_1[name] = transformAttribute(doc, name, value);
                 }
                 if (tagName === 'link' && inlineStylesheet) {
                     var stylesheet = Array.from(doc.styleSheets).find(function (s) {
@@ -527,6 +566,7 @@ var rrwebRecord = (function () {
     }
     function initMutationObserver(cb, blockClass, inlineStylesheet, maskAllInputs) {
         var observer = new MutationObserver(function (mutations) {
+            var e_1, _a, e_2, _b;
             var texts = [];
             var attributes = [];
             var removes = [];
@@ -581,7 +621,7 @@ var rrwebRecord = (function () {
                             };
                             attributes.push(item);
                         }
-                        item.attributes[attributeName] = value;
+                        item.attributes[attributeName] = transformAttribute(document, attributeName, value);
                         break;
                     }
                     case 'childList': {
@@ -632,19 +672,39 @@ var rrwebRecord = (function () {
                     node: serializeNodeWithId(n, document, mirror.map, blockClass, true, inlineStylesheet, maskAllInputs),
                 });
             };
-            for (var it = movedSet.values(), n = null; (n = it.next().value);) {
-                pushAdd(n);
+            try {
+                for (var movedSet_1 = __values(movedSet), movedSet_1_1 = movedSet_1.next(); !movedSet_1_1.done; movedSet_1_1 = movedSet_1.next()) {
+                    var n = movedSet_1_1.value;
+                    pushAdd(n);
+                }
             }
-            for (var it = addedSet.values(), n = null; (n = it.next().value);) {
-                if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
-                    pushAdd(n);
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (movedSet_1_1 && !movedSet_1_1.done && (_a = movedSet_1.return)) _a.call(movedSet_1);
                 }
-                else if (isAncestorInSet(movedSet, n)) {
-                    pushAdd(n);
+                finally { if (e_1) throw e_1.error; }
+            }
+            try {
+                for (var addedSet_1 = __values(addedSet), addedSet_1_1 = addedSet_1.next(); !addedSet_1_1.done; addedSet_1_1 = addedSet_1.next()) {
+                    var n = addedSet_1_1.value;
+                    if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
+                        pushAdd(n);
+                    }
+                    else if (isAncestorInSet(movedSet, n)) {
+                        pushAdd(n);
+                    }
+                    else {
+                        droppedSet.add(n);
+                    }
                 }
-                else {
-                    droppedSet.add(n);
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (addedSet_1_1 && !addedSet_1_1.done && (_b = addedSet_1.return)) _b.call(addedSet_1);
                 }
+                finally { if (e_2) throw e_2.error; }
             }
             while (addQueue.length) {
                 if (addQueue.every(function (n) { return mirror.getId(n.parentNode) === -1; })) {
@@ -686,7 +746,7 @@ var rrwebRecord = (function () {
         });
         return observer;
     }
-    function initMoveObserver(cb) {
+    function initMoveObserver(cb, mousemoveWait) {
         var positions = [];
         var timeBaseline;
         var wrappedCb = throttle(function (isTouch) {
@@ -713,7 +773,7 @@ var rrwebRecord = (function () {
                 timeOffset: Date.now() - timeBaseline,
             });
             wrappedCb(isTouchEvent(evt));
-        }, 50, {
+        }, mousemoveWait, {
             trailing: false,
         });
         var handlers = [
@@ -866,13 +926,13 @@ var rrwebRecord = (function () {
             [HTMLTextAreaElement.prototype, 'value'],
         ];
         if (propertyDescriptor && propertyDescriptor.set) {
-            handlers.push.apply(handlers, hookProperties.map(function (p) {
+            handlers.push.apply(handlers, __spread(hookProperties.map(function (p) {
                 return hookSetter(p[0], p[1], {
                     set: function () {
                         eventHandler({ target: this });
                     },
                 });
-            }));
+            })));
         }
         return function () {
             handlers.forEach(function (h) { return h(); });
@@ -886,9 +946,9 @@ var rrwebRecord = (function () {
                 p[_i] = arguments[_i];
             }
             if (hooks.mutation) {
-                hooks.mutation.apply(hooks, p);
+                hooks.mutation.apply(hooks, __spread(p));
             }
-            mutationCb.apply(void 0, p);
+            mutationCb.apply(void 0, __spread(p));
         };
         o.mousemoveCb = function () {
             var p = [];
@@ -896,9 +956,9 @@ var rrwebRecord = (function () {
                 p[_i] = arguments[_i];
             }
             if (hooks.mousemove) {
-                hooks.mousemove.apply(hooks, p);
+                hooks.mousemove.apply(hooks, __spread(p));
             }
-            mousemoveCb.apply(void 0, p);
+            mousemoveCb.apply(void 0, __spread(p));
         };
         o.mouseInteractionCb = function () {
             var p = [];
@@ -906,9 +966,9 @@ var rrwebRecord = (function () {
                 p[_i] = arguments[_i];
             }
             if (hooks.mouseInteraction) {
-                hooks.mouseInteraction.apply(hooks, p);
+                hooks.mouseInteraction.apply(hooks, __spread(p));
             }
-            mouseInteractionCb.apply(void 0, p);
+            mouseInteractionCb.apply(void 0, __spread(p));
         };
         o.scrollCb = function () {
             var p = [];
@@ -916,9 +976,9 @@ var rrwebRecord = (function () {
                 p[_i] = arguments[_i];
             }
             if (hooks.scroll) {
-                hooks.scroll.apply(hooks, p);
+                hooks.scroll.apply(hooks, __spread(p));
             }
-            scrollCb.apply(void 0, p);
+            scrollCb.apply(void 0, __spread(p));
         };
         o.viewportResizeCb = function () {
             var p = [];
@@ -926,9 +986,9 @@ var rrwebRecord = (function () {
                 p[_i] = arguments[_i];
             }
             if (hooks.viewportResize) {
-                hooks.viewportResize.apply(hooks, p);
+                hooks.viewportResize.apply(hooks, __spread(p));
             }
-            viewportResizeCb.apply(void 0, p);
+            viewportResizeCb.apply(void 0, __spread(p));
         };
         o.inputCb = function () {
             var p = [];
@@ -936,16 +996,16 @@ var rrwebRecord = (function () {
                 p[_i] = arguments[_i];
             }
             if (hooks.input) {
-                hooks.input.apply(hooks, p);
+                hooks.input.apply(hooks, __spread(p));
             }
-            inputCb.apply(void 0, p);
+            inputCb.apply(void 0, __spread(p));
         };
     }
     function initObservers(o, hooks) {
         if (hooks === void 0) { hooks = {}; }
         mergeHooks(o, hooks);
         var mutationObserver = initMutationObserver(o.mutationCb, o.blockClass, o.inlineStylesheet, o.maskAllInputs);
-        var mousemoveHandler = initMoveObserver(o.mousemoveCb);
+        var mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
         var mouseInteractionHandler = initMouseInteractionObserver(o.mouseInteractionCb, o.blockClass);
         var scrollHandler = initScrollObserver(o.scrollCb, o.blockClass);
         var viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
@@ -966,7 +1026,7 @@ var rrwebRecord = (function () {
     var wrappedEmit;
     function record(options) {
         if (options === void 0) { options = {}; }
-        var emit = options.emit, checkoutEveryNms = options.checkoutEveryNms, checkoutEveryNth = options.checkoutEveryNth, _a = options.blockClass, blockClass = _a === void 0 ? 'rr-block' : _a, _b = options.ignoreClass, ignoreClass = _b === void 0 ? 'rr-ignore' : _b, _c = options.inlineStylesheet, inlineStylesheet = _c === void 0 ? true : _c, _d = options.maskAllInputs, maskAllInputs = _d === void 0 ? false : _d, hooks = options.hooks;
+        var emit = options.emit, checkoutEveryNms = options.checkoutEveryNms, checkoutEveryNth = options.checkoutEveryNth, _a = options.blockClass, blockClass = _a === void 0 ? 'rr-block' : _a, _b = options.ignoreClass, ignoreClass = _b === void 0 ? 'rr-ignore' : _b, _c = options.inlineStylesheet, inlineStylesheet = _c === void 0 ? true : _c, _d = options.maskAllInputs, maskAllInputs = _d === void 0 ? false : _d, hooks = options.hooks, _e = options.mousemoveWait, mousemoveWait = _e === void 0 ? 50 : _e;
         if (!emit) {
             throw new Error('emit function is required');
         }
@@ -999,7 +1059,7 @@ var rrwebRecord = (function () {
                     height: getWindowHeight(),
                 },
             }), isCheckout);
-            var _a = snapshot(document, blockClass, inlineStylesheet, maskAllInputs), node = _a[0], idNodeMap = _a[1];
+            var _a = __read(snapshot(document, blockClass, inlineStylesheet, maskAllInputs), 2), node = _a[0], idNodeMap = _a[1];
             if (!node) {
                 return console.warn('Failed to snapshot the document');
             }
@@ -1069,6 +1129,7 @@ var rrwebRecord = (function () {
                     ignoreClass: ignoreClass,
                     maskAllInputs: maskAllInputs,
                     inlineStylesheet: inlineStylesheet,
+                    mousemoveWait: mousemoveWait
                 }, hooks));
             };
             if (document.readyState === 'interactive' ||
