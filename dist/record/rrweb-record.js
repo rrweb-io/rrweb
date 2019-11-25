@@ -72,8 +72,16 @@ var rrwebRecord = (function () {
     })(NodeType || (NodeType = {}));
 
     var _id = 1;
+    var symbolAndNumberRegex = RegExp('[^a-z]');
     function genId() {
         return _id++;
+    }
+    function getValidTagName(tagName) {
+        var processedTagName = tagName.toLowerCase().trim();
+        if (symbolAndNumberRegex.test(processedTagName)) {
+            return 'div';
+        }
+        return processedTagName;
     }
     function getCssRulesString(s) {
         try {
@@ -217,7 +225,7 @@ var rrwebRecord = (function () {
                         }
                     });
                 }
-                var tagName = n.tagName.toLowerCase();
+                var tagName = getValidTagName(n.tagName);
                 var attributes_1 = {};
                 for (var _i = 0, _a = Array.from(n.attributes); _i < _a.length; _i++) {
                     var _b = _a[_i], name = _b.name, value = _b.value;
@@ -239,8 +247,7 @@ var rrwebRecord = (function () {
                     !(n.innerText ||
                         n.textContent ||
                         '').trim().length) {
-                    var cssText = getCssRulesString(n
-                        .sheet);
+                    var cssText = getCssRulesString(n.sheet);
                     if (cssText) {
                         attributes_1._cssText = absoluteToStylesheet(cssText, location.href);
                     }
