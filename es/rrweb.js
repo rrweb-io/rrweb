@@ -189,7 +189,7 @@ function transformAttribute(doc, name, value) {
     else if (name === 'srcset') {
         return getAbsoluteSrcsetString(doc, value);
     }
-    else if (name === 'style') {
+    else if (name === 'style' && value) {
         return absoluteToStylesheet(value, location.href);
     }
     else {
