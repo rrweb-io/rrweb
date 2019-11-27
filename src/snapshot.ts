@@ -146,11 +146,11 @@ export function transformAttribute(
   value: string,
 ): string {
   // relative path in attribute
-  if (name === 'src' || name === 'href') {
+  if (name === 'src' || (name === 'href' && value)) {
     return absoluteToDoc(doc, value);
-  } else if (name === 'srcset') {
+  } else if (name === 'srcset' && value) {
     return getAbsoluteSrcsetString(doc, value);
-  } else if (name === 'style') {
+  } else if (name === 'style' && value) {
     return absoluteToStylesheet(value, location.href);
   } else {
     return value;
