@@ -2,5 +2,8 @@
   "non-interactive": true,
   "hooks": {
     "before:init": ["npm run bundle", "npm run typings"]
+  },
+  "git": {
+    "requireCleanWorkingDir": false
   }
 }
