@@ -142,10 +142,34 @@ for (const c of baseConfigs) {
   });
 }
 
-if (process.env.BROWSER_ONLY) {
+if (process.env.BROWSER) {
   configs = configs.filter(function(c){
-    return (c.output[0].format == 'iife' &&
-            c.output[0].file == toMinPath(pkg.unpkg));
+    var is_browser = c.output[0].format == 'iife';
+    if (process.env.BROWSER === 'suppress') {
+      return !is_browser;
+    } else {
+      return is_browser;
+    }
+  });
+}
+if (process.env.PACKED) {
+  configs = configs.filter(function(c){
+    var is_packed = c.output[0].file.endsWith('.min.js');
+    if (process.env.PACKED === 'suppress') {
+      return !is_packed;
+    } else {
+      return is_packed;
+    }
+  });
+}
+if (process.env.RECORD) {
+  configs = configs.filter(function(c){
+    var is_record =  c.input == './src/record/index.ts';
+    if (process.env.RECORD === 'suppress') {
+      return !is_record;
+    } else {
+      return is_record;
+    }
   });
 }
 
