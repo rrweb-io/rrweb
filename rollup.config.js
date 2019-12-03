@@ -93,6 +93,7 @@ let configs = [
       },
     ],
   },
+  // BROWSER_ONLY
   {
     input: './src/index.ts',
     plugins: [
@@ -176,28 +177,10 @@ let configs = [
 ];
 
 if (process.env.BROWSER_ONLY) {
-  configs = {
-    input: './src/index.ts',
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript(),
-      postcss({
-        extract: true,
-        minimize: true,
-        sourceMap: true,
-      }),
-      terser(),
-    ],
-    output: [
-      {
-        name: 'rrweb',
-        format: 'iife',
-        file: toMinPath(pkg.unpkg),
-        sourcemap: true,
-      },
-    ],
-  };
+  configs = configs.filter(function(c){
+    return (c.output[0].format == 'iife' &&
+            c.output[0].file == toMinPath(pkg.unpkg));
+  });
 }
 
 export default configs;
