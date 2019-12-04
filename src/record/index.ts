@@ -83,6 +83,7 @@ function record<T = eventWithTime>(
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
       mutationBuffer.paused &&
+	e.type !== EventType.FullSnapshot &&
       !(
         e.type == EventType.IncrementalSnapshot &&
         e.data.source == IncrementalSource.Mutation
