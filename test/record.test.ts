@@ -29,6 +29,7 @@ interface IWindow extends Window {
 }
 
 describe('record', function(this: ISuite) {
+  this.timeout(5000);
   before(async () => {
     this.browser = await puppeteer.launch({
       headless: false,

@@ -11,6 +11,7 @@ interface ISuite extends Suite {
 }
 
 describe('record integration tests', function(this: ISuite) {
+  this.timeout(5000);
   const getHtml = (fileName: string, options: recordOptions = {}): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
