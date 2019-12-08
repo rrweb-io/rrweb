@@ -131,7 +131,13 @@ export class Replayer {
       if (isSync) {
         castFn();
       } else {
-        actions.push({ doAction: castFn, delay: this.getDelay(event) });
+        actions.push({
+          doAction: () => {
+            castFn();
+            this.emitter.emit(ReplayerEvents.EventCast, event);
+          },
+          delay: this.getDelay(event),
+        });
       }
     }
     this.timer.addActions(actions);

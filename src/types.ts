@@ -313,4 +313,5 @@ export enum ReplayerEvents {
   SkipStart = 'skip-start',
   SkipEnd = 'skip-end',
   MouseInteraction = 'mouse-interaction',
+  EventCast = 'event-cast',
 }
