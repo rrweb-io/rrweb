@@ -32,7 +32,7 @@ describe('record', function(this: ISuite) {
   this.timeout(5000);
   before(async () => {
     this.browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       args: ['--no-sandbox'],
     });
 

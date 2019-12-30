@@ -41,7 +41,7 @@ describe('record integration tests', function(this: ISuite) {
         width: 1920,
         height: 1080,
       },
-      headless: false,
+      headless: true,
       args: ['--no-sandbox'],
     });
 
