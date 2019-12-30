@@ -45,7 +45,7 @@
     "inquirer": "^6.2.1",
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
-    "puppeteer": "^1.11.0",
+    "puppeteer": "^1.20.0",
     "rollup": "^0.66.6",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^3.4.0",
