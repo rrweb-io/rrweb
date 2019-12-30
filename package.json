@@ -4,6 +4,7 @@
   "description": "record and replay the web",
   "scripts": {
     "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
+    "test-only": "cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
     "bundle:browser": "cross-env BROWSER=only PACKED=only RECORD=suppress rollup --config",
     "bundle:browser-unpacked": "cross-env BROWSER=only PACKED=suppress rollup --config",
