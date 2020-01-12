@@ -20,6 +20,7 @@ import {
   ReplayerEvents,
   Handler,
   Emitter,
+  MediaInteractions,
 } from '../types';
 import { mirror, polyfill } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
@@ -584,6 +585,26 @@ export class Replayer {
           ((target as Node) as HTMLInputElement).value = d.text;
         } catch (error) {
           // for safe
+        }
+        break;
+      }
+      case IncrementalSource.MediaInteraction: {
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.debugNodeNotFound(d, d.id);
+        }
+        const mediaEl = (target as Node) as HTMLMediaElement;
+        if (d.type === MediaInteractions.Pause) {
+          mediaEl.pause();
+        }
+        if (d.type === MediaInteractions.Play) {
+          if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            mediaEl.play();
+          } else {
+            mediaEl.addEventListener('canplay', () => {
+              mediaEl.play();
+            });
+          }
         }
         break;
       }

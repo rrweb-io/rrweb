@@ -31,6 +31,8 @@ import {
   IncrementalSource,
   hooksParam,
   Arguments,
+  mediaInteractionCallback,
+  MediaInteractions,
 } from '../types';
 import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
 
@@ -517,6 +519,26 @@ function initInputObserver(
   };
 }
 
+function initMediaInteractionObserver(
+  mediaInteractionCb: mediaInteractionCallback,
+  blockClass: blockClass,
+): listenerHandler {
+  const handler = (type: 'play' | 'pause') => (event: Event) => {
+    const { target } = event;
+    if (!target || isBlocked(target as Node, blockClass)) {
+      return;
+    }
+    mediaInteractionCb({
+      type: type === 'play' ? MediaInteractions.Play : MediaInteractions.Pause,
+      id: mirror.getId(target as INode),
+    });
+  };
+  const handlers = [on('play', handler('play')), on('pause', handler('pause'))];
+  return () => {
+    handlers.forEach(h => h());
+  };
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -525,6 +547,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     scrollCb,
     viewportResizeCb,
     inputCb,
+    mediaInteractionCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -562,6 +585,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     inputCb(...p);
   };
+  o.mediaInteractionCb = (...p: Arguments<mediaInteractionCallback>) => {
+    if (hooks.mediaInteaction) {
+      hooks.mediaInteaction(...p);
+    }
+    mediaInteractionCb(...p);
+  };
 }
 
 export default function initObservers(
@@ -588,6 +617,10 @@ export default function initObservers(
     o.ignoreClass,
     o.maskAllInputs,
   );
+  const mediaInteractionHandler = initMediaInteractionObserver(
+    o.mediaInteractionCb,
+    o.blockClass,
+  );
   return () => {
     mutationObserver.disconnect();
     mousemoveHandler();
@@ -595,5 +628,6 @@ export default function initObservers(
     scrollHandler();
     viewportResizeHandler();
     inputHandler();
+    mediaInteractionHandler();
   };
 }
