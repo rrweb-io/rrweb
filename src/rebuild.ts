@@ -152,6 +152,16 @@ function buildNode(
           if (name === 'rr_height') {
             (node as HTMLElement).style.height = value;
           }
+          if (name === 'rr_mediaState') {
+            switch (value) {
+              case 'played':
+                (node as HTMLMediaElement).play();
+              case 'paused':
+                (node as HTMLMediaElement).pause();
+                break;
+              default:
+            }
+          }
         }
       }
       return node;

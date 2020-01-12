@@ -253,6 +253,12 @@ function serializeNode(
       if (tagName === 'canvas') {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
       }
+      // media elements
+      if (tagName === 'audio' || tagName === 'video') {
+        attributes.rr_mediaState = (n as HTMLMediaElement).paused
+          ? 'paused'
+          : 'played';
+      }
       if (needBlock) {
         const { width, height } = (n as HTMLElement).getBoundingClientRect();
         attributes.rr_width = `${width}px`;
