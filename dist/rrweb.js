@@ -120,6 +120,9 @@ var rrweb = (function (exports) {
     var RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/).*/;
     var DATA_URI = /^(data:)([\w\/\+\-]+);(charset=[\w-]+|base64).*,(.*)/i;
     function absoluteToStylesheet(cssText, href) {
+        if (cssText === null || cssText === 'underfined' || !cssText) {
+            return '';
+        }
         return cssText.replace(URL_IN_CSS_REF, function (origin, path1, path2, path3) {
             var filePath = path1 || path2 || path3;
             if (!filePath) {
@@ -192,7 +195,10 @@ var rrweb = (function (exports) {
         else if (name === 'srcset') {
             return getAbsoluteSrcsetString(doc, value);
         }
-        else if (name === 'style' && value) {
+        else if (name === 'style' &&
+            value &&
+            value !== null &&
+            value !== 'undefined') {
             return absoluteToStylesheet(value, location.href);
         }
         else {
@@ -236,7 +242,7 @@ var rrweb = (function (exports) {
                         return s.href === n.href;
                     });
                     var cssText = getCssRulesString(stylesheet);
-                    if (cssText) {
+                    if (cssText !== null && cssText !== 'underfined' && cssText) {
                         delete attributes_1.rel;
                         delete attributes_1.href;
                         attributes_1._cssText = absoluteToStylesheet(cssText, stylesheet.href);
@@ -248,7 +254,7 @@ var rrweb = (function (exports) {
                         n.textContent ||
                         '').trim().length) {
                     var cssText = getCssRulesString(n.sheet);
-                    if (cssText) {
+                    if (cssText !== null && cssText !== 'underfined' && cssText) {
                         attributes_1._cssText = absoluteToStylesheet(cssText, location.href);
                     }
                 }
@@ -291,7 +297,10 @@ var rrweb = (function (exports) {
                 var parentTagName = n.parentNode && n.parentNode.tagName;
                 var textContent = n.textContent;
                 var isStyle = parentTagName === 'STYLE' ? true : undefined;
-                if (isStyle && textContent) {
+                if (isStyle &&
+                    textContent !== null &&
+                    textContent !== 'underfined' &&
+                    textContent) {
                     textContent = absoluteToStylesheet(textContent, location.href);
                 }
                 if (parentTagName === 'SCRIPT') {
@@ -1134,6 +1143,7 @@ var rrweb = (function (exports) {
         IncrementalSource[IncrementalSource["ViewportResize"] = 4] = "ViewportResize";
         IncrementalSource[IncrementalSource["Input"] = 5] = "Input";
         IncrementalSource[IncrementalSource["TouchMove"] = 6] = "TouchMove";
+        IncrementalSource[IncrementalSource["MediaInteraction"] = 7] = "MediaInteraction";
     })(exports.IncrementalSource || (exports.IncrementalSource = {}));
     (function (MouseInteractions) {
         MouseInteractions[MouseInteractions["MouseUp"] = 0] = "MouseUp";
@@ -1147,6 +1157,11 @@ var rrweb = (function (exports) {
         MouseInteractions[MouseInteractions["TouchMove_Departed"] = 8] = "TouchMove_Departed";
         MouseInteractions[MouseInteractions["TouchEnd"] = 9] = "TouchEnd";
     })(exports.MouseInteractions || (exports.MouseInteractions = {}));
+    var MediaInteractions;
+    (function (MediaInteractions) {
+        MediaInteractions[MediaInteractions["Play"] = 0] = "Play";
+        MediaInteractions[MediaInteractions["Pause"] = 1] = "Pause";
+    })(MediaInteractions || (MediaInteractions = {}));
     (function (ReplayerEvents) {
         ReplayerEvents["Start"] = "start";
         ReplayerEvents["Pause"] = "pause";
@@ -1159,6 +1174,7 @@ var rrweb = (function (exports) {
         ReplayerEvents["SkipStart"] = "skip-start";
         ReplayerEvents["SkipEnd"] = "skip-end";
         ReplayerEvents["MouseInteraction"] = "mouse-interaction";
+        ReplayerEvents["EventCast"] = "event-cast";
     })(exports.ReplayerEvents || (exports.ReplayerEvents = {}));
 
     function deepDelete(addsSet, n) {
@@ -1565,8 +1581,24 @@ var rrweb = (function (exports) {
             handlers.forEach(function (h) { return h(); });
         };
     }
+    function initMediaInteractionObserver(mediaInteractionCb, blockClass) {
+        var handler = function (type) { return function (event) {
+            var target = event.target;
+            if (!target || isBlocked(target, blockClass)) {
+                return;
+            }
+            mediaInteractionCb({
+                type: type === 'play' ? MediaInteractions.Play : MediaInteractions.Pause,
+                id: mirror.getId(target),
+            });
+        }; };
+        var handlers = [on('play', handler('play')), on('pause', handler('pause'))];
+        return function () {
+            handlers.forEach(function (h) { return h(); });
+        };
+    }
     function mergeHooks(o, hooks) {
-        var mutationCb = o.mutationCb, mousemoveCb = o.mousemoveCb, mouseInteractionCb = o.mouseInteractionCb, scrollCb = o.scrollCb, viewportResizeCb = o.viewportResizeCb, inputCb = o.inputCb;
+        var mutationCb = o.mutationCb, mousemoveCb = o.mousemoveCb, mouseInteractionCb = o.mouseInteractionCb, scrollCb = o.scrollCb, viewportResizeCb = o.viewportResizeCb, inputCb = o.inputCb, mediaInteractionCb = o.mediaInteractionCb;
         o.mutationCb = function () {
             var p = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -1627,6 +1659,16 @@ var rrweb = (function (exports) {
             }
             inputCb.apply(void 0, __spread(p));
         };
+        o.mediaInteractionCb = function () {
+            var p = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                p[_i] = arguments[_i];
+            }
+            if (hooks.mediaInteaction) {
+                hooks.mediaInteaction.apply(hooks, __spread(p));
+            }
+            mediaInteractionCb.apply(void 0, __spread(p));
+        };
     }
     function initObservers(o, hooks) {
         if (hooks === void 0) { hooks = {}; }
@@ -1637,6 +1679,7 @@ var rrweb = (function (exports) {
         var scrollHandler = initScrollObserver(o.scrollCb, o.blockClass);
         var viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
         var inputHandler = initInputObserver(o.inputCb, o.blockClass, o.ignoreClass, o.maskAllInputs);
+        var mediaInteractionHandler = initMediaInteractionObserver(o.mediaInteractionCb, o.blockClass);
         return function () {
             mutationObserver.disconnect();
             mousemoveHandler();
@@ -1644,6 +1687,7 @@ var rrweb = (function (exports) {
             scrollHandler();
             viewportResizeHandler();
             inputHandler();
+            mediaInteractionHandler();
         };
     }
 
@@ -1752,11 +1796,17 @@ var rrweb = (function (exports) {
                             data: __assign({ source: exports.IncrementalSource.Input }, v),
                         }));
                     },
+                    mediaInteractionCb: function (p) {
+                        return wrappedEmit(wrapEvent({
+                            type: exports.EventType.IncrementalSnapshot,
+                            data: __assign({ source: exports.IncrementalSource.MediaInteraction }, p),
+                        }));
+                    },
                     blockClass: blockClass,
                     ignoreClass: ignoreClass,
                     maskAllInputs: maskAllInputs,
                     inlineStylesheet: inlineStylesheet,
-                    mousemoveWait: mousemoveWait
+                    mousemoveWait: mousemoveWait,
                 }, hooks));
             };
             if (document.readyState === 'interactive' ||
@@ -2428,21 +2478,32 @@ var rrweb = (function (exports) {
         };
         Replayer.prototype.play = function (timeOffset) {
             var e_1, _a;
+            var _this = this;
             if (timeOffset === void 0) { timeOffset = 0; }
             this.timer.clear();
             this.baselineTime = this.events[0].timestamp + timeOffset;
             var actions = new Array();
+            var _loop_1 = function (event) {
+                var isSync = event.timestamp < this_1.baselineTime;
+                var castFn = this_1.getCastFn(event, isSync);
+                if (isSync) {
+                    castFn();
+                }
+                else {
+                    actions.push({
+                        doAction: function () {
+                            castFn();
+                            _this.emitter.emit(exports.ReplayerEvents.EventCast, event);
+                        },
+                        delay: this_1.getDelay(event),
+                    });
+                }
+            };
+            var this_1 = this;
             try {
                 for (var _b = __values(this.events), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var event = _c.value;
-                    var isSync = event.timestamp < this.baselineTime;
-                    var castFn = this.getCastFn(event, isSync);
-                    if (isSync) {
-                        castFn();
-                    }
-                    else {
-                        actions.push({ doAction: castFn, delay: this.getDelay(event) });
-                    }
+                    _loop_1(event);
                 }
             }
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -2849,6 +2910,27 @@ var rrweb = (function (exports) {
                         target.value = d.text;
                     }
                     catch (error) {
+                    }
+                    break;
+                }
+                case exports.IncrementalSource.MediaInteraction: {
+                    var target = mirror.getNode(d.id);
+                    if (!target) {
+                        return this.debugNodeNotFound(d, d.id);
+                    }
+                    var mediaEl_1 = target;
+                    if (d.type === MediaInteractions.Pause) {
+                        mediaEl_1.pause();
+                    }
+                    if (d.type === MediaInteractions.Play) {
+                        if (mediaEl_1.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                            mediaEl_1.play();
+                        }
+                        else {
+                            mediaEl_1.addEventListener('canplay', function () {
+                                mediaEl_1.play();
+                            });
+                        }
                     }
                     break;
                 }

@@ -120,6 +120,9 @@ var rrwebRecord = (function () {
     var RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/).*/;
     var DATA_URI = /^(data:)([\w\/\+\-]+);(charset=[\w-]+|base64).*,(.*)/i;
     function absoluteToStylesheet(cssText, href) {
+        if (cssText === null || cssText === 'underfined' || !cssText) {
+            return '';
+        }
         return cssText.replace(URL_IN_CSS_REF, function (origin, path1, path2, path3) {
             var filePath = path1 || path2 || path3;
             if (!filePath) {
@@ -192,7 +195,10 @@ var rrwebRecord = (function () {
         else if (name === 'srcset') {
             return getAbsoluteSrcsetString(doc, value);
         }
-        else if (name === 'style' && value) {
+        else if (name === 'style' &&
+            value &&
+            value !== null &&
+            value !== 'undefined') {
             return absoluteToStylesheet(value, location.href);
         }
         else {
@@ -236,7 +242,7 @@ var rrwebRecord = (function () {
                         return s.href === n.href;
                     });
                     var cssText = getCssRulesString(stylesheet);
-                    if (cssText) {
+                    if (cssText !== null && cssText !== 'underfined' && cssText) {
                         delete attributes_1.rel;
                         delete attributes_1.href;
                         attributes_1._cssText = absoluteToStylesheet(cssText, stylesheet.href);
@@ -248,7 +254,7 @@ var rrwebRecord = (function () {
                         n.textContent ||
                         '').trim().length) {
                     var cssText = getCssRulesString(n.sheet);
-                    if (cssText) {
+                    if (cssText !== null && cssText !== 'underfined' && cssText) {
                         attributes_1._cssText = absoluteToStylesheet(cssText, location.href);
                     }
                 }
@@ -291,7 +297,10 @@ var rrwebRecord = (function () {
                 var parentTagName = n.parentNode && n.parentNode.tagName;
                 var textContent = n.textContent;
                 var isStyle = parentTagName === 'STYLE' ? true : undefined;
-                if (isStyle && textContent) {
+                if (isStyle &&
+                    textContent !== null &&
+                    textContent !== 'underfined' &&
+                    textContent) {
                     textContent = absoluteToStylesheet(textContent, location.href);
                 }
                 if (parentTagName === 'SCRIPT') {
@@ -512,6 +521,7 @@ var rrwebRecord = (function () {
         IncrementalSource[IncrementalSource["ViewportResize"] = 4] = "ViewportResize";
         IncrementalSource[IncrementalSource["Input"] = 5] = "Input";
         IncrementalSource[IncrementalSource["TouchMove"] = 6] = "TouchMove";
+        IncrementalSource[IncrementalSource["MediaInteraction"] = 7] = "MediaInteraction";
     })(IncrementalSource || (IncrementalSource = {}));
     var MouseInteractions;
     (function (MouseInteractions) {
@@ -526,6 +536,11 @@ var rrwebRecord = (function () {
         MouseInteractions[MouseInteractions["TouchMove_Departed"] = 8] = "TouchMove_Departed";
         MouseInteractions[MouseInteractions["TouchEnd"] = 9] = "TouchEnd";
     })(MouseInteractions || (MouseInteractions = {}));
+    var MediaInteractions;
+    (function (MediaInteractions) {
+        MediaInteractions[MediaInteractions["Play"] = 0] = "Play";
+        MediaInteractions[MediaInteractions["Pause"] = 1] = "Pause";
+    })(MediaInteractions || (MediaInteractions = {}));
     var ReplayerEvents;
     (function (ReplayerEvents) {
         ReplayerEvents["Start"] = "start";
@@ -539,6 +554,7 @@ var rrwebRecord = (function () {
         ReplayerEvents["SkipStart"] = "skip-start";
         ReplayerEvents["SkipEnd"] = "skip-end";
         ReplayerEvents["MouseInteraction"] = "mouse-interaction";
+        ReplayerEvents["EventCast"] = "event-cast";
     })(ReplayerEvents || (ReplayerEvents = {}));
 
     function deepDelete(addsSet, n) {
@@ -945,8 +961,24 @@ var rrwebRecord = (function () {
             handlers.forEach(function (h) { return h(); });
         };
     }
+    function initMediaInteractionObserver(mediaInteractionCb, blockClass) {
+        var handler = function (type) { return function (event) {
+            var target = event.target;
+            if (!target || isBlocked(target, blockClass)) {
+                return;
+            }
+            mediaInteractionCb({
+                type: type === 'play' ? MediaInteractions.Play : MediaInteractions.Pause,
+                id: mirror.getId(target),
+            });
+        }; };
+        var handlers = [on('play', handler('play')), on('pause', handler('pause'))];
+        return function () {
+            handlers.forEach(function (h) { return h(); });
+        };
+    }
     function mergeHooks(o, hooks) {
-        var mutationCb = o.mutationCb, mousemoveCb = o.mousemoveCb, mouseInteractionCb = o.mouseInteractionCb, scrollCb = o.scrollCb, viewportResizeCb = o.viewportResizeCb, inputCb = o.inputCb;
+        var mutationCb = o.mutationCb, mousemoveCb = o.mousemoveCb, mouseInteractionCb = o.mouseInteractionCb, scrollCb = o.scrollCb, viewportResizeCb = o.viewportResizeCb, inputCb = o.inputCb, mediaInteractionCb = o.mediaInteractionCb;
         o.mutationCb = function () {
             var p = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -1007,6 +1039,16 @@ var rrwebRecord = (function () {
             }
             inputCb.apply(void 0, __spread(p));
         };
+        o.mediaInteractionCb = function () {
+            var p = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                p[_i] = arguments[_i];
+            }
+            if (hooks.mediaInteaction) {
+                hooks.mediaInteaction.apply(hooks, __spread(p));
+            }
+            mediaInteractionCb.apply(void 0, __spread(p));
+        };
     }
     function initObservers(o, hooks) {
         if (hooks === void 0) { hooks = {}; }
@@ -1017,6 +1059,7 @@ var rrwebRecord = (function () {
         var scrollHandler = initScrollObserver(o.scrollCb, o.blockClass);
         var viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
         var inputHandler = initInputObserver(o.inputCb, o.blockClass, o.ignoreClass, o.maskAllInputs);
+        var mediaInteractionHandler = initMediaInteractionObserver(o.mediaInteractionCb, o.blockClass);
         return function () {
             mutationObserver.disconnect();
             mousemoveHandler();
@@ -1024,6 +1067,7 @@ var rrwebRecord = (function () {
             scrollHandler();
             viewportResizeHandler();
             inputHandler();
+            mediaInteractionHandler();
         };
     }
 
@@ -1132,11 +1176,17 @@ var rrwebRecord = (function () {
                             data: __assign({ source: IncrementalSource.Input }, v),
                         }));
                     },
+                    mediaInteractionCb: function (p) {
+                        return wrappedEmit(wrapEvent({
+                            type: EventType.IncrementalSnapshot,
+                            data: __assign({ source: IncrementalSource.MediaInteraction }, p),
+                        }));
+                    },
                     blockClass: blockClass,
                     ignoreClass: ignoreClass,
                     maskAllInputs: maskAllInputs,
                     inlineStylesheet: inlineStylesheet,
-                    mousemoveWait: mousemoveWait
+                    mousemoveWait: mousemoveWait,
                 }, hooks));
             };
             if (document.readyState === 'interactive' ||
