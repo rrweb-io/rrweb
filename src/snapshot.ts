@@ -68,35 +68,41 @@ function extractOrigin(url: string): string {
 const URL_IN_CSS_REF = /url\((?:'([^']*)'|"([^"]*)"|([^)]*))\)/gm;
 const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/).*/;
 const DATA_URI = /^(data:)([\w\/\+\-]+);(charset=[\w-]+|base64).*,(.*)/i;
-export function absoluteToStylesheet(cssText: string, href: string): string {
-  return cssText.replace(URL_IN_CSS_REF, (origin, path1, path2, path3) => {
-    const filePath = path1 || path2 || path3;
-    if (!filePath) {
-      return origin;
-    }
-    if (!RELATIVE_PATH.test(filePath)) {
-      return `url('${filePath}')`;
-    }
-    if (DATA_URI.test(filePath)) {
-      return `url(${filePath})`;
-    }
-    if (filePath[0] === '/') {
-      return `url('${extractOrigin(href) + filePath}')`;
-    }
-    const stack = href.split('/');
-    const parts = filePath.split('/');
-    stack.pop();
-    for (const part of parts) {
-      if (part === '.') {
-        continue;
-      } else if (part === '..') {
-        stack.pop();
-      } else {
-        stack.push(part);
+export function absoluteToStylesheet(
+  cssText: string | null,
+  href: string,
+): string {
+  return (cssText || '').replace(
+    URL_IN_CSS_REF,
+    (origin, path1, path2, path3) => {
+      const filePath = path1 || path2 || path3;
+      if (!filePath) {
+        return origin;
       }
-    }
-    return `url('${stack.join('/')}')`;
-  });
+      if (!RELATIVE_PATH.test(filePath)) {
+        return `url('${filePath}')`;
+      }
+      if (DATA_URI.test(filePath)) {
+        return `url(${filePath})`;
+      }
+      if (filePath[0] === '/') {
+        return `url('${extractOrigin(href) + filePath}')`;
+      }
+      const stack = href.split('/');
+      const parts = filePath.split('/');
+      stack.pop();
+      for (const part of parts) {
+        if (part === '.') {
+          continue;
+        } else if (part === '..') {
+          stack.pop();
+        } else {
+          stack.push(part);
+        }
+      }
+      return `url('${stack.join('/')}')`;
+    },
+  );
 }
 
 function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
