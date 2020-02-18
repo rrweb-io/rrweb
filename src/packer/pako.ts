@@ -19,9 +19,13 @@ export class PakoPacker implements Packer {
   }
 
   public unpack(raw: string): eventWithTime[] {
+    if (Array.isArray(raw)) {
+      // unpacking unpacked data, maybe legacy events
+      console.info('unpacking unpacked data...');
+      return raw;
+    }
     const data: PackedData<string> = JSON.parse(raw);
     if (!data.meta && Array.isArray(data)) {
-      // unpacking unpacked data, maybe legacy events
       console.info('unpacking unpacked data...');
       return data;
     }
