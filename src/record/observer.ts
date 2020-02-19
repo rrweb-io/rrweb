@@ -1,4 +1,4 @@
-import { INode, serializeNodeWithId } from 'rrweb-snapshot';
+import { INode, serializeNodeWithId, transformAttribute } from 'rrweb-snapshot';
 import {
   mirror,
   throttle,
@@ -31,6 +31,8 @@ import {
   IncrementalSource,
   hooksParam,
   Arguments,
+  mediaInteractionCallback,
+  MediaInteractions,
 } from '../types';
 import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
 
@@ -130,7 +132,11 @@ function initMutationObserver(
             attributes.push(item);
           }
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName!] = value;
+          item.attributes[attributeName!] = transformAttribute(
+            document,
+            attributeName!,
+            value!,
+          );
           break;
         }
         case 'childList': {
@@ -207,11 +213,11 @@ function initMutationObserver(
       });
     };
 
-    for (var it = movedSet.values(), n = null; (n = it.next().value); ) {
+    for (const n of movedSet) {
       pushAdd(n);
     }
 
-    for (var it = addedSet.values(), n = null; (n = it.next().value); ) {
+    for (const n of addedSet) {
       if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
         pushAdd(n);
       } else if (isAncestorInSet(movedSet, n)) {
@@ -277,7 +283,10 @@ function initMutationObserver(
   return observer;
 }
 
-function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
+function initMoveObserver(
+  cb: mousemoveCallBack,
+  mousemoveWait: number,
+): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle((isTouch: boolean) => {
@@ -309,7 +318,7 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
       });
       wrappedCb(isTouchEvent(evt));
     },
-    50,
+    mousemoveWait,
     {
       trailing: false,
     },
@@ -510,6 +519,26 @@ function initInputObserver(
   };
 }
 
+function initMediaInteractionObserver(
+  mediaInteractionCb: mediaInteractionCallback,
+  blockClass: blockClass,
+): listenerHandler {
+  const handler = (type: 'play' | 'pause') => (event: Event) => {
+    const { target } = event;
+    if (!target || isBlocked(target as Node, blockClass)) {
+      return;
+    }
+    mediaInteractionCb({
+      type: type === 'play' ? MediaInteractions.Play : MediaInteractions.Pause,
+      id: mirror.getId(target as INode),
+    });
+  };
+  const handlers = [on('play', handler('play')), on('pause', handler('pause'))];
+  return () => {
+    handlers.forEach(h => h());
+  };
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -518,6 +547,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     scrollCb,
     viewportResizeCb,
     inputCb,
+    mediaInteractionCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -555,6 +585,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     inputCb(...p);
   };
+  o.mediaInteractionCb = (...p: Arguments<mediaInteractionCallback>) => {
+    if (hooks.mediaInteaction) {
+      hooks.mediaInteaction(...p);
+    }
+    mediaInteractionCb(...p);
+  };
 }
 
 export default function initObservers(
@@ -568,7 +604,7 @@ export default function initObservers(
     o.inlineStylesheet,
     o.maskAllInputs,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb);
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.blockClass,
@@ -581,6 +617,10 @@ export default function initObservers(
     o.ignoreClass,
     o.maskAllInputs,
   );
+  const mediaInteractionHandler = initMediaInteractionObserver(
+    o.mediaInteractionCb,
+    o.blockClass,
+  );
   return () => {
     mutationObserver.disconnect();
     mousemoveHandler();
@@ -588,5 +628,6 @@ export default function initObservers(
     scrollHandler();
     viewportResizeHandler();
     inputHandler();
+    mediaInteractionHandler();
   };
 }

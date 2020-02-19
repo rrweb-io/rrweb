@@ -35,6 +35,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
     inlineStylesheet = true,
     maskAllInputs = false,
     hooks,
+    mousemoveWait = 50,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -177,10 +178,21 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
+            mediaInteractionCb: p =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.MediaInteraction,
+                    ...p,
+                  },
+                }),
+              ),
             blockClass,
             ignoreClass,
             maskAllInputs,
             inlineStylesheet,
+            mousemoveWait,
           },
           hooks,
         ),
