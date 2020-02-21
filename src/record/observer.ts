@@ -1,4 +1,4 @@
-import { INode, serializeNodeWithId } from 'rrweb-snapshot';
+import { INode, serializeNodeWithId, transformAttribute } from 'rrweb-snapshot';
 import {
   mirror,
   throttle,
@@ -30,6 +30,10 @@ import {
   attributeCursor,
   blockClass,
   IncrementalSource,
+  hooksParam,
+  Arguments,
+  mediaInteractionCallback,
+  MediaInteractions,
 } from '../types';
 import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
 
@@ -129,7 +133,11 @@ function initMutationObserver(
             attributes.push(item);
           }
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName!] = value;
+          item.attributes[attributeName!] = transformAttribute(
+            document,
+            attributeName!,
+            value!,
+          );
           break;
         }
         case 'childList': {
@@ -206,9 +214,11 @@ function initMutationObserver(
       });
     };
 
-    Array.from(movedSet).forEach(pushAdd);
+    for (const n of movedSet) {
+      pushAdd(n);
+    }
 
-    Array.from(addedSet).forEach(n => {
+    for (const n of addedSet) {
       if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
         pushAdd(n);
       } else if (isAncestorInSet(movedSet, n)) {
@@ -216,7 +226,7 @@ function initMutationObserver(
       } else {
         droppedSet.add(n);
       }
-    });
+    }
 
     while (addQueue.length) {
       if (
@@ -274,7 +284,10 @@ function initMutationObserver(
   return observer;
 }
 
-function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
+function initMoveObserver(
+  cb: mousemoveCallBack,
+  mousemoveWait: number,
+): listenerHandler {
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle((isTouch: boolean) => {
@@ -306,7 +319,7 @@ function initMoveObserver(cb: mousemoveCallBack): listenerHandler {
       });
       wrappedCb(isTouchEvent(evt));
     },
-    50,
+    mousemoveWait,
     {
       trailing: false,
     },
@@ -539,14 +552,92 @@ function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
   };
 }
 
-export default function initObservers(o: observerParam): listenerHandler {
+function initMediaInteractionObserver(
+  mediaInteractionCb: mediaInteractionCallback,
+  blockClass: blockClass,
+): listenerHandler {
+  const handler = (type: 'play' | 'pause') => (event: Event) => {
+    const { target } = event;
+    if (!target || isBlocked(target as Node, blockClass)) {
+      return;
+    }
+    mediaInteractionCb({
+      type: type === 'play' ? MediaInteractions.Play : MediaInteractions.Pause,
+      id: mirror.getId(target as INode),
+    });
+  };
+  const handlers = [on('play', handler('play')), on('pause', handler('pause'))];
+  return () => {
+    handlers.forEach(h => h());
+  };
+}
+
+function mergeHooks(o: observerParam, hooks: hooksParam) {
+  const {
+    mutationCb,
+    mousemoveCb,
+    mouseInteractionCb,
+    scrollCb,
+    viewportResizeCb,
+    inputCb,
+    mediaInteractionCb,
+  } = o;
+  o.mutationCb = (...p: Arguments<mutationCallBack>) => {
+    if (hooks.mutation) {
+      hooks.mutation(...p);
+    }
+    mutationCb(...p);
+  };
+  o.mousemoveCb = (...p: Arguments<mousemoveCallBack>) => {
+    if (hooks.mousemove) {
+      hooks.mousemove(...p);
+    }
+    mousemoveCb(...p);
+  };
+  o.mouseInteractionCb = (...p: Arguments<mouseInteractionCallBack>) => {
+    if (hooks.mouseInteraction) {
+      hooks.mouseInteraction(...p);
+    }
+    mouseInteractionCb(...p);
+  };
+  o.scrollCb = (...p: Arguments<scrollCallback>) => {
+    if (hooks.scroll) {
+      hooks.scroll(...p);
+    }
+    scrollCb(...p);
+  };
+  o.viewportResizeCb = (...p: Arguments<viewportResizeCallback>) => {
+    if (hooks.viewportResize) {
+      hooks.viewportResize(...p);
+    }
+    viewportResizeCb(...p);
+  };
+  o.inputCb = (...p: Arguments<inputCallback>) => {
+    if (hooks.input) {
+      hooks.input(...p);
+    }
+    inputCb(...p);
+  };
+  o.mediaInteractionCb = (...p: Arguments<mediaInteractionCallback>) => {
+    if (hooks.mediaInteaction) {
+      hooks.mediaInteaction(...p);
+    }
+    mediaInteractionCb(...p);
+  };
+}
+
+export default function initObservers(
+  o: observerParam,
+  hooks: hooksParam = {},
+): listenerHandler {
+  mergeHooks(o, hooks);
   const mutationObserver = initMutationObserver(
     o.mutationCb,
     o.blockClass,
     o.inlineStylesheet,
     o.maskAllInputs,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb);
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.blockClass,
@@ -559,7 +650,10 @@ export default function initObservers(o: observerParam): listenerHandler {
     o.ignoreClass,
     o.maskAllInputs,
   );
-
+  const mediaInteractionHandler = initMediaInteractionObserver(
+    o.mediaInteractionCb,
+    o.blockClass,
+  );
   const styleSheetObserver = initStyleSheetObserver(o.styleSheetRuleCb);
 
   return () => {
@@ -569,6 +663,7 @@ export default function initObservers(o: observerParam): listenerHandler {
     scrollHandler();
     viewportResizeHandler();
     inputHandler();
+    mediaInteractionHandler();
     styleSheetObserver();
   };
 }

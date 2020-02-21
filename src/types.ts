@@ -61,6 +61,7 @@ export enum IncrementalSource {
   ViewportResize,
   Input,
   TouchMove,
+  MediaInteraction,
 }
 
 export type mutationData = {
@@ -89,13 +90,18 @@ export type inputData = {
   id: number;
 } & inputValue;
 
+export type mediaInteractionData = {
+  source: IncrementalSource.MediaInteraction;
+} & mediaInteractionParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
   | mouseInteractionData
   | scrollData
   | viewportResizeData
-  | inputData;
+  | inputData
+  | mediaInteractionData;
 
 export type event =
   | domContentLoadedEvent
@@ -120,6 +126,8 @@ export type recordOptions = {
   ignoreClass?: string;
   maskAllInputs?: boolean;
   inlineStylesheet?: boolean;
+  hooks?: hooksParam;
+  mousemoveWait?: number;
 };
 
 export type observerParam = {
@@ -129,11 +137,23 @@ export type observerParam = {
   scrollCb: scrollCallback;
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
+  mediaInteractionCb: mediaInteractionCallback;
   blockClass: blockClass;
   ignoreClass: string;
   maskAllInputs: boolean;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
+  mousemoveWait: number;
+};
+
+export type hooksParam = {
+  mutation?: mutationCallBack;
+  mousemove?: mousemoveCallBack;
+  mouseInteraction?: mouseInteractionCallBack;
+  scroll?: scrollCallback;
+  viewportResize?: viewportResizeCallback;
+  input?: inputCallback;
+  mediaInteaction?: mediaInteractionCallback;
 };
 
 export type textCursor = {
@@ -250,6 +270,18 @@ export type inputValue = {
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
 
+export const enum MediaInteractions {
+  Play,
+  Pause,
+}
+
+export type mediaInteractionParam = {
+  type: MediaInteractions;
+  id: number;
+};
+
+export type mediaInteractionCallback = (p: mediaInteractionParam) => void;
+
 export type Mirror = {
   map: idNodeMap;
   getId: (n: INode) => number;
@@ -302,6 +334,10 @@ export type Emitter = {
   emit(type: string, event?: unknown): void;
 };
 
+export type Arguments<T> = T extends (...payload: infer U) => unknown
+  ? U
+  : unknown;
+
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
@@ -314,4 +350,5 @@ export enum ReplayerEvents {
   SkipStart = 'skip-start',
   SkipEnd = 'skip-end',
   MouseInteraction = 'mouse-interaction',
+  EventCast = 'event-cast',
 }

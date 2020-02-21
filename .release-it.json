@@ -1,4 +1,9 @@
 {
   "non-interactive": true,
-  "buildCommand": "npm run bundle && npm run typings"
+  "hooks": {
+    "before:init": ["npm run bundle", "npm run typings"]
+  },
+  "git": {
+    "requireCleanWorkingDir": false
+  }
 }

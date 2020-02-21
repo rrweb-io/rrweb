@@ -114,8 +114,6 @@ interface IWindow extends Window {
   };
 }
 
-type WindowAndGlobalThis = IWindow & typeof globalThis;
-
 interface ISuite extends Suite {
   code: string;
   browser: puppeteer.Browser;
@@ -153,7 +151,7 @@ describe('replayer', function(this: ISuite) {
 
   it('can get meta data', async () => {
     const meta = await this.page.evaluate(() => {
-      const { Replayer } = (window as WindowAndGlobalThis).rrweb;
+      const { Replayer } = ((window as unknown) as IWindow).rrweb;
       const replayer = new Replayer(events);
       return replayer.getMetaData();
     });
@@ -164,7 +162,7 @@ describe('replayer', function(this: ISuite) {
 
   it('will start actions when play', async () => {
     const actionLength = await this.page.evaluate(() => {
-      const { Replayer } = (window as WindowAndGlobalThis).rrweb;
+      const { Replayer } = ((window as unknown) as IWindow).rrweb;
       const replayer = new Replayer(events);
       replayer.play();
       return replayer['timer']['actions'].length;
@@ -174,7 +172,7 @@ describe('replayer', function(this: ISuite) {
 
   it('will clean actions when pause', async () => {
     const actionLength = await this.page.evaluate(() => {
-      const { Replayer } = (window as WindowAndGlobalThis).rrweb;
+      const { Replayer } = ((window as unknown) as IWindow).rrweb;
       const replayer = new Replayer(events);
       replayer.play();
       replayer.pause();
@@ -185,7 +183,7 @@ describe('replayer', function(this: ISuite) {
 
   it('can play at any time offset', async () => {
     const actionLength = await this.page.evaluate(() => {
-      const { Replayer } = (window as WindowAndGlobalThis).rrweb;
+      const { Replayer } = ((window as unknown) as IWindow).rrweb;
       const replayer = new Replayer(events);
       replayer.play(1500);
       return replayer['timer']['actions'].length;
@@ -197,7 +195,7 @@ describe('replayer', function(this: ISuite) {
 
   it('can resume at any time offset', async () => {
     const actionLength = await this.page.evaluate(() => {
-      const { Replayer } = (window as WindowAndGlobalThis).rrweb;
+      const { Replayer } = ((window as unknown) as IWindow).rrweb;
       const replayer = new Replayer(events);
       replayer.play(1500);
       replayer.pause();

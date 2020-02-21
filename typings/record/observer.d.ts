@@ -1,2 +1,2 @@
-import { observerParam, listenerHandler } from '../types';
-export default function initObservers(o: observerParam): listenerHandler;
+import { observerParam, listenerHandler, hooksParam } from '../types';
+export default function initObservers(o: observerParam, hooks?: hooksParam): listenerHandler;

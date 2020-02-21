@@ -88,6 +88,8 @@ export declare type recordOptions = {
     ignoreClass?: string;
     maskAllInputs?: boolean;
     inlineStylesheet?: boolean;
+    hooks?: hooksParam;
+    mousemoveWait?: number;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -100,6 +102,15 @@ export declare type observerParam = {
     ignoreClass: string;
     maskAllInputs: boolean;
     inlineStylesheet: boolean;
+    mousemoveWait: number;
+};
+export declare type hooksParam = {
+    mutation?: mutationCallBack;
+    mousemove?: mousemoveCallBack;
+    mouseInteraction?: mouseInteractionCallBack;
+    scroll?: scrollCallback;
+    viewportResize?: viewportResizeCallback;
+    input?: inputCallback;
 };
 export declare type textCursor = {
     node: Node;
@@ -225,6 +236,7 @@ export declare type Emitter = {
     on(type: string, handler: Handler): void;
     emit(type: string, event?: unknown): void;
 };
+export declare type Arguments<T> = T extends (...payload: infer U) => unknown ? U : unknown;
 export declare enum ReplayerEvents {
     Start = "start",
     Pause = "pause",

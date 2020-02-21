@@ -102,7 +102,7 @@ let configs = [
       postcss({
         extract: true,
         minimize: true,
-        sourceMap: 'inline',
+        sourceMap: true,
       }),
       terser(),
     ],
@@ -185,7 +185,7 @@ if (process.env.BROWSER_ONLY) {
       postcss({
         extract: true,
         minimize: true,
-        sourceMap: 'inline',
+        sourceMap: true,
       }),
       terser(),
     ],
