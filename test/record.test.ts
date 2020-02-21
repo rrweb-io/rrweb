@@ -28,6 +28,8 @@ interface IWindow extends Window {
   emit: (e: eventWithTime) => undefined;
 }
 
+type WindowAndGlobalThis = IWindow & typeof globalThis;
+
 describe('record', function(this: ISuite) {
   before(async () => {
     this.browser = await puppeteer.launch({
@@ -63,18 +65,18 @@ describe('record', function(this: ISuite) {
   });
 
   afterEach(async () => {
-    await this.page.close();
+    if (this.page) await this.page.close();
   });
 
   after(async () => {
-    await this.browser.close();
+    if (this.browser) await this.browser.close();
   });
 
   it('will only have one full snapshot without checkout config', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = (window as WindowAndGlobalThis).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: (window as WindowAndGlobalThis).emit,
       });
     });
     let count = 30;
@@ -97,9 +99,9 @@ describe('record', function(this: ISuite) {
 
   it('can checkout full snapshot by count', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = (window as WindowAndGlobalThis).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: (window as WindowAndGlobalThis).emit,
         checkoutEveryNth: 10,
       });
     });
@@ -127,9 +129,9 @@ describe('record', function(this: ISuite) {
 
   it('can checkout full snapshot by time', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = (window as WindowAndGlobalThis).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: (window as WindowAndGlobalThis).emit,
         checkoutEveryNms: 500,
       });
     });
@@ -158,9 +160,9 @@ describe('record', function(this: ISuite) {
 
   it('is safe to checkout during async callbacks', async () => {
     await this.page.evaluate(() => {
-      const { record } = (window as IWindow).rrweb;
+      const { record } = (window as WindowAndGlobalThis).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: (window as WindowAndGlobalThis).emit,
         checkoutEveryNth: 2,
       });
       const p = document.createElement('p');
@@ -184,9 +186,9 @@ describe('record', function(this: ISuite) {
 
   it('can add custom event', async () => {
     await this.page.evaluate(() => {
-      const { record, addCustomEvent } = (window as IWindow).rrweb;
+      const { record, addCustomEvent } = (window as WindowAndGlobalThis).rrweb;
       record({
-        emit: (window as IWindow).emit,
+        emit: (window as WindowAndGlobalThis).emit,
       });
       addCustomEvent<number>('tag1', 1);
       addCustomEvent<{ a: string }>('tag2', {
@@ -195,5 +197,26 @@ describe('record', function(this: ISuite) {
     });
     await this.page.waitFor(50);
     assertSnapshot(this.events, __filename, 'custom-event');
+  });
+
+  it('captures stylesheet rules', async () => {
+    await this.page.evaluate(() => {
+      const { record } = (window as WindowAndGlobalThis).rrweb;
+
+      record({
+        emit: (window as WindowAndGlobalThis).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
+      styleSheet.insertRule('body { color: #fff; }');
+      styleSheet.deleteRule(ruleIdx0);
+      styleSheet.insertRule('body { color: #ccc; }');
+    });
+    await this.page.waitFor(50);
+    assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
 });
