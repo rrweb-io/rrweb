@@ -1,5 +1,5 @@
 import { snapshot } from 'rrweb-snapshot';
-import initObservers, { observeStylesheet } from './observer';
+import initObservers from './observer';
 import {
   mirror,
   on,
@@ -177,19 +177,22 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                 },
               }),
             ),
+          styleSheetRuleCb: v =>
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.StyleSheetRule,
+                  ...v,
+                },
+              }),
+            ),
           blockClass,
           ignoreClass,
           maskAllInputs,
           inlineStylesheet,
         }),
       );
-
-      for (var i in mirror.map) {
-        const node = mirror.map[i];
-        if ((node as any).tagName == 'STYLE') {
-          observeStylesheet(node as any);
-        }
-      }
     };
     if (
       document.readyState === 'interactive' ||

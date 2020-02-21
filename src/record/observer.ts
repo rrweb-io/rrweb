@@ -21,6 +21,7 @@ import {
   MouseInteractions,
   listenerHandler,
   scrollCallback,
+  styleSheetRuleCallback,
   viewportResizeCallback,
   inputValue,
   inputCallback,
@@ -506,24 +507,36 @@ function initInputObserver(
   };
 }
 
-export function observeStylesheet(styleRoot: HTMLLinkElement) {
-  const handler: ProxyHandler<any> = {
-    apply: function apply(target, thisArg, argumentsList) {
-      const result = target.apply(thisArg, argumentsList);
-      styleRoot.innerHTML = Array.from(thisArg.rules, x => x.cssText).join(
-        '\n',
-      );
+function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
+  return () => {
+    const insertRule = CSSStyleSheet.prototype.insertRule;
+    CSSStyleSheet.prototype.insertRule = function(
+      rule: string,
+      index?: number | undefined,
+    ) {
+      cb({
+        // id: mirror.getId(target as INode);
+        rule,
+        index,
+      });
+      return insertRule.apply(rule, index);
+    };
 
-      const sheet = styleRoot.sheet as CSSStyleSheet;
-      sheet.insertRule = new Proxy(sheet.insertRule, handler);
-      return result;
-    },
+    const deleteRule = CSSStyleSheet.prototype.deleteRule;
+    CSSStyleSheet.prototype.deleteRule = function(index: number) {
+      cb({
+        index,
+      });
+      return deleteRule.apply(index);
+    };
+
+    // for (var i in mirror.map) {
+    //   const node = mirror.map[i];
+    //   if ((node as any).tagName == 'STYLE') {
+    //     observeStylesheet(node as any);
+    //   }
+    // }
   };
-
-  const sheet = styleRoot.sheet as CSSStyleSheet;
-  const proxy = new Proxy(sheet.insertRule, handler);
-  sheet.insertRule = proxy;
-  sheet.insertRule('.rr_track_on {}');
 }
 
 export default function initObservers(o: observerParam): listenerHandler {
@@ -546,6 +559,9 @@ export default function initObservers(o: observerParam): listenerHandler {
     o.ignoreClass,
     o.maskAllInputs,
   );
+
+  const styleSheetObserver = initStyleSheetObserver(o.styleSheetRuleCb);
+
   return () => {
     mutationObserver.disconnect();
     mousemoveHandler();
@@ -553,5 +569,6 @@ export default function initObservers(o: observerParam): listenerHandler {
     scrollHandler();
     viewportResizeHandler();
     inputHandler();
+    styleSheetObserver();
   };
 }

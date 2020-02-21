@@ -57,6 +57,7 @@ export enum IncrementalSource {
   MouseMove,
   MouseInteraction,
   Scroll,
+  StyleSheetRule,
   ViewportResize,
   Input,
   TouchMove,
@@ -132,6 +133,7 @@ export type observerParam = {
   ignoreClass: string;
   maskAllInputs: boolean;
   inlineStylesheet: boolean;
+  styleSheetRuleCb: styleSheetRuleCallback;
 };
 
 export type textCursor = {
@@ -218,6 +220,21 @@ export type scrollPosition = {
 };
 
 export type scrollCallback = (p: scrollPosition) => void;
+
+export type styleSheetAddRule = {
+  // id: number;
+  rule: string;
+  index?: number | undefined;
+};
+
+export type styleSheetDeleteRule = {
+  // id: number;
+  index: number;
+};
+
+export type styleSheetRuleCallback = (
+  s: styleSheetAddRule | styleSheetDeleteRule,
+) => void;
 
 export type viewportResizeDimention = {
   width: number;
