@@ -581,6 +581,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     viewportResizeCb,
     inputCb,
     mediaInteractionCb,
+    styleSheetRuleCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -624,6 +625,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     mediaInteractionCb(...p);
   };
+  o.styleSheetRuleCb = (...p: Arguments<styleSheetRuleCallback>) => {
+    if (hooks.styleSheetRule) {
+      hooks.styleSheetRule(...p);
+    }
+    styleSheetRuleCb(...p);
+  };
 }
 
 export default function initObservers(
@@ -664,6 +671,6 @@ export default function initObservers(
     viewportResizeHandler();
     inputHandler();
     mediaInteractionHandler();
-    styleSheetObserver();
+    // styleSheetObserver();
   };
 }

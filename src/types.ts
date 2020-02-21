@@ -154,6 +154,7 @@ export type hooksParam = {
   viewportResize?: viewportResizeCallback;
   input?: inputCallback;
   mediaInteaction?: mediaInteractionCallback;
+  styleSheetRule?: styleSheetRuleCallback;
 };
 
 export type textCursor = {
