@@ -526,7 +526,6 @@ function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
     rule: string,
     index?: number | undefined,
   ) {
-    console.log('insert rule');
     cb({
       id: mirror.getId(this as INode),
       rule,
@@ -537,7 +536,6 @@ function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
 
   const deleteRule = CSSStyleSheet.prototype.deleteRule;
   CSSStyleSheet.prototype.deleteRule = function(index: number) {
-    console.error('delete rule');
     cb({
       id: mirror.getId(this as INode),
       index,
