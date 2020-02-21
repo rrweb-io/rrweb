@@ -52,16 +52,18 @@ export type customEvent<T = unknown> = {
   };
 };
 
+export type styleSheetEvent = {};
+
 export enum IncrementalSource {
   Mutation,
   MouseMove,
   MouseInteraction,
   Scroll,
-  StyleSheetRule,
   ViewportResize,
   Input,
   TouchMove,
   MediaInteraction,
+  StyleSheetRule,
 }
 
 export type mutationData = {
@@ -94,6 +96,10 @@ export type mediaInteractionData = {
   source: IncrementalSource.MediaInteraction;
 } & mediaInteractionParam;
 
+export type styleSheetRuleData = {
+  source: IncrementalSource.StyleSheetRule;
+} & styleSheetRuleParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -101,7 +107,8 @@ export type incrementalData =
   | scrollData
   | viewportResizeData
   | inputData
-  | mediaInteractionData;
+  | mediaInteractionData
+  | styleSheetRuleData;
 
 export type event =
   | domContentLoadedEvent
@@ -243,19 +250,19 @@ export type scrollPosition = {
 export type scrollCallback = (p: scrollPosition) => void;
 
 export type styleSheetAddRule = {
-  // id: number;
+  id: number;
   rule: string;
   index?: number | undefined;
 };
 
 export type styleSheetDeleteRule = {
-  // id: number;
+  id: number;
   index: number;
 };
 
-export type styleSheetRuleCallback = (
-  s: styleSheetAddRule | styleSheetDeleteRule,
-) => void;
+export type styleSheetRuleParam = styleSheetAddRule | styleSheetDeleteRule;
+
+export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
 export type viewportResizeDimention = {
   width: number;

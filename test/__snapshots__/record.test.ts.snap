@@ -6,8 +6,8 @@ exports[`async-checkout 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -132,8 +132,8 @@ exports[`async-checkout 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -252,8 +252,8 @@ exports[`custom-event 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -338,8 +338,8 @@ exports[`stylesheet-rules 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -402,6 +402,14 @@ exports[`stylesheet-rules 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": -1,
+      \\"rule\\": \\"body { background: #000; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 0,
       \\"texts\\": [],
       \\"attributes\\": [],
@@ -422,6 +430,30 @@ exports[`stylesheet-rules 1`] = `
           }
         }
       ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": -1,
+      \\"rule\\": \\"body { color: #fff; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": -1,
+      \\"index\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": -1,
+      \\"rule\\": \\"body { color: #ccc; }\\"
     }
   }
 ]"

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { assertSnapshot } from './utils';
+import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
 import { recordOptions } from '../src/types';
 
@@ -35,14 +35,7 @@ describe('record integration tests', function(this: ISuite) {
   };
 
   before(async () => {
-    this.browser = await puppeteer.launch({
-      defaultViewport: {
-        width: 1920,
-        height: 1080,
-      },
-      headless: false,
-      args: ['--no-sandbox'],
-    });
+    this.browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
     this.code = fs.readFileSync(bundlePath, 'utf8');

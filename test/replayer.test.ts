@@ -12,6 +12,7 @@ import {
   MouseInteractions,
 } from '../src/types';
 import { Replayer } from '../src';
+import { launchPuppeteer } from './utils';
 
 const now = Date.now();
 
@@ -122,10 +123,7 @@ interface ISuite extends Suite {
 
 describe('replayer', function(this: ISuite) {
   before(async () => {
-    this.browser = await puppeteer.launch({
-      headless: false,
-      args: ['--no-sandbox'],
-    });
+    this.browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
     this.code = fs.readFileSync(bundlePath, 'utf8');

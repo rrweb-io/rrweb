@@ -521,34 +521,33 @@ function initInputObserver(
 }
 
 function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
+  const insertRule = CSSStyleSheet.prototype.insertRule;
+  CSSStyleSheet.prototype.insertRule = function(
+    rule: string,
+    index?: number | undefined,
+  ) {
+    console.log('insert rule');
+    cb({
+      id: mirror.getId(this as INode),
+      rule,
+      index,
+    });
+    return insertRule.apply(this, arguments);
+  };
+
+  const deleteRule = CSSStyleSheet.prototype.deleteRule;
+  CSSStyleSheet.prototype.deleteRule = function(index: number) {
+    console.error('delete rule');
+    cb({
+      id: mirror.getId(this as INode),
+      index,
+    });
+    return deleteRule.apply(this, arguments);
+  };
+
   return () => {
-    const insertRule = CSSStyleSheet.prototype.insertRule;
-    CSSStyleSheet.prototype.insertRule = function(
-      rule: string,
-      index?: number | undefined,
-    ) {
-      cb({
-        // id: mirror.getId(target as INode);
-        rule,
-        index,
-      });
-      return insertRule.apply(rule, index);
-    };
-
-    const deleteRule = CSSStyleSheet.prototype.deleteRule;
-    CSSStyleSheet.prototype.deleteRule = function(index: number) {
-      cb({
-        index,
-      });
-      return deleteRule.apply(index);
-    };
-
-    // for (var i in mirror.map) {
-    //   const node = mirror.map[i];
-    //   if ((node as any).tagName == 'STYLE') {
-    //     observeStylesheet(node as any);
-    //   }
-    // }
+    CSSStyleSheet.prototype.insertRule = insertRule;
+    CSSStyleSheet.prototype.deleteRule = deleteRule;
   };
 }
 
@@ -671,6 +670,6 @@ export default function initObservers(
     viewportResizeHandler();
     inputHandler();
     mediaInteractionHandler();
-    // styleSheetObserver();
+    styleSheetObserver();
   };
 }

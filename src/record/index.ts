@@ -190,13 +190,13 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            styleSheetRuleCb: v =>
+            styleSheetRuleCb: r =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
                   data: {
                     source: IncrementalSource.StyleSheetRule,
-                    ...v,
+                    ...r,
                   },
                 }),
               ),
