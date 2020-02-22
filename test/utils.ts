@@ -2,6 +2,18 @@ import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
 import { NodeType } from 'rrweb-snapshot';
 import { assert } from 'chai';
 import { EventType, IncrementalSource, eventWithTime } from '../src/types';
+import * as puppeteer from 'puppeteer';
+
+export async function launchPuppeteer() {
+  return await puppeteer.launch({
+    headless: process.env.PUPPETEER_HEADLESS ? true : false,
+    defaultViewport: {
+      width: 1920,
+      height: 1080,
+    },
+    args: ['--no-sandbox'],
+  });
+}
 
 function matchSnapshot(actual: string, testFile: string, testTitle: string) {
   const snapshotState = new SnapshotState(testFile, {

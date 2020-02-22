@@ -21,6 +21,7 @@ import {
   MouseInteractions,
   listenerHandler,
   scrollCallback,
+  styleSheetRuleCallback,
   viewportResizeCallback,
   inputValue,
   inputCallback,
@@ -519,6 +520,31 @@ function initInputObserver(
   };
 }
 
+function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
+  const insertRule = CSSStyleSheet.prototype.insertRule;
+  CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number) {
+    cb({
+      id: mirror.getId(this.ownerNode as INode),
+      adds: [{ rule, index }],
+    });
+    return insertRule.apply(this, arguments);
+  };
+
+  const deleteRule = CSSStyleSheet.prototype.deleteRule;
+  CSSStyleSheet.prototype.deleteRule = function(index: number) {
+    cb({
+      id: mirror.getId(this.ownerNode as INode),
+      removes: [{ index }],
+    });
+    return deleteRule.apply(this, arguments);
+  };
+
+  return () => {
+    CSSStyleSheet.prototype.insertRule = insertRule;
+    CSSStyleSheet.prototype.deleteRule = deleteRule;
+  };
+}
+
 function initMediaInteractionObserver(
   mediaInteractionCb: mediaInteractionCallback,
   blockClass: blockClass,
@@ -548,6 +574,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     viewportResizeCb,
     inputCb,
     mediaInteractionCb,
+    styleSheetRuleCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -591,6 +618,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     mediaInteractionCb(...p);
   };
+  o.styleSheetRuleCb = (...p: Arguments<styleSheetRuleCallback>) => {
+    if (hooks.styleSheetRule) {
+      hooks.styleSheetRule(...p);
+    }
+    styleSheetRuleCb(...p);
+  };
 }
 
 export default function initObservers(
@@ -621,6 +654,8 @@ export default function initObservers(
     o.mediaInteractionCb,
     o.blockClass,
   );
+  const styleSheetObserver = initStyleSheetObserver(o.styleSheetRuleCb);
+
   return () => {
     mutationObserver.disconnect();
     mousemoveHandler();
@@ -629,5 +664,6 @@ export default function initObservers(
     viewportResizeHandler();
     inputHandler();
     mediaInteractionHandler();
+    styleSheetObserver();
   };
 }

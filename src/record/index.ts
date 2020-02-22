@@ -82,9 +82,11 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       inlineStylesheet,
       maskAllInputs,
     );
+
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
+
     mirror.map = idNodeMap;
     wrappedEmit(
       wrapEvent({
@@ -185,6 +187,16 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   data: {
                     source: IncrementalSource.MediaInteraction,
                     ...p,
+                  },
+                }),
+              ),
+            styleSheetRuleCb: r =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.StyleSheetRule,
+                    ...r,
                   },
                 }),
               ),

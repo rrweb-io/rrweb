@@ -10,7 +10,7 @@ import {
   eventWithTime,
   EventType,
 } from '../src/types';
-import { assertSnapshot } from './utils';
+import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
 
 interface ISuite extends Suite {
@@ -30,10 +30,7 @@ interface IWindow extends Window {
 
 describe('record', function(this: ISuite) {
   before(async () => {
-    this.browser = await puppeteer.launch({
-      headless: false,
-      args: ['--no-sandbox'],
-    });
+    this.browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
     this.code = fs.readFileSync(bundlePath, 'utf8');
@@ -195,5 +192,33 @@ describe('record', function(this: ISuite) {
     });
     await this.page.waitFor(50);
     assertSnapshot(this.events, __filename, 'custom-event');
+  });
+
+  it('captures stylesheet rules', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
+      setTimeout(() => {
+        styleSheet.insertRule('body { color: #fff; }');
+      }, 0);
+      setTimeout(() => {
+        styleSheet.deleteRule(ruleIdx0);
+      }, 5);
+      setTimeout(() => {
+        styleSheet.insertRule('body { color: #ccc; }');
+      }, 10);
+    });
+    await this.page.waitFor(10);
+    expect(this.events.length).to.equal(7);
+    assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
 });

@@ -52,6 +52,8 @@ export type customEvent<T = unknown> = {
   };
 };
 
+export type styleSheetEvent = {};
+
 export enum IncrementalSource {
   Mutation,
   MouseMove,
@@ -61,6 +63,7 @@ export enum IncrementalSource {
   Input,
   TouchMove,
   MediaInteraction,
+  StyleSheetRule,
 }
 
 export type mutationData = {
@@ -93,6 +96,10 @@ export type mediaInteractionData = {
   source: IncrementalSource.MediaInteraction;
 } & mediaInteractionParam;
 
+export type styleSheetRuleData = {
+  source: IncrementalSource.StyleSheetRule;
+} & styleSheetRuleParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -100,7 +107,8 @@ export type incrementalData =
   | scrollData
   | viewportResizeData
   | inputData
-  | mediaInteractionData;
+  | mediaInteractionData
+  | styleSheetRuleData;
 
 export type event =
   | domContentLoadedEvent
@@ -141,6 +149,7 @@ export type observerParam = {
   ignoreClass: string;
   maskAllInputs: boolean;
   inlineStylesheet: boolean;
+  styleSheetRuleCb: styleSheetRuleCallback;
   mousemoveWait: number;
 };
 
@@ -152,6 +161,7 @@ export type hooksParam = {
   viewportResize?: viewportResizeCallback;
   input?: inputCallback;
   mediaInteaction?: mediaInteractionCallback;
+  styleSheetRule?: styleSheetRuleCallback;
 };
 
 export type textCursor = {
@@ -238,6 +248,23 @@ export type scrollPosition = {
 };
 
 export type scrollCallback = (p: scrollPosition) => void;
+
+export type styleSheetAddRule = {
+  rule: string;
+  index?: number;
+};
+
+export type styleSheetDeleteRule = {
+  index: number;
+};
+
+export type styleSheetRuleParam = {
+  id: number;
+  removes?: styleSheetDeleteRule[];
+  adds?: styleSheetAddRule[];
+};
+
+export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
 export type viewportResizeDimention = {
   width: number;
