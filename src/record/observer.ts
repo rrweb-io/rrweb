@@ -522,10 +522,7 @@ function initInputObserver(
 
 function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
   const insertRule = CSSStyleSheet.prototype.insertRule;
-  CSSStyleSheet.prototype.insertRule = function(
-    rule: string,
-    index?: number | undefined,
-  ) {
+  CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number) {
     cb({
       id: mirror.getId(this.ownerNode as INode),
       adds: [{ rule, index }],

@@ -251,7 +251,7 @@ export type scrollCallback = (p: scrollPosition) => void;
 
 export type styleSheetAddRule = {
   rule: string;
-  index?: number | undefined;
+  index?: number;
 };
 
 export type styleSheetDeleteRule = {
