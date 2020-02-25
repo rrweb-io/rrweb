@@ -134,7 +134,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
 }
 
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
-  if (attributeValue.trim() === '') {
+  if (!attributeValue || attributeValue.trim() === '') {
     return attributeValue;
   }
   const a: HTMLAnchorElement = doc.createElement('a');
