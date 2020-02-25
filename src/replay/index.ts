@@ -608,6 +608,28 @@ export class Replayer {
         }
         break;
       }
+      case IncrementalSource.StyleSheetRule: {
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.debugNodeNotFound(d, d.id);
+        }
+
+        const styleEl = (target as Node) as HTMLStyleElement;
+        const styleSheet = <CSSStyleSheet>styleEl.sheet;
+
+        if (d.adds) {
+          d.adds.forEach(({ rule, index }) => {
+            styleSheet.insertRule(rule, index);
+          });
+        }
+
+        if (d.removes) {
+          d.removes.forEach(({ index }) => {
+            styleSheet.deleteRule(index);
+          });
+        }
+        break;
+      }
       default:
     }
   }
