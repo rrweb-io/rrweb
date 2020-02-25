@@ -1,6 +1,7 @@
 import record from './record';
 import { Replayer } from './replay';
 import { mirror } from './utils';
+import { pack, unpack } from './packer';
 
 export {
   EventType,

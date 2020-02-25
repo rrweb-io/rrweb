@@ -1,18 +1,10 @@
 import { eventWithTime } from '../types';
 
-export abstract class Packer {
-  public version!: number;
+export type PackFn = (event: eventWithTime) => string;
+export type UnpackFn = (raw: string) => eventWithTime;
 
-  public pack!: (events: eventWithTime[]) => string;
-  public unpack!: (raw: string) => eventWithTime[];
-}
-
-export type PackedData<T> = {
-  meta: Meta;
-  data: T;
+export type eventWithTimeAndPacker = eventWithTime & {
+  v: string;
 };
 
-export type Meta = {
-  packer: string;
-  version: number;
-};
+export const MARK = 'v1';

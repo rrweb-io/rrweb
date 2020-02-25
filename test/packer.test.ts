@@ -2,65 +2,42 @@ import { expect } from 'chai';
 import { matchSnapshot } from './utils';
 import { pack, unpack } from '../src/packer';
 import { eventWithTime, EventType } from '../src/types';
+import { MARK } from '../src/packer/base';
 
-const events: eventWithTime[] = [
-  {
-    type: EventType.DomContentLoaded,
-    data: {},
-    timestamp: new Date('2020-01-01').getTime(),
-  },
-];
+const event: eventWithTime = {
+  type: EventType.DomContentLoaded,
+  data: {},
+  timestamp: new Date('2020-01-01').getTime(),
+};
 
 describe('pack', () => {
-  it('can pack events', () => {
-    const packedData = pack(events);
+  it('can pack event', () => {
+    const packedData = pack(event);
     matchSnapshot(packedData, __filename, 'pack');
   });
 });
 
 describe('unpack', () => {
   it('is compatible with unpacked data 1', () => {
-    const result = unpack((events as unknown) as string);
-    expect(result).to.deep.equal(events);
+    const result = unpack((event as unknown) as string);
+    expect(result).to.deep.equal(event);
   });
 
   it('is compatible with unpacked data 2', () => {
-    const result = unpack(JSON.stringify(events));
-    expect(result).to.deep.equal(events);
+    const result = unpack(JSON.stringify(event));
+    expect(result).to.deep.equal(event);
   });
 
   it('stop on unknown data format', () => {
-    expect(() => unpack('{}')).to.throw('Unknown data format.');
-  });
-
-  it('stop on unmatched packer', () => {
-    expect(() =>
-      unpack(
-        JSON.stringify({
-          meta: {
-            packer: 'dummy',
-          },
-        }),
-      ),
-    ).to.throw('These events were not packed by the pako packer.');
-  });
-
-  it('stop on unmatched packer version', () => {
-    expect(() =>
-      unpack(
-        JSON.stringify({
-          meta: {
-            packer: 'pako',
-            version: 2,
-          },
-        }),
-      ),
-    ).to.throw(/incompatible with current version/);
+    expect(() => unpack('[""]')).to.throw('');
   });
 
   it('can unpack packed data', () => {
-    const packedData = pack(events);
+    const packedData = pack(event);
     const result = unpack(packedData);
-    expect(result).to.deep.equal(events);
+    expect(result).to.deep.equal({
+      ...event,
+      v: MARK,
+    });
   });
 });

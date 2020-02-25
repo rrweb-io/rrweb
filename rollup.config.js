@@ -11,6 +11,12 @@ function toRecordPath(path) {
     .replace('rrweb', 'rrweb-record');
 }
 
+function toPackerPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/packer/')
+    .replace('rrweb', 'rrweb-packer');
+}
+
 function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
@@ -69,6 +75,47 @@ let configs = [
       {
         format: 'esm',
         file: toMinPath(toRecordPath(pkg.module)),
+        sourcemap: true,
+      },
+    ],
+  },
+  // browser(pack only)
+  {
+    input: './src/packer/index.ts',
+    plugins: [
+      resolve(),
+      commonjs({
+        namedExports: {
+          pako: ['inflate', 'deflate'],
+        },
+      }),
+      typescript(),
+    ],
+    output: [
+      {
+        name: 'rrwebPacker',
+        format: 'iife',
+        file: toPackerPath(pkg.unpkg),
+      },
+    ],
+  },
+  {
+    input: './src/packer/index.ts',
+    plugins: [
+      resolve(),
+      commonjs({
+        namedExports: {
+          pako: ['inflate', 'deflate'],
+        },
+      }),
+      typescript(),
+      terser(),
+    ],
+    output: [
+      {
+        name: 'rrwebPacker',
+        format: 'iife',
+        file: toMinPath(toPackerPath(pkg.unpkg)),
         sourcemap: true,
       },
     ],
