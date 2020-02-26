@@ -44,6 +44,7 @@ export declare type customEvent<T = unknown> = {
         payload: T;
     };
 };
+export declare type styleSheetEvent = {};
 export declare enum IncrementalSource {
     Mutation = 0,
     MouseMove = 1,
@@ -51,7 +52,9 @@ export declare enum IncrementalSource {
     Scroll = 3,
     ViewportResize = 4,
     Input = 5,
-    TouchMove = 6
+    TouchMove = 6,
+    MediaInteraction = 7,
+    StyleSheetRule = 8
 }
 export declare type mutationData = {
     source: IncrementalSource.Mutation;
@@ -73,7 +76,13 @@ export declare type inputData = {
     source: IncrementalSource.Input;
     id: number;
 } & inputValue;
-export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData;
+export declare type mediaInteractionData = {
+    source: IncrementalSource.MediaInteraction;
+} & mediaInteractionParam;
+export declare type styleSheetRuleData = {
+    source: IncrementalSource.StyleSheetRule;
+} & styleSheetRuleParam;
+export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData;
 export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
@@ -98,10 +107,12 @@ export declare type observerParam = {
     scrollCb: scrollCallback;
     viewportResizeCb: viewportResizeCallback;
     inputCb: inputCallback;
+    mediaInteractionCb: mediaInteractionCallback;
     blockClass: blockClass;
     ignoreClass: string;
     maskAllInputs: boolean;
     inlineStylesheet: boolean;
+    styleSheetRuleCb: styleSheetRuleCallback;
     mousemoveWait: number;
 };
 export declare type hooksParam = {
@@ -111,6 +122,8 @@ export declare type hooksParam = {
     scroll?: scrollCallback;
     viewportResize?: viewportResizeCallback;
     input?: inputCallback;
+    mediaInteaction?: mediaInteractionCallback;
+    styleSheetRule?: styleSheetRuleCallback;
 };
 export declare type textCursor = {
     node: Node;
@@ -181,6 +194,19 @@ export declare type scrollPosition = {
     y: number;
 };
 export declare type scrollCallback = (p: scrollPosition) => void;
+export declare type styleSheetAddRule = {
+    rule: string;
+    index?: number;
+};
+export declare type styleSheetDeleteRule = {
+    index: number;
+};
+export declare type styleSheetRuleParam = {
+    id: number;
+    removes?: styleSheetDeleteRule[];
+    adds?: styleSheetAddRule[];
+};
+export declare type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 export declare type viewportResizeDimention = {
     width: number;
     height: number;
@@ -193,6 +219,15 @@ export declare type inputValue = {
 export declare type inputCallback = (v: inputValue & {
     id: number;
 }) => void;
+export declare const enum MediaInteractions {
+    Play = 0,
+    Pause = 1
+}
+export declare type mediaInteractionParam = {
+    type: MediaInteractions;
+    id: number;
+};
+export declare type mediaInteractionCallback = (p: mediaInteractionParam) => void;
 export declare type Mirror = {
     map: idNodeMap;
     getId: (n: INode) => number;
@@ -248,6 +283,7 @@ export declare enum ReplayerEvents {
     LoadStylesheetEnd = "load-stylesheet-end",
     SkipStart = "skip-start",
     SkipEnd = "skip-end",
-    MouseInteraction = "mouse-interaction"
+    MouseInteraction = "mouse-interaction",
+    EventCast = "event-cast"
 }
 export {};
