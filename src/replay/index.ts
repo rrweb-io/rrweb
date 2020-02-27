@@ -681,7 +681,9 @@ export class Replayer {
       });
     let currentEl: Element | null = el;
     while (currentEl) {
-      currentEl.classList.add(':hover');
+      if (currentEl.classList) {
+        currentEl.classList.add(':hover');
+      }
       currentEl = currentEl.parentElement;
     }
   }
