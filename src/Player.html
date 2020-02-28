@@ -39,6 +39,7 @@
         autoPlay: true,
         skipInactive: true,
         replayer: null,
+        triggerFocus: true,
       };
     },
     computed: {
@@ -78,12 +79,13 @@
       },
     },
     oncreate() {
-      const { events } = this.get();
+      const { events, triggerFocus } = this.get();
       const replayer = new Replayer(events, {
         speed: 1,
         root: this.refs.frame,
         skipInactive: true,
         showWarning: true,
+        triggerFocus,
       });
       replayer.on('resize', dimension =>
         this.updateScale(replayer.wrapper, dimension),
