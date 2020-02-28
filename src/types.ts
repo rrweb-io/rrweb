@@ -318,6 +318,7 @@ export type playerConfig = {
   blockClass: string;
   liveMode: boolean;
   insertStyleRules: string[];
+  triggerFocus: boolean;
 };
 
 export type playerMetaData = {

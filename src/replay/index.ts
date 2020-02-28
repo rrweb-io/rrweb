@@ -74,6 +74,7 @@ export class Replayer {
       blockClass: 'rr-block',
       liveMode: false,
       insertStyleRules: [],
+      triggerFocus: true,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -494,6 +495,7 @@ export class Replayer {
           type: d.type,
           target,
         });
+        const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
             if (((target as Node) as HTMLElement).blur) {
@@ -501,7 +503,7 @@ export class Replayer {
             }
             break;
           case MouseInteractions.Focus:
-            if (((target as Node) as HTMLElement).focus) {
+            if (triggerFocus && ((target as Node) as HTMLElement).focus) {
               ((target as Node) as HTMLElement).focus({
                 preventScroll: true,
               });
