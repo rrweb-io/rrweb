@@ -1,7 +1,15 @@
 <div class="rr-player" ref:player style="{playerStyle}">
   <div class="rr-player__frame" ref:frame { style }></div>
   {#if replayer}
-  <Controller { replayer } {showController} {autoPlay} {skipInactive} on:fullscreen="fullscreen()" />
+  <Controller
+    {
+    replayer
+    }
+    {showController}
+    {autoPlay}
+    {skipInactive}
+    on:fullscreen="fullscreen()"
+  />
   {/if}
 </div>
 
@@ -40,10 +48,10 @@
           height: `${height}px`,
         });
       },
-      playerStyle({ width, height }) {
+      playerStyle({ width, height, showController }) {
         return inlineCss({
           width: `${width}px`,
-          height: `${height + controllerHeight}px`,
+          height: `${height + showController ? controllerHeight : 0}px`,
         });
       },
     },
@@ -77,8 +85,8 @@
         skipInactive: true,
         showWarning: true,
       });
-      replayer.on('resize', (dimension) =>
-        this.updateScale(replayer.wrapper, dimension)
+      replayer.on('resize', dimension =>
+        this.updateScale(replayer.wrapper, dimension),
       );
       this.set({
         replayer,
@@ -118,8 +126,6 @@
       }
     },
   };
-
-
 </script>
 
 <style>
