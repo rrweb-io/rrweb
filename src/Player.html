@@ -51,7 +51,7 @@
       playerStyle({ width, height, showController }) {
         return inlineCss({
           width: `${width}px`,
-          height: `${height + showController ? controllerHeight : 0}px`,
+          height: `${height + (showController ? controllerHeight : 0)}px`,
         });
       },
     },
