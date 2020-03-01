@@ -409,7 +409,11 @@ export class Replayer {
           ) {
             parent.insertBefore(target, previous.nextSibling);
           } else if (next && next.parentNode) {
-            parent.insertBefore(target, next);
+            // making sure the parent contains the reference nodes
+            // before we insert target before next.
+            parent.contains(next)
+              ? parent.insertBefore(target, next)
+              : parent.insertBefore(target, null);
           } else {
             parent.appendChild(target);
           }
