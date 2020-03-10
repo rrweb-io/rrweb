@@ -8,7 +8,7 @@ import {
 } from './types';
 
 let _id = 1;
-const symbolAndNumberRegex = RegExp('[^a-z]');
+const symbolAndNumberRegex = RegExp('[^a-z1-6]');
 
 function genId(): number {
   return _id++;

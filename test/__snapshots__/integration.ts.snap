@@ -45,7 +45,8 @@ exports[`[html file]: basic.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>Document</title>
-</head><body></body></html>"
+</head><body>
+  <h1>Title</h1></body></html>"
 `;
 
 exports[`[html file]: block-element.html 1`] = `
@@ -184,8 +185,8 @@ exports[`[html file]: invalid-tagname.html 1`] = `
 <body>
   <div>Hello</div>
   <div>Hello</div>
-  <div>Hello</div>
-  <div></div></body></html>"
+  <div></div>
+</body></html>"
 `;
 
 exports[`[html file]: picture.html 1`] = `
@@ -222,7 +223,7 @@ exports[`[html file]: with-relative-res.html 1`] = `
 <body>
   <a href=\\"http://localhost:3030/basic.html\\"></a>
   <div>Hello</div>
-  <div>Hello</div>
+  <alt34>Hello</alt34>
   <div>Hello</div>
   <div></div>
   <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"\\" />
