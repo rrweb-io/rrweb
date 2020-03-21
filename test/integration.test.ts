@@ -129,7 +129,7 @@ describe('record integration tests', function(this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'select2');
-  }).timeout(10000);
+  });
 
   it('should not record input events on ignored elements', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
@@ -205,4 +205,13 @@ describe('record integration tests', function(this: ISuite) {
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'move-node-2');
   });
-});
+
+  it('should record dynamic CSS changes', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'react-styled-components.html'));
+    await page.click('.toggle');
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'react-styled-components');
+  });
+}).timeout(10000);

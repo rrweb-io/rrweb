@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>react styled components</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="https://cdn.jsdelivr.net/npm/react@16/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-is@16.13.1/umd/react-is.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/styled-components/dist/styled-components.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+      const e = React.createElement;
+
+      const Title = styled.h1`
+        font-size: 1.5em;
+        text-align: center;
+        color: ${props => props.color || 'palevioletred'};
+      `;
+
+      const Wrapper = styled.section`
+        padding: 4em;
+        background: papayawhip;
+      `;
+
+      class MyComponent extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            color: 'rebeccapurple',
+          };
+        }
+
+        toggle = () => {
+          this.setState(({ color }) => ({
+            color: color === 'rebeccapurple' ? 'pink' : 'rebeccapurple',
+          }));
+        };
+
+        render() {
+          return (
+            <styled.StyleSheetManager disableCSSOMInjection={false}>
+              <Wrapper>
+                <Title>Hello World!</Title>
+                <Title
+                  className="toggle"
+                  color={this.state.color}
+                  onClick={this.toggle}
+                >
+                  Hello World!
+                </Title>
+              </Wrapper>
+            </styled.StyleSheetManager>
+          );
+        }
+      }
+      const domContainer = document.querySelector('#app');
+      ReactDOM.render(e(MyComponent), domContainer);
+    </script>
+  </body>
+</html>
