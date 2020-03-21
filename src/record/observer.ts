@@ -523,19 +523,25 @@ function initInputObserver(
 function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
   const insertRule = CSSStyleSheet.prototype.insertRule;
   CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number) {
-    cb({
-      id: mirror.getId(this.ownerNode as INode),
-      adds: [{ rule, index }],
-    });
+    const id = mirror.getId(this.ownerNode as INode);
+    if (id !== -1) {
+      cb({
+        id,
+        adds: [{ rule, index }],
+      });
+    }
     return insertRule.apply(this, arguments);
   };
 
   const deleteRule = CSSStyleSheet.prototype.deleteRule;
   CSSStyleSheet.prototype.deleteRule = function(index: number) {
-    cb({
-      id: mirror.getId(this.ownerNode as INode),
-      removes: [{ index }],
-    });
+    const id = mirror.getId(this.ownerNode as INode);
+    if (id !== -1) {
+      cb({
+        id,
+        removes: [{ index }],
+      });
+    }
     return deleteRule.apply(this, arguments);
   };
 

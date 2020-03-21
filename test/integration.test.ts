@@ -11,6 +11,8 @@ interface ISuite extends Suite {
 }
 
 describe('record integration tests', function(this: ISuite) {
+  this.timeout(10_000);
+
   const getHtml = (fileName: string, options: recordOptions = {}): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
@@ -214,4 +216,4 @@ describe('record integration tests', function(this: ISuite) {
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'react-styled-components');
   });
-}).timeout(10000);
+});

@@ -15,7 +15,8 @@
       "check-format",
       "allow-leading-underscore"
     ],
-    "arrow-parens": false
+    "arrow-parens": false,
+    "only-arrow-functions": false
   },
   "rulesDirectory": []
 }

@@ -9,6 +9,8 @@ import {
   listenerHandler,
   eventWithTime,
   EventType,
+  IncrementalSource,
+  styleSheetRuleData,
 } from '../src/types';
 import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
@@ -207,6 +209,8 @@ describe('record', function(this: ISuite) {
 
       const styleSheet = <CSSStyleSheet>styleElement.sheet;
       const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
+      const ruleIdx1 = styleSheet.insertRule('body { background: #111; }');
+      styleSheet.deleteRule(ruleIdx1);
       setTimeout(() => {
         styleSheet.insertRule('body { color: #fff; }');
       }, 0);
@@ -218,7 +222,20 @@ describe('record', function(this: ISuite) {
       }, 10);
     });
     await this.page.waitFor(10);
-    expect(this.events.length).to.equal(7);
+    const styleSheetRuleEvents = this.events.filter(
+      e =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.StyleSheetRule,
+    );
+    const addRuleCount = styleSheetRuleEvents.filter(e =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    ).length;
+    const removeRuleCount = styleSheetRuleEvents.filter(e =>
+      Boolean((e.data as styleSheetRuleData).removes),
+    ).length;
+    // sync insert/delete should be ignored
+    expect(addRuleCount).to.equal(2);
+    expect(removeRuleCount).to.equal(1);
     assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
 });

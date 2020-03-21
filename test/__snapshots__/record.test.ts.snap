@@ -402,18 +402,6 @@ exports[`stylesheet-rules 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"id\\": -1,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"body { background: #000; }\\"
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 0,
       \\"texts\\": [],
       \\"attributes\\": [],
