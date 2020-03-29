@@ -297,6 +297,7 @@ export class Replayer {
       );
     }
     this.missingNodeRetryMap = {};
+    console.log('rebuild map');
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
@@ -625,7 +626,11 @@ export class Replayer {
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
-            styleSheet.insertRule(rule, index);
+            const _index =
+              index === undefined
+                ? undefined
+                : Math.min(index, styleSheet.rules.length);
+            styleSheet.insertRule(rule, _index);
           });
         }
 
