@@ -297,7 +297,6 @@ export class Replayer {
       );
     }
     this.missingNodeRetryMap = {};
-    console.log('rebuild map');
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
