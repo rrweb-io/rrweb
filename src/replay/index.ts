@@ -630,7 +630,14 @@ export class Replayer {
               index === undefined
                 ? undefined
                 : Math.min(index, styleSheet.rules.length);
-            styleSheet.insertRule(rule, _index);
+            try {
+              styleSheet.insertRule(rule, _index);
+            } catch (e) {
+              /**
+               * sometimes we may capture rules with browser prefix
+               * insert rule with prefixs in other browsers may cause Error
+               */
+            }
           });
         }
 
