@@ -57,6 +57,8 @@ export class Replayer {
 
   private missingNodeRetryMap: missingNodeMap = {};
 
+  private playing: boolean = false;
+
   constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
     if (events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
@@ -144,11 +146,13 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
+    this.playing = true;
     this.emitter.emit(ReplayerEvents.Start);
   }
 
   public pause() {
     this.timer.clear();
+    this.playing = false;
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -171,6 +175,7 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
+    this.playing = true;
     this.emitter.emit(ReplayerEvents.Resume);
   }
 
@@ -324,10 +329,12 @@ export class Replayer {
         .forEach((css: HTMLLinkElement) => {
           if (!css.sheet) {
             if (unloadSheets.size === 0) {
-              this.pause();
+              this.timer.clear();  // artificial pause
               this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
               timer = window.setTimeout(() => {
-                this.resume(this.getCurrentTime());
+                if (this.playing) {
+                  this.resume(this.getCurrentTime());
+                }
                 // mark timer was called
                 timer = -1;
               }, this.config.loadTimeout);
@@ -336,7 +343,9 @@ export class Replayer {
             css.addEventListener('load', () => {
               unloadSheets.delete(css);
               if (unloadSheets.size === 0 && timer !== -1) {
-                this.resume(this.getCurrentTime());
+                if (this.playing) {
+                  this.resume(this.getCurrentTime());
+                }
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
                   window.clearTimeout(timer);
