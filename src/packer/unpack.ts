@@ -1,4 +1,4 @@
-import { inflate } from 'pako';
+import { inflate } from 'pako/dist/pako_inflate';
 import { UnpackFn, eventWithTimeAndPacker, MARK } from './base';
 import { eventWithTime } from '../types';
 

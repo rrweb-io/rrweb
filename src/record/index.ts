@@ -25,7 +25,9 @@ function wrapEvent(e: event): eventWithTime {
 
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
-function record(options: recordOptions = {}): listenerHandler | undefined {
+function record<T = eventWithTime>(
+  options: recordOptions<T> = {},
+): listenerHandler | undefined {
   const {
     emit,
     checkoutEveryNms,
@@ -36,6 +38,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
     maskAllInputs = false,
     hooks,
     mousemoveWait = 50,
+    packFn,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -47,7 +50,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
-    emit(e, isCheckout);
+    emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
@@ -120,7 +123,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       handlers.push(
         initObservers(
           {
-            mutationCb: m =>
+            mutationCb: (m) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -140,7 +143,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            mouseInteractionCb: d =>
+            mouseInteractionCb: (d) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -150,7 +153,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            scrollCb: p =>
+            scrollCb: (p) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -160,7 +163,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            viewportResizeCb: d =>
+            viewportResizeCb: (d) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -170,7 +173,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            inputCb: v =>
+            inputCb: (v) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -180,7 +183,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            mediaInteractionCb: p =>
+            mediaInteractionCb: (p) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -190,7 +193,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
                   },
                 }),
               ),
-            styleSheetRuleCb: r =>
+            styleSheetRuleCb: (r) =>
               wrappedEmit(
                 wrapEvent({
                   type: EventType.IncrementalSnapshot,
@@ -233,7 +236,7 @@ function record(options: recordOptions = {}): listenerHandler | undefined {
       );
     }
     return () => {
-      handlers.forEach(h => h());
+      handlers.forEach((h) => h());
     };
   } catch (error) {
     // TODO: handle internal error

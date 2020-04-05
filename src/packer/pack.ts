@@ -1,4 +1,4 @@
-import { deflate } from 'pako';
+import { deflate } from 'pako/dist/pako_deflate';
 import { PackFn, MARK, eventWithTimeAndPacker } from './base';
 
 export const pack: PackFn = (event) => {
