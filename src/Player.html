@@ -101,8 +101,8 @@
             this._width = width;
             this._height = height;
             const dimension = {
-              width: document.body.offsetWidth,
-              height: document.body.offsetHeight - controllerHeight,
+              width: this.refs.player.offsetWidth,
+              height: this.refs.player.offsetHeight - controllerHeight,
             };
             this.set(dimension);
             this.updateScale(replayer.wrapper, {
