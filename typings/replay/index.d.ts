@@ -14,6 +14,7 @@ export declare class Replayer {
     private nextUserInteractionEvent;
     private noramlSpeed;
     private missingNodeRetryMap;
+    private playing;
     constructor(events: eventWithTime[], config?: Partial<playerConfig>);
     on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
