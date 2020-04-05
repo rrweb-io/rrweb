@@ -62,7 +62,7 @@
         const widthScale = width / frameDimension.width;
         const heightScale = height / frameDimension.height;
         el.style.transform =
-          `scale(${Math.min(widthScale, heightScale, 1)})` +
+          `scale(${Math.min(widthScale, heightScale)})` +
           'translate(-50%, -50%)';
       },
       fullscreen() {
@@ -87,7 +87,7 @@
         showWarning: true,
         triggerFocus,
       });
-      replayer.on('resize', dimension =>
+      replayer.on('resize', (dimension) =>
         this.updateScale(replayer.wrapper, dimension),
       );
       this.set({
