@@ -3,17 +3,20 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
-import { recordOptions } from '../src/types';
+import { recordOptions, eventWithTime } from '../src/types';
 
 interface ISuite extends Suite {
   code: string;
   browser: puppeteer.Browser;
 }
 
-describe('record integration tests', function(this: ISuite) {
+describe('record integration tests', function (this: ISuite) {
   this.timeout(10_000);
 
-  const getHtml = (fileName: string, options: recordOptions = {}): string => {
+  const getHtml = (
+    fileName: string,
+    options: recordOptions<eventWithTime> = {},
+  ): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return html.replace(

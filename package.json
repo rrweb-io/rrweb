@@ -18,8 +18,9 @@
     "rrweb"
   ],
   "main": "lib/rrweb.js",
-  "module": "es/rrweb.js",
+  "module": "es/rrweb/src/index.js",
   "unpkg": "dist/rrweb.js",
+  "sideEffects": false,
   "typings": "typings/index.d.ts",
   "files": [
     "dist",
@@ -45,7 +46,7 @@
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
     "puppeteer": "^1.11.0",
-    "rollup": "^0.66.6",
+    "rollup": "^2.3.3",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-postcss": "^1.6.2",

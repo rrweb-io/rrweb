@@ -98,22 +98,11 @@ for (const c of baseConfigs) {
   configs.push({
     input: c.input,
     plugins,
+    preserveModules: true,
     output: [
       {
         format: 'esm',
-        file: c.pathFn(pkg.module),
-      },
-    ],
-  });
-  // ES module + minify
-  configs.push({
-    input: c.input,
-    plugins: minifyPlugins,
-    output: [
-      {
-        format: 'esm',
-        file: toMinPath(c.pathFn(pkg.module)),
-        sourcemap: true,
+        dir: 'es/rrweb',
       },
     ],
   });

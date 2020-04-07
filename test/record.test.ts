@@ -24,13 +24,15 @@ interface ISuite extends Suite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: (options: recordOptions) => listenerHandler | undefined;
+    record: (
+      options: recordOptions<eventWithTime>,
+    ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
 }
 
-describe('record', function(this: ISuite) {
+describe('record', function (this: ISuite) {
   before(async () => {
     this.browser = await launchPuppeteer();
 
@@ -58,7 +60,7 @@ describe('record', function(this: ISuite) {
       this.events.push(e);
     });
 
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
 
   afterEach(async () => {
@@ -223,14 +225,14 @@ describe('record', function(this: ISuite) {
     });
     await this.page.waitFor(10);
     const styleSheetRuleEvents = this.events.filter(
-      e =>
+      (e) =>
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.StyleSheetRule,
     );
-    const addRuleCount = styleSheetRuleEvents.filter(e =>
+    const addRuleCount = styleSheetRuleEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).adds),
     ).length;
-    const removeRuleCount = styleSheetRuleEvents.filter(e =>
+    const removeRuleCount = styleSheetRuleEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
     // sync insert/delete should be ignored
