@@ -1,4 +1,5 @@
 import { serializedNodeWithId, idNodeMap, INode } from 'rrweb-snapshot';
+import { PackFn, UnpackFn } from './packer/base';
 
 export enum EventType {
   DomContentLoaded,
@@ -125,8 +126,8 @@ export type eventWithTime = event & {
 
 export type blockClass = string | RegExp;
 
-export type recordOptions = {
-  emit?: (e: eventWithTime, isCheckout?: boolean) => void;
+export type recordOptions<T> = {
+  emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
   blockClass?: blockClass;
@@ -135,6 +136,7 @@ export type recordOptions = {
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   mousemoveWait?: number;
+  packFn?: PackFn;
 };
 
 export type observerParam = {
@@ -319,6 +321,7 @@ export type playerConfig = {
   liveMode: boolean;
   insertStyleRules: string[];
   triggerFocus: boolean;
+  unpackFn?: UnpackFn;
 };
 
 export type playerMetaData = {

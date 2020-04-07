@@ -15,7 +15,11 @@ export async function launchPuppeteer() {
   });
 }
 
-function matchSnapshot(actual: string, testFile: string, testTitle: string) {
+export function matchSnapshot(
+  actual: string,
+  testFile: string,
+  testTitle: string,
+) {
   const snapshotState = new SnapshotState(testFile, {
     updateSnapshot: process.env.SNAPSHOT_UPDATE ? 'all' : 'new',
   });

@@ -59,11 +59,19 @@ export class Replayer {
 
   private playing: boolean = false;
 
-  constructor(events: eventWithTime[], config?: Partial<playerConfig>) {
+  constructor(
+    events: Array<eventWithTime | string>,
+    config?: Partial<playerConfig>,
+  ) {
     if (events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
-    this.events = events;
+    this.events = events.map((e) => {
+      if (config && config.unpackFn) {
+        return config.unpackFn(e as string);
+      }
+      return e as eventWithTime;
+    });
     this.handleResize = this.handleResize.bind(this);
 
     const defaultConfig: playerConfig = {
@@ -179,7 +187,10 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Resume);
   }
 
-  public addEvent(event: eventWithTime) {
+  public addEvent(rawEvent: eventWithTime | string) {
+    const event = this.config.unpackFn
+      ? this.config.unpackFn(rawEvent as string)
+      : (rawEvent as eventWithTime);
     const castFn = this.getCastFn(event, true);
     castFn();
   }
@@ -329,7 +340,7 @@ export class Replayer {
         .forEach((css: HTMLLinkElement) => {
           if (!css.sheet) {
             if (unloadSheets.size === 0) {
-              this.timer.clear();  // artificial pause
+              this.timer.clear(); // artificial pause
               this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
               timer = window.setTimeout(() => {
                 if (this.playing) {
@@ -364,7 +375,7 @@ export class Replayer {
     const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
-        d.removes.forEach(mutation => {
+        d.removes.forEach((mutation) => {
           const target = mirror.getNode(mutation.id);
           if (!target) {
             return this.warnNodeNotFound(d, mutation.id);
@@ -432,13 +443,13 @@ export class Replayer {
           }
         };
 
-        d.adds.forEach(mutation => {
+        d.adds.forEach((mutation) => {
           appendNode(mutation);
         });
 
         while (queue.length) {
-          if (queue.every(m => !Boolean(mirror.getNode(m.parentId)))) {
-            return queue.forEach(m => this.warnNodeNotFound(d, m.node.id));
+          if (queue.every((m) => !Boolean(mirror.getNode(m.parentId)))) {
+            return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
           }
           const mutation = queue.shift()!;
           appendNode(mutation);
@@ -448,14 +459,14 @@ export class Replayer {
           Object.assign(this.missingNodeRetryMap, missingNodeMap);
         }
 
-        d.texts.forEach(mutation => {
+        d.texts.forEach((mutation) => {
           const target = mirror.getNode(mutation.id);
           if (!target) {
             return this.warnNodeNotFound(d, mutation.id);
           }
           target.textContent = mutation.value;
         });
-        d.attributes.forEach(mutation => {
+        d.attributes.forEach((mutation) => {
           const target = mirror.getNode(mutation.id);
           if (!target) {
             return this.warnNodeNotFound(d, mutation.id);
@@ -481,7 +492,7 @@ export class Replayer {
           const lastPosition = d.positions[d.positions.length - 1];
           this.moveAndHover(d, lastPosition.x, lastPosition.y, lastPosition.id);
         } else {
-          d.positions.forEach(p => {
+          d.positions.forEach((p) => {
             const action = {
               doAction: () => {
                 this.moveAndHover(d, p.x, p.y, p.id);
@@ -702,7 +713,7 @@ export class Replayer {
   private hoverElements(el: Element) {
     this.iframe
       .contentDocument!.querySelectorAll('.\\:hover')
-      .forEach(hoveredEl => {
+      .forEach((hoveredEl) => {
         hoveredEl.classList.remove(':hover');
       });
     let currentEl: Element | null = el;
