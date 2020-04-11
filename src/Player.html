@@ -14,7 +14,7 @@
 </div>
 
 <script>
-  import { Replayer } from 'rrweb';
+  import { Replayer, unpack } from 'rrweb';
   import 'rrweb/dist/rrweb.min.css';
   import {
     inlineCss,
@@ -86,6 +86,7 @@
         skipInactive: true,
         showWarning: true,
         triggerFocus,
+        unpackFn: unpack,
       });
       replayer.on('resize', (dimension) =>
         this.updateScale(replayer.wrapper, dimension),
