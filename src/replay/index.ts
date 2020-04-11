@@ -100,8 +100,9 @@ export class Replayer {
   }
 
   public setConfig(config: Partial<playerConfig>) {
-    Object.keys(config).forEach((key: keyof playerConfig) => {
-      this.config[key] = config[key]!;
+    Object.keys(config).forEach((key) => {
+      // @ts-ignore
+      this.config[key] = config[key];
     });
     if (!this.config.skipInactive) {
       this.noramlSpeed = -1;

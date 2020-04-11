@@ -65,7 +65,7 @@ function initMutationObserver(
   inlineStylesheet: boolean,
   maskAllInputs: boolean,
 ): MutationObserver {
-  const observer = new MutationObserver(mutations => {
+  const observer = new MutationObserver((mutations) => {
     const texts: textCursor[] = [];
     const attributes: attributeCursor[] = [];
     let removes: removedNodeMutation[] = [];
@@ -94,10 +94,10 @@ function initMutationObserver(
         addedSet.add(n);
         droppedSet.delete(n);
       }
-      n.childNodes.forEach(childN => genAdds(childN));
+      n.childNodes.forEach((childN) => genAdds(childN));
     };
 
-    mutations.forEach(mutation => {
+    mutations.forEach((mutation) => {
       const {
         type,
         target,
@@ -123,7 +123,7 @@ function initMutationObserver(
             return;
           }
           let item: attributeCursor | undefined = attributes.find(
-            a => a.node === target,
+            (a) => a.node === target,
           );
           if (!item) {
             item = {
@@ -141,8 +141,8 @@ function initMutationObserver(
           break;
         }
         case 'childList': {
-          addedNodes.forEach(n => genAdds(n, target));
-          removedNodes.forEach(n => {
+          addedNodes.forEach((n) => genAdds(n, target));
+          removedNodes.forEach((n) => {
             const nodeId = mirror.getId(n as INode);
             const parentId = mirror.getId(target as INode);
             if (isBlocked(n, blockClass)) {
@@ -198,7 +198,7 @@ function initMutationObserver(
         parentId,
         previousId: !n.previousSibling
           ? n.previousSibling
-          : mirror.getId(n.previousSibling as INode),
+          : mirror.getId((n.previousSibling as unknown) as INode),
         nextId: !n.nextSibling
           ? n.nextSibling
           : mirror.getId((n.nextSibling as unknown) as INode),
@@ -231,7 +231,7 @@ function initMutationObserver(
     while (addQueue.length) {
       if (
         addQueue.every(
-          n => mirror.getId((n.parentNode as Node) as INode) === -1,
+          (n) => mirror.getId((n.parentNode as Node) as INode) === -1,
         )
       ) {
         /**
@@ -246,19 +246,19 @@ function initMutationObserver(
 
     const payload = {
       texts: texts
-        .map(text => ({
+        .map((text) => ({
           id: mirror.getId(text.node as INode),
           value: text.value,
         }))
         // text mutation's id was not in the mirror map means the target node has been removed
-        .filter(text => mirror.has(text.id)),
+        .filter((text) => mirror.has(text.id)),
       attributes: attributes
-        .map(attribute => ({
+        .map((attribute) => ({
           id: mirror.getId(attribute.node as INode),
           attributes: attribute.attributes,
         }))
         // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter(attribute => mirror.has(attribute.id)),
+        .filter((attribute) => mirror.has(attribute.id)),
       removes,
       adds,
     };
@@ -293,7 +293,7 @@ function initMoveObserver(
   const wrappedCb = throttle((isTouch: boolean) => {
     const totalOffset = Date.now() - timeBaseline!;
     cb(
-      positions.map(p => {
+      positions.map((p) => {
         p.timeOffset -= totalOffset;
         return p;
       }),
@@ -303,7 +303,7 @@ function initMoveObserver(
     timeBaseline = null;
   }, 500);
   const updatePosition = throttle<MouseEvent | TouchEvent>(
-    evt => {
+    (evt) => {
       const { target } = evt;
       const { clientX, clientY } = isTouchEvent(evt)
         ? evt.changedTouches[0]
@@ -329,7 +329,7 @@ function initMoveObserver(
     on('touchmove', updatePosition),
   ];
   return () => {
-    handlers.forEach(h => h());
+    handlers.forEach((h) => h());
   };
 }
 
@@ -356,14 +356,14 @@ function initMouseInteractionObserver(
     };
   };
   Object.keys(MouseInteractions)
-    .filter(key => Number.isNaN(Number(key)) && !key.endsWith('_Departed'))
+    .filter((key) => Number.isNaN(Number(key)) && !key.endsWith('_Departed'))
     .forEach((eventKey: keyof typeof MouseInteractions) => {
       const eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
       handlers.push(on(eventName, handler));
     });
   return () => {
-    handlers.forEach(h => h());
+    handlers.forEach((h) => h());
   };
 }
 
@@ -371,7 +371,7 @@ function initScrollObserver(
   cb: scrollCallback,
   blockClass: blockClass,
 ): listenerHandler {
-  const updatePosition = throttle<UIEvent>(evt => {
+  const updatePosition = throttle<UIEvent>((evt) => {
     if (!evt.target || isBlocked(evt.target as Node, blockClass)) {
       return;
     }
@@ -464,7 +464,7 @@ function initInputObserver(
     if (type === 'radio' && name && isChecked) {
       document
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
-        .forEach(el => {
+        .forEach((el) => {
           if (el !== target) {
             cbWithDedup(el, {
               text: (el as HTMLInputElement).value,
@@ -492,7 +492,7 @@ function initInputObserver(
   const handlers: Array<listenerHandler | hookResetter> = [
     'input',
     'change',
-  ].map(eventName => on(eventName, eventHandler));
+  ].map((eventName) => on(eventName, eventHandler));
   const propertyDescriptor = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
     'value',
@@ -505,7 +505,7 @@ function initInputObserver(
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
-      ...hookProperties.map(p =>
+      ...hookProperties.map((p) =>
         hookSetter<HTMLElement>(p[0], p[1], {
           set() {
             // mock to a normal event
@@ -516,13 +516,13 @@ function initInputObserver(
     );
   }
   return () => {
-    handlers.forEach(h => h());
+    handlers.forEach((h) => h());
   };
 }
 
 function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
   const insertRule = CSSStyleSheet.prototype.insertRule;
-  CSSStyleSheet.prototype.insertRule = function(rule: string, index?: number) {
+  CSSStyleSheet.prototype.insertRule = function (rule: string, index?: number) {
     const id = mirror.getId(this.ownerNode as INode);
     if (id !== -1) {
       cb({
@@ -534,7 +534,7 @@ function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
   };
 
   const deleteRule = CSSStyleSheet.prototype.deleteRule;
-  CSSStyleSheet.prototype.deleteRule = function(index: number) {
+  CSSStyleSheet.prototype.deleteRule = function (index: number) {
     const id = mirror.getId(this.ownerNode as INode);
     if (id !== -1) {
       cb({
@@ -567,7 +567,7 @@ function initMediaInteractionObserver(
   };
   const handlers = [on('play', handler('play')), on('pause', handler('pause'))];
   return () => {
-    handlers.forEach(h => h());
+    handlers.forEach((h) => h());
   };
 }
 
