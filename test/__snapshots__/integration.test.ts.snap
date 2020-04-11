@@ -3111,7 +3111,7 @@ exports[`react-styled-components 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"src\\": \\"https://cdn.jsdelivr.net/npm/styled-components/dist/styled-components.min.js\\"
+                      \\"src\\": \\"https://cdn.jsdelivr.net/npm/styled-components@5.0.1/dist/styled-components.min.js\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 35

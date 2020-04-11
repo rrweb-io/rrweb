@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/react@16/umd/react.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@16/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-is@16.13.1/umd/react-is.production.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/styled-components/dist/styled-components.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/styled-components@5.0.1/dist/styled-components.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6/babel.min.js"></script>
     <script type="text/babel">
       const e = React.createElement;
@@ -19,7 +19,7 @@
       const Title = styled.h1`
         font-size: 1.5em;
         text-align: center;
-        color: ${props => props.color || 'palevioletred'};
+        color: ${(props) => props.color || 'palevioletred'};
       `;
 
       const Wrapper = styled.section`
