@@ -97,8 +97,20 @@ function record<T = eventWithTime>(
         data: {
           node,
           initialOffset: {
-            left: document.documentElement!.scrollLeft,
-            top: document.documentElement!.scrollTop,
+            left: (window.pageXOffset !== undefined) ?
+	      window.pageXOffset : (
+		document!.documentElement.scrollLeft ||
+		  document!.body!.parentNode.scrollLeft ||
+		  document!.body.scrollLeft ||
+		  0
+	      ),
+            top: (window.pageYOffset !== undefined) ?
+	      window.pageYOffset : (
+		document!.documentElement.scrollTop ||
+		  document!.body!.parentNode.scrollTop ||
+		  document!.body.scrollTop ||
+		  0
+	      ),
           },
         },
       }),
