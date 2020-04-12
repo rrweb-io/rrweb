@@ -2,6 +2,7 @@ import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import * as smoothscroll from 'smoothscroll-polyfill';
 import Timer from './timer';
+import { createPlayerService } from './machine';
 import {
   EventType,
   IncrementalSource,
@@ -35,6 +36,19 @@ const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
+const defaultConfig: playerConfig = {
+  speed: 1,
+  root: document.body,
+  loadTimeout: 0,
+  skipInactive: false,
+  showWarning: true,
+  showDebug: false,
+  blockClass: 'rr-block',
+  liveMode: false,
+  insertStyleRules: [],
+  triggerFocus: true,
+};
+
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
@@ -57,7 +71,7 @@ export class Replayer {
 
   private missingNodeRetryMap: missingNodeMap = {};
 
-  private playing: boolean = false;
+  private service!: ReturnType<typeof createPlayerService>;
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -66,6 +80,17 @@ export class Replayer {
     if (events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
+    this.service = createPlayerService({
+      events: events.map((e) => {
+        if (config && config.unpackFn) {
+          return config.unpackFn(e as string);
+        }
+        return e as eventWithTime;
+      }),
+      timeOffset: 0,
+      speed: config?.speed || defaultConfig.speed,
+    });
+    this.service.start();
     this.events = events.map((e) => {
       if (config && config.unpackFn) {
         return config.unpackFn(e as string);
@@ -74,18 +99,6 @@ export class Replayer {
     });
     this.handleResize = this.handleResize.bind(this);
 
-    const defaultConfig: playerConfig = {
-      speed: 1,
-      root: document.body,
-      loadTimeout: 0,
-      skipInactive: false,
-      showWarning: true,
-      showDebug: false,
-      blockClass: 'rr-block',
-      liveMode: false,
-      insertStyleRules: [],
-      triggerFocus: true,
-    };
     this.config = Object.assign({}, defaultConfig, config);
 
     this.timer = new Timer(this.config);
@@ -155,13 +168,13 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
-    this.playing = true;
+    this.service.send({ type: 'PLAY' });
     this.emitter.emit(ReplayerEvents.Start);
   }
 
   public pause() {
     this.timer.clear();
-    this.playing = false;
+    this.service.send({ type: 'PAUSE' });
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -184,7 +197,7 @@ export class Replayer {
     }
     this.timer.addActions(actions);
     this.timer.start();
-    this.playing = true;
+    this.service.send({ type: 'RESUME' });
     this.emitter.emit(ReplayerEvents.Resume);
   }
 
@@ -344,7 +357,7 @@ export class Replayer {
               this.timer.clear(); // artificial pause
               this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
               timer = window.setTimeout(() => {
-                if (this.playing) {
+                if (this.service.state.matches('playing')) {
                   this.resume(this.getCurrentTime());
                 }
                 // mark timer was called
@@ -355,7 +368,7 @@ export class Replayer {
             css.addEventListener('load', () => {
               unloadSheets.delete(css);
               if (unloadSheets.size === 0 && timer !== -1) {
-                if (this.playing) {
+                if (this.service.state.matches('playing')) {
                   this.resume(this.getCurrentTime());
                 }
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
