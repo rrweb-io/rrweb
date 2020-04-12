@@ -1,6 +1,12 @@
-import { playerConfig, actionWithDelay } from '../types';
+import {
+  playerConfig,
+  actionWithDelay,
+  eventWithTime,
+  EventType,
+  IncrementalSource,
+} from '../types';
 
-export default class Timer {
+export class Timer {
   public timeOffset: number = 0;
 
   private actions: actionWithDelay[];
@@ -74,4 +80,22 @@ export default class Timer {
     }
     return start;
   }
+}
+
+// TODO: add speed to mouse move timestamp calculation
+export function getDelay(event: eventWithTime, baselineTime: number): number {
+  // Mouse move events was recorded in a throttle function,
+  // so we need to find the real timestamp by traverse the time offsets.
+  if (
+    event.type === EventType.IncrementalSnapshot &&
+    event.data.source === IncrementalSource.MouseMove
+  ) {
+    const firstOffset = event.data.positions[0].timeOffset;
+    // timeOffset is a negative offset to event.timestamp
+    const firstTimestamp = event.timestamp + firstOffset;
+    event.delay = firstTimestamp - baselineTime;
+    return firstTimestamp - baselineTime;
+  }
+  event.delay = event.timestamp - baselineTime;
+  return event.timestamp - baselineTime;
 }

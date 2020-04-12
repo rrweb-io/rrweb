@@ -4,23 +4,50 @@ import {
   Typestate,
   InterpreterStatus,
   StateMachine,
+  assign,
 } from '@xstate/fsm';
-import { playerConfig, eventWithTime } from '../types';
+import {
+  playerConfig,
+  eventWithTime,
+  actionWithDelay,
+  ReplayerEvents,
+  Emitter,
+} from '../types';
+import { Timer, getDelay } from './timer';
 
-type PlayerContext = {
+export type PlayerContext = {
   events: eventWithTime[];
-  timeOffset: number;
+  timer: Timer;
   speed: playerConfig['speed'];
+  timeOffset: number;
+  baselineTime: number;
+  lastPlayedEvent: eventWithTime | null;
 };
-type PlayerEvent =
-  | { type: 'PLAY' }
+export type PlayerEvent =
+  | {
+      type: 'PLAY';
+      payload: {
+        timeOffset: number;
+      };
+    }
+  | {
+      type: 'CAST_EVENT';
+      payload: {
+        event: eventWithTime;
+      };
+    }
   | { type: 'PAUSE' }
-  | { type: 'RESUME' }
+  | {
+      type: 'RESUME';
+      payload: {
+        timeOffset: number;
+      };
+    }
   | { type: 'END' }
   | { type: 'REPLAY' }
   | { type: 'FAST_FORWARD' }
   | { type: 'BACK_TO_NORMAL' };
-type PlayerState =
+export type PlayerState =
   | {
       value: 'inited';
       context: PlayerContext;
@@ -112,40 +139,121 @@ function interpret<
   return service;
 }
 
-export function createPlayerService(context: PlayerContext) {
-  const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>({
-    id: 'player',
-    context,
-    initial: 'inited',
-    states: {
-      inited: {
-        on: {
-          PLAY: 'playing',
+type PlayerAssets = {
+  emitter: Emitter;
+  getCastFn(event: eventWithTime, isSync: boolean): () => void;
+};
+export function createPlayerService(
+  context: PlayerContext,
+  { getCastFn, emitter }: PlayerAssets,
+) {
+  const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
+    {
+      id: 'player',
+      context,
+      initial: 'inited',
+      states: {
+        inited: {
+          on: {
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+          },
         },
-      },
-      playing: {
-        on: {
-          PAUSE: 'paused',
-          END: 'ended',
-          FAST_FORWARD: 'skipping',
+        playing: {
+          on: {
+            PAUSE: {
+              target: 'paused',
+              actions: ['pause'],
+            },
+            END: 'ended',
+            FAST_FORWARD: 'skipping',
+            CAST_EVENT: {
+              target: 'playing',
+              actions: 'castEvent',
+            },
+          },
         },
-      },
-      paused: {
-        on: {
-          RESUME: 'playing',
+        paused: {
+          on: {
+            RESUME: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+            CAST_EVENT: {
+              target: 'paused',
+              actions: 'castEvent',
+            },
+          },
         },
-      },
-      skipping: {
-        on: {
-          BACK_TO_NORMAL: 'playing',
+        skipping: {
+          on: {
+            BACK_TO_NORMAL: 'playing',
+          },
         },
-      },
-      ended: {
-        on: {
-          REPLAY: 'playing',
+        ended: {
+          on: {
+            REPLAY: 'playing',
+          },
         },
       },
     },
-  });
+    {
+      actions: {
+        castEvent: assign({
+          lastPlayedEvent: (ctx, event) => {
+            if (event.type === 'CAST_EVENT') {
+              return event.payload.event;
+            }
+            return context.lastPlayedEvent;
+          },
+        }),
+        recordTimeOffset: assign((ctx, event) => {
+          let timeOffset = ctx.timeOffset;
+          if ('payload' in event && 'timeOffset' in event.payload) {
+            timeOffset = event.payload.timeOffset;
+          }
+          return {
+            ...ctx,
+            timeOffset,
+            baselineTime: ctx.events[0].timestamp + timeOffset,
+          };
+        }),
+        play(ctx) {
+          const { timer, events, baselineTime, lastPlayedEvent } = ctx;
+          timer.clear();
+          const actions = new Array<actionWithDelay>();
+          for (const event of events) {
+            if (
+              lastPlayedEvent &&
+              (event.timestamp <= lastPlayedEvent.timestamp ||
+                event === lastPlayedEvent)
+            ) {
+              continue;
+            }
+            const isSync = event.timestamp < baselineTime;
+            const castFn = getCastFn(event, isSync);
+            if (isSync) {
+              castFn();
+            } else {
+              actions.push({
+                doAction: () => {
+                  castFn();
+                  emitter.emit(ReplayerEvents.EventCast, event);
+                },
+                delay: getDelay(event, baselineTime),
+              });
+            }
+          }
+          timer.addActions(actions);
+          timer.start();
+        },
+        pause(ctx) {
+          ctx.timer.clear();
+        },
+      },
+    },
+  );
   return interpret(playerMachine);
 }
