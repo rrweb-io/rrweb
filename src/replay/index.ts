@@ -73,7 +73,7 @@ export class Replayer {
     events: Array<eventWithTime | string>,
     config?: Partial<playerConfig>,
   ) {
-    if (events.length < 2) {
+    if (!config?.liveMode && events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
     this.config = Object.assign({}, defaultConfig, config);
@@ -170,12 +170,17 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Resume);
   }
 
+  public startLive(baselineTime?: number) {
+    this.service.send({ type: 'TO_LIVE', payload: { baselineTime } });
+  }
+
   public addEvent(rawEvent: eventWithTime | string) {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
-    const castFn = this.getCastFn(event, true);
-    castFn();
+    Promise.resolve().then(() =>
+      this.service.send({ type: 'ADD_EVENT', payload: { event } }),
+    );
   }
 
   private setupDom() {

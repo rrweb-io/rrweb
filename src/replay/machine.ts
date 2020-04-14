@@ -46,7 +46,14 @@ export type PlayerEvent =
   | { type: 'END' }
   | { type: 'REPLAY' }
   | { type: 'FAST_FORWARD' }
-  | { type: 'BACK_TO_NORMAL' };
+  | { type: 'BACK_TO_NORMAL' }
+  | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
+  | {
+      type: 'ADD_EVENT';
+      payload: {
+        event: eventWithTime;
+      };
+    };
 export type PlayerState =
   | {
       value: 'inited';
@@ -66,6 +73,10 @@ export type PlayerState =
     }
   | {
       value: 'skipping';
+      context: PlayerContext;
+    }
+  | {
+      value: 'live';
       context: PlayerContext;
     };
 
@@ -159,6 +170,10 @@ export function createPlayerService(
               target: 'playing',
               actions: ['recordTimeOffset', 'play'],
             },
+            TO_LIVE: {
+              target: 'live',
+              actions: ['startLive'],
+            },
           },
         },
         playing: {
@@ -195,6 +210,14 @@ export function createPlayerService(
         ended: {
           on: {
             REPLAY: 'playing',
+          },
+        },
+        live: {
+          on: {
+            ADD_EVENT: {
+              target: 'live',
+              actions: ['addEvent'],
+            },
           },
         },
       },
@@ -252,6 +275,36 @@ export function createPlayerService(
         pause(ctx) {
           ctx.timer.clear();
         },
+        startLive: assign({
+          baselineTime: (ctx, event) => {
+            ctx.timer.start();
+            if (event.type === 'TO_LIVE' && event.payload.baselineTime) {
+              return event.payload.baselineTime;
+            }
+            return Date.now();
+          },
+        }),
+        addEvent: assign((ctx, machineEvent) => {
+          const { baselineTime, timer, events } = ctx;
+          if (machineEvent.type === 'ADD_EVENT') {
+            const { event } = machineEvent.payload;
+            events.push(event);
+            const isSync = event.timestamp < baselineTime;
+            const castFn = getCastFn(event, isSync);
+            if (isSync) {
+              castFn();
+            } else {
+              timer.addAction({
+                doAction: () => {
+                  castFn();
+                  emitter.emit(ReplayerEvents.EventCast, event);
+                },
+                delay: getDelay(event, baselineTime),
+              });
+            }
+          }
+          return { ...ctx, events };
+        }),
       },
     },
   );
