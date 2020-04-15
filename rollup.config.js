@@ -17,6 +17,16 @@ function toPackPath(path) {
     .replace('rrweb', 'rrweb-pack');
 }
 
+function toPackerPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/packer/')
+    .replace('rrweb', 'rrweb-packer');
+}
+
+function toBoostPath(path) {
+  return path.replace('rrweb', 'rrweb-boost');
+}
+
 function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
@@ -28,20 +38,35 @@ const namedExports = {
 };
 
 const baseConfigs = [
+  // record only
   {
     input: './src/record/index.ts',
     name: 'rrwebRecord',
     pathFn: toRecordPath,
   },
+  // pack only
   {
     input: './src/packer/pack.ts',
     name: 'rrwebPack',
     pathFn: toPackPath,
   },
+  // packer only
+  {
+    input: './src/packer/index.ts',
+    name: 'rrwebPacker',
+    pathFn: toPackerPath,
+  },
+  // record and replay
   {
     input: './src/index.ts',
     name: 'rrweb',
     pathFn: (p) => p,
+  },
+  // all in one
+  {
+    input: './src/boost.ts',
+    name: 'rrwebBoost',
+    pathFn: toBoostPath,
   },
 ];
 
