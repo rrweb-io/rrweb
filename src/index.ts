@@ -8,7 +8,6 @@ export {
   MouseInteractions,
   ReplayerEvents,
 } from './types';
-export { pack, unpack } from './packer';
 
 const { addCustomEvent } = record;
 
