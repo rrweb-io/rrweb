@@ -42,7 +42,7 @@ export function matchSnapshot(
 function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
-      .filter(s => {
+      .filter((s) => {
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseMove
@@ -51,7 +51,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
         }
         return true;
       })
-      .map(s => {
+      .map((s) => {
         if (s.type === EventType.Meta) {
           s.data.href = 'about:blank';
         }
@@ -68,7 +68,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.Mutation
         ) {
-          s.data.attributes.forEach(a => {
+          s.data.attributes.forEach((a) => {
             if (
               'style' in a.attributes &&
               coordinatesReg.test(a.attributes.style!)
@@ -76,7 +76,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               delete a.attributes.style;
             }
           });
-          s.data.adds.forEach(add => {
+          s.data.adds.forEach((add) => {
             if (
               add.node.type === NodeType.Element &&
               'style' in add.node.attributes &&
