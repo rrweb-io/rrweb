@@ -1,0 +1,16 @@
+stages:
+  - test
+
+rrweb_test:
+  stage: test
+  image: alekzonder/puppeteer:latest
+  variables:
+    PUPPETEER_HEADLESS: 'true'
+  cache:
+    key: '${CI_COMMIT_REF_SLUG}'
+    paths:
+      - node_modules
+  before_script:
+    - npm install
+  script:
+    - npm run test
