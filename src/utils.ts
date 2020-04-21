@@ -21,7 +21,7 @@ export const mirror: Mirror = {
   map: {},
   getId(n) {
     // if n is not a serialized INode, use -1 as its id.
-    if (!n.__sn) {
+    if (!n || !n.__sn) {
       return -1;
     }
     return n.__sn.id;
@@ -34,7 +34,7 @@ export const mirror: Mirror = {
     const id = n.__sn && n.__sn.id;
     delete mirror.map[id];
     if (n.childNodes) {
-      n.childNodes.forEach(child =>
+      n.childNodes.forEach((child) =>
         mirror.removeNodeFromMap((child as Node) as INode),
       );
     }
@@ -53,7 +53,7 @@ export function throttle<T>(
   let timeout: number | null = null;
   let previous = 0;
   // tslint:disable-next-line: only-arrow-functions
-  return function(arg: T) {
+  return function (arg: T) {
     let now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
@@ -130,7 +130,7 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
     if (typeof blockClass === 'string') {
       needBlock = (node as HTMLElement).classList.contains(blockClass);
     } else {
-      (node as HTMLElement).classList.forEach(className => {
+      (node as HTMLElement).classList.forEach((className) => {
         if (blockClass.test(className)) {
           needBlock = true;
         }
