@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
+import { expect } from 'chai';
 import { recordOptions, eventWithTime } from '../src/types';
 
 interface ISuite extends Suite {
@@ -63,7 +64,7 @@ describe('record integration tests', function (this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'form');
-  }).timeout(5000);
+  });
 
   it('can record childList mutations', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
@@ -81,7 +82,7 @@ describe('record integration tests', function (this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'child-list');
-  }).timeout(5000);
+  });
 
   it('can record character data muatations', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
@@ -218,5 +219,46 @@ describe('record integration tests', function (this: ISuite) {
     await page.click('.toggle');
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'react-styled-components');
+  });
+
+  it('will serialize node before record', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
+
+    await page.evaluate(() => {
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      let count = 3;
+      while (count > 0) {
+        count--;
+        const li = document.createElement('li');
+        ul.appendChild(li);
+      }
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'serialize-before-record');
+  });
+
+  it('will defer missing next node mutation', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'shuffle.html'));
+
+    const text = await page.evaluate(() => {
+      const els = Array.prototype.slice.call(document.querySelectorAll('li'));
+      const parent = document.querySelector('ul')!;
+      parent.removeChild(els[3]);
+      parent.removeChild(els[2]);
+      parent.removeChild(els[1]);
+      parent.removeChild(els[0]);
+      parent.insertBefore(els[3], els[4]);
+      parent.insertBefore(els[2], els[4]);
+      parent.insertBefore(els[1], els[4]);
+      parent.insertBefore(els[0], els[4]);
+      return parent.innerText;
+    });
+
+    expect(text).to.equal('4\n3\n2\n1\n5');
   });
 });

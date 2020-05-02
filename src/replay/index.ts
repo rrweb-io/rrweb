@@ -69,7 +69,7 @@ export class Replayer {
   private nextUserInteractionEvent: eventWithTime | null;
   private noramlSpeed: number = -1;
 
-  private missingNodeRetryMap: missingNodeMap = {};
+  private legacy_missingNodeRetryMap: missingNodeMap = {};
 
   private service!: ReturnType<typeof createPlayerService>;
 
@@ -320,13 +320,13 @@ export class Replayer {
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
   ) {
-    if (Object.keys(this.missingNodeRetryMap).length) {
+    if (Object.keys(this.legacy_missingNodeRetryMap).length) {
       console.warn(
         'Found unresolved missing node map',
-        this.missingNodeRetryMap,
+        this.legacy_missingNodeRetryMap,
       );
     }
-    this.missingNodeRetryMap = {};
+    this.legacy_missingNodeRetryMap = {};
     mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument!;
@@ -405,7 +405,9 @@ export class Replayer {
           }
         });
 
-        const missingNodeMap: missingNodeMap = { ...this.missingNodeRetryMap };
+        const legacy_missingNodeMap: missingNodeMap = {
+          ...this.legacy_missingNodeRetryMap,
+        };
         const queue: addedNodeMutation[] = [];
 
         const appendNode = (mutation: addedNodeMutation) => {
@@ -413,12 +415,7 @@ export class Replayer {
           if (!parent) {
             return queue.push(mutation);
           }
-          const target = buildNodeWithSN(
-            mutation.node,
-            this.iframe.contentDocument!,
-            mirror.map,
-            true,
-          ) as Node;
+
           let previous: Node | null = null;
           let next: Node | null = null;
           if (mutation.previousId) {
@@ -427,9 +424,21 @@ export class Replayer {
           if (mutation.nextId) {
             next = mirror.getNode(mutation.nextId) as Node;
           }
+          // next not present at this moment
+          if (mutation.nextId !== null && mutation.nextId !== -1 && !next) {
+            return queue.push(mutation);
+          }
 
+          const target = buildNodeWithSN(
+            mutation.node,
+            this.iframe.contentDocument!,
+            mirror.map,
+            true,
+          ) as Node;
+
+          // legacy data, we should not have -1 siblings any more
           if (mutation.previousId === -1 || mutation.nextId === -1) {
-            missingNodeMap[mutation.node.id] = {
+            legacy_missingNodeMap[mutation.node.id] = {
               node: target,
               mutation,
             };
@@ -453,7 +462,12 @@ export class Replayer {
           }
 
           if (mutation.previousId || mutation.nextId) {
-            this.resolveMissingNode(missingNodeMap, parent, target, mutation);
+            this.legacy_resolveMissingNode(
+              legacy_missingNodeMap,
+              parent,
+              target,
+              mutation,
+            );
           }
         };
 
@@ -469,8 +483,8 @@ export class Replayer {
           appendNode(mutation);
         }
 
-        if (Object.keys(missingNodeMap).length) {
-          Object.assign(this.missingNodeRetryMap, missingNodeMap);
+        if (Object.keys(legacy_missingNodeMap).length) {
+          Object.assign(this.legacy_missingNodeRetryMap, legacy_missingNodeMap);
         }
 
         d.texts.forEach((mutation) => {
@@ -685,7 +699,7 @@ export class Replayer {
     }
   }
 
-  private resolveMissingNode(
+  private legacy_resolveMissingNode(
     map: missingNodeMap,
     parent: Node,
     target: Node,
@@ -698,18 +712,18 @@ export class Replayer {
       const { node, mutation } = previousInMap as missingNode;
       parent.insertBefore(node, target);
       delete map[mutation.node.id];
-      delete this.missingNodeRetryMap[mutation.node.id];
+      delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
       }
     }
     if (nextInMap) {
       const { node, mutation } = nextInMap as missingNode;
       parent.insertBefore(node, target.nextSibling);
       delete map[mutation.node.id];
-      delete this.missingNodeRetryMap[mutation.node.id];
+      delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
       }
     }
   }

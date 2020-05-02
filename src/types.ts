@@ -195,7 +195,8 @@ export type removedNodeMutation = {
 
 export type addedNodeMutation = {
   parentId: number;
-  previousId: number | null;
+  // Newly recorded mutations will not have previousId any more, just for compatibility
+  previousId?: number | null;
   nextId: number | null;
   node: serializedNodeWithId;
 };

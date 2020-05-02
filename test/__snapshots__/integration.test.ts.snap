@@ -479,7 +479,6 @@ exports[`character-data 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 6,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -635,7 +634,6 @@ exports[`child-list 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 6,
-          \\"previousId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -2480,7 +2478,6 @@ exports[`move-node-1 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 6,
-          \\"previousId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -2492,7 +2489,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 11,
-          \\"previousId\\": null,
           \\"nextId\\": 13,
           \\"node\\": {
             \\"type\\": 3,
@@ -2502,7 +2498,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 11,
-          \\"previousId\\": 12,
           \\"nextId\\": 18,
           \\"node\\": {
             \\"type\\": 2,
@@ -2514,7 +2509,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 13,
-          \\"previousId\\": null,
           \\"nextId\\": 15,
           \\"node\\": {
             \\"type\\": 3,
@@ -2524,7 +2518,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 13,
-          \\"previousId\\": 14,
           \\"nextId\\": 17,
           \\"node\\": {
             \\"type\\": 2,
@@ -2536,7 +2529,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 15,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -2546,7 +2538,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 13,
-          \\"previousId\\": 15,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -2556,7 +2547,6 @@ exports[`move-node-1 1`] = `
         },
         {
           \\"parentId\\": 11,
-          \\"previousId\\": 13,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -2748,7 +2738,6 @@ exports[`move-node-2 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 11,
-          \\"previousId\\": null,
           \\"nextId\\": 13,
           \\"node\\": {
             \\"type\\": 3,
@@ -2758,7 +2747,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 11,
-          \\"previousId\\": 12,
           \\"nextId\\": 18,
           \\"node\\": {
             \\"type\\": 2,
@@ -2770,7 +2758,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 13,
-          \\"previousId\\": null,
           \\"nextId\\": 15,
           \\"node\\": {
             \\"type\\": 3,
@@ -2780,7 +2767,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 13,
-          \\"previousId\\": 14,
           \\"nextId\\": 17,
           \\"node\\": {
             \\"type\\": 2,
@@ -2792,7 +2778,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 15,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -2802,7 +2787,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 13,
-          \\"previousId\\": 15,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -2812,7 +2796,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 11,
-          \\"previousId\\": 13,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -2822,7 +2805,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 4,
-          \\"previousId\\": 22,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -2834,7 +2816,6 @@ exports[`move-node-2 1`] = `
         },
         {
           \\"parentId\\": 23,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -3804,7 +3785,7 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"id\\": 75,
+          \\"id\\": 70,
           \\"attributes\\": {
             \\"style\\": \\"\\"
           }
@@ -3823,7 +3804,7 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"id\\": 67,
+          \\"id\\": 72,
           \\"attributes\\": {
             \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\"
           }
@@ -3842,7 +3823,6 @@ exports[`select2 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 25,
-          \\"previousId\\": null,
           \\"nextId\\": 34,
           \\"node\\": {
             \\"type\\": 2,
@@ -3858,7 +3838,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 26,
-          \\"previousId\\": null,
           \\"nextId\\": 28,
           \\"node\\": {
             \\"type\\": 3,
@@ -3868,7 +3847,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 26,
-          \\"previousId\\": 27,
           \\"nextId\\": 30,
           \\"node\\": {
             \\"type\\": 2,
@@ -3883,7 +3861,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 28,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -3893,7 +3870,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 26,
-          \\"previousId\\": 28,
           \\"nextId\\": 31,
           \\"node\\": {
             \\"type\\": 2,
@@ -3907,7 +3883,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 26,
-          \\"previousId\\": 30,
           \\"nextId\\": 32,
           \\"node\\": {
             \\"type\\": 3,
@@ -3917,7 +3892,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 26,
-          \\"previousId\\": 31,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -3932,7 +3906,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 32,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -3946,7 +3919,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 18,
-          \\"previousId\\": -1,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -3961,7 +3933,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 36,
-          \\"previousId\\": null,
           \\"nextId\\": 38,
           \\"node\\": {
             \\"type\\": 3,
@@ -3971,7 +3942,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 36,
-          \\"previousId\\": 37,
           \\"nextId\\": 44,
           \\"node\\": {
             \\"type\\": 2,
@@ -3985,7 +3955,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 38,
-          \\"previousId\\": null,
           \\"nextId\\": 40,
           \\"node\\": {
             \\"type\\": 3,
@@ -3995,7 +3964,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 38,
-          \\"previousId\\": 39,
           \\"nextId\\": 41,
           \\"node\\": {
             \\"type\\": 2,
@@ -4010,7 +3978,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 38,
-          \\"previousId\\": 40,
           \\"nextId\\": 42,
           \\"node\\": {
             \\"type\\": 3,
@@ -4020,7 +3987,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 38,
-          \\"previousId\\": 41,
           \\"nextId\\": 43,
           \\"node\\": {
             \\"type\\": 2,
@@ -4046,7 +4012,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 38,
-          \\"previousId\\": 42,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -4056,7 +4021,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 36,
-          \\"previousId\\": 38,
           \\"nextId\\": 45,
           \\"node\\": {
             \\"type\\": 3,
@@ -4066,7 +4030,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 36,
-          \\"previousId\\": 44,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -4082,62 +4045,6 @@ exports[`select2 1`] = `
         },
         {
           \\"parentId\\": 45,
-          \\"previousId\\": null,
-          \\"nextId\\": -1,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"li\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\",
-              \\"role\\": \\"presentation\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 67
-          }
-        },
-        {
-          \\"parentId\\": 67,
-          \\"previousId\\": null,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-result-label\\",
-              \\"id\\": \\"select2-result-label-2\\",
-              \\"role\\": \\"option\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 68
-          }
-        },
-        {
-          \\"parentId\\": 68,
-          \\"previousId\\": null,
-          \\"nextId\\": -1,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-match\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 69
-          }
-        },
-        {
-          \\"parentId\\": 68,
-          \\"previousId\\": 69,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"A\\",
-            \\"id\\": 70
-          }
-        },
-        {
-          \\"parentId\\": 45,
-          \\"previousId\\": 67,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -4147,12 +4054,11 @@ exports[`select2 1`] = `
               \\"role\\": \\"presentation\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 71
+            \\"id\\": 67
           }
         },
         {
-          \\"parentId\\": 71,
-          \\"previousId\\": null,
+          \\"parentId\\": 67,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -4163,36 +4069,20 @@ exports[`select2 1`] = `
               \\"role\\": \\"option\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 72
+            \\"id\\": 68
           }
         },
         {
-          \\"parentId\\": 72,
-          \\"previousId\\": null,
-          \\"nextId\\": -1,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-match\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 73
-          }
-        },
-        {
-          \\"parentId\\": 72,
-          \\"previousId\\": 73,
+          \\"parentId\\": 68,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"B\\",
-            \\"id\\": 74
+            \\"id\\": 69
           }
         },
         {
           \\"parentId\\": 18,
-          \\"previousId\\": 66,
           \\"nextId\\": 36,
           \\"node\\": {
             \\"type\\": 2,
@@ -4203,16 +4093,79 @@ exports[`select2 1`] = `
               \\"style\\": \\"\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 75
+            \\"id\\": 70
           }
         },
         {
           \\"parentId\\": 62,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"2 results are available, use up and down arrow keys to navigate.\\",
+            \\"id\\": 71
+          }
+        },
+        {
+          \\"parentId\\": 45,
+          \\"nextId\\": 67,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\",
+              \\"role\\": \\"presentation\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 72
+          }
+        },
+        {
+          \\"parentId\\": 72,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-result-label\\",
+              \\"id\\": \\"select2-result-label-2\\",
+              \\"role\\": \\"option\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 73
+          }
+        },
+        {
+          \\"parentId\\": 73,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"A\\",
+            \\"id\\": 74
+          }
+        },
+        {
+          \\"parentId\\": 68,
+          \\"nextId\\": 69,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-match\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 75
+          }
+        },
+        {
+          \\"parentId\\": 73,
+          \\"nextId\\": 74,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-match\\"
+            },
+            \\"childNodes\\": [],
             \\"id\\": 76
           }
         }
@@ -4224,7 +4177,7 @@ exports[`select2 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 75
+      \\"id\\": 70
     }
   },
   {
@@ -4250,7 +4203,7 @@ exports[`select2 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 75
+      \\"id\\": 70
     }
   },
   {
@@ -4276,7 +4229,7 @@ exports[`select2 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 75,
+          \\"id\\": 70,
           \\"attributes\\": {
             \\"style\\": \\"display: none;\\"
           }
@@ -4309,21 +4262,20 @@ exports[`select2 1`] = `
       \\"removes\\": [
         {
           \\"parentId\\": 18,
-          \\"id\\": 75
+          \\"id\\": 70
+        },
+        {
+          \\"parentId\\": 45,
+          \\"id\\": 72
         },
         {
           \\"parentId\\": 45,
           \\"id\\": 67
-        },
-        {
-          \\"parentId\\": 45,
-          \\"id\\": 71
         }
       ],
       \\"adds\\": [
         {
           \\"parentId\\": 18,
-          \\"previousId\\": 66,
           \\"nextId\\": 36,
           \\"node\\": {
             \\"type\\": 2,
@@ -4334,7 +4286,7 @@ exports[`select2 1`] = `
               \\"style\\": \\"display: none;\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 75
+            \\"id\\": 70
           }
         }
       ]
@@ -4346,6 +4298,180 @@ exports[`select2 1`] = `
       \\"source\\": 2,
       \\"type\\": 0,
       \\"id\\": 26
+    }
+  }
+]"
+`;
+
+exports[`serialize-before-record 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"p\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"mutation observer\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"ul\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 10
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"li\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 11
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 12
+                      }
+                    ],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
+                    \\"id\\": 16
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 17
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": 17,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 18
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": 18,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 19
+          }
+        }
+      ]
     }
   }
 ]"

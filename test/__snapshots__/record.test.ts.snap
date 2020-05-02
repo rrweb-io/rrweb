@@ -82,7 +82,6 @@ exports[`async-checkout 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 4,
-          \\"previousId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -94,7 +93,6 @@ exports[`async-checkout 1`] = `
         },
         {
           \\"parentId\\": 8,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -117,7 +115,6 @@ exports[`async-checkout 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 9,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -220,7 +217,6 @@ exports[`async-checkout 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 4,
-          \\"previousId\\": 8,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -232,7 +228,6 @@ exports[`async-checkout 1`] = `
         },
         {
           \\"parentId\\": 9,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -409,7 +404,6 @@ exports[`stylesheet-rules 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 3,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,

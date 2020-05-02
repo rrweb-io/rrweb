@@ -191,17 +191,14 @@ function initMutationObserver(
     const addQueue: Node[] = [];
     const pushAdd = (n: Node) => {
       const parentId = mirror.getId((n.parentNode as Node) as INode);
-      if (parentId === -1) {
+      const nextId =
+        n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
+      if (parentId === -1 || nextId === -1) {
         return addQueue.push(n);
       }
       adds.push({
         parentId,
-        previousId: !n.previousSibling
-          ? n.previousSibling
-          : mirror.getId((n.previousSibling as unknown) as INode),
-        nextId: !n.nextSibling
-          ? n.nextSibling
-          : mirror.getId((n.nextSibling as unknown) as INode),
+        nextId,
         node: serializeNodeWithId(
           n,
           document,
