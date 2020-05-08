@@ -302,6 +302,11 @@ export class Replayer {
           }
         };
         break;
+      case EventType.Custom:
+        castFn = () => {
+          this.emitter.emit(ReplayerEvents.Custom, event);
+        }
+        break;
       default:
     }
     const wrappedCastFn = () => {
