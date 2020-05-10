@@ -499,6 +499,9 @@ export class Replayer {
           if (!target) {
             return this.warnNodeNotFound(d, mutation.id);
           }
+          if(target.nodeType !== 1) {
+            return this.warnNodeIsNotAnElement(d, mutation.id);
+          }
           for (const attributeName in mutation.attributes) {
             if (typeof attributeName === 'string') {
               const value = mutation.attributes[attributeName];
@@ -792,5 +795,15 @@ export class Replayer {
     }
     // tslint:disable-next-line: no-console
     console.log(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+  }
+
+  private warnNodeIsNotAnElement(d: incrementalData, id: number) {
+    /**
+     * In some cases, the node must be of type Element
+     */
+    if (!this.config.showWarning) {
+      return;
+    }
+    console.warn(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' is not an 'Element' type in`, d);
   }
 }
