@@ -254,6 +254,16 @@ export class Replayer {
       case EventType.DomContentLoaded:
       case EventType.Load:
         break;
+      case EventType.Custom:
+        castFn = () => {
+          /**
+           * emit custom-event and pass the event object. 
+           *
+           * This will add more value to the custom event and allows the client to react for custom-event.
+           */
+          this.emitter.emit(ReplayerEvents.CustomEvent, event);
+        };
+        break;
       case EventType.Meta:
         castFn = () =>
           this.emitter.emit(ReplayerEvents.Resize, {
