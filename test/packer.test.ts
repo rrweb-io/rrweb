@@ -13,7 +13,8 @@ const event: eventWithTime = {
 describe('pack', () => {
   it('can pack event', () => {
     const packedData = pack(event);
-    matchSnapshot(packedData, __filename, 'pack');
+    const result = matchSnapshot(packedData, __filename, 'pack');
+    expect(result.pass).to.true;
   });
 });
 
