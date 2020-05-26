@@ -53,7 +53,9 @@ function initMutationObserver(
     maskInputOptions,
     recordCanvas,
   );
-  const observer = new MutationObserver(mutationBuffer.processMutations);
+  const observer = new MutationObserver(
+    mutationBuffer.processMutations.bind(mutationBuffer)
+  );
   observer.observe(document, {
     attributes: true,
     attributeOldValue: true,
