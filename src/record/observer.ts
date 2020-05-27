@@ -45,9 +45,7 @@ function initMutationObserver(
     inlineStylesheet,
     maskAllInputs,
   );
-  const observer = new MutationObserver(
-    mutationBuffer.processMutations.bind(mutationBuffer)
-  );
+  const observer = new MutationObserver(mutationBuffer.processMutations);
   observer.observe(document, {
     attributes: true,
     attributeOldValue: true,

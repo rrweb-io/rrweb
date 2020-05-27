@@ -65,7 +65,7 @@ export default class MutationBuffer {
     this.emissionCallback = cb;
   }
 
-  public processMutations(mutations: mutationRecord[]) {
+  public processMutations = (mutations: mutationRecord[]) => {
 
     mutations.forEach(this.processMutation);
 
@@ -130,7 +130,7 @@ export default class MutationBuffer {
     this.emit();
   }
 
-  private processMutation(m: mutationRecord) {
+  private processMutation = (m: mutationRecord) => {
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
@@ -229,7 +229,7 @@ export default class MutationBuffer {
     n.childNodes.forEach((childN) => this.genAdds(childN));
   };
 
-  public emit() {
+  public emit = () => {
     const payload = {
       texts: this.texts
         .map((text) => ({
