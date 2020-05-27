@@ -226,8 +226,8 @@ export class Replayer {
   }
 
   private handleResize(dimension: viewportResizeDimention) {
-    this.iframe.setAttribute('width', dimension.width);
-    this.iframe.setAttribute('height', dimension.height);
+    this.iframe.setAttribute('width', String(dimension.width));
+    this.iframe.setAttribute('height', String(dimension.height));
   }
 
   // TODO: add speed to mouse move timestamp calculation
