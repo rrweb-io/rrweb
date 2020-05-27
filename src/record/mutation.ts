@@ -109,6 +109,8 @@ function isINode(n: Node | INode): n is INode {
  * controls behaviour of a MutationObserver
  */
 export default class MutationBuffer {
+  public paused: boolean = false;
+
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
   private removes: removedNodeMutation[] = [];
@@ -143,7 +145,7 @@ export default class MutationBuffer {
   private maskInputOptions: MaskInputOptions;
   private recordCanvas: boolean;
 
-  constructor(
+  public init(
     cb: mutationCallBack,
     blockClass: blockClass,
     inlineStylesheet: boolean,
@@ -253,7 +255,9 @@ export default class MutationBuffer {
       pushAdd(node.value);
     }
 
-    this.emit();
+    if (!this.paused) {
+      this.emit();
+    }
   };
 
   public emit = () => {

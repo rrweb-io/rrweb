@@ -38,6 +38,8 @@ import {
 } from '../types';
 import MutationBuffer from './mutation';
 
+export const mutationBuffer = new MutationBuffer();
+
 function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
@@ -46,7 +48,7 @@ function initMutationObserver(
   recordCanvas: boolean,
 ): MutationObserver {
   // see mutation.ts for details
-  const mutationBuffer = new MutationBuffer(
+  mutationBuffer.init(
     cb,
     blockClass,
     inlineStylesheet,
@@ -562,7 +564,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
   };
 }
 
-export default function initObservers(
+export function initObservers(
   o: observerParam,
   hooks: hooksParam = {},
 ): listenerHandler {

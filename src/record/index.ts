@@ -1,5 +1,5 @@
 import { snapshot, MaskInputOptions } from 'rrweb-snapshot';
-import initObservers from './observer';
+import { initObservers, mutationBuffer } from './observer';
 import {
   mirror,
   on,
@@ -81,6 +81,19 @@ function record<T = eventWithTime>(
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
+    if (
+      mutationBuffer.paused &&
+      !(
+        e.type == EventType.IncrementalSnapshot &&
+        e.data.source == IncrementalSource.Mutation
+      )
+    ) {
+      // we've got a user initiated event so first we need to apply
+      // all DOM changes that have been buffering during paused state
+      mutationBuffer.emit();
+      mutationBuffer.paused = false;
+    }
+
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
@@ -323,6 +336,10 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
       },
     }),
   );
+};
+
+record.freezePage = () => {
+  mutationBuffer.paused = true;
 };
 
 export default record;
