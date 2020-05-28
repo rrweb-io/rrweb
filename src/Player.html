@@ -8,6 +8,7 @@
     {showController}
     {autoPlay}
     {skipInactive}
+    {tags}
     on:fullscreen="fullscreen()"
   />
   {/if}
@@ -40,6 +41,7 @@
         skipInactive: true,
         replayer: null,
         triggerFocus: true,
+        tags: {},
       };
     },
     computed: {
@@ -91,6 +93,7 @@
       replayer.on('resize', (dimension) =>
         this.updateScale(replayer.wrapper, dimension),
       );
+
       this.set({
         replayer,
       });

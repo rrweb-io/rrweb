@@ -8,6 +8,13 @@
       ref:progress on:click="handleProgressClick(event)"
     >
       <div class="rr-progress__step" ref:step style="width: {percentage}"></div>
+        {#each getCustomEvents as event,i (i)}
+          <div
+            title="{event.name}"
+            style="width: 10px;height: 5px;position: absolute;top: 2px;transform: translate(-50%, -50%);background: {event.background};left: {event.position};"
+          ></div>
+        {/each}
+
       <div
         class="rr-progress__handler"
         ref:handler
@@ -76,6 +83,7 @@
 {/if}
 
 <script>
+  import { EventType } from 'rrweb';
   import { formatTime } from './utils.js';
 
   export default {
@@ -98,6 +106,40 @@
       percentage({ currentTime, meta }) {
         const percent = Math.min(1, currentTime / meta.totalTime);
         return `${100 * percent}%`;
+      },
+      getCustomEvents({tags, replayer}) {
+        const { events } = replayer;
+        const totalEvents = events.length;
+        const start = events[0].timestamp;
+        const end = events[totalEvents - 1].timestamp;
+        const customEvents = [];
+
+        // calculate tag position.
+        const position = (startTime, endTime, tagTime) => {
+          const sessionDuration = endTime - startTime;
+          const eventDuration = endTime - tagTime;
+          const eventPosition = 100 - ((eventDuration / sessionDuration) * 100);
+
+          return eventPosition.toFixed(2);
+        };
+
+         // loop through all the events and find out custom event.
+        events.forEach((event) => {
+          /**
+           * we are only interested in custom event and calculate it's position
+           * to place it in player's timeline.
+           */
+          if (event.type === EventType.Custom) {
+            const customEvent = {
+              name: event.data.tag,
+              background: tags[event.data.tag] || 'rgb(73, 80, 246)',
+              position: `${position(start, end, event.timestamp)}%`,
+            };
+            customEvents.push(customEvent);
+          }
+        });
+
+        return customEvents;
       },
     },
     helpers: {
@@ -129,6 +171,7 @@
       },
       play() {
         const { replayer, currentTime } = this.get();
+  
         if (currentTime > 0) {
           replayer.resume(currentTime);
         } else {
