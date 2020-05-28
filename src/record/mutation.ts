@@ -19,7 +19,6 @@ function isINode(n: Node | INode): n is INode {
  * controls behaviour of a MutationObserver
  */
 export default class MutationBuffer {
-
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
   private removes: removedNodeMutation[] = [];
@@ -66,7 +65,6 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-
     mutations.forEach(this.processMutation);
 
     /**
@@ -94,7 +92,6 @@ export default class MutationBuffer {
           this.maskAllInputs,
         )!,
       });
-
     };
 
     for (const n of this.movedSet) {
@@ -102,7 +99,10 @@ export default class MutationBuffer {
     }
 
     for (const n of this.addedSet) {
-      if (!isAncestorInSet(this.droppedSet, n) && !isParentRemoved(this.removes, n)) {
+      if (
+        !isAncestorInSet(this.droppedSet, n) &&
+        !isParentRemoved(this.removes, n)
+      ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
         pushAdd(n);
@@ -128,7 +128,7 @@ export default class MutationBuffer {
     }
 
     this.emit();
-  }
+  };
 
   private processMutation = (m: mutationRecord) => {
     switch (m.type) {
@@ -192,7 +192,10 @@ export default class MutationBuffer {
              * the node is also removed which we do not need to track
              * and replay.
              */
-          } else if (this.movedSet.has(n) && this.movedMap[moveKey(nodeId, parentId)]) {
+          } else if (
+            this.movedSet.has(n) &&
+            this.movedMap[moveKey(nodeId, parentId)]
+          ) {
             deepDelete(this.movedSet, n);
           } else {
             this.removes.push({
@@ -207,7 +210,7 @@ export default class MutationBuffer {
       default:
         break;
     }
-  }
+  };
 
   private genAdds = (n: Node | INode, target?: Node | INode) => {
     if (isBlocked(n, this.blockClass)) {
@@ -268,8 +271,7 @@ export default class MutationBuffer {
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
     this.movedMap = {};
-  }
-
+  };
 }
 
 /**
@@ -280,19 +282,16 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  n.childNodes.forEach(childN => deepDelete(addsSet, childN));
+  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(
-  removes: removedNodeMutation[],
-  n: Node,
-): boolean {
+function isParentRemoved(removes: removedNodeMutation[], n: Node): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
   }
   const parentId = mirror.getId((parentNode as Node) as INode);
-  if (removes.some(r => r.id === parentId)) {
+  if (removes.some((r) => r.id === parentId)) {
     return true;
   }
   return isParentRemoved(removes, parentNode);
