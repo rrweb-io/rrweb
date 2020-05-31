@@ -183,6 +183,16 @@ export class Replayer {
     );
   }
 
+  public enableInteract() {
+    this.iframe.setAttribute('scrolling', 'auto');
+    this.iframe.style.pointerEvents = 'auto';
+  }
+
+  public disableInteract() {
+    this.iframe.setAttribute('scrolling', 'no');
+    this.iframe.style.pointerEvents = 'none';
+  }
+
   private setupDom() {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
@@ -194,8 +204,7 @@ export class Replayer {
 
     this.iframe = document.createElement('iframe');
     this.iframe.setAttribute('sandbox', 'allow-same-origin');
-    this.iframe.setAttribute('scrolling', 'no');
-    this.iframe.setAttribute('style', 'pointer-events: none');
+    this.disableInteract();
     this.wrapper.appendChild(this.iframe);
   }
 
@@ -214,7 +223,7 @@ export class Replayer {
       case EventType.Custom:
         castFn = () => {
           /**
-           * emit custom-event and pass the event object. 
+           * emit custom-event and pass the event object.
            *
            * This will add more value to the custom event and allows the client to react for custom-event.
            */
