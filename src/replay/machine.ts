@@ -1,26 +1,53 @@
+import { createMachine, interpret, assign } from '@xstate/fsm';
 import {
-  createMachine,
-  EventObject,
-  Typestate,
-  InterpreterStatus,
-  StateMachine,
-} from '@xstate/fsm';
-import { playerConfig, eventWithTime } from '../types';
+  playerConfig,
+  eventWithTime,
+  actionWithDelay,
+  ReplayerEvents,
+  Emitter,
+} from '../types';
+import { Timer, getDelay } from './timer';
 
-type PlayerContext = {
+export type PlayerContext = {
   events: eventWithTime[];
-  timeOffset: number;
+  timer: Timer;
   speed: playerConfig['speed'];
+  timeOffset: number;
+  baselineTime: number;
+  lastPlayedEvent: eventWithTime | null;
 };
-type PlayerEvent =
-  | { type: 'PLAY' }
+export type PlayerEvent =
+  | {
+      type: 'PLAY';
+      payload: {
+        timeOffset: number;
+      };
+    }
+  | {
+      type: 'CAST_EVENT';
+      payload: {
+        event: eventWithTime;
+      };
+    }
   | { type: 'PAUSE' }
-  | { type: 'RESUME' }
+  | {
+      type: 'RESUME';
+      payload: {
+        timeOffset: number;
+      };
+    }
   | { type: 'END' }
   | { type: 'REPLAY' }
   | { type: 'FAST_FORWARD' }
-  | { type: 'BACK_TO_NORMAL' };
-type PlayerState =
+  | { type: 'BACK_TO_NORMAL' }
+  | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
+  | {
+      type: 'ADD_EVENT';
+      payload: {
+        event: eventWithTime;
+      };
+    };
+export type PlayerState =
   | {
       value: 'inited';
       context: PlayerContext;
@@ -40,112 +67,169 @@ type PlayerState =
   | {
       value: 'skipping';
       context: PlayerContext;
+    }
+  | {
+      value: 'live';
+      context: PlayerContext;
     };
 
-// TODO: import interpret when this relased
-// https://github.com/davidkpiano/xstate/issues/1080
-// tslint:disable no-any
-function toEventObject<TEvent extends EventObject>(
-  event: TEvent['type'] | TEvent,
-): TEvent {
-  return (typeof event === 'string' ? { type: event } : event) as TEvent;
-}
-const INIT_EVENT = { type: 'xstate.init' };
-const executeStateActions = <
-  TContext extends object,
-  TEvent extends EventObject = any,
-  TState extends Typestate<TContext> = any
->(
-  state: StateMachine.State<TContext, TEvent, TState>,
-  event: TEvent | typeof INIT_EVENT,
-) =>
-  state.actions.forEach(
-    ({ exec }) => exec && exec(state.context, event as any),
+type PlayerAssets = {
+  emitter: Emitter;
+  getCastFn(event: eventWithTime, isSync: boolean): () => void;
+};
+export function createPlayerService(
+  context: PlayerContext,
+  { getCastFn, emitter }: PlayerAssets,
+) {
+  const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
+    {
+      id: 'player',
+      context,
+      initial: 'inited',
+      states: {
+        inited: {
+          on: {
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+            TO_LIVE: {
+              target: 'live',
+              actions: ['startLive'],
+            },
+          },
+        },
+        playing: {
+          on: {
+            PAUSE: {
+              target: 'paused',
+              actions: ['pause'],
+            },
+            END: 'ended',
+            FAST_FORWARD: 'skipping',
+            CAST_EVENT: {
+              target: 'playing',
+              actions: 'castEvent',
+            },
+          },
+        },
+        paused: {
+          on: {
+            RESUME: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+            CAST_EVENT: {
+              target: 'paused',
+              actions: 'castEvent',
+            },
+          },
+        },
+        skipping: {
+          on: {
+            BACK_TO_NORMAL: 'playing',
+          },
+        },
+        ended: {
+          on: {
+            REPLAY: 'playing',
+          },
+        },
+        live: {
+          on: {
+            ADD_EVENT: {
+              target: 'live',
+              actions: ['addEvent'],
+            },
+          },
+        },
+      },
+    },
+    {
+      actions: {
+        castEvent: assign({
+          lastPlayedEvent: (ctx, event) => {
+            if (event.type === 'CAST_EVENT') {
+              return event.payload.event;
+            }
+            return context.lastPlayedEvent;
+          },
+        }),
+        recordTimeOffset: assign((ctx, event) => {
+          let timeOffset = ctx.timeOffset;
+          if ('payload' in event && 'timeOffset' in event.payload) {
+            timeOffset = event.payload.timeOffset;
+          }
+          return {
+            ...ctx,
+            timeOffset,
+            baselineTime: ctx.events[0].timestamp + timeOffset,
+          };
+        }),
+        play(ctx) {
+          const { timer, events, baselineTime, lastPlayedEvent } = ctx;
+          timer.clear();
+          const actions = new Array<actionWithDelay>();
+          for (const event of events) {
+            if (
+              lastPlayedEvent &&
+              (event.timestamp <= lastPlayedEvent.timestamp ||
+                event === lastPlayedEvent)
+            ) {
+              continue;
+            }
+            const isSync = event.timestamp < baselineTime;
+            const castFn = getCastFn(event, isSync);
+            if (isSync) {
+              castFn();
+            } else {
+              actions.push({
+                doAction: () => {
+                  castFn();
+                  emitter.emit(ReplayerEvents.EventCast, event);
+                },
+                delay: getDelay(event, baselineTime),
+              });
+            }
+          }
+          timer.addActions(actions);
+          timer.start();
+        },
+        pause(ctx) {
+          ctx.timer.clear();
+        },
+        startLive: assign({
+          baselineTime: (ctx, event) => {
+            ctx.timer.start();
+            if (event.type === 'TO_LIVE' && event.payload.baselineTime) {
+              return event.payload.baselineTime;
+            }
+            return Date.now();
+          },
+        }),
+        addEvent: assign((ctx, machineEvent) => {
+          const { baselineTime, timer, events } = ctx;
+          if (machineEvent.type === 'ADD_EVENT') {
+            const { event } = machineEvent.payload;
+            events.push(event);
+            const isSync = event.timestamp < baselineTime;
+            const castFn = getCastFn(event, isSync);
+            if (isSync) {
+              castFn();
+            } else {
+              timer.addAction({
+                doAction: () => {
+                  castFn();
+                  emitter.emit(ReplayerEvents.EventCast, event);
+                },
+                delay: getDelay(event, baselineTime),
+              });
+            }
+          }
+          return { ...ctx, events };
+        }),
+      },
+    },
   );
-function interpret<
-  TContext extends object,
-  TEvent extends EventObject = EventObject,
-  TState extends Typestate<TContext> = any
->(
-  machine: StateMachine.Machine<TContext, TEvent, TState>,
-): StateMachine.Service<TContext, TEvent, TState> {
-  let state = machine.initialState;
-  let status = InterpreterStatus.NotStarted;
-  const listeners = new Set<StateMachine.StateListener<typeof state>>();
-
-  const service = {
-    _machine: machine,
-    send: (event: TEvent | TEvent['type']): void => {
-      if (status !== InterpreterStatus.Running) {
-        return;
-      }
-      state = machine.transition(state, event);
-      executeStateActions(state, toEventObject(event));
-      listeners.forEach((listener) => listener(state));
-    },
-    subscribe: (listener: StateMachine.StateListener<typeof state>) => {
-      listeners.add(listener);
-      listener(state);
-
-      return {
-        unsubscribe: () => listeners.delete(listener),
-      };
-    },
-    start: () => {
-      status = InterpreterStatus.Running;
-      executeStateActions(state, INIT_EVENT);
-      return service;
-    },
-    stop: () => {
-      status = InterpreterStatus.Stopped;
-      listeners.clear();
-      return service;
-    },
-    get state() {
-      return state;
-    },
-    get status() {
-      return status;
-    },
-  };
-
-  return service;
-}
-
-export function createPlayerService(context: PlayerContext) {
-  const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>({
-    id: 'player',
-    context,
-    initial: 'inited',
-    states: {
-      inited: {
-        on: {
-          PLAY: 'playing',
-        },
-      },
-      playing: {
-        on: {
-          PAUSE: 'paused',
-          END: 'ended',
-          FAST_FORWARD: 'skipping',
-        },
-      },
-      paused: {
-        on: {
-          RESUME: 'playing',
-        },
-      },
-      skipping: {
-        on: {
-          BACK_TO_NORMAL: 'playing',
-        },
-      },
-      ended: {
-        on: {
-          REPLAY: 'playing',
-        },
-      },
-    },
-  });
   return interpret(playerMachine);
 }
