@@ -1,4 +1,4 @@
-import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN, idNodeMap } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import * as smoothscroll from 'smoothscroll-polyfill';
 import { Timer } from './timer';
@@ -21,6 +21,7 @@ import {
   Handler,
   Emitter,
   MediaInteractions,
+  metaEvent,
 } from '../types';
 import { mirror, polyfill } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
@@ -65,6 +66,7 @@ export class Replayer {
   private nextUserInteractionEvent: eventWithTime | null;
   private noramlSpeed: number = -1;
 
+  // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
   private service!: ReturnType<typeof createPlayerService>;
@@ -112,6 +114,26 @@ export class Replayer {
       }
       // publish via emitter
     });
+
+    // rebuild first full snapshot as the poster of the player
+    // maybe we can cache it for performance optimization
+    const { events: contextEvents } = this.service.state.context;
+    const firstMeta = contextEvents.find((e) => e.type === EventType.Meta);
+    const firstFullsnapshot = contextEvents.find(
+      (e) => e.type === EventType.FullSnapshot,
+    );
+    if (firstMeta) {
+      const { width, height } = firstMeta.data as metaEvent['data'];
+      this.emitter.emit(ReplayerEvents.Resize, {
+        width,
+        height,
+      });
+    }
+    if (firstFullsnapshot) {
+      this.rebuildFullSnapshot(
+        firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
+      );
+    }
   }
 
   public on(event: string, handler: Handler) {
