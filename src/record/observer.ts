@@ -1,4 +1,4 @@
-import { INode, serializeNodeWithId, transformAttribute } from 'rrweb-snapshot';
+import { INode } from 'rrweb-snapshot';
 import {
   mirror,
   throttle,
@@ -7,13 +7,10 @@ import {
   getWindowHeight,
   getWindowWidth,
   isBlocked,
-  isAncestorRemoved,
   isTouchEvent,
 } from '../utils';
 import {
   mutationCallBack,
-  removedNodeMutation,
-  addedNodeMutation,
   observerParam,
   mousemoveCallBack,
   mousePosition,
@@ -26,8 +23,6 @@ import {
   inputValue,
   inputCallback,
   hookResetter,
-  textCursor,
-  attributeCursor,
   blockClass,
   IncrementalSource,
   hooksParam,
@@ -35,241 +30,22 @@ import {
   mediaInteractionCallback,
   MediaInteractions,
 } from '../types';
-import { deepDelete, isParentRemoved, isAncestorInSet } from './collection';
+import MutationBuffer from './mutation';
 
-const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
-function isINode(n: Node | INode): n is INode {
-  return '__sn' in n;
-}
-
-/**
- * Mutation observer will merge several mutations into an array and pass
- * it to the callback function, this may make tracing added nodes hard.
- * For example, if we append an element el_1 into body, and then append
- * another element el_2 into el_1, these two mutations may be passed to the
- * callback function together when the two operations were done.
- * Generally we need trace child nodes of newly added node, but in this
- * case if we count el_2 as el_1's child node in the first mutation record,
- * then we will count el_2 again in the secoond mutation record which was
- * duplicated.
- * To avoid of duplicate counting added nodes, we will use a Set to store
- * added nodes and its child nodes during iterate mutation records. Then
- * collect added nodes from the Set which will has no duplicate copy. But
- * this also cause newly added node will not be serialized with id ASAP,
- * which means all the id related calculation should be lazy too.
- * @param cb mutationCallBack
- */
 function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
   inlineStylesheet: boolean,
   maskAllInputs: boolean,
 ): MutationObserver {
-  const observer = new MutationObserver((mutations) => {
-    const texts: textCursor[] = [];
-    const attributes: attributeCursor[] = [];
-    let removes: removedNodeMutation[] = [];
-    const adds: addedNodeMutation[] = [];
-
-    const addedSet = new Set<Node>();
-    const movedSet = new Set<Node>();
-    const droppedSet = new Set<Node>();
-
-    const movedMap: Record<string, true> = {};
-
-    const genAdds = (n: Node | INode, target?: Node | INode) => {
-      if (isBlocked(n, blockClass)) {
-        return;
-      }
-      if (isINode(n)) {
-        movedSet.add(n);
-        let targetId: number | null = null;
-        if (target && isINode(target)) {
-          targetId = target.__sn.id;
-        }
-        if (targetId) {
-          movedMap[moveKey(n.__sn.id, targetId)] = true;
-        }
-      } else {
-        addedSet.add(n);
-        droppedSet.delete(n);
-      }
-      n.childNodes.forEach((childN) => genAdds(childN));
-    };
-
-    mutations.forEach((mutation) => {
-      const {
-        type,
-        target,
-        oldValue,
-        addedNodes,
-        removedNodes,
-        attributeName,
-      } = mutation;
-      switch (type) {
-        case 'characterData': {
-          const value = target.textContent;
-          if (!isBlocked(target, blockClass) && value !== oldValue) {
-            texts.push({
-              value,
-              node: target,
-            });
-          }
-          break;
-        }
-        case 'attributes': {
-          const value = (target as HTMLElement).getAttribute(attributeName!);
-          if (isBlocked(target, blockClass) || value === oldValue) {
-            return;
-          }
-          let item: attributeCursor | undefined = attributes.find(
-            (a) => a.node === target,
-          );
-          if (!item) {
-            item = {
-              node: target,
-              attributes: {},
-            };
-            attributes.push(item);
-          }
-          // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName!] = transformAttribute(
-            document,
-            attributeName!,
-            value!,
-          );
-          break;
-        }
-        case 'childList': {
-          addedNodes.forEach((n) => genAdds(n, target));
-          removedNodes.forEach((n) => {
-            const nodeId = mirror.getId(n as INode);
-            const parentId = mirror.getId(target as INode);
-            if (isBlocked(n, blockClass)) {
-              return;
-            }
-            // removed node has not been serialized yet, just remove it from the Set
-            if (addedSet.has(n)) {
-              deepDelete(addedSet, n);
-              droppedSet.add(n);
-            } else if (addedSet.has(target) && nodeId === -1) {
-              /**
-               * If target was newly added and removed child node was
-               * not serialized, it means the child node has been removed
-               * before callback fired, so we can ignore it because
-               * newly added node will be serialized without child nodes.
-               * TODO: verify this
-               */
-            } else if (isAncestorRemoved(target as INode)) {
-              /**
-               * If parent id was not in the mirror map any more, it
-               * means the parent node has already been removed. So
-               * the node is also removed which we do not need to track
-               * and replay.
-               */
-            } else if (movedSet.has(n) && movedMap[moveKey(nodeId, parentId)]) {
-              deepDelete(movedSet, n);
-            } else {
-              removes.push({
-                parentId,
-                id: nodeId,
-              });
-            }
-            mirror.removeNodeFromMap(n as INode);
-          });
-          break;
-        }
-        default:
-          break;
-      }
-    });
-
-    /**
-     * Sometimes child node may be pushed before its newly added
-     * parent, so we init a queue to store these nodes.
-     */
-    const addQueue: Node[] = [];
-    const pushAdd = (n: Node) => {
-      const parentId = mirror.getId((n.parentNode as Node) as INode);
-      const nextId =
-        n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
-      if (parentId === -1 || nextId === -1) {
-        return addQueue.push(n);
-      }
-      adds.push({
-        parentId,
-        nextId,
-        node: serializeNodeWithId(
-          n,
-          document,
-          mirror.map,
-          blockClass,
-          true,
-          inlineStylesheet,
-          maskAllInputs,
-        )!,
-      });
-    };
-
-    for (const n of movedSet) {
-      pushAdd(n);
-    }
-
-    for (const n of addedSet) {
-      if (!isAncestorInSet(droppedSet, n) && !isParentRemoved(removes, n)) {
-        pushAdd(n);
-      } else if (isAncestorInSet(movedSet, n)) {
-        pushAdd(n);
-      } else {
-        droppedSet.add(n);
-      }
-    }
-
-    while (addQueue.length) {
-      if (
-        addQueue.every(
-          (n) => mirror.getId((n.parentNode as Node) as INode) === -1,
-        )
-      ) {
-        /**
-         * If all nodes in queue could not find a serialized parent,
-         * it may be a bug or corner case. We need to escape the
-         * dead while loop at once.
-         */
-        break;
-      }
-      pushAdd(addQueue.shift()!);
-    }
-
-    const payload = {
-      texts: texts
-        .map((text) => ({
-          id: mirror.getId(text.node as INode),
-          value: text.value,
-        }))
-        // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => mirror.has(text.id)),
-      attributes: attributes
-        .map((attribute) => ({
-          id: mirror.getId(attribute.node as INode),
-          attributes: attribute.attributes,
-        }))
-        // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => mirror.has(attribute.id)),
-      removes,
-      adds,
-    };
-    // payload may be empty if the mutations happened in some blocked elements
-    if (
-      !payload.texts.length &&
-      !payload.attributes.length &&
-      !payload.removes.length &&
-      !payload.adds.length
-    ) {
-      return;
-    }
-    cb(payload);
-  });
+  // see mutation.ts for details
+  const mutationBuffer = new MutationBuffer(
+    cb,
+    blockClass,
+    inlineStylesheet,
+    maskAllInputs,
+  );
+  const observer = new MutationObserver(mutationBuffer.processMutations);
   observer.observe(document, {
     attributes: true,
     attributeOldValue: true,

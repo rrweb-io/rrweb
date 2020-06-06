@@ -127,6 +127,14 @@ export declare type hooksParam = {
     mediaInteaction?: mediaInteractionCallback;
     styleSheetRule?: styleSheetRuleCallback;
 };
+export declare type mutationRecord = {
+    type: string;
+    target: Node;
+    oldValue: string | null;
+    addedNodes: NodeList;
+    removedNodes: NodeList;
+    attributeName: string | null;
+};
 export declare type textCursor = {
     node: Node;
     value: string | null;

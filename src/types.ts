@@ -166,6 +166,16 @@ export type hooksParam = {
   styleSheetRule?: styleSheetRuleCallback;
 };
 
+// https://dom.spec.whatwg.org/#interface-mutationrecord
+export type mutationRecord = {
+  type: string,
+  target: Node,
+  oldValue: string | null,
+  addedNodes: NodeList,
+  removedNodes: NodeList,
+  attributeName: string | null,
+}
+
 export type textCursor = {
   node: Node;
   value: string | null;
