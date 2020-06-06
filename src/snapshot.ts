@@ -8,7 +8,7 @@ import {
 } from './types';
 
 let _id = 1;
-const symbolAndNumberRegex = RegExp('[^a-z1-6]');
+const symbolAndNumberRegex = RegExp('[^a-z1-6\-]');
 
 function genId(): number {
   return _id++;
@@ -32,9 +32,9 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
     const rules = s.rules || s.cssRules;
     return rules
       ? Array.from(rules).reduce(
-          (prev, cur) => prev + getCssRuleString(cur),
-          '',
-        )
+        (prev, cur) => prev + getCssRuleString(cur),
+        '',
+      )
       : null;
   } catch (error) {
     return null;
