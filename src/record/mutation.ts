@@ -114,7 +114,6 @@ export default class MutationBuffer {
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
   private removes: removedNodeMutation[] = [];
-  private adds: addedNodeMutation[] = [];
 
   private movedMap: Record<string, true> = {};
 
@@ -161,6 +160,14 @@ export default class MutationBuffer {
 
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation);
+    if (!this.paused) {
+      this.emit();
+    }
+  };
+
+  public emit = () => {
+
+    const adds: addedNodeMutation[] = [];
 
     /**
      * Sometimes child node may be pushed before its newly added
@@ -184,7 +191,7 @@ export default class MutationBuffer {
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
-      this.adds.push({
+      adds.push({
         parentId,
         nextId,
         node: serializeNodeWithId(
@@ -255,12 +262,6 @@ export default class MutationBuffer {
       pushAdd(node.value);
     }
 
-    if (!this.paused) {
-      this.emit();
-    }
-  };
-
-  public emit = () => {
     const payload = {
       texts: this.texts
         .map((text) => ({
@@ -277,7 +278,7 @@ export default class MutationBuffer {
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => mirror.has(attribute.id)),
       removes: this.removes,
-      adds: this.adds,
+      adds: adds,
     };
     // payload may be empty if the mutations happened in some blocked elements
     if (
@@ -294,7 +295,6 @@ export default class MutationBuffer {
     this.texts = [];
     this.attributes = [];
     this.removes = [];
-    this.adds = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
