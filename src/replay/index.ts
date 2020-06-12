@@ -218,7 +218,7 @@ export class Replayer {
   private setupDom() {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
-    this.config.root.appendChild(this.wrapper);
+    this.config.root!.appendChild(this.wrapper);
 
     this.mouse = document.createElement('div');
     this.mouse.classList.add('replayer-mouse');
@@ -554,7 +554,7 @@ export class Replayer {
         const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
-            if (((target as Node) as HTMLElement).blur) {
+            if ('blur' in ((target as Node) as HTMLElement)) {
               ((target as Node) as HTMLElement).blur();
             }
             break;

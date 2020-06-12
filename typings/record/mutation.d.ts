@@ -13,8 +13,8 @@ export default class MutationBuffer {
     private inlineStylesheet;
     private maskAllInputs;
     constructor(cb: mutationCallBack, blockClass: blockClass, inlineStylesheet: boolean, maskAllInputs: boolean);
-    processMutations(mutations: mutationRecord[]): void;
+    processMutations: (mutations: mutationRecord[]) => void;
     private processMutation;
     private genAdds;
-    emit(): void;
+    emit: () => void;
 }

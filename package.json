@@ -55,7 +55,7 @@
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "tslint": "^4.5.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.5"
   },
   "dependencies": {
     "@types/smoothscroll-polyfill": "^0.3.0",
