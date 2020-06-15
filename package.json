@@ -21,7 +21,7 @@
   "module": "es/rrweb/entries/all.js",
   "unpkg": "dist/rrweb.js",
   "sideEffects": false,
-  "typings": "typings/index.d.ts",
+  "typings": "typings/entries/all.d.ts",
   "files": [
     "dist",
     "lib",
