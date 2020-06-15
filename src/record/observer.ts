@@ -181,8 +181,8 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, window);
 }
 
-const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
-const MASK_TYPES = [
+export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
+export const MASK_TYPES = [
   'color',
   'date',
   'datetime-local',
