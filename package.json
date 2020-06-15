@@ -18,7 +18,7 @@
     "rrweb"
   ],
   "main": "lib/rrweb-all.js",
-  "module": "es/rrweb/entries/all.js",
+  "module": "es/rrweb/src/entries/all.js",
   "unpkg": "dist/rrweb.js",
   "sideEffects": false,
   "typings": "typings/entries/all.d.ts",
