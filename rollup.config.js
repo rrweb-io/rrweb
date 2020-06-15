@@ -11,20 +11,26 @@ function toRecordPath(path) {
     .replace('rrweb', 'rrweb-record');
 }
 
-function toPackPath(path) {
+function toRecordPackPath(path) {
   return path
-    .replace(/^([\w]+)\//, '$1/packer/')
-    .replace('rrweb', 'rrweb-pack');
+    .replace(/^([\w]+)\//, '$1/record/')
+    .replace('rrweb', 'rrweb-record-pack');
 }
 
-function toPackerPath(path) {
+function toReplayPath(path) {
   return path
-    .replace(/^([\w]+)\//, '$1/packer/')
-    .replace('rrweb', 'rrweb-packer');
+    .replace(/^([\w]+)\//, '$1/replay/')
+    .replace('rrweb', 'rrweb-replay');
 }
 
-function toBoostPath(path) {
-  return path.replace('rrweb', 'rrweb-boost');
+function toReplayUnpackPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/replay/')
+    .replace('rrweb', 'rrweb-replay-unpack');
+}
+
+function toAllPath(path) {
+  return path.replace('rrweb', 'rrweb-all');
 }
 
 function toMinPath(path) {
@@ -44,17 +50,23 @@ const baseConfigs = [
     name: 'rrwebRecord',
     pathFn: toRecordPath,
   },
-  // pack only
+  // record and pack
   {
-    input: './src/packer/pack.ts',
-    name: 'rrwebPack',
-    pathFn: toPackPath,
+    input: './src/entries/record-pack.ts',
+    name: 'rrwebRecord',
+    pathFn: toRecordPackPath,
   },
-  // packer only
+  // replay only
   {
-    input: './src/packer/index.ts',
-    name: 'rrwebPacker',
-    pathFn: toPackerPath,
+    input: './src/replay/index.ts',
+    name: 'rrwebReplay',
+    pathFn: toReplayPath,
+  },
+  // replay and unpack
+  {
+    input: './src/entries/replay-unpack.ts',
+    name: 'rrwebReplay',
+    pathFn: toReplayUnpackPath,
   },
   // record and replay
   {
@@ -64,9 +76,9 @@ const baseConfigs = [
   },
   // all in one
   {
-    input: './src/boost.ts',
-    name: 'rrwebBoost',
-    pathFn: toBoostPath,
+    input: './src/entries/all.ts',
+    name: 'rrweb',
+    pathFn: toAllPath,
   },
 ];
 
@@ -119,7 +131,7 @@ for (const c of baseConfigs) {
     output: [
       {
         format: 'cjs',
-        file: c.pathFn(pkg.main),
+        file: c.pathFn('lib/rrweb.js'),
       },
     ],
   });

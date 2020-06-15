@@ -17,8 +17,8 @@
   "keywords": [
     "rrweb"
   ],
-  "main": "lib/rrweb-boost.js",
-  "module": "es/rrweb/src/boost.js",
+  "main": "lib/rrweb-all.js",
+  "module": "es/rrweb/entries/all.js",
   "unpkg": "dist/rrweb.js",
   "sideEffects": false,
   "typings": "typings/index.d.ts",
