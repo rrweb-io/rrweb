@@ -12,6 +12,8 @@
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
 
+> 我已开通 Github Sponsor， 您可以通过赞助的形式帮助 rrweb 的开发。
+
 rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
 
 **目前 rrweb 已经解决了许多录制与回放中的难点问题，但在 1.0 版本 release 之前数据结构仍有可能发生变化，请谨慎用于生产环境中。**

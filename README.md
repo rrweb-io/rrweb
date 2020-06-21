@@ -14,6 +14,8 @@
 
 [中文文档](./README.zh_CN.md)
 
+> I have joined Github Sponsors and highly appreciate your sponsorship.
+
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
 **Currently, rrweb has already solved many difficult problems in recording and replaying, but the data structure may still be changed before the release of Version 1.0. So please be cautious to use rrweb in the production environment.**
