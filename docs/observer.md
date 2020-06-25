@@ -27,7 +27,7 @@ During replay, the dropdown menu does not automatically appear after the "click 
 
 Fortunately, modern browsers have provided us with a very powerful API which can do exactly this: [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver).
 
-This documentation does not explain the basic usages of MutationObserver, but only focusses on aspects in particular relevant to rrweb.
+This documentation does not explain the basic usages of MutationObserver, but only focuses on aspects in particular relevant to rrweb.
 
 The first thing to understand is that MutationObserver uses a **Bulk Asynchronous** callback. Specifically, there will be a single callback after a series of DOM changes occur, and it is passed an array of multiple mutation records.
 
@@ -53,7 +53,7 @@ In the first case, two mutation records will be generated, namely adding node n1
 
 Due to the second case, when processing new nodes we must traverse all its descendants to ensure that all new nodes are recorded, however this strategy will cause n2 to be (incorrectly) recorded during the first record. Then, when processing the second record, adding a the node for a second time will result in a DOM structure that is inconsistent with the original page during replay.
 
-Therefore, when dealing with multiple mutation records in a callback, we need to "lazely" process the newly added nodes, that is, first collect all raw, unprocessed nodes when we go through each mutation record, and then after we've been through all the mutation records we determine the the order nodes were added to the DOM. When new these nodes are added we perform deduplication to ensure that each node is only recorded once and we check no nodes were missed.
+Therefore, when dealing with multiple mutation records in a callback, we need to "lazily" process the newly-added nodes, that is, first collect all raw, unprocessed nodes when we go through each mutation record, and then after we've been through all the mutation records we determine the the order nodes were added to the DOM. When new these nodes are added we perform deduplication to ensure that each node is only recorded once and we check no nodes were missed.
 
 We already introduced in the [serialization design document](./serialization.md) that we need to maintain a mapping of `id -> Node`, so when new nodes appear, we need to serialize the new nodes and add them to the map. But since we want to perform deduplication, and thus only serialize after all the mutation records have been processed, some problems may arise, as demonstrated in the following example:
 
