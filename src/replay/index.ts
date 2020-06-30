@@ -155,6 +155,8 @@ export class Replayer {
     const firstEvent = events[0];
     const lastEvent = events[events.length - 1];
     return {
+      startTime: firstEvent.timestamp,
+      endTime: lastEvent.timestamp,
       totalTime: lastEvent.timestamp - firstEvent.timestamp,
     };
   }
