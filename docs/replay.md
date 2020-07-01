@@ -6,7 +6,7 @@ During replay, we will get the complete snapshot chain at one time. If all the s
 
 The reason why **high precision** is emphasized is because the native `setTimeout` does not guarantee accurate execution after the set delay time, for example, when the main thread is blocked.
 
-For our replay function, this inprecise delay is unacceptable and can lead to various weird phenomena, so we implement a constantly calibrated timer with `requestAnimationFrame` to ensure that in most cases incremental snapshots have a replay delay of no more than one frame.
+For our replay function, this imprecise delay is unacceptable and can lead to various weird phenomena, so we implement a constantly calibrated timer with `requestAnimationFrame` to ensure that in most cases incremental snapshots have a replay delay of no more than one frame.
 
 At the same time, the custom timer is also the basis for our "fast forward" function.
 
