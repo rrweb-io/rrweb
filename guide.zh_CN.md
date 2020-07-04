@@ -106,6 +106,80 @@ setInterval(save, 10 * 1000);
 - 在 HTML 元素中添加类名 `.rr-ignore` 将会避免录制该元素的输入事件。
 - `input[type="password"]` 类型的密码输入框默认不会录制输入事件。
 
+#### 重新制作快照
+
+默认情况下，要重放内容需要所有的event，如果你不想存储所有的event，可以使用`checkout`配置。
+
+**多数时候你不必这样配置**。但比如在页面错误发生时，你只想捕获最近的几次 event ，这里有一个例子：
+
+```js
+// 使用二维数组来存放多个 event 数组
+const eventsMatrix = [[]];
+
+rrweb.record({
+  emit(event, isCheckout) {
+    // isCheckout 是一个标识，告诉你重新制作了快照
+    if (isCheckout) {
+      eventsMatrix.push([]);
+    }
+    const lastEvents = eventsMatrix[eventsMatrix.length - 1];
+    lastEvents.push(event);
+  },
+  checkoutEveryNth: 200, // 每 200 个 event 重新制作快照
+});
+
+// 向后端传送最新的两个 event 数组
+window.onerror = function() {
+  const len = eventsMatrix.length;
+  const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
+  const body = JSON.stringify({ events });
+  fetch('http://YOUR_BACKEND_API', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body,
+  });
+};
+```
+
+由于rrweb 使用了增量快照机制，我们不能指定数量来捕获最近的几次 event。上面这个例子，你可以拿到最新的 200-400 个 event 来发送给你的后端。
+
+类似的，你可以通过配置 `checkoutEveryNms` 来捕获最近指定时间的 event :
+
+```js
+// 使用二维数组来存放多个 event 数组
+const eventsMatrix = [[]];
+
+rrweb.record({
+  emit(event, isCheckout) {
+    // isCheckout 是一个标识，告诉你重新制作了快照
+    if (isCheckout) {
+      eventsMatrix.push([]);
+    }
+    const lastEvents = eventsMatrix[eventsMatrix.length - 1];
+    lastEvents.push(event);
+  },
+  checkoutEveryNms: 5 * 60 * 1000, // 每5分钟重新制作快照
+});
+
+// 向后端传送最新的两个 event 数组
+window.onerror = function() {
+  const len = eventsMatrix.length;
+  const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
+  const body = JSON.stringify({ events });
+  fetch('http://YOUR_BACKEND_API', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body,
+  });
+};
+```
+
+在上面的例子中，你最终会拿到最新的 5-10 分钟的 event 来发送给你的后端。
+
 ### 回放
 
 回放时需要引入对应的 CSS 文件：
