@@ -75,6 +75,33 @@ export type PlayerState =
       context: PlayerContext;
     };
 
+/**
+ * If the array have multiple meta and fullsnapshot events,
+ * return the events from last meta to the end.
+ */
+export function getLastSession(events: eventWithTime[]): eventWithTime[] {
+  const lastSession: eventWithTime[] = [];
+
+  let hasFullSnapshot = false;
+  let hasMeta = false;
+
+  for (let idx = events.length - 1; idx >= 0; idx--) {
+    const event = events[idx];
+    lastSession.unshift(event);
+    if (event.type === EventType.FullSnapshot) {
+      hasFullSnapshot = true;
+    }
+    if (event.type === EventType.Meta) {
+      hasMeta = true;
+    }
+    if (hasFullSnapshot && hasMeta) {
+      break;
+    }
+  }
+
+  return lastSession;
+}
+
 type PlayerAssets = {
   emitter: Emitter;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
@@ -171,22 +198,10 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
-          const needed_events = new Array<eventWithTime>();
-          for (const event of events) {
-            if (event.timestamp < baselineTime &&
-                event.type === EventType.FullSnapshot &&
-                needed_events.length > 0 &&
-                needed_events[needed_events.length -1].type === EventType.Meta
-               ) {
-              // delete everything before Meta
-              // so that we only rebuild from the latest full snapshot
-              needed_events.splice(0, needed_events.length -1);
-            }
-            needed_events.push(event);
-          }
+          const neededEvents = getLastSession(events);
 
           const actions = new Array<actionWithDelay>();
-          for (const event of needed_events) {
+          for (const event of neededEvents) {
             if (
               lastPlayedEvent &&
               (event.timestamp <= lastPlayedEvent.timestamp ||
