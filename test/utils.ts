@@ -1,7 +1,12 @@
 import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
 import { NodeType } from 'rrweb-snapshot';
 import { assert } from 'chai';
-import { EventType, IncrementalSource, eventWithTime } from '../src/types';
+import {
+  EventType,
+  IncrementalSource,
+  eventWithTime,
+  MouseInteractions,
+} from '../src/types';
 import * as puppeteer from 'puppeteer';
 
 export async function launchPuppeteer() {
@@ -42,7 +47,7 @@ export function matchSnapshot(
 function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
-      .filter(s => {
+      .filter((s) => {
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseMove
@@ -51,7 +56,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
         }
         return true;
       })
-      .map(s => {
+      .map((s) => {
         if (s.type === EventType.Meta) {
           s.data.href = 'about:blank';
         }
@@ -68,7 +73,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.Mutation
         ) {
-          s.data.attributes.forEach(a => {
+          s.data.attributes.forEach((a) => {
             if (
               'style' in a.attributes &&
               coordinatesReg.test(a.attributes.style!)
@@ -76,7 +81,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               delete a.attributes.style;
             }
           });
-          s.data.adds.forEach(add => {
+          s.data.adds.forEach((add) => {
             if (
               add.node.type === NodeType.Element &&
               'style' in add.node.attributes &&
@@ -103,3 +108,97 @@ export function assertSnapshot(
   const result = matchSnapshot(stringifySnapshots(snapshots), filename, name);
   assert(result.pass, result.pass ? '' : result.report());
 }
+
+const now = Date.now();
+export const sampleEvents: eventWithTime[] = [
+  {
+    type: EventType.DomContentLoaded,
+    data: {},
+    timestamp: now,
+  },
+  {
+    type: EventType.Load,
+    data: {},
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.Meta,
+    data: {
+      href: 'http://localhost',
+      width: 1000,
+      height: 800,
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.FullSnapshot,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'html',
+            attributes: {},
+            childNodes: [
+              {
+                type: 2,
+                tagName: 'head',
+                attributes: {},
+                childNodes: [],
+                id: 3,
+              },
+              {
+                type: 2,
+                tagName: 'body',
+                attributes: {},
+                childNodes: [],
+                id: 4,
+              },
+            ],
+            id: 2,
+          },
+        ],
+        id: 1,
+      },
+      initialOffset: {
+        top: 0,
+        left: 0,
+      },
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.MouseInteraction,
+      type: MouseInteractions.Click,
+      id: 1,
+      x: 0,
+      y: 0,
+    },
+    timestamp: now + 2000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.MouseInteraction,
+      type: MouseInteractions.Click,
+      id: 1,
+      x: 0,
+      y: 0,
+    },
+    timestamp: now + 3000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.MouseInteraction,
+      type: MouseInteractions.Click,
+      id: 1,
+      x: 0,
+      y: 0,
+    },
+    timestamp: now + 4000,
+  },
+];
