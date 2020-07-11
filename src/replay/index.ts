@@ -1,4 +1,4 @@
-import { rebuild, buildNodeWithSN } from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import * as smoothscroll from 'smoothscroll-polyfill';
 import { Timer } from './timer';
@@ -22,8 +22,11 @@ import {
   Emitter,
   MediaInteractions,
   metaEvent,
+  mutationData,
+  scrollData,
+  inputData,
 } from '../types';
-import { mirror, polyfill } from '../utils';
+import { mirror, polyfill, TreeIndex } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
@@ -71,6 +74,9 @@ export class Replayer {
 
   private service!: ReturnType<typeof createPlayerService>;
 
+  private treeIndex!: TreeIndex;
+  private fragmentParentMap!: Map<INode, INode>;
+
   constructor(
     events: Array<eventWithTime | string>,
     config?: Partial<playerConfig>,
@@ -82,11 +88,41 @@ export class Replayer {
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
-    this.emitter.on('resize', this.handleResize as Handler);
+    this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
     smoothscroll.polyfill();
     polyfill();
     this.setupDom();
+
+    this.treeIndex = new TreeIndex();
+    this.fragmentParentMap = new Map<INode, INode>();
+    this.emitter.on(ReplayerEvents.Flush, () => {
+      const { scrollMap, inputMap } = this.treeIndex.flush();
+
+      for (const d of scrollMap.values()) {
+        this.applyScroll(d);
+      }
+      for (const d of inputMap.values()) {
+        this.applyInput(d);
+      }
+
+      for (const [frag, parent] of this.fragmentParentMap.entries()) {
+        mirror.map[parent.__sn.id] = parent;
+        /**
+         * If we have already set value attribute on textarea,
+         * then we could not apply text content as default value any more.
+         */
+        if (
+          parent.__sn.type === NodeType.Element &&
+          parent.__sn.tagName === 'textarea' &&
+          frag.textContent
+        ) {
+          ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
+        }
+        parent.appendChild(frag);
+      }
+      this.fragmentParentMap.clear();
+    });
 
     this.service = createPlayerService(
       {
@@ -402,130 +438,13 @@ export class Replayer {
     const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
-        d.removes.forEach((mutation) => {
-          const target = mirror.getNode(mutation.id);
-          if (!target) {
-            return this.warnNodeNotFound(d, mutation.id);
-          }
-          const parent = mirror.getNode(mutation.parentId);
-          if (!parent) {
-            return this.warnNodeNotFound(d, mutation.parentId);
-          }
-          // target may be removed with its parents before
-          mirror.removeNodeFromMap(target);
-          if (parent) {
-            parent.removeChild(target);
-          }
-        });
-
-        const legacy_missingNodeMap: missingNodeMap = {
-          ...this.legacy_missingNodeRetryMap,
-        };
-        const queue: addedNodeMutation[] = [];
-
-        const appendNode = (mutation: addedNodeMutation) => {
-          const parent = mirror.getNode(mutation.parentId);
-          if (!parent) {
-            return queue.push(mutation);
-          }
-
-          let previous: Node | null = null;
-          let next: Node | null = null;
-          if (mutation.previousId) {
-            previous = mirror.getNode(mutation.previousId) as Node;
-          }
-          if (mutation.nextId) {
-            next = mirror.getNode(mutation.nextId) as Node;
-          }
-          // next not present at this moment
-          if (mutation.nextId !== null && mutation.nextId !== -1 && !next) {
-            return queue.push(mutation);
-          }
-
-          const target = buildNodeWithSN(
-            mutation.node,
-            this.iframe.contentDocument!,
-            mirror.map,
-            true,
-          ) as Node;
-
-          // legacy data, we should not have -1 siblings any more
-          if (mutation.previousId === -1 || mutation.nextId === -1) {
-            legacy_missingNodeMap[mutation.node.id] = {
-              node: target,
-              mutation,
-            };
-            return;
-          }
-
-          if (
-            previous &&
-            previous.nextSibling &&
-            previous.nextSibling.parentNode
-          ) {
-            parent.insertBefore(target, previous.nextSibling);
-          } else if (next && next.parentNode) {
-            // making sure the parent contains the reference nodes
-            // before we insert target before next.
-            parent.contains(next)
-              ? parent.insertBefore(target, next)
-              : parent.insertBefore(target, null);
-          } else {
-            parent.appendChild(target);
-          }
-
-          if (mutation.previousId || mutation.nextId) {
-            this.legacy_resolveMissingNode(
-              legacy_missingNodeMap,
-              parent,
-              target,
-              mutation,
-            );
-          }
-        };
-
-        d.adds.forEach((mutation) => {
-          appendNode(mutation);
-        });
-
-        while (queue.length) {
-          if (queue.every((m) => !Boolean(mirror.getNode(m.parentId)))) {
-            return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
-          }
-          const mutation = queue.shift()!;
-          appendNode(mutation);
+        if (isSync) {
+          d.adds.forEach((m) => this.treeIndex.add(m));
+          d.texts.forEach((m) => this.treeIndex.text(m));
+          d.attributes.forEach((m) => this.treeIndex.attribute(m));
+          d.removes.forEach((m) => this.treeIndex.remove(m));
         }
-
-        if (Object.keys(legacy_missingNodeMap).length) {
-          Object.assign(this.legacy_missingNodeRetryMap, legacy_missingNodeMap);
-        }
-
-        d.texts.forEach((mutation) => {
-          const target = mirror.getNode(mutation.id);
-          if (!target) {
-            return this.warnNodeNotFound(d, mutation.id);
-          }
-          target.textContent = mutation.value;
-        });
-        d.attributes.forEach((mutation) => {
-          const target = mirror.getNode(mutation.id);
-          if (!target) {
-            return this.warnNodeNotFound(d, mutation.id);
-          }
-          for (const attributeName in mutation.attributes) {
-            if (typeof attributeName === 'string') {
-              const value = mutation.attributes[attributeName];
-              if (value !== null) {
-                ((target as Node) as Element).setAttribute(
-                  attributeName,
-                  value,
-                );
-              } else {
-                ((target as Node) as Element).removeAttribute(attributeName);
-              }
-            }
-          }
-        });
+        this.applyMutation(d, true);
         break;
       }
       case IncrementalSource.MouseMove:
@@ -604,27 +523,11 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const target = mirror.getNode(d.id);
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
+        if (isSync) {
+          this.treeIndex.scroll(d);
+          break;
         }
-        if ((target as Node) === this.iframe.contentDocument) {
-          this.iframe.contentWindow!.scrollTo({
-            top: d.y,
-            left: d.x,
-            behavior: isSync ? 'auto' : 'smooth',
-          });
-        } else {
-          try {
-            ((target as Node) as Element).scrollTop = d.y;
-            ((target as Node) as Element).scrollLeft = d.x;
-          } catch (error) {
-            /**
-             * Seldomly we may found scroll target was removed before
-             * its last scroll event.
-             */
-          }
-        }
+        this.applyScroll(d);
         break;
       }
       case IncrementalSource.ViewportResize:
@@ -643,16 +546,11 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const target = mirror.getNode(d.id);
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
+        if (isSync) {
+          this.treeIndex.input(d);
+          break;
         }
-        try {
-          ((target as Node) as HTMLInputElement).checked = d.isChecked;
-          ((target as Node) as HTMLInputElement).value = d.text;
-        } catch (error) {
-          // for safe
-        }
+        this.applyInput(d);
         break;
       }
       case IncrementalSource.MediaInteraction: {
@@ -709,6 +607,188 @@ export class Replayer {
         break;
       }
       default:
+    }
+  }
+
+  private applyMutation(d: mutationData, useVirtualParent: boolean) {
+    d.removes.forEach((mutation) => {
+      const target = mirror.getNode(mutation.id);
+      if (!target) {
+        return this.warnNodeNotFound(d, mutation.id);
+      }
+      const parent = mirror.getNode(mutation.parentId);
+      if (!parent) {
+        return this.warnNodeNotFound(d, mutation.parentId);
+      }
+      // target may be removed with its parents before
+      mirror.removeNodeFromMap(target);
+      if (parent) {
+        const realParent = this.fragmentParentMap.get(parent);
+        if (realParent && realParent.contains(target)) {
+          realParent.removeChild(target);
+        } else {
+          parent.removeChild(target);
+        }
+      }
+    });
+
+    const legacy_missingNodeMap: missingNodeMap = {
+      ...this.legacy_missingNodeRetryMap,
+    };
+    const queue: addedNodeMutation[] = [];
+
+    const appendNode = (mutation: addedNodeMutation) => {
+      let parent = mirror.getNode(mutation.parentId);
+      if (!parent) {
+        return queue.push(mutation);
+      }
+
+      const parentInDocument = this.iframe.contentDocument!.contains(parent);
+      if (useVirtualParent && parentInDocument) {
+        const virtualParent = (document.createDocumentFragment() as unknown) as INode;
+        mirror.map[mutation.parentId] = virtualParent;
+        this.fragmentParentMap.set(virtualParent, parent);
+        while (parent.firstChild) {
+          virtualParent.appendChild(parent.firstChild);
+        }
+        parent = virtualParent;
+      }
+
+      let previous: Node | null = null;
+      let next: Node | null = null;
+      if (mutation.previousId) {
+        previous = mirror.getNode(mutation.previousId) as Node;
+      }
+      if (mutation.nextId) {
+        next = mirror.getNode(mutation.nextId) as Node;
+      }
+      // next not present at this moment
+      if (mutation.nextId !== null && mutation.nextId !== -1 && !next) {
+        return queue.push(mutation);
+      }
+
+      const target = buildNodeWithSN(
+        mutation.node,
+        this.iframe.contentDocument!,
+        mirror.map,
+        true,
+      ) as Node;
+
+      // legacy data, we should not have -1 siblings any more
+      if (mutation.previousId === -1 || mutation.nextId === -1) {
+        legacy_missingNodeMap[mutation.node.id] = {
+          node: target,
+          mutation,
+        };
+        return;
+      }
+
+      if (previous && previous.nextSibling && previous.nextSibling.parentNode) {
+        parent.insertBefore(target, previous.nextSibling);
+      } else if (next && next.parentNode) {
+        // making sure the parent contains the reference nodes
+        // before we insert target before next.
+        parent.contains(next)
+          ? parent.insertBefore(target, next)
+          : parent.insertBefore(target, null);
+      } else {
+        parent.appendChild(target);
+      }
+
+      if (mutation.previousId || mutation.nextId) {
+        this.legacy_resolveMissingNode(
+          legacy_missingNodeMap,
+          parent,
+          target,
+          mutation,
+        );
+      }
+    };
+
+    d.adds.forEach((mutation) => {
+      appendNode(mutation);
+    });
+
+    while (queue.length) {
+      if (queue.every((m) => !Boolean(mirror.getNode(m.parentId)))) {
+        return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
+      }
+      const mutation = queue.shift()!;
+      appendNode(mutation);
+    }
+
+    if (Object.keys(legacy_missingNodeMap).length) {
+      Object.assign(this.legacy_missingNodeRetryMap, legacy_missingNodeMap);
+    }
+
+    d.texts.forEach((mutation) => {
+      let target = mirror.getNode(mutation.id);
+      if (!target) {
+        return this.warnNodeNotFound(d, mutation.id);
+      }
+      /**
+       * apply text content to real parent directly
+       */
+      if (this.fragmentParentMap.has(target)) {
+        target = this.fragmentParentMap.get(target)!;
+      }
+      target.textContent = mutation.value;
+    });
+    d.attributes.forEach((mutation) => {
+      let target = mirror.getNode(mutation.id);
+      if (!target) {
+        return this.warnNodeNotFound(d, mutation.id);
+      }
+      if (this.fragmentParentMap.has(target)) {
+        target = this.fragmentParentMap.get(target)!;
+      }
+      for (const attributeName in mutation.attributes) {
+        if (typeof attributeName === 'string') {
+          const value = mutation.attributes[attributeName];
+          if (value !== null) {
+            ((target as Node) as Element).setAttribute(attributeName, value);
+          } else {
+            ((target as Node) as Element).removeAttribute(attributeName);
+          }
+        }
+      }
+    });
+  }
+
+  private applyScroll(d: scrollData) {
+    const target = mirror.getNode(d.id);
+    if (!target) {
+      return this.debugNodeNotFound(d, d.id);
+    }
+    if ((target as Node) === this.iframe.contentDocument) {
+      this.iframe.contentWindow!.scrollTo({
+        top: d.y,
+        left: d.x,
+        behavior: 'smooth',
+      });
+    } else {
+      try {
+        ((target as Node) as Element).scrollTop = d.y;
+        ((target as Node) as Element).scrollLeft = d.x;
+      } catch (error) {
+        /**
+         * Seldomly we may found scroll target was removed before
+         * its last scroll event.
+         */
+      }
+    }
+  }
+
+  private applyInput(d: inputData) {
+    const target = mirror.getNode(d.id);
+    if (!target) {
+      return this.debugNodeNotFound(d, d.id);
+    }
+    try {
+      ((target as Node) as HTMLInputElement).checked = d.isChecked;
+      ((target as Node) as HTMLInputElement).value = d.text;
+    } catch (error) {
+      // for safe
     }
   }
 

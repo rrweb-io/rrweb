@@ -8,6 +8,7 @@ import {
   Emitter,
 } from '../types';
 import { Timer, getDelay } from './timer';
+import { needCastInSyncMode } from '../utils';
 
 export type PlayerContext = {
   events: eventWithTime[];
@@ -194,6 +195,9 @@ export function createPlayerService(
               continue;
             }
             const isSync = event.timestamp < baselineTime;
+            if (isSync && !needCastInSyncMode(event)) {
+              continue;
+            }
             const castFn = getCastFn(event, isSync);
             if (isSync) {
               castFn();
@@ -207,6 +211,7 @@ export function createPlayerService(
               });
             }
           }
+          emitter.emit(ReplayerEvents.Flush);
           timer.addActions(actions);
           timer.start();
         },
