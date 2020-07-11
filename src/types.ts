@@ -168,13 +168,13 @@ export type hooksParam = {
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
 export type mutationRecord = {
-  type: string,
-  target: Node,
-  oldValue: string | null,
-  addedNodes: NodeList,
-  removedNodes: NodeList,
-  attributeName: string | null,
-}
+  type: string;
+  target: Node;
+  oldValue: string | null;
+  addedNodes: NodeList;
+  removedNodes: NodeList;
+  attributeName: string | null;
+};
 
 export type textCursor = {
   node: Node;
@@ -377,4 +377,5 @@ export enum ReplayerEvents {
   MouseInteraction = 'mouse-interaction',
   EventCast = 'event-cast',
   CustomEvent = 'custom-event',
+  Flush = 'flush',
 }
