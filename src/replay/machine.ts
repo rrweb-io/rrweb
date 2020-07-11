@@ -4,6 +4,7 @@ import {
   eventWithTime,
   actionWithDelay,
   ReplayerEvents,
+  EventType,
   Emitter,
 } from '../types';
 import { Timer, getDelay } from './timer';
@@ -169,8 +170,22 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
-          const actions = new Array<actionWithDelay>();
+          const needed_events = new Array<eventWithTime>();
           for (const event of events) {
+            if (event.timestamp < baselineTime &&
+                event.type === EventType.FullSnapshot &&
+                needed_events.length > 0 &&
+                needed_events[needed_events.length -1].type === EventType.Meta
+               ) {
+              // delete everything before Meta
+              // so that we only rebuild from the latest full snapshot
+              needed_events.splice(0, needed_events.length -1);
+            }
+            needed_events.push(event);
+          }
+
+          const actions = new Array<actionWithDelay>();
+          for (const event of needed_events) {
             if (
               lastPlayedEvent &&
               (event.timestamp <= lastPlayedEvent.timestamp ||
