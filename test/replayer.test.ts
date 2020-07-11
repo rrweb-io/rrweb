@@ -6,6 +6,7 @@ import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
 import { Suite } from 'mocha';
 import { launchPuppeteer, sampleEvents as events } from './utils';
+import { EventType } from '../src/types';
 
 interface ISuite extends Suite {
   code: string;
@@ -59,7 +60,11 @@ describe('replayer', function (this: ISuite) {
       replayer.play();
       replayer['timer']['actions'].length;
     `);
-    expect(actionLength).to.equal(events.length);
+    expect(actionLength).to.equal(
+      events.filter(
+        (e) => ![EventType.DomContentLoaded, EventType.Load].includes(e.type),
+      ).length,
+    );
   });
 
   it('will clean actions when pause', async () => {

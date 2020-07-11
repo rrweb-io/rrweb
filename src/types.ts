@@ -336,6 +336,8 @@ export type playerConfig = {
 };
 
 export type playerMetaData = {
+  startTime: number;
+  endTime: number;
   totalTime: number;
 };
 
