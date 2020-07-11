@@ -79,27 +79,37 @@ export type PlayerState =
  * If the array have multiple meta and fullsnapshot events,
  * return the events from last meta to the end.
  */
-export function getLastSession(events: eventWithTime[]): eventWithTime[] {
-  const lastSession: eventWithTime[] = [];
-
-  let hasFullSnapshot = false;
-  let hasMeta = false;
+export function getLastSession(
+  events: eventWithTime[],
+  baselineTime: number,
+): eventWithTime[] {
+  let startMetaIdx: number | null = null;
+  let endMetaIdx: number | null = null;
 
   for (let idx = events.length - 1; idx >= 0; idx--) {
     const event = events[idx];
-    lastSession.unshift(event);
-    if (event.type === EventType.FullSnapshot) {
-      hasFullSnapshot = true;
-    }
     if (event.type === EventType.Meta) {
-      hasMeta = true;
+      if (event.timestamp > baselineTime) {
+        endMetaIdx = idx;
+      } else {
+        startMetaIdx = idx;
+      }
     }
-    if (hasFullSnapshot && hasMeta) {
+    if (startMetaIdx !== null) {
       break;
     }
   }
 
-  return lastSession;
+  // baseline time is less than first meta event
+  if (startMetaIdx === null && endMetaIdx !== null) {
+    startMetaIdx = endMetaIdx;
+    endMetaIdx = null;
+  }
+
+  return events.slice(
+    startMetaIdx ?? 0,
+    endMetaIdx === null ? events.length : endMetaIdx + 1,
+  );
 }
 
 type PlayerAssets = {
@@ -198,12 +208,13 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
-          const neededEvents = getLastSession(events);
+          const neededEvents = getLastSession(events, baselineTime);
 
           const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
             if (
               lastPlayedEvent &&
+              lastPlayedEvent.timestamp > baselineTime &&
               (event.timestamp <= lastPlayedEvent.timestamp ||
                 event === lastPlayedEvent)
             ) {

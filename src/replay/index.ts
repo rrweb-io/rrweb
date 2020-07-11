@@ -216,10 +216,10 @@ export class Replayer {
    * @param timeOffset number
    */
   public play(timeOffset = 0) {
-    if (this.service.state.value == 'ended') {
-      this.service.send({ type: 'REPLAY'});
+    if (this.service.state.value === 'ended') {
+      this.service.send({ type: 'REPLAY' });
     }
-    if (this.service.state.value == 'paused') {
+    if (this.service.state.value === 'paused') {
       this.service.send({ type: 'RESUME', payload: { timeOffset } });
     } else {
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
