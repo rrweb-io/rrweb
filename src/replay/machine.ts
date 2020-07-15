@@ -212,14 +212,6 @@ export function createPlayerService(
 
           const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
-            if (
-              lastPlayedEvent &&
-              lastPlayedEvent.timestamp > baselineTime &&
-              (event.timestamp <= lastPlayedEvent.timestamp ||
-                event === lastPlayedEvent)
-            ) {
-              continue;
-            }
             const isSync = event.timestamp < baselineTime;
             if (isSync && !needCastInSyncMode(event)) {
               continue;
