@@ -63,6 +63,7 @@ export declare type PlayerState = {
     value: 'live';
     context: PlayerContext;
 };
+export declare function discardPriorSnapshots(events: eventWithTime[], baselineTime: number): eventWithTime[];
 declare type PlayerAssets = {
     emitter: Emitter;
     getCastFn(event: eventWithTime, isSync: boolean): () => void;
