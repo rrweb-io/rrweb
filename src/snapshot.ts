@@ -242,6 +242,8 @@ function serializeNode(
         if (
           attributes.type !== 'radio' &&
           attributes.type !== 'checkbox' &&
+          attributes.type !== 'submit' &&
+          attributes.type !== 'button' &&
           value
         ) {
           attributes.value = maskAllInputs ? '*'.repeat(value.length) : value;
