@@ -237,8 +237,6 @@ function serializeNode(
         tagName === 'select'
       ) {
         const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
-        const needBlockTextarea =
-          tagName === 'textarea' && maskInputOptions.textarea;
         if (
           attributes.type !== 'radio' &&
           attributes.type !== 'checkbox' &&
@@ -248,7 +246,7 @@ function serializeNode(
         ) {
           attributes.value =
             maskInputOptions[attributes.type as keyof MaskInputOptions] ||
-            needBlockTextarea
+            maskInputOptions[tagName as keyof MaskInputOptions]
               ? '*'.repeat(value.length)
               : value;
         } else if ((n as HTMLInputElement).checked) {

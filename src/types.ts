@@ -83,6 +83,7 @@ export type MaskInputOptions = Partial<{
   time: boolean;
   url: boolean;
   week: boolean;
-  // unify textarea element with text input
+  // unify textarea and select element with text input
   textarea: boolean;
+  select: boolean;
 }>;
