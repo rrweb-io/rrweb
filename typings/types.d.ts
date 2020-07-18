@@ -1,4 +1,4 @@
-import { serializedNodeWithId, idNodeMap, INode } from 'rrweb-snapshot';
+import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 export declare enum EventType {
     DomContentLoaded = 0,
@@ -90,6 +90,12 @@ export declare type eventWithTime = event & {
     delay?: number;
 };
 export declare type blockClass = string | RegExp;
+export declare type SamplingStrategy = Partial<{
+    mousemove: boolean | number;
+    mouseInteraction: boolean | Record<string, boolean | undefined>;
+    scroll: number;
+    input: 'all' | 'last';
+}>;
 export declare type recordOptions<T> = {
     emit?: (e: T, isCheckout?: boolean) => void;
     checkoutEveryNth?: number;
@@ -97,10 +103,12 @@ export declare type recordOptions<T> = {
     blockClass?: blockClass;
     ignoreClass?: string;
     maskAllInputs?: boolean;
+    maskInputOptions?: MaskInputOptions;
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
-    mousemoveWait?: number;
     packFn?: PackFn;
+    sampling?: SamplingStrategy;
+    mousemoveWait?: number;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -112,10 +120,10 @@ export declare type observerParam = {
     mediaInteractionCb: mediaInteractionCallback;
     blockClass: blockClass;
     ignoreClass: string;
-    maskAllInputs: boolean;
+    maskInputOptions: MaskInputOptions;
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
-    mousemoveWait: number;
+    sampling: SamplingStrategy;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;
@@ -265,6 +273,8 @@ export declare type playerConfig = {
     unpackFn?: UnpackFn;
 };
 export declare type playerMetaData = {
+    startTime: number;
+    endTime: number;
     totalTime: number;
 };
 export declare type missingNode = {
@@ -297,6 +307,7 @@ export declare enum ReplayerEvents {
     SkipEnd = "skip-end",
     MouseInteraction = "mouse-interaction",
     EventCast = "event-cast",
-    CustomEvent = "custom-event"
+    CustomEvent = "custom-event",
+    Flush = "flush"
 }
 export {};

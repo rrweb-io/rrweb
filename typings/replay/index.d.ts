@@ -12,6 +12,8 @@ export declare class Replayer {
     private noramlSpeed;
     private legacy_missingNodeRetryMap;
     private service;
+    private treeIndex;
+    private fragmentParentMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
@@ -31,6 +33,9 @@ export declare class Replayer {
     private rebuildFullSnapshot;
     private waitForStylesheetLoad;
     private applyIncremental;
+    private applyMutation;
+    private applyScroll;
+    private applyInput;
     private legacy_resolveMissingNode;
     private moveAndHover;
     private hoverElements;

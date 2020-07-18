@@ -116,6 +116,46 @@ export function hookSetter<T>(
   return () => hookSetter(target, key, original || {}, true);
 }
 
+// copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
+export function patch(
+  // tslint:disable-next-line:no-any
+  source: { [key: string]: any },
+  name: string,
+  // tslint:disable-next-line:no-any
+  replacement: (...args: any[]) => any,
+): () => void {
+  if (!(name in source)) {
+    return () => {};
+  }
+
+  const original = source[name] as () => unknown;
+  const wrapped = replacement(original);
+
+  // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
+  // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
+  // tslint:disable-next-line:strict-type-predicates
+  if (typeof wrapped === 'function') {
+    try {
+      wrapped.prototype = wrapped.prototype || {};
+      Object.defineProperties(wrapped, {
+        __rrweb_original__: {
+          enumerable: false,
+          value: original,
+        },
+      });
+    } catch {
+      // This can throw if multiple fill happens on a global object like XMLHttpRequest
+      // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
+    }
+  }
+
+  source[name] = wrapped;
+
+  return () => {
+    source[name] = original;
+  };
+}
+
 export function getWindowHeight(): number {
   return (
     window.innerHeight ||

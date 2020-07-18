@@ -1,3 +1,4 @@
+import { MaskInputOptions } from 'rrweb-snapshot';
 import { mutationRecord, blockClass, mutationCallBack } from '../types';
 export default class MutationBuffer {
     private texts;
@@ -11,10 +12,10 @@ export default class MutationBuffer {
     private emissionCallback;
     private blockClass;
     private inlineStylesheet;
-    private maskAllInputs;
-    constructor(cb: mutationCallBack, blockClass: blockClass, inlineStylesheet: boolean, maskAllInputs: boolean);
+    private maskInputOptions;
+    constructor(cb: mutationCallBack, blockClass: blockClass, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions);
     processMutations: (mutations: mutationRecord[]) => void;
+    emit: () => void;
     private processMutation;
     private genAdds;
-    emit: () => void;
 }
