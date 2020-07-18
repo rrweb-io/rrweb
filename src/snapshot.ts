@@ -5,10 +5,11 @@ import {
   attributes,
   INode,
   idNodeMap,
+  MaskInputOptions,
 } from './types';
 
 let _id = 1;
-const symbolAndNumberRegex = RegExp('[^a-z1-6\-]');
+const symbolAndNumberRegex = RegExp('[^a-z1-6-]');
 
 function genId(): number {
   return _id++;
@@ -32,9 +33,9 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
     const rules = s.rules || s.cssRules;
     return rules
       ? Array.from(rules).reduce(
-        (prev, cur) => prev + getCssRuleString(cur),
-        '',
-      )
+          (prev, cur) => prev + getCssRuleString(cur),
+          '',
+        )
       : null;
   } catch (error) {
     return null;
@@ -54,10 +55,7 @@ function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
 function extractOrigin(url: string): string {
   let origin;
   if (url.indexOf('//') > -1) {
-    origin = url
-      .split('/')
-      .slice(0, 3)
-      .join('/');
+    origin = url.split('/').slice(0, 3).join('/');
   } else {
     origin = url.split('/')[0];
   }
@@ -114,7 +112,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   // srcset attributes is defined as such:
   // srcset = "url size,url1 size1"
   const resultingSrcsetString = srcsetValues
-    .map(srcItem => {
+    .map((srcItem) => {
       // removing all but middle spaces
       const trimmedSrcItem = srcItem.trimLeft().trimRight();
       const urlAndSize = trimmedSrcItem.split(' ');
@@ -168,7 +166,7 @@ function serializeNode(
   doc: Document,
   blockClass: string | RegExp,
   inlineStylesheet: boolean,
-  maskAllInputs: boolean,
+  maskInputOptions: MaskInputOptions = {},
 ): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -188,7 +186,7 @@ function serializeNode(
       if (typeof blockClass === 'string') {
         needBlock = (n as HTMLElement).classList.contains(blockClass);
       } else {
-        (n as HTMLElement).classList.forEach(className => {
+        (n as HTMLElement).classList.forEach((className) => {
           if (blockClass.test(className)) {
             needBlock = true;
           }
@@ -201,7 +199,7 @@ function serializeNode(
       }
       // remote css
       if (tagName === 'link' && inlineStylesheet) {
-        const stylesheet = Array.from(doc.styleSheets).find(s => {
+        const stylesheet = Array.from(doc.styleSheets).find((s) => {
           return s.href === (n as HTMLLinkElement).href;
         });
         const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
@@ -246,7 +244,11 @@ function serializeNode(
           attributes.type !== 'button' &&
           value
         ) {
-          attributes.value = maskAllInputs ? '*'.repeat(value.length) : value;
+          attributes.value = maskInputOptions[
+            attributes.type as keyof MaskInputOptions
+          ]
+            ? '*'.repeat(value.length)
+            : value;
         } else if ((n as HTMLInputElement).checked) {
           attributes.checked = (n as HTMLInputElement).checked;
         }
@@ -320,14 +322,14 @@ export function serializeNodeWithId(
   blockClass: string | RegExp,
   skipChild = false,
   inlineStylesheet = true,
-  maskAllInputs = false,
+  maskInputOptions?: MaskInputOptions,
 ): serializedNodeWithId | null {
   const _serializedNode = serializeNode(
     n,
     doc,
     blockClass,
     inlineStylesheet,
-    maskAllInputs,
+    maskInputOptions,
   );
   if (!_serializedNode) {
     // TODO: dev only
@@ -363,7 +365,7 @@ export function serializeNodeWithId(
         blockClass,
         skipChild,
         inlineStylesheet,
-        maskAllInputs,
+        maskInputOptions,
       );
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
@@ -377,9 +379,29 @@ function snapshot(
   n: Document,
   blockClass: string | RegExp = 'rr-block',
   inlineStylesheet = true,
-  maskAllInputs = false,
+  maskAllInputsOrOptions: boolean | MaskInputOptions,
 ): [serializedNodeWithId | null, idNodeMap] {
   const idNodeMap: idNodeMap = {};
+  const maskInputOptions: MaskInputOptions =
+    maskAllInputsOrOptions === true
+      ? {
+          color: true,
+          date: true,
+          'datetime-local': true,
+          email: true,
+          month: true,
+          number: true,
+          range: true,
+          search: true,
+          tel: true,
+          text: true,
+          time: true,
+          url: true,
+          week: true,
+        }
+      : maskAllInputsOrOptions === false
+      ? {}
+      : maskAllInputsOrOptions;
   return [
     serializeNodeWithId(
       n,
@@ -388,7 +410,7 @@ function snapshot(
       blockClass,
       false,
       inlineStylesheet,
-      maskAllInputs,
+      maskInputOptions,
     ),
     idNodeMap,
   ];

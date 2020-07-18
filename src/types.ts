@@ -68,3 +68,19 @@ export interface INode extends Node {
 export type idNodeMap = {
   [key: number]: INode;
 };
+
+export type MaskInputOptions = Partial<{
+  color: boolean;
+  date: boolean;
+  'datetime-local': boolean;
+  email: boolean;
+  month: boolean;
+  number: boolean;
+  range: boolean;
+  search: boolean;
+  tel: boolean;
+  text: boolean;
+  time: boolean;
+  url: boolean;
+  week: boolean;
+}>;
