@@ -60,11 +60,7 @@ describe('replayer', function (this: ISuite) {
       replayer.play();
       replayer['timer']['actions'].length;
     `);
-    expect(actionLength).to.equal(
-      events.filter(
-        (e) => ![EventType.DomContentLoaded, EventType.Load].includes(e.type),
-      ).length,
-    );
+    expect(actionLength).to.equal(events.length);
   });
 
   it('will clean actions when pause', async () => {
