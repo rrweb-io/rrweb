@@ -381,7 +381,7 @@ export class Replayer {
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
-    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded);
+    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
     this.waitForStylesheetLoad();
   }
 
