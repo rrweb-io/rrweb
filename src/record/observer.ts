@@ -1,4 +1,4 @@
-import { INode } from 'rrweb-snapshot';
+import { INode, MaskInputOptions } from 'rrweb-snapshot';
 import {
   mirror,
   throttle,
@@ -36,14 +36,14 @@ function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
   inlineStylesheet: boolean,
-  maskAllInputs: boolean,
+  maskInputOptions: MaskInputOptions,
 ): MutationObserver {
   // see mutation.ts for details
   const mutationBuffer = new MutationBuffer(
     cb,
     blockClass,
     inlineStylesheet,
-    maskAllInputs,
+    maskInputOptions,
   );
   const observer = new MutationObserver(mutationBuffer.processMutations);
   observer.observe(document, {
@@ -182,27 +182,12 @@ function initViewportResizeObserver(
 }
 
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
-export const MASK_TYPES = [
-  'color',
-  'date',
-  'datetime-local',
-  'email',
-  'month',
-  'number',
-  'range',
-  'search',
-  'tel',
-  'text',
-  'time',
-  'url',
-  'week',
-];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
   blockClass: blockClass,
   ignoreClass: string,
-  maskAllInputs: boolean,
+  maskInputOptions: MaskInputOptions,
 ): listenerHandler {
   function eventHandler(event: Event) {
     const { target } = event;
@@ -223,11 +208,14 @@ function initInputObserver(
     }
     let text = (target as HTMLInputElement).value;
     let isChecked = false;
-    const hasTextInput =
-      MASK_TYPES.includes(type) || (target as Element).tagName === 'TEXTAREA';
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
-    } else if (hasTextInput && maskAllInputs) {
+    } else if (
+      maskInputOptions[
+        (target as Element).tagName.toLowerCase() as keyof MaskInputOptions
+      ] ||
+      maskInputOptions[type as keyof MaskInputOptions]
+    ) {
       text = '*'.repeat(text.length);
     }
     cbWithDedup(target, { text, isChecked });
@@ -414,7 +402,7 @@ export default function initObservers(
     o.mutationCb,
     o.blockClass,
     o.inlineStylesheet,
-    o.maskAllInputs,
+    o.maskInputOptions,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
   const mouseInteractionHandler = initMouseInteractionObserver(
@@ -427,7 +415,7 @@ export default function initObservers(
     o.inputCb,
     o.blockClass,
     o.ignoreClass,
-    o.maskAllInputs,
+    o.maskInputOptions,
   );
   const mediaInteractionHandler = initMediaInteractionObserver(
     o.mediaInteractionCb,

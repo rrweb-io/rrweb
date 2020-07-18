@@ -1,4 +1,9 @@
-import { serializedNodeWithId, idNodeMap, INode } from 'rrweb-snapshot';
+import {
+  serializedNodeWithId,
+  idNodeMap,
+  INode,
+  MaskInputOptions,
+} from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 
 export enum EventType {
@@ -133,6 +138,7 @@ export type recordOptions<T> = {
   blockClass?: blockClass;
   ignoreClass?: string;
   maskAllInputs?: boolean;
+  maskInputOptions?: MaskInputOptions;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   mousemoveWait?: number;
@@ -149,7 +155,7 @@ export type observerParam = {
   mediaInteractionCb: mediaInteractionCallback;
   blockClass: blockClass;
   ignoreClass: string;
-  maskAllInputs: boolean;
+  maskInputOptions: MaskInputOptions;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
   mousemoveWait: number;

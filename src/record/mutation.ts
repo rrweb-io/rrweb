@@ -1,4 +1,9 @@
-import { INode, serializeNodeWithId, transformAttribute } from 'rrweb-snapshot';
+import {
+  INode,
+  serializeNodeWithId,
+  transformAttribute,
+  MaskInputOptions,
+} from 'rrweb-snapshot';
 import {
   mutationRecord,
   blockClass,
@@ -50,17 +55,17 @@ export default class MutationBuffer {
   private emissionCallback: mutationCallBack;
   private blockClass: blockClass;
   private inlineStylesheet: boolean;
-  private maskAllInputs: boolean;
+  private maskInputOptions: MaskInputOptions;
 
   constructor(
     cb: mutationCallBack,
     blockClass: blockClass,
     inlineStylesheet: boolean,
-    maskAllInputs: boolean,
+    maskInputOptions: MaskInputOptions,
   ) {
     this.blockClass = blockClass;
     this.inlineStylesheet = inlineStylesheet;
-    this.maskAllInputs = maskAllInputs;
+    this.maskInputOptions = maskInputOptions;
     this.emissionCallback = cb;
   }
 
@@ -89,7 +94,7 @@ export default class MutationBuffer {
           this.blockClass,
           true,
           this.inlineStylesheet,
-          this.maskAllInputs,
+          this.maskInputOptions,
         )!,
       });
     };
@@ -128,6 +133,47 @@ export default class MutationBuffer {
     }
 
     this.emit();
+  };
+
+  public emit = () => {
+    const payload = {
+      texts: this.texts
+        .map((text) => ({
+          id: mirror.getId(text.node as INode),
+          value: text.value,
+        }))
+        // text mutation's id was not in the mirror map means the target node has been removed
+        .filter((text) => mirror.has(text.id)),
+      attributes: this.attributes
+        .map((attribute) => ({
+          id: mirror.getId(attribute.node as INode),
+          attributes: attribute.attributes,
+        }))
+        // attribute mutation's id was not in the mirror map means the target node has been removed
+        .filter((attribute) => mirror.has(attribute.id)),
+      removes: this.removes,
+      adds: this.adds,
+    };
+    // payload may be empty if the mutations happened in some blocked elements
+    if (
+      !payload.texts.length &&
+      !payload.attributes.length &&
+      !payload.removes.length &&
+      !payload.adds.length
+    ) {
+      return;
+    }
+    this.emissionCallback(payload);
+
+    // reset
+    this.texts = [];
+    this.attributes = [];
+    this.removes = [];
+    this.adds = [];
+    this.addedSet = new Set<Node>();
+    this.movedSet = new Set<Node>();
+    this.droppedSet = new Set<Node>();
+    this.movedMap = {};
   };
 
   private processMutation = (m: mutationRecord) => {
@@ -230,47 +276,6 @@ export default class MutationBuffer {
       this.droppedSet.delete(n);
     }
     n.childNodes.forEach((childN) => this.genAdds(childN));
-  };
-
-  public emit = () => {
-    const payload = {
-      texts: this.texts
-        .map((text) => ({
-          id: mirror.getId(text.node as INode),
-          value: text.value,
-        }))
-        // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => mirror.has(text.id)),
-      attributes: this.attributes
-        .map((attribute) => ({
-          id: mirror.getId(attribute.node as INode),
-          attributes: attribute.attributes,
-        }))
-        // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => mirror.has(attribute.id)),
-      removes: this.removes,
-      adds: this.adds,
-    };
-    // payload may be empty if the mutations happened in some blocked elements
-    if (
-      !payload.texts.length &&
-      !payload.attributes.length &&
-      !payload.removes.length &&
-      !payload.adds.length
-    ) {
-      return;
-    }
-    this.emissionCallback(payload);
-
-    // reset
-    this.texts = [];
-    this.attributes = [];
-    this.removes = [];
-    this.adds = [];
-    this.addedSet = new Set<Node>();
-    this.movedSet = new Set<Node>();
-    this.droppedSet = new Set<Node>();
-    this.movedMap = {};
   };
 }
 
