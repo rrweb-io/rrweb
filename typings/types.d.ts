@@ -67,4 +67,5 @@ export declare type MaskInputOptions = Partial<{
     time: boolean;
     url: boolean;
     week: boolean;
+    textarea: boolean;
 }>;
