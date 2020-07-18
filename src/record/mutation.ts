@@ -216,7 +216,10 @@ export default class MutationBuffer {
         m.removedNodes.forEach((n) => {
           const nodeId = mirror.getId(n as INode);
           const parentId = mirror.getId(m.target as INode);
-          if (isBlocked(n, this.blockClass)) {
+          if (
+            isBlocked(n, this.blockClass) ||
+            isBlocked(m.target, this.blockClass)
+          ) {
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set

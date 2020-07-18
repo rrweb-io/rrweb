@@ -189,6 +189,10 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
     }
     return needBlock || isBlocked(node.parentNode, blockClass);
   }
+  if (node.nodeType === node.TEXT_NODE) {
+    // check parent node since text node do not have class name
+    return isBlocked(node.parentNode, blockClass);
+  }
   return isBlocked(node.parentNode, blockClass);
 }
 
