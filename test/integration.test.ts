@@ -32,7 +32,8 @@ describe('record integration tests', function (this: ISuite) {
           console.log(event);
           window.snapshots.push(event);
         },
-        maskAllInputs: ${options.maskAllInputs}
+        maskAllInputs: ${options.maskAllInputs},
+        maskInputOptions: ${JSON.stringify(options.maskAllInputs)}
       });
     </script>
     </body>
@@ -164,6 +165,28 @@ describe('record integration tests', function (this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'mask');
+  });
+
+  it('can use maskInputOptions to configure which type of inputs should be masked', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'form.html', {
+        maskInputOptions: {
+          text: false,
+          textarea: false,
+        },
+      }),
+    );
+
+    await page.type('input[type="text"]', 'test');
+    await page.click('input[type="radio"]');
+    await page.click('input[type="checkbox"]');
+    await page.type('textarea', 'textarea test');
+    await page.select('select', '1');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'maskInputOptions');
   });
 
   it('should not record blocked elements and its child nodes', async () => {

@@ -1,4 +1,4 @@
-import { INode } from 'rrweb-snapshot';
+import { INode, MaskInputOptions } from 'rrweb-snapshot';
 import {
   mirror,
   throttle,
@@ -29,6 +29,7 @@ import {
   Arguments,
   mediaInteractionCallback,
   MediaInteractions,
+  SamplingStrategy,
 } from '../types';
 import MutationBuffer from './mutation';
 
@@ -36,14 +37,14 @@ function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
   inlineStylesheet: boolean,
-  maskAllInputs: boolean,
+  maskInputOptions: MaskInputOptions,
 ): MutationObserver {
   // see mutation.ts for details
   const mutationBuffer = new MutationBuffer(
     cb,
     blockClass,
     inlineStylesheet,
-    maskAllInputs,
+    maskInputOptions,
   );
   const observer = new MutationObserver(mutationBuffer.processMutations);
   observer.observe(document, {
@@ -59,8 +60,15 @@ function initMutationObserver(
 
 function initMoveObserver(
   cb: mousemoveCallBack,
-  mousemoveWait: number,
+  sampling: SamplingStrategy,
 ): listenerHandler {
+  if (sampling.mousemove === false) {
+    return () => {};
+  }
+
+  const threshold =
+    typeof sampling.mousemove === 'number' ? sampling.mousemove : 50;
+
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle((isTouch: boolean) => {
@@ -92,7 +100,7 @@ function initMoveObserver(
       });
       wrappedCb(isTouchEvent(evt));
     },
-    mousemoveWait,
+    threshold,
     {
       trailing: false,
     },
@@ -109,7 +117,17 @@ function initMoveObserver(
 function initMouseInteractionObserver(
   cb: mouseInteractionCallBack,
   blockClass: blockClass,
+  sampling: SamplingStrategy,
 ): listenerHandler {
+  if (sampling.mouseInteraction === false) {
+    return () => {};
+  }
+  const disableMap: Record<string, boolean | undefined> =
+    sampling.mouseInteraction === true ||
+    sampling.mouseInteraction === undefined
+      ? {}
+      : sampling.mouseInteraction;
+
   const handlers: listenerHandler[] = [];
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
@@ -129,7 +147,12 @@ function initMouseInteractionObserver(
     };
   };
   Object.keys(MouseInteractions)
-    .filter((key) => Number.isNaN(Number(key)) && !key.endsWith('_Departed'))
+    .filter(
+      (key) =>
+        Number.isNaN(Number(key)) &&
+        !key.endsWith('_Departed') &&
+        disableMap[key] !== false,
+    )
     .forEach((eventKey: keyof typeof MouseInteractions) => {
       const eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
@@ -143,6 +166,7 @@ function initMouseInteractionObserver(
 function initScrollObserver(
   cb: scrollCallback,
   blockClass: blockClass,
+  sampling: SamplingStrategy,
 ): listenerHandler {
   const updatePosition = throttle<UIEvent>((evt) => {
     if (!evt.target || isBlocked(evt.target as Node, blockClass)) {
@@ -163,7 +187,7 @@ function initScrollObserver(
         y: (evt.target as HTMLElement).scrollTop,
       });
     }
-  }, 100);
+  }, sampling.scroll || 100);
   return on('scroll', updatePosition);
 }
 
@@ -182,27 +206,13 @@ function initViewportResizeObserver(
 }
 
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
-export const MASK_TYPES = [
-  'color',
-  'date',
-  'datetime-local',
-  'email',
-  'month',
-  'number',
-  'range',
-  'search',
-  'tel',
-  'text',
-  'time',
-  'url',
-  'week',
-];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
   blockClass: blockClass,
   ignoreClass: string,
-  maskAllInputs: boolean,
+  maskInputOptions: MaskInputOptions,
+  sampling: SamplingStrategy,
 ): listenerHandler {
   function eventHandler(event: Event) {
     const { target } = event;
@@ -223,11 +233,14 @@ function initInputObserver(
     }
     let text = (target as HTMLInputElement).value;
     let isChecked = false;
-    const hasTextInput =
-      MASK_TYPES.includes(type) || (target as Element).tagName === 'TEXTAREA';
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
-    } else if (hasTextInput && maskAllInputs) {
+    } else if (
+      maskInputOptions[
+        (target as Element).tagName.toLowerCase() as keyof MaskInputOptions
+      ] ||
+      maskInputOptions[type as keyof MaskInputOptions]
+    ) {
       text = '*'.repeat(text.length);
     }
     cbWithDedup(target, { text, isChecked });
@@ -262,10 +275,10 @@ function initInputObserver(
       });
     }
   }
-  const handlers: Array<listenerHandler | hookResetter> = [
-    'input',
-    'change',
-  ].map((eventName) => on(eventName, eventHandler));
+  const events = sampling.input === 'last' ? ['change'] : ['input', 'change'];
+  const handlers: Array<
+    listenerHandler | hookResetter
+  > = events.map((eventName) => on(eventName, eventHandler));
   const propertyDescriptor = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
     'value',
@@ -414,20 +427,26 @@ export default function initObservers(
     o.mutationCb,
     o.blockClass,
     o.inlineStylesheet,
-    o.maskAllInputs,
+    o.maskInputOptions,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.mousemoveWait);
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.blockClass,
+    o.sampling,
   );
-  const scrollHandler = initScrollObserver(o.scrollCb, o.blockClass);
+  const scrollHandler = initScrollObserver(
+    o.scrollCb,
+    o.blockClass,
+    o.sampling,
+  );
   const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
   const inputHandler = initInputObserver(
     o.inputCb,
     o.blockClass,
     o.ignoreClass,
-    o.maskAllInputs,
+    o.maskInputOptions,
+    o.sampling,
   );
   const mediaInteractionHandler = initMediaInteractionObserver(
     o.mediaInteractionCb,

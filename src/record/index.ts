@@ -1,4 +1,4 @@
-import { snapshot } from 'rrweb-snapshot';
+import { snapshot, MaskInputOptions } from 'rrweb-snapshot';
 import initObservers from './observer';
 import {
   mirror,
@@ -35,15 +35,44 @@ function record<T = eventWithTime>(
     blockClass = 'rr-block',
     ignoreClass = 'rr-ignore',
     inlineStylesheet = true,
-    maskAllInputs = false,
+    maskAllInputs,
+    maskInputOptions: _maskInputOptions,
     hooks,
-    mousemoveWait = 50,
     packFn,
+    sampling = {},
+    mousemoveWait,
   } = options;
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
   }
+  // move departed options to new options
+  if (mousemoveWait !== undefined && sampling.mousemove === undefined) {
+    sampling.mousemove = mousemoveWait;
+  }
+
+  const maskInputOptions: MaskInputOptions =
+    maskAllInputs === true
+      ? {
+          color: true,
+          date: true,
+          'datetime-local': true,
+          email: true,
+          month: true,
+          number: true,
+          range: true,
+          search: true,
+          tel: true,
+          text: true,
+          time: true,
+          url: true,
+          week: true,
+          textarea: true,
+          select: true,
+        }
+      : _maskInputOptions !== undefined
+      ? _maskInputOptions
+      : {};
 
   polyfill();
 
@@ -83,7 +112,7 @@ function record<T = eventWithTime>(
       document,
       blockClass,
       inlineStylesheet,
-      maskAllInputs,
+      maskInputOptions,
     );
 
     if (!node) {
@@ -217,9 +246,9 @@ function record<T = eventWithTime>(
               ),
             blockClass,
             ignoreClass,
-            maskAllInputs,
+            maskInputOptions,
             inlineStylesheet,
-            mousemoveWait,
+            sampling,
           },
           hooks,
         ),
