@@ -364,6 +364,9 @@ export class Replayer {
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
   ) {
+    if (!this.iframe.contentDocument) {
+      return console.warn('Looks like your replayer has been destroyed.');
+    }
     if (Object.keys(this.legacy_missingNodeRetryMap).length) {
       console.warn(
         'Found unresolved missing node map',
@@ -371,9 +374,9 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    mirror.map = rebuild(event.data.node, this.iframe.contentDocument!)[1];
+    mirror.map = rebuild(event.data.node, this.iframe.contentDocument)[1];
     const styleEl = document.createElement('style');
-    const { documentElement, head } = this.iframe.contentDocument!;
+    const { documentElement, head } = this.iframe.contentDocument;
     documentElement!.insertBefore(styleEl, head);
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
@@ -389,7 +392,7 @@ export class Replayer {
    * pause when loading style sheet, resume when loaded all timeout exceed
    */
   private waitForStylesheetLoad() {
-    const { head } = this.iframe.contentDocument!;
+    const head = this.iframe.contentDocument?.head;
     if (head) {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: number;
@@ -638,12 +641,15 @@ export class Replayer {
     const queue: addedNodeMutation[] = [];
 
     const appendNode = (mutation: addedNodeMutation) => {
+      if (!this.iframe.contentDocument) {
+        return console.warn('Looks like your replayer has been destroyed.');
+      }
       let parent = mirror.getNode(mutation.parentId);
       if (!parent) {
         return queue.push(mutation);
       }
 
-      const parentInDocument = this.iframe.contentDocument!.contains(parent);
+      const parentInDocument = this.iframe.contentDocument.contains(parent);
       if (useVirtualParent && parentInDocument) {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         mirror.map[mutation.parentId] = virtualParent;
@@ -669,7 +675,7 @@ export class Replayer {
 
       const target = buildNodeWithSN(
         mutation.node,
-        this.iframe.contentDocument!,
+        this.iframe.contentDocument,
         mirror.map,
         true,
       ) as Node;
@@ -832,8 +838,8 @@ export class Replayer {
   }
 
   private hoverElements(el: Element) {
-    this.iframe
-      .contentDocument!.querySelectorAll('.\\:hover')
+    this.iframe.contentDocument
+      ?.querySelectorAll('.\\:hover')
       .forEach((hoveredEl) => {
         hoveredEl.classList.remove(':hover');
       });
