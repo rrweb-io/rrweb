@@ -68,4 +68,5 @@ export declare type MaskInputOptions = Partial<{
     url: boolean;
     week: boolean;
     textarea: boolean;
+    select: boolean;
 }>;
