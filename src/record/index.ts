@@ -38,13 +38,19 @@ function record<T = eventWithTime>(
     maskAllInputs,
     maskInputOptions: _maskInputOptions,
     hooks,
-    mousemoveWait = 50,
     packFn,
+    sampling = {},
+    mousemoveWait,
   } = options;
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
   }
+  // move departed options to new options
+  if (mousemoveWait !== undefined && sampling.mousemove === undefined) {
+    sampling.mousemove = mousemoveWait;
+  }
+
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
@@ -242,7 +248,7 @@ function record<T = eventWithTime>(
             ignoreClass,
             maskInputOptions,
             inlineStylesheet,
-            mousemoveWait,
+            sampling,
           },
           hooks,
         ),

@@ -17,7 +17,8 @@
     ],
     "arrow-parens": false,
     "only-arrow-functions": false,
-    "max-line-length": false
+    "max-line-length": false,
+    "no-empty": false
   },
   "rulesDirectory": []
 }

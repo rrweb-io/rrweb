@@ -131,6 +131,28 @@ export type eventWithTime = event & {
 
 export type blockClass = string | RegExp;
 
+export type SamplingStrategy = Partial<{
+  /**
+   * false means not to record mouse/touch move events
+   * number is the throttle threshold of recording mouse/touch move
+   */
+  mousemove: boolean | number;
+  /**
+   * false means not to record mouse interaction events
+   * can also specify record some kinds of mouse interactions
+   */
+  mouseInteraction: boolean | Record<string, boolean | undefined>;
+  /**
+   * number is the throttle threshold of recording scroll
+   */
+  scroll: number;
+  /**
+   * 'all' will record all the input events
+   * 'last' will only record the last input value while input a sequence of chars
+   */
+  input: 'all' | 'last';
+}>;
+
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
@@ -141,8 +163,10 @@ export type recordOptions<T> = {
   maskInputOptions?: MaskInputOptions;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
-  mousemoveWait?: number;
   packFn?: PackFn;
+  sampling?: SamplingStrategy;
+  // departed, please use sampling options
+  mousemoveWait?: number;
 };
 
 export type observerParam = {
@@ -158,7 +182,7 @@ export type observerParam = {
   maskInputOptions: MaskInputOptions;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
-  mousemoveWait: number;
+  sampling: SamplingStrategy;
 };
 
 export type hooksParam = {
