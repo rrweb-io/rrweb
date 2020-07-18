@@ -398,6 +398,8 @@ function snapshot(
           time: true,
           url: true,
           week: true,
+          textarea: true,
+          select: true,
         }
       : maskAllInputsOrOptions === false
       ? {}
