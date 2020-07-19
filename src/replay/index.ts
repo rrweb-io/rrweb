@@ -447,7 +447,7 @@ export class Replayer {
           d.attributes.forEach((m) => this.treeIndex.attribute(m));
           d.removes.forEach((m) => this.treeIndex.remove(m));
         }
-        this.applyMutation(d, true);
+        this.applyMutation(d, isSync);
         break;
       }
       case IncrementalSource.MouseMove:
