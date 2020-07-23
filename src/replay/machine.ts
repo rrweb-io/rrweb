@@ -20,60 +20,60 @@ export type PlayerContext = {
 };
 export type PlayerEvent =
   | {
-      type: 'PLAY';
-      payload: {
-        timeOffset: number;
-      };
-    }
+    type: 'PLAY';
+    payload: {
+      timeOffset: number;
+    };
+  }
   | {
-      type: 'CAST_EVENT';
-      payload: {
-        event: eventWithTime;
-      };
-    }
+    type: 'CAST_EVENT';
+    payload: {
+      event: eventWithTime;
+    };
+  }
   | { type: 'PAUSE' }
   | {
-      type: 'RESUME';
-      payload: {
-        timeOffset: number;
-      };
-    }
+    type: 'RESUME';
+    payload: {
+      timeOffset: number;
+    };
+  }
   | { type: 'END' }
   | { type: 'REPLAY' }
   | { type: 'FAST_FORWARD' }
   | { type: 'BACK_TO_NORMAL' }
   | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
   | {
-      type: 'ADD_EVENT';
-      payload: {
-        event: eventWithTime;
-      };
+    type: 'ADD_EVENT';
+    payload: {
+      event: eventWithTime;
     };
+  };
 export type PlayerState =
   | {
-      value: 'inited';
-      context: PlayerContext;
-    }
+    value: 'inited';
+    context: PlayerContext;
+  }
   | {
-      value: 'playing';
-      context: PlayerContext;
-    }
+    value: 'playing';
+    context: PlayerContext;
+  }
   | {
-      value: 'paused';
-      context: PlayerContext;
-    }
+    value: 'paused';
+    context: PlayerContext;
+  }
   | {
-      value: 'ended';
-      context: PlayerContext;
-    }
+    value: 'ended';
+    context: PlayerContext;
+  }
   | {
-      value: 'skipping';
-      context: PlayerContext;
-    }
+    value: 'skipping';
+    context: PlayerContext;
+  }
   | {
-      value: 'live';
-      context: PlayerContext;
-    };
+    value: 'live';
+    context: PlayerContext;
+  };
 
 /**
  * If the array have multiple meta and fullsnapshot events,
@@ -125,6 +125,10 @@ export function createPlayerService(
             PAUSE: {
               target: 'paused',
               actions: ['pause'],
+            },
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play']
             },
             END: 'ended',
             FAST_FORWARD: 'skipping',
@@ -196,7 +200,7 @@ export function createPlayerService(
           for (const event of neededEvents) {
             if (
               lastPlayedEvent &&
-              lastPlayedEvent.timestamp > baselineTime &&
+              lastPlayedEvent.timestamp < baselineTime &&
               (event.timestamp <= lastPlayedEvent.timestamp ||
                 event === lastPlayedEvent)
             ) {

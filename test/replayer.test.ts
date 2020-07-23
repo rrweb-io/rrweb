@@ -99,4 +99,31 @@ describe('replayer', function (this: ISuite) {
       events.filter((e) => e.timestamp - events[0].timestamp >= 1500).length,
     );
   });
+
+
+  it('can seek to the future', async () => {
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(500);
+      replayer.play(1500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).to.equal(
+      events.filter((e) => e.timestamp - events[0].timestamp >= 1500).length,
+    );
+  });
+
+  it('can seek to the past', async () => {
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(1500);
+      replayer.play(500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).to.equal(
+      events.filter((e) => e.timestamp - events[0].timestamp >= 500).length,
+    );
+  });
 });
