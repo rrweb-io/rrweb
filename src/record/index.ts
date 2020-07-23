@@ -43,6 +43,7 @@ function record<T = eventWithTime>(
     mousemoveWait,
     recordCanvas = false,
     collectFonts = false,
+    slimDOM = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -133,6 +134,7 @@ function record<T = eventWithTime>(
       inlineStylesheet,
       maskInputOptions,
       recordCanvas,
+      slimDOM,
     );
 
     if (!node) {
