@@ -78,6 +78,9 @@ export default class MutationBuffer {
      */
     const addQueue: Node[] = [];
     const pushAdd = (n: Node) => {
+      if (!n.parentNode) {
+        return;
+      }
       const parentId = mirror.getId((n.parentNode as Node) as INode);
       const nextId =
         n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
