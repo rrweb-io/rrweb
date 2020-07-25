@@ -269,6 +269,13 @@ function serializeNode(
           ? 'paused'
           : 'played';
       }
+      // scroll
+      if ((n as HTMLElement).scrollLeft) {
+        attributes.rr_scrollLeft = (n as HTMLElement).scrollLeft;
+      }
+      if ((n as HTMLElement).scrollTop) {
+        attributes.rr_scrollTop = (n as HTMLElement).scrollTop;
+      }
       if (needBlock) {
         const { width, height } = (n as HTMLElement).getBoundingClientRect();
         attributes.rr_width = `${width}px`;

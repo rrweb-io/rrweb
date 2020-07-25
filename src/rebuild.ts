@@ -102,7 +102,7 @@ function buildNode(
           continue;
         }
         let value = n.attributes[name];
-        value = typeof value === 'boolean' ? '' : value;
+        value = typeof value === 'boolean' || typeof value === 'number' ? '' : value;
         // attribute names start with rr_ are internal attributes added by rrweb
         if (!name.startsWith('rr_')) {
           const isTextarea = tagName === 'textarea' && name === 'value';
@@ -220,6 +220,29 @@ export function buildNodeWithSN(
   return node as INode;
 }
 
+function sideEffects(idNodeMap: idNodeMap) {
+  for(let id in idNodeMap) {
+    const node = idNodeMap[id];
+    const n = node.__sn;
+    if (n.type !== NodeType.Element) {
+      continue;
+    }
+    const el = node as Node as HTMLElement;
+    for(const name in n.attributes) {
+      if (!(n.attributes.hasOwnProperty(name) && name.startsWith('rr_'))) {
+        continue;
+      }
+      const value = n.attributes[name];
+      if (name === 'rr_scrollLeft') {
+        el.scrollLeft = value as number;
+      }
+      if (name === 'rr_scrollTop') {
+        el.scrollTop = value as number;
+      }
+    }
+  }
+}
+
 function rebuild(
   n: serializedNodeWithId,
   doc: Document,
@@ -229,7 +252,9 @@ function rebuild(
   HACK_CSS: boolean = true,
 ): [Node | null, idNodeMap] {
   const idNodeMap: idNodeMap = {};
-  return [buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS), idNodeMap];
+  const node = buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS);
+  sideEffects(idNodeMap);
+  return [node, idNodeMap];
 }
 
 export default rebuild;

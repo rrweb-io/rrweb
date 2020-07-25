@@ -20,7 +20,7 @@ export type documentTypeNode = {
 };
 
 export type attributes = {
-  [key: string]: string | boolean;
+  [key: string]: string | number | boolean;
 };
 export type elementNode = {
   type: NodeType.Element;

@@ -17,7 +17,7 @@ export declare type documentTypeNode = {
     systemId: string;
 };
 export declare type attributes = {
-    [key: string]: string | boolean;
+    [key: string]: string | number | boolean;
 };
 export declare type elementNode = {
     type: NodeType.Element;
