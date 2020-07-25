@@ -55,7 +55,7 @@
       </svg>
       {/if}
     </button>
-    {#each [1, 2, 4, 8] as s}
+    {#each speedOption as s}
     <button
       class:active="s === speed && !isSkipping"
       on:click="setSpeed(s)"
@@ -97,6 +97,7 @@
         isSkipping: false,
         skipInactive: true,
         speed: 1,
+        speedOption: [],
       };
     },
     computed: {
@@ -171,7 +172,7 @@
       },
       play() {
         const { replayer, currentTime } = this.get();
-  
+
         if (currentTime > 0) {
           replayer.resume(currentTime);
         } else {

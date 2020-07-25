@@ -19,6 +19,10 @@
         target: document.body,
         data: {
           events,
+          skipInactive: true,
+          showDebug: false,
+          autoPlay: false,
+          showWarning: false,
         },
       });
       component.addEventListener('finish', () => console.log('finish'));

@@ -9,6 +9,8 @@
     {autoPlay}
     {skipInactive}
     {tags}
+    {speedOption}
+    {speed}
     on:fullscreen="fullscreen()"
   />
   {/if}
@@ -23,6 +25,7 @@
     exitFullscreen,
     isFullscreen,
     onFullscreenChange,
+    typeOf,
   } from './utils.js';
 
   const controllerHeight = 80;
@@ -38,10 +41,12 @@
         height: 576,
         events: [],
         autoPlay: true,
-        skipInactive: true,
         replayer: null,
         triggerFocus: true,
         tags: {},
+        skipInactive: true,
+        speedOption: [1, 2, 3],
+        speed: 1,
       };
     },
     computed: {
@@ -81,12 +86,36 @@
       },
     },
     oncreate() {
-      const { events, triggerFocus } = this.get();
+      const { events, triggerFocus, showWarning, showDebug, speedOption } = this.get();
+      let { skipInactive, speed } = this.get();
+      skipInactive = skipInactive === undefined ? true : !!skipInactive;
+      speed = speed === undefined ? 1 : speed;
+      // 类型检查
+      if (speedOption !== undefined && typeOf(speedOption) !== 'array') {
+        throw new Error('speedOption must be array');
+      }
+      speedOption.forEach(item => {
+        if (typeOf(item) !== 'number') {
+          throw new Error('item of speedOption must be number');
+        }
+      });
+      if (speedOption.indexOf(speed) < 0) {
+        throw new Error(`speed must be one of speedOption,
+        current config:
+        {
+          ...
+          speed: ${speed},
+          speedOption: [${speedOption.toString()}]
+          ...
+        }
+        `);
+      }
       const replayer = new Replayer(events, {
-        speed: 1,
+        speed: speed === undefined ? 1 : speed,
         root: this.refs.frame,
-        skipInactive: true,
-        showWarning: true,
+        skipInactive,
+        showWarning: showWarning === undefined ? true : !!showWarning,
+        showDebug: showDebug === undefined ? true : !!showDebug,
         triggerFocus,
         unpackFn: unpack,
       });
@@ -96,6 +125,8 @@
 
       this.set({
         replayer,
+        skipInactive,
+        speed,
       });
       this.fullscreenListener = onFullscreenChange(() => {
         if (isFullscreen()) {
