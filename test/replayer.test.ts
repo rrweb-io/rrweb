@@ -101,7 +101,7 @@ describe('replayer', function (this: ISuite) {
   });
 
 
-  it('can seek to the future', async () => {
+  it('can play a second time in the future', async () => {
     const actionLength = await this.page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
@@ -114,7 +114,7 @@ describe('replayer', function (this: ISuite) {
     );
   });
 
-  it('can seek to the past', async () => {
+  it('can play a second time to the past', async () => {
     const actionLength = await this.page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
@@ -125,5 +125,23 @@ describe('replayer', function (this: ISuite) {
     expect(actionLength).to.equal(
       events.filter((e) => e.timestamp - events[0].timestamp >= 500).length,
     );
+  });
+
+  it('can seek', async () => {
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.seek(2500);
+      replayer['timer']['actions'].length;
+    `);
+    const currentTime = await this.page.evaluate(`
+      replayer.getCurrentTime();
+    `)
+    const currentState = await this.page.evaluate(`
+      replayer['service']['state']['value'];
+    `)
+    expect(actionLength).to.equal(0)
+    expect(currentTime).to.equal(2500);
+    expect(currentState).to.equal('paused');
   });
 });

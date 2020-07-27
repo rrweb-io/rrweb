@@ -21,6 +21,7 @@ export declare class Replayer {
     getCurrentTime(): number;
     getTimeOffset(): number;
     play(timeOffset?: number): void;
+    seek(timeOffset?: number): void;
     pause(): void;
     resume(timeOffset?: number): void;
     startLive(baselineTime?: number): void;

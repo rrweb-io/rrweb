@@ -227,6 +227,10 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Start);
   }
 
+  public seek(timeOffset = 0) {
+    this.service.send({ type: 'FAST_FORWARD', payload: { timeOffset } });
+  }
+
   public pause() {
     this.service.send({ type: 'PAUSE' });
     this.emitter.emit(ReplayerEvents.Pause);
@@ -397,6 +401,10 @@ export class Replayer {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: number;
       let beforeLoadState = this.service.state;
+
+      // no need to wait for stylesheets when we are fast forwarding
+      if (beforeLoadState.matches('skipping')) return;
+
       head
         .querySelectorAll('link[rel="stylesheet"]')
         .forEach((css: HTMLLinkElement) => {

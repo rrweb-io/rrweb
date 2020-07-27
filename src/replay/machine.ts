@@ -40,7 +40,12 @@ export type PlayerEvent =
   }
   | { type: 'END' }
   | { type: 'REPLAY' }
-  | { type: 'FAST_FORWARD' }
+  | {
+    type: 'FAST_FORWARD';
+    payload: {
+      timeOffset: number;
+    };
+  }
   | { type: 'BACK_TO_NORMAL' }
   | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
   | {
@@ -118,6 +123,10 @@ export function createPlayerService(
               target: 'live',
               actions: ['startLive'],
             },
+            FAST_FORWARD: {
+              target: 'skipping',
+              actions: ['recordTimeOffset', 'skipTo'],
+            },
           },
         },
         playing: {
@@ -140,6 +149,10 @@ export function createPlayerService(
         },
         paused: {
           on: {
+            FAST_FORWARD: {
+              target: 'skipping',
+              actions: ['recordTimeOffset', 'skipTo'],
+            },
             RESUME: {
               target: 'playing',
               actions: ['recordTimeOffset', 'play'],
@@ -152,6 +165,7 @@ export function createPlayerService(
         },
         skipping: {
           on: {
+            PAUSE: 'paused',
             BACK_TO_NORMAL: 'playing',
           },
         },
@@ -227,6 +241,32 @@ export function createPlayerService(
           timer.addActions(actions);
           timer.start();
         },
+        skipTo(ctx) {
+          const { timer, events, baselineTime, lastPlayedEvent } = ctx;
+          timer.clear();
+          const neededEvents = discardPriorSnapshots(events, baselineTime);
+
+          for (const event of neededEvents) {
+            if (
+              lastPlayedEvent &&
+              lastPlayedEvent.timestamp < baselineTime &&
+              (event.timestamp <= lastPlayedEvent.timestamp ||
+                event === lastPlayedEvent)
+            ) {
+              continue;
+            }
+            const isSync = event.timestamp < baselineTime;
+            if (isSync && !needCastInSyncMode(event)) {
+              continue;
+            }
+            const castFn = getCastFn(event, isSync);
+            if (isSync) {
+              castFn();
+            }
+          }
+          emitter.emit(ReplayerEvents.Flush);
+          service.send({ type: 'PAUSE' })
+        },
         pause(ctx) {
           ctx.timer.clear();
         },
@@ -263,5 +303,6 @@ export function createPlayerService(
       },
     },
   );
-  return interpret(playerMachine);
+  const service = interpret(playerMachine)
+  return service;
 }
