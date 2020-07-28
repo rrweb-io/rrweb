@@ -217,6 +217,7 @@ export class Replayer {
    */
   public play(timeOffset = 0) {
     if (this.service.state.value === 'ended') {
+      this.service.state.context.lastPlayedEvent = null;
       this.service.send({ type: 'REPLAY' });
     }
     if (this.service.state.value === 'paused') {
