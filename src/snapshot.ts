@@ -126,7 +126,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
       }
       return '';
     })
-    .join(',');
+    .join(', ');
 
   return resultingSrcsetString;
 }
