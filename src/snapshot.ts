@@ -425,4 +425,21 @@ function snapshot(
   ];
 }
 
+export function visit(
+  node: serializedNodeWithId,
+  onVisit: (node: serializedNodeWithId) => unknown,
+) {
+  function walk(current: serializedNodeWithId) {
+    onVisit(current);
+    if (
+      current.type === NodeType.Document ||
+      current.type === NodeType.Element
+    ) {
+      current.childNodes.forEach(walk);
+    }
+  }
+
+  walk(node);
+}
+
 export default snapshot;
