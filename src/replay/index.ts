@@ -2,7 +2,7 @@ import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import * as smoothscroll from 'smoothscroll-polyfill';
 import { Timer } from './timer';
-import { createPlayerService } from './machine';
+import { createPlayerService, createSpeedService } from './machine';
 import {
   EventType,
   IncrementalSource,
@@ -56,23 +56,22 @@ export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
 
+  public service: ReturnType<typeof createPlayerService>;
+  public speedService: ReturnType<typeof createSpeedService>;
   public get timer() {
     return this.service.state.context.timer;
   }
 
-  private config: playerConfig;
+  public config: playerConfig;
 
   private mouse: HTMLDivElement;
 
   private emitter: Emitter = mitt();
 
   private nextUserInteractionEvent: eventWithTime | null;
-  private noramlSpeed: number = -1;
 
   // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
-
-  private service!: ReturnType<typeof createPlayerService>;
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
@@ -124,6 +123,7 @@ export class Replayer {
       this.fragmentParentMap.clear();
     });
 
+    const timer = new Timer([], config?.speed || defaultConfig.speed);
     this.service = createPlayerService(
       {
         events: events.map((e) => {
@@ -132,8 +132,7 @@ export class Replayer {
           }
           return e as eventWithTime;
         }),
-        timer: new Timer(this.config),
-        speed: config?.speed || defaultConfig.speed,
+        timer,
         timeOffset: 0,
         baselineTime: 0,
         lastPlayedEvent: null,
@@ -145,25 +144,37 @@ export class Replayer {
     );
     this.service.start();
     this.service.subscribe((state) => {
-      if (!state.changed) {
-        return;
-      }
-      // publish via emitter
+      this.emitter.emit(ReplayerEvents.StateChange, {
+        player: state,
+      });
+    });
+    this.speedService = createSpeedService({
+      normalSpeed: -1,
+      timer,
+    });
+    this.speedService.start();
+    this.speedService.subscribe((state) => {
+      this.emitter.emit(ReplayerEvents.StateChange, {
+        speed: state,
+      });
     });
 
     // rebuild first full snapshot as the poster of the player
     // maybe we can cache it for performance optimization
-    const { events: contextEvents } = this.service.state.context;
-    const firstMeta = contextEvents.find((e) => e.type === EventType.Meta);
-    const firstFullsnapshot = contextEvents.find(
+    const firstMeta = this.service.state.context.events.find(
+      (e) => e.type === EventType.Meta,
+    );
+    const firstFullsnapshot = this.service.state.context.events.find(
       (e) => e.type === EventType.FullSnapshot,
     );
     if (firstMeta) {
       const { width, height } = firstMeta.data as metaEvent['data'];
-      this.emitter.emit(ReplayerEvents.Resize, {
-        width,
-        height,
-      });
+      setTimeout(() => {
+        this.emitter.emit(ReplayerEvents.Resize, {
+          width,
+          height,
+        });
+      }, 0);
     }
     if (firstFullsnapshot) {
       this.rebuildFullSnapshot(
@@ -182,14 +193,15 @@ export class Replayer {
       this.config[key] = config[key];
     });
     if (!this.config.skipInactive) {
-      this.noramlSpeed = -1;
+      this.backToNormal();
     }
   }
 
   public getMetaData(): playerMetaData {
-    const { events } = this.service.state.context;
-    const firstEvent = events[0];
-    const lastEvent = events[events.length - 1];
+    const firstEvent = this.service.state.context.events[0];
+    const lastEvent = this.service.state.context.events[
+      this.service.state.context.events.length - 1
+    ];
     return {
       startTime: firstEvent.timestamp,
       endTime: lastEvent.timestamp,
@@ -216,25 +228,31 @@ export class Replayer {
    * @param timeOffset number
    */
   public play(timeOffset = 0) {
-    if (this.service.state.value === 'ended') {
-      this.service.state.context.lastPlayedEvent = null;
-      this.service.send({ type: 'REPLAY' });
-    }
-    if (this.service.state.value === 'paused') {
-      this.service.send({ type: 'RESUME', payload: { timeOffset } });
+    if (this.service.state.matches('paused')) {
+      this.service.send({ type: 'PLAY', payload: { timeOffset } });
     } else {
+      this.service.send({ type: 'PAUSE' });
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     }
     this.emitter.emit(ReplayerEvents.Start);
   }
 
-  public pause() {
-    this.service.send({ type: 'PAUSE' });
+  public pause(timeOffset?: number) {
+    if (timeOffset === undefined && this.service.state.matches('playing')) {
+      this.service.send({ type: 'PAUSE' });
+    }
+    if (typeof timeOffset === 'number') {
+      this.play(timeOffset);
+      this.service.send({ type: 'PAUSE' });
+    }
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
   public resume(timeOffset = 0) {
-    this.service.send({ type: 'RESUME', payload: { timeOffset } });
+    console.warn(
+      `The 'resume' will be departed in 1.0. Please use 'play' method which has the same interface.`,
+    );
+    this.play(timeOffset);
     this.emitter.emit(ReplayerEvents.Resume);
   }
 
@@ -282,7 +300,6 @@ export class Replayer {
   }
 
   private getCastFn(event: eventWithTime, isSync = false) {
-    const { events } = this.service.state.context;
     let castFn: undefined | (() => void);
     switch (event.type) {
       case EventType.DomContentLoaded:
@@ -314,19 +331,24 @@ export class Replayer {
       case EventType.IncrementalSnapshot:
         castFn = () => {
           this.applyIncremental(event, isSync);
+          if (isSync) {
+            // do not check skip in sync
+            return;
+          }
           if (event === this.nextUserInteractionEvent) {
             this.nextUserInteractionEvent = null;
-            this.restoreSpeed();
+            this.backToNormal();
           }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
-            for (const _event of events) {
+            for (const _event of this.service.state.context.events) {
               if (_event.timestamp! <= event.timestamp!) {
                 continue;
               }
               if (this.isUserInteraction(_event)) {
                 if (
                   _event.delay! - event.delay! >
-                  SKIP_TIME_THRESHOLD * this.config.speed
+                  SKIP_TIME_THRESHOLD *
+                    this.speedService.state.context.timer.speed
                 ) {
                   this.nextUserInteractionEvent = _event;
                 }
@@ -334,13 +356,12 @@ export class Replayer {
               }
             }
             if (this.nextUserInteractionEvent) {
-              this.noramlSpeed = this.config.speed;
               const skipTime =
                 this.nextUserInteractionEvent.delay! - event.delay!;
               const payload = {
                 speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),
               };
-              this.setConfig(payload);
+              this.speedService.send({ type: 'FAST_FORWARD', payload });
               this.emitter.emit(ReplayerEvents.SkipStart, payload);
             }
           }
@@ -353,8 +374,13 @@ export class Replayer {
         castFn();
       }
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
-      if (event === events[events.length - 1]) {
-        this.restoreSpeed();
+      if (
+        event ===
+        this.service.state.context.events[
+          this.service.state.context.events.length - 1
+        ]
+      ) {
+        this.backToNormal();
         this.service.send('END');
         this.emitter.emit(ReplayerEvents.Finish);
       }
@@ -438,7 +464,6 @@ export class Replayer {
     e: incrementalSnapshotEvent & { timestamp: number },
     isSync: boolean,
   ) {
-    const { baselineTime } = this.service.state.context;
     const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
@@ -461,7 +486,10 @@ export class Replayer {
               doAction: () => {
                 this.moveAndHover(d, p.x, p.y, p.id);
               },
-              delay: p.timeOffset + e.timestamp - baselineTime,
+              delay:
+                p.timeOffset +
+                e.timestamp -
+                this.service.state.context.baselineTime,
             };
             this.timer.addAction(action);
           });
@@ -863,14 +891,15 @@ export class Replayer {
     );
   }
 
-  private restoreSpeed() {
-    if (this.noramlSpeed === -1) {
+  private backToNormal() {
+    this.nextUserInteractionEvent = null;
+    if (this.speedService.state.matches('normal')) {
       return;
     }
-    const payload = { speed: this.noramlSpeed };
-    this.setConfig(payload);
-    this.emitter.emit(ReplayerEvents.SkipEnd, payload);
-    this.noramlSpeed = -1;
+    this.speedService.send({ type: 'BACK_TO_NORMAL' });
+    this.emitter.emit(ReplayerEvents.SkipEnd, {
+      speed: this.speedService.state.context.normalSpeed,
+    });
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

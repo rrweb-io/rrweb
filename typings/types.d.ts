@@ -308,6 +308,7 @@ export declare enum ReplayerEvents {
     MouseInteraction = "mouse-interaction",
     EventCast = "event-cast",
     CustomEvent = "custom-event",
-    Flush = "flush"
+    Flush = "flush",
+    StateChange = "state-change"
 }
 export {};

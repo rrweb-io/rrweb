@@ -1,5 +1,4 @@
 import {
-  playerConfig,
   actionWithDelay,
   eventWithTime,
   EventType,
@@ -8,14 +7,15 @@ import {
 
 export class Timer {
   public timeOffset: number = 0;
+  public speed: number;
 
   private actions: actionWithDelay[];
-  private config: playerConfig;
   private raf: number;
+  private liveMode: boolean;
 
-  constructor(config: playerConfig, actions: actionWithDelay[] = []) {
+  constructor(actions: actionWithDelay[] = [], speed: number) {
     this.actions = actions;
-    this.config = config;
+    this.speed = speed;
   }
   /**
    * Add an action after the timer starts.
@@ -37,10 +37,10 @@ export class Timer {
     this.actions.sort((a1, a2) => a1.delay - a2.delay);
     this.timeOffset = 0;
     let lastTimestamp = performance.now();
-    const { actions, config } = this;
+    const { actions } = this;
     const self = this;
     function check(time: number) {
-      self.timeOffset += (time - lastTimestamp) * config.speed;
+      self.timeOffset += (time - lastTimestamp) * self.speed;
       lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
@@ -51,7 +51,7 @@ export class Timer {
           break;
         }
       }
-      if (actions.length > 0 || self.config.liveMode) {
+      if (actions.length > 0 || self.liveMode) {
         self.raf = requestAnimationFrame(check);
       }
     }
@@ -63,6 +63,14 @@ export class Timer {
       cancelAnimationFrame(this.raf);
     }
     this.actions.length = 0;
+  }
+
+  public setSpeed(speed: number) {
+    this.speed = speed;
+  }
+
+  public toggleLiveMode(mode: boolean) {
+    this.liveMode = mode;
   }
 
   private findActionIndex(action: actionWithDelay): number {
@@ -83,7 +91,7 @@ export class Timer {
 }
 
 // TODO: add speed to mouse move timestamp calculation
-export function getDelay(event: eventWithTime, baselineTime: number): number {
+export function addDelay(event: eventWithTime, baselineTime: number): number {
   // Mouse move events was recorded in a throttle function,
   // so we need to find the real timestamp by traverse the time offsets.
   if (
@@ -97,5 +105,5 @@ export function getDelay(event: eventWithTime, baselineTime: number): number {
     return firstTimestamp - baselineTime;
   }
   event.delay = event.timestamp - baselineTime;
-  return event.timestamp - baselineTime;
+  return event.delay;
 }

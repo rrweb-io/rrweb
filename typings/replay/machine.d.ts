@@ -1,9 +1,9 @@
+import { StateMachine } from '@xstate/fsm';
 import { playerConfig, eventWithTime, Emitter } from '../types';
 import { Timer } from './timer';
 export declare type PlayerContext = {
     events: eventWithTime[];
     timer: Timer;
-    speed: playerConfig['speed'];
     timeOffset: number;
     baselineTime: number;
     lastPlayedEvent: eventWithTime | null;
@@ -21,19 +21,6 @@ export declare type PlayerEvent = {
 } | {
     type: 'PAUSE';
 } | {
-    type: 'RESUME';
-    payload: {
-        timeOffset: number;
-    };
-} | {
-    type: 'END';
-} | {
-    type: 'REPLAY';
-} | {
-    type: 'FAST_FORWARD';
-} | {
-    type: 'BACK_TO_NORMAL';
-} | {
     type: 'TO_LIVE';
     payload: {
         baselineTime?: number;
@@ -43,21 +30,14 @@ export declare type PlayerEvent = {
     payload: {
         event: eventWithTime;
     };
+} | {
+    type: 'END';
 };
 export declare type PlayerState = {
-    value: 'inited';
-    context: PlayerContext;
-} | {
     value: 'playing';
     context: PlayerContext;
 } | {
     value: 'paused';
-    context: PlayerContext;
-} | {
-    value: 'ended';
-    context: PlayerContext;
-} | {
-    value: 'skipping';
     context: PlayerContext;
 } | {
     value: 'live';
@@ -68,5 +48,32 @@ declare type PlayerAssets = {
     emitter: Emitter;
     getCastFn(event: eventWithTime, isSync: boolean): () => void;
 };
-export declare function createPlayerService(context: PlayerContext, { getCastFn, emitter }: PlayerAssets): import("@xstate/fsm").StateMachine.Service<PlayerContext, PlayerEvent, PlayerState>;
+export declare function createPlayerService(context: PlayerContext, { getCastFn, emitter }: PlayerAssets): StateMachine.Service<PlayerContext, PlayerEvent, PlayerState>;
+export declare type SpeedContext = {
+    normalSpeed: playerConfig['speed'];
+    timer: Timer;
+};
+export declare type SpeedEvent = {
+    type: 'FAST_FORWARD';
+    payload: {
+        speed: playerConfig['speed'];
+    };
+} | {
+    type: 'BACK_TO_NORMAL';
+} | {
+    type: 'SET_SPEED';
+    payload: {
+        speed: playerConfig['speed'];
+    };
+};
+export declare type SpeedState = {
+    value: 'normal';
+    context: SpeedContext;
+} | {
+    value: 'skipping';
+    context: SpeedContext;
+};
+export declare function createSpeedService(context: SpeedContext): StateMachine.Service<SpeedContext, SpeedEvent, SpeedState>;
+export declare type PlayerMachineState = StateMachine.State<PlayerContext, PlayerEvent, PlayerState>;
+export declare type SpeedMachineState = StateMachine.State<SpeedContext, SpeedEvent, SpeedState>;
 export {};
