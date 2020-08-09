@@ -8,7 +8,7 @@ export default class rrwebPlayer {
       width?: number;
       height?: number;
       skipInactive?: boolean;
-      autoPlay?: number;
+      autoPlay?: boolean;
       speedOption?: number[];
       showController?: boolean;
       showWarning?: boolean;

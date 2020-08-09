@@ -39,7 +39,8 @@
   "unpkg": "dist/index.js",
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "typings"
   ],
   "typings": "typings/index.d.ts",
   "repository": {
