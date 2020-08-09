@@ -41,6 +41,7 @@
     "lib",
     "dist"
   ],
+  "typings": "typings/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb-player.git"
