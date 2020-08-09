@@ -424,6 +424,9 @@ export class Replayer {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: number;
       let beforeLoadState = this.service.state;
+      const { unsubscribe } = this.service.subscribe((state) => {
+        beforeLoadState = state;
+      });
       head
         .querySelectorAll('link[rel="stylesheet"]')
         .forEach((css: HTMLLinkElement) => {
@@ -440,6 +443,7 @@ export class Replayer {
                 if (timer) {
                   window.clearTimeout(timer);
                 }
+                unsubscribe();
               }
             });
           }
@@ -455,6 +459,7 @@ export class Replayer {
           }
           // mark timer was called
           timer = -1;
+          unsubscribe();
         }, this.config.loadTimeout);
       }
     }
