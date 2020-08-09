@@ -1,26 +1,43 @@
-export function inlineCss(cssObj) {
+declare global {
+  interface Document {
+    mozExitFullscreen: Document['exitFullscreen'];
+    webkitExitFullscreen: Document['exitFullscreen'];
+    msExitFullscreen: Document['exitFullscreen'];
+    webkitIsFullScreen: Document['fullscreen'];
+    mozFullScreen: Document['fullscreen'];
+    msFullscreenElement: Document['fullscreen'];
+  }
+
+  interface HTMLElement {
+    mozRequestFullScreen: Element['requestFullscreen'];
+    webkitRequestFullscreen: Element['requestFullscreen'];
+    msRequestFullscreen: Element['requestFullscreen'];
+  }
+}
+
+export function inlineCss(cssObj: Record<string, string>): string {
   let style = '';
-  Object.keys(cssObj).forEach(key => {
+  Object.keys(cssObj).forEach((key) => {
     style += `${key}: ${cssObj[key]};`;
   });
   return style;
 }
 
-function padZero(num, len = 2) {
+function padZero(num: number, len = 2): string {
+  let str = String(num);
   const threshold = Math.pow(10, len - 1);
   if (num < threshold) {
-    num = String(num);
-    while (String(threshold).length > num.length) {
-      num = '0' + num;
+    while (String(threshold).length > str.length) {
+      str = '0' + num;
     }
   }
-  return num;
+  return str;
 }
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
-export function formatTime(ms) {
+export function formatTime(ms: number): string {
   if (ms <= 0) {
     return '00:00';
   }
@@ -35,7 +52,7 @@ export function formatTime(ms) {
   return `${padZero(minute)}:${padZero(second)}`;
 }
 
-export function openFullscreen(el) {
+export function openFullscreen(el: HTMLElement): Promise<void> {
   if (el.requestFullscreen) {
     return el.requestFullscreen();
   } else if (el.mozRequestFullScreen) {
@@ -50,7 +67,7 @@ export function openFullscreen(el) {
   }
 }
 
-export function exitFullscreen() {
+export function exitFullscreen(): Promise<void> {
   if (document.exitFullscreen) {
     return document.exitFullscreen();
   } else if (document.mozExitFullscreen) {
@@ -65,7 +82,7 @@ export function exitFullscreen() {
   }
 }
 
-export function isFullscreen() {
+export function isFullscreen(): boolean {
   return (
     document.fullscreen ||
     document.webkitIsFullScreen ||
@@ -74,7 +91,7 @@ export function isFullscreen() {
   );
 }
 
-export function onFullscreenChange(handler) {
+export function onFullscreenChange(handler: () => unknown): () => void {
   document.addEventListener('fullscreenchange', handler);
   document.addEventListener('webkitfullscreenchange', handler);
   document.addEventListener('mozfullscreenchange', handler);
@@ -88,7 +105,19 @@ export function onFullscreenChange(handler) {
   };
 }
 
-export function typeOf(obj) {
+export function typeOf(
+  obj: unknown,
+):
+  | 'boolean'
+  | 'number'
+  | 'string'
+  | 'function'
+  | 'array'
+  | 'date'
+  | 'regExp'
+  | 'undefined'
+  | 'null'
+  | 'object' {
   const toString = Object.prototype.toString;
   const map = {
     '[object Boolean]': 'boolean',
@@ -100,7 +129,7 @@ export function typeOf(obj) {
     '[object RegExp]': 'regExp',
     '[object Undefined]': 'undefined',
     '[object Null]': 'null',
-    '[object Object]': 'object'
+    '[object Object]': 'object',
   };
   return map[toString.call(obj)];
 }

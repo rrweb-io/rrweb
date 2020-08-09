@@ -1,7 +1,8 @@
 {
-  "extends": "google",
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 8,
+    "ecmaVersion": 2019,
     "sourceType": "module"
   },
   "rules": {
@@ -10,5 +11,15 @@
     "object-curly-spacing": "off",
     "indent": "off"
   },
-  "plugins": ["html"]
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "plugins": ["svelte3", "@typescript-eslint"],
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "processor": "svelte3/svelte3"
+    }
+  ]
 }

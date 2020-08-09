@@ -1,12 +1,9 @@
-<div class="switch" class:disabled="disabled">
-  <input
-    type="checkbox"
-    id="{id}"
-    bind:checked="checked"
-    disabled="{disabled}"
-  />
-  <label for="{id}"></label> <span class="label">{label}</span>
-</div>
+<script lang="ts">
+  export let disabled: boolean;
+  export let checked: boolean;
+  export let id: string;
+  export let label: string;
+</script>
 
 <style>
   .switch {
@@ -74,3 +71,9 @@
     left: 1.1em;
   }
 </style>
+
+<div class="switch" class:disabled>
+  <input type="checkbox" {id} bind:checked {disabled} />
+  <label for={id} />
+  <span class="label">{label}</span>
+</div>
