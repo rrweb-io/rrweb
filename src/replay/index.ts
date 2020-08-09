@@ -434,7 +434,7 @@ export class Replayer {
               // all loaded and timer not released yet
               if (unloadSheets.size === 0 && timer !== -1) {
                 if (beforeLoadState.matches('playing')) {
-                  this.resume(this.getCurrentTime());
+                  this.play(this.getCurrentTime());
                 }
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
@@ -451,7 +451,7 @@ export class Replayer {
         this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
         timer = window.setTimeout(() => {
           if (beforeLoadState.matches('playing')) {
-            this.resume(this.getCurrentTime());
+            this.play(this.getCurrentTime());
           }
           // mark timer was called
           timer = -1;

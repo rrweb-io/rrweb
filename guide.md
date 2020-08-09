@@ -133,7 +133,7 @@ rrweb.record({
 });
 
 // send last two events array to the backend
-window.onerror = function() {
+window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
@@ -168,7 +168,7 @@ rrweb.record({
 });
 
 // send last two events array to the backend
-window.onerror = function() {
+window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
@@ -260,7 +260,6 @@ So rrweb expose a public API `on` which allow developers listen to the events an
 | ---------------------- | ---------------------------------- |
 | start                  | started to replay                  |
 | pause                  | paused the replay                  |
-| resume                 | resumed the replay                 |
 | finish                 | finished the replay                |
 | fullsnapshot-rebuilded | rebuilded a full snapshot          |
 | load-stylesheet-start  | started to load remote stylesheets |
@@ -298,8 +297,7 @@ class Replayer {
   public getMetaData(): playerMetaData;
   public getTimeOffset(): number;
   public play(timeOffset?: number): void;
-  public pause(): void;
-  public resume(timeOffset?: number): void;
+  public pause(timeOffset?: number): void;
 }
 
 type playerConfig = {

@@ -108,7 +108,7 @@ setInterval(save, 10 * 1000);
 
 #### 重新制作快照
 
-默认情况下，要重放内容需要所有的event，如果你不想存储所有的event，可以使用`checkout`配置。
+默认情况下，要重放内容需要所有的 event，如果你不想存储所有的 event，可以使用`checkout`配置。
 
 **多数时候你不必这样配置**。但比如在页面错误发生时，你只想捕获最近的几次 event ，这里有一个例子：
 
@@ -129,7 +129,7 @@ rrweb.record({
 });
 
 // 向后端传送最新的两个 event 数组
-window.onerror = function() {
+window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
@@ -143,7 +143,7 @@ window.onerror = function() {
 };
 ```
 
-由于rrweb 使用了增量快照机制，我们不能指定数量来捕获最近的几次 event。上面这个例子，你可以拿到最新的 200-400 个 event 来发送给你的后端。
+由于 rrweb 使用了增量快照机制，我们不能指定数量来捕获最近的几次 event。上面这个例子，你可以拿到最新的 200-400 个 event 来发送给你的后端。
 
 类似的，你可以通过配置 `checkoutEveryNms` 来捕获最近指定时间的 event :
 
@@ -164,7 +164,7 @@ rrweb.record({
 });
 
 // 向后端传送最新的两个 event 数组
-window.onerror = function() {
+window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
@@ -274,8 +274,7 @@ class Replayer {
   public getMetaData(): playerMetaData;
   public getTimeOffset(): number;
   public play(timeOffset?: number): void;
-  public pause(): void;
-  public resume(timeOffset?: number): void;
+  public pause(timeOffset?: number): void;
 }
 
 type playerConfig = {
