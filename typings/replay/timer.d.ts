@@ -14,4 +14,4 @@ export declare class Timer {
     toggleLiveMode(mode: boolean): void;
     private findActionIndex;
 }
-export declare function getDelay(event: eventWithTime, baselineTime: number): number;
+export declare function addDelay(event: eventWithTime, baselineTime: number): number;
