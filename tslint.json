@@ -18,7 +18,8 @@
     "arrow-parens": false,
     "only-arrow-functions": false,
     "max-line-length": false,
-    "no-empty": false
+    "no-empty": false,
+    "max-classes-per-file": false
   },
   "rulesDirectory": []
 }
