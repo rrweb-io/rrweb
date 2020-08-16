@@ -4832,8 +4832,8 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"parentId\\": 68,
-          \\"nextId\\": 69,
+          \\"parentId\\": 73,
+          \\"nextId\\": 74,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
@@ -4845,8 +4845,8 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"parentId\\": 73,
-          \\"nextId\\": 74,
+          \\"parentId\\": 68,
+          \\"nextId\\": 69,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
