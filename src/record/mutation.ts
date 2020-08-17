@@ -13,7 +13,7 @@ import {
   removedNodeMutation,
   addedNodeMutation,
 } from '../types';
-import { mirror, isBlocked, isAncestorRemoved } from '../utils';
+import { mirror, isBlocked, isIgnored, isAncestorRemoved } from '../utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -144,6 +144,7 @@ export default class MutationBuffer {
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
   private recordCanvas: boolean;
+  private slimDOM: boolean;
 
   public init(
     cb: mutationCallBack,
@@ -151,12 +152,14 @@ export default class MutationBuffer {
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
     recordCanvas: boolean,
+    slimDOM: boolean,
   ) {
     this.blockClass = blockClass;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
     this.recordCanvas = recordCanvas;
     this.emissionCallback = cb;
+    this.slimDOM = slimDOM;
   }
 
   public freeze() {
@@ -218,6 +221,7 @@ export default class MutationBuffer {
           this.inlineStylesheet,
           this.maskInputOptions,
           this.recordCanvas,
+          this.slimDOM,
         )!,
       });
     };
@@ -325,6 +329,9 @@ export default class MutationBuffer {
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
+        if (isIgnored(m.target, this.slimDOM)) {
+          return;
+        }
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
           this.texts.push({
             value,
@@ -336,6 +343,9 @@ export default class MutationBuffer {
       case 'attributes': {
         const value = (m.target as HTMLElement).getAttribute(m.attributeName!);
         if (isBlocked(m.target, this.blockClass) || value === m.oldValue) {
+          return;
+        }
+        if (isIgnored(m.target, this.slimDOM)) {
           return;
         }
         let item: attributeCursor | undefined = this.attributes.find(
@@ -365,6 +375,9 @@ export default class MutationBuffer {
             isBlocked(n, this.blockClass) ||
             isBlocked(m.target, this.blockClass)
           ) {
+            return;
+          }
+          if (isIgnored(n, this.slimDOM)) {
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set
@@ -411,6 +424,9 @@ export default class MutationBuffer {
       return;
     }
     if (isINode(n)) {
+      if (isIgnored(n, this.slimDOM)) {
+        return;
+      }
       this.movedSet.add(n);
       let targetId: number | null = null;
       if (target && isINode(target)) {

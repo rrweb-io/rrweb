@@ -297,6 +297,7 @@ function record<T = eventWithTime>(
             sampling,
             recordCanvas,
             collectFonts,
+            slimDOM,
           },
           hooks,
         ),

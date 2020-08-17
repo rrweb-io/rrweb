@@ -197,6 +197,18 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   return isBlocked(node.parentNode, blockClass);
 }
 
+export function isIgnored(n: Node | INode, slimDOM: boolean): boolean {
+  if (!slimDOM) {
+    return false;
+  }
+  if ('__sn' in n) {
+    return (n as INode).__sn.id === -2;
+  }
+  // The main part of the slimDOM check happens in
+  // rrweb-snapshot::serializeNodeWithId
+  return false;
+}
+
 export function isAncestorRemoved(target: INode): boolean {
   const id = mirror.getId(target);
   if (!mirror.has(id)) {

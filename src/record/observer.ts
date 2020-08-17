@@ -46,6 +46,7 @@ function initMutationObserver(
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
   recordCanvas: boolean,
+  slimDOM: boolean,
 ): MutationObserver {
   // see mutation.ts for details
   mutationBuffer.init(
@@ -54,6 +55,7 @@ function initMutationObserver(
     inlineStylesheet,
     maskInputOptions,
     recordCanvas,
+    slimDOM,
   );
   const observer = new MutationObserver(
     mutationBuffer.processMutations.bind(mutationBuffer)
@@ -575,6 +577,7 @@ export function initObservers(
     o.inlineStylesheet,
     o.maskInputOptions,
     o.recordCanvas,
+    o.slimDOM,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
   const mouseInteractionHandler = initMouseInteractionObserver(
