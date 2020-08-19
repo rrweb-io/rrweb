@@ -114,4 +114,21 @@ describe('replayer', function (this: ISuite) {
     );
   });
 
+  it('can pause at any time offset', async () => {
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2500);
+      replayer['timer']['actions'].length;
+    `);
+    const currentTime = await this.page.evaluate(`
+      replayer.getCurrentTime();
+    `)
+    const currentState = await this.page.evaluate(`
+      replayer['service']['state']['value'];
+    `)
+    expect(actionLength).to.equal(0)
+    expect(currentTime).to.equal(2500);
+    expect(currentState).to.equal('paused');
+  });
 });
