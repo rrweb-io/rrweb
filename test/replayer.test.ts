@@ -100,5 +100,5 @@ describe('replayer', function (this: ISuite) {
     expect(actionLength).to.equal(
       styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 59822).length,
     );
-});
+  });
 });

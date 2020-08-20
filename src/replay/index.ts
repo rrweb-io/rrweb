@@ -617,6 +617,22 @@ export class Replayer {
         }
 
         const styleEl = (target as Node) as HTMLStyleElement;
+        const parent = ((target.parentNode as unknown) as INode);
+        const usingVirtualParent = this.fragmentParentMap.has(parent);
+        let placeholderNode;
+
+        if (usingVirtualParent) {
+          /**
+           * styleEl.sheet is only accessible if the styleEl is part of the 
+           * dom. This doesn't work on DocumentFragments so we have to re-add
+           * it to the dom temporarily.
+           */
+          const domParent = this.fragmentParentMap.get((target.parentNode as unknown) as INode);
+          placeholderNode = document.createTextNode('');
+          parent.replaceChild(placeholderNode, target);
+          domParent!.appendChild(target);
+        }
+
         const styleSheet = <CSSStyleSheet>styleEl.sheet;
 
         if (d.adds) {
@@ -641,6 +657,11 @@ export class Replayer {
             styleSheet.deleteRule(index);
           });
         }
+
+        if (usingVirtualParent && placeholderNode) {
+          parent.replaceChild(target, placeholderNode);
+        }
+
         break;
       }
       default:
