@@ -6,7 +6,7 @@ import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
 import { Suite } from 'mocha';
 import { launchPuppeteer, sampleEvents as events } from './utils';
-import { EventType } from '../src/types';
+import styleSheetRuleEvents from './events/style-sheet-rule-events';
 
 interface ISuite extends Suite {
   code: string;
@@ -15,6 +15,8 @@ interface ISuite extends Suite {
 }
 
 describe('replayer', function (this: ISuite) {
+  this.timeout(10_000);
+
   before(async () => {
     this.browser = await launchPuppeteer();
 
@@ -26,7 +28,7 @@ describe('replayer', function (this: ISuite) {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
     await page.evaluate(this.code);
-    await page.evaluate(`const events = ${JSON.stringify(events)}`);
+    await page.evaluate(`let events = ${JSON.stringify(events)}`);
     this.page = page;
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -85,4 +87,18 @@ describe('replayer', function (this: ISuite) {
       events.filter((e) => e.timestamp - events[0].timestamp >= 1500).length,
     );
   });
+
+  it('can fast forward past StyleSheetRule changes on virtual elements', async () => {
+    await this.page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
+
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(1500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).to.equal(
+      styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 59822).length,
+    );
+});
 });
