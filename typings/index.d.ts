@@ -20,4 +20,7 @@ export default class rrwebPlayer {
   addEventListener(event: string, handler: () => unknown): void;
 
   addEvent(event: eventWithTime): void;
+  toggle: () => void;
+  setSpeed: (speed: number) => void;
+  toggleSkipInactive: () => void;
 }

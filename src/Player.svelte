@@ -32,6 +32,11 @@
   let fullscreenListener: undefined | (() => void);
   let _width: number = width;
   let _height: number = height;
+  let controller: {
+    toggle: () => void;
+    setSpeed: (speed: number) => void;
+    toggleSkipInactive: () => void;
+  };
 
   let style: string;
   $: style = inlineCss({
@@ -54,7 +59,7 @@
       `scale(${Math.min(widthScale, heightScale)})` + 'translate(-50%, -50%)';
   };
 
-  const fullscreen = () => {
+  export const toggleFullscreen = () => {
     if (player) {
       isFullscreen() ? exitFullscreen() : openFullscreen(player);
     }
@@ -66,6 +71,17 @@
 
   export const addEvent = (event: eventWithTime) => {
     replayer.addEvent(event);
+  };
+
+  // by pass controller methods as public API
+  export const toggle = () => {
+    controller.toggle();
+  };
+  export const setSpeed = (speed: number) => {
+    controller.setSpeed(speed);
+  };
+  export const toggleSkipInactive = () => {
+    controller.toggleSkipInactive();
   };
 
   onMount(() => {
@@ -167,12 +183,13 @@
   <div class="rr-player__frame" bind:this={frame} {style} />
   {#if replayer}
     <Controller
+      bind:this={controller}
       {replayer}
       {showController}
       {autoPlay}
       {speedOption}
       {skipInactive}
       {tags}
-      on:fullscreen={() => fullscreen()} />
+      on:fullscreen={() => toggleFullscreen()} />
   {/if}
 </div>

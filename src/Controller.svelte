@@ -102,7 +102,7 @@
     }
   };
 
-  const toggle = () => {
+  export const toggle = () => {
     switch (playerState) {
       case 'playing':
         replayer.pause();
@@ -142,7 +142,7 @@
     }
   };
 
-  const setSpeed = (newSpeed: number) => {
+  export const setSpeed = (newSpeed: number) => {
     let needFreeze = playerState === 'playing';
     speed = newSpeed;
     if (needFreeze) {
@@ -152,6 +152,10 @@
     if (needFreeze) {
       replayer.play(currentTime);
     }
+  };
+
+  export const toggleSkipInactive = () => {
+    skipInactive = !skipInactive;
   };
 
   onMount(() => {
@@ -320,7 +324,7 @@
     </div>
     <div class="rr-controller__btns">
       <button on:click={toggle}>
-        {#if ['playing', 'skipping'].includes(playerState)}
+        {#if playerState === 'playing'}
           <svg
             class="icon"
             viewBox="0 0 1024 1024"
