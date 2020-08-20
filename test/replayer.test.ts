@@ -141,7 +141,7 @@ describe('replayer', function (this: ISuite) {
       replayer['timer']['actions'].length;
     `);
     expect(actionLength).to.equal(
-      styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 59822).length,
+      styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500).length,
     );
   });
 });
