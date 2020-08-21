@@ -1,4 +1,5 @@
 import { eventWithTime } from 'rrweb/typings/types';
+import { Replayer } from 'rrweb';
 
 export default class rrwebPlayer {
   constructor(options: {
@@ -17,9 +18,12 @@ export default class rrwebPlayer {
     };
   });
 
-  addEventListener(event: string, handler: () => unknown): void;
+  addEventListener(event: string, handler: (params: any) => unknown): void;
 
   addEvent(event: eventWithTime): void;
+  getMetaData: Replayer['getMetaData'];
+  getReplayer: () => Replayer;
+
   toggle: () => void;
   setSpeed: (speed: number) => void;
   toggleSkipInactive: () => void;

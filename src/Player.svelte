@@ -73,6 +73,7 @@
     switch (event) {
       case 'ui-update-current-time':
       case 'ui-update-progress':
+      case 'ui-update-player-state':
         controller.$on(event, ({ detail }) => handler(detail));
       default:
         break;
@@ -82,6 +83,8 @@
   export const addEvent = (event: eventWithTime) => {
     replayer.addEvent(event);
   };
+  export const getMetaData = () => replayer.getMetaData();
+  export const getReplayer = () => replayer;
 
   // by pass controller methods as public API
   export const toggle = () => {

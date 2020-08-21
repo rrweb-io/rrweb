@@ -31,6 +31,9 @@
   }
   let timer: number | null = null;
   let playerState: 'playing' | 'paused' | 'live';
+  $: {
+    dispatch('ui-update-player-state', { payload: playerState });
+  }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
   let step: HTMLElement;
