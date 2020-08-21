@@ -36,7 +36,7 @@
     toggle: () => void;
     setSpeed: (speed: number) => void;
     toggleSkipInactive: () => void;
-  };
+  } & Controller;
 
   let style: string;
   $: style = inlineCss({
@@ -65,8 +65,18 @@
     }
   };
 
-  export const addEventListener = (event: string, handler: () => unknown) => {
+  export const addEventListener = (
+    event: string,
+    handler: (detail: unknown) => unknown,
+  ) => {
     replayer.on(event, handler);
+    switch (event) {
+      case 'ui-update-current-time':
+      case 'ui-update-progress':
+        controller.$on(event, ({ detail }) => handler(detail));
+      default:
+        break;
+    }
   };
 
   export const addEvent = (event: eventWithTime) => {

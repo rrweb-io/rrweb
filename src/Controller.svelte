@@ -26,6 +26,9 @@
   export let tags: Record<string, string> = {};
 
   let currentTime = 0;
+  $: {
+    dispatch('ui-update-current-time', { payload: currentTime });
+  }
   let timer: number | null = null;
   let playerState: 'playing' | 'paused' | 'live';
   let speedState: 'normal' | 'skipping';
@@ -39,6 +42,7 @@
   $: {
     const percent = Math.min(1, currentTime / meta.totalTime);
     percentage = `${100 * percent}%`;
+    dispatch('ui-update-progress', { payload: percent });
   }
   type CustomEvent = {
     name: string;
