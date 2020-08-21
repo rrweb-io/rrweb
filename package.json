@@ -1,6 +1,6 @@
 {
   "name": "rrweb-player",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-node-resolve": "^7.0.0",
