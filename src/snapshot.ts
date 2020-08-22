@@ -167,6 +167,7 @@ function serializeNode(
   blockClass: string | RegExp,
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions = {},
+  recordCanvas: boolean,
 ): serializedNode | false {
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
@@ -260,7 +261,7 @@ function serializeNode(
         }
       }
       // canvas image data
-      if (tagName === 'canvas') {
+      if (tagName === 'canvas' && recordCanvas) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
       }
       // media elements
@@ -330,6 +331,7 @@ export function serializeNodeWithId(
   skipChild = false,
   inlineStylesheet = true,
   maskInputOptions?: MaskInputOptions,
+  recordCanvas?: boolean,
 ): serializedNodeWithId | null {
   const _serializedNode = serializeNode(
     n,
@@ -337,6 +339,7 @@ export function serializeNodeWithId(
     blockClass,
     inlineStylesheet,
     maskInputOptions,
+    recordCanvas || false,
   );
   if (!_serializedNode) {
     // TODO: dev only
@@ -373,6 +376,7 @@ export function serializeNodeWithId(
         skipChild,
         inlineStylesheet,
         maskInputOptions,
+        recordCanvas,
       );
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
@@ -387,6 +391,7 @@ function snapshot(
   blockClass: string | RegExp = 'rr-block',
   inlineStylesheet = true,
   maskAllInputsOrOptions: boolean | MaskInputOptions,
+  recordCanvas?: boolean,
 ): [serializedNodeWithId | null, idNodeMap] {
   const idNodeMap: idNodeMap = {};
   const maskInputOptions: MaskInputOptions =
@@ -420,6 +425,7 @@ function snapshot(
       false,
       inlineStylesheet,
       maskInputOptions,
+      recordCanvas,
     ),
     idNodeMap,
   ];
