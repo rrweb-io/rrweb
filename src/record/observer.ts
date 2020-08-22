@@ -8,6 +8,7 @@ import {
   getWindowWidth,
   isBlocked,
   isTouchEvent,
+  patch,
 } from '../utils';
 import {
   mutationCallBack,
@@ -30,6 +31,7 @@ import {
   mediaInteractionCallback,
   MediaInteractions,
   SamplingStrategy,
+  canvasMutationCallback,
 } from '../types';
 import MutationBuffer from './mutation';
 
@@ -38,6 +40,7 @@ function initMutationObserver(
   blockClass: blockClass,
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
+  recordCanvas: boolean,
 ): MutationObserver {
   // see mutation.ts for details
   const mutationBuffer = new MutationBuffer(
@@ -45,6 +48,7 @@ function initMutationObserver(
     blockClass,
     inlineStylesheet,
     maskInputOptions,
+    recordCanvas,
   );
   const observer = new MutationObserver(mutationBuffer.processMutations);
   observer.observe(document, {
@@ -357,6 +361,75 @@ function initMediaInteractionObserver(
   };
 }
 
+function initCanvasMutationObserver(
+  cb: canvasMutationCallback,
+  blockClass: blockClass,
+): listenerHandler {
+  const props = Object.getOwnPropertyNames(CanvasRenderingContext2D.prototype);
+  const handlers: listenerHandler[] = [];
+  for (const prop of props) {
+    try {
+      if (
+        typeof CanvasRenderingContext2D.prototype[
+          prop as keyof CanvasRenderingContext2D
+        ] !== 'function'
+      ) {
+        continue;
+      }
+      const restoreHandler = patch(
+        CanvasRenderingContext2D.prototype,
+        prop,
+        function (original) {
+          return function (
+            this: CanvasRenderingContext2D,
+            ...args: Array<unknown>
+          ) {
+            if (!isBlocked(this.canvas, blockClass)) {
+              setTimeout(() => {
+                const recordArgs = [...args];
+                if (prop === 'drawImage') {
+                  if (
+                    recordArgs[0] &&
+                    recordArgs[0] instanceof HTMLCanvasElement
+                  ) {
+                    recordArgs[0] = recordArgs[0].toDataURL();
+                  }
+                }
+                cb({
+                  id: mirror.getId((this.canvas as unknown) as INode),
+                  property: prop,
+                  args: recordArgs,
+                });
+              }, 0);
+            }
+            return original.apply(this, args);
+          };
+        },
+      );
+      handlers.push(restoreHandler);
+    } catch {
+      const hookHandler = hookSetter<CanvasRenderingContext2D>(
+        CanvasRenderingContext2D.prototype,
+        prop,
+        {
+          set(v) {
+            cb({
+              id: mirror.getId((this.canvas as unknown) as INode),
+              property: prop,
+              args: [v],
+              setter: true,
+            });
+          },
+        },
+      );
+      handlers.push(hookHandler);
+    }
+  }
+  return () => {
+    handlers.forEach((h) => h());
+  };
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -367,6 +440,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     inputCb,
     mediaInteractionCb,
     styleSheetRuleCb,
+    canvasMutationCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -416,6 +490,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     styleSheetRuleCb(...p);
   };
+  o.canvasMutationCb = (...p: Arguments<canvasMutationCallback>) => {
+    if (hooks.canvasMutation) {
+      hooks.canvasMutation(...p);
+    }
+    canvasMutationCb(...p);
+  };
 }
 
 export default function initObservers(
@@ -428,6 +508,7 @@ export default function initObservers(
     o.blockClass,
     o.inlineStylesheet,
     o.maskInputOptions,
+    o.recordCanvas,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
   const mouseInteractionHandler = initMouseInteractionObserver(
@@ -453,6 +534,9 @@ export default function initObservers(
     o.blockClass,
   );
   const styleSheetObserver = initStyleSheetObserver(o.styleSheetRuleCb);
+  const canvasMutationObserver = o.recordCanvas
+    ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass)
+    : () => {};
 
   return () => {
     mutationObserver.disconnect();
@@ -463,5 +547,6 @@ export default function initObservers(
     inputHandler();
     mediaInteractionHandler();
     styleSheetObserver();
+    canvasMutationObserver();
   };
 }

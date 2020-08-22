@@ -41,6 +41,7 @@ function record<T = eventWithTime>(
     packFn,
     sampling = {},
     mousemoveWait,
+    recordCanvas = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -113,6 +114,7 @@ function record<T = eventWithTime>(
       blockClass,
       inlineStylesheet,
       maskInputOptions,
+      recordCanvas,
     );
 
     if (!node) {
@@ -244,11 +246,22 @@ function record<T = eventWithTime>(
                   },
                 }),
               ),
+            canvasMutationCb: (p) =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.CanvasMutation,
+                    ...p,
+                  },
+                }),
+              ),
             blockClass,
             ignoreClass,
             maskInputOptions,
             inlineStylesheet,
             sampling,
+            recordCanvas,
           },
           hooks,
         ),

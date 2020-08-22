@@ -25,6 +25,7 @@ import {
   mutationData,
   scrollData,
   inputData,
+  canvasMutationData,
 } from '../types';
 import { mirror, polyfill, TreeIndex } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
@@ -50,6 +51,7 @@ const defaultConfig: playerConfig = {
   liveMode: false,
   insertStyleRules: [],
   triggerFocus: true,
+  UNSAFE_replayCanvas: false,
 };
 
 export class Replayer {
@@ -75,6 +77,8 @@ export class Replayer {
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
+
+  private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -289,7 +293,11 @@ export class Replayer {
     this.wrapper.appendChild(this.mouse);
 
     this.iframe = document.createElement('iframe');
-    this.iframe.setAttribute('sandbox', 'allow-same-origin');
+    const attributes = ['allow-same-origin'];
+    if (this.config.UNSAFE_replayCanvas) {
+      attributes.push('allow-scripts');
+    }
+    this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
   }
@@ -413,6 +421,9 @@ export class Replayer {
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
     this.waitForStylesheetLoad();
+    if (this.config.UNSAFE_replayCanvas) {
+      this.preloadAllImages();
+    }
   }
 
   /**
@@ -462,6 +473,44 @@ export class Replayer {
           unsubscribe();
         }, this.config.loadTimeout);
       }
+    }
+  }
+
+  /**
+   * pause when there are some canvas drawImage args need to be loaded
+   */
+  private preloadAllImages() {
+    let beforeLoadState = this.service.state;
+    const { unsubscribe } = this.service.subscribe((state) => {
+      beforeLoadState = state;
+    });
+    let count = 0;
+    let resolved = 0;
+    for (const event of this.service.state.context.events) {
+      if (
+        event.type === EventType.IncrementalSnapshot &&
+        event.data.source === IncrementalSource.CanvasMutation &&
+        event.data.property === 'drawImage' &&
+        typeof event.data.args[0] === 'string' &&
+        !this.imageMap.has(event)
+      ) {
+        count++;
+        const image = document.createElement('img');
+        image.src = event.data.args[0];
+        this.imageMap.set(event, image);
+        image.onload = () => {
+          resolved++;
+          if (resolved === count) {
+            if (beforeLoadState.matches('playing')) {
+              this.play(this.getCurrentTime());
+            }
+            unsubscribe();
+          }
+        };
+      }
+    }
+    if (count !== resolved) {
+      this.service.send({ type: 'PAUSE' });
     }
   }
 
@@ -642,6 +691,43 @@ export class Replayer {
           });
         }
         break;
+      }
+      case IncrementalSource.CanvasMutation: {
+        if (!this.config.UNSAFE_replayCanvas) {
+          return;
+        }
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.debugNodeNotFound(d, d.id);
+        }
+        try {
+          const ctx = ((target as unknown) as HTMLCanvasElement).getContext(
+            '2d',
+          )!;
+          if (d.setter) {
+            // skip some read-only type checks
+            // tslint:disable-next-line:no-any
+            (ctx as any)[d.property] = d.args[0];
+            return;
+          }
+          const original = ctx[
+            d.property as keyof CanvasRenderingContext2D
+          ] as Function;
+          /**
+           * We have serialized the image source into base64 string during recording,
+           * which has been preloaded before replay.
+           * So we can get call drawImage SYNCHRONOUSLY which avoid some fragile cast.
+           */
+          if (d.property === 'drawImage' && typeof d.args[0] === 'string') {
+            const image = this.imageMap.get(e);
+            d.args[0] = image;
+            original.apply(ctx, d.args);
+          } else {
+            original.apply(ctx, d.args);
+          }
+        } catch (error) {
+          this.warnCanvasMutationFailed(d, d.id, error);
+        }
       }
       default:
     }
@@ -912,6 +998,19 @@ export class Replayer {
       return;
     }
     console.warn(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+  }
+
+  private warnCanvasMutationFailed(
+    d: canvasMutationData,
+    id: number,
+    error: unknown,
+  ) {
+    console.warn(
+      REPLAY_CONSOLE_PREFIX,
+      `Has error on update canvas '${id}'`,
+      d,
+      error,
+    );
   }
 
   private debugNodeNotFound(d: incrementalData, id: number) {
