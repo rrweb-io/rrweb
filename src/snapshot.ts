@@ -425,7 +425,7 @@ function snapshot(
   ];
 }
 
-export function visit(
+export function visitSnapshot(
   node: serializedNodeWithId,
   onVisit: (node: serializedNodeWithId) => unknown,
 ) {

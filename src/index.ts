@@ -1,7 +1,7 @@
 import snapshot, {
   serializeNodeWithId,
   transformAttribute,
-  visit,
+  visitSnapshot,
 } from './snapshot';
 import rebuild, { buildNodeWithSN, addHoverClass } from './rebuild';
 export * from './types';
@@ -13,5 +13,5 @@ export {
   buildNodeWithSN,
   addHoverClass,
   transformAttribute,
-  visit,
+  visitSnapshot,
 };
