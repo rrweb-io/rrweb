@@ -33,7 +33,8 @@ describe('record integration tests', function (this: ISuite) {
           window.snapshots.push(event);
         },
         maskAllInputs: ${options.maskAllInputs},
-        maskInputOptions: ${JSON.stringify(options.maskAllInputs)}
+        maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
+        recordCanvas: ${options.recordCanvas}
       });
     </script>
     </body>
@@ -242,6 +243,19 @@ describe('record integration tests', function (this: ISuite) {
     await page.click('.toggle');
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'react-styled-components');
+  });
+
+  it('should record canvas mutations', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'canvas.html', {
+        recordCanvas: true,
+      }),
+    );
+    await page.waitFor(50);
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'canvas');
   });
 
   it('will serialize node before record', async () => {
