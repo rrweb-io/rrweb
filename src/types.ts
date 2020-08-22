@@ -70,6 +70,7 @@ export enum IncrementalSource {
   TouchMove,
   MediaInteraction,
   StyleSheetRule,
+  CanvasMutation,
 }
 
 export type mutationData = {
@@ -106,6 +107,10 @@ export type styleSheetRuleData = {
   source: IncrementalSource.StyleSheetRule;
 } & styleSheetRuleParam;
 
+export type canvasMutationData = {
+  source: IncrementalSource.CanvasMutation;
+} & canvasMutationParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -114,7 +119,8 @@ export type incrementalData =
   | viewportResizeData
   | inputData
   | mediaInteractionData
-  | styleSheetRuleData;
+  | styleSheetRuleData
+  | canvasMutationData;
 
 export type event =
   | domContentLoadedEvent
@@ -165,6 +171,7 @@ export type recordOptions<T> = {
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
+  recordCanvas?: boolean;
   // departed, please use sampling options
   mousemoveWait?: number;
 };
@@ -182,7 +189,9 @@ export type observerParam = {
   maskInputOptions: MaskInputOptions;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
+  canvasMutationCb: canvasMutationCallback;
   sampling: SamplingStrategy;
+  recordCanvas: boolean;
 };
 
 export type hooksParam = {
@@ -194,6 +203,7 @@ export type hooksParam = {
   input?: inputCallback;
   mediaInteaction?: mediaInteractionCallback;
   styleSheetRule?: styleSheetRuleCallback;
+  canvasMutation?: canvasMutationCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -309,6 +319,15 @@ export type styleSheetRuleParam = {
 
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
+export type canvasMutationCallback = (p: canvasMutationParam) => void;
+
+export type canvasMutationParam = {
+  id: number;
+  property: string;
+  args: Array<unknown>;
+  setter?: true;
+};
+
 export type viewportResizeDimention = {
   width: number;
   height: number;
@@ -362,6 +381,7 @@ export type playerConfig = {
   liveMode: boolean;
   insertStyleRules: string[];
   triggerFocus: boolean;
+  UNSAFE_replayCanvas: boolean;
   unpackFn?: UnpackFn;
 };
 

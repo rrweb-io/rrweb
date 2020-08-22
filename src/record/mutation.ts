@@ -138,16 +138,19 @@ export default class MutationBuffer {
   private blockClass: blockClass;
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
+  private recordCanvas: boolean;
 
   constructor(
     cb: mutationCallBack,
     blockClass: blockClass,
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
+    recordCanvas: boolean,
   ) {
     this.blockClass = blockClass;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
+    this.recordCanvas = recordCanvas;
     this.emissionCallback = cb;
   }
 
@@ -187,6 +190,7 @@ export default class MutationBuffer {
           true,
           this.inlineStylesheet,
           this.maskInputOptions,
+          this.recordCanvas,
         )!,
       });
     };
