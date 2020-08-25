@@ -209,10 +209,7 @@ export default class MutationBuffer {
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
-      adds.push({
-        parentId,
-        nextId,
-        node: serializeNodeWithId(
+      let sn = serializeNodeWithId(
           n,
           document,
           mirror.map,
@@ -222,8 +219,14 @@ export default class MutationBuffer {
           this.maskInputOptions,
           this.recordCanvas,
           this.slimDOM,
-        )!,
-      });
+      );
+      if (sn) {
+        adds.push({
+          parentId,
+          nextId,
+          node: sn,
+        });
+      }
     };
 
     while (this.mapRemoves.length) {
