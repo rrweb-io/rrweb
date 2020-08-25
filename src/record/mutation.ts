@@ -193,8 +193,12 @@ export default class MutationBuffer {
      */
     const addList = new DoubleLinkedList();
     const getNextId = (n: Node): number | null => {
-      let nextId =
-        n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
+      let ns = n;
+      let nextId = -2;  // slimDOM: ignored
+      while (nextId === -2) {
+        ns = ns.nextSibling;
+        nextId = ns && mirror.getId((ns as unknown) as INode);
+      }
       if (nextId === -1 && isBlocked(n.nextSibling, this.blockClass)) {
         nextId = null;
       }
