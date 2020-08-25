@@ -51,6 +51,7 @@ const defaultConfig: playerConfig = {
   liveMode: false,
   insertStyleRules: [],
   triggerFocus: true,
+  modifiable: false,
   UNSAFE_replayCanvas: false,
 };
 
@@ -298,7 +299,12 @@ export class Replayer {
       attributes.push('allow-scripts');
     }
     this.iframe.setAttribute('sandbox', attributes.join(' '));
-    this.disableInteract();
+
+    if (this.config.modifiable)
+        this.enableInteract();
+    else
+        this.disableInteract();
+
     this.wrapper.appendChild(this.iframe);
   }
 
