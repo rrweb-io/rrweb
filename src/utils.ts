@@ -307,9 +307,11 @@ export class TreeIndex {
     const deepRemoveFromMirror = (id: number) => {
       this.removeIdSet.add(id);
       const node = mirror.getNode(id);
-      node?.childNodes.forEach((childNode) =>
-        deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id),
-      );
+      node?.childNodes.forEach((childNode) => {
+        if ('__sn' in childNode) {
+          deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id)
+        }
+      });
     };
     const deepRemoveFromTreeIndex = (node: TreeNode) => {
       this.removeIdSet.add(node.id);
