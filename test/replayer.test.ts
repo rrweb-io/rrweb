@@ -131,4 +131,16 @@ describe('replayer', function (this: ISuite) {
     expect(currentTime).to.equal(2500);
     expect(currentState).to.equal('paused');
   });
+
+  it('can stream events in live mode', async () => {
+    const status = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, {
+        liveMode: true
+      });
+      replayer.startLive();
+      replayer.service.state.value;
+    `);
+    expect(status).to.equal('live');
+  })
 });
