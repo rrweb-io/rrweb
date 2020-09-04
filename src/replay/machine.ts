@@ -126,6 +126,10 @@ export function createPlayerService(
               target: 'live',
               actions: ['addEvent'],
             },
+            CAST_EVENT: {
+              target: 'live',
+              actions: 'castEvent',
+            },
           },
         },
       },
