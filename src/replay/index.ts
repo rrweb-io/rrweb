@@ -403,7 +403,7 @@ export class Replayer {
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
-    isSync: boolean = false
+    isSync: boolean = false,
   ) {
     if (!this.iframe.contentDocument) {
       return console.warn('Looks like your replayer has been destroyed.');
@@ -426,7 +426,9 @@ export class Replayer {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    if (!isSync) this.waitForStylesheetLoad();
+    if (!isSync) {
+      this.waitForStylesheetLoad();
+    }
     if (this.config.UNSAFE_replayCanvas) {
       this.preloadAllImages();
     }
@@ -441,9 +443,15 @@ export class Replayer {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: number;
       let beforeLoadState = this.service.state;
-      const { unsubscribe } = this.service.subscribe((state) => {
-        beforeLoadState = state;
-      });
+      const stateHandler = () => {
+        beforeLoadState = this.service.state;
+      };
+      this.emitter.on(ReplayerEvents.Start, stateHandler);
+      this.emitter.on(ReplayerEvents.Pause, stateHandler);
+      const unsubscribe = () => {
+        this.emitter.off(ReplayerEvents.Start, stateHandler);
+        this.emitter.off(ReplayerEvents.Pause, stateHandler);
+      };
       head
         .querySelectorAll('link[rel="stylesheet"]')
         .forEach((css: HTMLLinkElement) => {
@@ -487,9 +495,15 @@ export class Replayer {
    */
   private preloadAllImages() {
     let beforeLoadState = this.service.state;
-    const { unsubscribe } = this.service.subscribe((state) => {
-      beforeLoadState = state;
-    });
+    const stateHandler = () => {
+      beforeLoadState = this.service.state;
+    };
+    this.emitter.on(ReplayerEvents.Start, stateHandler);
+    this.emitter.on(ReplayerEvents.Pause, stateHandler);
+    const unsubscribe = () => {
+      this.emitter.off(ReplayerEvents.Start, stateHandler);
+      this.emitter.off(ReplayerEvents.Pause, stateHandler);
+    };
     let count = 0;
     let resolved = 0;
     for (const event of this.service.state.context.events) {

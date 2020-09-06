@@ -409,6 +409,7 @@ export type Handler = (event?: unknown) => void;
 export type Emitter = {
   on(type: string, handler: Handler): void;
   emit(type: string, event?: unknown): void;
+  off(type: string, handler: Handler): void;
 };
 
 export type Arguments<T> = T extends (...payload: infer U) => unknown

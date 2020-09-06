@@ -116,8 +116,8 @@ export function createPlayerService(
             },
             TO_LIVE: {
               target: 'live',
-              actions: ['startLive']
-            }
+              actions: ['startLive'],
+            },
           },
         },
         live: {
