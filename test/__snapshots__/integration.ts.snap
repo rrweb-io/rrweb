@@ -175,6 +175,15 @@ exports[`[html file]: invalid-attribute.html 1`] = `
 </body></html>"
 `;
 
+exports[`[html file]: invalid-doctype.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <title>Invalid Doctype</title>
+  </head>
+  <body></body></html>"
+`;
+
 exports[`[html file]: invalid-tagname.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />

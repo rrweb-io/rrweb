@@ -85,7 +85,7 @@ function buildNode(
       return doc.implementation.createDocument(null, '', null);
     case NodeType.DocumentType:
       return doc.implementation.createDocumentType(
-        n.name,
+        n.name || 'html',
         n.publicId,
         n.systemId,
       );
