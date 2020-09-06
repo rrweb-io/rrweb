@@ -1,6 +1,6 @@
 import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
-import * as smoothscroll from 'smoothscroll-polyfill';
+import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import {
@@ -93,7 +93,6 @@ export class Replayer {
     this.getCastFn = this.getCastFn.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
-    smoothscroll.polyfill();
     polyfill();
     this.setupDom();
 
@@ -300,6 +299,12 @@ export class Replayer {
     this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
+    if (this.iframe.contentWindow && this.iframe.contentDocument) {
+      smoothscrollPolyfill(
+        this.iframe.contentWindow,
+        this.iframe.contentDocument,
+      );
+    }
   }
 
   private handleResize(dimension: viewportResizeDimention) {
@@ -332,7 +337,7 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          this.rebuildFullSnapshot(event);
+          this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
         };
         break;
@@ -398,6 +403,7 @@ export class Replayer {
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
+    isSync: boolean = false,
   ) {
     if (!this.iframe.contentDocument) {
       return console.warn('Looks like your replayer has been destroyed.');
@@ -420,7 +426,9 @@ export class Replayer {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    this.waitForStylesheetLoad();
+    if (!isSync) {
+      this.waitForStylesheetLoad();
+    }
     if (this.config.UNSAFE_replayCanvas) {
       this.preloadAllImages();
     }
@@ -435,9 +443,15 @@ export class Replayer {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: number;
       let beforeLoadState = this.service.state;
-      const { unsubscribe } = this.service.subscribe((state) => {
-        beforeLoadState = state;
-      });
+      const stateHandler = () => {
+        beforeLoadState = this.service.state;
+      };
+      this.emitter.on(ReplayerEvents.Start, stateHandler);
+      this.emitter.on(ReplayerEvents.Pause, stateHandler);
+      const unsubscribe = () => {
+        this.emitter.off(ReplayerEvents.Start, stateHandler);
+        this.emitter.off(ReplayerEvents.Pause, stateHandler);
+      };
       head
         .querySelectorAll('link[rel="stylesheet"]')
         .forEach((css: HTMLLinkElement) => {
@@ -481,9 +495,15 @@ export class Replayer {
    */
   private preloadAllImages() {
     let beforeLoadState = this.service.state;
-    const { unsubscribe } = this.service.subscribe((state) => {
-      beforeLoadState = state;
-    });
+    const stateHandler = () => {
+      beforeLoadState = this.service.state;
+    };
+    this.emitter.on(ReplayerEvents.Start, stateHandler);
+    this.emitter.on(ReplayerEvents.Pause, stateHandler);
+    const unsubscribe = () => {
+      this.emitter.off(ReplayerEvents.Start, stateHandler);
+      this.emitter.off(ReplayerEvents.Pause, stateHandler);
+    };
     let count = 0;
     let resolved = 0;
     for (const event of this.service.state.context.events) {
@@ -645,16 +665,24 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
         const mediaEl = (target as Node) as HTMLMediaElement;
-        if (d.type === MediaInteractions.Pause) {
-          mediaEl.pause();
-        }
-        if (d.type === MediaInteractions.Play) {
-          if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-            mediaEl.play();
-          } else {
-            mediaEl.addEventListener('canplay', () => {
+        try {
+          if (d.type === MediaInteractions.Pause) {
+            mediaEl.pause();
+          }
+          if (d.type === MediaInteractions.Play) {
+            if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
               mediaEl.play();
-            });
+            } else {
+              mediaEl.addEventListener('canplay', () => {
+                mediaEl.play();
+              });
+            }
+          }
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(
+              `Failed to replay media interactions: ${error.message || error}`,
+            );
           }
         }
         break;
@@ -687,7 +715,13 @@ export class Replayer {
 
         if (d.removes) {
           d.removes.forEach(({ index }) => {
-            styleSheet.deleteRule(index);
+            try {
+              styleSheet.deleteRule(index);
+            } catch (e) {
+              /**
+               * same as insertRule
+               */
+            }
           });
         }
         break;
@@ -789,7 +823,12 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId) as Node;
       }
       // next not present at this moment
-      if (mutation.nextId !== null && mutation.nextId !== -1 && !next) {
+      if (
+        mutation.nextId !== null &&
+        mutation.nextId !== undefined &&
+        mutation.nextId !== -1 &&
+        !next
+      ) {
         return queue.push(mutation);
       }
 

@@ -114,6 +114,10 @@ export function createPlayerService(
               target: 'paused',
               actions: 'castEvent',
             },
+            TO_LIVE: {
+              target: 'live',
+              actions: ['startLive'],
+            },
           },
         },
         live: {
@@ -121,6 +125,10 @@ export function createPlayerService(
             ADD_EVENT: {
               target: 'live',
               actions: ['addEvent'],
+            },
+            CAST_EVENT: {
+              target: 'live',
+              actions: ['castEvent'],
             },
           },
         },

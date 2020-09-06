@@ -147,4 +147,16 @@ describe('replayer', function (this: ISuite) {
       stylesheetRemoveEvents.filter((e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500).length,
     );
   });
+
+  it('can stream events in live mode', async () => {
+    const status = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, {
+        liveMode: true
+      });
+      replayer.startLive();
+      replayer.service.state.value;
+    `);
+    expect(status).to.equal('live');
+  });
 });
