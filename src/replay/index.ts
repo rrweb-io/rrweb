@@ -332,7 +332,7 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          this.rebuildFullSnapshot(event);
+          this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
         };
         break;
@@ -398,6 +398,7 @@ export class Replayer {
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
+    isSync: boolean = false
   ) {
     if (!this.iframe.contentDocument) {
       return console.warn('Looks like your replayer has been destroyed.');
@@ -420,7 +421,7 @@ export class Replayer {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    this.waitForStylesheetLoad();
+    if (!isSync) this.waitForStylesheetLoad();
     if (this.config.UNSAFE_replayCanvas) {
       this.preloadAllImages();
     }
