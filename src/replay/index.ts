@@ -817,7 +817,12 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId) as Node;
       }
       // next not present at this moment
-      if (mutation.nextId !== null && mutation.nextId !== -1 && !next) {
+      if (
+        mutation.nextId !== null &&
+        mutation.nextId !== undefined &&
+        mutation.nextId !== -1 &&
+        !next
+      ) {
         return queue.push(mutation);
       }
 
