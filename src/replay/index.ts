@@ -715,7 +715,13 @@ export class Replayer {
 
         if (d.removes) {
           d.removes.forEach(({ index }) => {
-            styleSheet.deleteRule(index);
+            try {
+              styleSheet.deleteRule(index);
+            } catch (e) {
+              /**
+               * same as insertRule
+               */
+            }
           });
         }
         break;
