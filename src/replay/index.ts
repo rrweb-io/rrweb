@@ -646,16 +646,24 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
         const mediaEl = (target as Node) as HTMLMediaElement;
-        if (d.type === MediaInteractions.Pause) {
-          mediaEl.pause();
-        }
-        if (d.type === MediaInteractions.Play) {
-          if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-            mediaEl.play();
-          } else {
-            mediaEl.addEventListener('canplay', () => {
+        try {
+          if (d.type === MediaInteractions.Pause) {
+            mediaEl.pause();
+          }
+          if (d.type === MediaInteractions.Play) {
+            if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
               mediaEl.play();
-            });
+            } else {
+              mediaEl.addEventListener('canplay', () => {
+                mediaEl.play();
+              });
+            }
+          }
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(
+              `Failed to replay media interactions: ${error.message || error}`,
+            );
           }
         }
         break;
