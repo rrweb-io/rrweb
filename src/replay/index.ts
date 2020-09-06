@@ -1,6 +1,6 @@
 import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
-import * as smoothscroll from 'smoothscroll-polyfill';
+import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import {
@@ -93,7 +93,6 @@ export class Replayer {
     this.getCastFn = this.getCastFn.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
-    smoothscroll.polyfill();
     polyfill();
     this.setupDom();
 
@@ -300,6 +299,12 @@ export class Replayer {
     this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
+    if (this.iframe.contentWindow && this.iframe.contentDocument) {
+      smoothscrollPolyfill(
+        this.iframe.contentWindow,
+        this.iframe.contentDocument,
+      );
+    }
   }
 
   private handleResize(dimension: viewportResizeDimention) {
