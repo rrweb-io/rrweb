@@ -40,6 +40,12 @@ const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
+const defaultMouseTailConfig = {
+  duration: 500,
+  lineCap: 'round',
+  lineWidth: 3,
+  strokeStyle: 'red',
+} as const;
 const defaultConfig: playerConfig = {
   speed: 1,
   root: document.body,
@@ -52,6 +58,7 @@ const defaultConfig: playerConfig = {
   insertStyleRules: [],
   triggerFocus: true,
   UNSAFE_replayCanvas: false,
+  mouseTail: defaultMouseTailConfig,
 };
 
 export class Replayer {
@@ -67,6 +74,8 @@ export class Replayer {
   public config: playerConfig;
 
   private mouse: HTMLDivElement;
+  private mouseTail: HTMLCanvasElement | null = null;
+  private tailPositions: Array<{ x: number; y: number }> = [];
 
   private emitter: Emitter = mitt();
 
@@ -291,6 +300,13 @@ export class Replayer {
     this.mouse.classList.add('replayer-mouse');
     this.wrapper.appendChild(this.mouse);
 
+    if (this.config.mouseTail !== false) {
+      this.mouseTail = document.createElement('canvas');
+      this.mouseTail.classList.add('replayer-mouse-tail');
+      this.mouseTail.style.display = 'none';
+      this.wrapper.appendChild(this.mouseTail);
+    }
+
     this.iframe = document.createElement('iframe');
     const attributes = ['allow-same-origin'];
     if (this.config.UNSAFE_replayCanvas) {
@@ -310,9 +326,14 @@ export class Replayer {
   }
 
   private handleResize(dimension: viewportResizeDimention) {
-    this.iframe.style.display = 'inherit';
-    this.iframe.setAttribute('width', String(dimension.width));
-    this.iframe.setAttribute('height', String(dimension.height));
+    for (const el of [this.mouseTail, this.iframe]) {
+      if (!el) {
+        continue;
+      }
+      el.style.display = 'inherit';
+      el.setAttribute('width', String(dimension.width));
+      el.setAttribute('height', String(dimension.height));
+    }
   }
 
   private getCastFn(event: eventWithTime, isSync = false) {
@@ -992,11 +1013,49 @@ export class Replayer {
   private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
     this.mouse.style.left = `${x}px`;
     this.mouse.style.top = `${y}px`;
+    this.drawMouseTail({ x, y });
+
     const target = mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(d, id);
     }
     this.hoverElements((target as Node) as Element);
+  }
+
+  private drawMouseTail(position: { x: number; y: number }) {
+    if (!this.mouseTail) {
+      return;
+    }
+
+    const { lineCap, lineWidth, strokeStyle, duration } =
+      this.config.mouseTail === true
+        ? defaultMouseTailConfig
+        : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
+
+    const draw = () => {
+      if (!this.mouseTail) {
+        return;
+      }
+      const ctx = this.mouseTail.getContext('2d');
+      if (!ctx || !this.tailPositions.length) {
+        return;
+      }
+      ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
+      ctx.beginPath();
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = lineCap;
+      ctx.strokeStyle = strokeStyle;
+      ctx.moveTo(this.tailPositions[0].x, this.tailPositions[0].y);
+      this.tailPositions.forEach((p) => ctx.lineTo(p.x, p.y));
+      ctx.stroke();
+    };
+
+    this.tailPositions.push(position);
+    draw();
+    setTimeout(() => {
+      this.tailPositions = this.tailPositions.filter((p) => p !== position);
+      draw();
+    }, duration);
   }
 
   private hoverElements(el: Element) {

@@ -382,6 +382,14 @@ export type playerConfig = {
   insertStyleRules: string[];
   triggerFocus: boolean;
   UNSAFE_replayCanvas: boolean;
+  mouseTail:
+    | boolean
+    | {
+        duration?: number;
+        lineCap?: string;
+        lineWidth?: number;
+        strokeStyle?: string;
+      };
   unpackFn?: UnpackFn;
 };
 
