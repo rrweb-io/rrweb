@@ -133,11 +133,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/smoothscroll-polyfill@^0.3.0":
-  version "0.3.1"
-  resolved "https://registry.npmjs.org/@types/smoothscroll-polyfill/-/smoothscroll-polyfill-0.3.1.tgz#77fb3a6e116bdab4a5959122e3b8e201224dcd49"
-  integrity sha512-+KkHw4y+EyeCtVXET7woHUhIbfWFCflc0E0mZnSV+ZdjPQeHt/9KPEuT7gSW/kFQ8O3EG30PLO++YhChDt8+Ag==
-
 "@typescript-eslint/eslint-plugin@^3.7.0":
   version "3.7.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-3.7.0.tgz#0f91aa3c83d019591719e597fbdb73a59595a263"
@@ -1222,22 +1217,20 @@ rollup@^1.20.0:
     "@types/node" "*"
     acorn "^7.1.0"
 
-rrweb-snapshot@^0.8.0:
-  version "0.8.0"
-  resolved "https://registry.npmjs.org/rrweb-snapshot/-/rrweb-snapshot-0.8.0.tgz#43f119407cb7ec0fdbb30056d6149b1a2c76b79b"
-  integrity sha512-rPQmgragMixTOGQNtMDI31XzpbtaXt2aIB98LNqkeOjaCeo46+B1rxAMLsT3FDFFgmq8vo/cS101H6wiiyuwew==
+rrweb-snapshot@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-0.8.2.tgz#1e87c0369e37c8af484de5a82301a9b09883081c"
+  integrity sha512-KwD5NJeiPMgA+qRPf/0YIk0dKevOpj/2redYX+9Ker6FpyUlUBKaopEc9M3VbFnUqwgU9v109c9220PwhKEQcQ==
 
-rrweb@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.0.tgz#94e5370b931fcbad61280845a540f39a3e8eb13a"
-  integrity sha512-sfLu1Wu7rE85mZu0kSvdVoM3VwDNo1SPqnz7wl96sIC0RchcthxifhMLrldmI9/btdGCi8jJrpcEnuW09vpdWw==
+rrweb@^0.9.2:
+  version "0.9.2"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.2.tgz#cc2a5b8072fcd652a039d3602759479624b4b026"
+  integrity sha512-4Yy4LEKHM4bFn8DlBn1hM9mjxlfyv7iMdO7VAJixCgg+Jy+RiE2dY7fDqU6LHyjMFTwF7G11knGHg0Dz2AOhkA==
   dependencies:
-    "@types/smoothscroll-polyfill" "^0.3.0"
     "@xstate/fsm" "^1.4.0"
     mitt "^1.1.3"
     pako "^1.0.11"
-    rrweb-snapshot "^0.8.0"
-    smoothscroll-polyfill "^0.4.3"
+    rrweb-snapshot "^0.8.2"
 
 sade@^1.4.0:
   version "1.7.3"
@@ -1297,11 +1290,6 @@ slice-ansi@^2.1.0:
     ansi-styles "^3.2.0"
     astral-regex "^1.0.0"
     is-fullwidth-code-point "^2.0.0"
-
-smoothscroll-polyfill@^0.4.3:
-  version "0.4.4"
-  resolved "https://registry.npmjs.org/smoothscroll-polyfill/-/smoothscroll-polyfill-0.4.4.tgz#3a259131dc6930e6ca80003e1cb03b603b69abf8"
-  integrity sha512-TK5ZA9U5RqCwMpfoMq/l1mrH0JAR7y7KRvOBx0n2869aLxch+gT9GhN3yUfjiw+d/DiF1mKo14+hd62JyMmoBg==
 
 source-map-support@~0.5.12:
   version "0.5.19"

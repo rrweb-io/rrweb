@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Replayer, unpack } from 'rrweb';
-  import type { eventWithTime } from 'rrweb/typings/types';
+  import { Replayer, unpack, mirror } from 'rrweb';
+  import type { eventWithTime, playerConfig } from 'rrweb/typings/types';
   import {
     inlineCss,
     openFullscreen,
@@ -23,6 +23,9 @@
   export let showWarning: boolean = true;
   export let showDebug: boolean = true;
   export let tags: Record<string, string> = {};
+  export let mouseTail: playerConfig['mouseTail'] = true;
+
+  export const getMirror = () => mirror;
 
   const controllerHeight = 80;
   let speed = 1;
@@ -127,6 +130,7 @@
       showDebug,
       triggerFocus,
       unpackFn: unpack,
+      mouseTail,
     });
 
     replayer.on('resize', (dimension) => {
