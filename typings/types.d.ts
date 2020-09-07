@@ -286,6 +286,12 @@ export declare type playerConfig = {
     insertStyleRules: string[];
     triggerFocus: boolean;
     UNSAFE_replayCanvas: boolean;
+    mouseTail: boolean | {
+        duration?: number;
+        lineCap?: string;
+        lineWidth?: number;
+        strokeStyle?: string;
+    };
     unpackFn?: UnpackFn;
 };
 export declare type playerMetaData = {
@@ -301,7 +307,7 @@ export declare type missingNodeMap = {
     [id: number]: missingNode;
 };
 export declare type actionWithDelay = {
-    doAction: () => void;
+    doAction: () => Promise<void>;
     delay: number;
 };
 export declare type Handler = (event?: unknown) => void;

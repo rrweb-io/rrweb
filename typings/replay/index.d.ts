@@ -10,6 +10,8 @@ export declare class Replayer {
     get timer(): Timer;
     config: playerConfig;
     private mouse;
+    private mouseTail;
+    private tailPositions;
     private emitter;
     private nextUserInteractionEvent;
     private legacy_missingNodeRetryMap;
@@ -41,6 +43,7 @@ export declare class Replayer {
     private applyInput;
     private legacy_resolveMissingNode;
     private moveAndHover;
+    private drawMouseTail;
     private hoverElements;
     private isUserInteraction;
     private backToNormal;

@@ -417,9 +417,23 @@ export class Replayer {
           this.service.state.context.events.length - 1
         ]
       ) {
-        this.backToNormal();
-        this.service.send('END');
-        this.emitter.emit(ReplayerEvents.Finish);
+        const finish = () => {
+          this.backToNormal();
+          this.service.send('END');
+          this.emitter.emit(ReplayerEvents.Finish);
+        };
+        if (
+          event.type === EventType.IncrementalSnapshot &&
+          event.data.source === IncrementalSource.MouseMove &&
+          event.data.positions.length
+        ) {
+          // defer finish event if the last event is a mouse move
+          setTimeout(() => {
+            finish();
+          }, Math.max(0, -event.data.positions[0].timeOffset));
+        } else {
+          finish();
+        }
       }
     };
     return wrappedCastFn;
@@ -559,7 +573,7 @@ export class Replayer {
   }
 
   private applyIncremental(
-    e: incrementalSnapshotEvent & { timestamp: number },
+    e: incrementalSnapshotEvent & { timestamp: number; delay?: number },
     isSync: boolean,
   ) {
     const { data: d } = e;
@@ -590,6 +604,11 @@ export class Replayer {
                 this.service.state.context.baselineTime,
             };
             this.timer.addAction(action);
+          });
+          // add a dummy action to keep timer alive
+          this.timer.addAction({
+            doAction() {},
+            delay: e.delay! - d.positions[0]?.timeOffset,
           });
         }
         break;
