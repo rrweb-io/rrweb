@@ -102,6 +102,10 @@ export function createPlayerService(
               target: 'paused',
               actions: ['resetLastPlayedEvent', 'pause'],
             },
+            ADD_EVENT: {
+              target: 'playing',
+              actions: ['addEvent'],
+            },
           },
         },
         paused: {
@@ -117,6 +121,10 @@ export function createPlayerService(
             TO_LIVE: {
               target: 'live',
               actions: ['startLive'],
+            },
+            ADD_EVENT: {
+              target: 'paused',
+              actions: ['addEvent'],
             },
           },
         },
@@ -232,6 +240,9 @@ export function createPlayerService(
                 },
                 delay: event.delay!,
               });
+              if (!timer.isActive()) {
+                timer.start();
+              }
             }
           }
           return { ...ctx, events };
