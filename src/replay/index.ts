@@ -296,6 +296,8 @@ export class Replayer {
     if (this.config.UNSAFE_replayCanvas) {
       attributes.push('allow-scripts');
     }
+    // hide iframe before first meta event
+    this.iframe.style.display = 'none';
     this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
@@ -308,6 +310,7 @@ export class Replayer {
   }
 
   private handleResize(dimension: viewportResizeDimention) {
+    this.iframe.style.display = 'inherit';
     this.iframe.setAttribute('width', String(dimension.width));
     this.iframe.setAttribute('height', String(dimension.height));
   }
