@@ -55,7 +55,8 @@ export declare enum IncrementalSource {
     Input = 5,
     TouchMove = 6,
     MediaInteraction = 7,
-    StyleSheetRule = 8
+    StyleSheetRule = 8,
+    CanvasMutation = 9
 }
 export declare type mutationData = {
     source: IncrementalSource.Mutation;
@@ -83,7 +84,10 @@ export declare type mediaInteractionData = {
 export declare type styleSheetRuleData = {
     source: IncrementalSource.StyleSheetRule;
 } & styleSheetRuleParam;
-export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData;
+export declare type canvasMutationData = {
+    source: IncrementalSource.CanvasMutation;
+} & canvasMutationParam;
+export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData;
 export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
@@ -108,6 +112,7 @@ export declare type recordOptions<T> = {
     hooks?: hooksParam;
     packFn?: PackFn;
     sampling?: SamplingStrategy;
+    recordCanvas?: boolean;
     mousemoveWait?: number;
 };
 export declare type observerParam = {
@@ -123,7 +128,9 @@ export declare type observerParam = {
     maskInputOptions: MaskInputOptions;
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
+    canvasMutationCb: canvasMutationCallback;
     sampling: SamplingStrategy;
+    recordCanvas: boolean;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;
@@ -134,6 +141,7 @@ export declare type hooksParam = {
     input?: inputCallback;
     mediaInteaction?: mediaInteractionCallback;
     styleSheetRule?: styleSheetRuleCallback;
+    canvasMutation?: canvasMutationCallback;
 };
 export declare type mutationRecord = {
     type: string;
@@ -225,6 +233,13 @@ export declare type styleSheetRuleParam = {
     adds?: styleSheetAddRule[];
 };
 export declare type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
+export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
+export declare type canvasMutationParam = {
+    id: number;
+    property: string;
+    args: Array<unknown>;
+    setter?: true;
+};
 export declare type viewportResizeDimention = {
     width: number;
     height: number;
@@ -270,6 +285,7 @@ export declare type playerConfig = {
     liveMode: boolean;
     insertStyleRules: string[];
     triggerFocus: boolean;
+    UNSAFE_replayCanvas: boolean;
     unpackFn?: UnpackFn;
 };
 export declare type playerMetaData = {
@@ -292,6 +308,7 @@ export declare type Handler = (event?: unknown) => void;
 export declare type Emitter = {
     on(type: string, handler: Handler): void;
     emit(type: string, event?: unknown): void;
+    off(type: string, handler: Handler): void;
 };
 export declare type Arguments<T> = T extends (...payload: infer U) => unknown ? U : unknown;
 export declare enum ReplayerEvents {

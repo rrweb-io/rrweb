@@ -15,6 +15,7 @@ export declare class Replayer {
     private legacy_missingNodeRetryMap;
     private treeIndex;
     private fragmentParentMap;
+    private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
@@ -33,6 +34,7 @@ export declare class Replayer {
     private getCastFn;
     private rebuildFullSnapshot;
     private waitForStylesheetLoad;
+    private preloadAllImages;
     private applyIncremental;
     private applyMutation;
     private applyScroll;
@@ -43,5 +45,6 @@ export declare class Replayer {
     private isUserInteraction;
     private backToNormal;
     private warnNodeNotFound;
+    private warnCanvasMutationFailed;
     private debugNodeNotFound;
 }
