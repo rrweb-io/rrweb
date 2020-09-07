@@ -307,7 +307,7 @@ export declare type missingNodeMap = {
     [id: number]: missingNode;
 };
 export declare type actionWithDelay = {
-    doAction: () => Promise<void>;
+    doAction: () => void;
     delay: number;
 };
 export declare type Handler = (event?: unknown) => void;
