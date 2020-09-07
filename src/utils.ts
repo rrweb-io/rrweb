@@ -15,7 +15,7 @@ import {
   scrollData,
   inputData,
 } from './types';
-import { INode } from 'rrweb-snapshot';
+import { INode, IGNORED_NODE } from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -202,7 +202,7 @@ export function isIgnored(n: Node | INode, slimDOM: boolean): boolean {
     return false;
   }
   if ('__sn' in n) {
-    return (n as INode).__sn.id === -2;
+    return (n as INode).__sn.id === IGNORED_NODE;
   }
   // The main part of the slimDOM check happens in
   // rrweb-snapshot::serializeNodeWithId

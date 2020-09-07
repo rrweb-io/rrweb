@@ -3,6 +3,7 @@ import {
   serializeNodeWithId,
   transformAttribute,
   MaskInputOptions,
+  IGNORED_NODE,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
@@ -194,8 +195,8 @@ export default class MutationBuffer {
     const addList = new DoubleLinkedList();
     const getNextId = (n: Node): number | null => {
       let ns = n;
-      let nextId = -2;  // slimDOM: ignored
-      while (nextId === -2) {
+      let nextId = IGNORED_NODE;  // slimDOM: ignored
+      while (nextId === IGNORED_NODE) {
         ns = ns.nextSibling;
         nextId = ns && mirror.getId((ns as unknown) as INode);
       }
