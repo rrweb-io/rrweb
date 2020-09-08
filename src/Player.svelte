@@ -99,6 +99,15 @@
   export const toggleSkipInactive = () => {
     controller.toggleSkipInactive();
   };
+  export const play = () => {
+    controller.play();
+  };
+  export const pause = () => {
+    controller.pause();
+  };
+  export const goto = (timeOffset: number) => {
+    controller.goto(timeOffset);
+  };
 
   onMount(() => {
     // runtime type check

@@ -29,4 +29,7 @@ export default class rrwebPlayer {
   toggle: () => void;
   setSpeed: (speed: number) => void;
   toggleSkipInactive: () => void;
+  play: () => void;
+  pause: () => void;
+  goto: (timeOffset: number) => void;
 }

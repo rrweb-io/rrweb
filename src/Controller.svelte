@@ -112,18 +112,42 @@
   export const toggle = () => {
     switch (playerState) {
       case 'playing':
-        replayer.pause();
+        pause();
         break;
       case 'paused':
-        if (finished) {
-          replayer.play();
-          finished = false;
-        } else {
-          replayer.play(currentTime);
-        }
+        play();
         break;
       default:
         break;
+    }
+  };
+
+  export const play = () => {
+    if (playerState !== 'paused') {
+      return;
+    }
+    if (finished) {
+      replayer.play();
+      finished = false;
+    } else {
+      replayer.play(currentTime);
+    }
+  };
+
+  export const pause = () => {
+    if (playerState !== 'playing') {
+      return;
+    }
+    replayer.pause();
+  };
+
+  export const goto = (timeOffset: number) => {
+    currentTime = timeOffset;
+    const isPlaying = playerState === 'playing';
+    replayer.pause();
+    replayer.play(timeOffset);
+    if (!isPlaying) {
+      replayer.pause();
     }
   };
 
@@ -140,13 +164,7 @@
       percent = 1;
     }
     const timeOffset = meta.totalTime * percent;
-    currentTime = timeOffset;
-    const isPlaying = playerState === 'playing';
-    replayer.pause();
-    replayer.play(timeOffset);
-    if (!isPlaying) {
-      replayer.pause();
-    }
+    goto(timeOffset);
   };
 
   export const setSpeed = (newSpeed: number) => {
