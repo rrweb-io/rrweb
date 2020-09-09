@@ -197,10 +197,7 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   return isBlocked(node.parentNode, blockClass);
 }
 
-export function isIgnored(n: Node | INode, slimDOM: boolean): boolean {
-  if (!slimDOM) {
-    return false;
-  }
+export function isIgnored(n: Node | INode): boolean {
   if ('__sn' in n) {
     return (n as INode).__sn.id === IGNORED_NODE;
   }

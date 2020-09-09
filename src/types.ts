@@ -3,6 +3,7 @@ import {
   idNodeMap,
   INode,
   MaskInputOptions,
+  SlimDOMOptions,
 } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
@@ -174,6 +175,7 @@ export type recordOptions<T> = {
   ignoreClass?: string;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
+  slimDOMOptions?: SlimDOMOptions;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   packFn?: PackFn;

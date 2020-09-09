@@ -1,4 +1,4 @@
-import { snapshot, MaskInputOptions } from 'rrweb-snapshot';
+import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { initObservers, mutationBuffer } from './observer';
 import {
   mirror,
@@ -37,13 +37,13 @@ function record<T = eventWithTime>(
     inlineStylesheet = true,
     maskAllInputs,
     maskInputOptions: _maskInputOptions,
+    slimDOMOptions: _slimDOMOptions,
     hooks,
     packFn,
     sampling = {},
     mousemoveWait,
     recordCanvas = false,
     collectFonts = false,
-    slimDOM = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -76,6 +76,17 @@ function record<T = eventWithTime>(
       : _maskInputOptions !== undefined
       ? _maskInputOptions
       : {};
+
+  const slimDOMOptions: SlimDOMOptions =
+    _slimDOMOptions === true
+      ? {
+          script: true,
+          comment: true,
+          headWhitespace: true,
+        }
+      : _slimDOMOptions === false
+      ? {}
+      : _slimDOMOptions;
 
   polyfill();
 
@@ -133,8 +144,8 @@ function record<T = eventWithTime>(
       blockClass,
       inlineStylesheet,
       maskInputOptions,
+      slimDOMOptions,
       recordCanvas,
-      slimDOM,
     );
 
     if (!node) {
@@ -297,7 +308,7 @@ function record<T = eventWithTime>(
             sampling,
             recordCanvas,
             collectFonts,
-            slimDOM,
+            slimDOMOptions,
           },
           hooks,
         ),

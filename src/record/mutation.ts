@@ -3,6 +3,7 @@ import {
   serializeNodeWithId,
   transformAttribute,
   MaskInputOptions,
+  SlimDOMOptions,
   IGNORED_NODE,
 } from 'rrweb-snapshot';
 import {
@@ -145,7 +146,7 @@ export default class MutationBuffer {
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
   private recordCanvas: boolean;
-  private slimDOM: boolean;
+  private slimDOMOptions: SlimDOMOptions;
 
   public init(
     cb: mutationCallBack,
@@ -153,14 +154,14 @@ export default class MutationBuffer {
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
     recordCanvas: boolean,
-    slimDOM: boolean,
+    slimDOMOptions: boolean,
   ) {
     this.blockClass = blockClass;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
     this.recordCanvas = recordCanvas;
     this.emissionCallback = cb;
-    this.slimDOM = slimDOM;
+    this.slimDOMOptions = slimDOMOptions;
   }
 
   public freeze() {
@@ -222,8 +223,8 @@ export default class MutationBuffer {
           true,
           this.inlineStylesheet,
           this.maskInputOptions,
+          this.slimDOMOptions,
           this.recordCanvas,
-          this.slimDOM,
       );
       if (sn) {
         adds.push({
@@ -337,7 +338,7 @@ export default class MutationBuffer {
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
-        if (isIgnored(m.target, this.slimDOM)) {
+        if (isIgnored(m.target)) {
           return;
         }
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
@@ -353,7 +354,7 @@ export default class MutationBuffer {
         if (isBlocked(m.target, this.blockClass) || value === m.oldValue) {
           return;
         }
-        if (isIgnored(m.target, this.slimDOM)) {
+        if (isIgnored(m.target)) {
           return;
         }
         let item: attributeCursor | undefined = this.attributes.find(
@@ -385,7 +386,7 @@ export default class MutationBuffer {
           ) {
             return;
           }
-          if (isIgnored(n, this.slimDOM)) {
+          if (isIgnored(n)) {
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set
@@ -432,7 +433,7 @@ export default class MutationBuffer {
       return;
     }
     if (isINode(n)) {
-      if (isIgnored(n, this.slimDOM)) {
+      if (isIgnored(n)) {
         return;
       }
       this.movedSet.add(n);

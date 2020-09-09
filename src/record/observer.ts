@@ -1,4 +1,4 @@
-import { INode, MaskInputOptions } from 'rrweb-snapshot';
+import { INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
   mirror,
@@ -46,7 +46,7 @@ function initMutationObserver(
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
   recordCanvas: boolean,
-  slimDOM: boolean,
+  slimDOMOptions: SlimDOMOptions,
 ): MutationObserver {
   // see mutation.ts for details
   mutationBuffer.init(
@@ -55,7 +55,7 @@ function initMutationObserver(
     inlineStylesheet,
     maskInputOptions,
     recordCanvas,
-    slimDOM,
+    slimDOMOptions,
   );
   const observer = new MutationObserver(
     mutationBuffer.processMutations.bind(mutationBuffer)
@@ -577,7 +577,7 @@ export function initObservers(
     o.inlineStylesheet,
     o.maskInputOptions,
     o.recordCanvas,
-    o.slimDOM,
+    o.slimDOMOptions,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
   const mouseInteractionHandler = initMouseInteractionObserver(
