@@ -16,6 +16,7 @@ export default class rrwebPlayer {
       showDebug?: boolean;
       tags?: Record<string, string>;
       mouseTail?: playerConfig['mouseTail'];
+      UNSAFE_replayCanvas?: boolean;
     };
   });
 

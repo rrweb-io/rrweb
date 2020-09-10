@@ -24,6 +24,7 @@
   export let showDebug: boolean = true;
   export let tags: Record<string, string> = {};
   export let mouseTail: playerConfig['mouseTail'] = true;
+  export let UNSAFE_replayCanvas: boolean = false;
 
   export const getMirror = () => mirror;
 
@@ -140,6 +141,7 @@
       triggerFocus,
       unpackFn: unpack,
       mouseTail,
+      UNSAFE_replayCanvas,
     });
 
     replayer.on('resize', (dimension) => {
