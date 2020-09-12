@@ -26,6 +26,7 @@
 }
 .replayer-mouse-tail {
   position: absolute;
+  pointer-events: none;
 }
 
 @keyframes click {
