@@ -92,7 +92,7 @@
     stopTimer();
 
     function update() {
-      currentTime = replayer.timer.timeOffset + replayer.getTimeOffset();
+      currentTime = replayer.getCurrentTime();
 
       if (currentTime < meta.totalTime) {
         timer = requestAnimationFrame(update);

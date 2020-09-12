@@ -1,7 +1,8 @@
 import { eventWithTime, playerConfig } from 'rrweb/typings/types';
 import { Replayer, mirror } from 'rrweb';
+import { SvelteComponent } from 'svelte';
 
-export default class rrwebPlayer {
+export default class rrwebPlayer extends SvelteComponent {
   constructor(options: {
     target: HTMLElement;
     props: {

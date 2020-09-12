@@ -1222,10 +1222,10 @@ rrweb-snapshot@^0.8.2:
   resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-0.8.2.tgz#1e87c0369e37c8af484de5a82301a9b09883081c"
   integrity sha512-KwD5NJeiPMgA+qRPf/0YIk0dKevOpj/2redYX+9Ker6FpyUlUBKaopEc9M3VbFnUqwgU9v109c9220PwhKEQcQ==
 
-rrweb@^0.9.2:
-  version "0.9.2"
-  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.2.tgz#cc2a5b8072fcd652a039d3602759479624b4b026"
-  integrity sha512-4Yy4LEKHM4bFn8DlBn1hM9mjxlfyv7iMdO7VAJixCgg+Jy+RiE2dY7fDqU6LHyjMFTwF7G11knGHg0Dz2AOhkA==
+rrweb@^0.9.3:
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.3.tgz#f783ab10e4201143c3381e0efb6f59fec0988608"
+  integrity sha512-rno2FgBFxhHAGZD+7mE6aYlIzvChys4kjQj0bD7yeEQL+BoPtNYKufDYV8w3ZjtyC1LPUDZy092fxlrQsXVFpQ==
   dependencies:
     "@xstate/fsm" "^1.4.0"
     mitt "^1.1.3"
