@@ -292,6 +292,8 @@ function initInputObserver(
     [HTMLInputElement.prototype, 'checked'],
     [HTMLSelectElement.prototype, 'value'],
     [HTMLTextAreaElement.prototype, 'value'],
+    // Some UI library use selectedIndex to set select value
+    [HTMLSelectElement.prototype, 'selectedIndex'],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
