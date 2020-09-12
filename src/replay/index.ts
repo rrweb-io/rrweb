@@ -207,6 +207,14 @@ export class Replayer {
     if (!this.config.skipInactive) {
       this.backToNormal();
     }
+    if (typeof this.config.speed !== 'undefined') {
+      this.speedService.send({
+        type: 'SET_SPEED',
+        payload: {
+          speed: config.speed!,
+        },
+      });
+    }
   }
 
   public getMetaData(): playerMetaData {
