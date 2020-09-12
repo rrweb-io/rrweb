@@ -207,7 +207,7 @@ export class Replayer {
     if (!this.config.skipInactive) {
       this.backToNormal();
     }
-    if (typeof this.config.speed !== 'undefined') {
+    if (typeof config.speed !== 'undefined') {
       this.speedService.send({
         type: 'SET_SPEED',
         payload: {
