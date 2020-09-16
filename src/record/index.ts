@@ -78,11 +78,21 @@ function record<T = eventWithTime>(
       : {};
 
   const slimDOMOptions: SlimDOMOptions =
-    _slimDOMOptions === true
+    (_slimDOMOptions === true ||
+     _slimDOMOptions === 'all')
       ? {
           script: true,
           comment: true,
+          headFavicon: true,
           headWhitespace: true,
+          headMetaSocial: true,
+          headMetaRobots: true,
+          headMetaHttpEquiv: true,
+          headMetaVerification: true,
+          // the following are off for slimDOMOptions === true,
+          // as they destroy some (hidden) info:
+          headMetaAuthorship: _slimDOMOptions === 'all',
+          headMetaDescKeywords: _slimDOMOptions === 'all',
         }
       : _slimDOMOptions === false
       ? {}
