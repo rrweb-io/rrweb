@@ -5,6 +5,7 @@ import {
   MaskInputOptions,
 } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
+import { FontFaceDescriptors } from 'css-font-loading-module';
 
 export enum EventType {
   DomContentLoaded,
@@ -71,6 +72,7 @@ export enum IncrementalSource {
   MediaInteraction,
   StyleSheetRule,
   CanvasMutation,
+  Font,
 }
 
 export type mutationData = {
@@ -111,6 +113,10 @@ export type canvasMutationData = {
   source: IncrementalSource.CanvasMutation;
 } & canvasMutationParam;
 
+export type fontData = {
+  source: IncrementalSource.Font;
+} & fontParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -120,7 +126,8 @@ export type incrementalData =
   | inputData
   | mediaInteractionData
   | styleSheetRuleData
-  | canvasMutationData;
+  | canvasMutationData
+  | fontData;
 
 export type event =
   | domContentLoadedEvent
@@ -172,6 +179,7 @@ export type recordOptions<T> = {
   packFn?: PackFn;
   sampling?: SamplingStrategy;
   recordCanvas?: boolean;
+  collectFonts?: boolean;
   // departed, please use sampling options
   mousemoveWait?: number;
 };
@@ -190,8 +198,10 @@ export type observerParam = {
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
   canvasMutationCb: canvasMutationCallback;
+  fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
+  collectFonts: boolean;
 };
 
 export type hooksParam = {
@@ -204,6 +214,7 @@ export type hooksParam = {
   mediaInteaction?: mediaInteractionCallback;
   styleSheetRule?: styleSheetRuleCallback;
   canvasMutation?: canvasMutationCallback;
+  font?: fontCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -327,6 +338,15 @@ export type canvasMutationParam = {
   args: Array<unknown>;
   setter?: true;
 };
+
+export type fontParam = {
+  family: string;
+  fontSource: string;
+  buffer: boolean;
+  descriptors?: FontFaceDescriptors;
+};
+
+export type fontCallback = (p: fontParam) => void;
 
 export type viewportResizeDimention = {
   width: number;

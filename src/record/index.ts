@@ -42,6 +42,7 @@ function record<T = eventWithTime>(
     sampling = {},
     mousemoveWait,
     recordCanvas = false,
+    collectFonts = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -256,12 +257,23 @@ function record<T = eventWithTime>(
                   },
                 }),
               ),
+            fontCb: (p) =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Font,
+                    ...p,
+                  },
+                }),
+              ),
             blockClass,
             ignoreClass,
             maskInputOptions,
             inlineStylesheet,
             sampling,
             recordCanvas,
+            collectFonts,
           },
           hooks,
         ),

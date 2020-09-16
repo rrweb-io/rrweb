@@ -813,6 +813,22 @@ export class Replayer {
         } catch (error) {
           this.warnCanvasMutationFailed(d, d.id, error);
         }
+        break;
+      }
+      case IncrementalSource.Font: {
+        try {
+          const fontFace = new FontFace(
+            d.family,
+            d.buffer ? new Uint8Array(JSON.parse(d.fontSource)) : d.fontSource,
+            d.descriptors,
+          );
+          this.iframe.contentDocument?.fonts.add(fontFace);
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(error);
+          }
+        }
+        break;
       }
       default:
     }

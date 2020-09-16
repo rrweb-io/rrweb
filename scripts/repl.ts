@@ -95,7 +95,8 @@ function getCode(): string {
       window.__IS_RECORDING__ = true
       rrweb.record({
         emit: event => window._replLog(event),
-        recordCanvas: true
+        recordCanvas: true,
+        collectFonts: true
       });
     `);
     page.on('framenavigated', async () => {
@@ -105,7 +106,8 @@ function getCode(): string {
           window.__IS_RECORDING__ = true
           rrweb.record({
             emit: event => window._replLog(event),
-            recordCanvas: true
+            recordCanvas: true,
+            collectFonts: true
           });
         `);
       }

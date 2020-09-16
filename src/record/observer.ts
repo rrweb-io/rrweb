@@ -1,4 +1,5 @@
 import { INode, MaskInputOptions } from 'rrweb-snapshot';
+import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
   mirror,
   throttle,
@@ -32,6 +33,8 @@ import {
   MediaInteractions,
   SamplingStrategy,
   canvasMutationCallback,
+  fontCallback,
+  fontParam,
 } from '../types';
 import MutationBuffer from './mutation';
 
@@ -432,6 +435,56 @@ function initCanvasMutationObserver(
   };
 }
 
+function initFontObserver(cb: fontCallback): listenerHandler {
+  const handlers: listenerHandler[] = [];
+
+  const fontMap = new WeakMap<FontFace, fontParam>();
+
+  const originalFontFace = FontFace;
+  // tslint:disable-next-line: no-any
+  (window as any).FontFace = function FontFace(
+    family: string,
+    source: string | ArrayBufferView,
+    descriptors?: FontFaceDescriptors,
+  ) {
+    const fontFace = new originalFontFace(family, source, descriptors);
+    fontMap.set(fontFace, {
+      family,
+      buffer: typeof source !== 'string',
+      descriptors,
+      fontSource:
+        typeof source === 'string'
+          ? source
+          : // tslint:disable-next-line: no-any
+            JSON.stringify(Array.from(new Uint8Array(source as any))),
+    });
+    return fontFace;
+  };
+
+  const restoreHandler = patch(document.fonts, 'add', function (original) {
+    return function (this: FontFaceSet, fontFace: FontFace) {
+      setTimeout(() => {
+        const p = fontMap.get(fontFace);
+        if (p) {
+          cb(p);
+          fontMap.delete(fontFace);
+        }
+      }, 0);
+      return original.apply(this, [fontFace]);
+    };
+  });
+
+  handlers.push(() => {
+    // tslint:disable-next-line: no-any
+    (window as any).FonFace = originalFontFace;
+  });
+  handlers.push(restoreHandler);
+
+  return () => {
+    handlers.forEach((h) => h());
+  };
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -443,6 +496,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     mediaInteractionCb,
     styleSheetRuleCb,
     canvasMutationCb,
+    fontCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -498,6 +552,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     canvasMutationCb(...p);
   };
+  o.fontCb = (...p: Arguments<fontCallback>) => {
+    if (hooks.font) {
+      hooks.font(...p);
+    }
+    fontCb(...p);
+  };
 }
 
 export default function initObservers(
@@ -539,6 +599,7 @@ export default function initObservers(
   const canvasMutationObserver = o.recordCanvas
     ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass)
     : () => {};
+  const fontObserver = o.collectFonts ? initFontObserver(o.fontCb) : () => {};
 
   return () => {
     mutationObserver.disconnect();
@@ -550,5 +611,6 @@ export default function initObservers(
     mediaInteractionHandler();
     styleSheetObserver();
     canvasMutationObserver();
+    fontObserver();
   };
 }
