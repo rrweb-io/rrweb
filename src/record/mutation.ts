@@ -93,6 +93,9 @@ class DoubleLinkedList {
         current.next.previous = current.previous;
       }
     }
+    if (n.__ln) {
+      delete n.__ln;
+    }
     this.length--;
   }
 }
