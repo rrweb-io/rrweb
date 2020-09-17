@@ -15,6 +15,91 @@ import {
 } from '../types';
 import { mirror, isBlocked, isAncestorRemoved } from '../utils';
 
+type DoubleLinkedListNode = {
+  previous: DoubleLinkedListNode | null;
+  next: DoubleLinkedListNode | null;
+  value: NodeInLinkedList;
+};
+type NodeInLinkedList = Node & {
+  __ln: DoubleLinkedListNode;
+};
+
+function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
+  return '__ln' in n;
+}
+class DoubleLinkedList {
+  public length = 0;
+  public head: DoubleLinkedListNode | null = null;
+
+  public get(position: number) {
+    if (position >= this.length) {
+      throw new Error('Position outside of list range');
+    }
+
+    let current = this.head;
+    for (let index = 0; index < position; index++) {
+      current = current?.next || null;
+    }
+    return current;
+  }
+
+  public addNode(n: Node) {
+    const node: DoubleLinkedListNode = {
+      value: n as NodeInLinkedList,
+      previous: null,
+      next: null,
+    };
+    (n as NodeInLinkedList).__ln = node;
+    if (n.previousSibling && isNodeInLinkedList(n.previousSibling)) {
+      const current = n.previousSibling.__ln.next;
+      node.next = current;
+      node.previous = n.previousSibling.__ln;
+      n.previousSibling.__ln.next = node;
+      if (current) {
+        current.previous = node;
+      }
+    } else if (n.nextSibling && isNodeInLinkedList(n.nextSibling)) {
+      const current = n.nextSibling.__ln.previous;
+      node.previous = current;
+      node.next = n.nextSibling.__ln;
+      n.nextSibling.__ln.previous = node;
+      if (current) {
+        current.next = node;
+      }
+    } else {
+      if (this.head) {
+        this.head.previous = node;
+      }
+      node.next = this.head;
+      this.head = node;
+    }
+    this.length++;
+  }
+
+  public removeNode(n: NodeInLinkedList) {
+    const current = n.__ln;
+    if (!this.head) {
+      return;
+    }
+
+    if (!current.previous) {
+      this.head = current.next;
+      if (this.head) {
+        this.head.previous = null;
+      }
+    } else {
+      current.previous.next = current.next;
+      if (current.next) {
+        current.next.previous = current.previous;
+      }
+    }
+    if (n.__ln) {
+      delete n.__ln;
+    }
+    this.length--;
+  }
+}
+
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 function isINode(n: Node | INode): n is INode {
   return '__sn' in n;
@@ -56,16 +141,19 @@ export default class MutationBuffer {
   private blockClass: blockClass;
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
+  private recordCanvas: boolean;
 
   constructor(
     cb: mutationCallBack,
     blockClass: blockClass,
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
+    recordCanvas: boolean,
   ) {
     this.blockClass = blockClass;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
+    this.recordCanvas = recordCanvas;
     this.emissionCallback = cb;
   }
 
@@ -76,13 +164,23 @@ export default class MutationBuffer {
      * Sometimes child node may be pushed before its newly added
      * parent, so we init a queue to store these nodes.
      */
-    const addQueue: Node[] = [];
-    const pushAdd = (n: Node) => {
-      const parentId = mirror.getId((n.parentNode as Node) as INode);
-      const nextId =
+    const addList = new DoubleLinkedList();
+    const getNextId = (n: Node): number | null => {
+      let nextId =
         n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
+      if (nextId === -1 && isBlocked(n.nextSibling, this.blockClass)) {
+        nextId = null;
+      }
+      return nextId;
+    };
+    const pushAdd = (n: Node) => {
+      if (!n.parentNode) {
+        return;
+      }
+      const parentId = mirror.getId((n.parentNode as Node) as INode);
+      const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
-        return addQueue.push(n);
+        return addList.addNode(n);
       }
       this.adds.push({
         parentId,
@@ -95,6 +193,7 @@ export default class MutationBuffer {
           true,
           this.inlineStylesheet,
           this.maskInputOptions,
+          this.recordCanvas,
         )!,
       });
     };
@@ -116,12 +215,32 @@ export default class MutationBuffer {
       }
     }
 
-    while (addQueue.length) {
-      if (
-        addQueue.every(
-          (n) => mirror.getId((n.parentNode as Node) as INode) === -1,
-        )
-      ) {
+    let candidate: DoubleLinkedListNode | null = null;
+    while (addList.length) {
+      let node: DoubleLinkedListNode | null = null;
+      if (candidate) {
+        const parentId = mirror.getId(
+          (candidate.value.parentNode as Node) as INode,
+        );
+        const nextId = getNextId(candidate.value);
+        if (parentId !== -1 && nextId !== -1) {
+          node = candidate;
+        }
+      }
+      if (!node) {
+        for (let index = addList.length - 1; index >= 0; index--) {
+          const _node = addList.get(index)!;
+          const parentId = mirror.getId(
+            (_node.value.parentNode as Node) as INode,
+          );
+          const nextId = getNextId(_node.value);
+          if (parentId !== -1 && nextId !== -1) {
+            node = _node;
+            break;
+          }
+        }
+      }
+      if (!node) {
         /**
          * If all nodes in queue could not find a serialized parent,
          * it may be a bug or corner case. We need to escape the
@@ -129,7 +248,9 @@ export default class MutationBuffer {
          */
         break;
       }
-      pushAdd(addQueue.shift()!);
+      candidate = node.previous;
+      addList.removeNode(node.value);
+      pushAdd(node.value);
     }
 
     this.emit();

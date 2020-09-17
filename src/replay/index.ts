@@ -1,8 +1,8 @@
 import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
-import * as smoothscroll from 'smoothscroll-polyfill';
+import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
-import { createPlayerService } from './machine';
+import { createPlayerService, createSpeedService } from './machine';
 import {
   EventType,
   IncrementalSource,
@@ -25,6 +25,7 @@ import {
   mutationData,
   scrollData,
   inputData,
+  canvasMutationData,
 } from '../types';
 import { mirror, polyfill, TreeIndex } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
@@ -39,6 +40,12 @@ const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
+const defaultMouseTailConfig = {
+  duration: 500,
+  lineCap: 'round',
+  lineWidth: 3,
+  strokeStyle: 'red',
+} as const;
 const defaultConfig: playerConfig = {
   speed: 1,
   root: document.body,
@@ -50,32 +57,37 @@ const defaultConfig: playerConfig = {
   liveMode: false,
   insertStyleRules: [],
   triggerFocus: true,
+  UNSAFE_replayCanvas: false,
+  mouseTail: defaultMouseTailConfig,
 };
 
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
 
+  public service: ReturnType<typeof createPlayerService>;
+  public speedService: ReturnType<typeof createSpeedService>;
   public get timer() {
     return this.service.state.context.timer;
   }
 
-  private config: playerConfig;
+  public config: playerConfig;
 
   private mouse: HTMLDivElement;
+  private mouseTail: HTMLCanvasElement | null = null;
+  private tailPositions: Array<{ x: number; y: number }> = [];
 
   private emitter: Emitter = mitt();
 
   private nextUserInteractionEvent: eventWithTime | null;
-  private noramlSpeed: number = -1;
 
   // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
-  private service!: ReturnType<typeof createPlayerService>;
-
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
+
+  private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -90,7 +102,6 @@ export class Replayer {
     this.getCastFn = this.getCastFn.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
-    smoothscroll.polyfill();
     polyfill();
     this.setupDom();
 
@@ -124,6 +135,7 @@ export class Replayer {
       this.fragmentParentMap.clear();
     });
 
+    const timer = new Timer([], config?.speed || defaultConfig.speed);
     this.service = createPlayerService(
       {
         events: events.map((e) => {
@@ -132,8 +144,7 @@ export class Replayer {
           }
           return e as eventWithTime;
         }),
-        timer: new Timer(this.config),
-        speed: config?.speed || defaultConfig.speed,
+        timer,
         timeOffset: 0,
         baselineTime: 0,
         lastPlayedEvent: null,
@@ -145,25 +156,37 @@ export class Replayer {
     );
     this.service.start();
     this.service.subscribe((state) => {
-      if (!state.changed) {
-        return;
-      }
-      // publish via emitter
+      this.emitter.emit(ReplayerEvents.StateChange, {
+        player: state,
+      });
+    });
+    this.speedService = createSpeedService({
+      normalSpeed: -1,
+      timer,
+    });
+    this.speedService.start();
+    this.speedService.subscribe((state) => {
+      this.emitter.emit(ReplayerEvents.StateChange, {
+        speed: state,
+      });
     });
 
     // rebuild first full snapshot as the poster of the player
     // maybe we can cache it for performance optimization
-    const { events: contextEvents } = this.service.state.context;
-    const firstMeta = contextEvents.find((e) => e.type === EventType.Meta);
-    const firstFullsnapshot = contextEvents.find(
+    const firstMeta = this.service.state.context.events.find(
+      (e) => e.type === EventType.Meta,
+    );
+    const firstFullsnapshot = this.service.state.context.events.find(
       (e) => e.type === EventType.FullSnapshot,
     );
     if (firstMeta) {
       const { width, height } = firstMeta.data as metaEvent['data'];
-      this.emitter.emit(ReplayerEvents.Resize, {
-        width,
-        height,
-      });
+      setTimeout(() => {
+        this.emitter.emit(ReplayerEvents.Resize, {
+          width,
+          height,
+        });
+      }, 0);
     }
     if (firstFullsnapshot) {
       this.rebuildFullSnapshot(
@@ -182,14 +205,23 @@ export class Replayer {
       this.config[key] = config[key];
     });
     if (!this.config.skipInactive) {
-      this.noramlSpeed = -1;
+      this.backToNormal();
+    }
+    if (typeof config.speed !== 'undefined') {
+      this.speedService.send({
+        type: 'SET_SPEED',
+        payload: {
+          speed: config.speed!,
+        },
+      });
     }
   }
 
   public getMetaData(): playerMetaData {
-    const { events } = this.service.state.context;
-    const firstEvent = events[0];
-    const lastEvent = events[events.length - 1];
+    const firstEvent = this.service.state.context.events[0];
+    const lastEvent = this.service.state.context.events[
+      this.service.state.context.events.length - 1
+    ];
     return {
       startTime: firstEvent.timestamp,
       endTime: lastEvent.timestamp,
@@ -216,24 +248,31 @@ export class Replayer {
    * @param timeOffset number
    */
   public play(timeOffset = 0) {
-    if (this.service.state.value === 'ended') {
-      this.service.send({ type: 'REPLAY' });
-    }
-    if (this.service.state.value === 'paused') {
-      this.service.send({ type: 'RESUME', payload: { timeOffset } });
+    if (this.service.state.matches('paused')) {
+      this.service.send({ type: 'PLAY', payload: { timeOffset } });
     } else {
+      this.service.send({ type: 'PAUSE' });
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     }
     this.emitter.emit(ReplayerEvents.Start);
   }
 
-  public pause() {
-    this.service.send({ type: 'PAUSE' });
+  public pause(timeOffset?: number) {
+    if (timeOffset === undefined && this.service.state.matches('playing')) {
+      this.service.send({ type: 'PAUSE' });
+    }
+    if (typeof timeOffset === 'number') {
+      this.play(timeOffset);
+      this.service.send({ type: 'PAUSE' });
+    }
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
   public resume(timeOffset = 0) {
-    this.service.send({ type: 'RESUME', payload: { timeOffset } });
+    console.warn(
+      `The 'resume' will be departed in 1.0. Please use 'play' method which has the same interface.`,
+    );
+    this.play(timeOffset);
     this.emitter.emit(ReplayerEvents.Resume);
   }
 
@@ -269,19 +308,43 @@ export class Replayer {
     this.mouse.classList.add('replayer-mouse');
     this.wrapper.appendChild(this.mouse);
 
+    if (this.config.mouseTail !== false) {
+      this.mouseTail = document.createElement('canvas');
+      this.mouseTail.classList.add('replayer-mouse-tail');
+      this.mouseTail.style.display = 'none';
+      this.wrapper.appendChild(this.mouseTail);
+    }
+
     this.iframe = document.createElement('iframe');
-    this.iframe.setAttribute('sandbox', 'allow-same-origin');
+    const attributes = ['allow-same-origin'];
+    if (this.config.UNSAFE_replayCanvas) {
+      attributes.push('allow-scripts');
+    }
+    // hide iframe before first meta event
+    this.iframe.style.display = 'none';
+    this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
+    if (this.iframe.contentWindow && this.iframe.contentDocument) {
+      smoothscrollPolyfill(
+        this.iframe.contentWindow,
+        this.iframe.contentDocument,
+      );
+    }
   }
 
   private handleResize(dimension: viewportResizeDimention) {
-    this.iframe.setAttribute('width', String(dimension.width));
-    this.iframe.setAttribute('height', String(dimension.height));
+    for (const el of [this.mouseTail, this.iframe]) {
+      if (!el) {
+        continue;
+      }
+      el.style.display = 'inherit';
+      el.setAttribute('width', String(dimension.width));
+      el.setAttribute('height', String(dimension.height));
+    }
   }
 
   private getCastFn(event: eventWithTime, isSync = false) {
-    const { events } = this.service.state.context;
     let castFn: undefined | (() => void);
     switch (event.type) {
       case EventType.DomContentLoaded:
@@ -306,26 +369,31 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          this.rebuildFullSnapshot(event);
+          this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
         };
         break;
       case EventType.IncrementalSnapshot:
         castFn = () => {
           this.applyIncremental(event, isSync);
+          if (isSync) {
+            // do not check skip in sync
+            return;
+          }
           if (event === this.nextUserInteractionEvent) {
             this.nextUserInteractionEvent = null;
-            this.restoreSpeed();
+            this.backToNormal();
           }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
-            for (const _event of events) {
+            for (const _event of this.service.state.context.events) {
               if (_event.timestamp! <= event.timestamp!) {
                 continue;
               }
               if (this.isUserInteraction(_event)) {
                 if (
                   _event.delay! - event.delay! >
-                  SKIP_TIME_THRESHOLD * this.config.speed
+                  SKIP_TIME_THRESHOLD *
+                    this.speedService.state.context.timer.speed
                 ) {
                   this.nextUserInteractionEvent = _event;
                 }
@@ -333,13 +401,12 @@ export class Replayer {
               }
             }
             if (this.nextUserInteractionEvent) {
-              this.noramlSpeed = this.config.speed;
               const skipTime =
                 this.nextUserInteractionEvent.delay! - event.delay!;
               const payload = {
                 speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),
               };
-              this.setConfig(payload);
+              this.speedService.send({ type: 'FAST_FORWARD', payload });
               this.emitter.emit(ReplayerEvents.SkipStart, payload);
             }
           }
@@ -352,10 +419,29 @@ export class Replayer {
         castFn();
       }
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
-      if (event === events[events.length - 1]) {
-        this.restoreSpeed();
-        this.service.send('END');
-        this.emitter.emit(ReplayerEvents.Finish);
+      if (
+        event ===
+        this.service.state.context.events[
+          this.service.state.context.events.length - 1
+        ]
+      ) {
+        const finish = () => {
+          this.backToNormal();
+          this.service.send('END');
+          this.emitter.emit(ReplayerEvents.Finish);
+        };
+        if (
+          event.type === EventType.IncrementalSnapshot &&
+          event.data.source === IncrementalSource.MouseMove &&
+          event.data.positions.length
+        ) {
+          // defer finish event if the last event is a mouse move
+          setTimeout(() => {
+            finish();
+          }, Math.max(0, -event.data.positions[0].timeOffset));
+        } else {
+          finish();
+        }
       }
     };
     return wrappedCastFn;
@@ -363,6 +449,7 @@ export class Replayer {
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
+    isSync: boolean = false,
   ) {
     if (!this.iframe.contentDocument) {
       return console.warn('Looks like your replayer has been destroyed.');
@@ -385,7 +472,12 @@ export class Replayer {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    this.waitForStylesheetLoad();
+    if (!isSync) {
+      this.waitForStylesheetLoad();
+    }
+    if (this.config.UNSAFE_replayCanvas) {
+      this.preloadAllImages();
+    }
   }
 
   /**
@@ -397,6 +489,15 @@ export class Replayer {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: number;
       let beforeLoadState = this.service.state;
+      const stateHandler = () => {
+        beforeLoadState = this.service.state;
+      };
+      this.emitter.on(ReplayerEvents.Start, stateHandler);
+      this.emitter.on(ReplayerEvents.Pause, stateHandler);
+      const unsubscribe = () => {
+        this.emitter.off(ReplayerEvents.Start, stateHandler);
+        this.emitter.off(ReplayerEvents.Pause, stateHandler);
+      };
       head
         .querySelectorAll('link[rel="stylesheet"]')
         .forEach((css: HTMLLinkElement) => {
@@ -407,12 +508,13 @@ export class Replayer {
               // all loaded and timer not released yet
               if (unloadSheets.size === 0 && timer !== -1) {
                 if (beforeLoadState.matches('playing')) {
-                  this.resume(this.getCurrentTime());
+                  this.play(this.getCurrentTime());
                 }
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
                   window.clearTimeout(timer);
                 }
+                unsubscribe();
               }
             });
           }
@@ -424,20 +526,64 @@ export class Replayer {
         this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
         timer = window.setTimeout(() => {
           if (beforeLoadState.matches('playing')) {
-            this.resume(this.getCurrentTime());
+            this.play(this.getCurrentTime());
           }
           // mark timer was called
           timer = -1;
+          unsubscribe();
         }, this.config.loadTimeout);
       }
     }
   }
 
+  /**
+   * pause when there are some canvas drawImage args need to be loaded
+   */
+  private preloadAllImages() {
+    let beforeLoadState = this.service.state;
+    const stateHandler = () => {
+      beforeLoadState = this.service.state;
+    };
+    this.emitter.on(ReplayerEvents.Start, stateHandler);
+    this.emitter.on(ReplayerEvents.Pause, stateHandler);
+    const unsubscribe = () => {
+      this.emitter.off(ReplayerEvents.Start, stateHandler);
+      this.emitter.off(ReplayerEvents.Pause, stateHandler);
+    };
+    let count = 0;
+    let resolved = 0;
+    for (const event of this.service.state.context.events) {
+      if (
+        event.type === EventType.IncrementalSnapshot &&
+        event.data.source === IncrementalSource.CanvasMutation &&
+        event.data.property === 'drawImage' &&
+        typeof event.data.args[0] === 'string' &&
+        !this.imageMap.has(event)
+      ) {
+        count++;
+        const image = document.createElement('img');
+        image.src = event.data.args[0];
+        this.imageMap.set(event, image);
+        image.onload = () => {
+          resolved++;
+          if (resolved === count) {
+            if (beforeLoadState.matches('playing')) {
+              this.play(this.getCurrentTime());
+            }
+            unsubscribe();
+          }
+        };
+      }
+    }
+    if (count !== resolved) {
+      this.service.send({ type: 'PAUSE' });
+    }
+  }
+
   private applyIncremental(
-    e: incrementalSnapshotEvent & { timestamp: number },
+    e: incrementalSnapshotEvent & { timestamp: number; delay?: number },
     isSync: boolean,
   ) {
-    const { baselineTime } = this.service.state.context;
     const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
@@ -460,9 +606,17 @@ export class Replayer {
               doAction: () => {
                 this.moveAndHover(d, p.x, p.y, p.id);
               },
-              delay: p.timeOffset + e.timestamp - baselineTime,
+              delay:
+                p.timeOffset +
+                e.timestamp -
+                this.service.state.context.baselineTime,
             };
             this.timer.addAction(action);
+          });
+          // add a dummy action to keep timer alive
+          this.timer.addAction({
+            doAction() {},
+            delay: e.delay! - d.positions[0]?.timeOffset,
           });
         }
         break;
@@ -562,16 +716,24 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
         const mediaEl = (target as Node) as HTMLMediaElement;
-        if (d.type === MediaInteractions.Pause) {
-          mediaEl.pause();
-        }
-        if (d.type === MediaInteractions.Play) {
-          if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-            mediaEl.play();
-          } else {
-            mediaEl.addEventListener('canplay', () => {
+        try {
+          if (d.type === MediaInteractions.Pause) {
+            mediaEl.pause();
+          }
+          if (d.type === MediaInteractions.Play) {
+            if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
               mediaEl.play();
-            });
+            } else {
+              mediaEl.addEventListener('canplay', () => {
+                mediaEl.play();
+              });
+            }
+          }
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(
+              `Failed to replay media interactions: ${error.message || error}`,
+            );
           }
         }
         break;
@@ -604,8 +766,67 @@ export class Replayer {
 
         if (d.removes) {
           d.removes.forEach(({ index }) => {
-            styleSheet.deleteRule(index);
+            try {
+              styleSheet.deleteRule(index);
+            } catch (e) {
+              /**
+               * same as insertRule
+               */
+            }
           });
+        }
+        break;
+      }
+      case IncrementalSource.CanvasMutation: {
+        if (!this.config.UNSAFE_replayCanvas) {
+          return;
+        }
+        const target = mirror.getNode(d.id);
+        if (!target) {
+          return this.debugNodeNotFound(d, d.id);
+        }
+        try {
+          const ctx = ((target as unknown) as HTMLCanvasElement).getContext(
+            '2d',
+          )!;
+          if (d.setter) {
+            // skip some read-only type checks
+            // tslint:disable-next-line:no-any
+            (ctx as any)[d.property] = d.args[0];
+            return;
+          }
+          const original = ctx[
+            d.property as keyof CanvasRenderingContext2D
+          ] as Function;
+          /**
+           * We have serialized the image source into base64 string during recording,
+           * which has been preloaded before replay.
+           * So we can get call drawImage SYNCHRONOUSLY which avoid some fragile cast.
+           */
+          if (d.property === 'drawImage' && typeof d.args[0] === 'string') {
+            const image = this.imageMap.get(e);
+            d.args[0] = image;
+            original.apply(ctx, d.args);
+          } else {
+            original.apply(ctx, d.args);
+          }
+        } catch (error) {
+          this.warnCanvasMutationFailed(d, d.id, error);
+        }
+        break;
+      }
+      case IncrementalSource.Font: {
+        try {
+          const fontFace = new FontFace(
+            d.family,
+            d.buffer ? new Uint8Array(JSON.parse(d.fontSource)) : d.fontSource,
+            d.descriptors,
+          );
+          this.iframe.contentDocument?.fonts.add(fontFace);
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(error);
+          }
         }
         break;
       }
@@ -669,7 +890,12 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId) as Node;
       }
       // next not present at this moment
-      if (mutation.nextId !== null && mutation.nextId !== -1 && !next) {
+      if (
+        mutation.nextId !== null &&
+        mutation.nextId !== undefined &&
+        mutation.nextId !== -1 &&
+        !next
+      ) {
         return queue.push(mutation);
       }
 
@@ -830,11 +1056,49 @@ export class Replayer {
   private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
     this.mouse.style.left = `${x}px`;
     this.mouse.style.top = `${y}px`;
+    this.drawMouseTail({ x, y });
+
     const target = mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(d, id);
     }
     this.hoverElements((target as Node) as Element);
+  }
+
+  private drawMouseTail(position: { x: number; y: number }) {
+    if (!this.mouseTail) {
+      return;
+    }
+
+    const { lineCap, lineWidth, strokeStyle, duration } =
+      this.config.mouseTail === true
+        ? defaultMouseTailConfig
+        : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
+
+    const draw = () => {
+      if (!this.mouseTail) {
+        return;
+      }
+      const ctx = this.mouseTail.getContext('2d');
+      if (!ctx || !this.tailPositions.length) {
+        return;
+      }
+      ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
+      ctx.beginPath();
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = lineCap;
+      ctx.strokeStyle = strokeStyle;
+      ctx.moveTo(this.tailPositions[0].x, this.tailPositions[0].y);
+      this.tailPositions.forEach((p) => ctx.lineTo(p.x, p.y));
+      ctx.stroke();
+    };
+
+    this.tailPositions.push(position);
+    draw();
+    setTimeout(() => {
+      this.tailPositions = this.tailPositions.filter((p) => p !== position);
+      draw();
+    }, duration);
   }
 
   private hoverElements(el: Element) {
@@ -862,14 +1126,15 @@ export class Replayer {
     );
   }
 
-  private restoreSpeed() {
-    if (this.noramlSpeed === -1) {
+  private backToNormal() {
+    this.nextUserInteractionEvent = null;
+    if (this.speedService.state.matches('normal')) {
       return;
     }
-    const payload = { speed: this.noramlSpeed };
-    this.setConfig(payload);
-    this.emitter.emit(ReplayerEvents.SkipEnd, payload);
-    this.noramlSpeed = -1;
+    this.speedService.send({ type: 'BACK_TO_NORMAL' });
+    this.emitter.emit(ReplayerEvents.SkipEnd, {
+      speed: this.speedService.state.context.normalSpeed,
+    });
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
@@ -877,6 +1142,19 @@ export class Replayer {
       return;
     }
     console.warn(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+  }
+
+  private warnCanvasMutationFailed(
+    d: canvasMutationData,
+    id: number,
+    error: unknown,
+  ) {
+    console.warn(
+      REPLAY_CONSOLE_PREFIX,
+      `Has error on update canvas '${id}'`,
+      d,
+      error,
+    );
   }
 
   private debugNodeNotFound(d: incrementalData, id: number) {

@@ -1,19 +1,23 @@
 import { Timer } from './timer';
+import { createPlayerService, createSpeedService } from './machine';
 import { eventWithTime, playerConfig, playerMetaData, Handler } from '../types';
 import './styles/style.css';
 export declare class Replayer {
     wrapper: HTMLDivElement;
     iframe: HTMLIFrameElement;
+    service: ReturnType<typeof createPlayerService>;
+    speedService: ReturnType<typeof createSpeedService>;
     get timer(): Timer;
-    private config;
+    config: playerConfig;
     private mouse;
+    private mouseTail;
+    private tailPositions;
     private emitter;
     private nextUserInteractionEvent;
-    private noramlSpeed;
     private legacy_missingNodeRetryMap;
-    private service;
     private treeIndex;
     private fragmentParentMap;
+    private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
@@ -21,7 +25,7 @@ export declare class Replayer {
     getCurrentTime(): number;
     getTimeOffset(): number;
     play(timeOffset?: number): void;
-    pause(): void;
+    pause(timeOffset?: number): void;
     resume(timeOffset?: number): void;
     startLive(baselineTime?: number): void;
     addEvent(rawEvent: eventWithTime | string): void;
@@ -32,15 +36,18 @@ export declare class Replayer {
     private getCastFn;
     private rebuildFullSnapshot;
     private waitForStylesheetLoad;
+    private preloadAllImages;
     private applyIncremental;
     private applyMutation;
     private applyScroll;
     private applyInput;
     private legacy_resolveMissingNode;
     private moveAndHover;
+    private drawMouseTail;
     private hoverElements;
     private isUserInteraction;
-    private restoreSpeed;
+    private backToNormal;
     private warnNodeNotFound;
+    private warnCanvasMutationFailed;
     private debugNodeNotFound;
 }

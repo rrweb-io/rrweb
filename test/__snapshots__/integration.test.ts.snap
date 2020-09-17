@@ -333,6 +333,230 @@ exports[`block 1`] = `
 ]"
 `;
 
+exports[`canvas 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"canvas\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 12
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 13
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"myCanvas\\",
+                      \\"width\\": \\"200\\",
+                      \\"height\\": \\"100\\",
+                      \\"style\\": \\"border: 1px solid #000000;\\",
+                      \\"rr_dataURL\\": \\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABkCAYAAADDhn8LAAAEK0lEQVR4Xu3d3VLjMAyG4YZzuBvu/9K6w2xZtqVJFcv5Ux5mOCgQ43yJ8lqSpQwXXxSgwKgCA20oQIFxBRiIu4MCEwowELcHBRiIe4ACbQogSJtujjqJAgzkJBfaabYpwEDadHPUSRRgICe50E6zTQEG0qabo06iQNhAru/v18vb2+UyDD/fY5+/fv719f37Z58j43z/zdQ4j/8nMq75/b2Grdelo37D52f4HtzCJsOTu358XLsZx5Y3deTimt/Pw63lITVDvzoGgiDrkTNixBFSttzckXE7zq+OgSDIz7Lk2U3U66aJjDPjCT25zF1qnBnj1jEQBEGQ3r7gMFzqGAiCIMiYY58IyNQxEARBEAQZD6SJYt3C20uHtvkgW0RzR/9nPMyLIAiCIAiyefIMQRAknJE/QBz/X0Y66sCunGfY+/zqOOmiWKJY0YeAPMhKDiuC5PZMHUA/BImsqddcdkTmM+MJuPdM9d7nV8dARLFEsUSxRLFEsTosn2cQGEEydQcHWEPvPUq09/nVMRBRLFEsUayJJRYfhA/CB+GD8EH4IP9bgb1YfKT73gFrhtzVg4w0BpgR5dh7HN/8cg066jjpfBA+CB+ED8IH4YPwQSLbTSJrcXma9F6xOksseRB5EHkQeZC7zPMjIV597kWmXuMcgHAI0utirzmOKJvOijdWyIPIg8iDTBT5xg2ED8IH4YPwQfgg63bv54Os6TtEQrOR+fBB+CB8EO8v2Twpai+WvVh3e7UQ7heZ6iyx7MWyF8teLHuxNl92nMxHQhB5hk3zDGrSc51M5UEiT+xevkOvcQpF2RAEQRBk7JURoliiWKJY068ORxAEQRAEuZFigb06ar5zNd971w9BEARBEARBnuZPloo2LTXuBlE2BEEQBEEQBEGQW7TqWV5pgkwIgiAIgiAIgiAIcg2/nbbX9o0DdOXY+16nvc+vzhJLTbqa9AXyXHUMRD2IehD1IOpB1IPozas3Lx8p11O3o351llh8ED4IH0RfLH2x9MVqW2IhCIIgCIIgCIIgyONu2Fefe+1y7TWO3by5Tgwzjo43bZAHkQeRB5EHkQeRB2lbYiEIgiAIgiAIgiBIx0zw3nfL7n1+Mum9bsY1xykUJdLVZEbI6smfimKpeNy04hFB1nzyyzPk3gy1gX51DEQUSxRLFEsUSxRLFEsUq9eyT818rq5Ed3fd3XV3193999rcEzr3ZD2RfnWcdPUg6kHUg6gHUQ+iHqTNSUcQBEEQBEEQBEGQVxWE9mLlMvIz9KvjpMuky6TLpMuky6TLpLctsRAEQRAEQRAEQZoIkis7cTQFjqlAuGDqmKdn1hTIKcBAcvo5urgCDKT4BXZ6OQUYSE4/RxdXgIEUv8BOL6cAA8np5+jiCjCQ4hfY6eUUYCA5/RxdXAEGUvwCO72cAn8Aw0BAdBcYDcUAAAAASUVORK5CYII=\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 17
+                      }
+                    ],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 20
+                      }
+                    ],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 23
+                      }
+                    ],
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 24
+                  }
+                ],
+                \\"id\\": 14
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 16,
+      \\"property\\": \\"moveTo\\",
+      \\"args\\": [
+        0,
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 16,
+      \\"property\\": \\"lineTo\\",
+      \\"args\\": [
+        200,
+        100
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 16,
+      \\"property\\": \\"stroke\\",
+      \\"args\\": []
+    }
+  }
+]"
+`;
+
 exports[`character-data 1`] = `
 "[
   {
@@ -4832,8 +5056,8 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"parentId\\": 68,
-          \\"nextId\\": 69,
+          \\"parentId\\": 73,
+          \\"nextId\\": 74,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
@@ -4845,8 +5069,8 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"parentId\\": 73,
-          \\"nextId\\": 74,
+          \\"parentId\\": 68,
+          \\"nextId\\": 69,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",

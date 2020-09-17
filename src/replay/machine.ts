@@ -1,4 +1,4 @@
-import { createMachine, interpret, assign } from '@xstate/fsm';
+import { createMachine, interpret, assign, StateMachine } from '@xstate/fsm';
 import {
   playerConfig,
   eventWithTime,
@@ -7,13 +7,12 @@ import {
   EventType,
   Emitter,
 } from '../types';
-import { Timer, getDelay } from './timer';
+import { Timer, addDelay } from './timer';
 import { needCastInSyncMode } from '../utils';
 
 export type PlayerContext = {
   events: eventWithTime[];
   timer: Timer;
-  speed: playerConfig['speed'];
   timeOffset: number;
   baselineTime: number;
   lastPlayedEvent: eventWithTime | null;
@@ -32,42 +31,23 @@ export type PlayerEvent =
       };
     }
   | { type: 'PAUSE' }
-  | {
-      type: 'RESUME';
-      payload: {
-        timeOffset: number;
-      };
-    }
-  | { type: 'END' }
-  | { type: 'REPLAY' }
-  | { type: 'FAST_FORWARD' }
-  | { type: 'BACK_TO_NORMAL' }
   | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
   | {
       type: 'ADD_EVENT';
       payload: {
         event: eventWithTime;
       };
+    }
+  | {
+      type: 'END';
     };
 export type PlayerState =
-  | {
-      value: 'inited';
-      context: PlayerContext;
-    }
   | {
       value: 'playing';
       context: PlayerContext;
     }
   | {
       value: 'paused';
-      context: PlayerContext;
-    }
-  | {
-      value: 'ended';
-      context: PlayerContext;
-    }
-  | {
-      value: 'skipping';
       context: PlayerContext;
     }
   | {
@@ -106,37 +86,31 @@ export function createPlayerService(
     {
       id: 'player',
       context,
-      initial: 'inited',
+      initial: 'paused',
       states: {
-        inited: {
-          on: {
-            PLAY: {
-              target: 'playing',
-              actions: ['recordTimeOffset', 'play'],
-            },
-            TO_LIVE: {
-              target: 'live',
-              actions: ['startLive'],
-            },
-          },
-        },
         playing: {
           on: {
             PAUSE: {
               target: 'paused',
               actions: ['pause'],
             },
-            END: 'ended',
-            FAST_FORWARD: 'skipping',
             CAST_EVENT: {
               target: 'playing',
               actions: 'castEvent',
+            },
+            END: {
+              target: 'paused',
+              actions: ['resetLastPlayedEvent', 'pause'],
+            },
+            ADD_EVENT: {
+              target: 'playing',
+              actions: ['addEvent'],
             },
           },
         },
         paused: {
           on: {
-            RESUME: {
+            PLAY: {
               target: 'playing',
               actions: ['recordTimeOffset', 'play'],
             },
@@ -144,16 +118,14 @@ export function createPlayerService(
               target: 'paused',
               actions: 'castEvent',
             },
-          },
-        },
-        skipping: {
-          on: {
-            BACK_TO_NORMAL: 'playing',
-          },
-        },
-        ended: {
-          on: {
-            REPLAY: 'playing',
+            TO_LIVE: {
+              target: 'live',
+              actions: ['startLive'],
+            },
+            ADD_EVENT: {
+              target: 'paused',
+              actions: ['addEvent'],
+            },
           },
         },
         live: {
@@ -161,6 +133,10 @@ export function createPlayerService(
             ADD_EVENT: {
               target: 'live',
               actions: ['addEvent'],
+            },
+            CAST_EVENT: {
+              target: 'live',
+              actions: ['castEvent'],
             },
           },
         },
@@ -173,7 +149,7 @@ export function createPlayerService(
             if (event.type === 'CAST_EVENT') {
               return event.payload.event;
             }
-            return context.lastPlayedEvent;
+            return ctx.lastPlayedEvent;
           },
         }),
         recordTimeOffset: assign((ctx, event) => {
@@ -190,13 +166,17 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
+          for (const event of events) {
+            // TODO: improve this API
+            addDelay(event, baselineTime);
+          }
           const neededEvents = discardPriorSnapshots(events, baselineTime);
 
           const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
             if (
               lastPlayedEvent &&
-              lastPlayedEvent.timestamp > baselineTime &&
+              lastPlayedEvent.timestamp < baselineTime &&
               (event.timestamp <= lastPlayedEvent.timestamp ||
                 event === lastPlayedEvent)
             ) {
@@ -215,7 +195,7 @@ export function createPlayerService(
                   castFn();
                   emitter.emit(ReplayerEvents.EventCast, event);
                 },
-                delay: getDelay(event, baselineTime),
+                delay: event.delay!,
               });
             }
           }
@@ -226,8 +206,15 @@ export function createPlayerService(
         pause(ctx) {
           ctx.timer.clear();
         },
+        resetLastPlayedEvent: assign((ctx) => {
+          return {
+            ...ctx,
+            lastPlayedEvent: null,
+          };
+        }),
         startLive: assign({
           baselineTime: (ctx, event) => {
+            ctx.timer.toggleLiveMode(true);
             ctx.timer.start();
             if (event.type === 'TO_LIVE' && event.payload.baselineTime) {
               return event.payload.baselineTime;
@@ -239,6 +226,7 @@ export function createPlayerService(
           const { baselineTime, timer, events } = ctx;
           if (machineEvent.type === 'ADD_EVENT') {
             const { event } = machineEvent.payload;
+            addDelay(event, baselineTime);
             events.push(event);
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);
@@ -250,8 +238,11 @@ export function createPlayerService(
                   castFn();
                   emitter.emit(ReplayerEvents.EventCast, event);
                 },
-                delay: getDelay(event, baselineTime),
+                delay: event.delay!,
               });
+              if (!timer.isActive()) {
+                timer.start();
+              }
             }
           }
           return { ...ctx, events };
@@ -261,3 +252,96 @@ export function createPlayerService(
   );
   return interpret(playerMachine);
 }
+
+export type SpeedContext = {
+  normalSpeed: playerConfig['speed'];
+  timer: Timer;
+};
+
+export type SpeedEvent =
+  | {
+      type: 'FAST_FORWARD';
+      payload: { speed: playerConfig['speed'] };
+    }
+  | {
+      type: 'BACK_TO_NORMAL';
+    }
+  | {
+      type: 'SET_SPEED';
+      payload: { speed: playerConfig['speed'] };
+    };
+
+export type SpeedState =
+  | {
+      value: 'normal';
+      context: SpeedContext;
+    }
+  | {
+      value: 'skipping';
+      context: SpeedContext;
+    };
+
+export function createSpeedService(context: SpeedContext) {
+  const speedMachine = createMachine<SpeedContext, SpeedEvent, SpeedState>(
+    {
+      id: 'speed',
+      context,
+      initial: 'normal',
+      states: {
+        normal: {
+          on: {
+            FAST_FORWARD: {
+              target: 'skipping',
+              actions: ['recordSpeed', 'setSpeed'],
+            },
+            SET_SPEED: {
+              target: 'normal',
+              actions: ['setSpeed'],
+            },
+          },
+        },
+        skipping: {
+          on: {
+            BACK_TO_NORMAL: {
+              target: 'normal',
+              actions: ['restoreSpeed'],
+            },
+            SET_SPEED: {
+              target: 'normal',
+              actions: ['setSpeed'],
+            },
+          },
+        },
+      },
+    },
+    {
+      actions: {
+        setSpeed: (ctx, event) => {
+          if ('payload' in event) {
+            ctx.timer.setSpeed(event.payload.speed);
+          }
+        },
+        recordSpeed: assign({
+          normalSpeed: (ctx) => ctx.timer.speed,
+        }),
+        restoreSpeed: (ctx) => {
+          ctx.timer.setSpeed(ctx.normalSpeed);
+        },
+      },
+    },
+  );
+
+  return interpret(speedMachine);
+}
+
+export type PlayerMachineState = StateMachine.State<
+  PlayerContext,
+  PlayerEvent,
+  PlayerState
+>;
+
+export type SpeedMachineState = StateMachine.State<
+  SpeedContext,
+  SpeedEvent,
+  SpeedState
+>;
