@@ -5,8 +5,11 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
 import { Suite } from 'mocha';
-import { launchPuppeteer, sampleEvents as events } from './utils';
-import { EventType } from '../src/types';
+import {
+  launchPuppeteer,
+  sampleEvents as events,
+  sampleStyleSheetRemoveEvents as stylesheetRemoveEvents
+} from './utils';
 
 interface ISuite extends Suite {
   code: string;
@@ -28,7 +31,7 @@ describe('replayer', function (this: ISuite) {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
     await page.evaluate(this.code);
-    await page.evaluate(`const events = ${JSON.stringify(events)}`);
+    await page.evaluate(`let events = ${JSON.stringify(events)}`);
     this.page = page;
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -132,6 +135,19 @@ describe('replayer', function (this: ISuite) {
     expect(currentState).to.equal('paused');
   });
 
+  it('can handle removing style elements', async () => {
+    await this.page.evaluate(`events = ${JSON.stringify(stylesheetRemoveEvents)}`);
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).to.equal(
+      stylesheetRemoveEvents.filter((e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500).length,
+    );
+  });
+
   it('can stream events in live mode', async () => {
     const status = await this.page.evaluate(`
       const { Replayer } = rrweb;
@@ -142,5 +158,5 @@ describe('replayer', function (this: ISuite) {
       replayer.service.state.value;
     `);
     expect(status).to.equal('live');
-  })
+  });
 });
