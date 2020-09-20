@@ -102,7 +102,6 @@ export class Replayer {
     this.getCastFn = this.getCastFn.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
-    polyfill();
     this.setupDom();
 
     this.treeIndex = new TreeIndex();
@@ -330,6 +329,8 @@ export class Replayer {
         this.iframe.contentWindow,
         this.iframe.contentDocument,
       );
+
+      polyfill(this.iframe.contentWindow);
     }
   }
 

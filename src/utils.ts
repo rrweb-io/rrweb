@@ -221,9 +221,9 @@ export function isTouchEvent(
   return Boolean((event as TouchEvent).changedTouches);
 }
 
-export function polyfill() {
-  if ('NodeList' in window && !NodeList.prototype.forEach) {
-    NodeList.prototype.forEach = (Array.prototype
+export function polyfill(win = window) {
+  if ('NodeList' in win && !win.NodeList.prototype.forEach) {
+    win.NodeList.prototype.forEach = (Array.prototype
       .forEach as unknown) as NodeList['forEach'];
   }
 }
