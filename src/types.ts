@@ -87,3 +87,16 @@ export type MaskInputOptions = Partial<{
   textarea: boolean;
   select: boolean;
 }>;
+
+export type SlimDOMOptions = Partial<{
+  script: boolean;
+  comment: boolean;
+  headFavicon: boolean;
+  headWhitespace: boolean;
+  headMetaDescKeywords: boolean;
+  headMetaSocial: boolean;
+  headMetaRobots: boolean;
+  headMetaHttpEquiv: boolean;
+  headMetaAuthorship: boolean;
+  headMetaVerification: boolean;
+}>;

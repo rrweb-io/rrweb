@@ -2,6 +2,7 @@ import snapshot, {
   serializeNodeWithId,
   transformAttribute,
   visitSnapshot,
+  IGNORED_NODE,
 } from './snapshot';
 import rebuild, { buildNodeWithSN, addHoverClass } from './rebuild';
 export * from './types';
@@ -14,4 +15,5 @@ export {
   addHoverClass,
   transformAttribute,
   visitSnapshot,
+  IGNORED_NODE,
 };
