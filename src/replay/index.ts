@@ -861,6 +861,24 @@ export class Replayer {
     };
     const queue: addedNodeMutation[] = [];
 
+    // next not present at this moment
+    function nextNotInDOM(mutation: addedNodeMutation) {
+      let next: Node | null = null;
+      if (mutation.nextId) {
+        next = mirror.getNode(mutation.nextId) as Node;
+      }
+      // next not present at this moment
+      if (
+        mutation.nextId !== null &&
+        mutation.nextId !== undefined &&
+        mutation.nextId !== -1 &&
+        !next
+      ) {
+        return true;
+      }
+      return false;
+    }
+
     const appendNode = (mutation: addedNodeMutation) => {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
@@ -889,14 +907,8 @@ export class Replayer {
       if (mutation.nextId) {
         next = mirror.getNode(mutation.nextId) as Node;
       }
-      // next not present at this moment
-      if (
-        mutation.nextId !== null &&
-        mutation.nextId !== undefined &&
-        mutation.nextId !== -1 &&
-        !next
-      ) {
-        return queue.push(mutation);
+      if (nextNotInDOM(mutation)) {
+        queue.push(mutation);
       }
 
       const target = buildNodeWithSN(
@@ -942,7 +954,11 @@ export class Replayer {
     });
 
     while (queue.length) {
-      if (queue.every((m) => !Boolean(mirror.getNode(m.parentId)))) {
+      if (
+        queue.every(
+          (m) => !Boolean(mirror.getNode(m.parentId)) || nextNotInDOM(m),
+        )
+      ) {
         return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
       }
       const mutation = queue.shift()!;
