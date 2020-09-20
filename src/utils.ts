@@ -226,6 +226,11 @@ export function polyfill(win = window) {
     win.NodeList.prototype.forEach = (Array.prototype
       .forEach as unknown) as NodeList['forEach'];
   }
+
+  if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
+    win.DOMTokenList.prototype.forEach = (Array.prototype
+      .forEach as unknown) as DOMTokenList['forEach'];
+  }
 }
 
 export function needCastInSyncMode(event: eventWithTime): boolean {
