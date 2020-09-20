@@ -1,5 +1,6 @@
 import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
+import { FontFaceDescriptors } from 'css-font-loading-module';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -56,7 +57,8 @@ export declare enum IncrementalSource {
     TouchMove = 6,
     MediaInteraction = 7,
     StyleSheetRule = 8,
-    CanvasMutation = 9
+    CanvasMutation = 9,
+    Font = 10
 }
 export declare type mutationData = {
     source: IncrementalSource.Mutation;
@@ -87,7 +89,10 @@ export declare type styleSheetRuleData = {
 export declare type canvasMutationData = {
     source: IncrementalSource.CanvasMutation;
 } & canvasMutationParam;
-export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData;
+export declare type fontData = {
+    source: IncrementalSource.Font;
+} & fontParam;
+export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData | fontData;
 export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
@@ -113,6 +118,7 @@ export declare type recordOptions<T> = {
     packFn?: PackFn;
     sampling?: SamplingStrategy;
     recordCanvas?: boolean;
+    collectFonts?: boolean;
     mousemoveWait?: number;
 };
 export declare type observerParam = {
@@ -129,8 +135,10 @@ export declare type observerParam = {
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
     canvasMutationCb: canvasMutationCallback;
+    fontCb: fontCallback;
     sampling: SamplingStrategy;
     recordCanvas: boolean;
+    collectFonts: boolean;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;
@@ -142,6 +150,7 @@ export declare type hooksParam = {
     mediaInteaction?: mediaInteractionCallback;
     styleSheetRule?: styleSheetRuleCallback;
     canvasMutation?: canvasMutationCallback;
+    font?: fontCallback;
 };
 export declare type mutationRecord = {
     type: string;
@@ -240,6 +249,13 @@ export declare type canvasMutationParam = {
     args: Array<unknown>;
     setter?: true;
 };
+export declare type fontParam = {
+    family: string;
+    fontSource: string;
+    buffer: boolean;
+    descriptors?: FontFaceDescriptors;
+};
+export declare type fontCallback = (p: fontParam) => void;
 export declare type viewportResizeDimention = {
     width: number;
     height: number;
