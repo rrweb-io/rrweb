@@ -194,7 +194,7 @@
     overflow: hidden;
   }
 
-  :global(.replayer-wrapper) {
+  .replayer-wrapper {
     float: left;
     clear: both;
     transform-origin: top left;
@@ -202,7 +202,7 @@
     top: 50%;
   }
 
-  :global(.replayer-wrapper > iframe) {
+  .replayer-wrapper > iframe {
     border: none;
   }
 </style>
