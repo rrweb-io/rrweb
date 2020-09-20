@@ -977,10 +977,19 @@ export class Replayer {
       for (const attributeName in mutation.attributes) {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
-          if (value !== null) {
-            ((target as Node) as Element).setAttribute(attributeName, value);
-          } else {
-            ((target as Node) as Element).removeAttribute(attributeName);
+          try {
+            if (value !== null) {
+              ((target as Node) as Element).setAttribute(attributeName, value);
+            } else {
+              ((target as Node) as Element).removeAttribute(attributeName);
+            }
+          } catch (error) {
+            if (this.config.showWarning) {
+              console.warn(
+                'An error occurred may due to the checkout feature.',
+                error,
+              );
+            }
           }
         }
       }
