@@ -46,20 +46,6 @@ const defaultMouseTailConfig = {
   lineWidth: 3,
   strokeStyle: 'red',
 } as const;
-const defaultConfig: playerConfig = {
-  speed: 1,
-  root: document.body,
-  loadTimeout: 0,
-  skipInactive: false,
-  showWarning: true,
-  showDebug: false,
-  blockClass: 'rr-block',
-  liveMode: false,
-  insertStyleRules: [],
-  triggerFocus: true,
-  UNSAFE_replayCanvas: false,
-  mouseTail: defaultMouseTailConfig,
-};
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -96,6 +82,20 @@ export class Replayer {
     if (!config?.liveMode && events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
+    const defaultConfig: playerConfig = {
+      speed: 1,
+      root: document.body,
+      loadTimeout: 0,
+      skipInactive: false,
+      showWarning: true,
+      showDebug: false,
+      blockClass: 'rr-block',
+      liveMode: false,
+      insertStyleRules: [],
+      triggerFocus: true,
+      UNSAFE_replayCanvas: false,
+      mouseTail: defaultMouseTailConfig,
+    };
     this.config = Object.assign({}, defaultConfig, config);
 
     this.handleResize = this.handleResize.bind(this);
