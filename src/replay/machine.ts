@@ -6,6 +6,7 @@ import {
   ReplayerEvents,
   EventType,
   Emitter,
+  IncrementalSource,
 } from '../types';
 import { Timer, addDelay } from './timer';
 import { needCastInSyncMode } from '../utils';
@@ -174,10 +175,19 @@ export function createPlayerService(
 
           const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
+            let lastPlayedTimestamp = lastPlayedEvent?.timestamp;
             if (
-              lastPlayedEvent &&
-              lastPlayedEvent.timestamp < baselineTime &&
-              (event.timestamp <= lastPlayedEvent.timestamp ||
+              lastPlayedEvent?.type === EventType.IncrementalSnapshot &&
+              lastPlayedEvent.data.source === IncrementalSource.MouseMove
+            ) {
+              lastPlayedTimestamp =
+                lastPlayedEvent.timestamp +
+                lastPlayedEvent.data.positions[0]?.timeOffset;
+            }
+            if (
+              lastPlayedTimestamp &&
+              lastPlayedTimestamp < baselineTime &&
+              (event.timestamp <= lastPlayedTimestamp ||
                 event === lastPlayedEvent)
             ) {
               continue;
