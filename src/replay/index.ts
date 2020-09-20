@@ -889,7 +889,15 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      const parentInDocument = this.iframe.contentDocument.contains(parent);
+      let parentInDocument = null;
+      if (this.iframe.contentDocument.contains) {
+        parentInDocument = this.iframe.contentDocument.contains(parent);
+      } else if (this.iframe.contentDocument.body.contains) {
+        // fix for IE
+        // refer 'Internet Explorer notes' at https://developer.mozilla.org/zh-CN/docs/Web/API/Document 
+        parentInDocument = this.iframe.contentDocument.body.contains(parent);
+      }
+
       if (useVirtualParent && parentInDocument) {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         mirror.map[mutation.parentId] = virtualParent;
