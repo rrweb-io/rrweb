@@ -330,7 +330,7 @@ export class Replayer {
         this.iframe.contentDocument,
       );
 
-      polyfill(this.iframe.contentWindow);
+      polyfill(this.iframe.contentWindow as Window & typeof globalThis);
     }
   }
 
@@ -894,7 +894,7 @@ export class Replayer {
         parentInDocument = this.iframe.contentDocument.contains(parent);
       } else if (this.iframe.contentDocument.body.contains) {
         // fix for IE
-        // refer 'Internet Explorer notes' at https://developer.mozilla.org/zh-CN/docs/Web/API/Document 
+        // refer 'Internet Explorer notes' at https://developer.mozilla.org/zh-CN/docs/Web/API/Document
         parentInDocument = this.iframe.contentDocument.body.contains(parent);
       }
 

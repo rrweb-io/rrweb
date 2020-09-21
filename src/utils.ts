@@ -314,7 +314,7 @@ export class TreeIndex {
       const node = mirror.getNode(id);
       node?.childNodes.forEach((childNode) => {
         if ('__sn' in childNode) {
-          deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id)
+          deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id);
         }
       });
     };
