@@ -335,12 +335,12 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
+    if (isIgnored(m.target)) {
+      return;
+    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
-        if (isIgnored(m.target)) {
-          return;
-        }
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
           this.texts.push({
             value,
@@ -352,9 +352,6 @@ export default class MutationBuffer {
       case 'attributes': {
         const value = (m.target as HTMLElement).getAttribute(m.attributeName!);
         if (isBlocked(m.target, this.blockClass) || value === m.oldValue) {
-          return;
-        }
-        if (isIgnored(m.target)) {
           return;
         }
         let item: attributeCursor | undefined = this.attributes.find(
