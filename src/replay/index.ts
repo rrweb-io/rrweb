@@ -917,7 +917,7 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId) as Node;
       }
       if (nextNotInDOM(mutation)) {
-        queue.push(mutation);
+        return queue.push(mutation);
       }
 
       const target = buildNodeWithSN(
@@ -962,12 +962,19 @@ export class Replayer {
       appendNode(mutation);
     });
 
+    let startTime = Date.now();
     while (queue.length) {
-      if (
-        queue.every(
-          (m) => !Boolean(mirror.getNode(m.parentId)) || nextNotInDOM(m),
-        )
-      ) {
+      /**
+       * Looks like this check is killing the performance
+       */
+      // if (
+      //   queue.every(
+      //     (m) => !Boolean(mirror.getNode(m.parentId)) || nextNotInDOM(m),
+      //   )
+      // ) {
+      //   return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
+      // }
+      if (Date.now() - startTime > 5000) {
         return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
       }
       const mutation = queue.shift()!;
