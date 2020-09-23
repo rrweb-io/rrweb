@@ -25,6 +25,7 @@
   export let tags: Record<string, string> = {};
   export let mouseTail: playerConfig['mouseTail'] = true;
   export let UNSAFE_replayCanvas: boolean = false;
+  export let insertStyleRules: string[] = [];
 
   export const getMirror = () => mirror;
 
@@ -142,6 +143,7 @@
       unpackFn: unpack,
       mouseTail,
       UNSAFE_replayCanvas,
+      insertStyleRules,
     });
 
     replayer.on('resize', (dimension) => {

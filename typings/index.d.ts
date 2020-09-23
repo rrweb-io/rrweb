@@ -18,6 +18,7 @@ export default class rrwebPlayer extends SvelteComponent {
       tags?: Record<string, string>;
       mouseTail?: playerConfig['mouseTail'];
       UNSAFE_replayCanvas?: boolean;
+      insertStyleRules?: string[];
     };
   });
 
