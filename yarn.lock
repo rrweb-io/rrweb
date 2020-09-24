@@ -1227,10 +1227,10 @@ rrweb-snapshot@^0.8.2:
   resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-0.8.2.tgz#1e87c0369e37c8af484de5a82301a9b09883081c"
   integrity sha512-KwD5NJeiPMgA+qRPf/0YIk0dKevOpj/2redYX+9Ker6FpyUlUBKaopEc9M3VbFnUqwgU9v109c9220PwhKEQcQ==
 
-rrweb@^0.9.6:
-  version "0.9.6"
-  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.6.tgz#115bb2c2b1a15c18d69d3878f362a7dbc74fd4b5"
-  integrity sha512-yzudVRhp5tjaFh9/M9UBikgqzQ5app8SJ2ITeqGJ5MmQ84hsTR0S9XFrLwdTA/sxnU7i7dbepT8T3846t0U1pg==
+rrweb@^0.9.7:
+  version "0.9.7"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.7.tgz#6632918dc61f2979d86d2b892810678408e7e11f"
+  integrity sha512-n3TEe1OyEtOGFvh4D513dR4jKVBlw//flCaFSwNFBreod/WKNRuqyZ7A2SCbY3XJbQ8JRFTfGa1jGsKvhiqTdQ==
   dependencies:
     "@types/css-font-loading-module" "0.0.4"
     "@xstate/fsm" "^1.4.0"

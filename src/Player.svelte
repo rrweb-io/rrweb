@@ -64,6 +64,13 @@
       `scale(${Math.min(widthScale, heightScale)})` + 'translate(-50%, -50%)';
   };
 
+  export const triggerResize = () => {
+    updateScale(replayer.wrapper, {
+      width: replayer.iframe.offsetWidth,
+      height: replayer.iframe.offsetHeight,
+    });
+  };
+
   export const toggleFullscreen = () => {
     if (player) {
       isFullscreen() ? exitFullscreen() : openFullscreen(player);
