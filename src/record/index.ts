@@ -123,6 +123,8 @@ function record<T = eventWithTime>(
       }),
       isCheckout,
     );
+
+    mutationBuffer.paused = true;  // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(
       document,
       blockClass,
@@ -160,6 +162,8 @@ function record<T = eventWithTime>(
         },
       }),
     );
+    mutationBuffer.emit();  // emit anything queued up now
+    mutationBuffer.paused = false;
   }
 
   try {

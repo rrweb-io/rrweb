@@ -114,6 +114,7 @@ export default class MutationBuffer {
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
   private removes: removedNodeMutation[] = [];
+  private mapRemoves: Node[] = [];
 
   private movedMap: Record<string, true> = {};
 
@@ -166,6 +167,8 @@ export default class MutationBuffer {
   };
 
   public emit = () => {
+    // delay any modification of the mirror until this function
+    // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
 
     const adds: addedNodeMutation[] = [];
 
@@ -260,6 +263,10 @@ export default class MutationBuffer {
       candidate = node.previous;
       addList.removeNode(node.value);
       pushAdd(node.value);
+    }
+
+    while (this.mapRemoves.length) {
+      mirror.removeNodeFromMap(this.mapRemoves.shift() as INode);
     }
 
     const payload = {
@@ -377,7 +384,7 @@ export default class MutationBuffer {
               id: nodeId,
             });
           }
-          mirror.removeNodeFromMap(n as INode);
+          this.mapRemoves.push(n);
         });
         break;
       }
