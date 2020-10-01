@@ -1,5 +1,7 @@
 # 使用指南
 
+> 除通用的使用指南外，你可能还想通过[场景示例]()了解特定场景下的使用方式，或是通过[设计文档](./docs)深入 rrweb 的技术细节。
+
 ## 安装
 
 ### 直接通过 `<script>` 引入
@@ -26,6 +28,33 @@ rrweb 代码分为录制和回放两部分，大多数时候用户在被录制�
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js"></script>
+```
+
+#### 其它按需引入方式
+
+除了仅包含录制代码的 `record/rrweb-record-min.js` 之外，rrweb 还提供了其它多种可选的打包文件。所有包含 `.min` 的文件为同名文件的压缩版。
+
+```shell
+# 包含录制、回放、压缩数据、解压缩数据
+rrweb-all.js
+rrweb-all.min.js
+# 包含录制、回放
+rrweb.js
+rrweb.min.js
+# 回放所需的样式文件
+rrweb.min.css
+# 录制
+record/rrweb-record.js
+record/rrweb-record.min.js
+# 压缩数据
+record/rrweb-record-pack.js
+record/rrweb-record-pack.min.js
+# 回放
+replay/rrweb-replay.js
+replay/rrweb-replay.min.js
+# 解压缩数据
+replay/rrweb-replay-unpack.js
+replay/rrweb-replay-unpack.min.js
 ```
 
 ### 通过 npm 引入
@@ -98,13 +127,34 @@ function save() {
 setInterval(save, 10 * 1000);
 ```
 
-#### 隐私
+#### 配置参数
+
+`rrweb.record(config)` 的 config 部分接受以下参数
+
+| key              | 默认值      | 功能                                                         |
+| ---------------- | ----------- | ------------------------------------------------------------ |
+| emit             | 必填        | 获取当前录制的数据                                           |
+| checkoutEveryNth | -           | 每 N 次事件重新制作一次全量快照<br />详见“重新制作快照”      |
+| checkoutEveryNms | -           | 每 N 毫秒重新制作一次全量快照<br />详见“重新制作快照”        |
+| blockClass       | 'rr-block'  | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见“隐私”   |
+| ignoreClass      | 'rr-ignore' | 字符串或正则表达式，可用域自定义忽略元素的类名，详见“隐私”   |
+| maskAllInputs    | false       | 将所有输入内容记录为 *                                       |
+| maskInputOptions | {}          | 选择将特定类型的输入框内容记录为 *<br />类型详见[列表](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
+| inlineStylesheet | true        | 是否将样式表内联                                             |
+| hooks            | {}          | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207) |
+| packFn           | -           | 数据压缩函数，详见“数据压缩”                                 |
+| sampling         | -           | 数据抽样策略                                                 |
+| recordCanvas     | false       | 是否记录 canvas 内容                                         |
+| collectFonts     | false       | 是否记录页面中的字体文件                                     |
+
+####  隐私
 
 页面中可能存在一些隐私相关的内容不希望被录制，rrweb 为此做了以下支持：
 
 - 在 HTML 元素中添加类名 `.rr-block` 将会避免该元素及其子元素被录制，回放时取而代之的是一个同等宽高的占位元素。
 - 在 HTML 元素中添加类名 `.rr-ignore` 将会避免录制该元素的输入事件。
 - `input[type="password"]` 类型的密码输入框默认不会录制输入事件。
+- 配置中还有更为丰富的隐私保护选项。
 
 #### 重新制作快照
 
@@ -204,18 +254,25 @@ replayer.play();
 
 可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
 
-| key          | 默认值        | 功能                            |
-| ------------ | ------------- | ------------------------------- |
-| speed        | 1             | 回放倍速                        |
-| root         | document.body | 回放时使用的 HTML 元素          |
-| loadTimeout  | 0             | 加载异步样式表的超时时长        |
-| skipInactive | false         | 是否快速跳过无用户操作的阶段    |
-| showWarning  | true          | 是否在回放过程中打印警告信息    |
-| showDebug    | false         | 是否在回放过程中打印 debug 信息 |
+| key                 | 默认值        | 功能                                                         |
+| ------------------- | ------------- | ------------------------------------------------------------ |
+| speed               | 1             | 回放倍速                                                     |
+| root                | document.body | 回放时使用的 HTML 元素                                       |
+| loadTimeout         | 0             | 加载异步样式表的超时时长                                     |
+| skipInactive        | false         | 是否快速跳过无用户操作的阶段                                 |
+| showWarning         | true          | 是否在回放过程中打印警告信息                                 |
+| showDebug           | false         | 是否在回放过程中打印 debug 信息                              |
+| blockClass          | 'rr-block'    | 需要在回放时展示为隐藏区域的元素类名                         |
+| liveMode            | false         | 是否开启直播模式                                             |
+| inertStyleRules     | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式 |
+| triggerFocus        | true          | 回放时是否回放 focus 交互                                    |
+| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险** |
+| mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
+| unpackFn            | -             | 数据解压缩函数，详见“数据压缩”                               |
 
 #### 使用 rrweb-player
 
-rrweb 自带的回放只提供所有的 JS API 以及最基本的 UI，如果需要更强的回放播放器 UI，可以使用 rrweb-player。
+rrweb 自带的回放只提供所有的 JS API 以及最基本的 UI，如果需要功能更强的回放播放器 UI，可以使用 rrweb-player。
 
 ##### 安装
 
@@ -237,57 +294,31 @@ npm install --save rrweb-player
 
 ##### 使用
 
+通过 props 传入 events 数据及配置项
+
 ```js
 new rrwebPlayer({
   target: document.body, // 可以自定义 DOM 元素
-  data: {
+  // 配置项
+  props: {
     events,
   },
 });
 ```
 
-## API
+##### 配置项参数
 
-### rrweb
+| key            | 默认值       | 功能                                                  |
+| -------------- | ------------ | ----------------------------------------------------- |
+| events         | []           | 包含回放所需的数据                                    |
+| width          | 1024         | 播放器宽度                                            |
+| height         | 576          | 播放器高度                                            |
+| autoPlay       | true         | 是否自动播放                                          |
+| speedOption    | [1, 2, 4, 8] | 倍速播放可选值                                        |
+| showController | true         | 是否显示播放器控制 UI                                 |
+| tags           | {}           | 可以以 key value 的形式展示自定义事件在时间轴上的颜色 |
+| ...            | -            | 其它所有 rrweb Replayer 的配置参数均可透传            |
 
-#### rrweb.record
-
-```typescript
-type record = (options: recordOptions) => listenerHandler;
-
-type recordOptions = {
-  emit: (e: eventWithTime) => void;
-};
-type listenerHandler = () => void;
-```
-
-#### rrweb.Replayer
-
-```typescript
-class Replayer {
-  public wrapper: HTMLDivElement;
-
-  constructor(events: eventWithTime[], config?: Partial<playerConfig>);
-
-  public on(event: string, handler: mitt.Handler): void;
-  public setConfig(config: Partial<playerConfig>): void;
-  public getMetaData(): playerMetaData;
-  public getTimeOffset(): number;
-  public play(timeOffset?: number): void;
-  public pause(timeOffset?: number): void;
-}
-
-type playerConfig = {
-  speed: number;
-  root: Element;
-  loadTimeout: number;
-  skipInactive: Boolean;
-};
-
-type playerMetaData = {
-  totalTime: number;
-};
-```
 
 ## REPL 工具
 
