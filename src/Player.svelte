@@ -17,15 +17,9 @@
   export let events: eventWithTime[] = [];
   export let skipInactive: boolean = true;
   export let autoPlay: boolean = true;
-  export let triggerFocus: boolean = true;
   export let speedOption: number[] = [1, 2, 4, 8];
   export let showController: boolean = true;
-  export let showWarning: boolean = true;
-  export let showDebug: boolean = true;
   export let tags: Record<string, string> = {};
-  export let mouseTail: playerConfig['mouseTail'] = true;
-  export let UNSAFE_replayCanvas: boolean = false;
-  export let insertStyleRules: string[] = [];
 
   export const getMirror = () => mirror;
 
@@ -143,14 +137,8 @@
     replayer = new Replayer(events, {
       speed,
       root: frame,
-      skipInactive,
-      showWarning,
-      showDebug,
-      triggerFocus,
       unpackFn: unpack,
-      mouseTail,
-      UNSAFE_replayCanvas,
-      insertStyleRules,
+      ...$$props,
     });
 
     replayer.on('resize', (dimension) => {

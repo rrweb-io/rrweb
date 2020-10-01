@@ -9,17 +9,11 @@ export default class rrwebPlayer extends SvelteComponent {
       events: eventWithTime[];
       width?: number;
       height?: number;
-      skipInactive?: boolean;
       autoPlay?: boolean;
       speedOption?: number[];
       showController?: boolean;
-      showWarning?: boolean;
-      showDebug?: boolean;
       tags?: Record<string, string>;
-      mouseTail?: playerConfig['mouseTail'];
-      UNSAFE_replayCanvas?: boolean;
-      insertStyleRules?: string[];
-    };
+    } & playerConfig;
   });
 
   addEventListener(event: string, handler: (params: any) => unknown): void;
