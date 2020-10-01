@@ -134,16 +134,16 @@ setInterval(save, 10 * 1000);
 | key              | 默认值      | 功能                                                                                                                                                               |
 | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | emit             | 必填        | 获取当前录制的数据                                                                                                                                                 |
-| checkoutEveryNth | -           | 每 N 次事件重新制作一次全量快照<br />详见“重新制作快照”                                                                                                            |
-| checkoutEveryNms | -           | 每 N 毫秒重新制作一次全量快照<br />详见“重新制作快照”                                                                                                              |
-| blockClass       | 'rr-block'  | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见“隐私”                                                                                                         |
-| ignoreClass      | 'rr-ignore' | 字符串或正则表达式，可用域自定义忽略元素的类名，详见“隐私”                                                                                                         |
+| checkoutEveryNth | -           | 每 N 次事件重新制作一次全量快照<br />详见“重新制作快照”章节                                                                                                        |
+| checkoutEveryNms | -           | 每 N 毫秒重新制作一次全量快照<br />详见“重新制作快照”章节                                                                                                          |
+| blockClass       | 'rr-block'  | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见“隐私”章节                                                                                                     |
+| ignoreClass      | 'rr-ignore' | 字符串或正则表达式，可用域自定义忽略元素的类名，详见“隐私”章节                                                                                                     |
 | maskAllInputs    | false       | 将所有输入内容记录为 \*                                                                                                                                            |
 | maskInputOptions | {}          | 选择将特定类型的输入框内容记录为 \*<br />类型详见[列表](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
 | inlineStylesheet | true        | 是否将样式表内联                                                                                                                                                   |
 | hooks            | {}          | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                              |
-| packFn           | -           | 数据压缩函数，详见“数据压缩”                                                                                                                                       |
-| sampling         | -           | 数据抽样策略                                                                                                                                                       |
+| packFn           | -           | 数据压缩函数，详见[优化存储策略](./docs/receipes/optimize-storage.zh_CN.md)                                                                                        |
+| sampling         | -           | 数据抽样策略，详见[优化存储策略](./docs/receipes/optimize-storage.zh_CN.md)                                                                                        |
 | recordCanvas     | false       | 是否记录 canvas 内容                                                                                                                                               |
 | collectFonts     | false       | 是否记录页面中的字体文件                                                                                                                                           |
 
@@ -250,6 +250,24 @@ const replayer = new rrweb.Replayer(events);
 replayer.play();
 ```
 
+#### 使用 API 控制回放
+
+```js
+const replayer = new rrweb.Replayer(events);
+
+//播放
+replayer.play();
+
+// 从第 3 秒的内容开始播放
+replayer.play(3000);
+
+// 暂停
+replayer.pause();
+
+// 暂停至第 5 秒处
+replayer.pause(5000);
+```
+
 #### 配置参数
 
 可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
@@ -268,7 +286,7 @@ replayer.play();
 | triggerFocus        | true          | 回放时是否回放 focus 交互                                                                                                                                                                            |
 | UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险**                                                                                                                                 |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
-| unpackFn            | -             | 数据解压缩函数，详见“数据压缩”                                                                                                                                                                       |
+| unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/receipes/optimize-storage.zh_CN.md)                                                                                                                        |
 
 #### 使用 rrweb-player
 
