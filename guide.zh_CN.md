@@ -131,23 +131,23 @@ setInterval(save, 10 * 1000);
 
 `rrweb.record(config)` 的 config 部分接受以下参数
 
-| key              | 默认值      | 功能                                                         |
-| ---------------- | ----------- | ------------------------------------------------------------ |
-| emit             | 必填        | 获取当前录制的数据                                           |
-| checkoutEveryNth | -           | 每 N 次事件重新制作一次全量快照<br />详见“重新制作快照”      |
-| checkoutEveryNms | -           | 每 N 毫秒重新制作一次全量快照<br />详见“重新制作快照”        |
-| blockClass       | 'rr-block'  | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见“隐私”   |
-| ignoreClass      | 'rr-ignore' | 字符串或正则表达式，可用域自定义忽略元素的类名，详见“隐私”   |
-| maskAllInputs    | false       | 将所有输入内容记录为 *                                       |
-| maskInputOptions | {}          | 选择将特定类型的输入框内容记录为 *<br />类型详见[列表](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
-| inlineStylesheet | true        | 是否将样式表内联                                             |
-| hooks            | {}          | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207) |
-| packFn           | -           | 数据压缩函数，详见“数据压缩”                                 |
-| sampling         | -           | 数据抽样策略                                                 |
-| recordCanvas     | false       | 是否记录 canvas 内容                                         |
-| collectFonts     | false       | 是否记录页面中的字体文件                                     |
+| key              | 默认值      | 功能                                                                                                                                                               |
+| ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| emit             | 必填        | 获取当前录制的数据                                                                                                                                                 |
+| checkoutEveryNth | -           | 每 N 次事件重新制作一次全量快照<br />详见“重新制作快照”                                                                                                            |
+| checkoutEveryNms | -           | 每 N 毫秒重新制作一次全量快照<br />详见“重新制作快照”                                                                                                              |
+| blockClass       | 'rr-block'  | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见“隐私”                                                                                                         |
+| ignoreClass      | 'rr-ignore' | 字符串或正则表达式，可用域自定义忽略元素的类名，详见“隐私”                                                                                                         |
+| maskAllInputs    | false       | 将所有输入内容记录为 \*                                                                                                                                            |
+| maskInputOptions | {}          | 选择将特定类型的输入框内容记录为 \*<br />类型详见[列表](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
+| inlineStylesheet | true        | 是否将样式表内联                                                                                                                                                   |
+| hooks            | {}          | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                              |
+| packFn           | -           | 数据压缩函数，详见“数据压缩”                                                                                                                                       |
+| sampling         | -           | 数据抽样策略                                                                                                                                                       |
+| recordCanvas     | false       | 是否记录 canvas 内容                                                                                                                                               |
+| collectFonts     | false       | 是否记录页面中的字体文件                                                                                                                                           |
 
-####  隐私
+#### 隐私
 
 页面中可能存在一些隐私相关的内容不希望被录制，rrweb 为此做了以下支持：
 
@@ -254,21 +254,21 @@ replayer.play();
 
 可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
 
-| key                 | 默认值        | 功能                                                         |
-| ------------------- | ------------- | ------------------------------------------------------------ |
-| speed               | 1             | 回放倍速                                                     |
-| root                | document.body | 回放时使用的 HTML 元素                                       |
-| loadTimeout         | 0             | 加载异步样式表的超时时长                                     |
-| skipInactive        | false         | 是否快速跳过无用户操作的阶段                                 |
-| showWarning         | true          | 是否在回放过程中打印警告信息                                 |
-| showDebug           | false         | 是否在回放过程中打印 debug 信息                              |
-| blockClass          | 'rr-block'    | 需要在回放时展示为隐藏区域的元素类名                         |
-| liveMode            | false         | 是否开启直播模式                                             |
-| inertStyleRules     | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式 |
-| triggerFocus        | true          | 回放时是否回放 focus 交互                                    |
-| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险** |
+| key                 | 默认值        | 功能                                                                                                                                                                                                 |
+| ------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| speed               | 1             | 回放倍速                                                                                                                                                                                             |
+| root                | document.body | 回放时使用的 HTML 元素                                                                                                                                                                               |
+| loadTimeout         | 0             | 加载异步样式表的超时时长                                                                                                                                                                             |
+| skipInactive        | false         | 是否快速跳过无用户操作的阶段                                                                                                                                                                         |
+| showWarning         | true          | 是否在回放过程中打印警告信息                                                                                                                                                                         |
+| showDebug           | false         | 是否在回放过程中打印 debug 信息                                                                                                                                                                      |
+| blockClass          | 'rr-block'    | 需要在回放时展示为隐藏区域的元素类名                                                                                                                                                                 |
+| liveMode            | false         | 是否开启直播模式                                                                                                                                                                                     |
+| inertStyleRules     | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式                                                                                                                                       |
+| triggerFocus        | true          | 回放时是否回放 focus 交互                                                                                                                                                                            |
+| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险**                                                                                                                                 |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
-| unpackFn            | -             | 数据解压缩函数，详见“数据压缩”                               |
+| unpackFn            | -             | 数据解压缩函数，详见“数据压缩”                                                                                                                                                                       |
 
 #### 使用 rrweb-player
 
@@ -319,6 +319,43 @@ new rrwebPlayer({
 | tags           | {}           | 可以以 key value 的形式展示自定义事件在时间轴上的颜色 |
 | ...            | -            | 其它所有 rrweb Replayer 的配置参数均可透传            |
 
+#### 事件
+
+开发者可能希望监听回放时的各类事件，例如在跳过无用户操作的时间时给用户一些提示。
+
+rrweb 的 Replayer 提供了 `on` API 用于提供该功能
+
+```js
+const replayer = new rrweb.Replayer(events);
+replayer.on(EVENT_NAME, (payload) => {
+  ...
+})
+```
+
+其包含的事件如下：
+
+| 事件类型               | 描述                   | 值                |
+| ---------------------- | ---------------------- | ----------------- |
+| start                  | 回放开始               | -                 |
+| pause                  | 回放暂停               | -                 |
+| finish                 | 回放完成               | -                 |
+| resize                 | 回放视图大小发生变化   | { width, height } |
+| fullsnapshot-rebuilded | 全量快照完成重建       | event             |
+| load-stylesheet-start  | 开始加载远端样式表     | -                 |
+| load-stylesheet-end    | 加载远端样式表完成     | -                 |
+| skip-start             | 开始跳过无用户操作时间 | { speed }         |
+| skip-end               | 结束无用户操作时间     | { speed }         |
+| mouse-interaction      | 回放鼠标交互事件       | { type, target }  |
+| event-cast             | 回放 event             | event             |
+| custom-event           | 回放自定义事件         | event             |
+
+使用 `rrweb-player` 时，也可以通过 `addEventListener` API 使用相同的事件功能，并且会获得 3 个额外的事件：
+
+| 事件类型               | 描述           | 值                      |
+| ---------------------- | -------------- | ----------------------- |
+| ui-update-current-time | 当前回放时间点 | { detail: { payload } } |
+| ui-update-player-state | 当前回放状态   | { detail: { payload } } |
+| ui-update-progress     | 当前回放百分比 | { detail: { payload } } |
 
 ## REPL 工具
 
