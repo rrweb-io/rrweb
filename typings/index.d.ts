@@ -10,6 +10,7 @@ export default class rrwebPlayer extends SvelteComponent {
       width?: number;
       height?: number;
       autoPlay?: boolean;
+      speed?: number;
       speedOption?: number[];
       showController?: boolean;
       tags?: Record<string, string>;

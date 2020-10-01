@@ -18,13 +18,13 @@
   export let skipInactive: boolean = true;
   export let autoPlay: boolean = true;
   export let speedOption: number[] = [1, 2, 4, 8];
+  export let speed: number = 1;
   export let showController: boolean = true;
   export let tags: Record<string, string> = {};
 
   export const getMirror = () => mirror;
 
   const controllerHeight = 80;
-  let speed = 1;
   let player: HTMLElement;
   let frame: HTMLElement;
   let replayer: Replayer;
