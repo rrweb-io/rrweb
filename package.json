@@ -16,7 +16,7 @@
     "typings": "tsc -d --declarationDir typings",
     "start:client": "webpack-dev-server --config webpack.config.js",
     "start": "babel-watch ./scrubber/server.js",
-    "postinstall": "npm run bundle; npm run typings"
+    "postinstall": "npm run bundle"
   },
   "repository": {
     "type": "git",
