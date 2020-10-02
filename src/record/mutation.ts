@@ -210,6 +210,10 @@ export default class MutationBuffer {
       });
     };
 
+    while (this.mapRemoves.length) {
+      mirror.removeNodeFromMap(this.mapRemoves.shift() as INode);
+    }
+
     for (const n of this.movedSet) {
       pushAdd(n);
     }
@@ -263,10 +267,6 @@ export default class MutationBuffer {
       candidate = node.previous;
       addList.removeNode(node.value);
       pushAdd(node.value);
-    }
-
-    while (this.mapRemoves.length) {
-      mirror.removeNodeFromMap(this.mapRemoves.shift() as INode);
     }
 
     const payload = {
