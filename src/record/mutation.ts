@@ -296,7 +296,6 @@ export default class MutationBuffer {
     ) {
       return;
     }
-    this.emissionCallback(payload);
 
     // reset
     this.texts = [];
@@ -306,6 +305,8 @@ export default class MutationBuffer {
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
     this.movedMap = {};
+
+    this.emissionCallback(payload);
   };
 
   private processMutation = (m: mutationRecord) => {
