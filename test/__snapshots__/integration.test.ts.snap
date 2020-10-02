@@ -4857,37 +4857,11 @@ exports[`select2 1`] = `
           }
         },
         {
-          \\"id\\": 36,
-          \\"attributes\\": {
-            \\"id\\": \\"select2-drop\\",
-            \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
-          }
-        },
-        {
-          \\"id\\": 70,
-          \\"attributes\\": {
-            \\"style\\": \\"\\"
-          }
-        },
-        {
-          \\"id\\": 42,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-input select2-focused\\",
-            \\"aria-activedescendant\\": \\"select2-result-label-2\\"
-          }
-        },
-        {
           \\"id\\": 35,
           \\"attributes\\": {
             \\"disabled\\": \\"\\"
           }
         },
-        {
-          \\"id\\": 72,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\"
-          }
-        }
       ],
       \\"removes\\": [
         {
@@ -5307,12 +5281,6 @@ exports[`select2 1`] = `
       \\"source\\": 0,
       \\"texts\\": [],
       \\"attributes\\": [
-        {
-          \\"id\\": 70,
-          \\"attributes\\": {
-            \\"style\\": \\"display: none;\\"
-          }
-        },
         {
           \\"id\\": 36,
           \\"attributes\\": {
