@@ -7,7 +7,7 @@
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch --watch-extensions js,ts",
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
-    "bundle:inject": "npx webpack --config webpack.config-inject.js",
+    "bundle:inject": "npx webpack --config webpack.config-inject.js --mode production",
     "bundle:default": "rollup --config",
     "bundle": "run-s bundle:inject bundle:default",
     "dev": "run-p dev:**",
