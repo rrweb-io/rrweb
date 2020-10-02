@@ -221,7 +221,7 @@ function initInputObserver(
   maskInputOptions: MaskInputOptions,
   sampling: SamplingStrategy,
 ): listenerHandler {
-  function eventHandler(event: Event) {
+  function eventHandler(event: KeyboardEvent) { // was Event
     const { target } = event;
     if (
       !target ||
@@ -231,6 +231,11 @@ function initInputObserver(
     ) {
       return;
     }
+
+    if (event.type === 'keyup' && event.key === 'Enter') {
+      return cbWithDedup(target, { key: 'Enter' });
+    }
+
     const type: string | undefined = (target as HTMLInputElement).type;
     if (
       type === 'password' ||
@@ -272,7 +277,8 @@ function initInputObserver(
     if (
       !lastInputValue ||
       lastInputValue.text !== v.text ||
-      lastInputValue.isChecked !== v.isChecked
+      lastInputValue.isChecked !== v.isChecked ||
+      lastInputValue.key !== v.key
     ) {
       lastInputValueMap.set(target, v);
       const id = mirror.getId(target as INode);
@@ -304,7 +310,7 @@ function initInputObserver(
         hookSetter<HTMLElement>(p[0], p[1], {
           set() {
             // mock to a normal event
-            eventHandler({ target: this } as Event);
+            eventHandler({ target: this } as KeyboardEvent); // was Event
           },
         }),
       ),

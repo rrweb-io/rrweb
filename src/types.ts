@@ -356,8 +356,9 @@ export type viewportResizeDimention = {
 export type viewportResizeCallback = (d: viewportResizeDimention) => void;
 
 export type inputValue = {
-  text: string;
-  isChecked: boolean;
+  text?: string;
+  isChecked?: boolean;
+  key?: string;
 };
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
