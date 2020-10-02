@@ -7,8 +7,15 @@
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch --watch-extensions js,ts",
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
-    "bundle": "rollup --config",
-    "typings": "tsc -d --declarationDir typings"
+    "bundle:inject": "npx webpack --config webpack.config-inject.js",
+    "bundle:default": "rollup --config",
+    "bundle": "run-s bundle:inject bundle:default",
+    "dev": "run-p dev:**",
+    "dev:default": "rollup --watch --config",
+    "dev:inject": "npx webpack --watch --config webpack.config-inject.js",
+    "typings": "tsc -d --declarationDir typings",
+    "start:client": "webpack-dev-server --config webpack.config.js",
+    "start": "babel-watch ./scrubber/server.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +31,7 @@
   "typings": "typings/entries/all.d.ts",
   "files": [
     "dist",
+    "dist-electron",
     "lib",
     "es",
     "typings"
@@ -45,6 +53,7 @@
     "inquirer": "^6.2.1",
     "jest-snapshot": "^23.6.0",
     "mocha": "^5.2.0",
+    "npm-run-all": "^4.1.5",
     "puppeteer": "^1.11.0",
     "rollup": "^2.3.3",
     "rollup-plugin-commonjs": "^9.2.0",
@@ -55,7 +64,11 @@
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "tslint": "^4.5.1",
-    "typescript": "^3.9.5"
+    "typescript": "^3.9.5",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-middleware": "^3.7.2",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-hot-middleware": "^2.25.0"
   },
   "dependencies": {
     "@types/css-font-loading-module": "0.0.4",
