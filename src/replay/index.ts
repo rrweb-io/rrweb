@@ -1058,8 +1058,8 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     try {
-      ((target as Node) as HTMLInputElement).checked = d.isChecked;
-      ((target as Node) as HTMLInputElement).value = d.text;
+      if (d.isChecked) ((target as Node) as HTMLInputElement).checked = d.isChecked;
+      if (d.text) ((target as Node) as HTMLInputElement).value = d.text;
     } catch (error) {
       // for safe
     }
