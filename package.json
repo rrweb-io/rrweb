@@ -15,7 +15,8 @@
     "dev:inject": "npx webpack --watch --config webpack.config-inject.js",
     "typings": "tsc -d --declarationDir typings",
     "start:client": "webpack-dev-server --config webpack.config.js",
-    "start": "babel-watch ./scrubber/server.js"
+    "start": "babel-watch ./scrubber/server.js",
+    "postinstall": "npm run bundle; npm run typings"
   },
   "repository": {
     "type": "git",
