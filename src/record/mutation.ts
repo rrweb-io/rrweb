@@ -109,7 +109,7 @@ function isINode(n: Node | INode): n is INode {
  * controls behaviour of a MutationObserver
  */
 export default class MutationBuffer {
-  public paused: boolean = false;
+  private frozen: boolean = false;
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
@@ -159,9 +159,21 @@ export default class MutationBuffer {
     this.emissionCallback = cb;
   }
 
+  public freeze() {
+    this.frozen = true;
+  }
+
+  public unfreeze() {
+    this.frozen = false;
+  }
+
+  public isFrozen() {
+    return this.frozen;
+  }
+
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation);
-    if (!this.paused) {
+    if (!this.frozen) {
       this.emit();
     }
   };

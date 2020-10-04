@@ -82,7 +82,7 @@ function record<T = eventWithTime>(
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
-      mutationBuffer.paused &&
+      mutationBuffer.isFrozen() &&
 	e.type !== EventType.FullSnapshot &&
       !(
         e.type == EventType.IncrementalSnapshot &&
@@ -92,7 +92,7 @@ function record<T = eventWithTime>(
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
       mutationBuffer.emit();
-      mutationBuffer.paused = false;
+      mutationBuffer.unfreeze();
     }
 
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
@@ -125,8 +125,8 @@ function record<T = eventWithTime>(
       isCheckout,
     );
 
-    let wasPaused = mutationBuffer.paused;
-    mutationBuffer.paused = true;  // don't allow any mirror modifications during snapshotting
+    let wasFrozen = mutationBuffer.isFrozen();
+    mutationBuffer.freeze();  // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(
       document,
       blockClass,
@@ -164,9 +164,9 @@ function record<T = eventWithTime>(
         },
       }),
     );
-    if (!wasPaused) {
+    if (!wasFrozen) {
       mutationBuffer.emit();  // emit anything queued up now
-      mutationBuffer.paused = false;
+      mutationBuffer.unfreeze();
     }
   }
 
@@ -347,7 +347,7 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
 };
 
 record.freezePage = () => {
-  mutationBuffer.paused = true;
+  mutationBuffer.freeze();
 };
 
 export default record;
