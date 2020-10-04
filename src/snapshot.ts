@@ -66,28 +66,29 @@ function extractOrigin(url: string): string {
   return origin;
 }
 
-const URL_IN_CSS_REF = /url\((?:'([^']*)'|"([^"]*)"|([^)]*))\)/gm;
+const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")([^"]*)"|([^)]*))\)/gm;
 const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/).*/;
-const DATA_URI = /^(data:)([\w\/\+\-]+);(charset=[\w-]+|base64).*,(.*)/i;
+const DATA_URI = /^(data:)([\w\/\+\-]+);(charset=[\w-]+|base64|utf-?8).*,(.*)/i;
 export function absoluteToStylesheet(
   cssText: string | null,
   href: string,
 ): string {
   return (cssText || '').replace(
     URL_IN_CSS_REF,
-    (origin, path1, path2, path3) => {
+    (origin, quote1, path1, quote2, path2, path3) => {
       const filePath = path1 || path2 || path3;
+      const maybe_quote = quote1 || quote2 || '';
       if (!filePath) {
         return origin;
       }
       if (!RELATIVE_PATH.test(filePath)) {
-        return `url('${filePath}')`;
+        return `url(${maybe_quote}${filePath}${maybe_quote})`;
       }
       if (DATA_URI.test(filePath)) {
-        return `url(${filePath})`;
+        return `url(${maybe_quote}${filePath}${maybe_quote})`;
       }
       if (filePath[0] === '/') {
-        return `url('${extractOrigin(href) + filePath}')`;
+        return `url(${maybe_quote}${extractOrigin(href) + filePath}${maybe_quote})`;
       }
       const stack = href.split('/');
       const parts = filePath.split('/');
@@ -101,7 +102,7 @@ export function absoluteToStylesheet(
           stack.push(part);
         }
       }
-      return `url('${stack.join('/')}')`;
+      return `url(${maybe_quote}${stack.join('/')}${maybe_quote})`;
     },
   );
 }
