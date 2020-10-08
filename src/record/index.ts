@@ -1,4 +1,4 @@
-import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import { snapshot, cleanupSnapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { initObservers, mutationBuffer } from './observer';
 import {
   mirror,
@@ -25,6 +25,7 @@ function wrapEvent(e: event): eventWithTime {
 }
 
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
+let stop!: () => void;
 
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
@@ -389,9 +390,17 @@ function record<T = eventWithTime>(
         ),
       );
     }
-    return () => {
+    stop = function(cleanup: boolean) {
       handlers.forEach((h) => h());
+      if (cleanup) {
+        let id: keyof typeof mirror.map;
+        for (id in mirror.map) {
+          delete mirror.map[id].__sn;
+        }
+        cleanupSnapshot();
+      }
     };
+    return stop;
   } catch (error) {
     // TODO: handle internal error
     console.warn(error);
@@ -415,6 +424,10 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
 
 record.freezePage = () => {
   mutationBuffer.freeze();
+};
+
+record.stop = (cleanup=true) => {
+  stop(cleanup);
 };
 
 export default record;
