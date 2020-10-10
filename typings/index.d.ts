@@ -14,7 +14,7 @@ export default class rrwebPlayer extends SvelteComponent {
       speedOption?: number[];
       showController?: boolean;
       tags?: Record<string, string>;
-    } & playerConfig;
+    } & Partial<playerConfig>;
   });
 
   addEventListener(event: string, handler: (params: any) => unknown): void;
