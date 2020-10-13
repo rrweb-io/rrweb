@@ -1,4 +1,5 @@
 import { INode, MaskInputOptions } from 'rrweb-snapshot';
+import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
   mirror,
   throttle,
@@ -8,6 +9,7 @@ import {
   getWindowWidth,
   isBlocked,
   isTouchEvent,
+  patch,
 } from '../utils';
 import {
   mutationCallBack,
@@ -30,23 +32,32 @@ import {
   mediaInteractionCallback,
   MediaInteractions,
   SamplingStrategy,
+  canvasMutationCallback,
+  fontCallback,
+  fontParam,
 } from '../types';
 import MutationBuffer from './mutation';
+
+export const mutationBuffer = new MutationBuffer();
 
 function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
+  recordCanvas: boolean,
 ): MutationObserver {
   // see mutation.ts for details
-  const mutationBuffer = new MutationBuffer(
+  mutationBuffer.init(
     cb,
     blockClass,
     inlineStylesheet,
     maskInputOptions,
+    recordCanvas,
   );
-  const observer = new MutationObserver(mutationBuffer.processMutations);
+  const observer = new MutationObserver(
+    mutationBuffer.processMutations.bind(mutationBuffer)
+  );
   observer.observe(document, {
     attributes: true,
     attributeOldValue: true,
@@ -288,6 +299,8 @@ function initInputObserver(
     [HTMLInputElement.prototype, 'checked'],
     [HTMLSelectElement.prototype, 'value'],
     [HTMLTextAreaElement.prototype, 'value'],
+    // Some UI library use selectedIndex to set select value
+    [HTMLSelectElement.prototype, 'selectedIndex'],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
@@ -357,6 +370,125 @@ function initMediaInteractionObserver(
   };
 }
 
+function initCanvasMutationObserver(
+  cb: canvasMutationCallback,
+  blockClass: blockClass,
+): listenerHandler {
+  const props = Object.getOwnPropertyNames(CanvasRenderingContext2D.prototype);
+  const handlers: listenerHandler[] = [];
+  for (const prop of props) {
+    try {
+      if (
+        typeof CanvasRenderingContext2D.prototype[
+          prop as keyof CanvasRenderingContext2D
+        ] !== 'function'
+      ) {
+        continue;
+      }
+      const restoreHandler = patch(
+        CanvasRenderingContext2D.prototype,
+        prop,
+        function (original) {
+          return function (
+            this: CanvasRenderingContext2D,
+            ...args: Array<unknown>
+          ) {
+            if (!isBlocked(this.canvas, blockClass)) {
+              setTimeout(() => {
+                const recordArgs = [...args];
+                if (prop === 'drawImage') {
+                  if (
+                    recordArgs[0] &&
+                    recordArgs[0] instanceof HTMLCanvasElement
+                  ) {
+                    recordArgs[0] = recordArgs[0].toDataURL();
+                  }
+                }
+                cb({
+                  id: mirror.getId((this.canvas as unknown) as INode),
+                  property: prop,
+                  args: recordArgs,
+                });
+              }, 0);
+            }
+            return original.apply(this, args);
+          };
+        },
+      );
+      handlers.push(restoreHandler);
+    } catch {
+      const hookHandler = hookSetter<CanvasRenderingContext2D>(
+        CanvasRenderingContext2D.prototype,
+        prop,
+        {
+          set(v) {
+            cb({
+              id: mirror.getId((this.canvas as unknown) as INode),
+              property: prop,
+              args: [v],
+              setter: true,
+            });
+          },
+        },
+      );
+      handlers.push(hookHandler);
+    }
+  }
+  return () => {
+    handlers.forEach((h) => h());
+  };
+}
+
+function initFontObserver(cb: fontCallback): listenerHandler {
+  const handlers: listenerHandler[] = [];
+
+  const fontMap = new WeakMap<FontFace, fontParam>();
+
+  const originalFontFace = FontFace;
+  // tslint:disable-next-line: no-any
+  (window as any).FontFace = function FontFace(
+    family: string,
+    source: string | ArrayBufferView,
+    descriptors?: FontFaceDescriptors,
+  ) {
+    const fontFace = new originalFontFace(family, source, descriptors);
+    fontMap.set(fontFace, {
+      family,
+      buffer: typeof source !== 'string',
+      descriptors,
+      fontSource:
+        typeof source === 'string'
+          ? source
+          : // tslint:disable-next-line: no-any
+            JSON.stringify(Array.from(new Uint8Array(source as any))),
+    });
+    return fontFace;
+  };
+
+  const restoreHandler = patch(document.fonts, 'add', function (original) {
+    return function (this: FontFaceSet, fontFace: FontFace) {
+      setTimeout(() => {
+        const p = fontMap.get(fontFace);
+        if (p) {
+          cb(p);
+          fontMap.delete(fontFace);
+        }
+      }, 0);
+      return original.apply(this, [fontFace]);
+    };
+  });
+
+  handlers.push(() => {
+    // tslint:disable-next-line: no-any
+    (window as any).FonFace = originalFontFace;
+  });
+  handlers.push(restoreHandler);
+
+  return () => {
+    handlers.forEach((h) => h());
+  };
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -367,6 +499,8 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     inputCb,
     mediaInteractionCb,
     styleSheetRuleCb,
+    canvasMutationCb,
+    fontCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -416,9 +550,21 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     styleSheetRuleCb(...p);
   };
+  o.canvasMutationCb = (...p: Arguments<canvasMutationCallback>) => {
+    if (hooks.canvasMutation) {
+      hooks.canvasMutation(...p);
+    }
+    canvasMutationCb(...p);
+  };
+  o.fontCb = (...p: Arguments<fontCallback>) => {
+    if (hooks.font) {
+      hooks.font(...p);
+    }
+    fontCb(...p);
+  };
 }
 
-export default function initObservers(
+export function initObservers(
   o: observerParam,
   hooks: hooksParam = {},
 ): listenerHandler {
@@ -428,6 +574,7 @@ export default function initObservers(
     o.blockClass,
     o.inlineStylesheet,
     o.maskInputOptions,
+    o.recordCanvas,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
   const mouseInteractionHandler = initMouseInteractionObserver(
@@ -453,6 +600,10 @@ export default function initObservers(
     o.blockClass,
   );
   const styleSheetObserver = initStyleSheetObserver(o.styleSheetRuleCb);
+  const canvasMutationObserver = o.recordCanvas
+    ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass)
+    : () => {};
+  const fontObserver = o.collectFonts ? initFontObserver(o.fontCb) : () => {};
 
   return () => {
     mutationObserver.disconnect();
@@ -463,5 +614,7 @@ export default function initObservers(
     inputHandler();
     mediaInteractionHandler();
     styleSheetObserver();
+    canvasMutationObserver();
+    fontObserver();
   };
 }

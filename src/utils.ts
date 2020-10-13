@@ -124,18 +124,18 @@ export function patch(
   // tslint:disable-next-line:no-any
   replacement: (...args: any[]) => any,
 ): () => void {
-  if (!(name in source)) {
-    return () => {};
-  }
+  try {
+    if (!(name in source)) {
+      return () => {};
+    }
 
-  const original = source[name] as () => unknown;
-  const wrapped = replacement(original);
+    const original = source[name] as () => unknown;
+    const wrapped = replacement(original);
 
-  // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
-  // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
-  // tslint:disable-next-line:strict-type-predicates
-  if (typeof wrapped === 'function') {
-    try {
+    // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
+    // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
+    // tslint:disable-next-line:strict-type-predicates
+    if (typeof wrapped === 'function') {
       wrapped.prototype = wrapped.prototype || {};
       Object.defineProperties(wrapped, {
         __rrweb_original__: {
@@ -143,17 +143,18 @@ export function patch(
           value: original,
         },
       });
-    } catch {
-      // This can throw if multiple fill happens on a global object like XMLHttpRequest
-      // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
     }
+
+    source[name] = wrapped;
+
+    return () => {
+      source[name] = original;
+    };
+  } catch {
+    return () => {};
+    // This can throw if multiple fill happens on a global object like XMLHttpRequest
+    // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
   }
-
-  source[name] = wrapped;
-
-  return () => {
-    source[name] = original;
-  };
 }
 
 export function getWindowHeight(): number {
@@ -220,10 +221,15 @@ export function isTouchEvent(
   return Boolean((event as TouchEvent).changedTouches);
 }
 
-export function polyfill() {
-  if ('NodeList' in window && !NodeList.prototype.forEach) {
-    NodeList.prototype.forEach = (Array.prototype
+export function polyfill(win = window) {
+  if ('NodeList' in win && !win.NodeList.prototype.forEach) {
+    win.NodeList.prototype.forEach = (Array.prototype
       .forEach as unknown) as NodeList['forEach'];
+  }
+
+  if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
+    win.DOMTokenList.prototype.forEach = (Array.prototype
+      .forEach as unknown) as DOMTokenList['forEach'];
   }
 }
 
@@ -306,9 +312,11 @@ export class TreeIndex {
     const deepRemoveFromMirror = (id: number) => {
       this.removeIdSet.add(id);
       const node = mirror.getNode(id);
-      node?.childNodes.forEach((childNode) =>
-        deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id),
-      );
+      node?.childNodes.forEach((childNode) => {
+        if ('__sn' in childNode) {
+          deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id);
+        }
+      });
     };
     const deepRemoveFromTreeIndex = (node: TreeNode) => {
       this.removeIdSet.add(node.id);

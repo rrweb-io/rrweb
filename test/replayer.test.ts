@@ -5,7 +5,11 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
 import { Suite } from 'mocha';
-import { launchPuppeteer, sampleEvents as events } from './utils';
+import {
+  launchPuppeteer,
+  sampleEvents as events,
+  sampleStyleSheetRemoveEvents as stylesheetRemoveEvents
+} from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 
 interface ISuite extends Suite {
@@ -143,5 +147,30 @@ describe('replayer', function (this: ISuite) {
     expect(actionLength).to.equal(
       styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500).length,
     );
+  });
+
+  it('can handle removing style elements', async () => {
+    await this.page.evaluate(`events = ${JSON.stringify(stylesheetRemoveEvents)}`);
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).to.equal(
+      stylesheetRemoveEvents.filter((e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500).length,
+    );
+  });
+
+  it('can stream events in live mode', async () => {
+    const status = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, {
+        liveMode: true
+      });
+      replayer.startLive();
+      replayer.service.state.value;
+    `);
+    expect(status).to.equal('live');
   });
 });

@@ -93,6 +93,9 @@ class DoubleLinkedList {
         current.next.previous = current.previous;
       }
     }
+    if (n.__ln) {
+      delete n.__ln;
+    }
     this.length--;
   }
 }
@@ -106,10 +109,12 @@ function isINode(n: Node | INode): n is INode {
  * controls behaviour of a MutationObserver
  */
 export default class MutationBuffer {
+  private frozen: boolean = false;
+
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
   private removes: removedNodeMutation[] = [];
-  private adds: addedNodeMutation[] = [];
+  private mapRemoves: Node[] = [];
 
   private movedMap: Record<string, true> = {};
 
@@ -138,21 +143,46 @@ export default class MutationBuffer {
   private blockClass: blockClass;
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
+  private recordCanvas: boolean;
 
-  constructor(
+  public init(
     cb: mutationCallBack,
     blockClass: blockClass,
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
+    recordCanvas: boolean,
   ) {
     this.blockClass = blockClass;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
+    this.recordCanvas = recordCanvas;
     this.emissionCallback = cb;
+  }
+
+  public freeze() {
+    this.frozen = true;
+  }
+
+  public unfreeze() {
+    this.frozen = false;
+  }
+
+  public isFrozen() {
+    return this.frozen;
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation);
+    if (!this.frozen) {
+      this.emit();
+    }
+  };
+
+  public emit = () => {
+    // delay any modification of the mirror until this function
+    // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
+
+    const adds: addedNodeMutation[] = [];
 
     /**
      * Sometimes child node may be pushed before its newly added
@@ -176,7 +206,7 @@ export default class MutationBuffer {
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
-      this.adds.push({
+      adds.push({
         parentId,
         nextId,
         node: serializeNodeWithId(
@@ -187,9 +217,14 @@ export default class MutationBuffer {
           true,
           this.inlineStylesheet,
           this.maskInputOptions,
+          this.recordCanvas,
         )!,
       });
     };
+
+    while (this.mapRemoves.length) {
+      mirror.removeNodeFromMap(this.mapRemoves.shift() as INode);
+    }
 
     for (const n of this.movedSet) {
       pushAdd(n);
@@ -246,10 +281,6 @@ export default class MutationBuffer {
       pushAdd(node.value);
     }
 
-    this.emit();
-  };
-
-  public emit = () => {
     const payload = {
       texts: this.texts
         .map((text) => ({
@@ -266,7 +297,7 @@ export default class MutationBuffer {
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => mirror.has(attribute.id)),
       removes: this.removes,
-      adds: this.adds,
+      adds: adds,
     };
     // payload may be empty if the mutations happened in some blocked elements
     if (
@@ -277,17 +308,17 @@ export default class MutationBuffer {
     ) {
       return;
     }
-    this.emissionCallback(payload);
 
     // reset
     this.texts = [];
     this.attributes = [];
     this.removes = [];
-    this.adds = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
     this.movedMap = {};
+
+    this.emissionCallback(payload);
   };
 
   private processMutation = (m: mutationRecord) => {
@@ -366,7 +397,7 @@ export default class MutationBuffer {
               id: nodeId,
             });
           }
-          mirror.removeNodeFromMap(n as INode);
+          this.mapRemoves.push(n);
         });
         break;
       }

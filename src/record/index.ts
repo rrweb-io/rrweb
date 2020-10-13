@@ -1,5 +1,5 @@
 import { snapshot, MaskInputOptions } from 'rrweb-snapshot';
-import initObservers from './observer';
+import { initObservers, mutationBuffer } from './observer';
 import {
   mirror,
   on,
@@ -41,6 +41,8 @@ function record<T = eventWithTime>(
     packFn,
     sampling = {},
     mousemoveWait,
+    recordCanvas = false,
+    collectFonts = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -79,6 +81,20 @@ function record<T = eventWithTime>(
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
+    if (
+      mutationBuffer.isFrozen() &&
+	e.type !== EventType.FullSnapshot &&
+      !(
+        e.type == EventType.IncrementalSnapshot &&
+        e.data.source == IncrementalSource.Mutation
+      )
+    ) {
+      // we've got a user initiated event so first we need to apply
+      // all DOM changes that have been buffering during paused state
+      mutationBuffer.emit();
+      mutationBuffer.unfreeze();
+    }
+
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
@@ -108,11 +124,15 @@ function record<T = eventWithTime>(
       }),
       isCheckout,
     );
+
+    let wasFrozen = mutationBuffer.isFrozen();
+    mutationBuffer.freeze();  // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(
       document,
       blockClass,
       inlineStylesheet,
       maskInputOptions,
+      recordCanvas,
     );
 
     if (!node) {
@@ -144,6 +164,10 @@ function record<T = eventWithTime>(
         },
       }),
     );
+    if (!wasFrozen) {
+      mutationBuffer.emit();  // emit anything queued up now
+      mutationBuffer.unfreeze();
+    }
   }
 
   try {
@@ -244,11 +268,33 @@ function record<T = eventWithTime>(
                   },
                 }),
               ),
+            canvasMutationCb: (p) =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.CanvasMutation,
+                    ...p,
+                  },
+                }),
+              ),
+            fontCb: (p) =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Font,
+                    ...p,
+                  },
+                }),
+              ),
             blockClass,
             ignoreClass,
             maskInputOptions,
             inlineStylesheet,
             sampling,
+            recordCanvas,
+            collectFonts,
           },
           hooks,
         ),
@@ -298,6 +344,10 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
       },
     }),
   );
+};
+
+record.freezePage = () => {
+  mutationBuffer.freeze();
 };
 
 export default record;

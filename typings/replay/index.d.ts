@@ -10,11 +10,14 @@ export declare class Replayer {
     get timer(): Timer;
     config: playerConfig;
     private mouse;
+    private mouseTail;
+    private tailPositions;
     private emitter;
     private nextUserInteractionEvent;
     private legacy_missingNodeRetryMap;
     private treeIndex;
     private fragmentParentMap;
+    private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): void;
     setConfig(config: Partial<playerConfig>): void;
@@ -33,15 +36,18 @@ export declare class Replayer {
     private getCastFn;
     private rebuildFullSnapshot;
     private waitForStylesheetLoad;
+    private preloadAllImages;
     private applyIncremental;
     private applyMutation;
     private applyScroll;
     private applyInput;
     private legacy_resolveMissingNode;
     private moveAndHover;
+    private drawMouseTail;
     private hoverElements;
     private isUserInteraction;
     private backToNormal;
     private warnNodeNotFound;
+    private warnCanvasMutationFailed;
     private debugNodeNotFound;
 }

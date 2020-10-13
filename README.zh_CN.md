@@ -22,6 +22,8 @@ rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所
 
 [**📚 rrweb 使用指南 📚**](./guide.zh_CN.md)
 
+[**场景示例**](./docs/recipes/index.zh_CN.md)
+
 ## 项目结构
 
 rrweb 主要由 3 部分组成：

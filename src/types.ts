@@ -5,6 +5,7 @@ import {
   MaskInputOptions,
 } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
+import { FontFaceDescriptors } from 'css-font-loading-module';
 
 export enum EventType {
   DomContentLoaded,
@@ -70,6 +71,8 @@ export enum IncrementalSource {
   TouchMove,
   MediaInteraction,
   StyleSheetRule,
+  CanvasMutation,
+  Font,
 }
 
 export type mutationData = {
@@ -106,6 +109,14 @@ export type styleSheetRuleData = {
   source: IncrementalSource.StyleSheetRule;
 } & styleSheetRuleParam;
 
+export type canvasMutationData = {
+  source: IncrementalSource.CanvasMutation;
+} & canvasMutationParam;
+
+export type fontData = {
+  source: IncrementalSource.Font;
+} & fontParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -114,7 +125,9 @@ export type incrementalData =
   | viewportResizeData
   | inputData
   | mediaInteractionData
-  | styleSheetRuleData;
+  | styleSheetRuleData
+  | canvasMutationData
+  | fontData;
 
 export type event =
   | domContentLoadedEvent
@@ -165,6 +178,8 @@ export type recordOptions<T> = {
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
+  recordCanvas?: boolean;
+  collectFonts?: boolean;
   // departed, please use sampling options
   mousemoveWait?: number;
 };
@@ -182,7 +197,11 @@ export type observerParam = {
   maskInputOptions: MaskInputOptions;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
+  canvasMutationCb: canvasMutationCallback;
+  fontCb: fontCallback;
   sampling: SamplingStrategy;
+  recordCanvas: boolean;
+  collectFonts: boolean;
 };
 
 export type hooksParam = {
@@ -194,6 +213,8 @@ export type hooksParam = {
   input?: inputCallback;
   mediaInteaction?: mediaInteractionCallback;
   styleSheetRule?: styleSheetRuleCallback;
+  canvasMutation?: canvasMutationCallback;
+  font?: fontCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -309,6 +330,24 @@ export type styleSheetRuleParam = {
 
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
+export type canvasMutationCallback = (p: canvasMutationParam) => void;
+
+export type canvasMutationParam = {
+  id: number;
+  property: string;
+  args: Array<unknown>;
+  setter?: true;
+};
+
+export type fontParam = {
+  family: string;
+  fontSource: string;
+  buffer: boolean;
+  descriptors?: FontFaceDescriptors;
+};
+
+export type fontCallback = (p: fontParam) => void;
+
 export type viewportResizeDimention = {
   width: number;
   height: number;
@@ -362,6 +401,15 @@ export type playerConfig = {
   liveMode: boolean;
   insertStyleRules: string[];
   triggerFocus: boolean;
+  UNSAFE_replayCanvas: boolean;
+  mouseTail:
+    | boolean
+    | {
+        duration?: number;
+        lineCap?: string;
+        lineWidth?: number;
+        strokeStyle?: string;
+      };
   unpackFn?: UnpackFn;
 };
 
@@ -389,6 +437,7 @@ export type Handler = (event?: unknown) => void;
 export type Emitter = {
   on(type: string, handler: Handler): void;
   emit(type: string, event?: unknown): void;
+  off(type: string, handler: Handler): void;
 };
 
 export type Arguments<T> = T extends (...payload: infer U) => unknown

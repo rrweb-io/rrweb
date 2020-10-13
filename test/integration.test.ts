@@ -33,7 +33,8 @@ describe('record integration tests', function (this: ISuite) {
           window.snapshots.push(event);
         },
         maskAllInputs: ${options.maskAllInputs},
-        maskInputOptions: ${JSON.stringify(options.maskAllInputs)}
+        maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
+        recordCanvas: ${options.recordCanvas}
       });
     </script>
     </body>
@@ -136,6 +137,32 @@ describe('record integration tests', function (this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'select2');
+  });
+
+  it('can freeze mutations', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      ul.appendChild(li);
+      li.setAttribute('foo', 'bar');
+      document.body.setAttribute('test', 'true');
+    });
+    await page.evaluate('rrweb.freezePage()');
+    await page.evaluate(() => {
+      document.body.setAttribute('test', 'bad');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      const li = document.createElement('li');
+      li.setAttribute('bad-attr', 'bad');
+      li.innerText = 'bad text';
+      ul.appendChild(li);
+      document.body.removeChild(ul);
+    });
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'frozen');
   });
 
   it('should not record input events on ignored elements', async () => {
@@ -242,6 +269,19 @@ describe('record integration tests', function (this: ISuite) {
     await page.click('.toggle');
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'react-styled-components');
+  });
+
+  it('should record canvas mutations', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'canvas.html', {
+        recordCanvas: true,
+      }),
+    );
+    await page.waitFor(50);
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'canvas');
   });
 
   it('will serialize node before record', async () => {

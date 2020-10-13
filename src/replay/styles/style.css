@@ -24,6 +24,10 @@
 .replayer-mouse.active::after {
   animation: click 0.2s ease-in-out 1;
 }
+.replayer-mouse-tail {
+  position: absolute;
+  pointer-events: none;
+}
 
 @keyframes click {
   0% {

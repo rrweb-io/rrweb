@@ -12,6 +12,7 @@ export declare class Timer {
     clear(): void;
     setSpeed(speed: number): void;
     toggleLiveMode(mode: boolean): void;
+    isActive(): boolean;
     private findActionIndex;
 }
 export declare function addDelay(event: eventWithTime, baselineTime: number): number;

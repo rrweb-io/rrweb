@@ -10,7 +10,7 @@ export class Timer {
   public speed: number;
 
   private actions: actionWithDelay[];
-  private raf: number;
+  private raf: number | null = null;
   private liveMode: boolean;
 
   constructor(actions: actionWithDelay[] = [], speed: number) {
@@ -61,6 +61,7 @@ export class Timer {
   public clear() {
     if (this.raf) {
       cancelAnimationFrame(this.raf);
+      this.raf = null;
     }
     this.actions.length = 0;
   }
@@ -71,6 +72,10 @@ export class Timer {
 
   public toggleLiveMode(mode: boolean) {
     this.liveMode = mode;
+  }
+
+  public isActive() {
+    return this.raf !== null;
   }
 
   private findActionIndex(action: actionWithDelay): number {
