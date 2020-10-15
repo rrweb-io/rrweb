@@ -35,10 +35,7 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     return rules
-      ? Array.from(rules).reduce(
-          (prev, cur) => prev + getCssRuleString(cur),
-          '',
-        )
+      ? Array.from(rules).map(getCssRuleString).join('')
       : null;
   } catch (error) {
     return null;
