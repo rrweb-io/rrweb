@@ -5,7 +5,7 @@ export default class MutationBuffer {
     private texts;
     private attributes;
     private removes;
-    private adds;
+    private mapRemoves;
     private movedMap;
     private addedSet;
     private movedSet;
