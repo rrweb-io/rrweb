@@ -157,7 +157,7 @@ describe('record', function (this: ISuite) {
     expect(this.events[35].type).to.equal(EventType.FullSnapshot);
   });
 
-  it('is safe to checkout during async callbacks', async () => {
+  it.only('is safe to checkout during async callbacks', async () => {
     await this.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({

@@ -227,6 +227,12 @@ export default class MutationBuffer {
     }
 
     for (const n of this.movedSet) {
+      if (
+        isParentRemoved(this.removes, n) &&
+        !this.movedSet.has(n.parentNode!)
+      ) {
+        continue;
+      }
       pushAdd(n);
     }
 
