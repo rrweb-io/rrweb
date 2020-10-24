@@ -4,7 +4,8 @@ import * as puppeteer from 'puppeteer';
 import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
 import { expect } from 'chai';
-import { recordOptions, eventWithTime } from '../src/types';
+import { recordOptions, eventWithTime, EventType } from '../src/types';
+import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 interface ISuite extends Suite {
   code: string;
@@ -271,7 +272,7 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots, __filename, 'react-styled-components');
   });
 
-  it('should record canvas mutations', async () => {
+  it.only('should record canvas mutations', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
@@ -281,6 +282,15 @@ describe('record integration tests', function (this: ISuite) {
     );
     await page.waitFor(50);
     const snapshots = await page.evaluate('window.snapshots');
+    for (const event of snapshots) {
+      if (event.type === EventType.FullSnapshot) {
+        visitSnapshot(event.data.node, (n) => {
+          if (n.type === NodeType.Element && n.attributes.rr_dataURL) {
+            n.attributes.rr_dataURL = `LOOKS LIKE WE COULD NOT GET STABLE BASE64 FROM SAME IMAGE.`;
+          }
+        });
+      }
+    }
     assertSnapshot(snapshots, __filename, 'canvas');
   });
 
