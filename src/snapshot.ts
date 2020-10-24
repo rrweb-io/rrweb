@@ -162,10 +162,34 @@ export function transformAttribute(
   }
 }
 
+export function _isBlockedElement(
+  element: HTMLElement,
+  blockClass: string | RegExp,
+  blockSelector: string | null,
+): boolean {
+  if (typeof blockClass === 'string') {
+    if (element.classList.contains(blockClass)) {
+      return true;
+    }
+  } else {
+    element.classList.forEach((className) => {
+      if (blockClass.test(className)) {
+        return true;
+      }
+    });
+  }
+  if (blockSelector) {
+    return element.matches(blockSelector)
+  }
+
+  return false;
+}
+
 function serializeNode(
   n: Node,
   doc: Document,
   blockClass: string | RegExp,
+  blockSelector: string | null,
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions = {},
   recordCanvas: boolean,
@@ -184,16 +208,7 @@ function serializeNode(
         systemId: (n as DocumentType).systemId,
       };
     case n.ELEMENT_NODE:
-      let needBlock = false;
-      if (typeof blockClass === 'string') {
-        needBlock = (n as HTMLElement).classList.contains(blockClass);
-      } else {
-        (n as HTMLElement).classList.forEach((className) => {
-          if (blockClass.test(className)) {
-            needBlock = true;
-          }
-        });
-      }
+      const needBlock = _isBlockedElement(n as HTMLElement, blockClass, blockSelector);
       const tagName = getValidTagName((n as HTMLElement).tagName);
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
@@ -406,6 +421,7 @@ export function serializeNodeWithId(
   doc: Document,
   map: idNodeMap,
   blockClass: string | RegExp,
+  blockSelector: string | null,
   skipChild = false,
   inlineStylesheet = true,
   maskInputOptions?: MaskInputOptions,
@@ -417,6 +433,7 @@ export function serializeNodeWithId(
     n,
     doc,
     blockClass,
+    blockSelector,
     inlineStylesheet,
     maskInputOptions,
     recordCanvas || false,
@@ -472,6 +489,7 @@ export function serializeNodeWithId(
         doc,
         map,
         blockClass,
+        blockSelector,
         skipChild,
         inlineStylesheet,
         maskInputOptions,
@@ -494,6 +512,7 @@ function snapshot(
   maskAllInputsOrOptions: boolean | MaskInputOptions,
   slimDOMSensibleOrOptions: boolean | SlimDOMOptions,
   recordCanvas?: boolean,
+  blockSelector: string | null = null,
 ): [serializedNodeWithId | null, idNodeMap] {
   const idNodeMap: idNodeMap = {};
   const maskInputOptions: MaskInputOptions =
@@ -543,6 +562,7 @@ function snapshot(
       n,
       idNodeMap,
       blockClass,
+      blockSelector,
       false,
       inlineStylesheet,
       maskInputOptions,
