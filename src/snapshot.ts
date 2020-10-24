@@ -570,4 +570,9 @@ export function visitSnapshot(
   walk(node);
 }
 
+export function cleanupSnapshot() {
+  // allow a new recording to start numbering nodes from scratch
+  _id = 1;
+}
+
 export default snapshot;
