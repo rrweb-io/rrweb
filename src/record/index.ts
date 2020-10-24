@@ -83,7 +83,7 @@ function record<T = eventWithTime>(
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
       mutationBuffer.isFrozen() &&
-	e.type !== EventType.FullSnapshot &&
+      e.type !== EventType.FullSnapshot &&
       !(
         e.type == EventType.IncrementalSnapshot &&
         e.data.source == IncrementalSource.Mutation
@@ -126,12 +126,14 @@ function record<T = eventWithTime>(
     );
 
     let wasFrozen = mutationBuffer.isFrozen();
-    mutationBuffer.freeze();  // don't allow any mirror modifications during snapshotting
+    mutationBuffer.freeze(); // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(
       document,
       blockClass,
       inlineStylesheet,
       maskInputOptions,
+      // TODO: bypass slim DOM options
+      false,
       recordCanvas,
     );
 
@@ -165,7 +167,7 @@ function record<T = eventWithTime>(
       }),
     );
     if (!wasFrozen) {
-      mutationBuffer.emit();  // emit anything queued up now
+      mutationBuffer.emit(); // emit anything queued up now
       mutationBuffer.unfreeze();
     }
   }
