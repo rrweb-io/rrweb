@@ -27,7 +27,13 @@ import {
   inputData,
   canvasMutationData,
 } from '../types';
-import { mirror, polyfill, TreeIndex } from '../utils';
+import {
+  mirror,
+  polyfill,
+  TreeIndex,
+  queueToResolveTrees,
+  iterateResolveTree,
+} from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
@@ -746,17 +752,19 @@ export class Replayer {
         }
 
         const styleEl = (target as Node) as HTMLStyleElement;
-        const parent = ((target.parentNode as unknown) as INode);
+        const parent = (target.parentNode as unknown) as INode;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
         let placeholderNode;
 
         if (usingVirtualParent) {
           /**
-           * styleEl.sheet is only accessible if the styleEl is part of the 
+           * styleEl.sheet is only accessible if the styleEl is part of the
            * dom. This doesn't work on DocumentFragments so we have to re-add
            * it to the dom temporarily.
            */
-          const domParent = this.fragmentParentMap.get((target.parentNode as unknown) as INode);
+          const domParent = this.fragmentParentMap.get(
+            (target.parentNode as unknown) as INode,
+          );
           placeholderNode = document.createTextNode('');
           parent.replaceChild(placeholderNode, target);
           domParent!.appendChild(target);
@@ -985,21 +993,29 @@ export class Replayer {
 
     let startTime = Date.now();
     while (queue.length) {
-      /**
-       * Looks like this check is killing the performance
-       */
-      // if (
-      //   queue.every(
-      //     (m) => !Boolean(mirror.getNode(m.parentId)) || nextNotInDOM(m),
-      //   )
-      // ) {
-      //   return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
-      // }
-      if (Date.now() - startTime > 5000) {
-        return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
+      // transform queue to resolve tree
+      const resolveTrees = queueToResolveTrees(queue);
+      queue.length = 0;
+      if (Date.now() - startTime > 500) {
+        this.warn(
+          'Timeout in the loop, please check the resolve tree data:',
+          resolveTrees,
+        );
+        break;
       }
-      const mutation = queue.shift()!;
-      appendNode(mutation);
+      for (const tree of resolveTrees) {
+        let parent = mirror.getNode(tree.value.parentId);
+        if (!parent) {
+          this.debug(
+            'Drop resolve tree since there is no parent for the root node.',
+            tree,
+          );
+        } else {
+          iterateResolveTree(tree, (mutation) => {
+            appendNode(mutation);
+          });
+        }
+      }
     }
 
     if (Object.keys(legacy_missingNodeMap).length) {
@@ -1200,10 +1216,7 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
-    if (!this.config.showWarning) {
-      return;
-    }
-    console.warn(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+    this.warn(`Node with id '${id}' not found in`, d);
   }
 
   private warnCanvasMutationFailed(
@@ -1211,12 +1224,7 @@ export class Replayer {
     id: number,
     error: unknown,
   ) {
-    console.warn(
-      REPLAY_CONSOLE_PREFIX,
-      `Has error on update canvas '${id}'`,
-      d,
-      error,
-    );
+    this.warn(`Has error on update canvas '${id}'`, d, error);
   }
 
   private debugNodeNotFound(d: incrementalData, id: number) {
@@ -1226,10 +1234,21 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
+    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+  }
+
+  private warn(...args: Parameters<typeof console.warn>) {
+    if (!this.config.showWarning) {
+      return;
+    }
+    console.warn(REPLAY_CONSOLE_PREFIX, ...args);
+  }
+
+  private debug(...args: Parameters<typeof console.log>) {
     if (!this.config.showDebug) {
       return;
     }
     // tslint:disable-next-line: no-console
-    console.log(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+    console.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }
