@@ -214,9 +214,11 @@ export default class MutationBuffer {
           document,
           mirror.map,
           this.blockClass,
+          null,
           true,
           this.inlineStylesheet,
           this.maskInputOptions,
+          undefined,
           this.recordCanvas,
         )!,
       });

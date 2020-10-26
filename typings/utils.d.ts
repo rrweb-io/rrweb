@@ -45,3 +45,11 @@ export declare class TreeIndex {
     };
     private reset;
 }
+declare type ResolveTree = {
+    value: addedNodeMutation;
+    children: ResolveTree[];
+    parent: ResolveTree | null;
+};
+export declare function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[];
+export declare function iterateResolveTree(tree: ResolveTree, cb: (mutation: addedNodeMutation) => unknown): void;
+export {};

@@ -50,4 +50,6 @@ export declare class Replayer {
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;
+    private warn;
+    private debug;
 }
