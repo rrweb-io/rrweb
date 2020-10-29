@@ -27,32 +27,36 @@ export function on(
   return () => target.removeEventListener(type, fn, options);
 }
 
-export const mirror: Mirror = {
-  map: {},
-  getId(n) {
-    // if n is not a serialized INode, use -1 as its id.
-    if (!n.__sn) {
-      return -1;
-    }
-    return n.__sn.id;
-  },
-  getNode(id) {
-    return mirror.map[id] || null;
-  },
-  // TODO: use a weakmap to get rid of manually memory management
-  removeNodeFromMap(n) {
-    const id = n.__sn && n.__sn.id;
-    delete mirror.map[id];
-    if (n.childNodes) {
-      n.childNodes.forEach((child) =>
-        mirror.removeNodeFromMap((child as Node) as INode),
-      );
-    }
-  },
-  has(id) {
-    return mirror.map.hasOwnProperty(id);
-  },
-};
+export function createMirror (): Mirror {
+  return {
+    map: {},
+    getId(n) {
+      // if n is not a serialized INode, use -1 as its id.
+      if (!n.__sn) {
+        return -1;
+      }
+      return n.__sn.id;
+    },
+    getNode(id) {
+      return this.map[id] || null;
+    },
+    // TODO: use a weakmap to get rid of manually memory management
+    removeNodeFromMap(n) {
+      const id = n.__sn && n.__sn.id;
+      delete this.map[id];
+      if (n.childNodes) {
+        n.childNodes.forEach((child) =>
+          this.removeNodeFromMap((child as Node) as INode),
+        );
+      }
+    },
+    has(id) {
+      return this.map.hasOwnProperty(id);
+    },
+  };
+}
+
+export const mirror: Mirror = createMirror();
 
 // copy from underscore and modified
 export function throttle<T>(
