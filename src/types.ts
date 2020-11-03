@@ -174,6 +174,7 @@ export type recordOptions<T> = {
   ignoreClass?: string;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
+  maskInputFn?: MaskInputFn;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   packFn?: PackFn;
@@ -195,6 +196,7 @@ export type observerParam = {
   blockClass: blockClass;
   ignoreClass: string;
   maskInputOptions: MaskInputOptions;
+  maskInputFn?: MaskInputFn;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
   canvasMutationCb: canvasMutationCallback;
@@ -461,3 +463,5 @@ export enum ReplayerEvents {
   Flush = 'flush',
   StateChange = 'state-change',
 }
+
+export type MaskInputFn = (text: string) => string;
