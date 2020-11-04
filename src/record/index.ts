@@ -250,6 +250,7 @@ function record<T = eventWithTime>(
         );
       }),
     );
+    let iframeMap: any;
     const observe = (doc: Document, dimension: DocumentDimension) => {
       return initObservers(
         {
@@ -378,11 +379,17 @@ function record<T = eventWithTime>(
           slimDOMOptions,
         },
         hooks,
+        (i: HTMLIFrameElement) => {
+          iframeMap = getIframeDimensions();
+          const d = iframeMap.get(i);
+          console.assert(d, 'iframe not found in the dimension map');
+          return observe(i.contentDocument!, d || initDimension);
+        },
       );
     };
     const init = () => {
       takeFullSnapshot();
-      const iframeMap = getIframeDimensions();
+      iframeMap = getIframeDimensions();
       handlers.push(
         observe(document, initDimension),
         ...iframes.map((iframe) => {

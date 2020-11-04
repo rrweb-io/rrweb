@@ -65,6 +65,7 @@ function initMutationObserver(
   maskInputOptions: MaskInputOptions,
   recordCanvas: boolean,
   slimDOMOptions: SlimDOMOptions,
+  doIframe: any,
 ): MutationObserver {
   // see mutation.ts for details
   mutationBuffer.init(
@@ -75,6 +76,8 @@ function initMutationObserver(
     maskInputOptions,
     recordCanvas,
     slimDOMOptions,
+    doc,
+    doIframe,
   );
   let mutationBufferCtor =
     window.MutationObserver ||
@@ -104,7 +107,8 @@ function initMutationObserver(
   const observer = new mutationBufferCtor(
     mutationBuffer.processMutations.bind(mutationBuffer),
   );
-  observer.observe(document, {
+  console.log('ob', doc);
+  observer.observe(doc, {
     attributes: true,
     attributeOldValue: true,
     characterData: true,
@@ -352,7 +356,7 @@ function initInputObserver(
   const events = sampling.input === 'last' ? ['change'] : ['input', 'change'];
   const handlers: Array<
     listenerHandler | hookResetter
-  > = events.map((eventName) => on(eventName, eventHandler));
+  > = events.map((eventName) => on(eventName, eventHandler, doc));
   const propertyDescriptor = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
     'value',
@@ -731,6 +735,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
 export function initObservers(
   o: observerParam,
   hooks: hooksParam = {},
+  doIframe: any,
 ): listenerHandler {
   mergeHooks(o, hooks);
   const mutationObserver = initMutationObserver(
@@ -742,6 +747,7 @@ export function initObservers(
     o.maskInputOptions,
     o.recordCanvas,
     o.slimDOMOptions,
+    doIframe,
   );
   const mousemoveHandler = initMoveObserver(
     o.mousemoveCb,
