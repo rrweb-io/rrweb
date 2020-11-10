@@ -3681,6 +3681,21 @@ var rrweb = (function (exports) {
                     },
                 });
             }
+            if (typeof config.mouseTail !== 'undefined') {
+                if (config.mouseTail === false) {
+                    this.mouseTail && (this.mouseTail.style.display = 'none');
+                }
+                else {
+                    if (!this.mouseTail) {
+                        this.mouseTail = document.createElement('canvas');
+                        this.mouseTail.width = Number.parseFloat(this.iframe.width);
+                        this.mouseTail.height = Number.parseFloat(this.iframe.height);
+                        this.mouseTail.classList.add('replayer-mouse-tail');
+                        this.wrapper.insertBefore(this.mouseTail, this.iframe);
+                    }
+                    this.mouseTail.style.display = 'inherit';
+                }
+            }
         };
         Replayer.prototype.getMetaData = function () {
             var firstEvent = this.service.state.context.events[0];
@@ -3755,7 +3770,7 @@ var rrweb = (function (exports) {
             if (this.config.mouseTail !== false) {
                 this.mouseTail = document.createElement('canvas');
                 this.mouseTail.classList.add('replayer-mouse-tail');
-                this.mouseTail.style.display = 'none';
+                this.mouseTail.style.display = 'inherit';
                 this.wrapper.appendChild(this.mouseTail);
             }
             this.iframe = document.createElement('iframe');
@@ -3774,13 +3789,13 @@ var rrweb = (function (exports) {
         };
         Replayer.prototype.handleResize = function (dimension) {
             var e_5, _a;
+            this.iframe.style.display = 'inherit';
             try {
                 for (var _b = __values([this.mouseTail, this.iframe]), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var el = _c.value;
                     if (!el) {
                         continue;
                     }
-                    el.style.display = 'inherit';
                     el.setAttribute('width', String(dimension.width));
                     el.setAttribute('height', String(dimension.height));
                 }
