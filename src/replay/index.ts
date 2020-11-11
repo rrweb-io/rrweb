@@ -194,14 +194,17 @@ export class Replayer {
       }, 0);
     }
     if (firstFullsnapshot) {
-      this.rebuildFullSnapshot(
-        firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
-      );
+      setTimeout(() => {
+        this.rebuildFullSnapshot(
+          firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
+        );
+      }, 1);
     }
   }
 
   public on(event: string, handler: Handler) {
     this.emitter.on(event, handler);
+    return this;
   }
 
   public setConfig(config: Partial<playerConfig>) {
