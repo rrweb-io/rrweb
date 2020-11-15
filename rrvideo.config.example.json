@@ -1,0 +1,10 @@
+{
+  "width": 1400,
+  "height": 900,
+  "speed": 4,
+  "skipInactive": true,
+  "mouseTail": {
+    "strokeStyle": "green",
+    "lineWidth": 2
+  }
+}

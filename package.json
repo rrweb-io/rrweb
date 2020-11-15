@@ -1,0 +1,20 @@
+{
+  "name": "rrvideo",
+  "version": "0.1.0",
+  "description": "transform rrweb session into video",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "test",
+    "build": "tsc"
+  },
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "dependencies": {
+    "@types/minimist": "^1.2.1",
+    "@types/puppeteer": "^5.4.0",
+    "minimist": "^1.2.5",
+    "puppeteer": "^5.4.1",
+    "rrweb-player": "^0.6.5",
+    "typescript": "^4.0.5"
+  }
+}
