@@ -35,6 +35,7 @@ import {
   canvasMutationCallback,
   fontCallback,
   fontParam,
+  MaskInputFn,
 } from '../types';
 import MutationBuffer from './mutation';
 
@@ -223,6 +224,7 @@ function initInputObserver(
   blockClass: blockClass,
   ignoreClass: string,
   maskInputOptions: MaskInputOptions,
+  maskInputFn: MaskInputFn | undefined,
   sampling: SamplingStrategy,
 ): listenerHandler {
   function eventHandler(event: Event) {
@@ -252,7 +254,11 @@ function initInputObserver(
       ] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
-      text = '*'.repeat(text.length);
+      if(maskInputFn) {
+        text = maskInputFn(text)
+      } else {
+        text = '*'.repeat(text.length);
+      }
     }
     cbWithDedup(target, { text, isChecked });
     // if a radio was checked
@@ -593,6 +599,7 @@ export function initObservers(
     o.blockClass,
     o.ignoreClass,
     o.maskInputOptions,
+    o.maskInputFn,
     o.sampling,
   );
   const mediaInteractionHandler = initMediaInteractionObserver(
