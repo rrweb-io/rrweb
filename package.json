@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "test": "test",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "yarn build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
