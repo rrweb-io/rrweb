@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
+  "bin": {
+    "vtc": "build/cli.js"
+  },
+  "files": [
+    "build"
+  ],
   "scripts": {
     "test": "test",
     "build": "tsc"
