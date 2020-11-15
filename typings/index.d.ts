@@ -2,20 +2,22 @@ import { eventWithTime, playerConfig } from 'rrweb/typings/types';
 import { Replayer, mirror } from 'rrweb';
 import { SvelteComponent } from 'svelte';
 
+export type RRwebPlayerOptions = {
+  target: HTMLElement;
+  props: {
+    events: eventWithTime[];
+    width?: number;
+    height?: number;
+    autoPlay?: boolean;
+    speed?: number;
+    speedOption?: number[];
+    showController?: boolean;
+    tags?: Record<string, string>;
+  } & Partial<playerConfig>;
+};
+
 export default class rrwebPlayer extends SvelteComponent {
-  constructor(options: {
-    target: HTMLElement;
-    props: {
-      events: eventWithTime[];
-      width?: number;
-      height?: number;
-      autoPlay?: boolean;
-      speed?: number;
-      speedOption?: number[];
-      showController?: boolean;
-      tags?: Record<string, string>;
-    } & Partial<playerConfig>;
-  });
+  constructor(options: RRwebPlayerOptions);
 
   addEventListener(event: string, handler: (params: any) => unknown): void;
 
