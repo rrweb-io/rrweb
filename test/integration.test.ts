@@ -272,7 +272,7 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots, __filename, 'react-styled-components');
   });
 
-  it.only('should record canvas mutations', async () => {
+  it('should record canvas mutations', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
     await page.setContent(

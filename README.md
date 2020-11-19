@@ -7,6 +7,13 @@
 
 # rrweb
 
+<div style="padding: 0.5rem 0.75rem;text-align: center;background-color: black;font-weight: 700;">
+  <span style="background: #4950f6;color: white;padding: 6px 8px;border-radius: 3px;margin-right: 4px;font-weight: 12px;">New</span>
+  <a href="http://www.myriptide.com/rrweb-community/" target="_blank" style="color: white !important;border-bottom: 2px solid rgba(255, 255, 255, 0.6);text-decoration: none;">
+    The new adventure of the rrweb community</a
+  >
+</div>
+
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
@@ -23,6 +30,8 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 ## Guide
 
 [**📚 Read the rrweb guide here. 📚**](./guide.md)
+
+[**Recipes**](./docs/recipes/index.md)
 
 ## Project Structure
 
