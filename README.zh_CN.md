@@ -7,12 +7,7 @@
 
 # rrweb
 
-<div style="padding: 0.5rem 0.75rem;text-align: center;background-color: black;font-weight: 700;">
-  <span style="background: #4950f6;color: white;padding: 6px 8px;border-radius: 3px;margin-right: 4px;font-weight: 12px;">New</span>
-  <a href="http://www.myriptide.com/rrweb-community-cn/" target="_blank" style="color: white !important;border-bottom: 2px solid rgba(255, 255, 255, 0.6);text-decoration: none;">
-    rrweb 社区新的征程</a
-  >
-</div>
+**[rrweb 社区新的征程](http://www.myriptide.com/rrweb-community-cn/)**
 
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
