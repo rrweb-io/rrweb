@@ -440,11 +440,11 @@ export function parse(css: string, options: ParserOptions = {}) {
      * http://ostermiller.org/findcomment.html */
     return trim(m[0])
       .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
-      .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, m => {
+      .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
         return m.replace(/,/g, '\u200C');
       })
       .split(/\s*(?![^(]*\)),\s*/)
-      .map(s => {
+      .map((s) => {
         return s.replace(/\u200C/g, ',');
       });
   }
@@ -888,7 +888,7 @@ function addParent(obj: Stylesheet, parent?: Stylesheet) {
   for (const k of Object.keys(obj)) {
     const value = obj[k as keyof Stylesheet];
     if (Array.isArray(value)) {
-      value.forEach(v => {
+      value.forEach((v) => {
         addParent(v, childParent);
       });
     } else if (value && typeof value === 'object') {
