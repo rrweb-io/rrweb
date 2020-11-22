@@ -5,6 +5,12 @@ import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import pkg from './package.json';
 
+function toLoggerPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/logger/')
+    .replace('rrweb', 'rrweb-logger');
+}
+
 function toRecordPath(path) {
   return path
     .replace(/^([\w]+)\//, '$1/record/')
@@ -44,6 +50,12 @@ const namedExports = {
 };
 
 const baseConfigs = [
+  // logger only
+  {
+    input: './src/logger/index.ts',
+    name: 'rrwebLogger',
+    pathFn: toLoggerPath,
+  },
   // record only
   {
     input: './src/record/index.ts',

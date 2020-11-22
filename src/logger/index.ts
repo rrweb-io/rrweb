@@ -1,14 +1,12 @@
-import { createPlayerService } from '../replay/machine';
-import { Timer } from '../replay/timer';
+import { addDelay, Timer } from '../replay/timer';
 import {
+  actionWithDelay,
   event,
   EventType,
   eventWithTime,
-  incrementalData,
   IncrementalSource,
   logData,
 } from '../types';
-import * as mittProxy from 'mitt';
 
 type RecordOptions = {
   emit: (e: eventWithTime) => void;
@@ -65,7 +63,7 @@ export function recordLog(options: RecordOptions) {
                   source: IncrementalSource.Log,
                   level: 'log',
                   trace: '',
-                  payload: args.toString(),
+                  payload: args[0],
                 },
               }),
             );
@@ -94,12 +92,9 @@ export function recordLog(options: RecordOptions) {
     };
   }
 }
-// tslint:disable-next-line
-mitt = (mittProxy as any).default || mittProxy;
 export class replayLog {
   private replayConfig: ReplayConfig;
-  private service;
-  emitter = mitt();
+  private events: Array<eventWithTime>;
   constructor(events: Array<eventWithTime>, config: ReplayConfig) {
     const defaults = {
       level: ['log', 'info', 'warn', 'error', 'debug', 'assert', 'trace'],
@@ -108,22 +103,7 @@ export class replayLog {
     };
     this.replayConfig = defaults;
     Object.assign(this.replayConfig, defaults, config);
-    const timer = new Timer([], 1);
-    this.service = createPlayerService(
-      {
-        events: events.map((e) => {
-          return e as eventWithTime;
-        }),
-        timer,
-        timeOffset: 0,
-        baselineTime: 0,
-        lastPlayedEvent: null,
-      },
-      {
-        getCastFn: this.getCastFn,
-        emitter: this.emitter,
-      },
-    );
+    this.events = events;
   }
   private getCastFn(event: eventWithTime, isSync = false) {
     let castFn: () => void = () => {};
@@ -159,7 +139,20 @@ export class replayLog {
     return castFn;
   }
 
-  public play() {
-    this.service.send('PLAY');
+  public play(timeOffset = 0) {
+    const actions = new Array<actionWithDelay>();
+    for (const event of this.events) {
+      addDelay(event, this.events[0].timestamp);
+      const castFn = this.getCastFn(event, false);
+      actions.push({
+        doAction: () => {
+          castFn();
+        },
+        delay: event.delay!,
+      });
+    }
+    const timer = new Timer([], 1);
+    timer.addActions(actions);
+    timer.start();
   }
 }
