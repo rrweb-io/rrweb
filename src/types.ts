@@ -52,6 +52,11 @@ export type metaEvent = {
   };
 };
 
+export type logEvent = {
+  type: EventType.IncrementalSnapshot;
+  data: incrementalData;
+};
+
 export type customEvent<T = unknown> = {
   type: EventType.Custom;
   data: {
@@ -142,40 +147,8 @@ export type event =
   | fullSnapshotEvent
   | incrementalSnapshotEvent
   | metaEvent
-  | customEvent
-  | logEvent;
-
-export type logEvent = {
-  type: EventType.IncrementalSnapshot;
-  data: incrementalData;
-};
-
-type LogParam = {
-  level: LogLevel;
-  trace: Array<string>;
-  payload: Array<string>;
-};
-
-export type LogLevel =
-  | 'assert'
-  | 'clear'
-  | 'count'
-  | 'countReset'
-  | 'debug'
-  | 'dir'
-  | 'dirxml'
-  | 'error'
-  | 'group'
-  | 'groupCollapsed'
-  | 'groupEnd'
-  | 'info'
-  | 'log'
-  | 'table'
-  | 'time'
-  | 'timeEnd'
-  | 'timeLog'
-  | 'trace'
-  | 'warn';
+  | logEvent
+  | customEvent;
 
 export type eventWithTime = event & {
   timestamp: number;
@@ -225,6 +198,7 @@ export type recordOptions<T> = {
   collectFonts?: boolean;
   // departed, please use sampling options
   mousemoveWait?: number;
+  recordLog?: boolean | LogRecordOptions;
 };
 
 export type observerParam = {
@@ -244,6 +218,8 @@ export type observerParam = {
   styleSheetRuleCb: styleSheetRuleCallback;
   canvasMutationCb: canvasMutationCallback;
   fontCb: fontCallback;
+  logCb: logCallback;
+  logOptions: LogRecordOptions;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
   collectFonts: boolean;
@@ -261,6 +237,7 @@ export type hooksParam = {
   styleSheetRule?: styleSheetRuleCallback;
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
+  log?: logCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -392,7 +369,83 @@ export type fontParam = {
   descriptors?: FontFaceDescriptors;
 };
 
+export type LogLevel =
+  | 'assert'
+  | 'clear'
+  | 'count'
+  | 'countReset'
+  | 'debug'
+  | 'dir'
+  | 'dirxml'
+  | 'error'
+  | 'group'
+  | 'groupCollapsed'
+  | 'groupEnd'
+  | 'info'
+  | 'log'
+  | 'table'
+  | 'time'
+  | 'timeEnd'
+  | 'timeLog'
+  | 'trace'
+  | 'warn';
+
+/* fork from interface Console */
+// all kinds of console functions
+export type Logger = {
+  assert?: (value: any, message?: string, ...optionalParams: any[]) => void;
+  clear?: () => void;
+  count?: (label?: string) => void;
+  countReset?: (label?: string) => void;
+  debug?: (message?: any, ...optionalParams: any[]) => void;
+  dir?: (obj: any, options?: NodeJS.InspectOptions) => void;
+  dirxml?: (...data: any[]) => void;
+  error?: (message?: any, ...optionalParams: any[]) => void;
+  group?: (...label: any[]) => void;
+  groupCollapsed?: (label?: any[]) => void;
+  groupEnd?: () => void;
+  info?: (message?: any, ...optionalParams: any[]) => void;
+  log?: (message?: any, ...optionalParams: any[]) => void;
+  table?: (tabularData: any, properties?: ReadonlyArray<string>) => void;
+  time?: (label?: string) => void;
+  timeEnd?: (label?: string) => void;
+  timeLog?: (label?: string, ...data: any[]) => void;
+  trace?: (message?: any, ...optionalParams: any[]) => void;
+  warn?: (message?: any, ...optionalParams: any[]) => void;
+};
+
+// functions to replay log record
+export type ReplayLogger = {
+  assert?: (data: logData) => void;
+  clear?: (data: logData) => void;
+  count?: (data: logData) => void;
+  countReset?: (data: logData) => void;
+  debug?: (data: logData) => void;
+  dir?: (data: logData) => void;
+  dirxml?: (data: logData) => void;
+  error?: (data: logData) => void;
+  group?: (data: logData) => void;
+  groupCollapsed?: (data: logData) => void;
+  groupEnd?: (data: logData) => void;
+  info?: (data: logData) => void;
+  log?: (data: logData) => void;
+  table?: (data: logData) => void;
+  time?: (data: logData) => void;
+  timeEnd?: (data: logData) => void;
+  timeLog?: (data: logData) => void;
+  trace?: (data: logData) => void;
+  warn?: (data: logData) => void;
+};
+
+export type LogParam = {
+  level: LogLevel;
+  trace: Array<string>;
+  payload: Array<string>;
+};
+
 export type fontCallback = (p: fontParam) => void;
+
+export type logCallback = (p: LogParam) => void;
 
 export type viewportResizeDimention = {
   width: number;
@@ -458,6 +511,12 @@ export type playerConfig = {
         strokeStyle?: string;
       };
   unpackFn?: UnpackFn;
+  logConfig: LogReplayConfig;
+};
+
+export type LogReplayConfig = {
+  level?: Array<LogLevel> | undefined;
+  replayLogger: ReplayLogger | undefined;
 };
 
 export type playerMetaData = {
@@ -515,4 +574,10 @@ export type MaskInputFn = (text: string) => string;
 export type ElementState = {
   // [scrollLeft,scrollTop]
   scroll?: [number, number];
+}
+
+export type LogRecordOptions = {
+  level?: Array<LogLevel> | undefined;
+  lengthThreshold?: number;
+  logger?: Logger;
 };

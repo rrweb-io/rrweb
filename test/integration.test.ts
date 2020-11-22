@@ -29,13 +29,13 @@ describe('record integration tests', function (this: ISuite) {
       window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();
       window.snapshots = [];
       rrweb.record({
-        emit: event => {
-          console.log(event);
+        emit: event => {          
           window.snapshots.push(event);
         },
         maskAllInputs: ${options.maskAllInputs},
         maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
-        recordCanvas: ${options.recordCanvas}
+        recordCanvas: ${options.recordCanvas},
+        recordLog: ${options.recordLog},
       });
     </script>
     </body>
@@ -333,5 +333,38 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     expect(text).to.equal('4\n3\n2\n1\n5');
+  });
+
+  it('can record log mutation', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'log.html', {
+        recordLog: true,
+      }),
+    );
+
+    await page.evaluate(() => {
+      console.assert(0 == 0, 'assert');
+      console.count('count');
+      console.countReset('count');
+      console.debug('debug');
+      console.dir('dir');
+      console.dirxml('dirxml');
+      console.group();
+      console.groupCollapsed();
+      console.info('info');
+      console.log('log');
+      console.table('table');
+      console.time();
+      console.timeEnd();
+      console.timeLog();
+      console.trace('trace');
+      console.warn('warn');
+      console.clear();
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'log');
   });
 });

@@ -1,11 +1,18 @@
-// @ts-nocheck
-// tslint:disable
-function pathToSelector(node: Node) {
+/**
+ * this file is used to serialize log message to string
+ *
+ */
+
+/**
+ * transfer the node path in Event to string
+ * @param node the first node in a node path array
+ */
+function pathToSelector(node: HTMLElement): string | '' {
   if (!node || !node.outerHTML) {
-    return null;
+    return '';
   }
 
-  var path;
+  var path = '';
   while (node.parentElement) {
     var name = node.localName;
     if (!name) break;
@@ -35,18 +42,23 @@ function pathToSelector(node: Node) {
   return path;
 }
 
-export function stringify(o) {
+export function stringify(o: unknown) {
   return JSON.stringify(o, (_, o) => {
+    if (o === null || o === undefined) return o;
     if (o instanceof Event) {
-      const value = {};
+      const value: any = {};
       for (const key in o) {
-        if (Array.isArray(o[key])) value[key] = pathToSelector(o[key]);
-        else value[key] = o[key];
+        const v = (o as any)[key];
+        if (Array.isArray(v))
+          value[key] = pathToSelector(v.length ? v[0] : null);
+        else value[key] = v;
       }
       return value;
     } else if (o instanceof Node) {
-      return o ? o.outerHTML : '';
-    } else if (o instanceof Window) return o.toString();
+      if (o instanceof HTMLElement) return o ? o.outerHTML : '';
+      return o.nodeName;
+    } else if (o instanceof Object && Object.keys(o).length > 50)
+      return o.toString();
     return o;
   });
 }
