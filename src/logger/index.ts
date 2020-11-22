@@ -67,17 +67,11 @@ type ReplayLogger = {
   trace?: (data: logData) => void;
   warn?: (data: logData) => void;
 };
-function wrapEvent(e: event): eventWithTime {
-  return {
-    ...e,
-    timestamp: Date.now(),
-  };
-}
 
 function parseStack(
   stack: string | undefined,
   omitDepth: number = 1,
-): string[] {
+): Array<string> {
   let stacks: string[] = [];
   if (stack) {
     stacks = stack
@@ -89,6 +83,7 @@ function parseStack(
 }
 
 export function recordLog(options: RecordOptions) {
+  let logCount = 0;
   const defaults: RecordOptions = {
     emit: (event: eventWithTime): void => {},
     level: [
@@ -112,7 +107,7 @@ export function recordLog(options: RecordOptions) {
       'trace',
       'warn',
     ],
-    lengthThreshold: 10000,
+    lengthThreshold: 1000,
     logger: console,
   };
   const loggerOptions: RecordOptions = defaults;
@@ -126,7 +121,9 @@ export function recordLog(options: RecordOptions) {
       const originalOnError = window.onerror;
       window.onerror = (...args: any[]) => {
         originalOnError && originalOnError.apply(this, args);
-        const stack = parseStack(args[args.length - 1].stack, 0);
+        let stack: Array<string> = [];
+        if (args[args.length - 1] instanceof Error)
+          stack = parseStack(args[args.length - 1].stack, 0);
         const payload = [stringify(args[0])];
         loggerOptions.emit(
           wrapEvent({
@@ -159,19 +156,41 @@ export function recordLog(options: RecordOptions) {
         original.apply(this, args);
         const stack = parseStack(new Error().stack);
         const payload = args.map((s) => stringify(s));
-        loggerOptions.emit(
-          wrapEvent({
-            type: EventType.IncrementalSnapshot,
-            data: {
-              source: IncrementalSource.Log,
-              level: level,
-              trace: stack,
-              payload: payload,
-            },
-          }),
-        );
+        logCount++;
+        if (logCount < loggerOptions.lengthThreshold!)
+          loggerOptions.emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Log,
+                level: level,
+                trace: stack,
+                payload: payload,
+              },
+            }),
+          );
+        else if (logCount === loggerOptions.lengthThreshold)
+          loggerOptions.emit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Log,
+                level: 'warn',
+                trace: [],
+                payload: [
+                  stringify('The number of log records reached the threshold.'),
+                ],
+              },
+            }),
+          );
       };
     });
+  }
+  function wrapEvent(e: event): eventWithTime {
+    return {
+      ...e,
+      timestamp: Date.now(),
+    };
   }
 }
 export class replayLog {
@@ -239,6 +258,7 @@ export class replayLog {
   }
 
   private formatMessage(data: logData): string {
+    if (data.trace.length === 0) return '';
     const stackPrefix = '\n\tat ';
     let result = stackPrefix;
     result += data.trace.join(stackPrefix);
