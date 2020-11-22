@@ -4,6 +4,7 @@ import {
   event,
   EventType,
   eventWithTime,
+  incrementalData,
   IncrementalSource,
   logData,
 } from '../types';
@@ -12,16 +13,16 @@ type RecordOptions = {
   emit: (e: eventWithTime) => void;
   level?: Array<String> | undefined;
   lengthThreshold?: number;
-  logger?: logger;
+  logger?: Logger;
 };
 
 type ReplayConfig = {
   level?: Array<String> | undefined;
   lengthThreshold?: number;
-  logger: logger;
+  logger: Logger;
 };
 
-type logger = {
+type Logger = {
   log?: (message?: any, ...optionalParams: any[]) => void;
   info?: (message?: any, ...optionalParams: any[]) => void;
   warn?: (message?: any, ...optionalParams: any[]) => void;
@@ -29,12 +30,37 @@ type logger = {
   debug?: (message?: any, ...optionalParams: any[]) => void;
   assert?: (message?: any, ...optionalParams: any[]) => void;
   trace?: (message?: any, ...optionalParams: any[]) => void;
+  DefaultLog?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayLog?: (data: logData) => void;
+  oInfo?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayInfo?: (data: logData) => void;
+  oWarn?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayWarn?: (data: logData) => void;
+  oError?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayError?: (data: logData) => void;
+  oDebug?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayDebug?: (data: logData) => void;
+  oAssert?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayAssert?: (data: logData) => void;
+  oTrace?: (message?: any, ...optionalParams: any[]) => void;
+  ReplayTrace?: (data: logData) => void;
 };
 function wrapEvent(e: event): eventWithTime {
   return {
     ...e,
     timestamp: Date.now(),
   };
+}
+
+function parseStack(stack: string | undefined): string[] {
+  let stacks: string[] = [];
+  if (stack) {
+    stacks = stack
+      .split('at')
+      .splice(2)
+      .map((s) => s.trim());
+  }
+  return stacks;
 }
 
 export function recordLog(options: RecordOptions) {
@@ -54,22 +80,27 @@ export function recordLog(options: RecordOptions) {
     switch (levelType.toLowerCase()) {
       case 'log':
         if (logger.log) {
-          const originalLog = logger.log;
+          logger.DefaultLog = logger.log;
           logger.log = (...args) => {
+            const stack = parseStack(new Error().stack);
+            const payload = args.map((s) => JSON.stringify(s));
             loggerOptions.emit(
               wrapEvent({
                 type: EventType.IncrementalSnapshot,
                 data: {
                   source: IncrementalSource.Log,
                   level: 'log',
-                  trace: '',
-                  payload: args[0],
+                  trace: stack,
+                  payload: payload,
                 },
               }),
             );
-            originalLog.apply(this, args);
+            logger.DefaultLog!.apply(this, args);
           };
-          cancelHandlers.push(() => (logger.log = originalLog));
+          cancelHandlers.push(() => {
+            logger.log = logger.DefaultLog;
+            logger.DefaultLog = undefined;
+          });
         }
         break;
       case 'info':
@@ -96,16 +127,32 @@ export class replayLog {
   private replayConfig: ReplayConfig;
   private events: Array<eventWithTime>;
   constructor(events: Array<eventWithTime>, config: ReplayConfig) {
-    const defaults = {
+    const defaults: ReplayConfig = {
       level: ['log', 'info', 'warn', 'error', 'debug', 'assert', 'trace'],
       lengthThreshold: 10000,
-      logger: console,
+      logger: this.getConsoleLogger(console),
     };
     this.replayConfig = defaults;
     Object.assign(this.replayConfig, defaults, config);
     this.events = events;
   }
-  private getCastFn(event: eventWithTime, isSync = false) {
+
+  getConsoleLogger(logger: Logger): Logger {
+    logger.ReplayLog = (data) => {
+      logger.log!(this.formatMessage(data));
+    };
+    return logger;
+  }
+
+  private formatMessage(data: logData): string {
+    let result = '';
+    result += data.payload.map((s) => JSON.parse(s)).join(' ');
+    result += '\n\t';
+    result += data.trace.join('\n\t');
+    return result;
+  }
+
+  private getCastFn(event: eventWithTime) {
     let castFn: () => void = () => {};
     switch (event.type) {
       case EventType.IncrementalSnapshot:
@@ -114,7 +161,7 @@ export class replayLog {
             const logData = event.data as logData;
             switch (logData.level) {
               case 'log':
-                this.replayConfig.logger.log!(logData.payload);
+                this.replayConfig.logger.ReplayLog!(logData);
                 break;
               case 'info':
                 break;
@@ -143,7 +190,7 @@ export class replayLog {
     const actions = new Array<actionWithDelay>();
     for (const event of this.events) {
       addDelay(event, this.events[0].timestamp);
-      const castFn = this.getCastFn(event, false);
+      const castFn = this.getCastFn(event);
       actions.push({
         doAction: () => {
           castFn();
