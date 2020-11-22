@@ -156,14 +156,26 @@ type LogParam = {
   payload: Array<string>;
 };
 
-type LogLevel =
-  | 'log'
-  | 'info'
-  | 'warn'
-  | 'error'
-  | 'debug'
+export type LogLevel =
   | 'assert'
-  | 'trace';
+  | 'clear'
+  | 'count'
+  | 'countReset'
+  | 'debug'
+  | 'dir'
+  | 'dirxml'
+  | 'error'
+  | 'group'
+  | 'groupCollapsed'
+  | 'groupEnd'
+  | 'info'
+  | 'log'
+  | 'table'
+  | 'time'
+  | 'timeEnd'
+  | 'timeLog'
+  | 'trace'
+  | 'warn';
 
 export type eventWithTime = event & {
   timestamp: number;

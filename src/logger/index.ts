@@ -4,47 +4,68 @@ import {
   event,
   EventType,
   eventWithTime,
-  incrementalData,
   IncrementalSource,
   logData,
+  LogLevel,
 } from '../types';
+import { patch } from '../utils';
 import { stringify } from './json';
 
 type RecordOptions = {
   emit: (e: eventWithTime) => void;
-  level?: Array<String> | undefined;
+  level?: Array<LogLevel> | undefined;
   lengthThreshold?: number;
   logger?: Logger;
 };
 
 type ReplayConfig = {
-  level?: Array<String> | undefined;
+  level?: Array<LogLevel> | undefined;
   lengthThreshold?: number;
-  logger: Logger;
+  replayLogger: ReplayLogger | undefined;
 };
 
+/* fork from interface Console */
 type Logger = {
-  log?: (message?: any, ...optionalParams: any[]) => void;
-  info?: (message?: any, ...optionalParams: any[]) => void;
-  warn?: (message?: any, ...optionalParams: any[]) => void;
-  error?: (message?: any, ...optionalParams: any[]) => void;
+  assert?: (value: any, message?: string, ...optionalParams: any[]) => void;
+  clear?: () => void;
+  count?: (label?: string) => void;
+  countReset?: (label?: string) => void;
   debug?: (message?: any, ...optionalParams: any[]) => void;
-  assert?: (message?: any, ...optionalParams: any[]) => void;
+  dir?: (obj: any, options?: NodeJS.InspectOptions) => void;
+  dirxml?: (...data: any[]) => void;
+  error?: (message?: any, ...optionalParams: any[]) => void;
+  group?: (...label: any[]) => void;
+  groupCollapsed?: (label?: any[]) => void;
+  groupEnd?: () => void;
+  info?: (message?: any, ...optionalParams: any[]) => void;
+  log?: (message?: any, ...optionalParams: any[]) => void;
+  table?: (tabularData: any, properties?: ReadonlyArray<string>) => void;
+  time?: (label?: string) => void;
+  timeEnd?: (label?: string) => void;
+  timeLog?: (label?: string, ...data: any[]) => void;
   trace?: (message?: any, ...optionalParams: any[]) => void;
-  DefaultLog?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayLog?: (data: logData) => void;
-  oInfo?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayInfo?: (data: logData) => void;
-  oWarn?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayWarn?: (data: logData) => void;
-  oError?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayError?: (data: logData) => void;
-  oDebug?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayDebug?: (data: logData) => void;
-  oAssert?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayAssert?: (data: logData) => void;
-  oTrace?: (message?: any, ...optionalParams: any[]) => void;
-  ReplayTrace?: (data: logData) => void;
+  warn?: (message?: any, ...optionalParams: any[]) => void;
+};
+type ReplayLogger = {
+  assert?: (data: logData) => void;
+  clear?: (data: logData) => void;
+  count?: (data: logData) => void;
+  countReset?: (data: logData) => void;
+  debug?: (data: logData) => void;
+  dir?: (data: logData) => void;
+  dirxml?: (data: logData) => void;
+  error?: (data: logData) => void;
+  group?: (data: logData) => void;
+  groupCollapsed?: (data: logData) => void;
+  groupEnd?: (data: logData) => void;
+  info?: (data: logData) => void;
+  log?: (data: logData) => void;
+  table?: (data: logData) => void;
+  time?: (data: logData) => void;
+  timeEnd?: (data: logData) => void;
+  timeLog?: (data: logData) => void;
+  trace?: (data: logData) => void;
+  warn?: (data: logData) => void;
 };
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -53,75 +74,104 @@ function wrapEvent(e: event): eventWithTime {
   };
 }
 
-function parseStack(stack: string | undefined): string[] {
+function parseStack(
+  stack: string | undefined,
+  omitDepth: number = 1,
+): string[] {
   let stacks: string[] = [];
   if (stack) {
     stacks = stack
       .split('at')
-      .splice(2)
+      .splice(1 + omitDepth)
       .map((s) => s.trim());
   }
   return stacks;
 }
 
 export function recordLog(options: RecordOptions) {
-  const defaults = {
+  const defaults: RecordOptions = {
     emit: (event: eventWithTime): void => {},
-    level: ['log', 'info', 'warn', 'error', 'debug', 'assert', 'trace'],
+    level: [
+      'assert',
+      'clear',
+      'count',
+      'countReset',
+      'debug',
+      'dir',
+      'dirxml',
+      'error',
+      'group',
+      'groupCollapsed',
+      'groupEnd',
+      'info',
+      'log',
+      'table',
+      'time',
+      'timeEnd',
+      'timeLog',
+      'trace',
+      'warn',
+    ],
     lengthThreshold: 10000,
     logger: console,
   };
   const loggerOptions: RecordOptions = defaults;
   Object.assign(loggerOptions, defaults, options);
-
-  for (const levelType of loggerOptions.level!) {
-    const logger = loggerOptions.logger;
-    const cancelHandlers: any[] = [];
-    if (!logger) return;
-    switch (levelType.toLowerCase()) {
-      case 'log':
-        if (logger.log) {
-          logger.DefaultLog = logger.log;
-          logger.log = (...args) => {
-            logger.DefaultLog!.apply(this, args);
-            const stack = parseStack(new Error().stack);
-            const payload = args.map((s) => stringify(s));
-            loggerOptions.emit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Log,
-                  level: 'log',
-                  trace: stack,
-                  payload: payload,
-                },
-              }),
-            );
-          };
-          cancelHandlers.push(() => {
-            logger.log = logger.DefaultLog;
-            logger.DefaultLog = undefined;
-          });
-        }
-        break;
-      case 'info':
-        break;
-      case 'warn':
-        break;
-      case 'error':
-        break;
-      case 'debug':
-        break;
-      case 'assert':
-        break;
-      case 'trace':
-        break;
-      default:
-        break;
+  const logger = loggerOptions.logger;
+  const cancelHandlers: any[] = [];
+  if (!logger) return;
+  // add listener to thrown errors
+  if (loggerOptions.level!.includes('error')) {
+    if (window) {
+      const originalOnError = window.onerror;
+      window.onerror = (...args: any[]) => {
+        originalOnError && originalOnError.apply(this, args);
+        const stack = parseStack(args[args.length - 1].stack, 0);
+        const payload = [stringify(args[0])];
+        loggerOptions.emit(
+          wrapEvent({
+            type: EventType.IncrementalSnapshot,
+            data: {
+              source: IncrementalSource.Log,
+              level: 'error',
+              trace: stack,
+              payload: payload,
+            },
+          }),
+        );
+      };
+      cancelHandlers.push(() => {
+        window.onerror = originalOnError;
+      });
     }
-    return () => {
-      cancelHandlers.forEach((h) => h());
-    };
+  }
+  for (const levelType of loggerOptions.level!)
+    cancelHandlers.push(replace(logger, levelType));
+  return () => {
+    cancelHandlers.forEach((h) => h());
+  };
+
+  function replace(logger: Logger, level: LogLevel) {
+    if (!logger[level]) return () => {};
+    // replace the logger.{level}. return a restore function
+    return patch(logger, level, (original) => {
+      return (...args: any[]) => {
+        original.apply(this, args);
+        const stack = parseStack(new Error().stack);
+        const payload = args.map((s) => stringify(s));
+        loggerOptions.emit(
+          wrapEvent({
+            type: EventType.IncrementalSnapshot,
+            data: {
+              source: IncrementalSource.Log,
+              level: level,
+              trace: stack,
+              payload: payload,
+            },
+          }),
+        );
+      };
+    });
   }
 }
 export class replayLog {
@@ -129,25 +179,67 @@ export class replayLog {
   private events: Array<eventWithTime>;
   constructor(events: Array<eventWithTime>, config: ReplayConfig) {
     const defaults: ReplayConfig = {
-      level: ['log', 'info', 'warn', 'error', 'debug', 'assert', 'trace'],
+      level: [
+        'assert',
+        'clear',
+        'count',
+        'countReset',
+        'debug',
+        'dir',
+        'dirxml',
+        'error',
+        'group',
+        'groupCollapsed',
+        'groupEnd',
+        'info',
+        'log',
+        'table',
+        'time',
+        'timeEnd',
+        'timeLog',
+        'trace',
+        'warn',
+      ],
       lengthThreshold: 10000,
-      logger: this.getConsoleLogger(console),
+      replayLogger: undefined,
     };
     this.replayConfig = defaults;
     Object.assign(this.replayConfig, defaults, config);
+    if (!this.replayConfig.replayLogger) {
+      this.replayConfig.replayLogger = this.getConsoleLogger();
+    }
     this.events = events;
   }
 
-  getConsoleLogger(logger: Logger): Logger {
-    logger.ReplayLog = (data) => {
-      logger.log!(...data.payload.map((s) => JSON.parse(s)));
-      logger.log!(this.formatMessage(data));
-    };
-    return logger;
+  getConsoleLogger(): ReplayLogger {
+    const rrwebOriginal = '__rrweb_original__';
+    const replayLogger: ReplayLogger = {};
+    for (const level of this.replayConfig.level!)
+      if (level === 'trace')
+        replayLogger[level] = (data: logData) => {
+          const logger = (console.log as any)[rrwebOriginal]
+            ? (console.log as any)[rrwebOriginal]
+            : console.log;
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+      else
+        replayLogger[level] = (data: logData) => {
+          const logger = (console[level] as any)[rrwebOriginal]
+            ? (console[level] as any)[rrwebOriginal]
+            : console[level];
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+    return replayLogger;
   }
 
   private formatMessage(data: logData): string {
-    const stackPrefix = '\n\t@';
+    const stackPrefix = '\n\tat ';
     let result = stackPrefix;
     result += data.trace.join(stackPrefix);
     return result;
@@ -160,25 +252,9 @@ export class replayLog {
         if (event.data.source === IncrementalSource.Log)
           castFn = () => {
             const logData = event.data as logData;
-            switch (logData.level) {
-              case 'log':
-                this.replayConfig.logger.ReplayLog!(logData);
-                break;
-              case 'info':
-                break;
-              case 'warn':
-                break;
-              case 'error':
-                break;
-              case 'debug':
-                break;
-              case 'assert':
-                break;
-              case 'trace':
-                break;
-              default:
-                break;
-            }
+            const replayLogger = this.replayConfig.replayLogger!;
+            if (typeof replayLogger[logData.level] === 'function')
+              replayLogger[logData.level]!(logData);
           };
         break;
       default:
