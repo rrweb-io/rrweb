@@ -8,6 +8,7 @@ import {
   IncrementalSource,
   logData,
 } from '../types';
+import { stringify } from './json';
 
 type RecordOptions = {
   emit: (e: eventWithTime) => void;
@@ -82,8 +83,9 @@ export function recordLog(options: RecordOptions) {
         if (logger.log) {
           logger.DefaultLog = logger.log;
           logger.log = (...args) => {
+            logger.DefaultLog!.apply(this, args);
             const stack = parseStack(new Error().stack);
-            const payload = args.map((s) => JSON.stringify(s));
+            const payload = args.map((s) => stringify(s));
             loggerOptions.emit(
               wrapEvent({
                 type: EventType.IncrementalSnapshot,
@@ -95,7 +97,6 @@ export function recordLog(options: RecordOptions) {
                 },
               }),
             );
-            logger.DefaultLog!.apply(this, args);
           };
           cancelHandlers.push(() => {
             logger.log = logger.DefaultLog;
@@ -139,16 +140,16 @@ export class replayLog {
 
   getConsoleLogger(logger: Logger): Logger {
     logger.ReplayLog = (data) => {
+      logger.log!(...data.payload.map((s) => JSON.parse(s)));
       logger.log!(this.formatMessage(data));
     };
     return logger;
   }
 
   private formatMessage(data: logData): string {
-    let result = '';
-    result += data.payload.map((s) => JSON.parse(s)).join(' ');
-    result += '\n\t';
-    result += data.trace.join('\n\t');
+    const stackPrefix = '\n\t@';
+    let result = stackPrefix;
+    result += data.trace.join(stackPrefix);
     return result;
   }
 
