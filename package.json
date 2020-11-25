@@ -4,7 +4,7 @@
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
-    "vtc": "build/cli.js"
+    "rrvideo": "build/cli.js"
   },
   "files": [
     "build"
