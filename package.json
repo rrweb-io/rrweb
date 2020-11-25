@@ -1,6 +1,6 @@
 {
   "name": "rrvideo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
