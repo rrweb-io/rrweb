@@ -575,9 +575,19 @@ export type ElementState = {
   // [scrollLeft,scrollTop]
   scroll?: [number, number];
 }
+export type StringifyOptions = {
+  // limit of string length
+  stringLengthLimit?: number;
+  /**
+   * limit of number of keys in an object
+   * if an object contains more keys than this limit, we would call its toString function directly
+   */
+  numOfKeysLimit: number;
+};
 
 export type LogRecordOptions = {
   level?: Array<LogLevel> | undefined;
   lengthThreshold?: number;
+  stringifyOptions?: StringifyOptions;
   logger?: Logger;
 };

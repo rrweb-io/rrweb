@@ -42,6 +42,8 @@ export declare class Replayer {
     private applyMutation;
     private applyScroll;
     private applyInput;
+    private formatMessage;
+    private getConsoleLogger;
     private legacy_resolveMissingNode;
     private moveAndHover;
     private drawMouseTail;

@@ -1217,7 +1217,7 @@ export class Replayer {
   /**
    * generate a console log replayer which implement the interface ReplayLogger
    */
-  getConsoleLogger(): ReplayLogger {
+  private getConsoleLogger(): ReplayLogger {
     const rrwebOriginal = '__rrweb_original__';
     const replayLogger: ReplayLogger = {};
     for (const level of this.config.logConfig.level!)

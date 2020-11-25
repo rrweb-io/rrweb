@@ -522,7 +522,7 @@ function initLogObserver(
         if (args[args.length - 1] instanceof Error)
           // 0(the second parameter) tells parseStack that every stack in Error is useful
           stack = parseStack(args[args.length - 1].stack, 0);
-        const payload = [stringify(args[0])];
+        const payload = [stringify(args[0], logOptions.stringifyOptions)];
         cb({
           level: 'error',
           trace: stack,
@@ -553,7 +553,9 @@ function initLogObserver(
         original.apply(this, args);
         try {
           const stack = parseStack(new Error().stack);
-          const payload = args.map((s) => stringify(s));
+          const payload = args.map((s) =>
+            stringify(s, logOptions.stringifyOptions),
+          );
           logCount++;
           if (logCount < logOptions.lengthThreshold!)
             cb({
