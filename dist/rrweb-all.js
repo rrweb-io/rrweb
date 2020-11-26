@@ -88,9 +88,7 @@ var rrweb = (function (exports) {
     function getCssRulesString(s) {
         try {
             var rules = s.rules || s.cssRules;
-            return rules
-                ? Array.from(rules).map(getCssRuleString).join('')
-                : null;
+            return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
         }
         catch (error) {
             return null;
@@ -219,18 +217,25 @@ var rrweb = (function (exports) {
     }
     function serializeNode(n, doc, blockClass, blockSelector, inlineStylesheet, maskInputOptions, recordCanvas) {
         if (maskInputOptions === void 0) { maskInputOptions = {}; }
+        var rootId;
+        if (doc.__sn) {
+            var docId = doc.__sn.id;
+            rootId = docId === 1 ? undefined : docId;
+        }
         switch (n.nodeType) {
             case n.DOCUMENT_NODE:
                 return {
                     type: NodeType.Document,
-                    childNodes: []
+                    childNodes: [],
+                    rootId: rootId
                 };
             case n.DOCUMENT_TYPE_NODE:
                 return {
                     type: NodeType.DocumentType,
                     name: n.name,
                     publicId: n.publicId,
-                    systemId: n.systemId
+                    systemId: n.systemId,
+                    rootId: rootId
                 };
             case n.ELEMENT_NODE:
                 var needBlock = _isBlockedElement(n, blockClass, blockSelector);
@@ -311,7 +316,8 @@ var rrweb = (function (exports) {
                     attributes: attributes_1,
                     childNodes: [],
                     isSVG: isSVGElement(n) || undefined,
-                    needBlock: needBlock
+                    needBlock: needBlock,
+                    rootId: rootId
                 };
             case n.TEXT_NODE:
                 var parentTagName = n.parentNode && n.parentNode.tagName;
@@ -326,17 +332,20 @@ var rrweb = (function (exports) {
                 return {
                     type: NodeType.Text,
                     textContent: textContent || '',
-                    isStyle: isStyle
+                    isStyle: isStyle,
+                    rootId: rootId
                 };
             case n.CDATA_SECTION_NODE:
                 return {
                     type: NodeType.CDATA,
-                    textContent: ''
+                    textContent: '',
+                    rootId: rootId
                 };
             case n.COMMENT_NODE:
                 return {
                     type: NodeType.Comment,
-                    textContent: n.textContent || ''
+                    textContent: n.textContent || '',
+                    rootId: rootId
                 };
             default:
                 return false;
@@ -357,57 +366,67 @@ var rrweb = (function (exports) {
         else if (sn.type === NodeType.Element) {
             if (slimDOMOptions.script &&
                 (sn.tagName === 'script' ||
-                    (sn.tagName === 'link' && sn.attributes.rel === 'preload' && sn.attributes['as'] === 'script'))) {
+                    (sn.tagName === 'link' &&
+                        sn.attributes.rel === 'preload' &&
+                        sn.attributes['as'] === 'script'))) {
                 return true;
             }
-            else if (slimDOMOptions.headFavicon && ((sn.tagName === 'link' && sn.attributes.rel === 'shortcut icon')
-                || (sn.tagName === 'meta' && (lowerIfExists(sn.attributes['name']).match(/^msapplication-tile(image|color)$/)
-                    || lowerIfExists(sn.attributes['name']) === 'application-name'
-                    || lowerIfExists(sn.attributes['rel']) === 'icon'
-                    || lowerIfExists(sn.attributes['rel']) === 'apple-touch-icon'
-                    || lowerIfExists(sn.attributes['rel']) === 'shortcut icon')))) {
+            else if (slimDOMOptions.headFavicon &&
+                ((sn.tagName === 'link' && sn.attributes.rel === 'shortcut icon') ||
+                    (sn.tagName === 'meta' &&
+                        (lowerIfExists(sn.attributes['name']).match(/^msapplication-tile(image|color)$/) ||
+                            lowerIfExists(sn.attributes['name']) === 'application-name' ||
+                            lowerIfExists(sn.attributes['rel']) === 'icon' ||
+                            lowerIfExists(sn.attributes['rel']) === 'apple-touch-icon' ||
+                            lowerIfExists(sn.attributes['rel']) === 'shortcut icon')))) {
                 return true;
             }
             else if (sn.tagName === 'meta') {
-                if (slimDOMOptions.headMetaDescKeywords && (lowerIfExists(sn.attributes['name']).match(/^description|keywords$/))) {
+                if (slimDOMOptions.headMetaDescKeywords &&
+                    lowerIfExists(sn.attributes['name']).match(/^description|keywords$/)) {
                     return true;
                 }
-                else if (slimDOMOptions.headMetaSocial && (lowerIfExists(sn.attributes['property']).match(/^(og|twitter|fb):/)
-                    || lowerIfExists(sn.attributes['name']).match(/^(og|twitter):/)
-                    || lowerIfExists(sn.attributes['name']) === 'pinterest')) {
+                else if (slimDOMOptions.headMetaSocial &&
+                    (lowerIfExists(sn.attributes['property']).match(/^(og|twitter|fb):/) ||
+                        lowerIfExists(sn.attributes['name']).match(/^(og|twitter):/) ||
+                        lowerIfExists(sn.attributes['name']) === 'pinterest')) {
                     return true;
                 }
-                else if (slimDOMOptions.headMetaRobots && (lowerIfExists(sn.attributes['name']) === 'robots'
-                    || lowerIfExists(sn.attributes['name']) === 'googlebot'
-                    || lowerIfExists(sn.attributes['name']) === 'bingbot')) {
+                else if (slimDOMOptions.headMetaRobots &&
+                    (lowerIfExists(sn.attributes['name']) === 'robots' ||
+                        lowerIfExists(sn.attributes['name']) === 'googlebot' ||
+                        lowerIfExists(sn.attributes['name']) === 'bingbot')) {
                     return true;
                 }
-                else if (slimDOMOptions.headMetaHttpEquiv && (sn.attributes['http-equiv'] !== undefined)) {
+                else if (slimDOMOptions.headMetaHttpEquiv &&
+                    sn.attributes['http-equiv'] !== undefined) {
                     return true;
                 }
-                else if (slimDOMOptions.headMetaAuthorship && (lowerIfExists(sn.attributes['name']) === 'author'
-                    || lowerIfExists(sn.attributes['name']) === 'generator'
-                    || lowerIfExists(sn.attributes['name']) === 'framework'
-                    || lowerIfExists(sn.attributes['name']) === 'publisher'
-                    || lowerIfExists(sn.attributes['name']) === 'progid'
-                    || lowerIfExists(sn.attributes['property']).match(/^article:/)
-                    || lowerIfExists(sn.attributes['property']).match(/^product:/))) {
+                else if (slimDOMOptions.headMetaAuthorship &&
+                    (lowerIfExists(sn.attributes['name']) === 'author' ||
+                        lowerIfExists(sn.attributes['name']) === 'generator' ||
+                        lowerIfExists(sn.attributes['name']) === 'framework' ||
+                        lowerIfExists(sn.attributes['name']) === 'publisher' ||
+                        lowerIfExists(sn.attributes['name']) === 'progid' ||
+                        lowerIfExists(sn.attributes['property']).match(/^article:/) ||
+                        lowerIfExists(sn.attributes['property']).match(/^product:/))) {
                     return true;
                 }
-                else if (slimDOMOptions.headMetaVerification && (lowerIfExists(sn.attributes['name']) === 'google-site-verification'
-                    || lowerIfExists(sn.attributes['name']) === 'yandex-verification'
-                    || lowerIfExists(sn.attributes['name']) === 'csrf-token'
-                    || lowerIfExists(sn.attributes['name']) === 'p:domain_verify'
-                    || lowerIfExists(sn.attributes['name']) === 'verify-v1'
-                    || lowerIfExists(sn.attributes['name']) === 'verification'
-                    || lowerIfExists(sn.attributes['name']) === 'shopify-checkout-api-token')) {
+                else if (slimDOMOptions.headMetaVerification &&
+                    (lowerIfExists(sn.attributes['name']) === 'google-site-verification' ||
+                        lowerIfExists(sn.attributes['name']) === 'yandex-verification' ||
+                        lowerIfExists(sn.attributes['name']) === 'csrf-token' ||
+                        lowerIfExists(sn.attributes['name']) === 'p:domain_verify' ||
+                        lowerIfExists(sn.attributes['name']) === 'verify-v1' ||
+                        lowerIfExists(sn.attributes['name']) === 'verification' ||
+                        lowerIfExists(sn.attributes['name']) === 'shopify-checkout-api-token')) {
                     return true;
                 }
             }
         }
         return false;
     }
-    function serializeNodeWithId(n, doc, map, blockClass, blockSelector, skipChild, inlineStylesheet, maskInputOptions, slimDOMOptions, recordCanvas, preserveWhiteSpace) {
+    function serializeNodeWithId(n, doc, map, blockClass, blockSelector, skipChild, inlineStylesheet, maskInputOptions, slimDOMOptions, recordCanvas, preserveWhiteSpace, onSerialize) {
         if (skipChild === void 0) { skipChild = false; }
         if (inlineStylesheet === void 0) { inlineStylesheet = true; }
         if (slimDOMOptions === void 0) { slimDOMOptions = {}; }
@@ -437,6 +456,9 @@ var rrweb = (function (exports) {
             return null;
         }
         map[id] = n;
+        if (onSerialize) {
+            onSerialize(n);
+        }
         var recordChild = !skipChild;
         if (serializedNode.type === NodeType.Element) {
             recordChild = recordChild && !serializedNode.needBlock;
@@ -445,9 +467,9 @@ var rrweb = (function (exports) {
         if ((serializedNode.type === NodeType.Document ||
             serializedNode.type === NodeType.Element) &&
             recordChild) {
-            if ((slimDOMOptions.headWhitespace &&
+            if (slimDOMOptions.headWhitespace &&
                 _serializedNode.type === NodeType.Element &&
-                _serializedNode.tagName == 'head')) {
+                _serializedNode.tagName == 'head') {
                 preserveWhiteSpace = false;
             }
             for (var _i = 0, _a = Array.from(n.childNodes); _i < _a.length; _i++) {
@@ -458,9 +480,19 @@ var rrweb = (function (exports) {
                 }
             }
         }
+        if (serializedNode.type === NodeType.Element &&
+            serializedNode.tagName === 'iframe') {
+            var iframeDoc = n.contentDocument;
+            if (iframeDoc) {
+                var serializedIframeNode = serializeNodeWithId(iframeDoc, iframeDoc, map, blockClass, blockSelector, false, inlineStylesheet, maskInputOptions, slimDOMOptions, recordCanvas);
+                if (serializedIframeNode) {
+                    serializedNode.childNodes.push(serializedIframeNode);
+                }
+            }
+        }
         return serializedNode;
     }
-    function snapshot(n, blockClass, inlineStylesheet, maskAllInputsOrOptions, slimDOMSensibleOrOptions, recordCanvas, blockSelector) {
+    function snapshot(n, blockClass, inlineStylesheet, maskAllInputsOrOptions, slimDOMSensibleOrOptions, recordCanvas, blockSelector, preserveWhiteSpace, onSerialize) {
         if (blockClass === void 0) { blockClass = 'rr-block'; }
         if (inlineStylesheet === void 0) { inlineStylesheet = true; }
         if (blockSelector === void 0) { blockSelector = null; }
@@ -486,25 +518,25 @@ var rrweb = (function (exports) {
             : maskAllInputsOrOptions === false
                 ? {}
                 : maskAllInputsOrOptions;
-        var slimDOMOptions = (slimDOMSensibleOrOptions === true ||
-            slimDOMSensibleOrOptions === 'all')
-            ? {
-                script: true,
-                comment: true,
-                headFavicon: true,
-                headWhitespace: true,
-                headMetaDescKeywords: slimDOMSensibleOrOptions === 'all',
-                headMetaSocial: true,
-                headMetaRobots: true,
-                headMetaHttpEquiv: true,
-                headMetaAuthorship: true,
-                headMetaVerification: true
-            }
+        var slimDOMOptions = slimDOMSensibleOrOptions === true || slimDOMSensibleOrOptions === 'all'
+            ?
+                {
+                    script: true,
+                    comment: true,
+                    headFavicon: true,
+                    headWhitespace: true,
+                    headMetaDescKeywords: slimDOMSensibleOrOptions === 'all',
+                    headMetaSocial: true,
+                    headMetaRobots: true,
+                    headMetaHttpEquiv: true,
+                    headMetaAuthorship: true,
+                    headMetaVerification: true
+                }
             : slimDOMSensibleOrOptions === false
                 ? {}
                 : slimDOMSensibleOrOptions;
         return [
-            serializeNodeWithId(n, n, idNodeMap, blockClass, blockSelector, false, inlineStylesheet, maskInputOptions, slimDOMOptions, recordCanvas),
+            serializeNodeWithId(n, n, idNodeMap, blockClass, blockSelector, false, inlineStylesheet, maskInputOptions, slimDOMOptions, recordCanvas, preserveWhiteSpace, onSerialize),
             idNodeMap,
         ];
     }
@@ -1013,6 +1045,17 @@ var rrweb = (function (exports) {
         });
         return cssText;
     }
+    function isIframe(n) {
+        return n.type === NodeType.Element && n.tagName === 'iframe';
+    }
+    function buildIframe(iframe, childNodes, map, cbs, HACK_CSS) {
+        var targetDoc = iframe.contentDocument;
+        for (var _i = 0, childNodes_1 = childNodes; _i < childNodes_1.length; _i++) {
+            var childN = childNodes_1[_i];
+            console.log('build iframe', childN);
+            buildNodeWithSN(childN, targetDoc, map, cbs, false, HACK_CSS);
+        }
+    }
     function buildNode(n, doc, HACK_CSS) {
         switch (n.type) {
             case NodeType.Document:
@@ -1113,12 +1156,15 @@ var rrweb = (function (exports) {
                 return null;
         }
     }
-    function buildNodeWithSN(n, doc, map, skipChild, HACK_CSS) {
+    function buildNodeWithSN(n, doc, map, cbs, skipChild, HACK_CSS) {
         if (skipChild === void 0) { skipChild = false; }
         if (HACK_CSS === void 0) { HACK_CSS = true; }
         var node = buildNode(n, doc, HACK_CSS);
         if (!node) {
-            return null;
+            return [null, []];
+        }
+        if (n.rootId) {
+            console.assert(map[n.rootId] === doc, 'Target document should has the same root id.');
         }
         if (n.type === NodeType.Document) {
             doc.close();
@@ -1127,20 +1173,35 @@ var rrweb = (function (exports) {
         }
         node.__sn = n;
         map[n.id] = node;
+        var nodeIsIframe = isIframe(n);
+        if (n.type === NodeType.Element && nodeIsIframe) {
+            return [node, n.childNodes];
+        }
         if ((n.type === NodeType.Document || n.type === NodeType.Element) &&
             !skipChild) {
-            for (var _i = 0, _a = n.childNodes; _i < _a.length; _i++) {
-                var childN = _a[_i];
-                var childNode = buildNodeWithSN(childN, doc, map, false, HACK_CSS);
+            var _loop_2 = function (childN) {
+                var _a = buildNodeWithSN(childN, doc, map, cbs, false, HACK_CSS), childNode = _a[0], nestedNodes = _a[1];
                 if (!childNode) {
                     console.warn('Failed to rebuild', childN);
+                    return "continue";
                 }
-                else {
-                    node.appendChild(childNode);
+                node.appendChild(childNode);
+                if (nestedNodes.length === 0) {
+                    return "continue";
                 }
+                var childNodeIsIframe = isIframe(childN);
+                if (childNodeIsIframe) {
+                    cbs.push(function () {
+                        return buildIframe(childNode, nestedNodes, map, cbs, HACK_CSS);
+                    });
+                }
+            };
+            for (var _i = 0, _a = n.childNodes; _i < _a.length; _i++) {
+                var childN = _a[_i];
+                _loop_2(childN);
             }
         }
-        return node;
+        return [node, []];
     }
     function visit(idNodeMap, onVisit) {
         function walk(node) {
@@ -1174,7 +1235,9 @@ var rrweb = (function (exports) {
     function rebuild(n, doc, onVisit, HACK_CSS) {
         if (HACK_CSS === void 0) { HACK_CSS = true; }
         var idNodeMap = {};
-        var node = buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS);
+        var callbackArray = [];
+        var node = buildNodeWithSN(n, doc, idNodeMap, callbackArray, false, HACK_CSS)[0];
+        callbackArray.forEach(function (f) { return f(); });
         visit(idNodeMap, function (visitedNode) {
             if (onVisit) {
                 onVisit(visitedNode);
@@ -1825,7 +1888,14 @@ var rrweb = (function (exports) {
                     adds.push({
                         parentId: parentId,
                         nextId: nextId,
-                        node: serializeNodeWithId(n, _this.doc, mirror.map, _this.blockClass, null, true, _this.inlineStylesheet, _this.maskInputOptions, undefined, _this.recordCanvas, undefined),
+                        node: serializeNodeWithId(n, _this.doc, mirror.map, _this.blockClass, null, true, _this.inlineStylesheet, _this.maskInputOptions, undefined, _this.recordCanvas, undefined, function (n) {
+                            if (n.__sn.type === NodeType.Element &&
+                                n.__sn.tagName === 'iframe') {
+                                n.onload = function () {
+                                    _this.doIframe(n);
+                                };
+                            }
+                        }),
                     });
                 };
                 while (_this.mapRemoves.length) {
@@ -2616,7 +2686,11 @@ var rrweb = (function (exports) {
             }), isCheckout);
             var wasFrozen = mutationBuffer.isFrozen();
             mutationBuffer.freeze();
-            var _e = __read(snapshot(document, blockClass, inlineStylesheet, maskInputOptions, false, recordCanvas, null), 2), node = _e[0], idNodeMap = _e[1];
+            var _e = __read(snapshot(document, blockClass, inlineStylesheet, maskInputOptions, false, recordCanvas, null, true, function (n) {
+                if (n.__sn.type === NodeType.Element && n.__sn.tagName === 'iframe') {
+                    iframes.push(n);
+                }
+            }), 2), node = _e[0], idNodeMap = _e[1];
             if (!node) {
                 return console.warn('Failed to snapshot the document');
             }
@@ -3435,7 +3509,7 @@ var rrweb = (function (exports) {
         lineWidth: 3,
         strokeStyle: 'red',
     };
-    function buildIframe(iframe, childNodes, map, cbs, HACK_CSS) {
+    function buildIframe$1(iframe, childNodes, map, cbs, HACK_CSS) {
         var e_1, _a;
         var targetDoc = iframe.contentDocument;
         try {
@@ -4264,7 +4338,7 @@ var rrweb = (function (exports) {
                     : _this.iframe.contentDocument;
                 var _a = __read(buildNodeWithSN(mutation.node, targetDoc, mirror.map, cbs, true), 2), target = _a[0], nestedNodes = _a[1];
                 cbs.push(function () {
-                    return buildIframe(target, nestedNodes, mirror.map, cbs, true);
+                    return buildIframe$1(target, nestedNodes, mirror.map, cbs, true);
                 });
                 if (mutation.previousId === -1 || mutation.nextId === -1) {
                     legacy_missingNodeMap[mutation.node.id] = {

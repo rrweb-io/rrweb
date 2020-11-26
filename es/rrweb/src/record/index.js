@@ -1,5 +1,5 @@
 import { __assign, __spread, __read } from '../../node_modules/tslib/tslib.es6.js';
-import { snapshot } from '../../node_modules/rrweb-snapshot/es/rrweb-snapshot.js';
+import { snapshot, NodeType } from '../../node_modules/rrweb-snapshot/es/rrweb-snapshot.js';
 import { EventType, IncrementalSource } from '../types.js';
 import { polyfill, on, getIframeDimensions, initDimension, getWindowWidth, getWindowHeight, mirror } from '../utils.js';
 import { initObservers, mutationBuffer } from './observer.js';
@@ -78,7 +78,11 @@ function record(options) {
         }), isCheckout);
         var wasFrozen = mutationBuffer.isFrozen();
         mutationBuffer.freeze();
-        var _e = __read(snapshot(document, blockClass, inlineStylesheet, maskInputOptions, false, recordCanvas, null), 2), node = _e[0], idNodeMap = _e[1];
+        var _e = __read(snapshot(document, blockClass, inlineStylesheet, maskInputOptions, false, recordCanvas, null, true, function (n) {
+            if (n.__sn.type === NodeType.Element && n.__sn.tagName === 'iframe') {
+                iframes.push(n);
+            }
+        }), 2), node = _e[0], idNodeMap = _e[1];
         if (!node) {
             return console.warn('Failed to snapshot the document');
         }

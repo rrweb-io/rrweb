@@ -576,6 +576,17 @@ var rrwebReplay = (function (exports) {
         });
         return cssText;
     }
+    function isIframe(n) {
+        return n.type === NodeType.Element && n.tagName === 'iframe';
+    }
+    function buildIframe(iframe, childNodes, map, cbs, HACK_CSS) {
+        var targetDoc = iframe.contentDocument;
+        for (var _i = 0, childNodes_1 = childNodes; _i < childNodes_1.length; _i++) {
+            var childN = childNodes_1[_i];
+            console.log('build iframe', childN);
+            buildNodeWithSN(childN, targetDoc, map, cbs, false, HACK_CSS);
+        }
+    }
     function buildNode(n, doc, HACK_CSS) {
         switch (n.type) {
             case NodeType.Document:
@@ -676,12 +687,15 @@ var rrwebReplay = (function (exports) {
                 return null;
         }
     }
-    function buildNodeWithSN(n, doc, map, skipChild, HACK_CSS) {
+    function buildNodeWithSN(n, doc, map, cbs, skipChild, HACK_CSS) {
         if (skipChild === void 0) { skipChild = false; }
         if (HACK_CSS === void 0) { HACK_CSS = true; }
         var node = buildNode(n, doc, HACK_CSS);
         if (!node) {
-            return null;
+            return [null, []];
+        }
+        if (n.rootId) {
+            console.assert(map[n.rootId] === doc, 'Target document should has the same root id.');
         }
         if (n.type === NodeType.Document) {
             doc.close();
@@ -690,20 +704,35 @@ var rrwebReplay = (function (exports) {
         }
         node.__sn = n;
         map[n.id] = node;
+        var nodeIsIframe = isIframe(n);
+        if (n.type === NodeType.Element && nodeIsIframe) {
+            return [node, n.childNodes];
+        }
         if ((n.type === NodeType.Document || n.type === NodeType.Element) &&
             !skipChild) {
-            for (var _i = 0, _a = n.childNodes; _i < _a.length; _i++) {
-                var childN = _a[_i];
-                var childNode = buildNodeWithSN(childN, doc, map, false, HACK_CSS);
+            var _loop_2 = function (childN) {
+                var _a = buildNodeWithSN(childN, doc, map, cbs, false, HACK_CSS), childNode = _a[0], nestedNodes = _a[1];
                 if (!childNode) {
                     console.warn('Failed to rebuild', childN);
+                    return "continue";
                 }
-                else {
-                    node.appendChild(childNode);
+                node.appendChild(childNode);
+                if (nestedNodes.length === 0) {
+                    return "continue";
                 }
+                var childNodeIsIframe = isIframe(childN);
+                if (childNodeIsIframe) {
+                    cbs.push(function () {
+                        return buildIframe(childNode, nestedNodes, map, cbs, HACK_CSS);
+                    });
+                }
+            };
+            for (var _i = 0, _a = n.childNodes; _i < _a.length; _i++) {
+                var childN = _a[_i];
+                _loop_2(childN);
             }
         }
-        return node;
+        return [node, []];
     }
     function visit(idNodeMap, onVisit) {
         function walk(node) {
@@ -737,7 +766,9 @@ var rrwebReplay = (function (exports) {
     function rebuild(n, doc, onVisit, HACK_CSS) {
         if (HACK_CSS === void 0) { HACK_CSS = true; }
         var idNodeMap = {};
-        var node = buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS);
+        var callbackArray = [];
+        var node = buildNodeWithSN(n, doc, idNodeMap, callbackArray, false, HACK_CSS)[0];
+        callbackArray.forEach(function (f) { return f(); });
         visit(idNodeMap, function (visitedNode) {
             if (onVisit) {
                 onVisit(visitedNode);
@@ -1749,7 +1780,7 @@ var rrwebReplay = (function (exports) {
         lineWidth: 3,
         strokeStyle: 'red',
     };
-    function buildIframe(iframe, childNodes, map, cbs, HACK_CSS) {
+    function buildIframe$1(iframe, childNodes, map, cbs, HACK_CSS) {
         var e_1, _a;
         var targetDoc = iframe.contentDocument;
         try {
@@ -2578,7 +2609,7 @@ var rrwebReplay = (function (exports) {
                     : _this.iframe.contentDocument;
                 var _a = __read(buildNodeWithSN(mutation.node, targetDoc, mirror.map, cbs, true), 2), target = _a[0], nestedNodes = _a[1];
                 cbs.push(function () {
-                    return buildIframe(target, nestedNodes, mirror.map, cbs, true);
+                    return buildIframe$1(target, nestedNodes, mirror.map, cbs, true);
                 });
                 if (mutation.previousId === -1 || mutation.nextId === -1) {
                     legacy_missingNodeMap[mutation.node.id] = {
