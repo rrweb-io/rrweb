@@ -72,34 +72,8 @@ var Replayer = (function () {
             var e_2, _a, e_3, _b, e_4, _c;
             var _d = _this.treeIndex.flush(), scrollMap = _d.scrollMap, inputMap = _d.inputMap;
             try {
-                for (var _e = __values(scrollMap.values()), _f = _e.next(); !_f.done; _f = _e.next()) {
-                    var d = _f.value;
-                    _this.applyScroll(d);
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (_f && !_f.done && (_a = _e.return)) _a.call(_e);
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-            try {
-                for (var _g = __values(inputMap.values()), _h = _g.next(); !_h.done; _h = _g.next()) {
-                    var d = _h.value;
-                    _this.applyInput(d);
-                }
-            }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
-            finally {
-                try {
-                    if (_h && !_h.done && (_b = _g.return)) _b.call(_g);
-                }
-                finally { if (e_3) throw e_3.error; }
-            }
-            try {
-                for (var _j = __values(_this.fragmentParentMap.entries()), _k = _j.next(); !_k.done; _k = _j.next()) {
-                    var _l = __read(_k.value, 2), frag = _l[0], parent = _l[1];
+                for (var _e = __values(_this.fragmentParentMap.entries()), _f = _e.next(); !_f.done; _f = _e.next()) {
+                    var _g = __read(_f.value, 2), frag = _g[0], parent = _g[1];
                     mirror.map[parent.__sn.id] = parent;
                     if (parent.__sn.type === NodeType.Element &&
                         parent.__sn.tagName === 'textarea' &&
@@ -109,14 +83,40 @@ var Replayer = (function () {
                     parent.appendChild(frag);
                 }
             }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (_f && !_f.done && (_a = _e.return)) _a.call(_e);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+            _this.fragmentParentMap.clear();
+            try {
+                for (var _h = __values(scrollMap.values()), _j = _h.next(); !_j.done; _j = _h.next()) {
+                    var d = _j.value;
+                    _this.applyScroll(d);
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_j && !_j.done && (_b = _h.return)) _b.call(_h);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+            try {
+                for (var _k = __values(inputMap.values()), _l = _k.next(); !_l.done; _l = _k.next()) {
+                    var d = _l.value;
+                    _this.applyInput(d);
+                }
+            }
             catch (e_4_1) { e_4 = { error: e_4_1 }; }
             finally {
                 try {
-                    if (_k && !_k.done && (_c = _j.return)) _c.call(_j);
+                    if (_l && !_l.done && (_c = _k.return)) _c.call(_k);
                 }
                 finally { if (e_4) throw e_4.error; }
             }
-            _this.fragmentParentMap.clear();
         });
         var timer = new Timer([], (config === null || config === void 0 ? void 0 : config.speed) || defaultConfig.speed);
         this.service = createPlayerService({

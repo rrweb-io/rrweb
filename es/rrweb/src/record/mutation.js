@@ -1,5 +1,5 @@
 import { __values } from '../../node_modules/tslib/tslib.es6.js';
-import { transformAttribute, serializeNodeWithId, NodeType } from '../../node_modules/rrweb-snapshot/es/rrweb-snapshot.js';
+import { transformAttribute, serializeNodeWithId } from '../../node_modules/rrweb-snapshot/es/rrweb-snapshot.js';
 import { mirror, isBlocked, isAncestorRemoved } from '../utils.js';
 
 function isNodeInLinkedList(n, list) {
@@ -132,14 +132,7 @@ var MutationBuffer = (function () {
                 adds.push({
                     parentId: parentId,
                     nextId: nextId,
-                    node: serializeNodeWithId(n, _this.doc, mirror.map, _this.blockClass, null, true, _this.inlineStylesheet, _this.maskInputOptions, undefined, _this.recordCanvas, undefined, function (n) {
-                        if (n.__sn.type === NodeType.Element &&
-                            n.__sn.tagName === 'iframe') {
-                            n.onload = function () {
-                                _this.doIframe(n);
-                            };
-                        }
-                    }),
+                    node: serializeNodeWithId(n, _this.doc, mirror.map, _this.blockClass, null, true, _this.inlineStylesheet, _this.maskInputOptions, undefined, _this.recordCanvas, undefined),
                 });
             };
             while (_this.mapRemoves.length) {
