@@ -115,13 +115,6 @@ export class Replayer {
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
 
-      for (const d of scrollMap.values()) {
-        this.applyScroll(d);
-      }
-      for (const d of inputMap.values()) {
-        this.applyInput(d);
-      }
-
       for (const [frag, parent] of this.fragmentParentMap.entries()) {
         mirror.map[parent.__sn.id] = parent;
         /**
@@ -138,6 +131,13 @@ export class Replayer {
         parent.appendChild(frag);
       }
       this.fragmentParentMap.clear();
+
+      for (const d of scrollMap.values()) {
+        this.applyScroll(d);
+      }
+      for (const d of inputMap.values()) {
+        this.applyInput(d);
+      }
     });
 
     const timer = new Timer([], config?.speed || defaultConfig.speed);
