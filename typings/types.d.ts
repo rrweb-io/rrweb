@@ -124,7 +124,10 @@ export declare type recordOptions<T> = {
     maskAllInputs?: boolean;
     maskInputOptions?: MaskInputOptions;
     maskInputFn?: MaskInputFn;
+<<<<<<< HEAD
     slimDOMOptions?: SlimDOMOptions | 'all' | true;
+=======
+>>>>>>> feat: add an option to determine whether to pause CSS animation when playback is paused (#428)
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
     packFn?: PackFn;
@@ -405,6 +408,7 @@ export declare enum ReplayerEvents {
     StateChange = "state-change"
 }
 export declare type MaskInputFn = (text: string) => string;
+<<<<<<< HEAD
 export declare type ElementState = {
     scroll?: [number, number];
 };
@@ -418,4 +422,6 @@ export declare type LogRecordOptions = {
     stringifyOptions?: StringifyOptions;
     logger?: Logger;
 };
+=======
+>>>>>>> feat: add an option to determine whether to pause CSS animation when playback is paused (#428)
 export {};
