@@ -158,7 +158,7 @@ export class Replayer {
       insertStyleRules: [],
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
-      pauseAnimation: true,
+      pauseAnimation: false,
       mouseTail: defaultMouseTailConfig,
       logConfig: defaultLogConfig,
     };

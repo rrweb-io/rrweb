@@ -3549,6 +3549,7 @@ var rrweb = (function (exports) {
                 insertStyleRules: [],
                 triggerFocus: true,
                 UNSAFE_replayCanvas: false,
+                pauseAnimation: false,
                 mouseTail: defaultMouseTailConfig,
             };
             this.config = Object.assign({}, defaultConfig, config);
@@ -3558,6 +3559,7 @@ var rrweb = (function (exports) {
             this.setupDom();
             this.treeIndex = new TreeIndex();
             this.fragmentParentMap = new Map();
+            this.elementStateMap = new Map();
             this.emitter.on(exports.ReplayerEvents.Flush, function () {
                 var e_2, _a, e_3, _b, e_4, _c;
                 var _d = _this.treeIndex.flush(), scrollMap = _d.scrollMap, inputMap = _d.inputMap;
@@ -3571,6 +3573,7 @@ var rrweb = (function (exports) {
                             parent.value = frag.textContent;
                         }
                         parent.appendChild(frag);
+                        _this.restoreState(parent);
                     }
                 }
                 catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -3581,6 +3584,7 @@ var rrweb = (function (exports) {
                     finally { if (e_2) throw e_2.error; }
                 }
                 _this.fragmentParentMap.clear();
+                _this.elementStateMap.clear();
                 try {
                     for (var _h = __values(scrollMap.values()), _j = _h.next(); !_j.done; _j = _h.next()) {
                         var d = _j.value;
@@ -3714,6 +3718,7 @@ var rrweb = (function (exports) {
             return baselineTime - events[0].timestamp;
         };
         Replayer.prototype.play = function (timeOffset) {
+            var _a;
             if (timeOffset === void 0) { timeOffset = 0; }
             if (this.service.state.matches('paused')) {
                 this.service.send({ type: 'PLAY', payload: { timeOffset: timeOffset } });
@@ -3722,9 +3727,11 @@ var rrweb = (function (exports) {
                 this.service.send({ type: 'PAUSE' });
                 this.service.send({ type: 'PLAY', payload: { timeOffset: timeOffset } });
             }
+            (_a = this.iframe.contentDocument) === null || _a === void 0 ? void 0 : _a.getElementsByTagName('html')[0].classList.remove('rrweb-paused');
             this.emitter.emit(exports.ReplayerEvents.Start);
         };
         Replayer.prototype.pause = function (timeOffset) {
+            var _a;
             if (timeOffset === undefined && this.service.state.matches('playing')) {
                 this.service.send({ type: 'PAUSE' });
             }
@@ -3732,6 +3739,7 @@ var rrweb = (function (exports) {
                 this.play(timeOffset);
                 this.service.send({ type: 'PAUSE' });
             }
+            (_a = this.iframe.contentDocument) === null || _a === void 0 ? void 0 : _a.getElementsByTagName('html')[0].classList.add('rrweb-paused');
             this.emitter.emit(exports.ReplayerEvents.Pause);
         };
         Replayer.prototype.resume = function (timeOffset) {
@@ -3922,6 +3930,13 @@ var rrweb = (function (exports) {
             var _a = this.iframe.contentDocument, documentElement = _a.documentElement, head = _a.head;
             documentElement.insertBefore(styleEl, head);
             var injectStylesRules = rules(this.config.blockClass).concat(this.config.insertStyleRules);
+            if (this.config.pauseAnimation)
+                injectStylesRules.push('html.rrweb-paused * { animation-play-state: paused !important; }');
+            if (!this.service.state.matches('playing')) {
+                this.iframe.contentDocument
+                    .getElementsByTagName('html')[0]
+                    .classList.add('rrweb-paused');
+            }
             for (var idx = 0; idx < injectStylesRules.length; idx++) {
                 styleEl.sheet.insertRule(injectStylesRules[idx], idx);
             }
@@ -4274,6 +4289,11 @@ var rrweb = (function (exports) {
                     if (realParent && realParent.contains(target)) {
                         realParent.removeChild(target);
                     }
+                    else if (_this.fragmentParentMap.has(target)) {
+                        var realTarget = _this.fragmentParentMap.get(target);
+                        parent.removeChild(realTarget);
+                        _this.fragmentParentMap.delete(target);
+                    }
                     else {
                         parent.removeChild(target);
                     }
@@ -4313,6 +4333,7 @@ var rrweb = (function (exports) {
                     var virtualParent = document.createDocumentFragment();
                     mirror.map[mutation.parentId] = virtualParent;
                     _this.fragmentParentMap.set(virtualParent, parent);
+                    _this.storeState(parent);
                     while (parent.firstChild) {
                         virtualParent.appendChild(parent.firstChild);
                     }
@@ -4564,6 +4585,38 @@ var rrweb = (function (exports) {
             this.emitter.emit(exports.ReplayerEvents.SkipEnd, {
                 speed: this.speedService.state.context.normalSpeed,
             });
+        };
+        Replayer.prototype.storeState = function (parent) {
+            if (parent) {
+                if (parent.nodeType === parent.ELEMENT_NODE) {
+                    var parentElement = parent;
+                    if (parentElement.scrollLeft || parentElement.scrollTop) {
+                        this.elementStateMap.set(parent, {
+                            scroll: [parentElement.scrollLeft, parentElement.scrollTop],
+                        });
+                    }
+                    var children = parentElement.children;
+                    for (var i = 0; i < children.length; i++)
+                        this.storeState(children[i]);
+                }
+            }
+        };
+        Replayer.prototype.restoreState = function (parent) {
+            if (parent.nodeType === parent.ELEMENT_NODE) {
+                var parentElement = parent;
+                if (this.elementStateMap.has(parent)) {
+                    var storedState = this.elementStateMap.get(parent);
+                    if (storedState.scroll) {
+                        parentElement.scrollLeft = storedState.scroll[0];
+                        parentElement.scrollTop = storedState.scroll[1];
+                    }
+                    this.elementStateMap.delete(parent);
+                }
+                var children = parentElement.children;
+                for (var i = 0; i < children.length; i++) {
+                    this.restoreState(children[i]);
+                }
+            }
         };
         Replayer.prototype.warnNodeNotFound = function (d, id) {
             this.warn("Node with id '" + id + "' not found in", d);
