@@ -466,3 +466,9 @@ export enum ReplayerEvents {
 }
 
 export type MaskInputFn = (text: string) => string;
+
+// store the state that would be changed during the process(unmount from dom and mount again)
+export type ElementState = {
+  // [scrollLeft,scrollTop]
+  scroll?: [number, number];
+};

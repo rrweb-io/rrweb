@@ -17,6 +17,7 @@ export declare class Replayer {
     private legacy_missingNodeRetryMap;
     private treeIndex;
     private fragmentParentMap;
+    private elementStateMap;
     private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;

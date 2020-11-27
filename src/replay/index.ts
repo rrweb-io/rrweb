@@ -26,6 +26,7 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
+  ElementState,
 } from '../types';
 import {
   mirror,
@@ -79,6 +80,7 @@ export class Replayer {
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
+  private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -114,6 +116,7 @@ export class Replayer {
 
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
+    this.elementStateMap = new Map<INode, ElementState>();
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
 
@@ -135,6 +138,7 @@ export class Replayer {
         this.restoreState(parent);
       }
       this.fragmentParentMap.clear();
+      this.elementStateMap.clear();
 
       for (const d of scrollMap.values()) {
         this.applyScroll(d);
@@ -1265,11 +1269,10 @@ export class Replayer {
       if (parent.nodeType === parent.ELEMENT_NODE) {
         const parentElement = (parent as unknown) as HTMLElement;
         if (parentElement.scrollLeft || parentElement.scrollTop) {
-          // store scroll position on the node itself
-          parentElement.setAttribute(
-            SCROLL_ATTRIBUTE_NAME,
-            `${parentElement.scrollLeft},${parentElement.scrollTop}`,
-          );
+          // store scroll position state
+          this.elementStateMap.set(parent, {
+            scroll: [parentElement.scrollLeft, parentElement.scrollTop],
+          });
         }
         const children = parentElement.children;
         for (let i = 0; i < children.length; i++)
@@ -1285,12 +1288,14 @@ export class Replayer {
   private restoreState(parent: INode) {
     if (parent.nodeType === parent.ELEMENT_NODE) {
       const parentElement = (parent as unknown) as HTMLElement;
-      const scrollData = parentElement.getAttribute(SCROLL_ATTRIBUTE_NAME); // e.g. "scrollLeft,scrollTop"
-      if (scrollData) {
-        const scrollDataArray = scrollData.split(',');
-        parentElement.scrollLeft = Number(scrollDataArray[0]);
-        parentElement.scrollTop = Number(scrollDataArray[1]);
-        parentElement.removeAttribute(SCROLL_ATTRIBUTE_NAME);
+      if (this.elementStateMap.has(parent)) {
+        const storedState = this.elementStateMap.get(parent)!;
+        // restore scroll position
+        if (storedState.scroll) {
+          parentElement.scrollLeft = storedState.scroll[0];
+          parentElement.scrollTop = storedState.scroll[1];
+        }
+        this.elementStateMap.delete(parent);
       }
       const children = parentElement.children;
       for (let i = 0; i < children.length; i++) {
