@@ -113,6 +113,7 @@ export declare type recordOptions<T> = {
     ignoreClass?: string;
     maskAllInputs?: boolean;
     maskInputOptions?: MaskInputOptions;
+    maskInputFn?: MaskInputFn;
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
     packFn?: PackFn;
@@ -132,6 +133,7 @@ export declare type observerParam = {
     blockClass: blockClass;
     ignoreClass: string;
     maskInputOptions: MaskInputOptions;
+    maskInputFn?: MaskInputFn;
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
     canvasMutationCb: canvasMutationCallback;
@@ -302,6 +304,7 @@ export declare type playerConfig = {
     insertStyleRules: string[];
     triggerFocus: boolean;
     UNSAFE_replayCanvas: boolean;
+    pauseAnimation?: boolean;
     mouseTail: boolean | {
         duration?: number;
         lineCap?: string;
@@ -350,4 +353,5 @@ export declare enum ReplayerEvents {
     Flush = "flush",
     StateChange = "state-change"
 }
+export declare type MaskInputFn = (text: string) => string;
 export {};
