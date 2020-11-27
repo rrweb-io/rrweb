@@ -920,6 +920,14 @@ export class Replayer {
         const realParent = this.fragmentParentMap.get(parent);
         if (realParent && realParent.contains(target)) {
           realParent.removeChild(target);
+        } else if (this.fragmentParentMap.has(target)) {
+        /**
+         * the target itself is a fragment document and it's not in the dom
+         * so we should remove the real target from its parent
+         */
+          const realTarget = this.fragmentParentMap.get(target)!;
+          parent.removeChild(realTarget);
+          this.fragmentParentMap.delete(target);
         } else {
           parent.removeChild(target);
         }
