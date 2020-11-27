@@ -100,6 +100,7 @@ export class Replayer {
       insertStyleRules: [],
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
+      pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
     };
     this.config = Object.assign({}, defaultConfig, config);
@@ -276,7 +277,9 @@ export class Replayer {
       this.service.send({ type: 'PAUSE' });
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     }
-    this.iframe.contentDocument.getElementsByTagName('html')[0].classList.remove('rrweb-paused');
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      .classList.remove('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Start);
   }
 
@@ -288,7 +291,9 @@ export class Replayer {
       this.play(timeOffset);
       this.service.send({ type: 'PAUSE' });
     }
-    this.iframe.contentDocument.getElementsByTagName('html')[0].classList.add('rrweb-paused');
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      .classList.add('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -494,9 +499,14 @@ export class Replayer {
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
     ).concat(this.config.insertStyleRules);
-    injectStylesRules.push('html.rrweb-paused * { animation-play-state: paused !important; }');
+    if (this.config.pauseAnimation)
+      injectStylesRules.push(
+        'html.rrweb-paused * { animation-play-state: paused !important; }',
+      );
     if (!this.service.state.matches('playing')) {
-      this.iframe.contentDocument.getElementsByTagName('html')[0].classList.add('rrweb-paused');
+      this.iframe.contentDocument
+        .getElementsByTagName('html')[0]
+        .classList.add('rrweb-paused');
     }
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);

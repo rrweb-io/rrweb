@@ -19,7 +19,7 @@ export declare class Replayer {
     private fragmentParentMap;
     private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
-    on(event: string, handler: Handler): void;
+    on(event: string, handler: Handler): this;
     setConfig(config: Partial<playerConfig>): void;
     getMetaData(): playerMetaData;
     getCurrentTime(): number;
