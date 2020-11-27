@@ -409,6 +409,7 @@ export declare enum ReplayerEvents {
 }
 export declare type MaskInputFn = (text: string) => string;
 <<<<<<< HEAD
+<<<<<<< HEAD
 export declare type ElementState = {
     scroll?: [number, number];
 };
@@ -424,4 +425,9 @@ export declare type LogRecordOptions = {
 };
 =======
 >>>>>>> feat: add an option to determine whether to pause CSS animation when playback is paused (#428)
+=======
+export declare type ElementState = {
+    scroll?: [number, number];
+};
+>>>>>>> fix: elements would lose some states like scroll position because of "virtual parent" optimization (#427)
 export {};

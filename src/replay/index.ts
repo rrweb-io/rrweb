@@ -57,6 +57,7 @@ const SKIP_TIME_INTERVAL = 5 * 1000;
 const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
+const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
 
 const defaultMouseTailConfig = {
   duration: 500,
