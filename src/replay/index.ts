@@ -26,6 +26,7 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
+  ElementState,
 } from '../types';
 import {
   mirror,
@@ -45,6 +46,7 @@ const SKIP_TIME_INTERVAL = 5 * 1000;
 const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
+const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
 
 const defaultMouseTailConfig = {
   duration: 500,
@@ -78,6 +80,7 @@ export class Replayer {
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
+  private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -113,6 +116,7 @@ export class Replayer {
 
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
+    this.elementStateMap = new Map<INode, ElementState>();
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
 
@@ -130,8 +134,11 @@ export class Replayer {
           ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
         }
         parent.appendChild(frag);
+        // restore state of elements after they are mounted
+        this.restoreState(parent);
       }
       this.fragmentParentMap.clear();
+      this.elementStateMap.clear();
 
       for (const d of scrollMap.values()) {
         this.applyScroll(d);
@@ -913,6 +920,14 @@ export class Replayer {
         const realParent = this.fragmentParentMap.get(parent);
         if (realParent && realParent.contains(target)) {
           realParent.removeChild(target);
+        } else if (this.fragmentParentMap.has(target)) {
+        /**
+         * the target itself is a fragment document and it's not in the dom
+         * so we should remove the real target from its parent
+         */
+          const realTarget = this.fragmentParentMap.get(target)!;
+          parent.removeChild(realTarget);
+          this.fragmentParentMap.delete(target);
         } else {
           parent.removeChild(target);
         }
@@ -964,6 +979,10 @@ export class Replayer {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         mirror.map[mutation.parentId] = virtualParent;
         this.fragmentParentMap.set(virtualParent, parent);
+
+        // store the state, like scroll position, of child nodes before they are unmounted from dom
+        this.storeState(parent);
+
         while (parent.firstChild) {
           virtualParent.appendChild(parent.firstChild);
         }
@@ -1246,6 +1265,51 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.SkipEnd, {
       speed: this.speedService.state.context.normalSpeed,
     });
+  }
+
+  /**
+   * store state of elements before unmounted from dom recursively
+   * the state should be restored in the handler of event ReplayerEvents.Flush
+   * e.g. browser would lose scroll position after the process that we add children of parent node to Fragment Document as virtual dom
+   */
+  private storeState(parent: INode) {
+    if (parent) {
+      if (parent.nodeType === parent.ELEMENT_NODE) {
+        const parentElement = (parent as unknown) as HTMLElement;
+        if (parentElement.scrollLeft || parentElement.scrollTop) {
+          // store scroll position state
+          this.elementStateMap.set(parent, {
+            scroll: [parentElement.scrollLeft, parentElement.scrollTop],
+          });
+        }
+        const children = parentElement.children;
+        for (let i = 0; i < children.length; i++)
+          this.storeState((children[i] as unknown) as INode);
+      }
+    }
+  }
+
+  /**
+   * restore the state of elements recursively, which was stored before elements were unmounted from dom in virtual parent mode
+   * this function corresponds to function storeState
+   */
+  private restoreState(parent: INode) {
+    if (parent.nodeType === parent.ELEMENT_NODE) {
+      const parentElement = (parent as unknown) as HTMLElement;
+      if (this.elementStateMap.has(parent)) {
+        const storedState = this.elementStateMap.get(parent)!;
+        // restore scroll position
+        if (storedState.scroll) {
+          parentElement.scrollLeft = storedState.scroll[0];
+          parentElement.scrollTop = storedState.scroll[1];
+        }
+        this.elementStateMap.delete(parent);
+      }
+      const children = parentElement.children;
+      for (let i = 0; i < children.length; i++) {
+        this.restoreState((children[i] as unknown) as INode);
+      }
+    }
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

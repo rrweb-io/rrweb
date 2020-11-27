@@ -354,4 +354,7 @@ export declare enum ReplayerEvents {
     StateChange = "state-change"
 }
 export declare type MaskInputFn = (text: string) => string;
+export declare type ElementState = {
+    scroll?: [number, number];
+};
 export {};

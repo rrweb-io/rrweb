@@ -17,6 +17,7 @@ export declare class Replayer {
     private legacy_missingNodeRetryMap;
     private treeIndex;
     private fragmentParentMap;
+    private elementStateMap;
     private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
@@ -47,6 +48,8 @@ export declare class Replayer {
     private hoverElements;
     private isUserInteraction;
     private backToNormal;
+    private storeState;
+    private restoreState;
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;
