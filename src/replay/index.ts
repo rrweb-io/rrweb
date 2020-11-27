@@ -45,6 +45,7 @@ const SKIP_TIME_INTERVAL = 5 * 1000;
 const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
+const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
 
 const defaultMouseTailConfig = {
   duration: 500,
@@ -130,6 +131,8 @@ export class Replayer {
           ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
         }
         parent.appendChild(frag);
+        // restore state of elements after they are mounted
+        this.restoreState(parent);
       }
       this.fragmentParentMap.clear();
 
@@ -964,6 +967,10 @@ export class Replayer {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         mirror.map[mutation.parentId] = virtualParent;
         this.fragmentParentMap.set(virtualParent, parent);
+
+        // store the state, like scroll position, of child nodes before they are unmounted from dom
+        this.storeState(parent);
+
         while (parent.firstChild) {
           virtualParent.appendChild(parent.firstChild);
         }
@@ -1246,6 +1253,50 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.SkipEnd, {
       speed: this.speedService.state.context.normalSpeed,
     });
+  }
+
+  /**
+   * store state of elements before unmounted from dom recursively
+   * the state should be restored in the handler of event ReplayerEvents.Flush
+   * e.g. browser would lose scroll position after the process that we add children of parent node to Fragment Document as virtual dom
+   */
+  private storeState(parent: INode) {
+    if (parent) {
+      if (parent.nodeType === parent.ELEMENT_NODE) {
+        const parentElement = (parent as unknown) as HTMLElement;
+        if (parentElement.scrollLeft || parentElement.scrollTop) {
+          // store scroll position on the node itself
+          parentElement.setAttribute(
+            SCROLL_ATTRIBUTE_NAME,
+            `${parentElement.scrollLeft},${parentElement.scrollTop}`,
+          );
+        }
+        const children = parentElement.children;
+        for (let i = 0; i < children.length; i++)
+          this.storeState((children[i] as unknown) as INode);
+      }
+    }
+  }
+
+  /**
+   * restore the state of elements recursively, which was stored before elements were unmounted from dom in virtual parent mode
+   * this function corresponds to function storeState
+   */
+  private restoreState(parent: INode) {
+    if (parent.nodeType === parent.ELEMENT_NODE) {
+      const parentElement = (parent as unknown) as HTMLElement;
+      const scrollData = parentElement.getAttribute(SCROLL_ATTRIBUTE_NAME); // e.g. "scrollLeft,scrollTop"
+      if (scrollData) {
+        const scrollDataArray = scrollData.split(',');
+        parentElement.scrollLeft = Number(scrollDataArray[0]);
+        parentElement.scrollTop = Number(scrollDataArray[1]);
+        parentElement.removeAttribute(SCROLL_ATTRIBUTE_NAME);
+      }
+      const children = parentElement.children;
+      for (let i = 0; i < children.length; i++) {
+        this.restoreState((children[i] as unknown) as INode);
+      }
+    }
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

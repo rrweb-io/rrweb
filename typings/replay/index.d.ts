@@ -47,6 +47,8 @@ export declare class Replayer {
     private hoverElements;
     private isUserInteraction;
     private backToNormal;
+    private storeState;
+    private restoreState;
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;
