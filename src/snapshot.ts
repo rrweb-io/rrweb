@@ -187,13 +187,23 @@ export function _isBlockedElement(
 
 function serializeNode(
   n: Node,
-  doc: Document,
-  blockClass: string | RegExp,
-  blockSelector: string | null,
-  inlineStylesheet: boolean,
-  maskInputOptions: MaskInputOptions = {},
-  recordCanvas: boolean,
+  options: {
+    doc: Document;
+    blockClass: string | RegExp;
+    blockSelector: string | null;
+    inlineStylesheet: boolean;
+    maskInputOptions: MaskInputOptions;
+    recordCanvas: boolean;
+  },
 ): serializedNode | false {
+  const {
+    doc,
+    blockClass,
+    blockSelector,
+    inlineStylesheet,
+    maskInputOptions = {},
+    recordCanvas,
+  } = options;
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
       return {
@@ -437,26 +447,39 @@ function slimDOMExcluded(
 
 export function serializeNodeWithId(
   n: Node | INode,
-  doc: Document,
-  map: idNodeMap,
-  blockClass: string | RegExp,
-  blockSelector: string | null,
-  skipChild = false,
-  inlineStylesheet = true,
-  maskInputOptions?: MaskInputOptions,
-  slimDOMOptions: SlimDOMOptions = {},
-  recordCanvas?: boolean,
-  preserveWhiteSpace = true,
+  options: {
+    doc: Document;
+    map: idNodeMap;
+    blockClass: string | RegExp;
+    blockSelector: string | null;
+    skipChild: boolean;
+    inlineStylesheet: boolean;
+    maskInputOptions?: MaskInputOptions;
+    slimDOMOptions: SlimDOMOptions;
+    recordCanvas?: boolean;
+    preserveWhiteSpace?: boolean;
+  },
 ): serializedNodeWithId | null {
-  const _serializedNode = serializeNode(
-    n,
+  const {
+    doc,
+    map,
+    blockClass,
+    blockSelector,
+    skipChild = false,
+    inlineStylesheet = true,
+    maskInputOptions = {},
+    slimDOMOptions,
+    recordCanvas = false,
+  } = options;
+  let { preserveWhiteSpace = true } = options;
+  const _serializedNode = serializeNode(n, {
     doc,
     blockClass,
     blockSelector,
     inlineStylesheet,
     maskInputOptions,
-    recordCanvas || false,
-  );
+    recordCanvas,
+  });
   if (!_serializedNode) {
     // TODO: dev only
     console.warn(n, 'not serialized');
@@ -504,8 +527,7 @@ export function serializeNodeWithId(
       preserveWhiteSpace = false;
     }
     for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = serializeNodeWithId(
-        childN,
+      const serializedChildNode = serializeNodeWithId(childN, {
         doc,
         map,
         blockClass,
@@ -516,7 +538,7 @@ export function serializeNodeWithId(
         slimDOMOptions,
         recordCanvas,
         preserveWhiteSpace,
-      );
+      });
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
@@ -527,16 +549,26 @@ export function serializeNodeWithId(
 
 function snapshot(
   n: Document,
-  blockClass: string | RegExp = 'rr-block',
-  inlineStylesheet = true,
-  maskAllInputsOrOptions: boolean | MaskInputOptions,
-  slimDOMSensibleOrOptions: boolean | SlimDOMOptions,
-  recordCanvas?: boolean,
-  blockSelector: string | null = null,
+  options?: {
+    blockClass?: string | RegExp;
+    inlineStylesheet?: boolean;
+    maskAllInputs?: boolean | MaskInputOptions;
+    slimDOM?: boolean | SlimDOMOptions;
+    recordCanvas?: boolean;
+    blockSelector?: string | null;
+  },
 ): [serializedNodeWithId | null, idNodeMap] {
+  const {
+    blockClass = 'rr-block',
+    inlineStylesheet = true,
+    recordCanvas = false,
+    blockSelector = null,
+    maskAllInputs = false,
+    slimDOM = false,
+  } = options || {};
   const idNodeMap: idNodeMap = {};
   const maskInputOptions: MaskInputOptions =
-    maskAllInputsOrOptions === true
+    maskAllInputs === true
       ? {
           color: true,
           date: true,
@@ -554,40 +586,39 @@ function snapshot(
           textarea: true,
           select: true,
         }
-      : maskAllInputsOrOptions === false
+      : maskAllInputs === false
       ? {}
-      : maskAllInputsOrOptions;
+      : maskAllInputs;
   const slimDOMOptions: SlimDOMOptions =
-    slimDOMSensibleOrOptions === true || slimDOMSensibleOrOptions === 'all'
+    slimDOM === true || slimDOM === 'all'
       ? // if true: set of sensible options that should not throw away any information
         {
           script: true,
           comment: true,
           headFavicon: true,
           headWhitespace: true,
-          headMetaDescKeywords: slimDOMSensibleOrOptions === 'all', // destructive
+          headMetaDescKeywords: slimDOM === 'all', // destructive
           headMetaSocial: true,
           headMetaRobots: true,
           headMetaHttpEquiv: true,
           headMetaAuthorship: true,
           headMetaVerification: true,
         }
-      : slimDOMSensibleOrOptions === false
+      : slimDOM === false
       ? {}
-      : slimDOMSensibleOrOptions;
+      : slimDOM;
   return [
-    serializeNodeWithId(
-      n,
-      n,
-      idNodeMap,
+    serializeNodeWithId(n, {
+      doc: n,
+      map: idNodeMap,
       blockClass,
       blockSelector,
-      false,
+      skipChild: false,
       inlineStylesheet,
       maskInputOptions,
       slimDOMOptions,
       recordCanvas,
-    ),
+    }),
     idNodeMap,
   ];
 }

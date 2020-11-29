@@ -77,9 +77,12 @@ export function addHoverClass(cssText: string): string {
 
 function buildNode(
   n: serializedNodeWithId,
-  doc: Document,
-  HACK_CSS: boolean,
+  options: {
+    doc: Document;
+    hackCss: boolean;
+  },
 ): Node | null {
+  const { doc, hackCss } = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -109,7 +112,7 @@ function buildNode(
           const isTextarea = tagName === 'textarea' && name === 'value';
           const isRemoteOrDynamicCss =
             tagName === 'style' && name === '_cssText';
-          if (isRemoteOrDynamicCss && HACK_CSS) {
+          if (isRemoteOrDynamicCss && hackCss) {
             value = addHoverClass(value);
           }
           if (isTextarea || isRemoteOrDynamicCss) {
@@ -177,7 +180,7 @@ function buildNode(
       return node;
     case NodeType.Text:
       return doc.createTextNode(
-        n.isStyle && HACK_CSS ? addHoverClass(n.textContent) : n.textContent,
+        n.isStyle && hackCss ? addHoverClass(n.textContent) : n.textContent,
       );
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
@@ -190,12 +193,15 @@ function buildNode(
 
 export function buildNodeWithSN(
   n: serializedNodeWithId,
-  doc: Document,
-  map: idNodeMap,
-  skipChild = false,
-  HACK_CSS = true,
+  options: {
+    doc: Document;
+    map: idNodeMap;
+    skipChild?: boolean;
+    hackCss: boolean;
+  },
 ): INode | null {
-  let node = buildNode(n, doc, HACK_CSS);
+  const { doc, map, skipChild = false, hackCss = true } = options;
+  let node = buildNode(n, { doc, hackCss });
   if (!node) {
     return null;
   }
@@ -214,7 +220,12 @@ export function buildNodeWithSN(
     !skipChild
   ) {
     for (const childN of n.childNodes) {
-      const childNode = buildNodeWithSN(childN, doc, map, false, HACK_CSS);
+      const childNode = buildNodeWithSN(childN, {
+        doc,
+        map,
+        skipChild: false,
+        hackCss,
+      });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
       } else {
@@ -259,15 +270,20 @@ function handleScroll(node: INode) {
 
 function rebuild(
   n: serializedNodeWithId,
-  doc: Document,
-  onVisit?: (node: INode) => unknown,
-  /**
-   * This is not a public API yet, just for POC
-   */
-  HACK_CSS: boolean = true,
+  options: {
+    doc: Document;
+    onVisit?: (node: INode) => unknown;
+    hackCss?: boolean;
+  },
 ): [Node | null, idNodeMap] {
+  const { doc, onVisit, hackCss = true } = options;
   const idNodeMap: idNodeMap = {};
-  const node = buildNodeWithSN(n, doc, idNodeMap, false, HACK_CSS);
+  const node = buildNodeWithSN(n, {
+    doc,
+    map: idNodeMap,
+    skipChild: false,
+    hackCss,
+  });
   visit(idNodeMap, (visitedNode) => {
     if (onVisit) {
       onVisit(visitedNode);

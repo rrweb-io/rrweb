@@ -11,7 +11,7 @@ import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
 import { Suite } from 'mocha';
 
 const htmlFolder = path.join(__dirname, 'html');
-const htmls = fs.readdirSync(htmlFolder).map(filePath => {
+const htmls = fs.readdirSync(htmlFolder).map((filePath) => {
   const raw = fs.readFileSync(path.resolve(htmlFolder, filePath), 'utf-8');
   return {
     filePath,
@@ -24,7 +24,7 @@ interface IMimeType {
 }
 
 const server = () =>
-  new Promise<http.Server>(resolve => {
+  new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
       '.js': 'text/javascript',
@@ -73,7 +73,7 @@ interface ISuite extends Suite {
   code: string;
 }
 
-describe('integration tests', function(this: ISuite) {
+describe('integration tests', function (this: ISuite) {
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
@@ -102,16 +102,18 @@ describe('integration tests', function(this: ISuite) {
       const page: puppeteer.Page = await this.browser.newPage();
       // console for debug
       // tslint:disable-next-line: no-console
-      page.on('console', msg => console.log(msg.text()));
+      page.on('console', (msg) => console.log(msg.text()));
       await page.goto(`http://localhost:3030/html`);
       await page.setContent(html.src, {
         waitUntil: 'load',
       });
-      const rebuildHtml = (await page.evaluate(`${this.code}
+      const rebuildHtml = (
+        await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap, document)[0]);
-      `)).replace(/\n\n/g, '');
+        x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
+      `)
+      ).replace(/\n\n/g, '');
       const result = matchSnapshot(rebuildHtml, __filename, title);
       assert(result.pass, result.pass ? '' : result.report());
     }).timeout(5000);
