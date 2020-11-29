@@ -95,9 +95,7 @@ function record<T = eventWithTime>(
           headMetaAuthorship: _slimDOMOptions === 'all',
           headMetaDescKeywords: _slimDOMOptions === 'all',
         }
-      : _slimDOMOptions === false
-      ? {}
-      : _slimDOMOptions;
+      : {};
 
   polyfill();
 
