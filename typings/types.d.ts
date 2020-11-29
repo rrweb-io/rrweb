@@ -1,4 +1,4 @@
-import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions } from 'rrweb-snapshot';
+import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
 export declare enum EventType {
@@ -110,10 +110,12 @@ export declare type recordOptions<T> = {
     checkoutEveryNth?: number;
     checkoutEveryNms?: number;
     blockClass?: blockClass;
+    blockSelector?: string;
     ignoreClass?: string;
     maskAllInputs?: boolean;
     maskInputOptions?: MaskInputOptions;
     maskInputFn?: MaskInputFn;
+    slimDOMOptions?: SlimDOMOptions;
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
     packFn?: PackFn;
@@ -131,6 +133,7 @@ export declare type observerParam = {
     inputCb: inputCallback;
     mediaInteractionCb: mediaInteractionCallback;
     blockClass: blockClass;
+    blockSelector: string | null;
     ignoreClass: string;
     maskInputOptions: MaskInputOptions;
     maskInputFn?: MaskInputFn;
@@ -141,6 +144,7 @@ export declare type observerParam = {
     sampling: SamplingStrategy;
     recordCanvas: boolean;
     collectFonts: boolean;
+    slimDOMOptions: SlimDOMOptions;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;

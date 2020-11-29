@@ -1,4 +1,4 @@
-import { MaskInputOptions } from 'rrweb-snapshot';
+import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { mutationRecord, blockClass, mutationCallBack } from '../types';
 export default class MutationBuffer {
     private frozen;
@@ -12,10 +12,12 @@ export default class MutationBuffer {
     private droppedSet;
     private emissionCallback;
     private blockClass;
+    private blockSelector;
     private inlineStylesheet;
     private maskInputOptions;
     private recordCanvas;
-    init(cb: mutationCallBack, blockClass: blockClass, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, recordCanvas: boolean): void;
+    private slimDOMOptions;
+    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, recordCanvas: boolean, slimDOMOptions: SlimDOMOptions): void;
     freeze(): void;
     unfreeze(): void;
     isFrozen(): boolean;
