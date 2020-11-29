@@ -171,6 +171,7 @@ export type recordOptions<T> = {
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
   blockClass?: blockClass;
+  blockSelector?: string;
   ignoreClass?: string;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
@@ -194,6 +195,7 @@ export type observerParam = {
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
   blockClass: blockClass;
+  blockSelector: string | null;
   ignoreClass: string;
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;

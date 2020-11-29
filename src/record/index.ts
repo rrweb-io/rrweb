@@ -33,6 +33,7 @@ function record<T = eventWithTime>(
     checkoutEveryNms,
     checkoutEveryNth,
     blockClass = 'rr-block',
+    blockSelector = null,
     ignoreClass = 'rr-ignore',
     inlineStylesheet = true,
     maskAllInputs,
@@ -130,6 +131,7 @@ function record<T = eventWithTime>(
     mutationBuffer.freeze(); // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(document, {
       blockClass,
+      blockSelector,
       inlineStylesheet,
       maskAllInputs: maskInputOptions,
       recordCanvas,
@@ -289,6 +291,7 @@ function record<T = eventWithTime>(
                 }),
               ),
             blockClass,
+            blockSelector,
             ignoreClass,
             maskInputOptions,
             maskInputFn,

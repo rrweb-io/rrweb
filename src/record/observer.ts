@@ -44,6 +44,7 @@ export const mutationBuffer = new MutationBuffer();
 function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
+  blockSelector: string | null,
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
   recordCanvas: boolean,
@@ -52,6 +53,7 @@ function initMutationObserver(
   mutationBuffer.init(
     cb,
     blockClass,
+    blockSelector,
     inlineStylesheet,
     maskInputOptions,
     recordCanvas,
@@ -578,6 +580,7 @@ export function initObservers(
   const mutationObserver = initMutationObserver(
     o.mutationCb,
     o.blockClass,
+    o.blockSelector,
     o.inlineStylesheet,
     o.maskInputOptions,
     o.recordCanvas,
