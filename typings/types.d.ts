@@ -295,27 +295,7 @@ export declare type Logger = {
     trace?: (message?: any, ...optionalParams: any[]) => void;
     warn?: (message?: any, ...optionalParams: any[]) => void;
 };
-export declare type ReplayLogger = {
-    assert?: (data: logData) => void;
-    clear?: (data: logData) => void;
-    count?: (data: logData) => void;
-    countReset?: (data: logData) => void;
-    debug?: (data: logData) => void;
-    dir?: (data: logData) => void;
-    dirxml?: (data: logData) => void;
-    error?: (data: logData) => void;
-    group?: (data: logData) => void;
-    groupCollapsed?: (data: logData) => void;
-    groupEnd?: (data: logData) => void;
-    info?: (data: logData) => void;
-    log?: (data: logData) => void;
-    table?: (data: logData) => void;
-    time?: (data: logData) => void;
-    timeEnd?: (data: logData) => void;
-    timeLog?: (data: logData) => void;
-    trace?: (data: logData) => void;
-    warn?: (data: logData) => void;
-};
+export declare type ReplayLogger = Partial<Record<LogLevel, (data: logData) => void>>;
 export declare type LogParam = {
     level: LogLevel;
     trace: Array<string>;

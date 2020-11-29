@@ -414,28 +414,11 @@ export type Logger = {
   warn?: (message?: any, ...optionalParams: any[]) => void;
 };
 
-// functions to replay log record
-export type ReplayLogger = {
-  assert?: (data: logData) => void;
-  clear?: (data: logData) => void;
-  count?: (data: logData) => void;
-  countReset?: (data: logData) => void;
-  debug?: (data: logData) => void;
-  dir?: (data: logData) => void;
-  dirxml?: (data: logData) => void;
-  error?: (data: logData) => void;
-  group?: (data: logData) => void;
-  groupCollapsed?: (data: logData) => void;
-  groupEnd?: (data: logData) => void;
-  info?: (data: logData) => void;
-  log?: (data: logData) => void;
-  table?: (data: logData) => void;
-  time?: (data: logData) => void;
-  timeEnd?: (data: logData) => void;
-  timeLog?: (data: logData) => void;
-  trace?: (data: logData) => void;
-  warn?: (data: logData) => void;
-};
+/**
+ * define an interface to replay log records
+ * (data: logData) => void> function to display the log data
+ */
+export type ReplayLogger = Partial<Record<LogLevel, (data: logData) => void>>;
 
 export type LogParam = {
   level: LogLevel;
@@ -574,7 +557,8 @@ export type MaskInputFn = (text: string) => string;
 export type ElementState = {
   // [scrollLeft,scrollTop]
   scroll?: [number, number];
-}
+};
+
 export type StringifyOptions = {
   // limit of string length
   stringLengthLimit?: number;
