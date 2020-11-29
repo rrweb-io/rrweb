@@ -86,8 +86,8 @@ function record<T = eventWithTime>(
       mutationBuffer.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
       !(
-        e.type == EventType.IncrementalSnapshot &&
-        e.data.source == IncrementalSource.Mutation
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation
       )
     ) {
       // we've got a user initiated event so first we need to apply
@@ -128,15 +128,12 @@ function record<T = eventWithTime>(
 
     let wasFrozen = mutationBuffer.isFrozen();
     mutationBuffer.freeze(); // don't allow any mirror modifications during snapshotting
-    const [node, idNodeMap] = snapshot(
-      document,
+    const [node, idNodeMap] = snapshot(document, {
       blockClass,
       inlineStylesheet,
-      maskInputOptions,
-      // TODO: bypass slim DOM options
-      false,
+      maskAllInputs: maskInputOptions,
       recordCanvas,
-    );
+    });
 
     if (!node) {
       return console.warn('Failed to snapshot the document');

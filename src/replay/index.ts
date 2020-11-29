@@ -232,7 +232,9 @@ export class Replayer {
     }
     if (typeof config.mouseTail !== 'undefined') {
       if (config.mouseTail === false) {
-        this.mouseTail && (this.mouseTail.style.display = 'none');
+        if (this.mouseTail) {
+          this.mouseTail.style.display = 'none';
+        }
       } else {
         if (!this.mouseTail) {
           this.mouseTail = document.createElement('canvas');
@@ -498,17 +500,20 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    mirror.map = rebuild(event.data.node, this.iframe.contentDocument)[1];
+    mirror.map = rebuild(event.data.node, {
+      doc: this.iframe.contentDocument,
+    })[1];
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument;
     documentElement!.insertBefore(styleEl, head);
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
     ).concat(this.config.insertStyleRules);
-    if (this.config.pauseAnimation)
+    if (this.config.pauseAnimation) {
       injectStylesRules.push(
         'html.rrweb-paused * { animation-play-state: paused !important; }',
       );
+    }
     if (!this.service.state.matches('playing')) {
       this.iframe.contentDocument
         .getElementsByTagName('html')[0]
@@ -809,7 +814,7 @@ export class Replayer {
           domParent!.appendChild(target);
         }
 
-        const styleSheet = <CSSStyleSheet>styleEl.sheet;
+        const styleSheet: CSSStyleSheet = styleEl.sheet!;
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
@@ -920,10 +925,10 @@ export class Replayer {
         if (realParent && realParent.contains(target)) {
           realParent.removeChild(target);
         } else if (this.fragmentParentMap.has(target)) {
-        /**
-         * the target itself is a fragment document and it's not in the dom
-         * so we should remove the real target from its parent
-         */
+          /**
+           * the target itself is a fragment document and it's not in the dom
+           * so we should remove the real target from its parent
+           */
           const realTarget = this.fragmentParentMap.get(target)!;
           parent.removeChild(realTarget);
           this.fragmentParentMap.delete(target);
@@ -933,6 +938,7 @@ export class Replayer {
       }
     });
 
+    // tslint:disable-next-line: variable-name
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
@@ -1000,12 +1006,12 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      const target = buildNodeWithSN(
-        mutation.node,
-        this.iframe.contentDocument,
-        mirror.map,
-        true,
-      ) as Node;
+      const target = buildNodeWithSN(mutation.node, {
+        doc: this.iframe.contentDocument,
+        map: mirror.map,
+        skipChild: true,
+        hackCss: true,
+      }) as Node;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1282,8 +1288,9 @@ export class Replayer {
           });
         }
         const children = parentElement.children;
-        for (let i = 0; i < children.length; i++)
-          this.storeState((children[i] as unknown) as INode);
+        for (const child of Array.from(children)) {
+          this.storeState((child as unknown) as INode);
+        }
       }
     }
   }
@@ -1305,8 +1312,8 @@ export class Replayer {
         this.elementStateMap.delete(parent);
       }
       const children = parentElement.children;
-      for (let i = 0; i < children.length; i++) {
-        this.restoreState((children[i] as unknown) as INode);
+      for (const child of Array.from(children)) {
+        this.restoreState((child as unknown) as INode);
       }
     }
   }

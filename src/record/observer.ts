@@ -57,7 +57,7 @@ function initMutationObserver(
     recordCanvas,
   );
   const observer = new MutationObserver(
-    mutationBuffer.processMutations.bind(mutationBuffer)
+    mutationBuffer.processMutations.bind(mutationBuffer),
   );
   observer.observe(document, {
     attributes: true,
@@ -254,8 +254,8 @@ function initInputObserver(
       ] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
-      if(maskInputFn) {
-        text = maskInputFn(text)
+      if (maskInputFn) {
+        text = maskInputFn(text);
       } else {
         text = '*'.repeat(text.length);
       }

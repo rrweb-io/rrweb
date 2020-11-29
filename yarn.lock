@@ -2749,10 +2749,10 @@ rollup@^2.3.3:
   optionalDependencies:
     fsevents "~2.1.2"
 
-rrweb-snapshot@^0.8.4:
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-0.8.4.tgz#3f8bf1270975f9dfad60321a29067d2ea39e3c39"
-  integrity sha512-6zY4lEUpA6qEd/ArAo1crWefxsmiXMuK/fTToGmsW+ehR8/pglxTsqpMPEkgQO9uBUIWIUE9I3CyIQkigmt4ug==
+rrweb-snapshot@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/rrweb-snapshot/-/rrweb-snapshot-1.0.0.tgz#5736e0f14f3bfa5c9cad462e8178ae9b0ca9ce53"
+  integrity sha512-9mzEqbFE2OCe5aTzFFA1gKTqwvx2o2X2bMARpOWm7ST4cA1/xBbq4+wHia35CIn6EmMougaBVgUmah7QDJHXlQ==
 
 run-async@^2.2.0:
   version "2.4.1"

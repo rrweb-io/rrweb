@@ -209,18 +209,17 @@ export default class MutationBuffer {
       adds.push({
         parentId,
         nextId,
-        node: serializeNodeWithId(
-          n,
-          document,
-          mirror.map,
-          this.blockClass,
-          null,
-          true,
-          this.inlineStylesheet,
-          this.maskInputOptions,
-          undefined,
-          this.recordCanvas,
-        )!,
+        node: serializeNodeWithId(n, {
+          doc: document,
+          map: mirror.map,
+          blockClass: this.blockClass,
+          blockSelector: null,
+          skipChild: true,
+          inlineStylesheet: this.inlineStylesheet,
+          maskInputOptions: this.maskInputOptions,
+          slimDOMOptions: {},
+          recordCanvas: this.recordCanvas,
+        })!,
       });
     };
 
@@ -305,7 +304,7 @@ export default class MutationBuffer {
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => mirror.has(attribute.id)),
       removes: this.removes,
-      adds: adds,
+      adds,
     };
     // payload may be empty if the mutations happened in some blocked elements
     if (
