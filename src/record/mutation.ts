@@ -3,6 +3,8 @@ import {
   serializeNodeWithId,
   transformAttribute,
   MaskInputOptions,
+  SlimDOMOptions,
+  IGNORED_NODE,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
@@ -13,7 +15,7 @@ import {
   removedNodeMutation,
   addedNodeMutation,
 } from '../types';
-import { mirror, isBlocked, isAncestorRemoved } from '../utils';
+import { mirror, isBlocked, isAncestorRemoved, isIgnored } from '../utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -145,6 +147,7 @@ export default class MutationBuffer {
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
   private recordCanvas: boolean;
+  private slimDOMOptions: SlimDOMOptions;
 
   public init(
     cb: mutationCallBack,
@@ -153,12 +156,14 @@ export default class MutationBuffer {
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
     recordCanvas: boolean,
+    slimDOMOptions: SlimDOMOptions,
   ) {
     this.blockClass = blockClass;
     this.blockSelector = blockSelector;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
     this.recordCanvas = recordCanvas;
+    this.slimDOMOptions = slimDOMOptions;
     this.emissionCallback = cb;
   }
 
@@ -193,8 +198,12 @@ export default class MutationBuffer {
      */
     const addList = new DoubleLinkedList();
     const getNextId = (n: Node): number | null => {
-      let nextId =
-        n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
+      let ns: Node | null = n;
+      let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
+      while (nextId === IGNORED_NODE) {
+        ns = ns && ns.nextSibling;
+        nextId = ns && mirror.getId((ns as unknown) as INode);
+      }
       if (nextId === -1 && isBlocked(n.nextSibling, this.blockClass)) {
         nextId = null;
       }
@@ -209,21 +218,24 @@ export default class MutationBuffer {
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
-      adds.push({
-        parentId,
-        nextId,
-        node: serializeNodeWithId(n, {
-          doc: document,
-          map: mirror.map,
-          blockClass: this.blockClass,
-          blockSelector: this.blockSelector,
-          skipChild: true,
-          inlineStylesheet: this.inlineStylesheet,
-          maskInputOptions: this.maskInputOptions,
-          slimDOMOptions: {},
-          recordCanvas: this.recordCanvas,
-        })!,
+      let sn = serializeNodeWithId(n, {
+        doc: document,
+        map: mirror.map,
+        blockClass: this.blockClass,
+        blockSelector: this.blockSelector,
+        skipChild: true,
+        inlineStylesheet: this.inlineStylesheet,
+        maskInputOptions: this.maskInputOptions,
+        slimDOMOptions: this.slimDOMOptions,
+        recordCanvas: this.recordCanvas,
       });
+      if (sn) {
+        adds.push({
+          parentId,
+          nextId,
+          node: sn,
+        });
+      }
     };
 
     while (this.mapRemoves.length) {
@@ -332,6 +344,9 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
+    if (isIgnored(m.target)) {
+      return;
+    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
@@ -373,7 +388,8 @@ export default class MutationBuffer {
           const parentId = mirror.getId(m.target as INode);
           if (
             isBlocked(n, this.blockClass) ||
-            isBlocked(m.target, this.blockClass)
+            isBlocked(m.target, this.blockClass) ||
+            isIgnored(n)
           ) {
             return;
           }
@@ -421,6 +437,9 @@ export default class MutationBuffer {
       return;
     }
     if (isINode(n)) {
+      if (isIgnored(n)) {
+        return;
+      }
       this.movedSet.add(n);
       let targetId: number | null = null;
       if (target && isINode(target)) {
