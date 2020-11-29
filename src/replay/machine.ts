@@ -165,6 +165,7 @@ export function createPlayerService(
           };
         }),
         play(ctx) {
+          console.warn('play');
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
           for (const event of events) {

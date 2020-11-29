@@ -36,8 +36,13 @@ import {
   fontCallback,
   fontParam,
   MaskInputFn,
+  logCallback,
+  LogRecordOptions,
+  Logger,
+  LogLevel,
 } from '../types';
 import MutationBuffer from './mutation';
+import { stringify } from './stringify';
 
 export const mutationBuffer = new MutationBuffer();
 
@@ -499,6 +504,100 @@ function initFontObserver(cb: fontCallback): listenerHandler {
   };
 }
 
+function initLogObserver(
+  cb: logCallback,
+  logOptions: LogRecordOptions,
+): listenerHandler {
+  const logger = logOptions.logger;
+  if (!logger) return () => {};
+  let logCount = 0;
+  const cancelHandlers: any[] = [];
+  // add listener to thrown errors
+  if (logOptions.level!.includes('error')) {
+    if (window) {
+      const originalOnError = window.onerror;
+      window.onerror = (...args: any[]) => {
+        originalOnError && originalOnError.apply(this, args);
+        let stack: Array<string> = [];
+        if (args[args.length - 1] instanceof Error)
+          // 0(the second parameter) tells parseStack that every stack in Error is useful
+          stack = parseStack(args[args.length - 1].stack, 0);
+        const payload = [stringify(args[0], logOptions.stringifyOptions)];
+        cb({
+          level: 'error',
+          trace: stack,
+          payload: payload,
+        });
+      };
+      cancelHandlers.push(() => {
+        window.onerror = originalOnError;
+      });
+    }
+  }
+  for (const levelType of logOptions.level!)
+    cancelHandlers.push(replace(logger, levelType));
+  return () => {
+    cancelHandlers.forEach((h) => h());
+  };
+
+  /**
+   * replace the original console function and record logs
+   * @param logger the logger object such as Console
+   * @param level the name of log function to be replaced
+   */
+  function replace(logger: Logger, level: LogLevel) {
+    if (!logger[level]) return () => {};
+    // replace the logger.{level}. return a restore function
+    return patch(logger, level, (original) => {
+      return (...args: any[]) => {
+        original.apply(this, args);
+        try {
+          const stack = parseStack(new Error().stack);
+          const payload = args.map((s) =>
+            stringify(s, logOptions.stringifyOptions),
+          );
+          logCount++;
+          if (logCount < logOptions.lengthThreshold!)
+            cb({
+              level: level,
+              trace: stack,
+              payload: payload,
+            });
+          else if (logCount === logOptions.lengthThreshold)
+            // notify the user
+            cb({
+              level: 'warn',
+              trace: [],
+              payload: [
+                stringify('The number of log records reached the threshold.'),
+              ],
+            });
+        } catch (error) {
+          original('rrweb logger error:', error, ...args);
+        }
+      };
+    });
+  }
+  /**
+   * parse single stack message to an stack array.
+   * @param stack the stack message to be parsed
+   * @param omitDepth omit specific depth of useless stack. omit hijacked log function by default
+   */
+  function parseStack(
+    stack: string | undefined,
+    omitDepth: number = 1,
+  ): Array<string> {
+    let stacks: string[] = [];
+    if (stack) {
+      stacks = stack
+        .split('at')
+        .splice(1 + omitDepth)
+        .map((s) => s.trim());
+    }
+    return stacks;
+  }
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -511,6 +610,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     styleSheetRuleCb,
     canvasMutationCb,
     fontCb,
+    logCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -572,6 +672,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     fontCb(...p);
   };
+  o.logCb = (...p: Arguments<logCallback>) => {
+    if (hooks.log) {
+      hooks.log(...p);
+    }
+    logCb(...p);
+  };
 }
 
 export function initObservers(
@@ -617,6 +723,9 @@ export function initObservers(
     ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass)
     : () => {};
   const fontObserver = o.collectFonts ? initFontObserver(o.fontCb) : () => {};
+  const logObserver = o.logOptions
+    ? initLogObserver(o.logCb, o.logOptions)
+    : () => {};
 
   return () => {
     mutationObserver.disconnect();
@@ -629,5 +738,6 @@ export function initObservers(
     styleSheetObserver();
     canvasMutationObserver();
     fontObserver();
+    logObserver();
   };
 }

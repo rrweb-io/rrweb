@@ -27,6 +27,9 @@ import {
   inputData,
   canvasMutationData,
   ElementState,
+  LogReplayConfig,
+  logData,
+  ReplayLogger,
 } from '../types';
 import {
   mirror,
@@ -53,6 +56,31 @@ const defaultMouseTailConfig = {
   lineWidth: 3,
   strokeStyle: 'red',
 } as const;
+
+const defaultLogConfig: LogReplayConfig = {
+  level: [
+    'assert',
+    'clear',
+    'count',
+    'countReset',
+    'debug',
+    'dir',
+    'dirxml',
+    'error',
+    'group',
+    'groupCollapsed',
+    'groupEnd',
+    'info',
+    'log',
+    'table',
+    'time',
+    'timeEnd',
+    'timeLog',
+    'trace',
+    'warn',
+  ],
+  replayLogger: undefined,
+};
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -104,8 +132,11 @@ export class Replayer {
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
+      logConfig: defaultLogConfig,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    if (!this.config.logConfig.replayLogger)
+      this.config.logConfig.replayLogger = this.getConsoleLogger();
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -904,6 +935,18 @@ export class Replayer {
         }
         break;
       }
+      case IncrementalSource.Log: {
+        try {
+          const logData = e.data as logData;
+          const replayLogger = this.config.logConfig.replayLogger!;
+          if (typeof replayLogger[logData.level] === 'function')
+            replayLogger[logData.level]!(logData);
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(error);
+          }
+        }
+      }
       default:
     }
   }
@@ -1157,6 +1200,48 @@ export class Replayer {
     } catch (error) {
       // for safe
     }
+  }
+
+  /**
+   * format the trace data to a string
+   * @param data the log data
+   */
+  private formatMessage(data: logData): string {
+    if (data.trace.length === 0) return '';
+    const stackPrefix = '\n\tat ';
+    let result = stackPrefix;
+    result += data.trace.join(stackPrefix);
+    return result;
+  }
+
+  /**
+   * generate a console log replayer which implement the interface ReplayLogger
+   */
+  private getConsoleLogger(): ReplayLogger {
+    const rrwebOriginal = '__rrweb_original__';
+    const replayLogger: ReplayLogger = {};
+    for (const level of this.config.logConfig.level!)
+      if (level === 'trace')
+        replayLogger[level] = (data: logData) => {
+          const logger = (console.log as any)[rrwebOriginal]
+            ? (console.log as any)[rrwebOriginal]
+            : console.log;
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+      else
+        replayLogger[level] = (data: logData) => {
+          const logger = (console[level] as any)[rrwebOriginal]
+            ? (console[level] as any)[rrwebOriginal]
+            : console[level];
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+    return replayLogger;
   }
 
   private legacy_resolveMissingNode(
