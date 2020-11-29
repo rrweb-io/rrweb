@@ -177,7 +177,7 @@ export type recordOptions<T> = {
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
-  slimDOMOptions?: SlimDOMOptions;
+  slimDOMOptions?: SlimDOMOptions | 'all' | true;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   packFn?: PackFn;
