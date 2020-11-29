@@ -70,7 +70,7 @@ exports[`[html file]: block-element.html 1`] = `
     <div class=\\"rr-block big\\" style=\\"width: 50px; height: 50px;\\"></div>
     <div>record 2</div>
     <div class=\\"rr-block small\\" style=\\"width: 50px; height: 100px;\\"></div>
-    <div class=\\"rr-block\\" style=\\"height: 200px; width: 100px\\"></div>
+    <div class=\\"rr-block\\" style=\\"width: 100px; height: 200px;\\"></div>
   </body></html>"
 `;
 

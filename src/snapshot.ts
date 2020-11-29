@@ -309,8 +309,11 @@ function serializeNode(
       }
       if (needBlock) {
         const { width, height } = (n as HTMLElement).getBoundingClientRect();
-        attributes.rr_width = `${width}px`;
-        attributes.rr_height = `${height}px`;
+        attributes = {
+          class: attributes.class,
+          rr_width: `${width}px`,
+          rr_height: `${height}px`,
+        };
       }
       return {
         type: NodeType.Element,
