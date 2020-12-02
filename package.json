@@ -5,7 +5,6 @@
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-typescript": "^4.0.0",
-    "@tsconfig/svelte": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^3.7.0",
     "@typescript-eslint/parser": "^3.7.0",
     "eslint": "^7.5.0",
@@ -14,7 +13,7 @@
     "postcss-easy-import": "^3.0.0",
     "rollup": "^1.20.0",
     "rollup-plugin-livereload": "^1.0.0",
-    "rollup-plugin-svelte": "^5.0.3",
+    "rollup-plugin-svelte": "^6.1.1",
     "rollup-plugin-terser": "^5.1.2",
     "sirv-cli": "^0.4.4",
     "svelte": "^3.2.0",
@@ -24,7 +23,8 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "rrweb": "^0.9.10"
+    "rrweb": "^0.9.10",
+    "@tsconfig/svelte": "^1.0.0"
   },
   "scripts": {
     "build": "rollup -c",
