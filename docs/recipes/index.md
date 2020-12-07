@@ -65,3 +65,10 @@ In some Apps, rrweb may record an unexpected amount of data. This part will help
 Canvas is a special HTML element, which will not be recorded by rrweb by default. There are some options for recording and replaying Canvas.
 
 [link](./canvas.md)
+
+### Console Recorder and Replayer
+
+Starting with a later version of v0.9.11, we add the ability to record and play back console output. 
+This feature aims to provide developers with more information about the bug scene. There are some options for recording and replaying console output.
+
+[link](./console.md)

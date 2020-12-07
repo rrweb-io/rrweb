@@ -150,6 +150,7 @@ The parameter of `rrweb.record` accepts the following options.
 | sampling         | -           | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                   |
 | recordCanvas     | false       | whether to record the canvas element                                                                                                                             |
 | collectFonts     | false       | whether to collect fonts in the website                                                                                                                          |
+| recordLog        | false       | whether to record console output, refer to the [console recipe](./docs/recipes/console.md)                                                                       |
 
 #### Privacy
 
@@ -291,6 +292,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | UNSAFE_replayCanvas | false         | whether to replay the canvas element. **Enable this will remove the sandbox, which is unsafe.**                                                                                                                                |
 | mouseTail           | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn            | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
+| logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
 
 #### Use rrweb-player
 
