@@ -62,7 +62,7 @@ replayer.play();
 
 Description of replay option is as follows:
 
-| key          | default                                                                                      | description                                                                                                                                            |
-| ------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| level        | ['log','warn','error',...]                                                                   | Same meaning as that option in recordLog. You can set this option to play levels of log you need.                                                      |
-| replayLogger | a console based object that implements the interface [ReplayLogger](../../src/types.ts#L417) | You can also set a replay logger to replay the log messages in a simulated browser console like LogRocket by implementing the interface `ReplayLogger` |
+| key          | default                                                                                      | description                                                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| level        | ['log','warn','error',...]                                                                   | Same meaning as that option in recordLog. You can set this option to play levels of log you need.                                       |
+| replayLogger | a console based object that implements the interface [ReplayLogger](../../src/types.ts#L417) | You can also set a replay logger to replay the log messages in a simulated browser console by implementing the interface `ReplayLogger` |
