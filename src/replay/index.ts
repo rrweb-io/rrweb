@@ -849,16 +849,23 @@ export class Replayer {
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
-            const _index =
-              index === undefined
-                ? undefined
-                : Math.min(index, styleSheet.rules.length);
             try {
-              styleSheet.insertRule(rule, _index);
+              const _index =
+                index === undefined
+                  ? undefined
+                  : Math.min(index, styleSheet.rules.length);
+              try {
+                styleSheet.insertRule(rule, _index);
+              } catch (e) {
+                /**
+                 * sometimes we may capture rules with browser prefix
+                 * insert rule with prefixs in other browsers may cause Error
+                 */
+              }
             } catch (e) {
               /**
-               * sometimes we may capture rules with browser prefix
-               * insert rule with prefixs in other browsers may cause Error
+               * accessing styleSheet rules may cause SecurityError
+               * for specific access control settings
                */
             }
           });
