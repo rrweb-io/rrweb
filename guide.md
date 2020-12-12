@@ -143,7 +143,7 @@ The parameter of `rrweb.record` accepts the following options.
 | blockClass       | 'rr-block'  | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                   |
 | ignoreClass      | 'rr-ignore' | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                   |
 | maskAllInputs    | false       | mask all input content as \*                                                                                                                                     |
-| maskInputOptions | {}          | mask some kinds of input \*<br />refert ot the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
+| maskInputOptions | {}          | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
 | inlineStylesheet | true        | whether to inline the stylesheet in the events                                                                                                                   |
 | hooks            | {}          | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                     |
 | packFn           | -           | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                   |
