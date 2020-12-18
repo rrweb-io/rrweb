@@ -39,7 +39,8 @@ export class Timer {
     let lastTimestamp = performance.now();
     const { actions } = this;
     const self = this;
-    function check(time: number) {
+    function check() {
+      const time = performance.now();
       self.timeOffset += (time - lastTimestamp) * self.speed;
       lastTimestamp = time;
       while (actions.length) {
