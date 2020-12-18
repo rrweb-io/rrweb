@@ -508,7 +508,7 @@ export class Replayer {
           // defer finish event if the last event is a mouse move
           setTimeout(() => {
             finish();
-          }, Math.max(0, -event.data.positions[0].timeOffset));
+          }, Math.max(0, -event.data.positions[0].timeOffset + 50)); // Add 50 to make sure the timer would check the last mousemove event. Otherwise, the timer may be stopped by the service before checking the last event.
         } else {
           finish();
         }
