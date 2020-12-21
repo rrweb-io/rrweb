@@ -1,4 +1,4 @@
-import { inflate } from 'pako/dist/pako_inflate';
+import { strFromU8, strToU8, unzlibSync } from 'fflate';
 import { UnpackFn, eventWithTimeAndPacker, MARK } from './base';
 import { eventWithTime } from '../types';
 
@@ -16,7 +16,7 @@ export const unpack: UnpackFn = (raw: string) => {
   }
   try {
     const e: eventWithTimeAndPacker = JSON.parse(
-      inflate(raw, { to: 'string' }),
+      strFromU8(unzlibSync(strToU8(raw, true)))
     );
     if (e.v === MARK) {
       return e;
