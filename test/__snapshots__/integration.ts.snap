@@ -102,32 +102,36 @@ exports[`[html file]: dynamic-stylesheet.html 1`] = `
 
 exports[`[html file]: form-fields.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
-  <meta charset=\\"UTF-8\\" />
-  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
-  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
-  <title>form fields</title>
-</head><body>
-  <form>
-    <label for=\\"text\\">
-      <input type=\\"text\\" value=\\"1\\" />
-    </label>
-    <label for=\\"radio\\">
-      <input type=\\"radio\\" checked=\\"\\" />
-    </label>
-    <label for=\\"checkbox\\">
-      <input type=\\"checkbox\\" checked=\\"\\" />
-    </label>
-    <label for=\\"textarea\\">
-      <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
-    </label>
-    <label for=\\"select\\">
-      <select name=\\"\\" id=\\"\\" value=\\"2\\">
-        <option value=\\"1\\">1</option>
-        <option value=\\"2\\" selected=\\"\\">2</option>
-      </select>
-    </label>
-  </form><noscript>SCRIPT_PLACEHOLDER</noscript>
-</body></html>"
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>form fields</title>
+  </head>  <body>
+    <form>
+      <label for=\\"text\\">
+        <input type=\\"text\\" value=\\"1\\" />
+      </label>
+      <label for=\\"radio\\">
+        <input type=\\"radio\\" checked=\\"\\" />
+      </label>
+      <label for=\\"checkbox\\">
+        <input type=\\"checkbox\\" checked=\\"\\" />
+      </label>
+      <label for=\\"textarea\\">
+        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
+      </label>
+      <label for=\\"select\\">
+        <select name=\\"\\" id=\\"\\" value=\\"2\\">
+          <option value=\\"1\\">1</option>
+          <option value=\\"2\\" selected=\\"\\">2</option>
+        </select>
+      </label>
+      <label>
+        <input name=\\"tagName\\" />
+      </label>
+    </form>
+  
+  <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
 exports[`[html file]: hover.html 1`] = `

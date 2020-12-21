@@ -18,8 +18,12 @@ function genId(): number {
   return _id++;
 }
 
-function getValidTagName(tagName: string): string {
-  const processedTagName = tagName.toLowerCase().trim();
+function getValidTagName(element: HTMLElement): string {
+  if (element instanceof HTMLFormElement) {
+    return 'form';
+  }
+
+  const processedTagName = element.tagName.toLowerCase().trim();
 
   if (tagNameRegex.test(processedTagName)) {
     // if the tag name is odd and we cannot extract
@@ -223,7 +227,7 @@ function serializeNode(
         blockClass,
         blockSelector,
       );
-      const tagName = getValidTagName((n as HTMLElement).tagName);
+      const tagName = getValidTagName(n as HTMLElement);
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
         attributes[name] = transformAttribute(doc, name, value);
