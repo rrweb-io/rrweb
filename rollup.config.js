@@ -1,5 +1,4 @@
 import typescript from 'rollup-plugin-typescript';
-import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
@@ -36,12 +35,6 @@ function toAllPath(path) {
 function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
-
-const namedExports = {
-  'pako/dist/pako_deflate': ['deflate'],
-  'pako/dist/pako_inflate': ['inflate'],
-  pako: ['deflate'],
-};
 
 const baseConfigs = [
   // record only
@@ -85,7 +78,7 @@ const baseConfigs = [
 let configs = [];
 
 for (const c of baseConfigs) {
-  const basePlugins = [resolve(), commonjs({ namedExports }), typescript()];
+  const basePlugins = [resolve({ browser: true }), typescript()];
   const plugins = basePlugins.concat(
     postcss({
       extract: false,
@@ -153,10 +146,7 @@ if (process.env.BROWSER_ONLY) {
   configs = {
     input: './src/index.ts',
     plugins: [
-      resolve(),
-      commonjs({
-        namedExports,
-      }),
+      resolve({ browser: true }),
       typescript(),
       postcss({
         extract: true,
