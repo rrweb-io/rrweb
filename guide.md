@@ -2,7 +2,7 @@
 
 [中文指南](./guide.md)
 
-> You may also want to read the [recipes](./docs/recipes/index.md) to find some use real-world use case, or read the [design docs](../) to know more technical details of rrweb.
+> You may also want to read the [recipes](./docs/recipes/index.md) to find some use real-world use case, or read the [design docs](./docs) to know more technical details of rrweb.
 
 ## Installation
 
