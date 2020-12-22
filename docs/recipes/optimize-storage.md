@@ -66,7 +66,7 @@ rrweb.record({
 
 ### Use packFn to compress every event
 
-rrweb provides a pako-based simple compress function rrweb.pack.
+rrweb provides an fflate-based simple compress function rrweb.pack.
 
 You can use it by passing it as the `packFn` in the recording.
 

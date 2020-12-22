@@ -66,7 +66,7 @@ rrweb.record({
 
 ### 基于 packFn 的单数据压缩
 
-rrweb 内包含了基于 pako 的简单压缩 rrweb.pack，在录制时可以作为 `packFn` 传入。
+rrweb 内包含了基于 fflate 的简单压缩 rrweb.pack，在录制时可以作为 `packFn` 传入。
 
 ```js
 rrweb.record({
