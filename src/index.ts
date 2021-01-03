@@ -74,7 +74,14 @@ class RRvideo {
   private config: RRvideoConfig;
 
   constructor(config?: Partial<RRvideoConfig> & { input: string }) {
-    this.config = Object.assign({}, defaultConfig, config);
+    this.config = {
+      fps: config?.fps || defaultConfig.fps,
+      headless: config?.headless || defaultConfig.headless,
+      input: config?.input || defaultConfig.input,
+      cb: config?.cb || defaultConfig.cb,
+      output: config?.output || defaultConfig.output,
+      rrwebPlayer: config?.rrwebPlayer || defaultConfig.rrwebPlayer,
+    };
   }
 
   public async init() {
