@@ -215,13 +215,19 @@ function initScrollObserver(
 function initViewportResizeObserver(
   cb: viewportResizeCallback,
 ): listenerHandler {
+  let last_h = -1;
+  let last_w = -1;
   const updateDimension = throttle(() => {
     const height = getWindowHeight();
     const width = getWindowWidth();
-    cb({
-      width: Number(width),
-      height: Number(height),
-    });
+    if (last_h !== height || last_w != width) {
+      cb({
+        width: Number(width),
+        height: Number(height),
+      });
+      last_h = height;
+      last_w = width;
+    }
   }, 200);
   return on('resize', updateDimension, window);
 }
