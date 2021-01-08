@@ -436,6 +436,9 @@ export default class MutationBuffer {
     if (isBlocked(n, this.blockClass)) {
       return;
     }
+    if (target && isBlocked(target, this.blockClass)) {
+      return;
+    }
     if (isINode(n)) {
       if (isIgnored(n)) {
         return;
