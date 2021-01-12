@@ -1328,7 +1328,7 @@ export class Replayer {
     setTimeout(() => {
       this.tailPositions = this.tailPositions.filter((p) => p !== position);
       draw();
-    }, duration);
+    }, duration / this.speedService.state.context.timer.speed);
   }
 
   private hoverElements(el: Element) {
