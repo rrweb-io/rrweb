@@ -296,6 +296,9 @@ export default class MutationBuffer {
          * it may be a bug or corner case. We need to escape the
          * dead while loop at once.
          */
+        while (addList.head) {
+          addList.removeNode(addList.head.value);
+        }
         break;
       }
       candidate = node.previous;
