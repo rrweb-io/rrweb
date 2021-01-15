@@ -449,6 +449,7 @@ export default class MutationBuffer {
         break;
       }
       case 'attributes': {
+        const target = (m.target as HTMLElement);
         let value = (m.target as HTMLElement).getAttribute(m.attributeName!);
         if (m.attributeName === 'value') {
           value = maskInputValue({
@@ -472,13 +473,41 @@ export default class MutationBuffer {
           };
           this.attributes.push(item);
         }
-        // overwrite attribute if the mutations was triggered in same time
-        item.attributes[m.attributeName!] = transformAttribute(
-          this.doc,
-          (m.target as HTMLElement).tagName,
-          m.attributeName!,
-          value!,
-        );
+        if (m.attributeName === 'style') {
+          const old = this.doc.createElement('span');
+          old.setAttribute('style', m.oldValue);
+          if (item.attributes['style'] === undefined) {
+            item.attributes['style'] = {};
+          }
+          for (let i=0; i<target.style.length; i++) {
+            let pname = target.style[i];
+            if (target.style.getPropertyValue(pname) !=
+                old.style.getPropertyValue(pname) ||
+                target.style.getPropertyPriority(pname) !=
+                old.style.getPropertyPriority(pname)) {
+              item.attributes['style'][pname] = [
+                target.style.getPropertyValue(pname),
+                target.style.getPropertyPriority(pname)
+              ];
+            }
+          }
+          for (let i=0; i<old.style.length; i++) {
+            let pname = old.style[i];
+            if (target.style.getPropertyValue(pname) === '' ||
+                !target.style.getPropertyValue(pname)  // covering potential non-standard browsers
+               ) {
+              item.attributes['style'][pname] = false;  // delete
+            }
+          }
+        } else {
+          // overwrite attribute if the mutations was triggered in same time
+          item.attributes[m.attributeName!] = transformAttribute(
+            this.doc,
+            (m.target as HTMLElement).tagName,
+            m.attributeName!,
+            value!,
+          );
+        }
         break;
       }
       case 'childList': {
