@@ -210,7 +210,7 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (!n.parentNode) {
+      if (!n.parentNode || !document.contains(n)) {
         return;
       }
       const parentId = mirror.getId((n.parentNode as Node) as INode);
