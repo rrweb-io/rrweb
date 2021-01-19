@@ -134,6 +134,7 @@ describe('record integration tests', function (this: ISuite) {
 
     // toggle the select box
     await page.click('.select2-container');
+    await page.waitFor(100);
     await page.click('.select2-container');
 
     const snapshots = await page.evaluate('window.snapshots');
