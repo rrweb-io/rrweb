@@ -15,7 +15,7 @@ import {
   scrollData,
   inputData,
 } from './types';
-import { INode } from 'rrweb-snapshot';
+import { INode, IGNORED_NODE } from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -195,6 +195,15 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
     return isBlocked(node.parentNode, blockClass);
   }
   return isBlocked(node.parentNode, blockClass);
+}
+
+export function isIgnored(n: Node | INode): boolean {
+  if ('__sn' in n) {
+    return (n as INode).__sn.id === IGNORED_NODE;
+  }
+  // The main part of the slimDOM check happens in
+  // rrweb-snapshot::serializeNodeWithId
+  return false;
 }
 
 export function isAncestorRemoved(target: INode): boolean {
@@ -451,5 +460,70 @@ export class TreeIndex {
     this.removeIdSet = new Set();
     this.scrollMap = new Map();
     this.inputMap = new Map();
+  }
+}
+
+type ResolveTree = {
+  value: addedNodeMutation;
+  children: ResolveTree[];
+  parent: ResolveTree | null;
+};
+
+export function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[] {
+  const queueNodeMap: Record<number, ResolveTree> = {};
+  const putIntoMap = (
+    m: addedNodeMutation,
+    parent: ResolveTree | null,
+  ): ResolveTree => {
+    const nodeInTree: ResolveTree = {
+      value: m,
+      parent,
+      children: [],
+    };
+    queueNodeMap[m.node.id] = nodeInTree;
+    return nodeInTree;
+  };
+
+  const queueNodeTrees: ResolveTree[] = [];
+  for (const mutation of queue) {
+    const { nextId, parentId } = mutation;
+    if (nextId && nextId in queueNodeMap) {
+      const nextInTree = queueNodeMap[nextId];
+      if (nextInTree.parent) {
+        const idx = nextInTree.parent.children.indexOf(nextInTree);
+        nextInTree.parent.children.splice(
+          idx,
+          0,
+          putIntoMap(mutation, nextInTree.parent),
+        );
+      } else {
+        const idx = queueNodeTrees.indexOf(nextInTree);
+        queueNodeTrees.splice(idx, 0, putIntoMap(mutation, null));
+      }
+      continue;
+    }
+    if (parentId in queueNodeMap) {
+      const parentInTree = queueNodeMap[parentId];
+      parentInTree.children.push(putIntoMap(mutation, parentInTree));
+      continue;
+    }
+    queueNodeTrees.push(putIntoMap(mutation, null));
+  }
+
+  return queueNodeTrees;
+}
+
+export function iterateResolveTree(
+  tree: ResolveTree,
+  cb: (mutation: addedNodeMutation) => unknown,
+) {
+  cb(tree.value);
+  /**
+   * The resolve tree was designed to reflect the DOM layout,
+   * but we need append next sibling first, so we do a reverse
+   * loop here.
+   */
+  for (let i = tree.children.length - 1; i >= 0; i--) {
+    iterateResolveTree(tree.children[i], cb);
   }
 }

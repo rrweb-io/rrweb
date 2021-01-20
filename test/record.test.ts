@@ -179,7 +179,7 @@ describe('record', function (this: ISuite) {
         document.body.appendChild(span);
       }, 10);
     });
-    await this.page.waitFor(50);
+    await this.page.waitFor(100);
     assertSnapshot(this.events, __filename, 'async-checkout');
   });
 

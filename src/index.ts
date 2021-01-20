@@ -11,5 +11,6 @@ export {
 } from './types';
 
 const { addCustomEvent } = record;
+const { freezePage } = record;
 
-export { record, addCustomEvent, Replayer, mirror, utils };
+export { record, addCustomEvent, freezePage, Replayer, mirror, utils };

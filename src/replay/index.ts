@@ -26,8 +26,18 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
+  ElementState,
+  LogReplayConfig,
+  logData,
+  ReplayLogger,
 } from '../types';
-import { mirror, polyfill, TreeIndex } from '../utils';
+import {
+  mirror,
+  polyfill,
+  TreeIndex,
+  queueToResolveTrees,
+  iterateResolveTree,
+} from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 
@@ -46,6 +56,31 @@ const defaultMouseTailConfig = {
   lineWidth: 3,
   strokeStyle: 'red',
 } as const;
+
+const defaultLogConfig: LogReplayConfig = {
+  level: [
+    'assert',
+    'clear',
+    'count',
+    'countReset',
+    'debug',
+    'dir',
+    'dirxml',
+    'error',
+    'group',
+    'groupCollapsed',
+    'groupEnd',
+    'info',
+    'log',
+    'table',
+    'time',
+    'timeEnd',
+    'timeLog',
+    'trace',
+    'warn',
+  ],
+  replayLogger: undefined,
+};
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -72,6 +107,7 @@ export class Replayer {
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
+  private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -94,9 +130,13 @@ export class Replayer {
       insertStyleRules: [],
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
+      pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
+      logConfig: defaultLogConfig,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    if (!this.config.logConfig.replayLogger)
+      this.config.logConfig.replayLogger = this.getConsoleLogger();
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -106,15 +146,9 @@ export class Replayer {
 
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
+    this.elementStateMap = new Map<INode, ElementState>();
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
-
-      for (const d of scrollMap.values()) {
-        this.applyScroll(d);
-      }
-      for (const d of inputMap.values()) {
-        this.applyInput(d);
-      }
 
       for (const [frag, parent] of this.fragmentParentMap.entries()) {
         mirror.map[parent.__sn.id] = parent;
@@ -130,8 +164,18 @@ export class Replayer {
           ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
         }
         parent.appendChild(frag);
+        // restore state of elements after they are mounted
+        this.restoreState(parent);
       }
       this.fragmentParentMap.clear();
+      this.elementStateMap.clear();
+
+      for (const d of scrollMap.values()) {
+        this.applyScroll(d);
+      }
+      for (const d of inputMap.values()) {
+        this.applyInput(d);
+      }
     });
 
     const timer = new Timer([], config?.speed || defaultConfig.speed);
@@ -188,14 +232,20 @@ export class Replayer {
       }, 0);
     }
     if (firstFullsnapshot) {
-      this.rebuildFullSnapshot(
-        firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
-      );
+      setTimeout(() => {
+        this.rebuildFullSnapshot(
+          firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
+        );
+        this.iframe.contentWindow!.scrollTo(
+          (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
+        );
+      }, 1);
     }
   }
 
   public on(event: string, handler: Handler) {
     this.emitter.on(event, handler);
+    return this;
   }
 
   public setConfig(config: Partial<playerConfig>) {
@@ -213,6 +263,22 @@ export class Replayer {
           speed: config.speed!,
         },
       });
+    }
+    if (typeof config.mouseTail !== 'undefined') {
+      if (config.mouseTail === false) {
+        if (this.mouseTail) {
+          this.mouseTail.style.display = 'none';
+        }
+      } else {
+        if (!this.mouseTail) {
+          this.mouseTail = document.createElement('canvas');
+          this.mouseTail.width = Number.parseFloat(this.iframe.width);
+          this.mouseTail.height = Number.parseFloat(this.iframe.height);
+          this.mouseTail.classList.add('replayer-mouse-tail');
+          this.wrapper.insertBefore(this.mouseTail, this.iframe);
+        }
+        this.mouseTail.style.display = 'inherit';
+      }
     }
   }
 
@@ -253,6 +319,9 @@ export class Replayer {
       this.service.send({ type: 'PAUSE' });
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      .classList.remove('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Start);
   }
 
@@ -264,6 +333,9 @@ export class Replayer {
       this.play(timeOffset);
       this.service.send({ type: 'PAUSE' });
     }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      .classList.add('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -310,7 +382,7 @@ export class Replayer {
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
       this.mouseTail.classList.add('replayer-mouse-tail');
-      this.mouseTail.style.display = 'none';
+      this.mouseTail.style.display = 'inherit';
       this.wrapper.appendChild(this.mouseTail);
     }
 
@@ -335,11 +407,11 @@ export class Replayer {
   }
 
   private handleResize(dimension: viewportResizeDimention) {
+    this.iframe.style.display = 'inherit';
     for (const el of [this.mouseTail, this.iframe]) {
       if (!el) {
         continue;
       }
-      el.style.display = 'inherit';
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
     }
@@ -439,7 +511,7 @@ export class Replayer {
           // defer finish event if the last event is a mouse move
           setTimeout(() => {
             finish();
-          }, Math.max(0, -event.data.positions[0].timeOffset));
+          }, Math.max(0, -event.data.positions[0].timeOffset + 50)); // Add 50 to make sure the timer would check the last mousemove event. Otherwise, the timer may be stopped by the service before checking the last event.
         } else {
           finish();
         }
@@ -462,13 +534,25 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    mirror.map = rebuild(event.data.node, this.iframe.contentDocument)[1];
+    mirror.map = rebuild(event.data.node, {
+      doc: this.iframe.contentDocument,
+    })[1];
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument;
     documentElement!.insertBefore(styleEl, head);
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
     ).concat(this.config.insertStyleRules);
+    if (this.config.pauseAnimation) {
+      injectStylesRules.push(
+        'html.rrweb-paused * { animation-play-state: paused !important; }',
+      );
+    }
+    if (!this.service.state.matches('playing')) {
+      this.iframe.contentDocument
+        .getElementsByTagName('html')[0]
+        .classList.add('rrweb-paused');
+    }
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
@@ -746,20 +830,45 @@ export class Replayer {
         }
 
         const styleEl = (target as Node) as HTMLStyleElement;
-        const styleSheet = <CSSStyleSheet>styleEl.sheet;
+        const parent = (target.parentNode as unknown) as INode;
+        const usingVirtualParent = this.fragmentParentMap.has(parent);
+        let placeholderNode;
+
+        if (usingVirtualParent) {
+          /**
+           * styleEl.sheet is only accessible if the styleEl is part of the
+           * dom. This doesn't work on DocumentFragments so we have to re-add
+           * it to the dom temporarily.
+           */
+          const domParent = this.fragmentParentMap.get(
+            (target.parentNode as unknown) as INode,
+          );
+          placeholderNode = document.createTextNode('');
+          parent.replaceChild(placeholderNode, target);
+          domParent!.appendChild(target);
+        }
+
+        const styleSheet: CSSStyleSheet = styleEl.sheet!;
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
-            const _index =
-              index === undefined
-                ? undefined
-                : Math.min(index, styleSheet.rules.length);
             try {
-              styleSheet.insertRule(rule, _index);
+              const _index =
+                index === undefined
+                  ? undefined
+                  : Math.min(index, styleSheet.rules.length);
+              try {
+                styleSheet.insertRule(rule, _index);
+              } catch (e) {
+                /**
+                 * sometimes we may capture rules with browser prefix
+                 * insert rule with prefixs in other browsers may cause Error
+                 */
+              }
             } catch (e) {
               /**
-               * sometimes we may capture rules with browser prefix
-               * insert rule with prefixs in other browsers may cause Error
+               * accessing styleSheet rules may cause SecurityError
+               * for specific access control settings
                */
             }
           });
@@ -776,6 +885,11 @@ export class Replayer {
             }
           });
         }
+
+        if (usingVirtualParent && placeholderNode) {
+          parent.replaceChild(target, placeholderNode);
+        }
+
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -831,6 +945,18 @@ export class Replayer {
         }
         break;
       }
+      case IncrementalSource.Log: {
+        try {
+          const logData = e.data as logData;
+          const replayLogger = this.config.logConfig.replayLogger!;
+          if (typeof replayLogger[logData.level] === 'function')
+            replayLogger[logData.level]!(logData);
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(error);
+          }
+        }
+      }
       default:
     }
   }
@@ -851,12 +977,21 @@ export class Replayer {
         const realParent = this.fragmentParentMap.get(parent);
         if (realParent && realParent.contains(target)) {
           realParent.removeChild(target);
+        } else if (this.fragmentParentMap.has(target)) {
+          /**
+           * the target itself is a fragment document and it's not in the dom
+           * so we should remove the real target from its parent
+           */
+          const realTarget = this.fragmentParentMap.get(target)!;
+          parent.removeChild(realTarget);
+          this.fragmentParentMap.delete(target);
         } else {
           parent.removeChild(target);
         }
       }
     });
 
+    // tslint:disable-next-line: variable-name
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
@@ -902,6 +1037,10 @@ export class Replayer {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         mirror.map[mutation.parentId] = virtualParent;
         this.fragmentParentMap.set(virtualParent, parent);
+
+        // store the state, like scroll position, of child nodes before they are unmounted from dom
+        this.storeState(parent);
+
         while (parent.firstChild) {
           virtualParent.appendChild(parent.firstChild);
         }
@@ -920,12 +1059,12 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      const target = buildNodeWithSN(
-        mutation.node,
-        this.iframe.contentDocument,
-        mirror.map,
-        true,
-      ) as Node;
+      const target = buildNodeWithSN(mutation.node, {
+        doc: this.iframe.contentDocument,
+        map: mirror.map,
+        skipChild: true,
+        hackCss: true,
+      }) as Node;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -964,21 +1103,29 @@ export class Replayer {
 
     let startTime = Date.now();
     while (queue.length) {
-      /**
-       * Looks like this check is killing the performance
-       */
-      // if (
-      //   queue.every(
-      //     (m) => !Boolean(mirror.getNode(m.parentId)) || nextNotInDOM(m),
-      //   )
-      // ) {
-      //   return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
-      // }
-      if (Date.now() - startTime > 5000) {
-        return queue.forEach((m) => this.warnNodeNotFound(d, m.node.id));
+      // transform queue to resolve tree
+      const resolveTrees = queueToResolveTrees(queue);
+      queue.length = 0;
+      if (Date.now() - startTime > 500) {
+        this.warn(
+          'Timeout in the loop, please check the resolve tree data:',
+          resolveTrees,
+        );
+        break;
       }
-      const mutation = queue.shift()!;
-      appendNode(mutation);
+      for (const tree of resolveTrees) {
+        let parent = mirror.getNode(tree.value.parentId);
+        if (!parent) {
+          this.debug(
+            'Drop resolve tree since there is no parent for the root node.',
+            tree,
+          );
+        } else {
+          iterateResolveTree(tree, (mutation) => {
+            appendNode(mutation);
+          });
+        }
+      }
     }
 
     if (Object.keys(legacy_missingNodeMap).length) {
@@ -1065,6 +1212,48 @@ export class Replayer {
     }
   }
 
+  /**
+   * format the trace data to a string
+   * @param data the log data
+   */
+  private formatMessage(data: logData): string {
+    if (data.trace.length === 0) return '';
+    const stackPrefix = '\n\tat ';
+    let result = stackPrefix;
+    result += data.trace.join(stackPrefix);
+    return result;
+  }
+
+  /**
+   * generate a console log replayer which implement the interface ReplayLogger
+   */
+  private getConsoleLogger(): ReplayLogger {
+    const rrwebOriginal = '__rrweb_original__';
+    const replayLogger: ReplayLogger = {};
+    for (const level of this.config.logConfig.level!)
+      if (level === 'trace')
+        replayLogger[level] = (data: logData) => {
+          const logger = (console.log as any)[rrwebOriginal]
+            ? (console.log as any)[rrwebOriginal]
+            : console.log;
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+      else
+        replayLogger[level] = (data: logData) => {
+          const logger = (console[level] as any)[rrwebOriginal]
+            ? (console[level] as any)[rrwebOriginal]
+            : console[level];
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+    return replayLogger;
+  }
+
   private legacy_resolveMissingNode(
     map: missingNodeMap,
     parent: Node,
@@ -1139,7 +1328,7 @@ export class Replayer {
     setTimeout(() => {
       this.tailPositions = this.tailPositions.filter((p) => p !== position);
       draw();
-    }, duration);
+    }, duration / this.speedService.state.context.timer.speed);
   }
 
   private hoverElements(el: Element) {
@@ -1178,11 +1367,54 @@ export class Replayer {
     });
   }
 
-  private warnNodeNotFound(d: incrementalData, id: number) {
-    if (!this.config.showWarning) {
-      return;
+  /**
+   * store state of elements before unmounted from dom recursively
+   * the state should be restored in the handler of event ReplayerEvents.Flush
+   * e.g. browser would lose scroll position after the process that we add children of parent node to Fragment Document as virtual dom
+   */
+  private storeState(parent: INode) {
+    if (parent) {
+      if (parent.nodeType === parent.ELEMENT_NODE) {
+        const parentElement = (parent as unknown) as HTMLElement;
+        if (parentElement.scrollLeft || parentElement.scrollTop) {
+          // store scroll position state
+          this.elementStateMap.set(parent, {
+            scroll: [parentElement.scrollLeft, parentElement.scrollTop],
+          });
+        }
+        const children = parentElement.children;
+        for (const child of Array.from(children)) {
+          this.storeState((child as unknown) as INode);
+        }
+      }
     }
-    console.warn(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+  }
+
+  /**
+   * restore the state of elements recursively, which was stored before elements were unmounted from dom in virtual parent mode
+   * this function corresponds to function storeState
+   */
+  private restoreState(parent: INode) {
+    if (parent.nodeType === parent.ELEMENT_NODE) {
+      const parentElement = (parent as unknown) as HTMLElement;
+      if (this.elementStateMap.has(parent)) {
+        const storedState = this.elementStateMap.get(parent)!;
+        // restore scroll position
+        if (storedState.scroll) {
+          parentElement.scrollLeft = storedState.scroll[0];
+          parentElement.scrollTop = storedState.scroll[1];
+        }
+        this.elementStateMap.delete(parent);
+      }
+      const children = parentElement.children;
+      for (const child of Array.from(children)) {
+        this.restoreState((child as unknown) as INode);
+      }
+    }
+  }
+
+  private warnNodeNotFound(d: incrementalData, id: number) {
+    this.warn(`Node with id '${id}' not found in`, d);
   }
 
   private warnCanvasMutationFailed(
@@ -1190,12 +1422,7 @@ export class Replayer {
     id: number,
     error: unknown,
   ) {
-    console.warn(
-      REPLAY_CONSOLE_PREFIX,
-      `Has error on update canvas '${id}'`,
-      d,
-      error,
-    );
+    this.warn(`Has error on update canvas '${id}'`, d, error);
   }
 
   private debugNodeNotFound(d: incrementalData, id: number) {
@@ -1205,10 +1432,21 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
+    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+  }
+
+  private warn(...args: Parameters<typeof console.warn>) {
+    if (!this.config.showWarning) {
+      return;
+    }
+    console.warn(REPLAY_CONSOLE_PREFIX, ...args);
+  }
+
+  private debug(...args: Parameters<typeof console.log>) {
     if (!this.config.showDebug) {
       return;
     }
     // tslint:disable-next-line: no-console
-    console.log(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+    console.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }

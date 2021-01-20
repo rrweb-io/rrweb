@@ -1,4 +1,4 @@
-import { INode, MaskInputOptions } from 'rrweb-snapshot';
+import { INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
   mirror,
@@ -35,25 +35,39 @@ import {
   canvasMutationCallback,
   fontCallback,
   fontParam,
+  MaskInputFn,
+  logCallback,
+  LogRecordOptions,
+  Logger,
+  LogLevel,
 } from '../types';
 import MutationBuffer from './mutation';
+import { stringify } from './stringify';
+
+export const mutationBuffer = new MutationBuffer();
 
 function initMutationObserver(
   cb: mutationCallBack,
   blockClass: blockClass,
+  blockSelector: string | null,
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
   recordCanvas: boolean,
+  slimDOMOptions: SlimDOMOptions,
 ): MutationObserver {
   // see mutation.ts for details
-  const mutationBuffer = new MutationBuffer(
+  mutationBuffer.init(
     cb,
     blockClass,
+    blockSelector,
     inlineStylesheet,
     maskInputOptions,
     recordCanvas,
+    slimDOMOptions,
   );
-  const observer = new MutationObserver(mutationBuffer.processMutations);
+  const observer = new MutationObserver(
+    mutationBuffer.processMutations.bind(mutationBuffer),
+  );
   observer.observe(document, {
     attributes: true,
     attributeOldValue: true,
@@ -201,13 +215,19 @@ function initScrollObserver(
 function initViewportResizeObserver(
   cb: viewportResizeCallback,
 ): listenerHandler {
+  let last_h = -1;
+  let last_w = -1;
   const updateDimension = throttle(() => {
     const height = getWindowHeight();
     const width = getWindowWidth();
-    cb({
-      width: Number(width),
-      height: Number(height),
-    });
+    if (last_h !== height || last_w != width) {
+      cb({
+        width: Number(width),
+        height: Number(height),
+      });
+      last_h = height;
+      last_w = width;
+    }
   }, 200);
   return on('resize', updateDimension, window);
 }
@@ -219,6 +239,7 @@ function initInputObserver(
   blockClass: blockClass,
   ignoreClass: string,
   maskInputOptions: MaskInputOptions,
+  maskInputFn: MaskInputFn | undefined,
   sampling: SamplingStrategy,
 ): listenerHandler {
   function eventHandler(event: KeyboardEvent) { // was Event
@@ -254,7 +275,11 @@ function initInputObserver(
       ] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
-      text = '*'.repeat(text.length);
+      if (maskInputFn) {
+        text = maskInputFn(text);
+      } else {
+        text = '*'.repeat(text.length);
+      }
     }
     cbWithDedup(target, { text, isChecked, rrwebGenerated });
     // if a radio was checked
@@ -493,6 +518,100 @@ function initFontObserver(cb: fontCallback): listenerHandler {
   };
 }
 
+function initLogObserver(
+  cb: logCallback,
+  logOptions: LogRecordOptions,
+): listenerHandler {
+  const logger = logOptions.logger;
+  if (!logger) return () => {};
+  let logCount = 0;
+  const cancelHandlers: any[] = [];
+  // add listener to thrown errors
+  if (logOptions.level!.includes('error')) {
+    if (window) {
+      const originalOnError = window.onerror;
+      window.onerror = (...args: any[]) => {
+        originalOnError && originalOnError.apply(this, args);
+        let stack: Array<string> = [];
+        if (args[args.length - 1] instanceof Error)
+          // 0(the second parameter) tells parseStack that every stack in Error is useful
+          stack = parseStack(args[args.length - 1].stack, 0);
+        const payload = [stringify(args[0], logOptions.stringifyOptions)];
+        cb({
+          level: 'error',
+          trace: stack,
+          payload: payload,
+        });
+      };
+      cancelHandlers.push(() => {
+        window.onerror = originalOnError;
+      });
+    }
+  }
+  for (const levelType of logOptions.level!)
+    cancelHandlers.push(replace(logger, levelType));
+  return () => {
+    cancelHandlers.forEach((h) => h());
+  };
+
+  /**
+   * replace the original console function and record logs
+   * @param logger the logger object such as Console
+   * @param level the name of log function to be replaced
+   */
+  function replace(logger: Logger, level: LogLevel) {
+    if (!logger[level]) return () => {};
+    // replace the logger.{level}. return a restore function
+    return patch(logger, level, (original) => {
+      return (...args: any[]) => {
+        original.apply(this, args);
+        try {
+          const stack = parseStack(new Error().stack);
+          const payload = args.map((s) =>
+            stringify(s, logOptions.stringifyOptions),
+          );
+          logCount++;
+          if (logCount < logOptions.lengthThreshold!)
+            cb({
+              level: level,
+              trace: stack,
+              payload: payload,
+            });
+          else if (logCount === logOptions.lengthThreshold)
+            // notify the user
+            cb({
+              level: 'warn',
+              trace: [],
+              payload: [
+                stringify('The number of log records reached the threshold.'),
+              ],
+            });
+        } catch (error) {
+          original('rrweb logger error:', error, ...args);
+        }
+      };
+    });
+  }
+  /**
+   * parse single stack message to an stack array.
+   * @param stack the stack message to be parsed
+   * @param omitDepth omit specific depth of useless stack. omit hijacked log function by default
+   */
+  function parseStack(
+    stack: string | undefined,
+    omitDepth: number = 1,
+  ): Array<string> {
+    let stacks: string[] = [];
+    if (stack) {
+      stacks = stack
+        .split('at')
+        .splice(1 + omitDepth)
+        .map((s) => s.trim());
+    }
+    return stacks;
+  }
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -505,6 +624,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     styleSheetRuleCb,
     canvasMutationCb,
     fontCb,
+    logCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -566,9 +686,15 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     fontCb(...p);
   };
+  o.logCb = (...p: Arguments<logCallback>) => {
+    if (hooks.log) {
+      hooks.log(...p);
+    }
+    logCb(...p);
+  };
 }
 
-export default function initObservers(
+export function initObservers(
   o: observerParam,
   hooks: hooksParam = {},
 ): listenerHandler {
@@ -576,9 +702,11 @@ export default function initObservers(
   const mutationObserver = initMutationObserver(
     o.mutationCb,
     o.blockClass,
+    o.blockSelector,
     o.inlineStylesheet,
     o.maskInputOptions,
     o.recordCanvas,
+    o.slimDOMOptions,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling);
   const mouseInteractionHandler = initMouseInteractionObserver(
@@ -597,6 +725,7 @@ export default function initObservers(
     o.blockClass,
     o.ignoreClass,
     o.maskInputOptions,
+    o.maskInputFn,
     o.sampling,
   );
   const mediaInteractionHandler = initMediaInteractionObserver(
@@ -608,6 +737,9 @@ export default function initObservers(
     ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass)
     : () => {};
   const fontObserver = o.collectFonts ? initFontObserver(o.fontCb) : () => {};
+  const logObserver = o.logOptions
+    ? initLogObserver(o.logCb, o.logOptions)
+    : () => {};
 
   return () => {
     mutationObserver.disconnect();
@@ -620,5 +752,6 @@ export default function initObservers(
     styleSheetObserver();
     canvasMutationObserver();
     fontObserver();
+    logObserver();
   };
 }

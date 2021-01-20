@@ -17,9 +17,10 @@ export declare class Replayer {
     private legacy_missingNodeRetryMap;
     private treeIndex;
     private fragmentParentMap;
+    private elementStateMap;
     private imageMap;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
-    on(event: string, handler: Handler): void;
+    on(event: string, handler: Handler): this;
     setConfig(config: Partial<playerConfig>): void;
     getMetaData(): playerMetaData;
     getCurrentTime(): number;
@@ -41,13 +42,19 @@ export declare class Replayer {
     private applyMutation;
     private applyScroll;
     private applyInput;
+    private formatMessage;
+    private getConsoleLogger;
     private legacy_resolveMissingNode;
     private moveAndHover;
     private drawMouseTail;
     private hoverElements;
     private isUserInteraction;
     private backToNormal;
+    private storeState;
+    private restoreState;
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;
+    private warn;
+    private debug;
 }

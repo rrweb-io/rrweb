@@ -10,6 +10,7 @@ import {
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents
 } from './utils';
+import styleSheetRuleEvents from './events/style-sheet-rule-events';
 
 interface ISuite extends Suite {
   code: string;
@@ -133,6 +134,19 @@ describe('replayer', function (this: ISuite) {
     expect(actionLength).to.equal(0)
     expect(currentTime).to.equal(2500);
     expect(currentState).to.equal('paused');
+  });
+
+  it('can fast forward past StyleSheetRule changes on virtual elements', async () => {
+    await this.page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(1500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).to.equal(
+      styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500).length,
+    );
   });
 
   it('can handle removing style elements', async () => {

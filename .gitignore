@@ -1,7 +1,8 @@
 .vscode
+.idea
 node_modules
 package-lock.json
-yarn.lock
+# yarn.lock
 build
 dist
 es

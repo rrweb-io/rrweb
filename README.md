@@ -7,6 +7,8 @@
 
 # rrweb
 
+**[The new adventure of the rrweb community](http://www.myriptide.com/rrweb-community/)**
+
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
@@ -23,6 +25,8 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 ## Guide
 
 [**📚 Read the rrweb guide here. 📚**](./guide.md)
+
+[**Recipes**](./docs/recipes/index.md)
 
 ## Project Structure
 

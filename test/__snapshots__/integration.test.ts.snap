@@ -285,7 +285,6 @@ exports[`block 1`] = `
                     \\"tagName\\": \\"div\\",
                     \\"attributes\\": {
                       \\"class\\": \\"rr-block\\",
-                      \\"style\\": \\"width: 50px; height: 50px;\\",
                       \\"rr_width\\": \\"50px\\",
                       \\"rr_height\\": \\"50px\\"
                     },
@@ -454,7 +453,7 @@ exports[`canvas 1`] = `
                       \\"width\\": \\"200\\",
                       \\"height\\": \\"100\\",
                       \\"style\\": \\"border: 1px solid #000000;\\",
-                      \\"rr_dataURL\\": \\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABkCAYAAADDhn8LAAAEK0lEQVR4Xu3d3VLjMAyG4YZzuBvu/9K6w2xZtqVJFcv5Ux5mOCgQ43yJ8lqSpQwXXxSgwKgCA20oQIFxBRiIu4MCEwowELcHBRiIe4ACbQogSJtujjqJAgzkJBfaabYpwEDadHPUSRRgICe50E6zTQEG0qabo06iQNhAru/v18vb2+UyDD/fY5+/fv719f37Z58j43z/zdQ4j/8nMq75/b2Grdelo37D52f4HtzCJsOTu358XLsZx5Y3deTimt/Pw63lITVDvzoGgiDrkTNixBFSttzckXE7zq+OgSDIz7Lk2U3U66aJjDPjCT25zF1qnBnj1jEQBEGQ3r7gMFzqGAiCIMiYY58IyNQxEARBEAQZD6SJYt3C20uHtvkgW0RzR/9nPMyLIAiCIAiyefIMQRAknJE/QBz/X0Y66sCunGfY+/zqOOmiWKJY0YeAPMhKDiuC5PZMHUA/BImsqddcdkTmM+MJuPdM9d7nV8dARLFEsUSxRLFEsTosn2cQGEEydQcHWEPvPUq09/nVMRBRLFEsUayJJRYfhA/CB+GD8EH4IP9bgb1YfKT73gFrhtzVg4w0BpgR5dh7HN/8cg066jjpfBA+CB+ED8IH4YPwQSLbTSJrcXma9F6xOksseRB5EHkQeZC7zPMjIV597kWmXuMcgHAI0utirzmOKJvOijdWyIPIg8iDTBT5xg2ED8IH4YPwQfgg63bv54Os6TtEQrOR+fBB+CB8EO8v2Twpai+WvVh3e7UQ7heZ6iyx7MWyF8teLHuxNl92nMxHQhB5hk3zDGrSc51M5UEiT+xevkOvcQpF2RAEQRBk7JURoliiWKJY068ORxAEQRAEuZFigb06ar5zNd971w9BEARBEARBnuZPloo2LTXuBlE2BEEQBEEQBEGQW7TqWV5pgkwIgiAIgiAIgiAIcg2/nbbX9o0DdOXY+16nvc+vzhJLTbqa9AXyXHUMRD2IehD1IOpB1IPozas3Lx8p11O3o351llh8ED4IH0RfLH2x9MVqW2IhCIIgCIIgCIIgyONu2Fefe+1y7TWO3by5Tgwzjo43bZAHkQeRB5EHkQeRB2lbYiEIgiAIgiAIgiBIx0zw3nfL7n1+Mum9bsY1xykUJdLVZEbI6smfimKpeNy04hFB1nzyyzPk3gy1gX51DEQUSxRLFEsUSxRLFEsUq9eyT818rq5Ed3fd3XV3193999rcEzr3ZD2RfnWcdPUg6kHUg6gHUQ+iHqTNSUcQBEEQBEEQBEGQVxWE9mLlMvIz9KvjpMuky6TLpMuky6TLpLctsRAEQRAEQRAEQZoIkis7cTQFjqlAuGDqmKdn1hTIKcBAcvo5urgCDKT4BXZ6OQUYSE4/RxdXgIEUv8BOL6cAA8np5+jiCjCQ4hfY6eUUYCA5/RxdXAEGUvwCO72cAn8Aw0BAdBcYDcUAAAAASUVORK5CYII=\\"
+                      \\"rr_dataURL\\": \\"LOOKS LIKE WE COULD NOT GET STABLE BASE64 FROM SAME IMAGE.\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1561,6 +1560,173 @@ exports[`form 1`] = `
 ]"
 `;
 
+exports[`frozen 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"p\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"mutation observer\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"ul\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 10
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"li\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 11
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 12
+                      }
+                    ],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
+                    \\"id\\": 16
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 17,
+          \\"attributes\\": {
+            \\"foo\\": \\"bar\\"
+          }
+        },
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"test\\": \\"true\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {
+              \\"foo\\": \\"bar\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 17
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`ignore 1`] = `
 "[
   {
@@ -1831,6 +1997,720 @@ exports[`ignore 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 27
+    }
+  }
+]"
+`;
+
+exports[`log`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"ie=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Log record\\",
+                        \\"id\\": 13
+                      }
+                    ],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 15
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 19
+                      }
+                    ],
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 20
+                  }
+                ],
+                \\"id\\": 16
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"assert\\",
+      \\"payload\\": [
+        \\"true\\",
+        \\"\\"assert\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"count\\",
+      \\"payload\\": [
+        \\"\\"count\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"countReset\\",
+      \\"payload\\": [
+        \\"\\"count\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"debug\\",
+      \\"payload\\": [
+        \\"\\"debug\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"dir\\",
+      \\"payload\\": [
+        \\"\\"dir\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"dirxml\\",
+      \\"payload\\": [
+        \\"\\"dirxml\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"group\\",
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"groupCollapsed\\",
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"info\\",
+      \\"payload\\": [
+        \\"\\"info\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"log\\",
+      \\"payload\\": [
+        \\"\\"log\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"table\\",
+      \\"payload\\": [
+        \\"\\"table\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"time\\",
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"timeEnd\\",
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"timeLog\\",
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"trace\\",
+      \\"payload\\": [
+        \\"\\"trace\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"warn\\",
+      \\"payload\\": [
+        \\"\\"warn\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"clear\\",
+      \\"payload\\": []
+    }
+  }
+]"
+`;
+
+exports[`log 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"ie=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Log record\\",
+                        \\"id\\": 13
+                      }
+                    ],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 15
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 19
+                      }
+                    ],
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 20
+                  }
+                ],
+                \\"id\\": 16
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"assert\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:2:37\\"
+      ],
+      \\"payload\\": [
+        \\"true\\",
+        \\"\\\\\\"assert\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"count\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:3:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"count\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"countReset\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:4:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"count\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"debug\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:5:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"debug\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"dir\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:6:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"dir\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"dirxml\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:7:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"dirxml\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"group\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:8:37\\"
+      ],
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"groupCollapsed\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:9:37\\"
+      ],
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"info\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:10:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"info\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"log\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:11:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"log\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"table\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:12:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"table\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"time\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:13:37\\"
+      ],
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"timeEnd\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:14:37\\"
+      ],
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"timeLog\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:15:37\\"
+      ],
+      \\"payload\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"trace\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:16:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"trace\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"warn\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:17:37\\"
+      ],
+      \\"payload\\": [
+        \\"\\\\\\"warn\\\\\\"\\"
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 11,
+      \\"level\\": \\"clear\\",
+      \\"trace\\": [
+        \\"__puppeteer_evalu\\",
+        \\"ion_script__:18:37\\"
+      ],
+      \\"payload\\": []
     }
   }
 ]"
@@ -4730,6 +5610,10 @@ exports[`select2 1`] = `
         {
           \\"parentId\\": 25,
           \\"id\\": 36
+        },
+        {
+          \\"parentId\\": 45,
+          \\"id\\": 46
         }
       ],
       \\"adds\\": [

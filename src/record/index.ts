@@ -1,5 +1,5 @@
-import { snapshot, MaskInputOptions } from 'rrweb-snapshot';
-import initObservers from './observer';
+import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import { initObservers, mutationBuffer } from './observer';
 import {
   mirror,
   on,
@@ -14,6 +14,7 @@ import {
   recordOptions,
   IncrementalSource,
   listenerHandler,
+  LogRecordOptions,
 } from '../types';
 
 function wrapEvent(e: event): eventWithTime {
@@ -33,16 +34,20 @@ function record<T = eventWithTime>(
     checkoutEveryNms,
     checkoutEveryNth,
     blockClass = 'rr-block',
+    blockSelector = null,
     ignoreClass = 'rr-ignore',
     inlineStylesheet = true,
     maskAllInputs,
     maskInputOptions: _maskInputOptions,
+    slimDOMOptions: _slimDOMOptions,
+    maskInputFn,
     hooks,
     packFn,
     sampling = {},
     mousemoveWait,
     recordCanvas = false,
     collectFonts = false,
+    recordLog = false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -77,11 +82,76 @@ function record<T = eventWithTime>(
       ? _maskInputOptions
       : {};
 
+  const slimDOMOptions: SlimDOMOptions =
+    _slimDOMOptions === true || _slimDOMOptions === 'all'
+      ? {
+          script: true,
+          comment: true,
+          headFavicon: true,
+          headWhitespace: true,
+          headMetaSocial: true,
+          headMetaRobots: true,
+          headMetaHttpEquiv: true,
+          headMetaVerification: true,
+          // the following are off for slimDOMOptions === true,
+          // as they destroy some (hidden) info:
+          headMetaAuthorship: _slimDOMOptions === 'all',
+          headMetaDescKeywords: _slimDOMOptions === 'all',
+        }
+      : _slimDOMOptions
+      ? _slimDOMOptions
+      : {};
+  const defaultLogOptions: LogRecordOptions = {
+    level: [
+      'assert',
+      'clear',
+      'count',
+      'countReset',
+      'debug',
+      'dir',
+      'dirxml',
+      'error',
+      'group',
+      'groupCollapsed',
+      'groupEnd',
+      'info',
+      'log',
+      'table',
+      'time',
+      'timeEnd',
+      'timeLog',
+      'trace',
+      'warn',
+    ],
+    lengthThreshold: 1000,
+    logger: console,
+  };
+
+  const logOptions: LogRecordOptions = recordLog
+    ? recordLog === true
+      ? defaultLogOptions
+      : Object.assign({}, defaultLogOptions, recordLog)
+    : {};
+
   polyfill();
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
+    if (
+      mutationBuffer.isFrozen() &&
+      e.type !== EventType.FullSnapshot &&
+      !(
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation
+      )
+    ) {
+      // we've got a user initiated event so first we need to apply
+      // all DOM changes that have been buffering during paused state
+      mutationBuffer.emit();
+      mutationBuffer.unfreeze();
+    }
+
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
@@ -111,13 +181,17 @@ function record<T = eventWithTime>(
       }),
       isCheckout,
     );
-    const [node, idNodeMap] = snapshot(
-      document,
+
+    let wasFrozen = mutationBuffer.isFrozen();
+    mutationBuffer.freeze(); // don't allow any mirror modifications during snapshotting
+    const [node, idNodeMap] = snapshot(document, {
       blockClass,
+      blockSelector,
       inlineStylesheet,
-      maskInputOptions,
+      maskAllInputs: maskInputOptions,
+      slimDOM: slimDOMOptions,
       recordCanvas,
-    );
+    });
 
     if (!node) {
       return console.warn('Failed to snapshot the document');
@@ -148,6 +222,10 @@ function record<T = eventWithTime>(
         },
       }),
     );
+    if (!wasFrozen) {
+      mutationBuffer.emit(); // emit anything queued up now
+      mutationBuffer.unfreeze();
+    }
   }
 
   try {
@@ -268,13 +346,27 @@ function record<T = eventWithTime>(
                   },
                 }),
               ),
+            logCb: (p) =>
+              wrappedEmit(
+                wrapEvent({
+                  type: EventType.IncrementalSnapshot,
+                  data: {
+                    source: IncrementalSource.Log,
+                    ...p,
+                  },
+                }),
+              ),
             blockClass,
+            blockSelector,
             ignoreClass,
             maskInputOptions,
+            maskInputFn,
             inlineStylesheet,
             sampling,
             recordCanvas,
             collectFonts,
+            slimDOMOptions,
+            logOptions,
           },
           hooks,
         ),
@@ -324,6 +416,10 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
       },
     }),
   );
+};
+
+record.freezePage = () => {
+  mutationBuffer.freeze();
 };
 
 export default record;
