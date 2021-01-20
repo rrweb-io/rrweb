@@ -32,7 +32,6 @@
   "typings": "typings/entries/all.d.ts",
   "files": [
     "dist",
-    "dist-electron",
     "lib",
     "es",
     "typings"
