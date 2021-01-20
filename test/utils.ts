@@ -82,6 +82,10 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
 		                // TODO: could round the number here instead depending on what's coming out of various test envs
 		                a.attributes.style[k] = ['Npx', v[1]];
 		              }
+		            } else if (typeof v === 'string') {
+		              if (coordinatesReg.test(k + ': ' + v)) {
+		                a.attributes.style[k] = 'Npx';
+		              }
 		            }
 		            coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
 	            }
@@ -99,7 +103,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
                 '$1: Npx',
               );
             }
-	    coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
+            coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
           });
         }
         delete s.timestamp;

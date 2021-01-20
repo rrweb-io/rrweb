@@ -1329,8 +1329,10 @@ export class Replayer {
             for (var s in value) {
               if (value[s] === false) {
                 ((target as Node) as Element).style.removeProperty(s);
-              } else {
+              } else if (Array.isArray(value[s])) {
                 ((target as Node) as Element).style.setProperty(s, value[s][0], value[s][1]);
+              } else {
+                ((target as Node) as Element).style.setProperty(s, value[s]);
               }
             }
           }

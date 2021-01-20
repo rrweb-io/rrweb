@@ -481,14 +481,15 @@ export default class MutationBuffer {
           }
           for (let i=0; i<target.style.length; i++) {
             let pname = target.style[i];
-            if (target.style.getPropertyValue(pname) !=
-                old.style.getPropertyValue(pname) ||
-                target.style.getPropertyPriority(pname) !=
-                old.style.getPropertyPriority(pname)) {
-              item.attributes['style'][pname] = [
-                target.style.getPropertyValue(pname),
-                target.style.getPropertyPriority(pname)
-              ];
+            const newValue = target.style.getPropertyValue(pname);
+            const newPriority = target.style.getPropertyPriority(pname);
+            if (newValue != old.style.getPropertyValue(pname) ||
+                newPriority != old.style.getPropertyPriority(pname)) {
+              if (newPriority == '') {
+                item.attributes['style'][pname] = newValue;
+              } else {
+                item.attributes['style'][pname] = [newValue, newPriority];
+              }
             }
           }
           for (let i=0; i<old.style.length; i++) {
