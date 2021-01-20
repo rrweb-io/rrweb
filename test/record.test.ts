@@ -33,6 +33,8 @@ interface IWindow extends Window {
 }
 
 describe('record', function (this: ISuite) {
+  this.timeout(10_000);
+
   before(async () => {
     this.browser = await launchPuppeteer();
 
@@ -138,7 +140,7 @@ describe('record', function (this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(500);
+    await this.page.waitFor(300);  // originally 500, but that was resulting in this.events.length==35 on a slower test env
     expect(this.events.length).to.equal(33);
     await this.page.type('input', 'a');
     await this.page.waitFor(10);
@@ -223,7 +225,7 @@ describe('record', function (this: ISuite) {
         styleSheet.insertRule('body { color: #ccc; }');
       }, 10);
     });
-    await this.page.waitFor(10);
+    await this.page.waitFor(50);
     const styleSheetRuleEvents = this.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
