@@ -5573,6 +5573,7 @@ exports[`select2 1`] = `
           \\"id\\": 36,
           \\"attributes\\": {
             \\"id\\": \\"select2-drop\\",
+            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: block;\\",
             \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
           }
         },
@@ -5721,7 +5722,8 @@ exports[`select2 1`] = `
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {
               \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\",
-              \\"id\\": \\"select2-drop\\"
+              \\"id\\": \\"select2-drop\\",
+              \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: block;\\"
             },
             \\"childNodes\\": [],
             \\"id\\": 36
@@ -6033,7 +6035,8 @@ exports[`select2 1`] = `
         {
           \\"id\\": 36,
           \\"attributes\\": {
-            \\"id\\": null
+            \\"id\\": null,
+            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: none;\\"
           }
         },
         {

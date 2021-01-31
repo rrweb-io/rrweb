@@ -61,7 +61,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.data.href = 'about:blank';
         }
         // FIXME: travis coordinates seems different with my laptop
-        const coordinatesReg = /(bottom|top|left|right)/;
+        const coordinatesReg = /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseInteraction
@@ -78,7 +78,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               'style' in a.attributes &&
               coordinatesReg.test(a.attributes.style!)
             ) {
-              delete a.attributes.style;
+              a.attributes.style = a.attributes.style!.replace(coordinatesReg, '$1: Npx');
             }
           });
           s.data.adds.forEach((add) => {
@@ -88,7 +88,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               typeof add.node.attributes.style === 'string' &&
               coordinatesReg.test(add.node.attributes.style)
             ) {
-              delete add.node.attributes.style;
+              add.node.attributes.style = add.node.attributes.style.replace(coordinatesReg, '$1: Npx');
             }
           });
         }
