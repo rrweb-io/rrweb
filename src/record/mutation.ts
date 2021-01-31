@@ -173,20 +173,33 @@ export default class MutationBuffer {
 
   public unfreeze() {
     this.frozen = false;
+    this.emit();
   }
 
   public isFrozen() {
     return this.frozen;
   }
 
+  public lock() {
+    this.locked = true;
+  }
+
+  public unlock() {
+    this.locked = false;
+    this.emit();
+  }
+
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation);
-    if (!this.frozen) {
-      this.emit();
-    }
+    this.emit();
   };
 
   public emit = () => {
+
+    if (this.frozen || this.locked) {
+      return;
+    }
+
     // delay any modification of the mirror until this function
     // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
 

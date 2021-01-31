@@ -21,6 +21,8 @@ export default class MutationBuffer {
     freeze(): void;
     unfreeze(): void;
     isFrozen(): boolean;
+    lock(): void;
+    unlock(): void;
     processMutations: (mutations: mutationRecord[]) => void;
     emit: () => void;
     private processMutation;

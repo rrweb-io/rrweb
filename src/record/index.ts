@@ -147,7 +147,6 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffer.emit();
       mutationBuffer.unfreeze();
     }
 
@@ -182,7 +181,7 @@ function record<T = eventWithTime>(
     );
 
     let wasFrozen = mutationBuffer.isFrozen();
-    mutationBuffer.freeze(); // don't allow any mirror modifications during snapshotting
+    mutationBuffer.lock();  // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(document, {
       blockClass,
       blockSelector,
@@ -221,10 +220,7 @@ function record<T = eventWithTime>(
         },
       }),
     );
-    if (!wasFrozen) {
-      mutationBuffer.emit(); // emit anything queued up now
-      mutationBuffer.unfreeze();
-    }
+    mutationBuffer.unlock(); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
   }
 
   try {
