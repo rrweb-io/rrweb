@@ -149,6 +149,13 @@ function isSVGElement(el: Element): boolean {
   return el.tagName === 'svg' || el instanceof SVGElement;
 }
 
+function getHref() {
+  // return a href without hash
+  const a = document.createElement('a');
+  a.href = '';
+  return a.href;
+}
+
 export function transformAttribute(
   doc: Document,
   name: string,
@@ -160,7 +167,7 @@ export function transformAttribute(
   } else if (name === 'srcset' && value) {
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style' && value) {
-    return absoluteToStylesheet(value, location.href);
+    return absoluteToStylesheet(value, getHref());
   } else {
     return value;
   }
@@ -262,7 +269,7 @@ function serializeNode(
           (n as HTMLStyleElement).sheet as CSSStyleSheet,
         );
         if (cssText) {
-          attributes._cssText = absoluteToStylesheet(cssText, location.href);
+          attributes._cssText = absoluteToStylesheet(cssText, getHref());
         }
       }
       // form fields
@@ -335,7 +342,7 @@ function serializeNode(
       let textContent = (n as Text).textContent;
       const isStyle = parentTagName === 'STYLE' ? true : undefined;
       if (isStyle && textContent) {
-        textContent = absoluteToStylesheet(textContent, location.href);
+        textContent = absoluteToStylesheet(textContent, getHref());
       }
       if (parentTagName === 'SCRIPT') {
         textContent = 'SCRIPT_PLACEHOLDER';
