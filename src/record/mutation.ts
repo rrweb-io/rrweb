@@ -112,6 +112,7 @@ function isINode(n: Node | INode): n is INode {
  */
 export default class MutationBuffer {
   private frozen: boolean = false;
+  private locked: boolean = false;
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
@@ -195,7 +196,6 @@ export default class MutationBuffer {
   };
 
   public emit = () => {
-
     if (this.frozen || this.locked) {
       return;
     }

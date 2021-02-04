@@ -44,6 +44,9 @@ import {
 import MutationBuffer from './mutation';
 import { stringify } from './stringify';
 
+type WindowWithStoredMutationObserver = Window & {
+  __rrMutationObserver?: MutationObserver;
+};
 type WindowWithAngularZone = Window & {
   Zone?: {
     __symbol__?: (key: string) => string;
@@ -71,7 +74,17 @@ function initMutationObserver(
     recordCanvas,
     slimDOMOptions,
   );
-  let mutationBufferCtor = window.MutationObserver;
+  let mutationBufferCtor =
+    window.MutationObserver ||
+    /**
+     * Some websites may disable MutationObserver by removing it from the window object.
+     * If someone is using rrweb to build a browser extention or things like it, they
+     * could not change the website's code but can have an opportunity to inject some
+     * code before the website executing its JS logic.
+     * Then they can do this to store the native MutationObserver:
+     * window.__rrMutationObserver = MutationObserver
+     */
+    (window as WindowWithStoredMutationObserver).__rrMutationObserver;
   const angularZoneSymbol = (window as WindowWithAngularZone)?.Zone?.__symbol__?.(
     'MutationObserver',
   );
