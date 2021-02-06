@@ -81,7 +81,7 @@ export declare type scrollData = {
 } & scrollPosition;
 export declare type viewportResizeData = {
     source: IncrementalSource.ViewportResize;
-} & viewportResizeDimention;
+} & viewportResizeDimension;
 export declare type inputData = {
     source: IncrementalSource.Input;
     id: number;
@@ -124,10 +124,7 @@ export declare type recordOptions<T> = {
     maskAllInputs?: boolean;
     maskInputOptions?: MaskInputOptions;
     maskInputFn?: MaskInputFn;
-<<<<<<< HEAD
     slimDOMOptions?: SlimDOMOptions | 'all' | true;
-=======
->>>>>>> feat: add an option to determine whether to pause CSS animation when playback is paused (#428)
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
     packFn?: PackFn;
@@ -160,6 +157,8 @@ export declare type observerParam = {
     recordCanvas: boolean;
     collectFonts: boolean;
     slimDOMOptions: SlimDOMOptions;
+    doc: Document;
+    dimension: DocumentDimension;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;
@@ -307,11 +306,11 @@ export declare type LogParam = {
 };
 export declare type fontCallback = (p: fontParam) => void;
 export declare type logCallback = (p: LogParam) => void;
-export declare type viewportResizeDimention = {
+export declare type viewportResizeDimension = {
     width: number;
     height: number;
 };
-export declare type viewportResizeCallback = (d: viewportResizeDimention) => void;
+export declare type viewportResizeCallback = (d: viewportResizeDimension) => void;
 export declare type inputValue = {
     text: string;
     isChecked: boolean;
@@ -328,6 +327,10 @@ export declare type mediaInteractionParam = {
     id: number;
 };
 export declare type mediaInteractionCallback = (p: mediaInteractionParam) => void;
+export declare type DocumentDimension = {
+    x: number;
+    y: number;
+};
 export declare type Mirror = {
     map: idNodeMap;
     getId: (n: INode) => number;
@@ -408,8 +411,6 @@ export declare enum ReplayerEvents {
     StateChange = "state-change"
 }
 export declare type MaskInputFn = (text: string) => string;
-<<<<<<< HEAD
-<<<<<<< HEAD
 export declare type ElementState = {
     scroll?: [number, number];
 };
@@ -423,11 +424,4 @@ export declare type LogRecordOptions = {
     stringifyOptions?: StringifyOptions;
     logger?: Logger;
 };
-=======
->>>>>>> feat: add an option to determine whether to pause CSS animation when playback is paused (#428)
-=======
-export declare type ElementState = {
-    scroll?: [number, number];
-};
->>>>>>> fix: elements would lose some states like scroll position because of "virtual parent" optimization (#427)
 export {};

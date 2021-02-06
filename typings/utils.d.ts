@@ -1,4 +1,4 @@
-import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, eventWithTime, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData } from './types';
+import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, eventWithTime, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension } from './types';
 import { INode } from 'rrweb-snapshot';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | Window): listenerHandler;
 export declare const mirror: Mirror;
@@ -53,4 +53,9 @@ declare type ResolveTree = {
 };
 export declare function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[];
 export declare function iterateResolveTree(tree: ResolveTree, cb: (mutation: addedNodeMutation) => unknown): void;
+export declare const initDimension: {
+    x: number;
+    y: number;
+};
+export declare function getIframeDimensions(): WeakMap<HTMLIFrameElement, DocumentDimension>;
 export {};

@@ -4,9 +4,9 @@ node_modules
 package-lock.json
 # yarn.lock
 build
-# dist
-# es
-# lib
+dist
+es
+lib
 !es/rrweb/node_modules
 
 temp
