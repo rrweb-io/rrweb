@@ -17,6 +17,7 @@ import {
   addedNodeMutation,
 } from '../types';
 import { mirror, isBlocked, isAncestorRemoved, isIgnored } from '../utils';
+import { IframeManager } from './iframe-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -33,7 +34,6 @@ function isNodeInLinkedList(
   list: DoubleLinkedList,
 ): n is NodeInLinkedList {
   if ('__list' in n && n.__list !== list) {
-    console.log('???', n, n.__list, list);
     return false;
   }
   return '__ln' in n;
@@ -87,7 +87,6 @@ class DoubleLinkedList {
     }
     this.length++;
     if (!this.get(this.length - 1)) {
-      console.log('!!!', n, this);
       throw new Error('stop');
     }
   }
@@ -165,7 +164,7 @@ export default class MutationBuffer {
   private slimDOMOptions: SlimDOMOptions;
   private doc: Document;
 
-  private doIframe: any;
+  private iframeManager: IframeManager;
 
   public init(
     cb: mutationCallBack,
@@ -176,7 +175,7 @@ export default class MutationBuffer {
     recordCanvas: boolean,
     slimDOMOptions: SlimDOMOptions,
     doc: Document,
-    doIframe: any,
+    iframeManager: IframeManager,
   ) {
     this.blockClass = blockClass;
     this.blockSelector = blockSelector;
@@ -186,7 +185,7 @@ export default class MutationBuffer {
     this.slimDOMOptions = slimDOMOptions;
     this.emissionCallback = cb;
     this.doc = doc;
-    this.doIframe = doIframe;
+    this.iframeManager = iframeManager;
   }
 
   public freeze() {
@@ -244,7 +243,7 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (!n.parentNode || !document.contains(n)) {
+      if (!n.parentNode || !this.doc.contains(n)) {
         return;
       }
       const parentId = mirror.getId((n.parentNode as Node) as INode);
@@ -253,7 +252,7 @@ export default class MutationBuffer {
         return addList.addNode(n);
       }
       let sn = serializeNodeWithId(n, {
-        doc: document,
+        doc: this.doc,
         map: mirror.map,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
@@ -262,12 +261,18 @@ export default class MutationBuffer {
         maskInputOptions: this.maskInputOptions,
         slimDOMOptions: this.slimDOMOptions,
         recordCanvas: this.recordCanvas,
-        onSerialize: (n) => {
-          if (n.__sn.type === NodeType.Element && n.__sn.tagName === 'iframe') {
-            ((n as unknown) as HTMLIFrameElement).onload = () => {
-              this.doIframe((n as unknown) as HTMLIFrameElement);
-            };
+        onSerialize: (currentN) => {
+          if (
+            currentN.__sn.type === NodeType.Element &&
+            currentN.__sn.tagName === 'iframe'
+          ) {
+            this.iframeManager.addIframe(
+              (currentN as unknown) as HTMLIFrameElement,
+            );
           }
+        },
+        onIframeLoad: (iframe, childSn) => {
+          this.iframeManager.attachIframe(iframe, childSn);
         },
       });
       if (sn) {

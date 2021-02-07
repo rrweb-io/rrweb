@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Main</title>
+  </head>
+  <body>
+    <iframe id="one"></iframe>
+  </body>
+  <script>
+    const iframe2 = document.createElement('iframe');
+    iframe2.id = 'two';
+    iframe2.src = './html/frame1.html';
+    setTimeout(() => {
+      document.body.appendChild(iframe2);
+    }, 10);
+  </script>
+</html>

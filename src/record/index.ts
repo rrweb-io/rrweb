@@ -4,7 +4,7 @@ import {
   SlimDOMOptions,
   NodeType,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffer } from './observer';
+import { initObservers, mutationBuffers } from './observer';
 import {
   mirror,
   on,
@@ -24,6 +24,7 @@ import {
   LogRecordOptions,
   DocumentDimension,
 } from '../types';
+import { IframeManager } from './iframe-manager';
 
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -146,7 +147,7 @@ function record<T = eventWithTime>(
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
-      mutationBuffer.isFrozen() &&
+      mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
@@ -155,7 +156,7 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffer.unfreeze();
+      mutationBuffers.forEach((buf) => buf.unfreeze());
     }
 
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
@@ -175,7 +176,18 @@ function record<T = eventWithTime>(
     }
   };
 
-  const iframes: HTMLIFrameElement[] = [];
+  const iframeManager = new IframeManager({
+    mutationCb: (m) =>
+      wrappedEmit(
+        wrapEvent({
+          type: EventType.IncrementalSnapshot,
+          data: {
+            source: IncrementalSource.Mutation,
+            ...m,
+          },
+        }),
+      ),
+  });
 
   function takeFullSnapshot(isCheckout = false) {
     wrappedEmit(
@@ -190,8 +202,7 @@ function record<T = eventWithTime>(
       isCheckout,
     );
 
-    let wasFrozen = mutationBuffer.isFrozen();
-    mutationBuffer.lock(); // don't allow any mirror modifications during snapshotting
+    mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const [node, idNodeMap] = snapshot(document, {
       blockClass,
       blockSelector,
@@ -201,8 +212,11 @@ function record<T = eventWithTime>(
       recordCanvas,
       onSerialize: (n) => {
         if (n.__sn.type === NodeType.Element && n.__sn.tagName === 'iframe') {
-          iframes.push((n as unknown) as HTMLIFrameElement);
+          iframeManager.addIframe((n as unknown) as HTMLIFrameElement);
         }
+      },
+      onIframeLoad: (iframe, childSn) => {
+        iframeManager.attachIframe(iframe, childSn);
       },
     });
 
@@ -235,7 +249,7 @@ function record<T = eventWithTime>(
         },
       }),
     );
-    mutationBuffer.unlock(); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+    mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
   }
 
   try {
@@ -250,7 +264,7 @@ function record<T = eventWithTime>(
         );
       }),
     );
-    let iframeMap: any;
+
     const observe = (doc: Document, dimension: DocumentDimension) => {
       return initObservers(
         {
@@ -377,27 +391,19 @@ function record<T = eventWithTime>(
           logOptions,
           blockSelector,
           slimDOMOptions,
+          iframeManager,
         },
         hooks,
-        (i: HTMLIFrameElement) => {
-          iframeMap = getIframeDimensions();
-          const d = iframeMap.get(i);
-          console.assert(d, 'iframe not found in the dimension map');
-          return observe(i.contentDocument!, d || initDimension);
-        },
       );
     };
+
+    iframeManager.addLoadListener((iframeEl) => {
+      handlers.push(observe(iframeEl.contentDocument!, initDimension));
+    });
+
     const init = () => {
       takeFullSnapshot();
-      iframeMap = getIframeDimensions();
-      handlers.push(
-        observe(document, initDimension),
-        ...iframes.map((iframe) => {
-          const dimension = iframeMap.get(iframe);
-          console.assert(dimension, 'iframe not found in the dimension map');
-          return observe(iframe.contentDocument!, dimension || initDimension);
-        }),
-      );
+      handlers.push(observe(document, initDimension));
     };
     if (
       document.readyState === 'interactive' ||
@@ -446,7 +452,7 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
 };
 
 record.freezePage = () => {
-  mutationBuffer.freeze();
+  mutationBuffers.forEach((buf) => buf.freeze());
 };
 
 export default record;

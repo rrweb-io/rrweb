@@ -44,6 +44,7 @@ import {
 } from '../types';
 import MutationBuffer from './mutation';
 import { stringify } from './stringify';
+import { IframeManager } from './iframe-manager';
 
 type WindowWithStoredMutationObserver = Window & {
   __rrMutationObserver?: MutationObserver;
@@ -54,7 +55,7 @@ type WindowWithAngularZone = Window & {
   };
 };
 
-export const mutationBuffer = new MutationBuffer();
+export const mutationBuffers: MutationBuffer[] = [];
 
 function initMutationObserver(
   cb: mutationCallBack,
@@ -65,8 +66,10 @@ function initMutationObserver(
   maskInputOptions: MaskInputOptions,
   recordCanvas: boolean,
   slimDOMOptions: SlimDOMOptions,
-  doIframe: any,
+  iframeManager: IframeManager,
 ): MutationObserver {
+  const mutationBuffer = new MutationBuffer();
+  mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(
     cb,
@@ -77,9 +80,9 @@ function initMutationObserver(
     recordCanvas,
     slimDOMOptions,
     doc,
-    doIframe,
+    iframeManager,
   );
-  let mutationBufferCtor =
+  let mutationObserverCtor =
     window.MutationObserver ||
     /**
      * Some websites may disable MutationObserver by removing it from the window object.
@@ -99,15 +102,14 @@ function initMutationObserver(
       angularZoneSymbol
     ]
   ) {
-    mutationBufferCtor = ((window as unknown) as Record<
+    mutationObserverCtor = ((window as unknown) as Record<
       string,
       typeof MutationObserver
     >)[angularZoneSymbol];
   }
-  const observer = new mutationBufferCtor(
+  const observer = new mutationObserverCtor(
     mutationBuffer.processMutations.bind(mutationBuffer),
   );
-  console.log('ob', doc);
   observer.observe(doc, {
     attributes: true,
     attributeOldValue: true,
@@ -735,7 +737,6 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
 export function initObservers(
   o: observerParam,
   hooks: hooksParam = {},
-  doIframe: any,
 ): listenerHandler {
   mergeHooks(o, hooks);
   const mutationObserver = initMutationObserver(
@@ -747,7 +748,7 @@ export function initObservers(
     o.maskInputOptions,
     o.recordCanvas,
     o.slimDOMOptions,
-    doIframe,
+    o.iframeManager,
   );
   const mousemoveHandler = initMoveObserver(
     o.mousemoveCb,

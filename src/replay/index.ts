@@ -93,11 +93,14 @@ const defaultLogConfig: LogReplayConfig = {
 
 function buildIframe(
   iframe: HTMLIFrameElement,
-  childNodes: serializedNodeWithId[],
-  map: idNodeMap,
-  cbs: CallbackArray,
-  hackCss: boolean,
+  options: {
+    childNodes: serializedNodeWithId[];
+    map: idNodeMap;
+    cbs: CallbackArray;
+    hackCss: boolean;
+  },
 ) {
+  const { childNodes, map, cbs, hackCss } = options;
   const targetDoc = iframe.contentDocument!;
   for (const childN of childNodes) {
     buildNodeWithSN(childN, {
@@ -261,6 +264,10 @@ export class Replayer {
     }
     if (firstFullsnapshot) {
       setTimeout(() => {
+        // when something has been played, there is no need to rebuild poster
+        if (this.timer.timeOffset > 0) {
+          return;
+        }
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
@@ -1102,15 +1109,19 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
       }) as [Node, serializedNodeWithId[]];
-      cbs.push(() =>
-        buildIframe(
-          (target as unknown) as HTMLIFrameElement,
-          nestedNodes,
-          mirror.map,
-          cbs,
-          true,
-        ),
-      );
+      if (
+        mutation.node.type === NodeType.Element &&
+        mutation.node.tagName === 'iframe'
+      ) {
+        cbs.push(() =>
+          buildIframe((target as unknown) as HTMLIFrameElement, {
+            childNodes: nestedNodes,
+            map: mirror.map,
+            cbs,
+            hackCss: true,
+          }),
+        );
+      }
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {

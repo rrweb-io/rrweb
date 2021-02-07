@@ -7,6 +7,7 @@ import {
 } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
+import { IframeManager } from './record/iframe-manager';
 
 export enum EventType {
   DomContentLoaded,
@@ -226,6 +227,7 @@ export type observerParam = {
   slimDOMOptions: SlimDOMOptions;
   doc: Document;
   dimension: DocumentDimension;
+  iframeManager: IframeManager;
 };
 
 export type hooksParam = {
