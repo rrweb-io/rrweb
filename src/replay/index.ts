@@ -1,10 +1,8 @@
 import {
   rebuild,
   buildNodeWithSN,
-  CallbackArray,
   INode,
   NodeType,
-  idNodeMap,
   serializedNodeWithId,
 } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
@@ -59,6 +57,18 @@ const mitt = (mittProxy as any).default || mittProxy;
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
 
+type HTMLIFrameINode = HTMLIFrameElement & {
+  __sn: serializedNodeWithId;
+};
+type AppendedIframe = {
+  mutationInQueue: addedNodeMutation;
+  builtNode: HTMLIFrameINode;
+};
+
+export function isIframeINode(node: INode): node is HTMLIFrameINode {
+  return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
+}
+
 const defaultMouseTailConfig = {
   duration: 500,
   lineCap: 'round',
@@ -91,28 +101,6 @@ const defaultLogConfig: LogReplayConfig = {
   replayLogger: undefined,
 };
 
-function buildIframe(
-  iframe: HTMLIFrameElement,
-  options: {
-    childNodes: serializedNodeWithId[];
-    map: idNodeMap;
-    cbs: CallbackArray;
-    hackCss: boolean;
-  },
-) {
-  const { childNodes, map, cbs, hackCss } = options;
-  const targetDoc = iframe.contentDocument!;
-  for (const childN of childNodes) {
-    buildNodeWithSN(childN, {
-      doc: targetDoc,
-      map,
-      cbs,
-      skipChild: false,
-      hackCss,
-    });
-  }
-}
-
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
@@ -141,6 +129,8 @@ export class Replayer {
   private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
+
+  private newDocumentQueue: addedNodeMutation[] = [];
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -569,9 +559,19 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
+    const collected: AppendedIframe[] = [];
     mirror.map = rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
+      afterAppend: (builtNode) => {
+        this.collectIframeAndAttachDocument(collected, builtNode);
+      },
     })[1];
+    for (const { mutationInQueue, builtNode } of collected) {
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
+      this.newDocumentQueue = this.newDocumentQueue.filter(
+        (m) => m !== mutationInQueue,
+      );
+    }
     const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument;
     documentElement!.insertBefore(styleEl, head);
@@ -597,6 +597,44 @@ export class Replayer {
     }
     if (this.config.UNSAFE_replayCanvas) {
       this.preloadAllImages();
+    }
+  }
+
+  private attachDocumentToIframe(
+    mutation: addedNodeMutation,
+    iframeEl: HTMLIFrameElement,
+  ) {
+    const collected: AppendedIframe[] = [];
+    buildNodeWithSN(mutation.node, {
+      doc: iframeEl.contentDocument!,
+      map: mirror.map,
+      hackCss: true,
+      skipChild: false,
+      afterAppend: (builtNode) => {
+        this.collectIframeAndAttachDocument(collected, builtNode);
+      },
+    });
+    for (const { mutationInQueue, builtNode } of collected) {
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
+      this.newDocumentQueue = this.newDocumentQueue.filter(
+        (m) => m !== mutationInQueue,
+      );
+    }
+  }
+
+  private collectIframeAndAttachDocument(
+    collected: AppendedIframe[],
+    builtNode: INode,
+  ) {
+    if (isIframeINode(builtNode)) {
+      {
+        const mutationInQueue = this.newDocumentQueue.find(
+          (m) => m.parentId === builtNode.__sn.id,
+        );
+        if (mutationInQueue) {
+          collected.push({ mutationInQueue, builtNode });
+        }
+      }
     }
   }
 
@@ -1056,6 +1094,10 @@ export class Replayer {
       }
       let parent = mirror.getNode(mutation.parentId);
       if (!parent) {
+        if (mutation.node.type === NodeType.Document) {
+          // is newly added document, maybe the document node of an iframe
+          return this.newDocumentQueue.push(mutation);
+        }
         return queue.push(mutation);
       }
 
@@ -1098,30 +1140,19 @@ export class Replayer {
         return;
       }
 
-      const cbs: CallbackArray = [];
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
         : this.iframe.contentDocument;
-      const [target, nestedNodes] = buildNodeWithSN(mutation.node, {
+      if (isIframeINode(parent)) {
+        this.attachDocumentToIframe(mutation, parent);
+        return;
+      }
+      const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document,
         map: mirror.map,
-        cbs,
         skipChild: true,
         hackCss: true,
-      }) as [Node, serializedNodeWithId[]];
-      if (
-        mutation.node.type === NodeType.Element &&
-        mutation.node.tagName === 'iframe'
-      ) {
-        cbs.push(() =>
-          buildIframe((target as unknown) as HTMLIFrameElement, {
-            childNodes: nestedNodes,
-            map: mirror.map,
-            cbs,
-            hackCss: true,
-          }),
-        );
-      }
+      }) as INode;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1144,6 +1175,20 @@ export class Replayer {
         parent.appendChild(target);
       }
 
+      if (isIframeINode(target)) {
+        {
+          const mutationInQueue = this.newDocumentQueue.find(
+            (m) => m.parentId === target.__sn.id,
+          );
+          if (mutationInQueue) {
+            this.attachDocumentToIframe(mutationInQueue, target);
+            this.newDocumentQueue = this.newDocumentQueue.filter(
+              (m) => m !== mutationInQueue,
+            );
+          }
+        }
+      }
+
       if (mutation.previousId || mutation.nextId) {
         this.legacy_resolveMissingNode(
           legacy_missingNodeMap,
@@ -1152,8 +1197,6 @@ export class Replayer {
           mutation,
         );
       }
-
-      cbs.forEach((f) => f());
     };
 
     d.adds.forEach((mutation) => {
@@ -1287,7 +1330,7 @@ export class Replayer {
    * generate a console log replayer which implement the interface ReplayLogger
    */
   private getConsoleLogger(): ReplayLogger {
-    const rrwebOriginal = '__rrweb_original__';
+    const rrwebOriginal = SCROLL_ATTRIBUTE_NAME;
     const replayLogger: ReplayLogger = {};
     for (const level of this.config.logConfig.level!)
       if (level === 'trace')
