@@ -198,12 +198,19 @@ export function buildNodeWithSN(
     map: idNodeMap;
     skipChild?: boolean;
     hackCss: boolean;
+    afterAppend?: (n: INode) => unknown;
   },
 ): INode | null {
-  const { doc, map, skipChild = false, hackCss = true } = options;
+  const { doc, map, skipChild = false, hackCss = true, afterAppend } = options;
   let node = buildNode(n, { doc, hackCss });
   if (!node) {
     return null;
+  }
+  if (n.rootId) {
+    console.assert(
+      ((map[n.rootId] as unknown) as Document) === doc,
+      'Target document should has the same root id.',
+    );
   }
   // use target document as root document
   if (n.type === NodeType.Document) {
@@ -215,6 +222,7 @@ export function buildNodeWithSN(
 
   (node as INode).__sn = n;
   map[n.id] = node as INode;
+
   if (
     (n.type === NodeType.Document || n.type === NodeType.Element) &&
     !skipChild
@@ -225,14 +233,20 @@ export function buildNodeWithSN(
         map,
         skipChild: false,
         hackCss,
+        afterAppend,
       });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
-      } else {
-        node.appendChild(childNode);
+        continue;
+      }
+
+      node.appendChild(childNode);
+      if (afterAppend) {
+        afterAppend(childNode);
       }
     }
   }
+
   return node as INode;
 }
 
@@ -274,15 +288,17 @@ function rebuild(
     doc: Document;
     onVisit?: (node: INode) => unknown;
     hackCss?: boolean;
+    afterAppend?: (n: INode) => unknown;
   },
 ): [Node | null, idNodeMap] {
-  const { doc, onVisit, hackCss = true } = options;
+  const { doc, onVisit, hackCss = true, afterAppend } = options;
   const idNodeMap: idNodeMap = {};
   const node = buildNodeWithSN(n, {
     doc,
     map: idNodeMap,
     skipChild: false,
     hackCss,
+    afterAppend,
   });
   visit(idNodeMap, (visitedNode) => {
     if (onVisit) {

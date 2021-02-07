@@ -47,13 +47,16 @@ export type commentNode = {
   textContent: string;
 };
 
-export type serializedNode =
+export type serializedNode = (
   | documentNode
   | documentTypeNode
   | elementNode
   | textNode
   | cdataNode
-  | commentNode;
+  | commentNode
+) & {
+  rootId?: number;
+};
 
 export type serializedNodeWithId = serializedNode & { id: number };
 
