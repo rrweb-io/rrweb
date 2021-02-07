@@ -39,6 +39,7 @@ import {
   iterateResolveTree,
   AppendedIframe,
   isIframeINode,
+  getBaseDimension,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -135,7 +136,7 @@ export class Replayer {
       insertStyleRules: [],
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
-      pauseAnimation: false,
+      pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       logConfig: defaultLogConfig,
     };
@@ -555,9 +556,32 @@ export class Replayer {
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
+      if (builtNode.contentDocument) {
+        const { documentElement, head } = builtNode.contentDocument;
+        this.insertStyleRules(documentElement, head);
+      }
     }
-    const styleEl = document.createElement('style');
     const { documentElement, head } = this.iframe.contentDocument;
+    this.insertStyleRules(documentElement, head);
+    if (!this.service.state.matches('playing')) {
+      this.iframe.contentDocument
+        .getElementsByTagName('html')[0]
+        .classList.add('rrweb-paused');
+    }
+    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
+    if (!isSync) {
+      this.waitForStylesheetLoad();
+    }
+    if (this.config.UNSAFE_replayCanvas) {
+      this.preloadAllImages();
+    }
+  }
+
+  private insertStyleRules(
+    documentElement: HTMLElement,
+    head: HTMLHeadElement,
+  ) {
+    const styleEl = document.createElement('style');
     documentElement!.insertBefore(styleEl, head);
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
@@ -567,20 +591,8 @@ export class Replayer {
         'html.rrweb-paused * { animation-play-state: paused !important; }',
       );
     }
-    if (!this.service.state.matches('playing')) {
-      this.iframe.contentDocument
-        .getElementsByTagName('html')[0]
-        .classList.add('rrweb-paused');
-    }
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
-    }
-    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    if (!isSync) {
-      this.waitForStylesheetLoad();
-    }
-    if (this.config.UNSAFE_replayCanvas) {
-      this.preloadAllImages();
     }
   }
 
@@ -603,6 +615,10 @@ export class Replayer {
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
+      if (builtNode.contentDocument) {
+        const { documentElement, head } = builtNode.contentDocument;
+        this.insertStyleRules(documentElement, head);
+      }
     }
   }
 
@@ -611,13 +627,11 @@ export class Replayer {
     builtNode: INode,
   ) {
     if (isIframeINode(builtNode)) {
-      {
-        const mutationInQueue = this.newDocumentQueue.find(
-          (m) => m.parentId === builtNode.__sn.id,
-        );
-        if (mutationInQueue) {
-          collected.push({ mutationInQueue, builtNode });
-        }
+      const mutationInQueue = this.newDocumentQueue.find(
+        (m) => m.parentId === builtNode.__sn.id,
+      );
+      if (mutationInQueue) {
+        collected.push({ mutationInQueue, builtNode });
       }
     }
   }
@@ -1160,16 +1174,18 @@ export class Replayer {
       }
 
       if (isIframeINode(target)) {
-        {
-          const mutationInQueue = this.newDocumentQueue.find(
-            (m) => m.parentId === target.__sn.id,
+        const mutationInQueue = this.newDocumentQueue.find(
+          (m) => m.parentId === target.__sn.id,
+        );
+        if (mutationInQueue) {
+          this.attachDocumentToIframe(mutationInQueue, target);
+          this.newDocumentQueue = this.newDocumentQueue.filter(
+            (m) => m !== mutationInQueue,
           );
-          if (mutationInQueue) {
-            this.attachDocumentToIframe(mutationInQueue, target);
-            this.newDocumentQueue = this.newDocumentQueue.filter(
-              (m) => m !== mutationInQueue,
-            );
-          }
+        }
+        if (target.contentDocument) {
+          const { documentElement, head } = target.contentDocument;
+          this.insertStyleRules(documentElement, head);
         }
       }
 
@@ -1370,14 +1386,18 @@ export class Replayer {
   }
 
   private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
-    this.mouse.style.left = `${x}px`;
-    this.mouse.style.top = `${y}px`;
-    this.drawMouseTail({ x, y });
-
     const target = mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(d, id);
     }
+
+    const base = getBaseDimension(target);
+    const _x = x + base.x;
+    const _y = y + base.y;
+
+    this.mouse.style.left = `${_x}px`;
+    this.mouse.style.top = `${_y}px`;
+    this.drawMouseTail({ x: _x, y: _y });
     this.hoverElements((target as Node) as Element);
   }
 

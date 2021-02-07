@@ -2,6 +2,7 @@
 import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
+import { IframeManager } from './record/iframe-manager';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -158,7 +159,7 @@ export declare type observerParam = {
     collectFonts: boolean;
     slimDOMOptions: SlimDOMOptions;
     doc: Document;
-    dimension: DocumentDimension;
+    iframeManager: IframeManager;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;

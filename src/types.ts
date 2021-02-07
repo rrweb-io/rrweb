@@ -226,7 +226,6 @@ export type observerParam = {
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
   doc: Document;
-  dimension: DocumentDimension;
   iframeManager: IframeManager;
 };
 

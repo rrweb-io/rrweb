@@ -1,9 +1,4 @@
-import {
-  snapshot,
-  MaskInputOptions,
-  SlimDOMOptions,
-  NodeType,
-} from 'rrweb-snapshot';
+import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   mirror,
@@ -11,8 +6,6 @@ import {
   getWindowWidth,
   getWindowHeight,
   polyfill,
-  getIframeDimensions,
-  initDimension,
   isIframeINode,
 } from '../utils';
 import {
@@ -23,7 +16,6 @@ import {
   IncrementalSource,
   listenerHandler,
   LogRecordOptions,
-  DocumentDimension,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 
@@ -266,7 +258,7 @@ function record<T = eventWithTime>(
       }),
     );
 
-    const observe = (doc: Document, dimension: DocumentDimension) => {
+    const observe = (doc: Document) => {
       return initObservers(
         {
           mutationCb: (m) =>
@@ -387,7 +379,6 @@ function record<T = eventWithTime>(
           recordCanvas,
           collectFonts,
           doc,
-          dimension,
           maskInputFn,
           logOptions,
           blockSelector,
@@ -399,12 +390,12 @@ function record<T = eventWithTime>(
     };
 
     iframeManager.addLoadListener((iframeEl) => {
-      handlers.push(observe(iframeEl.contentDocument!, initDimension));
+      handlers.push(observe(iframeEl.contentDocument!));
     });
 
     const init = () => {
       takeFullSnapshot();
-      handlers.push(observe(document, initDimension));
+      handlers.push(observe(document));
     };
     if (
       document.readyState === 'interactive' ||

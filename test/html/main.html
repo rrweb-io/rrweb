@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Main</title>
+    <style>
+      iframe {
+        width: 500px;
+        height: 500px;
+      }
+    </style>
   </head>
   <body>
     <iframe id="one"></iframe>
@@ -11,7 +17,7 @@
   <script>
     const iframe2 = document.createElement('iframe');
     iframe2.id = 'two';
-    iframe2.src = './html/frame1.html';
+    iframe2.src = './frame1.html';
     setTimeout(() => {
       document.body.appendChild(iframe2);
     }, 10);

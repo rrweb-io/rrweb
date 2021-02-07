@@ -534,32 +534,6 @@ export function iterateResolveTree(
   }
 }
 
-export const initDimension = { x: 0, y: 0 };
-
-export function getIframeDimensions(): WeakMap<
-  HTMLIFrameElement,
-  DocumentDimension
-> {
-  let x = 0;
-  let y = 0;
-  const wmap: WeakMap<HTMLIFrameElement, DocumentDimension> = new WeakMap();
-  function matchIframe(doc: Document) {
-    doc.querySelectorAll('iframe').forEach((iframe) => {
-      x += iframe.offsetLeft;
-      y += iframe.offsetTop;
-      wmap.set(iframe, {
-        x,
-        y,
-      });
-      if (iframe.contentDocument) {
-        matchIframe(iframe.contentDocument);
-      }
-    });
-  }
-  matchIframe(document);
-  return wmap;
-}
-
 type HTMLIFrameINode = HTMLIFrameElement & {
   __sn: serializedNodeWithId;
 };
@@ -570,4 +544,21 @@ export type AppendedIframe = {
 
 export function isIframeINode(node: INode): node is HTMLIFrameINode {
   return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
+}
+
+export function getBaseDimension(node: Node): DocumentDimension {
+  const frameElement = node.ownerDocument?.defaultView?.frameElement;
+  if (!frameElement) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+
+  const frameDimension = frameElement.getBoundingClientRect();
+  const frameBaseDimension = getBaseDimension(frameElement);
+  return {
+    x: frameDimension.x + frameBaseDimension.x,
+    y: frameDimension.y + frameBaseDimension.y,
+  };
 }

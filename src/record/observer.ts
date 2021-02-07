@@ -40,7 +40,6 @@ import {
   LogRecordOptions,
   Logger,
   LogLevel,
-  DocumentDimension,
 } from '../types';
 import MutationBuffer from './mutation';
 import { stringify } from './stringify';
@@ -125,7 +124,6 @@ function initMoveObserver(
   cb: mousemoveCallBack,
   sampling: SamplingStrategy,
   doc: Document,
-  dimension: DocumentDimension,
 ): listenerHandler {
   if (sampling.mousemove === false) {
     return () => {};
@@ -158,8 +156,8 @@ function initMoveObserver(
         timeBaseline = Date.now();
       }
       positions.push({
-        x: dimension.x + clientX,
-        y: dimension.y + clientY,
+        x: clientX,
+        y: clientY,
         id: mirror.getId(target as INode),
         timeOffset: Date.now() - timeBaseline,
       });
@@ -182,7 +180,6 @@ function initMoveObserver(
 function initMouseInteractionObserver(
   cb: mouseInteractionCallBack,
   doc: Document,
-  dimension: DocumentDimension,
   blockClass: blockClass,
   sampling: SamplingStrategy,
 ): listenerHandler {
@@ -208,8 +205,8 @@ function initMouseInteractionObserver(
       cb({
         type: MouseInteractions[eventKey],
         id,
-        x: dimension.x + clientX,
-        y: dimension.y + clientY,
+        x: clientX,
+        y: clientY,
       });
     };
   };
@@ -750,16 +747,10 @@ export function initObservers(
     o.slimDOMOptions,
     o.iframeManager,
   );
-  const mousemoveHandler = initMoveObserver(
-    o.mousemoveCb,
-    o.sampling,
-    o.doc,
-    o.dimension,
-  );
+  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling, o.doc);
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.doc,
-    o.dimension,
     o.blockClass,
     o.sampling,
   );

@@ -19,6 +19,7 @@ export declare class Replayer {
     private fragmentParentMap;
     private elementStateMap;
     private imageMap;
+    private newDocumentQueue;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
     setConfig(config: Partial<playerConfig>): void;
@@ -36,6 +37,9 @@ export declare class Replayer {
     private handleResize;
     private getCastFn;
     private rebuildFullSnapshot;
+    private insertStyleRules;
+    private attachDocumentToIframe;
+    private collectIframeAndAttachDocument;
     private waitForStylesheetLoad;
     private preloadAllImages;
     private applyIncremental;
