@@ -39,11 +39,11 @@ describe('replayer', function (this: ISuite) {
   });
 
   afterEach(async () => {
-    // await this.page.close();
+    await this.page.close();
   });
 
   after(async () => {
-    // await this.browser.close();
+    await this.browser.close();
   });
 
   it('can get meta data', async () => {
