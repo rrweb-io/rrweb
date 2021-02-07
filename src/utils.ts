@@ -543,6 +543,10 @@ export type AppendedIframe = {
 };
 
 export function isIframeINode(node: INode): node is HTMLIFrameINode {
+  // node can be document fragment when using the virtual parent feature
+  if (!node.__sn) {
+    return false;
+  }
   return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
 }
 

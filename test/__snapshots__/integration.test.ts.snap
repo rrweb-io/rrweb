@@ -1751,7 +1751,7 @@ exports[`iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 16,
+          \\"parentId\\": 19,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -1766,23 +1766,23 @@ exports[`iframe 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 17,
-                    \\"id\\": 19
+                    \\"rootId\\": 20,
+                    \\"id\\": 22
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"body\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 17,
-                    \\"id\\": 20
+                    \\"rootId\\": 20,
+                    \\"id\\": 23
                   }
                 ],
-                \\"rootId\\": 17,
-                \\"id\\": 18
+                \\"rootId\\": 20,
+                \\"id\\": 21
               }
             ],
-            \\"id\\": 17
+            \\"id\\": 20
           }
         }
       ],
@@ -1865,8 +1865,27 @@ exports[`iframe 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      iframe {\\\\n        width: 500px;\\\\n        height: 500px;\\\\n      }\\\\n    \\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 15
                   }
                 ],
                 \\"id\\": 4
@@ -1874,7 +1893,7 @@ exports[`iframe 1`] = `
               {
                 \\"type\\": 3,
                 \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 13
+                \\"id\\": 16
               },
               {
                 \\"type\\": 2,
@@ -1884,7 +1903,7 @@ exports[`iframe 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 15
+                    \\"id\\": 18
                   },
                   {
                     \\"type\\": 2,
@@ -1893,29 +1912,11 @@ exports[`iframe 1`] = `
                       \\"id\\": \\"one\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 16
+                    \\"id\\": 19
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 21
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 23
-                      }
-                    ],
-                    \\"id\\": 22
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n  \\",
                     \\"id\\": 24
                   },
                   {
@@ -1933,11 +1934,29 @@ exports[`iframe 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n\\",
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n  \\",
                     \\"id\\": 27
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 29
+                      }
+                    ],
+                    \\"id\\": 28
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n\\",
+                    \\"id\\": 30
                   }
                 ],
-                \\"id\\": 14
+                \\"id\\": 17
               }
             ],
             \\"id\\": 3
@@ -1960,7 +1979,7 @@ exports[`iframe 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 14,
+          \\"parentId\\": 17,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -1969,7 +1988,7 @@ exports[`iframe 1`] = `
               \\"id\\": \\"two\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 28
+            \\"id\\": 31
           }
         }
       ]
@@ -1981,7 +2000,7 @@ exports[`iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 44,
+          \\"parentId\\": 47,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -1996,23 +2015,23 @@ exports[`iframe 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 45,
-                    \\"id\\": 47
+                    \\"rootId\\": 48,
+                    \\"id\\": 50
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"body\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 45,
-                    \\"id\\": 48
+                    \\"rootId\\": 48,
+                    \\"id\\": 51
                   }
                 ],
-                \\"rootId\\": 45,
-                \\"id\\": 46
+                \\"rootId\\": 48,
+                \\"id\\": 49
               }
             ],
-            \\"id\\": 45
+            \\"id\\": 48
           }
         }
       ],
@@ -2027,7 +2046,7 @@ exports[`iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 50,
+          \\"parentId\\": 53,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -2037,8 +2056,8 @@ exports[`iframe 1`] = `
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
-                \\"rootId\\": 51,
-                \\"id\\": 52
+                \\"rootId\\": 54,
+                \\"id\\": 55
               },
               {
                 \\"type\\": 2,
@@ -2055,8 +2074,8 @@ exports[`iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 51,
-                        \\"id\\": 55
+                        \\"rootId\\": 54,
+                        \\"id\\": 58
                       },
                       {
                         \\"type\\": 2,
@@ -2065,14 +2084,14 @@ exports[`iframe 1`] = `
                           \\"charset\\": \\"UTF-8\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 51,
-                        \\"id\\": 56
+                        \\"rootId\\": 54,
+                        \\"id\\": 59
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 51,
-                        \\"id\\": 57
+                        \\"rootId\\": 54,
+                        \\"id\\": 60
                       },
                       {
                         \\"type\\": 2,
@@ -2082,14 +2101,14 @@ exports[`iframe 1`] = `
                           \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 51,
-                        \\"id\\": 58
+                        \\"rootId\\": 54,
+                        \\"id\\": 61
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 51,
-                        \\"id\\": 59
+                        \\"rootId\\": 54,
+                        \\"id\\": 62
                       },
                       {
                         \\"type\\": 2,
@@ -2099,28 +2118,28 @@ exports[`iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Frame 2\\",
-                            \\"rootId\\": 51,
-                            \\"id\\": 61
+                            \\"rootId\\": 54,
+                            \\"id\\": 64
                           }
                         ],
-                        \\"rootId\\": 51,
-                        \\"id\\": 60
+                        \\"rootId\\": 54,
+                        \\"id\\": 63
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"rootId\\": 51,
-                        \\"id\\": 62
+                        \\"rootId\\": 54,
+                        \\"id\\": 65
                       }
                     ],
-                    \\"rootId\\": 51,
-                    \\"id\\": 54
+                    \\"rootId\\": 54,
+                    \\"id\\": 57
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"rootId\\": 51,
-                    \\"id\\": 63
+                    \\"rootId\\": 54,
+                    \\"id\\": 66
                   },
                   {
                     \\"type\\": 2,
@@ -2130,8 +2149,8 @@ exports[`iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    frame 2\\\\n  \\\\n  \\",
-                        \\"rootId\\": 51,
-                        \\"id\\": 65
+                        \\"rootId\\": 54,
+                        \\"id\\": 68
                       },
                       {
                         \\"type\\": 2,
@@ -2141,29 +2160,29 @@ exports[`iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                            \\"rootId\\": 51,
-                            \\"id\\": 67
+                            \\"rootId\\": 54,
+                            \\"id\\": 70
                           }
                         ],
-                        \\"rootId\\": 51,
-                        \\"id\\": 66
+                        \\"rootId\\": 54,
+                        \\"id\\": 69
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n\\\\n\\",
-                        \\"rootId\\": 51,
-                        \\"id\\": 68
+                        \\"rootId\\": 54,
+                        \\"id\\": 71
                       }
                     ],
-                    \\"rootId\\": 51,
-                    \\"id\\": 64
+                    \\"rootId\\": 54,
+                    \\"id\\": 67
                   }
                 ],
-                \\"rootId\\": 51,
-                \\"id\\": 53
+                \\"rootId\\": 54,
+                \\"id\\": 56
               }
             ],
-            \\"id\\": 51
+            \\"id\\": 54
           }
         }
       ],
@@ -2178,7 +2197,7 @@ exports[`iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 28,
+          \\"parentId\\": 31,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -2188,8 +2207,8 @@ exports[`iframe 1`] = `
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
-                \\"rootId\\": 29,
-                \\"id\\": 30
+                \\"rootId\\": 32,
+                \\"id\\": 33
               },
               {
                 \\"type\\": 2,
@@ -2206,8 +2225,8 @@ exports[`iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 33
+                        \\"rootId\\": 32,
+                        \\"id\\": 36
                       },
                       {
                         \\"type\\": 2,
@@ -2216,14 +2235,14 @@ exports[`iframe 1`] = `
                           \\"charset\\": \\"UTF-8\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 29,
-                        \\"id\\": 34
+                        \\"rootId\\": 32,
+                        \\"id\\": 37
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 35
+                        \\"rootId\\": 32,
+                        \\"id\\": 38
                       },
                       {
                         \\"type\\": 2,
@@ -2233,14 +2252,14 @@ exports[`iframe 1`] = `
                           \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 29,
-                        \\"id\\": 36
+                        \\"rootId\\": 32,
+                        \\"id\\": 39
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 37
+                        \\"rootId\\": 32,
+                        \\"id\\": 40
                       },
                       {
                         \\"type\\": 2,
@@ -2250,28 +2269,28 @@ exports[`iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Frame 1\\",
-                            \\"rootId\\": 29,
-                            \\"id\\": 39
+                            \\"rootId\\": 32,
+                            \\"id\\": 42
                           }
                         ],
-                        \\"rootId\\": 29,
-                        \\"id\\": 38
+                        \\"rootId\\": 32,
+                        \\"id\\": 41
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 40
+                        \\"rootId\\": 32,
+                        \\"id\\": 43
                       }
                     ],
-                    \\"rootId\\": 29,
-                    \\"id\\": 32
+                    \\"rootId\\": 32,
+                    \\"id\\": 35
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"rootId\\": 29,
-                    \\"id\\": 41
+                    \\"rootId\\": 32,
+                    \\"id\\": 44
                   },
                   {
                     \\"type\\": 2,
@@ -2281,8 +2300,8 @@ exports[`iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    frame 1\\\\n    \\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 43
+                        \\"rootId\\": 32,
+                        \\"id\\": 46
                       },
                       {
                         \\"type\\": 2,
@@ -2292,14 +2311,14 @@ exports[`iframe 1`] = `
                           \\"frameborder\\": \\"0\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 29,
-                        \\"id\\": 44
+                        \\"rootId\\": 32,
+                        \\"id\\": 47
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 49
+                        \\"rootId\\": 32,
+                        \\"id\\": 52
                       },
                       {
                         \\"type\\": 2,
@@ -2309,25 +2328,25 @@ exports[`iframe 1`] = `
                           \\"frameborder\\": \\"0\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 29,
-                        \\"id\\": 50
+                        \\"rootId\\": 32,
+                        \\"id\\": 53
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-                        \\"rootId\\": 29,
-                        \\"id\\": 69
+                        \\"rootId\\": 32,
+                        \\"id\\": 72
                       }
                     ],
-                    \\"rootId\\": 29,
-                    \\"id\\": 42
+                    \\"rootId\\": 32,
+                    \\"id\\": 45
                   }
                 ],
-                \\"rootId\\": 29,
-                \\"id\\": 31
+                \\"rootId\\": 32,
+                \\"id\\": 34
               }
             ],
-            \\"id\\": 29
+            \\"id\\": 32
           }
         }
       ],
@@ -2342,7 +2361,7 @@ exports[`iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 70,
+          \\"parentId\\": 73,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -2357,23 +2376,23 @@ exports[`iframe 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 71,
-                    \\"id\\": 73
+                    \\"rootId\\": 74,
+                    \\"id\\": 76
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"body\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 71,
-                    \\"id\\": 74
+                    \\"rootId\\": 74,
+                    \\"id\\": 77
                   }
                 ],
-                \\"rootId\\": 71,
-                \\"id\\": 72
+                \\"rootId\\": 74,
+                \\"id\\": 75
               }
             ],
-            \\"id\\": 71
+            \\"id\\": 74
           }
         }
       ],
@@ -2391,7 +2410,7 @@ exports[`iframe 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 64,
+          \\"parentId\\": 67,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -2400,35 +2419,11 @@ exports[`iframe 1`] = `
               \\"id\\": \\"five\\"
             },
             \\"childNodes\\": [],
-            \\"rootId\\": 51,
-            \\"id\\": 70
+            \\"rootId\\": 54,
+            \\"id\\": 73
           }
         }
       ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 1,
-      \\"id\\": 14
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 14
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 14
     }
   }
 ]"
