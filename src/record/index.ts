@@ -13,6 +13,7 @@ import {
   polyfill,
   getIframeDimensions,
   initDimension,
+  isIframeINode,
 } from '../utils';
 import {
   EventType,
@@ -211,8 +212,8 @@ function record<T = eventWithTime>(
       slimDOM: slimDOMOptions,
       recordCanvas,
       onSerialize: (n) => {
-        if (n.__sn.type === NodeType.Element && n.__sn.tagName === 'iframe') {
-          iframeManager.addIframe((n as unknown) as HTMLIFrameElement);
+        if (isIframeINode(n)) {
+          iframeManager.addIframe(n);
         }
       },
       onIframeLoad: (iframe, childSn) => {

@@ -7,7 +7,6 @@ build
 dist
 es
 lib
-!es/rrweb/node_modules
 
 temp
 

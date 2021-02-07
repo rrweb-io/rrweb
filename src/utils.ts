@@ -16,7 +16,12 @@ import {
   inputData,
   DocumentDimension,
 } from './types';
-import { INode, IGNORED_NODE } from 'rrweb-snapshot';
+import {
+  INode,
+  IGNORED_NODE,
+  serializedNodeWithId,
+  NodeType,
+} from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -553,4 +558,16 @@ export function getIframeDimensions(): WeakMap<
   }
   matchIframe(document);
   return wmap;
+}
+
+type HTMLIFrameINode = HTMLIFrameElement & {
+  __sn: serializedNodeWithId;
+};
+export type AppendedIframe = {
+  mutationInQueue: addedNodeMutation;
+  builtNode: HTMLIFrameINode;
+};
+
+export function isIframeINode(node: INode): node is HTMLIFrameINode {
+  return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
 }

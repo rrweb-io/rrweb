@@ -26,16 +26,9 @@ type DoubleLinkedListNode = {
 };
 type NodeInLinkedList = Node & {
   __ln: DoubleLinkedListNode;
-  __list: DoubleLinkedList;
 };
 
-function isNodeInLinkedList(
-  n: Node | NodeInLinkedList,
-  list: DoubleLinkedList,
-): n is NodeInLinkedList {
-  if ('__list' in n && n.__list !== list) {
-    return false;
-  }
+function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
   return '__ln' in n;
 }
 class DoubleLinkedList {
@@ -61,8 +54,7 @@ class DoubleLinkedList {
       next: null,
     };
     (n as NodeInLinkedList).__ln = node;
-    (n as NodeInLinkedList).__list = this;
-    if (n.previousSibling && isNodeInLinkedList(n.previousSibling, this)) {
+    if (n.previousSibling && isNodeInLinkedList(n.previousSibling)) {
       const current = n.previousSibling.__ln.next;
       node.next = current;
       node.previous = n.previousSibling.__ln;
@@ -70,7 +62,7 @@ class DoubleLinkedList {
       if (current) {
         current.previous = node;
       }
-    } else if (n.nextSibling && isNodeInLinkedList(n.nextSibling, this)) {
+    } else if (n.nextSibling && isNodeInLinkedList(n.nextSibling)) {
       const current = n.nextSibling.__ln.previous;
       node.previous = current;
       node.next = n.nextSibling.__ln;
@@ -86,9 +78,6 @@ class DoubleLinkedList {
       this.head = node;
     }
     this.length++;
-    if (!this.get(this.length - 1)) {
-      throw new Error('stop');
-    }
   }
 
   public removeNode(n: NodeInLinkedList) {

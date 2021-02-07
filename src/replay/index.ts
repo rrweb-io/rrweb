@@ -1,10 +1,4 @@
-import {
-  rebuild,
-  buildNodeWithSN,
-  INode,
-  NodeType,
-  serializedNodeWithId,
-} from 'rrweb-snapshot';
+import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -43,6 +37,8 @@ import {
   TreeIndex,
   queueToResolveTrees,
   iterateResolveTree,
+  AppendedIframe,
+  isIframeINode,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -56,18 +52,6 @@ const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
-
-type HTMLIFrameINode = HTMLIFrameElement & {
-  __sn: serializedNodeWithId;
-};
-type AppendedIframe = {
-  mutationInQueue: addedNodeMutation;
-  builtNode: HTMLIFrameINode;
-};
-
-export function isIframeINode(node: INode): node is HTMLIFrameINode {
-  return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
-}
 
 const defaultMouseTailConfig = {
   duration: 500,
