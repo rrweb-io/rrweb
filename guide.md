@@ -1,6 +1,6 @@
 # Guide
 
-[中文指南](./guide.md)
+[中文指南](./guide.zh_CN.md)
 
 > You may also want to read the [recipes](./docs/recipes/index.md) to find some use real-world use case, or read the [design docs](./docs) to know more technical details of rrweb.
 
@@ -142,8 +142,11 @@ The parameter of `rrweb.record` accepts the following options.
 | checkoutEveryNms | -           | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter                                                                            |
 | blockClass       | 'rr-block'  | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                   |
 | ignoreClass      | 'rr-ignore' | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                   |
+| blockSelector    | null        | Use a string or RegExp to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
 | maskAllInputs    | false       | mask all input content as \*                                                                                                                                     |
 | maskInputOptions | {}          | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
+| maskInputFn      | -           | customize mask input content recording logic                                                                                                                                |
+| slimDOMOptions   | {}          | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L91)            |
 | inlineStylesheet | true        | whether to inline the stylesheet in the events                                                                                                                   |
 | hooks            | {}          | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                     |
 | packFn           | -           | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                   |
