@@ -81,7 +81,11 @@ function getCode(): string {
         width: 1600,
         height: 900,
       },
-      args: ['--start-maximized', '--ignore-certificate-errors'],
+      args: [
+        '--start-maximized',
+        '--ignore-certificate-errors',
+        '--no-sandbox',
+      ],
     });
     const page = await browser.newPage();
     await page.goto(url, {
@@ -128,7 +132,7 @@ function getCode(): string {
         width: 1600,
         height: 900,
       },
-      args: ['--start-maximized'],
+      args: ['--start-maximized', '--no-sandbox'],
     });
     const page = await browser.newPage();
     await page.goto('about:blank');

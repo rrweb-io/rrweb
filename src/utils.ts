@@ -14,8 +14,14 @@ import {
   mutationData,
   scrollData,
   inputData,
+  DocumentDimension,
 } from './types';
-import { INode, IGNORED_NODE } from 'rrweb-snapshot';
+import {
+  INode,
+  IGNORED_NODE,
+  serializedNodeWithId,
+  NodeType,
+} from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -526,4 +532,37 @@ export function iterateResolveTree(
   for (let i = tree.children.length - 1; i >= 0; i--) {
     iterateResolveTree(tree.children[i], cb);
   }
+}
+
+type HTMLIFrameINode = HTMLIFrameElement & {
+  __sn: serializedNodeWithId;
+};
+export type AppendedIframe = {
+  mutationInQueue: addedNodeMutation;
+  builtNode: HTMLIFrameINode;
+};
+
+export function isIframeINode(node: INode): node is HTMLIFrameINode {
+  // node can be document fragment when using the virtual parent feature
+  if (!node.__sn) {
+    return false;
+  }
+  return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
+}
+
+export function getBaseDimension(node: Node): DocumentDimension {
+  const frameElement = node.ownerDocument?.defaultView?.frameElement;
+  if (!frameElement) {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+
+  const frameDimension = frameElement.getBoundingClientRect();
+  const frameBaseDimension = getBaseDimension(frameElement);
+  return {
+    x: frameDimension.x + frameBaseDimension.x,
+    y: frameDimension.y + frameBaseDimension.y,
+  };
 }

@@ -11,7 +11,7 @@ import {
   MouseInteractions,
   playerConfig,
   playerMetaData,
-  viewportResizeDimention,
+  viewportResizeDimension,
   missingNodeMap,
   addedNodeMutation,
   missingNode,
@@ -37,6 +37,9 @@ import {
   TreeIndex,
   queueToResolveTrees,
   iterateResolveTree,
+  AppendedIframe,
+  isIframeINode,
+  getBaseDimension,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -49,6 +52,7 @@ const SKIP_TIME_INTERVAL = 5 * 1000;
 const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
+const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
 
 const defaultMouseTailConfig = {
   duration: 500,
@@ -110,6 +114,8 @@ export class Replayer {
   private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
+
+  private newDocumentQueue: addedNodeMutation[] = [];
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -233,6 +239,10 @@ export class Replayer {
     }
     if (firstFullsnapshot) {
       setTimeout(() => {
+        // when something has been played, there is no need to rebuild poster
+        if (this.timer.timeOffset > 0) {
+          return;
+        }
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
@@ -406,7 +416,7 @@ export class Replayer {
     }
   }
 
-  private handleResize(dimension: viewportResizeDimention) {
+  private handleResize(dimension: viewportResizeDimension) {
     this.iframe.style.display = 'inherit';
     for (const el of [this.mouseTail, this.iframe]) {
       if (!el) {
@@ -534,11 +544,44 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
+    const collected: AppendedIframe[] = [];
     mirror.map = rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
+      afterAppend: (builtNode) => {
+        this.collectIframeAndAttachDocument(collected, builtNode);
+      },
     })[1];
-    const styleEl = document.createElement('style');
+    for (const { mutationInQueue, builtNode } of collected) {
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
+      this.newDocumentQueue = this.newDocumentQueue.filter(
+        (m) => m !== mutationInQueue,
+      );
+      if (builtNode.contentDocument) {
+        const { documentElement, head } = builtNode.contentDocument;
+        this.insertStyleRules(documentElement, head);
+      }
+    }
     const { documentElement, head } = this.iframe.contentDocument;
+    this.insertStyleRules(documentElement, head);
+    if (!this.service.state.matches('playing')) {
+      this.iframe.contentDocument
+        .getElementsByTagName('html')[0]
+        .classList.add('rrweb-paused');
+    }
+    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
+    if (!isSync) {
+      this.waitForStylesheetLoad();
+    }
+    if (this.config.UNSAFE_replayCanvas) {
+      this.preloadAllImages();
+    }
+  }
+
+  private insertStyleRules(
+    documentElement: HTMLElement,
+    head: HTMLHeadElement,
+  ) {
+    const styleEl = document.createElement('style');
     documentElement!.insertBefore(styleEl, head);
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
@@ -548,20 +591,48 @@ export class Replayer {
         'html.rrweb-paused * { animation-play-state: paused !important; }',
       );
     }
-    if (!this.service.state.matches('playing')) {
-      this.iframe.contentDocument
-        .getElementsByTagName('html')[0]
-        .classList.add('rrweb-paused');
-    }
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
       (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
     }
-    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    if (!isSync) {
-      this.waitForStylesheetLoad();
+  }
+
+  private attachDocumentToIframe(
+    mutation: addedNodeMutation,
+    iframeEl: HTMLIFrameElement,
+  ) {
+    const collected: AppendedIframe[] = [];
+    buildNodeWithSN(mutation.node, {
+      doc: iframeEl.contentDocument!,
+      map: mirror.map,
+      hackCss: true,
+      skipChild: false,
+      afterAppend: (builtNode) => {
+        this.collectIframeAndAttachDocument(collected, builtNode);
+      },
+    });
+    for (const { mutationInQueue, builtNode } of collected) {
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
+      this.newDocumentQueue = this.newDocumentQueue.filter(
+        (m) => m !== mutationInQueue,
+      );
+      if (builtNode.contentDocument) {
+        const { documentElement, head } = builtNode.contentDocument;
+        this.insertStyleRules(documentElement, head);
+      }
     }
-    if (this.config.UNSAFE_replayCanvas) {
-      this.preloadAllImages();
+  }
+
+  private collectIframeAndAttachDocument(
+    collected: AppendedIframe[],
+    builtNode: INode,
+  ) {
+    if (isIframeINode(builtNode)) {
+      const mutationInQueue = this.newDocumentQueue.find(
+        (m) => m.parentId === builtNode.__sn.id,
+      );
+      if (mutationInQueue) {
+        collected.push({ mutationInQueue, builtNode });
+      }
     }
   }
 
@@ -1021,6 +1092,10 @@ export class Replayer {
       }
       let parent = mirror.getNode(mutation.parentId);
       if (!parent) {
+        if (mutation.node.type === NodeType.Document) {
+          // is newly added document, maybe the document node of an iframe
+          return this.newDocumentQueue.push(mutation);
+        }
         return queue.push(mutation);
       }
 
@@ -1059,12 +1134,23 @@ export class Replayer {
         return queue.push(mutation);
       }
 
+      if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
+        return;
+      }
+
+      const targetDoc = mutation.node.rootId
+        ? mirror.getNode(mutation.node.rootId)
+        : this.iframe.contentDocument;
+      if (isIframeINode(parent)) {
+        this.attachDocumentToIframe(mutation, parent);
+        return;
+      }
       const target = buildNodeWithSN(mutation.node, {
-        doc: this.iframe.contentDocument,
+        doc: targetDoc as Document,
         map: mirror.map,
         skipChild: true,
         hackCss: true,
-      }) as Node;
+      }) as INode;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1085,6 +1171,22 @@ export class Replayer {
           : parent.insertBefore(target, null);
       } else {
         parent.appendChild(target);
+      }
+
+      if (isIframeINode(target)) {
+        const mutationInQueue = this.newDocumentQueue.find(
+          (m) => m.parentId === target.__sn.id,
+        );
+        if (mutationInQueue) {
+          this.attachDocumentToIframe(mutationInQueue, target);
+          this.newDocumentQueue = this.newDocumentQueue.filter(
+            (m) => m !== mutationInQueue,
+          );
+        }
+        if (target.contentDocument) {
+          const { documentElement, head } = target.contentDocument;
+          this.insertStyleRules(documentElement, head);
+        }
       }
 
       if (mutation.previousId || mutation.nextId) {
@@ -1228,7 +1330,7 @@ export class Replayer {
    * generate a console log replayer which implement the interface ReplayLogger
    */
   private getConsoleLogger(): ReplayLogger {
-    const rrwebOriginal = '__rrweb_original__';
+    const rrwebOriginal = SCROLL_ATTRIBUTE_NAME;
     const replayLogger: ReplayLogger = {};
     for (const level of this.config.logConfig.level!)
       if (level === 'trace')
@@ -1284,14 +1386,18 @@ export class Replayer {
   }
 
   private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
-    this.mouse.style.left = `${x}px`;
-    this.mouse.style.top = `${y}px`;
-    this.drawMouseTail({ x, y });
-
     const target = mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(d, id);
     }
+
+    const base = getBaseDimension(target);
+    const _x = x + base.x;
+    const _y = y + base.y;
+
+    this.mouse.style.left = `${_x}px`;
+    this.mouse.style.top = `${_y}px`;
+    this.drawMouseTail({ x: _x, y: _y });
     this.hoverElements((target as Node) as Element);
   }
 

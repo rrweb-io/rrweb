@@ -1727,6 +1727,708 @@ exports[`frozen 1`] = `
 ]"
 `;
 
+exports[`iframe 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 19,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 20,
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 20,
+                    \\"id\\": 23
+                  }
+                ],
+                \\"rootId\\": 20,
+                \\"id\\": 21
+              }
+            ],
+            \\"id\\": 20
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": []
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Main\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      iframe {\\\\n        width: 500px;\\\\n        height: 500px;\\\\n      }\\\\n    \\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 15
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 16
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"one\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 24
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 26
+                      }
+                    ],
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n  \\",
+                    \\"id\\": 27
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 29
+                      }
+                    ],
+                    \\"id\\": 28
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n\\",
+                    \\"id\\": 30
+                  }
+                ],
+                \\"id\\": 17
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 17,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {
+              \\"id\\": \\"two\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 31
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 47,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 48,
+                    \\"id\\": 50
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 48,
+                    \\"id\\": 51
+                  }
+                ],
+                \\"rootId\\": 48,
+                \\"id\\": 49
+              }
+            ],
+            \\"id\\": 48
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 53,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 1,
+                \\"name\\": \\"html\\",
+                \\"publicId\\": \\"\\",
+                \\"systemId\\": \\"\\",
+                \\"rootId\\": 54,
+                \\"id\\": 55
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {
+                  \\"lang\\": \\"en\\"
+                },
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 54,
+                        \\"id\\": 58
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"charset\\": \\"UTF-8\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 54,
+                        \\"id\\": 59
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 54,
+                        \\"id\\": 60
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"name\\": \\"viewport\\",
+                          \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 54,
+                        \\"id\\": 61
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 54,
+                        \\"id\\": 62
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"title\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"Frame 2\\",
+                            \\"rootId\\": 54,
+                            \\"id\\": 64
+                          }
+                        ],
+                        \\"rootId\\": 54,
+                        \\"id\\": 63
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"rootId\\": 54,
+                        \\"id\\": 65
+                      }
+                    ],
+                    \\"rootId\\": 54,
+                    \\"id\\": 57
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"rootId\\": 54,
+                    \\"id\\": 66
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    frame 2\\\\n  \\\\n  \\",
+                        \\"rootId\\": 54,
+                        \\"id\\": 68
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 54,
+                            \\"id\\": 70
+                          }
+                        ],
+                        \\"rootId\\": 54,
+                        \\"id\\": 69
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\\\n\\",
+                        \\"rootId\\": 54,
+                        \\"id\\": 71
+                      }
+                    ],
+                    \\"rootId\\": 54,
+                    \\"id\\": 67
+                  }
+                ],
+                \\"rootId\\": 54,
+                \\"id\\": 56
+              }
+            ],
+            \\"id\\": 54
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 31,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 1,
+                \\"name\\": \\"html\\",
+                \\"publicId\\": \\"\\",
+                \\"systemId\\": \\"\\",
+                \\"rootId\\": 32,
+                \\"id\\": 33
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {
+                  \\"lang\\": \\"en\\"
+                },
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 36
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"charset\\": \\"UTF-8\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 32,
+                        \\"id\\": 37
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 38
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"name\\": \\"viewport\\",
+                          \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 32,
+                        \\"id\\": 39
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 40
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"title\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"Frame 1\\",
+                            \\"rootId\\": 32,
+                            \\"id\\": 42
+                          }
+                        ],
+                        \\"rootId\\": 32,
+                        \\"id\\": 41
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 43
+                      }
+                    ],
+                    \\"rootId\\": 32,
+                    \\"id\\": 35
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"rootId\\": 32,
+                    \\"id\\": 44
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    frame 1\\\\n    \\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 46
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"iframe\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"three\\",
+                          \\"frameborder\\": \\"0\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 32,
+                        \\"id\\": 47
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 52
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"iframe\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"four\\",
+                          \\"frameborder\\": \\"0\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 32,
+                        \\"id\\": 53
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 72
+                      }
+                    ],
+                    \\"rootId\\": 32,
+                    \\"id\\": 45
+                  }
+                ],
+                \\"rootId\\": 32,
+                \\"id\\": 34
+              }
+            ],
+            \\"id\\": 32
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 73,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 74,
+                    \\"id\\": 76
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 74,
+                    \\"id\\": 77
+                  }
+                ],
+                \\"rootId\\": 74,
+                \\"id\\": 75
+              }
+            ],
+            \\"id\\": 74
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 67,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {
+              \\"id\\": \\"five\\"
+            },
+            \\"childNodes\\": [],
+            \\"rootId\\": 54,
+            \\"id\\": 73
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`ignore 1`] = `
 "[
   {
