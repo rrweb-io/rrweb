@@ -200,14 +200,26 @@ export function _isBlockedElement(
 function onceIframeLoaded(
   iframeEl: HTMLIFrameElement,
   listener: () => unknown,
+  iframeLoadTimeout: number,
 ) {
   const win = iframeEl.contentWindow;
   if (!win) {
     return;
   }
   // document is loading
+  let fired = false;
   if (win.document.readyState !== 'complete') {
-    iframeEl.addEventListener('load', listener);
+    const timer = setTimeout(() => {
+      if (!fired) {
+        listener();
+        fired = true;
+      }
+    }, iframeLoadTimeout);
+    iframeEl.addEventListener('load', () => {
+      clearTimeout(timer);
+      fired = true;
+      listener();
+    });
     return;
   }
   // check blank frame for Chrome
@@ -519,6 +531,7 @@ export function serializeNodeWithId(
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
     onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    iframeLoadTimeout?: number;
   },
 ): serializedNodeWithId | null {
   const {
@@ -533,6 +546,7 @@ export function serializeNodeWithId(
     recordCanvas = false,
     onSerialize,
     onIframeLoad,
+    iframeLoadTimeout = 5000,
   } = options;
   let { preserveWhiteSpace = true } = options;
   const _serializedNode = serializeNode(n, {
@@ -606,6 +620,7 @@ export function serializeNodeWithId(
         preserveWhiteSpace,
         onSerialize,
         onIframeLoad,
+        iframeLoadTimeout,
       });
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
@@ -617,29 +632,34 @@ export function serializeNodeWithId(
     serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'iframe'
   ) {
-    onceIframeLoaded(n as HTMLIFrameElement, () => {
-      const iframeDoc = (n as HTMLIFrameElement).contentDocument;
-      if (iframeDoc && onIframeLoad) {
-        const serializedIframeNode = serializeNodeWithId(iframeDoc, {
-          doc: iframeDoc,
-          map,
-          blockClass,
-          blockSelector,
-          skipChild: false,
-          inlineStylesheet,
-          maskInputOptions,
-          slimDOMOptions,
-          recordCanvas,
-          preserveWhiteSpace,
-          onSerialize,
-          onIframeLoad,
-        });
+    onceIframeLoaded(
+      n as HTMLIFrameElement,
+      () => {
+        const iframeDoc = (n as HTMLIFrameElement).contentDocument;
+        if (iframeDoc && onIframeLoad) {
+          const serializedIframeNode = serializeNodeWithId(iframeDoc, {
+            doc: iframeDoc,
+            map,
+            blockClass,
+            blockSelector,
+            skipChild: false,
+            inlineStylesheet,
+            maskInputOptions,
+            slimDOMOptions,
+            recordCanvas,
+            preserveWhiteSpace,
+            onSerialize,
+            onIframeLoad,
+            iframeLoadTimeout,
+          });
 
-        if (serializedIframeNode) {
-          onIframeLoad(n as INode, serializedIframeNode);
+          if (serializedIframeNode) {
+            onIframeLoad(n as INode, serializedIframeNode);
+          }
         }
-      }
-    });
+      },
+      iframeLoadTimeout,
+    );
   }
 
   return serializedNode;
@@ -657,6 +677,7 @@ function snapshot(
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
     onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    iframeLoadTimeout?: number;
   },
 ): [serializedNodeWithId | null, idNodeMap] {
   const {
@@ -669,6 +690,7 @@ function snapshot(
     preserveWhiteSpace,
     onSerialize,
     onIframeLoad,
+    iframeLoadTimeout,
   } = options || {};
   const idNodeMap: idNodeMap = {};
   const maskInputOptions: MaskInputOptions =
@@ -725,6 +747,7 @@ function snapshot(
       preserveWhiteSpace,
       onSerialize,
       onIframeLoad,
+      iframeLoadTimeout,
     }),
     idNodeMap,
   ];
