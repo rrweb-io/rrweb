@@ -64,6 +64,6 @@
     "@xstate/fsm": "^1.4.0",
     "fflate": "^0.4.4",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "noibu/rrweb-snapshot#master"
+    "rrweb-snapshot": "^1.0.6"
   }
 }
