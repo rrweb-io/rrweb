@@ -3,6 +3,7 @@
   "version": "0.9.14",
   "description": "record and replay the web",
   "scripts": {
+    "prepare": "npm run bundle",
     "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.test.ts",
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch --watch-extensions js,ts",
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
@@ -63,6 +64,6 @@
     "@xstate/fsm": "^1.4.0",
     "fflate": "^0.4.4",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^1.0.6"
+    "rrweb-snapshot": "noibu/rrweb-snapshot#master"
   }
 }
