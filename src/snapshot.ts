@@ -208,7 +208,14 @@ function onceIframeLoaded(
   }
   // document is loading
   let fired = false;
-  if (win.document.readyState !== 'complete') {
+
+  let readyState: DocumentReadyState;
+  try {
+    readyState = win.document.readyState;
+  } catch (error) {
+    return;
+  }
+  if (readyState !== 'complete') {
     const timer = setTimeout(() => {
       if (!fired) {
         listener();
