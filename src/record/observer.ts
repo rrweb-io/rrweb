@@ -351,6 +351,7 @@ function initInputObserver(
 ): listenerHandler {
   function eventHandler(event: Event) {
     const target = getEventTarget(event);
+    const userTriggered = event.isTrusted;
     if (
       !target ||
       !(target as Element).tagName ||
@@ -381,7 +382,7 @@ function initInputObserver(
         maskInputFn,
       });
     }
-    cbWithDedup(target, { text, isChecked });
+    cbWithDedup(target, { text, isChecked, userTriggered });
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
     const name: string | undefined = (target as HTMLInputElement).name;
@@ -393,6 +394,7 @@ function initInputObserver(
             cbWithDedup(el, {
               text: (el as HTMLInputElement).value,
               isChecked: !isChecked,
+              userTriggered: false,
             });
           }
         });
