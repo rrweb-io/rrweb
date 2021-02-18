@@ -78,10 +78,11 @@ function record<T = eventWithTime>(
           week: true,
           textarea: true,
           select: true,
+          password: true,
         }
       : _maskInputOptions !== undefined
       ? _maskInputOptions
-      : {};
+      : { password: true };
 
   const slimDOMOptions: SlimDOMOptions =
     _slimDOMOptions === true || _slimDOMOptions === 'all'

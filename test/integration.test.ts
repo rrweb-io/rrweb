@@ -213,7 +213,6 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'ignore.html'));
 
-    await page.type('input[type="password"]', 'password');
     await page.type('.rr-ignore', 'secret');
 
     const snapshots = await page.evaluate('window.snapshots');
@@ -230,6 +229,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.type('input[type="text"]', 'test');
     await page.click('input[type="radio"]');
     await page.click('input[type="checkbox"]');
+    await page.type('input[type="password"]', 'password');
     await page.type('textarea', 'textarea test');
     await page.select('select', '1');
 
@@ -245,6 +245,7 @@ describe('record integration tests', function (this: ISuite) {
         maskInputOptions: {
           text: false,
           textarea: false,
+          password: true,
         },
       }),
     );
@@ -253,6 +254,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.click('input[type="radio"]');
     await page.click('input[type="checkbox"]');
     await page.type('textarea', 'textarea test');
+    await page.type('input[type="password"]', 'password');
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');

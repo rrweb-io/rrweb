@@ -135,25 +135,25 @@ setInterval(save, 10 * 1000);
 
 The parameter of `rrweb.record` accepts the following options.
 
-| key              | default     | description                                                                                                                                                      |
-| ---------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| emit             | required    | the callback function to get emitted events                                                                                                                      |
-| checkoutEveryNth | -           | take a full snapshot after every N events<br />refer to the [checkout](#checkout) chapter                                                                        |
-| checkoutEveryNms | -           | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter                                                                            |
-| blockClass       | 'rr-block'  | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                   |
-| ignoreClass      | 'rr-ignore' | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                   |
-| blockSelector    | null        | Use a string or RegExp to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
-| maskAllInputs    | false       | mask all input content as \*                                                                                                                                     |
-| maskInputOptions | {}          | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
-| maskInputFn      | -           | customize mask input content recording logic                                                                                                                                |
-| slimDOMOptions   | {}          | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L91)            |
-| inlineStylesheet | true        | whether to inline the stylesheet in the events                                                                                                                   |
-| hooks            | {}          | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                     |
-| packFn           | -           | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                   |
-| sampling         | -           | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                   |
-| recordCanvas     | false       | whether to record the canvas element                                                                                                                             |
-| collectFonts     | false       | whether to collect fonts in the website                                                                                                                          |
-| recordLog        | false       | whether to record console output, refer to the [console recipe](./docs/recipes/console.md)                                                                       |
+| key              | default            | description                                                                                                                                                              |
+| ---------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| emit             | required           | the callback function to get emitted events                                                                                                                              |
+| checkoutEveryNth | -                  | take a full snapshot after every N events<br />refer to the [checkout](#checkout) chapter                                                                                |
+| checkoutEveryNms | -                  | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter                                                                                    |
+| blockClass       | 'rr-block'         | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                           |
+| ignoreClass      | 'rr-ignore'        | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                           |
+| blockSelector    | null               | Use a string or RegExp to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                           |
+| maskAllInputs    | false              | mask all input content as \*                                                                                                                                             |
+| maskInputOptions | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72)          |
+| maskInputFn      | -                  | customize mask input content recording logic                                                                                                                             |
+| slimDOMOptions   | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L91) |
+| inlineStylesheet | true               | whether to inline the stylesheet in the events                                                                                                                           |
+| hooks            | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                             |
+| packFn           | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                           |
+| sampling         | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                           |
+| recordCanvas     | false              | whether to record the canvas element                                                                                                                                     |
+| collectFonts     | false              | whether to collect fonts in the website                                                                                                                                  |
+| recordLog        | false              | whether to record console output, refer to the [console recipe](./docs/recipes/console.md)                                                                               |
 
 #### Privacy
 
@@ -161,8 +161,8 @@ You may find some contents on the webpage which are not willing to be recorded, 
 
 - An element with the class name `.rr-block` will not be recorded. Instead, it will replay as a placeholder with the same dimension.
 - An element with the class name `.rr-ignore` will not record its input events.
-- `input[type="password"]` will be ignored as default.
 - Mask options to mask the content in input elements.
+- `input[type="password"]` will be masked as default.
 
 #### Checkout
 
