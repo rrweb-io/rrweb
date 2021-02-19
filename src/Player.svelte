@@ -109,8 +109,8 @@
   export const pause = () => {
     controller.pause();
   };
-  export const goto = (timeOffset: number) => {
-    controller.goto(timeOffset);
+  export const goto = (timeOffset: number, play?: boolean) => {
+    controller.goto(timeOffset, play);
   };
 
   onMount(() => {
