@@ -131,6 +131,8 @@ function initMoveObserver(
 
   const threshold =
     typeof sampling.mousemove === 'number' ? sampling.mousemove : 50;
+  const callbackThreshold =
+    typeof sampling.mousemoveCallback === 'number' ? sampling.mousemoveCallback : 500;
 
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
@@ -145,7 +147,7 @@ function initMoveObserver(
     );
     positions = [];
     timeBaseline = null;
-  }, 500);
+  }, callbackThreshold);
   const updatePosition = throttle<MouseEvent | TouchEvent>(
     (evt) => {
       const { target } = evt;

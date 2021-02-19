@@ -165,6 +165,10 @@ export type SamplingStrategy = Partial<{
    */
   mousemove: boolean | number;
   /**
+   * number is the throttle threshold of mouse/touch move callback
+   */
+  mousemoveCallback: number;
+  /** 
    * false means not to record mouse interaction events
    * can also specify record some kinds of mouse interactions
    */

@@ -111,6 +111,7 @@ export declare type eventWithTime = event & {
 export declare type blockClass = string | RegExp;
 export declare type SamplingStrategy = Partial<{
     mousemove: boolean | number;
+    mousemoveCallback: number;
     mouseInteraction: boolean | Record<string, boolean | undefined>;
     scroll: number;
     input: 'all' | 'last';
