@@ -62,7 +62,11 @@ class DoubleLinkedList {
       if (current) {
         current.previous = node;
       }
-    } else if (n.nextSibling && isNodeInLinkedList(n.nextSibling)) {
+    } else if (
+      n.nextSibling &&
+      isNodeInLinkedList(n.nextSibling) &&
+      n.nextSibling.__ln.previous
+    ) {
       const current = n.nextSibling.__ln.previous;
       node.previous = current;
       node.next = n.nextSibling.__ln;
