@@ -158,11 +158,14 @@ function getHref() {
 
 export function transformAttribute(
   doc: Document,
+  tagName: string,
   name: string,
   value: string,
 ): string {
   // relative path in attribute
   if (name === 'src' || ((name === 'href' || name === 'xlink:href') && value)) {
+    return absoluteToDoc(doc, value);
+  } else if (name === 'background' && value && (tagName === 'table' || tagName == 'td' || tagName == 'th')) {
     return absoluteToDoc(doc, value);
   } else if (name === 'srcset' && value) {
     return getAbsoluteSrcsetString(doc, value);
@@ -294,7 +297,7 @@ function serializeNode(
       const tagName = getValidTagName(n as HTMLElement);
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
-        attributes[name] = transformAttribute(doc, name, value);
+        attributes[name] = transformAttribute(doc, tagName, name, value);
       }
       // remote css
       if (tagName === 'link' && inlineStylesheet) {
