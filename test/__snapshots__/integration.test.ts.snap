@@ -1788,7 +1788,8 @@ exports[`iframe 1`] = `
       ],
       \\"removes\\": [],
       \\"texts\\": [],
-      \\"attributes\\": []
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
     }
   },
   {
@@ -2037,7 +2038,8 @@ exports[`iframe 1`] = `
       ],
       \\"removes\\": [],
       \\"texts\\": [],
-      \\"attributes\\": []
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
     }
   },
   {
@@ -2188,7 +2190,8 @@ exports[`iframe 1`] = `
       ],
       \\"removes\\": [],
       \\"texts\\": [],
-      \\"attributes\\": []
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
     }
   },
   {
@@ -2352,7 +2355,8 @@ exports[`iframe 1`] = `
       ],
       \\"removes\\": [],
       \\"texts\\": [],
-      \\"attributes\\": []
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
     }
   },
   {
@@ -2398,7 +2402,8 @@ exports[`iframe 1`] = `
       ],
       \\"removes\\": [],
       \\"texts\\": [],
-      \\"attributes\\": []
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
     }
   },
   {
