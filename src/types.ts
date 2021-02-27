@@ -168,7 +168,7 @@ export type SamplingStrategy = Partial<{
    * number is the throttle threshold of mouse/touch move callback
    */
   mousemoveCallback: number;
-  /** 
+  /**
    * false means not to record mouse interaction events
    * can also specify record some kinds of mouse interactions
    */
@@ -297,6 +297,7 @@ type mutationCallbackParam = {
   attributes: attributeMutation[];
   removes: removedNodeMutation[];
   adds: addedNodeMutation[];
+  isAttachIframe?: true;
 };
 
 export type mutationCallBack = (m: mutationCallbackParam) => void;

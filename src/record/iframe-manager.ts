@@ -30,6 +30,7 @@ export class IframeManager {
       removes: [],
       texts: [],
       attributes: [],
+      isAttachIframe: true,
     });
     this.loadListener?.((iframeEl as unknown) as HTMLIFrameElement);
   }
