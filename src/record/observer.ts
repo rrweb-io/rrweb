@@ -471,7 +471,11 @@ function initCanvasMutationObserver(
                     recordArgs[0] &&
                     recordArgs[0] instanceof HTMLCanvasElement
                   ) {
-                    recordArgs[0] = recordArgs[0].toDataURL();
+                    const canvas = recordArgs[0]
+                    const ctx = canvas.getContext('2d')
+                    let imgd = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+                    let pix = imgd?.data;
+                    recordArgs[0] = JSON.stringify(pix)
                   }
                 }
                 cb({
