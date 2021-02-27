@@ -132,7 +132,9 @@ function initMoveObserver(
   const threshold =
     typeof sampling.mousemove === 'number' ? sampling.mousemove : 50;
   const callbackThreshold =
-    typeof sampling.mousemoveCallback === 'number' ? sampling.mousemoveCallback : 500;
+    typeof sampling.mousemoveCallback === 'number'
+      ? sampling.mousemoveCallback
+      : 500;
 
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
@@ -261,18 +263,18 @@ function initScrollObserver(
 function initViewportResizeObserver(
   cb: viewportResizeCallback,
 ): listenerHandler {
-  let last_h = -1;
-  let last_w = -1;
+  let lastH = -1;
+  let lastW = -1;
   const updateDimension = throttle(() => {
     const height = getWindowHeight();
     const width = getWindowWidth();
-    if (last_h !== height || last_w != width) {
+    if (lastH !== height || lastW !== width) {
       cb({
         width: Number(width),
         height: Number(height),
       });
-      last_h = height;
-      last_w = width;
+      lastH = height;
+      lastW = width;
     }
   }, 200);
   return on('resize', updateDimension, window);
@@ -562,24 +564,30 @@ function initLogObserver(
   logOptions: LogRecordOptions,
 ): listenerHandler {
   const logger = logOptions.logger;
-  if (!logger) return () => {};
+  if (!logger) {
+    return () => {};
+  }
   let logCount = 0;
-  const cancelHandlers: any[] = [];
+  const cancelHandlers: listenerHandler[] = [];
   // add listener to thrown errors
   if (logOptions.level!.includes('error')) {
     if (window) {
       const originalOnError = window.onerror;
+      // tslint:disable-next-line:no-any
       window.onerror = (...args: any[]) => {
-        originalOnError && originalOnError.apply(this, args);
-        let stack: Array<string> = [];
-        if (args[args.length - 1] instanceof Error)
+        if (originalOnError) {
+          originalOnError.apply(this, args);
+        }
+        let stack: string[] = [];
+        if (args[args.length - 1] instanceof Error) {
           // 0(the second parameter) tells parseStack that every stack in Error is useful
           stack = parseStack(args[args.length - 1].stack, 0);
+        }
         const payload = [stringify(args[0], logOptions.stringifyOptions)];
         cb({
           level: 'error',
           trace: stack,
-          payload: payload,
+          payload,
         });
       };
       cancelHandlers.push(() => {
@@ -587,8 +595,9 @@ function initLogObserver(
       });
     }
   }
-  for (const levelType of logOptions.level!)
+  for (const levelType of logOptions.level!) {
     cancelHandlers.push(replace(logger, levelType));
+  }
   return () => {
     cancelHandlers.forEach((h) => h());
   };
@@ -598,10 +607,13 @@ function initLogObserver(
    * @param logger the logger object such as Console
    * @param level the name of log function to be replaced
    */
-  function replace(logger: Logger, level: LogLevel) {
-    if (!logger[level]) return () => {};
+  function replace(_logger: Logger, level: LogLevel) {
+    if (!_logger[level]) {
+      return () => {};
+    }
     // replace the logger.{level}. return a restore function
-    return patch(logger, level, (original) => {
+    return patch(_logger, level, (original) => {
+      // tslint:disable-next-line:no-any
       return (...args: any[]) => {
         original.apply(this, args);
         try {
@@ -610,13 +622,13 @@ function initLogObserver(
             stringify(s, logOptions.stringifyOptions),
           );
           logCount++;
-          if (logCount < logOptions.lengthThreshold!)
+          if (logCount < logOptions.lengthThreshold!) {
             cb({
-              level: level,
+              level,
               trace: stack,
-              payload: payload,
+              payload,
             });
-          else if (logCount === logOptions.lengthThreshold)
+          } else if (logCount === logOptions.lengthThreshold) {
             // notify the user
             cb({
               level: 'warn',
@@ -625,6 +637,7 @@ function initLogObserver(
                 stringify('The number of log records reached the threshold.'),
               ],
             });
+          }
         } catch (error) {
           original('rrweb logger error:', error, ...args);
         }
@@ -639,7 +652,7 @@ function initLogObserver(
   function parseStack(
     stack: string | undefined,
     omitDepth: number = 1,
-  ): Array<string> {
+  ): string[] {
     let stacks: string[] = [];
     if (stack) {
       stacks = stack

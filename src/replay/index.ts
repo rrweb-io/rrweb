@@ -52,7 +52,11 @@ const SKIP_TIME_INTERVAL = 5 * 1000;
 const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
-const SCROLL_ATTRIBUTE_NAME = '__rrweb_scroll__';
+const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
+
+type PatchedConsoleLog = {
+  [ORIGINAL_ATTRIBUTE_NAME]: typeof console.log;
+};
 
 const defaultMouseTailConfig = {
   duration: 500,
@@ -141,8 +145,9 @@ export class Replayer {
       logConfig: defaultLogConfig,
     };
     this.config = Object.assign({}, defaultConfig, config);
-    if (!this.config.logConfig.replayLogger)
+    if (!this.config.logConfig.replayLogger) {
       this.config.logConfig.replayLogger = this.getConsoleLogger();
+    }
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -1020,8 +1025,9 @@ export class Replayer {
         try {
           const logData = e.data as logData;
           const replayLogger = this.config.logConfig.replayLogger!;
-          if (typeof replayLogger[logData.level] === 'function')
+          if (typeof replayLogger[logData.level] === 'function') {
             replayLogger[logData.level]!(logData);
+          }
         } catch (error) {
           if (this.config.showWarning) {
             console.warn(error);
@@ -1319,7 +1325,9 @@ export class Replayer {
    * @param data the log data
    */
   private formatMessage(data: logData): string {
-    if (data.trace.length === 0) return '';
+    if (data.trace.length === 0) {
+      return '';
+    }
     const stackPrefix = '\n\tat ';
     let result = stackPrefix;
     result += data.trace.join(stackPrefix);
@@ -1330,29 +1338,38 @@ export class Replayer {
    * generate a console log replayer which implement the interface ReplayLogger
    */
   private getConsoleLogger(): ReplayLogger {
-    const rrwebOriginal = SCROLL_ATTRIBUTE_NAME;
     const replayLogger: ReplayLogger = {};
-    for (const level of this.config.logConfig.level!)
-      if (level === 'trace')
+    for (const level of this.config.logConfig.level!) {
+      if (level === 'trace') {
         replayLogger[level] = (data: logData) => {
-          const logger = (console.log as any)[rrwebOriginal]
-            ? (console.log as any)[rrwebOriginal]
+          const logger = ((console.log as unknown) as PatchedConsoleLog)[
+            ORIGINAL_ATTRIBUTE_NAME
+          ]
+            ? ((console.log as unknown) as PatchedConsoleLog)[
+                ORIGINAL_ATTRIBUTE_NAME
+              ]
             : console.log;
           logger(
             ...data.payload.map((s) => JSON.parse(s)),
             this.formatMessage(data),
           );
         };
-      else
+      } else {
         replayLogger[level] = (data: logData) => {
-          const logger = (console[level] as any)[rrwebOriginal]
-            ? (console[level] as any)[rrwebOriginal]
+          const logger = ((console[level] as unknown) as PatchedConsoleLog)[
+            ORIGINAL_ATTRIBUTE_NAME
+          ]
+            ? ((console[level] as unknown) as PatchedConsoleLog)[
+                ORIGINAL_ATTRIBUTE_NAME
+              ]
             : console[level];
           logger(
             ...data.payload.map((s) => JSON.parse(s)),
             this.formatMessage(data),
           );
         };
+      }
+    }
     return replayLogger;
   }
 

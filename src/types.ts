@@ -401,25 +401,25 @@ export type LogLevel =
 /* fork from interface Console */
 // all kinds of console functions
 export type Logger = {
-  assert?: (value: any, message?: string, ...optionalParams: any[]) => void;
-  clear?: () => void;
-  count?: (label?: string) => void;
-  countReset?: (label?: string) => void;
-  debug?: (message?: any, ...optionalParams: any[]) => void;
-  dir?: (obj: any, options?: NodeJS.InspectOptions) => void;
-  dirxml?: (...data: any[]) => void;
-  error?: (message?: any, ...optionalParams: any[]) => void;
-  group?: (...label: any[]) => void;
-  groupCollapsed?: (label?: any[]) => void;
+  assert?: typeof console.assert;
+  clear?: typeof console.clear;
+  count?: typeof console.count;
+  countReset?: typeof console.countReset;
+  debug?: typeof console.debug;
+  dir?: typeof console.dir;
+  dirxml?: typeof console.dirxml;
+  error?: typeof console.error;
+  group?: typeof console.group;
+  groupCollapsed?: typeof console.groupCollapsed;
   groupEnd?: () => void;
-  info?: (message?: any, ...optionalParams: any[]) => void;
-  log?: (message?: any, ...optionalParams: any[]) => void;
-  table?: (tabularData: any, properties?: ReadonlyArray<string>) => void;
-  time?: (label?: string) => void;
-  timeEnd?: (label?: string) => void;
-  timeLog?: (label?: string, ...data: any[]) => void;
-  trace?: (message?: any, ...optionalParams: any[]) => void;
-  warn?: (message?: any, ...optionalParams: any[]) => void;
+  info?: typeof console.info;
+  log?: typeof console.log;
+  table?: typeof console.table;
+  time?: typeof console.time;
+  timeEnd?: typeof console.timeEnd;
+  timeLog?: typeof console.timeLog;
+  trace?: typeof console.trace;
+  warn?: typeof console.warn;
 };
 
 /**
@@ -430,8 +430,8 @@ export type ReplayLogger = Partial<Record<LogLevel, (data: logData) => void>>;
 
 export type LogParam = {
   level: LogLevel;
-  trace: Array<string>;
-  payload: Array<string>;
+  trace: string[];
+  payload: string[];
 };
 
 export type fontCallback = (p: fontParam) => void;
@@ -511,7 +511,7 @@ export type playerConfig = {
 };
 
 export type LogReplayConfig = {
-  level?: Array<LogLevel> | undefined;
+  level?: LogLevel[] | undefined;
   replayLogger: ReplayLogger | undefined;
 };
 
@@ -583,7 +583,7 @@ export type StringifyOptions = {
 };
 
 export type LogRecordOptions = {
-  level?: Array<LogLevel> | undefined;
+  level?: LogLevel[] | undefined;
   lengthThreshold?: number;
   stringifyOptions?: StringifyOptions;
   logger?: Logger;
