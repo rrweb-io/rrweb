@@ -7,6 +7,8 @@
 
 # rrweb
 
+**[招聘：和我们一起，做难的事情!](https://mp.weixin.qq.com/s/VhFwemIzaXec-hI3zyltfg)**
+
 **[rrweb 社区新的征程](http://www.myriptide.com/rrweb-community-cn/)**
 
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
