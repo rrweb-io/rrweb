@@ -1186,10 +1186,10 @@ rollup-plugin-livereload@^1.0.0:
   dependencies:
     livereload "^0.9.1"
 
-rollup-plugin-svelte@^5.0.3:
-  version "5.2.3"
-  resolved "https://registry.npmjs.org/rollup-plugin-svelte/-/rollup-plugin-svelte-5.2.3.tgz#efdc15e3e3fdd9b9f1100fdc14a8532b4e587bc8"
-  integrity sha512-513vOht9A93OV7fvmpIq8mD1JFgTZ5LidmpULKM2Od9P1l8oI5KwvO32fwCnASuVJS1EkRfvCnS7vKQ8DF4srg==
+rollup-plugin-svelte@^6.1.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-svelte/-/rollup-plugin-svelte-6.1.1.tgz#66362cf0500fb7a848283ebcf19d289a60ef0871"
+  integrity sha512-ijnm0pH1ScrY4uxwaNXBpNVejVzpL2769hIEbAlnqNUWZrffLspu5/k9/l/Wsj3NrEHLQ6wCKGagVJonyfN7ow==
   dependencies:
     require-relative "^0.8.7"
     rollup-pluginutils "^2.8.2"

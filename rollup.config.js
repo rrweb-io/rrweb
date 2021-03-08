@@ -12,12 +12,24 @@ const production = !process.env.ROLLUP_WATCH;
 
 const entries = (production
   ? [
-      { file: pkg.module, format: 'es' },
-      { file: pkg.main, format: 'cjs' },
-      { file: pkg.unpkg, format: 'iife', name: 'rrwebPlayer' },
+      { file: pkg.module, format: 'es', css: false },
+      { file: pkg.main, format: 'cjs', css: false },
+      {
+        file: pkg.unpkg,
+        format: 'iife',
+        name: 'rrwebPlayer',
+        css: 'style.css',
+      },
     ]
   : []
-).concat([{ file: 'public/bundle.js', format: 'iife', name: 'rrwebPlayer' }]);
+).concat([
+  {
+    file: 'public/bundle.js',
+    format: 'iife',
+    name: 'rrwebPlayer',
+    css: 'bundle.css',
+  },
+]);
 
 export default entries.map((output) => ({
   input: 'src/main.ts',
@@ -28,10 +40,7 @@ export default entries.map((output) => ({
       dev: !production,
       // we'll extract any component CSS out into
       // a separate file — better for performance
-      css: (css) => {
-        css.write('dist/style.css');
-        css.write('public/bundle.css');
-      },
+      css: output.css && ((css) => css.write(output.css)),
       preprocess: sveltePreprocess({
         postcss: {
           // eslint-disable-next-line no-undef
