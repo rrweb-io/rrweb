@@ -487,6 +487,7 @@ export type hookResetter = () => void;
 
 export type playerConfig = {
   speed: number;
+  maxSpeed: number;
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;

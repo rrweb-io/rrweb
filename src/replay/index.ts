@@ -130,6 +130,7 @@ export class Replayer {
     }
     const defaultConfig: playerConfig = {
       speed: 1,
+      maxSpeed: 360,
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
@@ -492,7 +493,10 @@ export class Replayer {
               const skipTime =
                 this.nextUserInteractionEvent.delay! - event.delay!;
               const payload = {
-                speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),
+                speed: Math.min(
+                  Math.round(skipTime / SKIP_TIME_INTERVAL),
+                  this.config.maxSpeed,
+                ),
               };
               this.speedService.send({ type: 'FAST_FORWARD', payload });
               this.emitter.emit(ReplayerEvents.SkipStart, payload);
