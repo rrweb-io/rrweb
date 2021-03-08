@@ -28,6 +28,8 @@ function wrapEvent(e: event): eventWithTime {
 
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
+let takeFullSnapshot!: (isCheckout?: boolean) => void;
+
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -190,7 +192,7 @@ function record<T = eventWithTime>(
       ),
   });
 
-  function takeFullSnapshot(isCheckout = false) {
+  takeFullSnapshot = (isCheckout = false) => {
     wrappedEmit(
       wrapEvent({
         type: EventType.Meta,
@@ -251,7 +253,7 @@ function record<T = eventWithTime>(
       }),
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
-  }
+  };
 
   try {
     const handlers: listenerHandler[] = [];
@@ -453,6 +455,13 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
 
 record.freezePage = () => {
   mutationBuffers.forEach((buf) => buf.freeze());
+};
+
+record.takeFullSnapshot = (isCheckout?: boolean) => {
+  if (!takeFullSnapshot) {
+    throw new Error('please take full snapshot after start recording');
+  }
+  takeFullSnapshot(isCheckout);
 };
 
 export default record;
