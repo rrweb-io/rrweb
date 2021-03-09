@@ -202,10 +202,12 @@ function initMouseInteractionObserver(
       if (isBlocked(event.target as Node, blockClass)) {
         return;
       }
+      const e = isTouchEvent(event) ? event.changedTouches[0] : event;
+      if (!e) {
+        return;
+      }
       const id = mirror.getId(event.target as INode);
-      const { clientX, clientY } = isTouchEvent(event)
-        ? event.changedTouches[0]
-        : event;
+      const { clientX, clientY } = e;
       cb({
         type: MouseInteractions[eventKey],
         id,
