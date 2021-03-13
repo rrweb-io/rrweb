@@ -8,6 +8,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
 } from './types';
+import { isElement } from './utils';
 
 let _id = 1;
 const tagNameRegex = RegExp('[^a-z0-9-_]');
@@ -622,24 +623,36 @@ export function serializeNodeWithId(
     ) {
       preserveWhiteSpace = false;
     }
+    const bypassOptions = {
+      doc,
+      map,
+      blockClass,
+      blockSelector,
+      skipChild,
+      inlineStylesheet,
+      maskInputOptions,
+      slimDOMOptions,
+      recordCanvas,
+      preserveWhiteSpace,
+      onSerialize,
+      onIframeLoad,
+      iframeLoadTimeout,
+    };
     for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = serializeNodeWithId(childN, {
-        doc,
-        map,
-        blockClass,
-        blockSelector,
-        skipChild,
-        inlineStylesheet,
-        maskInputOptions,
-        slimDOMOptions,
-        recordCanvas,
-        preserveWhiteSpace,
-        onSerialize,
-        onIframeLoad,
-        iframeLoadTimeout,
-      });
+      const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
+      }
+    }
+
+    if (isElement(n) && n.shadowRoot) {
+      serializedNode.isShadowHost = true;
+      for (const childN of Array.from(n.shadowRoot.childNodes)) {
+        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+        if (serializedChildNode) {
+          serializedChildNode.isShadow = true;
+          serializedNode.childNodes.push(serializedChildNode);
+        }
       }
     }
   }

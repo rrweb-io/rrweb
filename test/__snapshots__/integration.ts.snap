@@ -211,6 +211,25 @@ exports[`[html file]: picture.html 1`] = `
   </body></html>"
 `;
 
+exports[`[html file]: shadow-dom.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <title>shadow DOM</title>
+  </head>
+  <body>
+    <fancy-tabs background=\\"\\" role=\\"tablist\\" selected=\\"1\\">
+      <button slot=\\"title\\" role=\\"tab\\" tabindex=\\"-1\\" aria-selected=\\"false\\">Tab 1</button>
+      <button slot=\\"title\\" selected=\\"\\" role=\\"tab\\" tabindex=\\"0\\" aria-selected=\\"true\\">Tab 2</button>
+      <button slot=\\"title\\" role=\\"tab\\" tabindex=\\"-1\\" aria-selected=\\"false\\">Tab 3</button>
+      <section role=\\"tabpanel\\" tabindex=\\"0\\" aria-hidden=\\"true\\">content panel 1</section>
+      <section role=\\"tabpanel\\" tabindex=\\"0\\" aria-hidden=\\"false\\">content panel 2</section>
+      <section role=\\"tabpanel\\" tabindex=\\"0\\" aria-hidden=\\"true\\">content panel 3</section>
+    </fancy-tabs>
+    <noscript>SCRIPT_PLACEHOLDER</noscript>
+  </body></html>"
+`;
+
 exports[`[html file]: video.html 1`] = `
 "<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
@@ -398,6 +417,387 @@ exports[`iframe integration tests 1`] = `
               \\"type\\": 3,
               \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
               \\"id\\": 19
+            }
+          ],
+          \\"id\\": 14
+        }
+      ],
+      \\"id\\": 3
+    }
+  ],
+  \\"id\\": 1
+}"
+`;
+
+exports[`shadown DOM integration tests 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 1,
+      \\"name\\": \\"html\\",
+      \\"publicId\\": \\"\\",
+      \\"systemId\\": \\"\\",
+      \\"id\\": 2
+    },
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {
+        \\"lang\\": \\"en\\"
+      },
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"charset\\": \\"UTF-8\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 7
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"name\\": \\"viewport\\",
+                \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 8
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 9
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"title\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"shadow DOM\\",
+                  \\"id\\": 11
+                }
+              ],
+              \\"id\\": 10
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\",
+              \\"id\\": 12
+            }
+          ],
+          \\"id\\": 4
+        },
+        {
+          \\"type\\": 3,
+          \\"textContent\\": \\"\\\\n  \\",
+          \\"id\\": 13
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 15
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"fancy-tabs\\",
+              \\"attributes\\": {
+                \\"background\\": \\"\\",
+                \\"role\\": \\"tablist\\",
+                \\"selected\\": \\"1\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 17
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"button\\",
+                  \\"attributes\\": {
+                    \\"slot\\": \\"title\\",
+                    \\"role\\": \\"tab\\",
+                    \\"tabindex\\": \\"-1\\",
+                    \\"aria-selected\\": \\"false\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"Tab 1\\",
+                      \\"id\\": 19
+                    }
+                  ],
+                  \\"id\\": 18
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 20
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"button\\",
+                  \\"attributes\\": {
+                    \\"slot\\": \\"title\\",
+                    \\"selected\\": \\"\\",
+                    \\"role\\": \\"tab\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-selected\\": \\"true\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"Tab 2\\",
+                      \\"id\\": 22
+                    }
+                  ],
+                  \\"id\\": 21
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 23
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"button\\",
+                  \\"attributes\\": {
+                    \\"slot\\": \\"title\\",
+                    \\"role\\": \\"tab\\",
+                    \\"tabindex\\": \\"-1\\",
+                    \\"aria-selected\\": \\"false\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"Tab 3\\",
+                      \\"id\\": 25
+                    }
+                  ],
+                  \\"id\\": 24
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 26
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"section\\",
+                  \\"attributes\\": {
+                    \\"role\\": \\"tabpanel\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-hidden\\": \\"true\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"content panel 1\\",
+                      \\"id\\": 28
+                    }
+                  ],
+                  \\"id\\": 27
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 29
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"section\\",
+                  \\"attributes\\": {
+                    \\"role\\": \\"tabpanel\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-hidden\\": \\"false\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"content panel 2\\",
+                      \\"id\\": 31
+                    }
+                  ],
+                  \\"id\\": 30
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 32
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"section\\",
+                  \\"attributes\\": {
+                    \\"role\\": \\"tabpanel\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-hidden\\": \\"true\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"content panel 3\\",
+                      \\"id\\": 34
+                    }
+                  ],
+                  \\"id\\": 33
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n    \\",
+                  \\"id\\": 35
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n            \\",
+                  \\"id\\": 36,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"style\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n              :host {\\\\n                display: inline-block;\\\\n                width: 650px;\\\\n                font-family: 'Roboto Slab';\\\\n                contain: content;\\\\n              }\\\\n              :host([background]) {\\\\n                background: var(--background-color, #9E9E9E);\\\\n                border-radius: 10px;\\\\n                padding: 10px;\\\\n              }\\\\n              #panels {\\\\n                box-shadow: 0 2px 2px rgba(0, 0, 0, .3);\\\\n                background: white;\\\\n                border-radius: 3px;\\\\n                padding: 16px;\\\\n                height: 250px;\\\\n                overflow: auto;\\\\n              }\\\\n              #tabs {\\\\n                display: inline-flex;\\\\n                -webkit-user-select: none;\\\\n                user-select: none;\\\\n              }\\\\n              #tabs slot {\\\\n                display: inline-flex; /* Safari bug. Treats <slot> as a parent */\\\\n              }\\\\n              /* Safari does not support #id prefixes on ::slotted\\\\n                 See https://bugs.webkit.org/show_bug.cgi?id=160538 */\\\\n              #tabs ::slotted(*) {\\\\n                font: 400 16px/22px 'Roboto';\\\\n                padding: 16px 8px;\\\\n                margin: 0;\\\\n                text-align: center;\\\\n                width: 100px;\\\\n                text-overflow: ellipsis;\\\\n                white-space: nowrap;\\\\n                overflow: hidden;\\\\n                cursor: pointer;\\\\n                border-top-left-radius: 3px;\\\\n                border-top-right-radius: 3px;\\\\n                background: linear-gradient(#fafafa, #eee);\\\\n                border: none; /* if the user users a <button> */\\\\n              }\\\\n              #tabs ::slotted([aria-selected=\\\\\\"true\\\\\\"]) {\\\\n                font-weight: 600;\\\\n                background: white;\\\\n                box-shadow: none;\\\\n              }\\\\n              #tabs ::slotted(:focus) {\\\\n                z-index: 1; /* make sure focus ring doesn't get buried */\\\\n              }\\\\n              #panels ::slotted([aria-hidden=\\\\\\"true\\\\\\"]) {\\\\n                display: none;\\\\n              }\\\\n            \\",
+                      \\"isStyle\\": true,
+                      \\"id\\": 38
+                    }
+                  ],
+                  \\"id\\": 37,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n            \\",
+                  \\"id\\": 39,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"div\\",
+                  \\"attributes\\": {
+                    \\"id\\": \\"tabs\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n              \\",
+                      \\"id\\": 41
+                    },
+                    {
+                      \\"type\\": 2,
+                      \\"tagName\\": \\"slot\\",
+                      \\"attributes\\": {
+                        \\"id\\": \\"tabsSlot\\",
+                        \\"name\\": \\"title\\"
+                      },
+                      \\"childNodes\\": [],
+                      \\"id\\": 42
+                    },
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n            \\",
+                      \\"id\\": 43
+                    }
+                  ],
+                  \\"id\\": 40,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n            \\",
+                  \\"id\\": 44,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"div\\",
+                  \\"attributes\\": {
+                    \\"id\\": \\"panels\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n              \\",
+                      \\"id\\": 46
+                    },
+                    {
+                      \\"type\\": 2,
+                      \\"tagName\\": \\"slot\\",
+                      \\"attributes\\": {
+                        \\"id\\": \\"panelsSlot\\"
+                      },
+                      \\"childNodes\\": [],
+                      \\"id\\": 47
+                    },
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n            \\",
+                      \\"id\\": 48
+                    }
+                  ],
+                  \\"id\\": 45,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n          \\",
+                  \\"id\\": 49,
+                  \\"isShadow\\": true
+                }
+              ],
+              \\"id\\": 16,
+              \\"isShadowHost\\": true
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 50
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"script\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                  \\"id\\": 52
+                }
+              ],
+              \\"id\\": 51
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 53
             }
           ],
           \\"id\\": 14

@@ -166,3 +166,50 @@ describe('iframe integration tests', function (this: ISuite) {
     assert(result.pass, result.pass ? '' : result.report());
   }).timeout(5000);
 });
+
+describe('shadown DOM integration tests', function (this: ISuite) {
+  const shadowDomHtml = path.join(__dirname, 'html/shadow-dom.html');
+  const raw = fs.readFileSync(shadowDomHtml, 'utf-8');
+
+  before(async () => {
+    this.server = await server();
+    this.browser = await puppeteer.launch({
+      // headless: false,
+    });
+
+    const bundle = await rollup.rollup({
+      input: path.resolve(__dirname, '../src/index.ts'),
+      plugins: [typescript()],
+    });
+    const { code } = await bundle.generate({
+      name: 'rrweb',
+      format: 'iife',
+    });
+    this.code = code;
+  });
+
+  after(async () => {
+    await this.browser.close();
+    await this.server.close();
+  });
+
+  it('snapshot shadow DOM', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    // console for debug
+    // tslint:disable-next-line: no-console
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`http://localhost:3030/html`);
+    await page.setContent(raw, {
+      waitUntil: 'load',
+    });
+    const snapshotResult = JSON.stringify(
+      await page.evaluate(`${this.code};
+      rrweb.snapshot(document)[0];
+    `),
+      null,
+      2,
+    );
+    const result = matchSnapshot(snapshotResult, __filename, this.title);
+    assert(result.pass, result.pass ? '' : result.report());
+  }).timeout(5000);
+});

@@ -7,6 +7,7 @@ import {
   idNodeMap,
   INode,
 } from './types';
+import { isElement } from './utils';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -177,6 +178,25 @@ function buildNode(
           }
         }
       }
+      if (n.isShadowHost) {
+        /**
+         * Since node is newly rebuilt, it should be a normal element
+         * without shadowRoot.
+         * But if there are some weird situations that has defined
+         * custom element in the scope before we rebuild node, it may
+         * register the shadowRoot earlier.
+         * The logic in the 'else' block is just a try-my-best solution
+         * for the corner case, please let we know if it is wrong and
+         * we can remove it.
+         */
+        if (!node.shadowRoot) {
+          node.attachShadow({ mode: 'open' });
+        } else {
+          while (node.shadowRoot.firstChild) {
+            node.shadowRoot.removeChild(node.shadowRoot.firstChild);
+          }
+        }
+      }
       return node;
     case NodeType.Text:
       return doc.createTextNode(
@@ -240,7 +260,11 @@ export function buildNodeWithSN(
         continue;
       }
 
-      node.appendChild(childNode);
+      if (childN.isShadow && isElement(node) && node.shadowRoot) {
+        node.shadowRoot.appendChild(childNode);
+      } else {
+        node.appendChild(childNode);
+      }
       if (afterAppend) {
         afterAppend(childNode);
       }

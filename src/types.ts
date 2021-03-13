@@ -56,6 +56,8 @@ export type serializedNode = (
   | commentNode
 ) & {
   rootId?: number;
+  isShadowHost?: boolean;
+  isShadow?: boolean;
 };
 
 export type serializedNodeWithId = serializedNode & { id: number };
