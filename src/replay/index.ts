@@ -1182,13 +1182,14 @@ export class Replayer {
           : parent.insertBefore(target, null);
       } else {
         /**
-         * When nest recording rrweb player, if the html element of iframe changes, we will get a mutation which adds a new html element here and we need to remove the old html element first to avoid collision.
+         * Sometimes the document changes and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded. After the change of document, we may get another mutation which adds a new html element, while the old html element still exists in the dom, and we need to remove the old html element first to avoid collision.
          */
         if (parent === targetDoc) {
           while (targetDoc.firstChild) {
             targetDoc.removeChild(targetDoc.firstChild);
           }
         }
+
         parent.appendChild(target);
       }
 
