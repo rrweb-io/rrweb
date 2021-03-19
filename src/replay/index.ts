@@ -1118,7 +1118,8 @@ export class Replayer {
         parentInDocument = this.iframe.contentDocument.body.contains(parent);
       }
 
-      if (useVirtualParent && parentInDocument) {
+      // if parent element is an iframe, iframe document can't be appended to virtual parent
+      if (useVirtualParent && parentInDocument && !isIframeINode(parent)) {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         mirror.map[mutation.parentId] = virtualParent;
         this.fragmentParentMap.set(virtualParent, parent);
@@ -1180,6 +1181,15 @@ export class Replayer {
           ? parent.insertBefore(target, next)
           : parent.insertBefore(target, null);
       } else {
+        /**
+         * Sometimes the document changes and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded. After the change of document, we may get another mutation which adds a new html element, while the old html element still exists in the dom, and we need to remove the old html element first to avoid collision.
+         */
+        if (parent === targetDoc) {
+          while (targetDoc.firstChild) {
+            targetDoc.removeChild(targetDoc.firstChild);
+          }
+        }
+
         parent.appendChild(target);
       }
 
