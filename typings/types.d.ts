@@ -42,6 +42,8 @@ export declare type commentNode = {
 };
 export declare type serializedNode = (documentNode | documentTypeNode | elementNode | textNode | cdataNode | commentNode) & {
     rootId?: number;
+    isShadowHost?: boolean;
+    isShadow?: boolean;
 };
 export declare type serializedNodeWithId = serializedNode & {
     id: number;

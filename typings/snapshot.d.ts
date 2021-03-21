@@ -2,7 +2,7 @@ import { serializedNodeWithId, INode, idNodeMap, MaskInputOptions, SlimDOMOption
 export declare const IGNORED_NODE = -2;
 export declare function absoluteToStylesheet(cssText: string | null, href: string): string;
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
-export declare function transformAttribute(doc: Document, name: string, value: string): string;
+export declare function transformAttribute(doc: Document, tagName: string, name: string, value: string): string;
 export declare function _isBlockedElement(element: HTMLElement, blockClass: string | RegExp, blockSelector: string | null): boolean;
 export declare function serializeNodeWithId(n: Node | INode, options: {
     doc: Document;
