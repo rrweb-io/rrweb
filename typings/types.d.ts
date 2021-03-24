@@ -332,6 +332,8 @@ export declare type mediaInteractionCallback = (p: mediaInteractionParam) => voi
 export declare type DocumentDimension = {
     x: number;
     y: number;
+    relativeScale: number;
+    absoluteScale: number;
 };
 export declare type Mirror = {
     map: idNodeMap;
