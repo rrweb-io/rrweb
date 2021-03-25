@@ -467,6 +467,10 @@ export type mediaInteractionCallback = (p: mediaInteractionParam) => void;
 export type DocumentDimension = {
   x: number;
   y: number;
+  // scale value relative to its parent iframe
+  relativeScale: number;
+  // scale value relative to the root iframe
+  absoluteScale: number;
 };
 
 export type Mirror = {

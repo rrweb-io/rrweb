@@ -550,19 +550,32 @@ export function isIframeINode(node: INode): node is HTMLIFrameINode {
   return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
 }
 
-export function getBaseDimension(node: Node): DocumentDimension {
+export function getBaseDimension(
+  node: Node,
+  rootIframe: Node,
+): DocumentDimension {
   const frameElement = node.ownerDocument?.defaultView?.frameElement;
-  if (!frameElement) {
+  if (!frameElement || frameElement === rootIframe) {
     return {
       x: 0,
       y: 0,
+      relativeScale: 1,
+      absoluteScale: 1,
     };
   }
 
   const frameDimension = frameElement.getBoundingClientRect();
-  const frameBaseDimension = getBaseDimension(frameElement);
+  const frameBaseDimension = getBaseDimension(frameElement, rootIframe);
+  // the iframe element may have a scale transform
+  const relativeScale = frameDimension.height / frameElement.clientHeight;
   return {
-    x: frameDimension.x + frameBaseDimension.x,
-    y: frameDimension.y + frameBaseDimension.y,
+    x:
+      frameDimension.x * frameBaseDimension.relativeScale +
+      frameBaseDimension.x,
+    y:
+      frameDimension.y * frameBaseDimension.relativeScale +
+      frameBaseDimension.y,
+    relativeScale,
+    absoluteScale: frameBaseDimension.absoluteScale * relativeScale,
   };
 }
