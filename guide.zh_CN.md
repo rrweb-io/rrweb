@@ -376,9 +376,9 @@ replayer.on(EVENT_NAME, (payload) => {
 
 | 事件类型               | 描述           | 值                      |
 | ---------------------- | -------------- | ----------------------- |
-| ui-update-current-time | 当前回放时间点 | { detail: { payload } } |
-| ui-update-player-state | 当前回放状态   | { detail: { payload } } |
-| ui-update-progress     | 当前回放百分比 | { detail: { payload } } |
+| ui-update-current-time | 当前回放时间点 | { payload } |
+| ui-update-player-state | 当前回放状态   | { payload } |
+| ui-update-progress     | 当前回放百分比 | { payload } |
 
 ## REPL 工具
 
