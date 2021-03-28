@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shadow DOM Observer</title>
+    <style>
+      .my-element {
+        margin: 0 0 1rem 0;
+      }
+      iframe {
+        border: 0;
+        width: 100%;
+        padding: 0;
+      }
+
+      body {
+        max-width: 400px;
+        margin: 1rem auto;
+        padding: 0 1rem;
+        font-family: 'comic sans ms';
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat odit
+      officiis necessitatibus laborum asperiores et adipisci dolores corporis,
+      vero distinctio voluptas, suscipit commodi architecto, aliquam fugit.
+      Nesciunt labore reiciendis blanditiis!
+    </p>
+
+    <div class="my-element">
+      <!-- Also could be a 
+    <custom-element />
+  -->
+    </div>
+
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat odit
+      officiis necessitatibus laborum asperiores et adipisci dolores corporis,
+      vero distinctio voluptas, suscipit commodi architecto, aliquam fugit.
+      Nesciunt labore reiciendis blanditiis!
+    </p>
+    <script>
+      let content = `
+  <style>
+    body { /* for fallback iframe */
+      margin: 0;
+    }
+    p { 
+      border: 1px solid #ccc;
+      padding: 1rem;
+      color: red;
+      font-family: sans-serif;
+    }
+  </style>
+
+  <p>Element with Shadow DOM</p>
+`;
+
+      let myElements = document.querySelectorAll('.my-element');
+
+      if (document.body.attachShadow) {
+        myElements.forEach((el) => {
+          var shadow = el.attachShadow({
+            mode: 'open',
+          });
+          shadow.innerHTML = content;
+        });
+      } else {
+        let newiframe = document.createElement('iframe');
+        newiframe.srcdoc = content;
+
+        myElements.forEach((el) => {
+          let parent = el.parentNode;
+          parent.replaceChild(newiframe, el);
+        });
+      }
+    </script>
+    </script>
+  </body>
+</html>

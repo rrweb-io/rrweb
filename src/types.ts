@@ -8,6 +8,7 @@ import {
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
+import { ShadowDomManager } from './record/shadow-dom-manager';
 
 export enum EventType {
   DomContentLoaded,
@@ -231,6 +232,7 @@ export type observerParam = {
   slimDOMOptions: SlimDOMOptions;
   doc: Document;
   iframeManager: IframeManager;
+  shadowDomManager: ShadowDomManager;
 };
 
 export type hooksParam = {
@@ -282,6 +284,7 @@ export type attributeMutation = {
 export type removedNodeMutation = {
   parentId: number;
   id: number;
+  isShadow?: boolean;
 };
 
 export type addedNodeMutation = {
@@ -292,7 +295,7 @@ export type addedNodeMutation = {
   node: serializedNodeWithId;
 };
 
-type mutationCallbackParam = {
+export type mutationCallbackParam = {
   texts: textMutation[];
   attributes: attributeMutation[];
   removes: removedNodeMutation[];

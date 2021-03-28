@@ -21,6 +21,7 @@ import {
   IGNORED_NODE,
   serializedNodeWithId,
   NodeType,
+  isShadowRoot,
 } from 'rrweb-snapshot';
 
 export function on(
@@ -213,6 +214,9 @@ export function isIgnored(n: Node | INode): boolean {
 }
 
 export function isAncestorRemoved(target: INode): boolean {
+  if (isShadowRoot(target)) {
+    return false;
+  }
   const id = mirror.getId(target);
   if (!mirror.has(id)) {
     return true;
@@ -542,12 +546,16 @@ export type AppendedIframe = {
   builtNode: HTMLIFrameINode;
 };
 
-export function isIframeINode(node: INode): node is HTMLIFrameINode {
-  // node can be document fragment when using the virtual parent feature
-  if (!node.__sn) {
-    return false;
+export function isIframeINode(
+  node: INode | ShadowRoot,
+): node is HTMLIFrameINode {
+  if ('__sn' in node) {
+    return (
+      node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe'
+    );
   }
-  return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
+  // node can be document fragment when using the virtual parent feature
+  return false;
 }
 
 export function getBaseDimension(
@@ -578,4 +586,10 @@ export function getBaseDimension(
     relativeScale,
     absoluteScale: frameBaseDimension.absoluteScale * relativeScale,
   };
+}
+
+export function hasShadowRoot<T extends Node>(
+  n: T,
+): n is T & { shadowRoot: ShadowRoot } {
+  return Boolean(((n as unknown) as Element)?.shadowRoot);
 }

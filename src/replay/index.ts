@@ -40,6 +40,7 @@ import {
   AppendedIframe,
   isIframeINode,
   getBaseDimension,
+  hasShadowRoot,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -1048,14 +1049,18 @@ export class Replayer {
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
-      const parent = mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = mirror.getNode(mutation.parentId);
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
+      }
+      if (mutation.isShadow && hasShadowRoot(parent)) {
+        parent = parent.shadowRoot;
       }
       // target may be removed with its parents before
       mirror.removeNodeFromMap(target);
       if (parent) {
-        const realParent = this.fragmentParentMap.get(parent);
+        const realParent =
+          '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
         if (realParent && realParent.contains(target)) {
           realParent.removeChild(target);
         } else if (this.fragmentParentMap.has(target)) {
@@ -1100,7 +1105,7 @@ export class Replayer {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent = mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = mirror.getNode(mutation.parentId);
       if (!parent) {
         if (mutation.node.type === NodeType.Document) {
           // is newly added document, maybe the document node of an iframe
@@ -1131,6 +1136,10 @@ export class Replayer {
           virtualParent.appendChild(parent.firstChild);
         }
         parent = virtualParent;
+      }
+
+      if (mutation.node.isShadow && hasShadowRoot(parent)) {
+        parent = parent.shadowRoot;
       }
 
       let previous: Node | null = null;

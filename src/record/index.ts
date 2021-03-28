@@ -7,6 +7,7 @@ import {
   getWindowHeight,
   polyfill,
   isIframeINode,
+  hasShadowRoot,
 } from '../utils';
 import {
   EventType,
@@ -16,8 +17,10 @@ import {
   IncrementalSource,
   listenerHandler,
   LogRecordOptions,
+  mutationCallbackParam,
 } from '../types';
 import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
 
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -179,17 +182,33 @@ function record<T = eventWithTime>(
     }
   };
 
+  const wrappedMutationEmit = (m: mutationCallbackParam) => {
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.Mutation,
+          ...m,
+        },
+      }),
+    );
+  };
+
   const iframeManager = new IframeManager({
-    mutationCb: (m) =>
-      wrappedEmit(
-        wrapEvent({
-          type: EventType.IncrementalSnapshot,
-          data: {
-            source: IncrementalSource.Mutation,
-            ...m,
-          },
-        }),
-      ),
+    mutationCb: wrappedMutationEmit,
+  });
+
+  const shadowDomManager = new ShadowDomManager({
+    mutationCb: wrappedMutationEmit,
+    bypassOptions: {
+      blockClass,
+      blockSelector,
+      inlineStylesheet,
+      maskInputOptions,
+      recordCanvas,
+      slimDOMOptions,
+      iframeManager,
+    },
   });
 
   takeFullSnapshot = (isCheckout = false) => {
@@ -216,6 +235,9 @@ function record<T = eventWithTime>(
       onSerialize: (n) => {
         if (isIframeINode(n)) {
           iframeManager.addIframe(n);
+        }
+        if (hasShadowRoot(n)) {
+          shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
       },
       onIframeLoad: (iframe, childSn) => {
@@ -271,16 +293,7 @@ function record<T = eventWithTime>(
     const observe = (doc: Document) => {
       return initObservers(
         {
-          mutationCb: (m) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Mutation,
-                  ...m,
-                },
-              }),
-            ),
+          mutationCb: wrappedMutationEmit,
           mousemoveCb: (positions, source) =>
             wrappedEmit(
               wrapEvent({
@@ -394,6 +407,7 @@ function record<T = eventWithTime>(
           blockSelector,
           slimDOMOptions,
           iframeManager,
+          shadowDomManager,
         },
         hooks,
       );

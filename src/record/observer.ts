@@ -44,6 +44,7 @@ import {
 import MutationBuffer from './mutation';
 import { stringify } from './stringify';
 import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
 
 type WindowWithStoredMutationObserver = Window & {
   __rrMutationObserver?: MutationObserver;
@@ -56,7 +57,7 @@ type WindowWithAngularZone = Window & {
 
 export const mutationBuffers: MutationBuffer[] = [];
 
-function initMutationObserver(
+export function initMutationObserver(
   cb: mutationCallBack,
   doc: Document,
   blockClass: blockClass,
@@ -66,6 +67,8 @@ function initMutationObserver(
   recordCanvas: boolean,
   slimDOMOptions: SlimDOMOptions,
   iframeManager: IframeManager,
+  shadowDomManager: ShadowDomManager,
+  rootEl: Node,
 ): MutationObserver {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
@@ -80,6 +83,7 @@ function initMutationObserver(
     slimDOMOptions,
     doc,
     iframeManager,
+    shadowDomManager,
   );
   let mutationObserverCtor =
     window.MutationObserver ||
@@ -109,7 +113,7 @@ function initMutationObserver(
   const observer = new mutationObserverCtor(
     mutationBuffer.processMutations.bind(mutationBuffer),
   );
-  observer.observe(doc, {
+  observer.observe(rootEl, {
     attributes: true,
     attributeOldValue: true,
     characterData: true,
@@ -763,6 +767,8 @@ export function initObservers(
     o.recordCanvas,
     o.slimDOMOptions,
     o.iframeManager,
+    o.shadowDomManager,
+    o.doc,
   );
   const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling, o.doc);
   const mouseInteractionHandler = initMouseInteractionObserver(

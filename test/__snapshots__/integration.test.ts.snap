@@ -6982,3 +6982,409 @@ exports[`serialize-before-record 1`] = `
   }
 ]"
 `;
+
+exports[`shadow-dom 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Shadow DOM Observer\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      .my-element {\\\\n        margin: 0 0 1rem 0;\\\\n      }\\\\n      iframe {\\\\n        border: 0;\\\\n        width: 100%;\\\\n        padding: 0;\\\\n      }\\\\n\\\\n      body {\\\\n        max-width: 400px;\\\\n        margin: 1rem auto;\\\\n        padding: 0 1rem;\\\\n        font-family: 'comic sans ms';\\\\n      }\\\\n    \\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 15
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 16
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"p\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat odit\\\\n      officiis necessitatibus laborum asperiores et adipisci dolores corporis,\\\\n      vero distinctio voluptas, suscipit commodi architecto, aliquam fugit.\\\\n      Nesciunt labore reiciendis blanditiis!\\\\n    \\",
+                        \\"id\\": 20
+                      }
+                    ],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"class\\": \\"my-element\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 23
+                      },
+                      {
+                        \\"type\\": 5,
+                        \\"textContent\\": \\" Also could be a \\\\n    <custom-element />\\\\n  \\",
+                        \\"id\\": 24
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 25
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 26,
+                        \\"isShadow\\": true
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"style\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    body { /* for fallback iframe */\\\\n      margin: 0;\\\\n    }\\\\n    p { \\\\n      border: 1px solid #ccc;\\\\n      padding: 1rem;\\\\n      color: red;\\\\n      font-family: sans-serif;\\\\n    }\\\\n  \\",
+                            \\"isStyle\\": true,
+                            \\"id\\": 28
+                          }
+                        ],
+                        \\"id\\": 27,
+                        \\"isShadow\\": true
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\\\n  \\",
+                        \\"id\\": 29,
+                        \\"isShadow\\": true
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"p\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"Element with Shadow DOM\\",
+                            \\"id\\": 31
+                          }
+                        ],
+                        \\"id\\": 30,
+                        \\"isShadow\\": true
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\",
+                        \\"id\\": 32,
+                        \\"isShadow\\": true
+                      }
+                    ],
+                    \\"id\\": 22,
+                    \\"isShadowHost\\": true
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 33
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"p\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellat odit\\\\n      officiis necessitatibus laborum asperiores et adipisci dolores corporis,\\\\n      vero distinctio voluptas, suscipit commodi architecto, aliquam fugit.\\\\n      Nesciunt labore reiciendis blanditiis!\\\\n    \\",
+                        \\"id\\": 35
+                      }
+                    ],
+                    \\"id\\": 34
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 36
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 38
+                      }
+                    ],
+                    \\"id\\": 37
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n  \\\\n    \\",
+                    \\"id\\": 39
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 41
+                      }
+                    ],
+                    \\"id\\": 40
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 42
+                  }
+                ],
+                \\"id\\": 17
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"p\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 43,
+            \\"isShadow\\": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 43,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"p\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 44
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 22,
+          \\"id\\": 30,
+          \\"isShadow\\": true
+        }
+      ],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 44,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"hi\\",
+            \\"id\\": 45
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 44,
+          \\"id\\": 45
+        }
+      ],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 44,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"123\\",
+            \\"id\\": 46
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
