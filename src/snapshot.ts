@@ -8,7 +8,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
 } from './types';
-import { isElement } from './utils';
+import { isElement, isShadowRoot } from './utils';
 
 let _id = 1;
 const tagNameRegex = RegExp('[^a-z0-9-_]');
@@ -655,6 +655,10 @@ export function serializeNodeWithId(
         }
       }
     }
+  }
+
+  if (n.parentNode && isShadowRoot(n.parentNode)) {
+    serializedNode.isShadow = true;
   }
 
   if (
