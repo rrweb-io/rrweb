@@ -378,9 +378,9 @@ And there are three rrweb-replayer event will be emitted in the same way:
 
 | Event                  | Description                      | Value                   |
 | ---------------------- | -------------------------------- | ----------------------- |
-| ui-update-current-time | current time has changed         | { detail: { payload } } |
-| ui-update-player-state | current player state has changed | { detail: { payload } } |
-| ui-update-progress     | current progress has changed     | { detail: { payload } } |
+| ui-update-current-time | current time has changed         | { payload } |
+| ui-update-player-state | current player state has changed | { payload } |
+| ui-update-progress     | current progress has changed     | { payload } |
 
 ## REPL tool
 
