@@ -117,6 +117,8 @@ export class Replayer {
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
   private elementStateMap!: Map<INode, ElementState>;
+  // Hold the list of CSSRules during in-memory state restoration
+  private virtualStyleRulesMap!: Map<INode, CSSRule[]>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -160,6 +162,8 @@ export class Replayer {
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
     this.elementStateMap = new Map<INode, ElementState>();
+    this.virtualStyleRulesMap = new Map<INode, CSSRule[]>();
+
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
 
@@ -180,8 +184,13 @@ export class Replayer {
         // restore state of elements after they are mounted
         this.restoreState(parent);
       }
+      for (const [node] of this.virtualStyleRulesMap.entries()) {
+        // restore css rules of elements after they are mounted
+        this.restoreNodeSheet(node);
+      }
       this.fragmentParentMap.clear();
       this.elementStateMap.clear();
+      this.virtualStyleRulesMap.clear();
 
       for (const d of scrollMap.values()) {
         this.applyScroll(d);
@@ -913,6 +922,17 @@ export class Replayer {
         const styleEl = (target as Node) as HTMLStyleElement;
         const parent = (target.parentNode as unknown) as INode;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
+
+        /**
+         * Always use existing DOM node, when it's there.
+         * In in-memory replay, there is virtual node, but it's `sheet` will be removed during replacement.
+         * Hence, we re-create it and re-populate it on each run to not miss pre-existing styles and previously inserted
+         */
+        const styleSheet = usingVirtualParent
+          ? new CSSStyleSheet()
+          : styleEl.sheet
+          ? styleEl.sheet
+          : new CSSStyleSheet();
         let placeholderNode;
 
         if (usingVirtualParent) {
@@ -927,9 +947,21 @@ export class Replayer {
           placeholderNode = document.createTextNode('');
           parent.replaceChild(placeholderNode, target);
           domParent!.appendChild(target);
-        }
 
-        const styleSheet: CSSStyleSheet = styleEl.sheet!;
+          if (!this.virtualStyleRulesMap.has(target)) {
+            this.virtualStyleRulesMap.set(
+              target,
+              Array.from(styleEl.sheet?.rules || []),
+            );
+          }
+
+          const existingRules = this.virtualStyleRulesMap.get(target);
+          if (existingRules) {
+            existingRules.forEach((rule, index) => {
+              styleSheet?.insertRule(rule.cssText, index);
+            });
+          }
+        }
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
@@ -966,11 +998,16 @@ export class Replayer {
             }
           });
         }
-
+        if (usingVirtualParent) {
+          // Update rules list according to new styleSheet
+          this.virtualStyleRulesMap.set(
+            target,
+            Array.from(styleSheet?.rules || []),
+          );
+        }
         if (usingVirtualParent && placeholderNode) {
           parent.replaceChild(target, placeholderNode);
         }
-
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -1555,6 +1592,22 @@ export class Replayer {
       const children = parentElement.children;
       for (const child of Array.from(children)) {
         this.restoreState((child as unknown) as INode);
+      }
+    }
+  }
+
+  private restoreNodeSheet(node: INode) {
+    if (node.nodeName === 'STYLE') {
+      const styleNode = (node as unknown) as HTMLStyleElement;
+      if (this.virtualStyleRulesMap.has(node)) {
+        const storedRules = this.virtualStyleRulesMap.get(node);
+        if (!storedRules) return;
+        storedRules.forEach((rule, index) => {
+          if (styleNode?.sheet?.rules[index]) {
+            styleNode.sheet?.deleteRule(index);
+          }
+          styleNode.sheet?.insertRule(rule.cssText, index);
+        });
       }
     }
   }

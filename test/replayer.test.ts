@@ -146,6 +146,19 @@ describe('replayer', function (this: ISuite) {
       replayer.play(1500);
       replayer['timer']['actions'].length;
     `);
+
+    const result = await this.page.evaluate(`
+      const rules = Array.from(replayer.iframe.contentDocument.head.children)
+        .filter(x=>x.nodeName === 'STYLE')
+        .reduce((acc, node) => {
+          acc.push(...node.sheet.rules);
+          return acc;
+        }, []);
+
+        rules.some(x=>x.selectorText === ".css-1fbxx79")
+    `);
+
+    expect(result).to.equal(true);
     expect(actionLength).to.equal(
       styleSheetRuleEvents.filter(
         (e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500,
