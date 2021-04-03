@@ -183,6 +183,31 @@ describe('replayer', function (this: ISuite) {
     );
   });
 
+  it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+
+    const result = await this.page.evaluate(`
+      const rules = Array.from(replayer.iframe.contentDocument.head.children)
+        .filter(x=>x.nodeName === 'STYLE')
+        .reduce((acc, node) => {
+          acc.push(...node.sheet.rules);
+          return acc;
+        }, []);
+
+        rules.some(x=>x.selectorText === ".css-1fbxx79")
+    `);
+
+    expect(result).to.equal(false);
+  });
+
   it('can stream events in live mode', async () => {
     const status = await this.page.evaluate(`
       const { Replayer } = rrweb;

@@ -1608,6 +1608,11 @@ export class Replayer {
           }
           styleNode.sheet?.insertRule(rule.cssText, index);
         });
+        if(styleNode.sheet && styleNode.sheet.rules.length > storedRules.length) {
+          for(let i = styleNode.sheet.rules.length-1; i < storedRules.length - 1; i--) {
+            styleNode.sheet.removeRule(i);
+          }
+        }
       }
     }
   }

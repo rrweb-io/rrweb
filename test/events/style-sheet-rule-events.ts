@@ -141,6 +141,19 @@ const events: eventWithTime[] = [
     type: EventType.IncrementalSnapshot,
     timestamp: now + 1000,
   },
+  {
+    data: {
+      id: 105,
+      removes: [
+        {
+          index: 2,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 2500,
+  },
 ];
 
 export default events;
