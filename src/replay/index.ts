@@ -1597,22 +1597,25 @@ export class Replayer {
   }
 
   private restoreNodeSheet(node: INode) {
-    if (node.nodeName === 'STYLE') {
-      const styleNode = (node as unknown) as HTMLStyleElement;
-      if (this.virtualStyleRulesMap.has(node)) {
-        const storedRules = this.virtualStyleRulesMap.get(node);
-        if (!storedRules) return;
-        storedRules.forEach((rule, index) => {
-          if (styleNode?.sheet?.rules[index]) {
-            styleNode.sheet?.deleteRule(index);
-          }
-          styleNode.sheet?.insertRule(rule.cssText, index);
-        });
-        if(styleNode.sheet && styleNode.sheet.rules.length > storedRules.length) {
-          for(let i = styleNode.sheet.rules.length-1; i < storedRules.length - 1; i--) {
-            styleNode.sheet.removeRule(i);
-          }
-        }
+    const storedRules = this.virtualStyleRulesMap.get(node);
+    if (node.nodeName !== 'STYLE') return;
+
+    if(!storedRules) return;
+
+    const styleNode = (node as unknown) as HTMLStyleElement;
+
+    storedRules.forEach((rule, index) => {
+      // Esnure consistency of rules list
+      if (styleNode?.sheet?.rules[index]) {
+        styleNode.sheet?.deleteRule(index);
+      }
+      styleNode.sheet?.insertRule(rule.cssText, index);
+    });
+    // Avoid situation, when your Node has more styles, than it should
+    // Otherwise, inserting will be broken
+    if(styleNode.sheet && styleNode.sheet.rules.length > storedRules.length) {
+      for(let i = styleNode.sheet.rules.length-1; i < storedRules.length - 1; i--) {
+        styleNode.sheet.removeRule(i);
       }
     }
   }
