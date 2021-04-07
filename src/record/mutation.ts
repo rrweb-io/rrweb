@@ -247,7 +247,9 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      const shadowHost: Element | null = (n.getRootNode() as ShadowRoot)?.host;
+      const shadowHost: Element | null = n.getRootNode
+        ? (n.getRootNode() as ShadowRoot)?.host
+        : null;
       const notInDoc = !this.doc.contains(n) && !this.doc.contains(shadowHost);
       if (!n.parentNode || notInDoc) {
         return;
