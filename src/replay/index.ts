@@ -121,7 +121,7 @@ export class Replayer {
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
   
   /** The first time the player is playing. */
-  private firstPlay = false;
+  private firstPlay = true;
                              
   private newDocumentQueue: addedNodeMutation[] = [];
 
