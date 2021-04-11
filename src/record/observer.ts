@@ -142,19 +142,27 @@ function initMoveObserver(
 
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
-  const wrappedCb = throttle((isTouch: boolean) => {
-    const totalOffset = Date.now() - timeBaseline!;
-    cb(
-      positions.map((p) => {
-        p.timeOffset -= totalOffset;
-        return p;
-      }),
-      isTouch ? IncrementalSource.TouchMove : IncrementalSource.MouseMove,
-    );
-    positions = [];
-    timeBaseline = null;
-  }, callbackThreshold);
-  const updatePosition = throttle<MouseEvent | TouchEvent>(
+  const wrappedCb = throttle(
+    (
+      source:
+        | IncrementalSource.MouseMove
+        | IncrementalSource.TouchMove
+        | IncrementalSource.Drag,
+    ) => {
+      const totalOffset = Date.now() - timeBaseline!;
+      cb(
+        positions.map((p) => {
+          p.timeOffset -= totalOffset;
+          return p;
+        }),
+        source,
+      );
+      positions = [];
+      timeBaseline = null;
+    },
+    callbackThreshold,
+  );
+  const updatePosition = throttle<MouseEvent | TouchEvent | DragEvent>(
     (evt) => {
       const { target } = evt;
       const { clientX, clientY } = isTouchEvent(evt)
@@ -169,7 +177,13 @@ function initMoveObserver(
         id: mirror.getId(target as INode),
         timeOffset: Date.now() - timeBaseline,
       });
-      wrappedCb(isTouchEvent(evt));
+      wrappedCb(
+        evt instanceof MouseEvent
+          ? IncrementalSource.MouseMove
+          : evt instanceof DragEvent
+          ? IncrementalSource.Drag
+          : IncrementalSource.TouchMove,
+      );
     },
     threshold,
     {
@@ -179,6 +193,7 @@ function initMoveObserver(
   const handlers = [
     on('mousemove', updatePosition, doc),
     on('touchmove', updatePosition, doc),
+    on('drag', updatePosition, doc),
   ];
   return () => {
     handlers.forEach((h) => h());

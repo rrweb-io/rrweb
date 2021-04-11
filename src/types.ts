@@ -82,6 +82,7 @@ export enum IncrementalSource {
   CanvasMutation,
   Font,
   Log,
+  Drag,
 }
 
 export type mutationData = {
@@ -89,7 +90,10 @@ export type mutationData = {
 } & mutationCallbackParam;
 
 export type mousemoveData = {
-  source: IncrementalSource.MouseMove | IncrementalSource.TouchMove;
+  source:
+    | IncrementalSource.MouseMove
+    | IncrementalSource.TouchMove
+    | IncrementalSource.Drag;
   positions: mousePosition[];
 };
 
@@ -307,7 +311,10 @@ export type mutationCallBack = (m: mutationCallbackParam) => void;
 
 export type mousemoveCallBack = (
   p: mousePosition[],
-  source: IncrementalSource.MouseMove | IncrementalSource.TouchMove,
+  source:
+    | IncrementalSource.MouseMove
+    | IncrementalSource.TouchMove
+    | IncrementalSource.Drag,
 ) => void;
 
 export type mousePosition = {
