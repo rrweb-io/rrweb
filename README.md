@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[We are hiring!(in mainland China)](https://mp.weixin.qq.com/s/VhFwemIzaXec-hI3zyltfg)**
+**[🚀 Try storyteller, a no-code interactive tutorial builder build with rrweb](http://labs.smartx.com/get-storyteller/?utm_source=rrweb&utm_medium=github)**
 
 **[The new adventure of the rrweb community](http://www.myriptide.com/rrweb-community/)**
 
