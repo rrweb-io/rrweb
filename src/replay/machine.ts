@@ -242,7 +242,7 @@ export function createPlayerService(
             const castFn = getCastFn(event, isSync);
             if (isSync) {
               castFn();
-            } else {
+            } else if (timer.isActive()) {
               timer.addAction({
                 doAction: () => {
                   castFn();
@@ -250,9 +250,6 @@ export function createPlayerService(
                 },
                 delay: event.delay!,
               });
-              if (!timer.isActive()) {
-                timer.start();
-              }
             }
           }
           return { ...ctx, events };
