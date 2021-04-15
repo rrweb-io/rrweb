@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[🚀 Try storyteller, a no-code interactive tutorial builder build with rrweb](http://labs.smartx.com/get-storyteller/?utm_source=rrweb&utm_medium=github)**
+**[🚀 Try storyteller, a no-code interactive tutorial builder build with rrweb](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
 
 **[The new adventure of the rrweb community](http://www.myriptide.com/rrweb-community/)**
 

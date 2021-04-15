@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[🚀 Storyteller, 基于 rrweb 开发的无代码交互式教程编辑器](http://labs.smartx.com/get-storyteller/?utm_source=rrweb&utm_medium=github)**
+**[🚀 Storyteller, 基于 rrweb 开发的无代码交互式教程编辑器](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
 
 **[rrweb 社区新的征程](http://www.myriptide.com/rrweb-community-cn/)**
 
