@@ -6,15 +6,18 @@ import {
   SlimDOMOptions,
   IGNORED_NODE,
   isShadowRoot,
+  needMasking,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
   blockClass,
+  maskClass,
   mutationCallBack,
   textCursor,
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
+  MaskTextFn,
 } from '../types';
 import {
   mirror,
@@ -159,8 +162,11 @@ export default class MutationBuffer {
   private emissionCallback: mutationCallBack;
   private blockClass: blockClass;
   private blockSelector: string | null;
+  private maskClass: maskClass;
+  private maskSelector: string | null;
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
+  private maskTextFn: MaskTextFn | undefined;
   private recordCanvas: boolean;
   private slimDOMOptions: SlimDOMOptions;
   private doc: Document;
@@ -172,8 +178,11 @@ export default class MutationBuffer {
     cb: mutationCallBack,
     blockClass: blockClass,
     blockSelector: string | null,
+    maskClass: maskClass,
+    maskSelector: string | null,
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
+    maskTextFn: MaskTextFn | undefined,
     recordCanvas: boolean,
     slimDOMOptions: SlimDOMOptions,
     doc: Document,
@@ -182,8 +191,11 @@ export default class MutationBuffer {
   ) {
     this.blockClass = blockClass;
     this.blockSelector = blockSelector;
+    this.maskClass = maskClass;
+    this.maskSelector = maskSelector;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
+    this.maskTextFn = maskTextFn;
     this.recordCanvas = recordCanvas;
     this.slimDOMOptions = slimDOMOptions;
     this.emissionCallback = cb;
@@ -266,9 +278,12 @@ export default class MutationBuffer {
         map: mirror.map,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
+        maskClass: this.maskClass,
+        maskSelector: this.maskSelector,
         skipChild: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
+        maskTextFn: this.maskTextFn,
         slimDOMOptions: this.slimDOMOptions,
         recordCanvas: this.recordCanvas,
         onSerialize: (currentN) => {
@@ -409,7 +424,12 @@ export default class MutationBuffer {
         const value = m.target.textContent;
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
           this.texts.push({
-            value,
+            value:
+              needMasking(m.target, this.maskClass, this.maskSelector) &&
+              this.maskTextFn &&
+              value
+                ? this.maskTextFn(value)
+                : value,
             node: m.target,
           });
         }

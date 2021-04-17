@@ -3,6 +3,7 @@ import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOption
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
+import { MaskTextFn } from '../src/types';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -109,6 +110,7 @@ export declare type eventWithTime = event & {
     delay?: number;
 };
 export declare type blockClass = string | RegExp;
+export declare type maskClass = string | RegExp;
 export declare type SamplingStrategy = Partial<{
     mousemove: boolean | number;
     mousemoveCallback: number;
@@ -123,9 +125,12 @@ export declare type recordOptions<T> = {
     blockClass?: blockClass;
     blockSelector?: string;
     ignoreClass?: string;
+    maskClass?: maskClass;
+    maskSelector?: string | null;
     maskAllInputs?: boolean;
     maskInputOptions?: MaskInputOptions;
     maskInputFn?: MaskInputFn;
+    maskTextFn?: MaskTextFn;
     slimDOMOptions?: SlimDOMOptions | 'all' | true;
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
@@ -146,9 +151,12 @@ export declare type observerParam = {
     mediaInteractionCb: mediaInteractionCallback;
     blockClass: blockClass;
     blockSelector: string | null;
+    maskClass: maskClass;
+    maskSelector: string | null;
     ignoreClass: string;
     maskInputOptions: MaskInputOptions;
     maskInputFn?: MaskInputFn;
+    maskTextFn?: MaskTextFn;
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
     canvasMutationCb: canvasMutationCallback;
