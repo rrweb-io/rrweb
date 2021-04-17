@@ -119,10 +119,10 @@ export class Replayer {
   private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
-  
+
   /** The first time the player is playing. */
-  private firstPlay = true;
-                             
+  private firstPlayedEvent: eventWithTime | null = null;
+
   private newDocumentQueue: addedNodeMutation[] = [];
 
   constructor(
@@ -250,9 +250,10 @@ export class Replayer {
     if (firstFullsnapshot) {
       setTimeout(() => {
         // when something has been played, there is no need to rebuild poster
-        if (this.timer.timeOffset > 0) {
+        if (this.firstPlayedEvent) {
           return;
         }
+        this.firstPlayedEvent = firstFullsnapshot;
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
@@ -463,8 +464,7 @@ export class Replayer {
       case EventType.FullSnapshot:
         castFn = () => {
           // Don't build a full snapshot during the first play through since we've already built it when the player was mounted.
-          if (this.firstPlay) {
-            this.firstPlay = false;
+          if (this.firstPlayedEvent && this.firstPlayedEvent === event) {
             return;
           }
           this.rebuildFullSnapshot(event, isSync);
