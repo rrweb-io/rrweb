@@ -243,7 +243,7 @@ export function createPlayerService(
               // fast track
               events.push(event);
             } else {
-              let insertion_index = -1;
+              let insertionIndex = -1;
               let start = 0;
               while (start <= end) {
                 let mid = Math.floor((start + end) / 2);
@@ -253,12 +253,11 @@ export function createPlayerService(
                   end = mid - 1;
                 }
               }
-              if (insertion_index === -1) {
-                insertion_index = start;
+              if (insertionIndex === -1) {
+                insertionIndex = start;
               }
-              events.splice(insertion_index, 0, event);
+              events.splice(insertionIndex, 0, event);
             }
-
 
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);

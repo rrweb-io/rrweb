@@ -129,8 +129,6 @@ export class Replayer {
     events: Array<eventWithTime | string>,
     config?: Partial<playerConfig>,
   ) {
-    events.sort((a1, a2) => a1.timestamp - a2.timestamp);
-
     if (!config?.liveMode && events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
@@ -199,12 +197,14 @@ export class Replayer {
     const timer = new Timer([], config?.speed || defaultConfig.speed);
     this.service = createPlayerService(
       {
-        events: events.map((e) => {
-          if (config && config.unpackFn) {
-            return config.unpackFn(e as string);
-          }
-          return e as eventWithTime;
-        }),
+        events: events
+          .map((e) => {
+            if (config && config.unpackFn) {
+              return config.unpackFn(e as string);
+            }
+            return e as eventWithTime;
+          })
+          .sort((a1, a2) => a1.timestamp - a2.timestamp),
         timer,
         timeOffset: 0,
         baselineTime: 0,
