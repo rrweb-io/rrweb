@@ -173,17 +173,21 @@ export function createPlayerService(
           }
           const neededEvents = discardPriorSnapshots(events, baselineTime);
 
+          let lastPlayedTimestamp = lastPlayedEvent?.timestamp;
+          if (
+            lastPlayedEvent?.type === EventType.IncrementalSnapshot &&
+            lastPlayedEvent.data.source === IncrementalSource.MouseMove
+          ) {
+            lastPlayedTimestamp =
+              lastPlayedEvent.timestamp +
+              lastPlayedEvent.data.positions[0]?.timeOffset;
+          }
+          if (baselineTime < (lastPlayedTimestamp || 0)) {
+            emitter.emit(ReplayerEvents.PlayBack);
+          }
+
           const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
-            let lastPlayedTimestamp = lastPlayedEvent?.timestamp;
-            if (
-              lastPlayedEvent?.type === EventType.IncrementalSnapshot &&
-              lastPlayedEvent.data.source === IncrementalSource.MouseMove
-            ) {
-              lastPlayedTimestamp =
-                lastPlayedEvent.timestamp +
-                lastPlayedEvent.data.positions[0]?.timeOffset;
-            }
             if (
               lastPlayedTimestamp &&
               lastPlayedTimestamp < baselineTime &&

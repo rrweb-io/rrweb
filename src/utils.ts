@@ -59,6 +59,9 @@ export const mirror: Mirror = {
   has(id) {
     return mirror.map.hasOwnProperty(id);
   },
+  reset() {
+    mirror.map = {};
+  },
 };
 
 // copy from underscore and modified

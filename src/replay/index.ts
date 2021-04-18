@@ -193,6 +193,10 @@ export class Replayer {
         this.applyInput(d);
       }
     });
+    this.emitter.on(ReplayerEvents.PlayBack, () => {
+      this.firstPlayedEvent = null;
+      mirror.reset();
+    });
 
     const timer = new Timer([], config?.speed || defaultConfig.speed);
     this.service = createPlayerService(
