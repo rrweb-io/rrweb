@@ -237,7 +237,29 @@ export function createPlayerService(
           if (machineEvent.type === 'ADD_EVENT') {
             const { event } = machineEvent.payload;
             addDelay(event, baselineTime);
-            events.push(event);
+
+            let end = events.length - 1;
+            if (events[end].timestamp <= event.timestamp) {
+              // fast track
+              events.push(event);
+            } else {
+              let insertion_index = -1;
+              let start = 0;
+              while (start <= end) {
+                let mid = Math.floor((start + end) / 2);
+                if (events[mid].timestamp <= event.timestamp) {
+                  start = mid + 1;
+                } else {
+                  end = mid - 1;
+                }
+              }
+              if (insertion_index === -1) {
+                insertion_index = start;
+              }
+              events.splice(insertion_index, 0, event);
+            }
+
+
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);
             if (isSync) {
