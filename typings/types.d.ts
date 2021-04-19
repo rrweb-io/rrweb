@@ -110,7 +110,7 @@ export declare type eventWithTime = event & {
     delay?: number;
 };
 export declare type blockClass = string | RegExp;
-export declare type maskClass = string | RegExp;
+export declare type maskTextClass = string | RegExp;
 export declare type SamplingStrategy = Partial<{
     mousemove: boolean | number;
     mousemoveCallback: number;
@@ -125,8 +125,8 @@ export declare type recordOptions<T> = {
     blockClass?: blockClass;
     blockSelector?: string;
     ignoreClass?: string;
-    maskClass?: maskClass;
-    maskSelector?: string | null;
+    maskTextClass?: maskTextClass;
+    maskTextSelector?: string | null;
     maskAllInputs?: boolean;
     maskInputOptions?: MaskInputOptions;
     maskInputFn?: MaskInputFn;
@@ -151,8 +151,8 @@ export declare type observerParam = {
     mediaInteractionCb: mediaInteractionCallback;
     blockClass: blockClass;
     blockSelector: string | null;
-    maskClass: maskClass;
-    maskSelector: string | null;
+    maskTextClass: maskTextClass;
+    maskTextSelector: string | null;
     ignoreClass: string;
     maskInputOptions: MaskInputOptions;
     maskInputFn?: MaskInputFn;

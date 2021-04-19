@@ -1,4 +1,4 @@
-import { mutationCallBack, blockClass, maskClass, MaskTextFn } from '../types';
+import { mutationCallBack, blockClass, maskTextClass, MaskTextFn } from '../types';
 import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
 import { initMutationObserver } from './observer';
@@ -6,8 +6,8 @@ import { initMutationObserver } from './observer';
 type BypassOptions = {
   blockClass: blockClass;
   blockSelector: string | null;
-  maskClass: maskClass;
-  maskSelector: string | null;
+  maskTextClass: maskTextClass;
+  maskTextSelector: string | null;
   inlineStylesheet: boolean;
   maskInputOptions: MaskInputOptions;
   maskTextFn: MaskTextFn | undefined;
@@ -34,8 +34,8 @@ export class ShadowDomManager {
       doc,
       this.bypassOptions.blockClass,
       this.bypassOptions.blockSelector,
-      this.bypassOptions.maskClass,
-      this.bypassOptions.maskSelector,
+      this.bypassOptions.maskTextClass,
+      this.bypassOptions.maskTextSelector,
       this.bypassOptions.inlineStylesheet,
       this.bypassOptions.maskInputOptions,
       this.bypassOptions.maskTextFn,

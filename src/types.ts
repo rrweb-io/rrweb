@@ -163,7 +163,7 @@ export type eventWithTime = event & {
 
 export type blockClass = string | RegExp;
 
-export type maskClass = string | RegExp;
+export type maskTextClass = string | RegExp;
 
 export type SamplingStrategy = Partial<{
   /**
@@ -198,8 +198,8 @@ export type recordOptions<T> = {
   blockClass?: blockClass;
   blockSelector?: string;
   ignoreClass?: string;
-  maskClass?: maskClass;
-  maskSelector?: string;
+  maskTextClass?: maskTextClass;
+  maskTextSelector?: string;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
@@ -227,8 +227,8 @@ export type observerParam = {
   blockClass: blockClass;
   blockSelector: string | null;
   ignoreClass: string;
-  maskClass: maskClass;
-  maskSelector: string | null;
+  maskTextClass: maskTextClass;
+  maskTextSelector: string | null;
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;

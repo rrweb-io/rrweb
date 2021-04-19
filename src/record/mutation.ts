@@ -6,12 +6,12 @@ import {
   SlimDOMOptions,
   IGNORED_NODE,
   isShadowRoot,
-  needMasking,
+  needMaskingText,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
   blockClass,
-  maskClass,
+  maskTextClass,
   mutationCallBack,
   textCursor,
   attributeCursor,
@@ -162,8 +162,8 @@ export default class MutationBuffer {
   private emissionCallback: mutationCallBack;
   private blockClass: blockClass;
   private blockSelector: string | null;
-  private maskClass: maskClass;
-  private maskSelector: string | null;
+  private maskTextClass: maskTextClass;
+  private maskTextSelector: string | null;
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
   private maskTextFn: MaskTextFn | undefined;
@@ -178,8 +178,8 @@ export default class MutationBuffer {
     cb: mutationCallBack,
     blockClass: blockClass,
     blockSelector: string | null,
-    maskClass: maskClass,
-    maskSelector: string | null,
+    maskTextClass: maskTextClass,
+    maskTextSelector: string | null,
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
     maskTextFn: MaskTextFn | undefined,
@@ -191,8 +191,8 @@ export default class MutationBuffer {
   ) {
     this.blockClass = blockClass;
     this.blockSelector = blockSelector;
-    this.maskClass = maskClass;
-    this.maskSelector = maskSelector;
+    this.maskTextClass = maskTextClass;
+    this.maskTextSelector = maskTextSelector;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
     this.maskTextFn = maskTextFn;
@@ -278,8 +278,8 @@ export default class MutationBuffer {
         map: mirror.map,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
-        maskClass: this.maskClass,
-        maskSelector: this.maskSelector,
+        maskTextClass: this.maskTextClass,
+        maskTextSelector: this.maskTextSelector,
         skipChild: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
@@ -425,7 +425,11 @@ export default class MutationBuffer {
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
           this.texts.push({
             value:
-              needMasking(m.target, this.maskClass, this.maskSelector) && value
+              needMaskingText(
+                m.target,
+                this.maskTextClass,
+                this.maskTextSelector,
+              ) && value
                 ? this.maskTextFn
                   ? this.maskTextFn(value)
                   : value.replace(/[\S]/g, '*')
