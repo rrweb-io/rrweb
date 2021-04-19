@@ -425,10 +425,10 @@ export default class MutationBuffer {
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
           this.texts.push({
             value:
-              needMasking(m.target, this.maskClass, this.maskSelector) &&
-              this.maskTextFn &&
-              value
-                ? this.maskTextFn(value)
+              needMasking(m.target, this.maskClass, this.maskSelector) && value
+                ? this.maskTextFn
+                  ? this.maskTextFn(value)
+                  : value.replace(/[\S]/g, '*')
                 : value,
             node: m.target,
           });
