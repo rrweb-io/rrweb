@@ -142,10 +142,13 @@ The parameter of `rrweb.record` accepts the following options.
 | checkoutEveryNms | -           | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter                                                                            |
 | blockClass       | 'rr-block'  | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                   |
 | ignoreClass      | 'rr-ignore' | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                   |
-| blockSelector    | null        | Use a string or RegExp to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
+| maskTextClass    | 'rr-mask'   | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter                                                    |
+| blockSelector    | null        | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                             |
+| maskTextSelector | null        | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter                                                              |
 | maskAllInputs    | false       | mask all input content as \*                                                                                                                                     |
-| maskInputOptions | {}          | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72) |
-| maskInputFn      | -           | customize mask input content recording logic                                                                                                                                |
+| maskInputOptions | {}          | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72)  |
+| maskInputFn      | -           | customize mask input content recording logic                                                                                                                     |
+| maskTextFn       | -           | customize mask text content recording logic                                                                                                                      |
 | slimDOMOptions   | {}          | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L91)            |
 | inlineStylesheet | true        | whether to inline the stylesheet in the events                                                                                                                   |
 | hooks            | {}          | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                     |
@@ -163,6 +166,7 @@ You may find some contents on the webpage which are not willing to be recorded, 
 - An element with the class name `.rr-ignore` will not record its input events.
 - `input[type="password"]` will be ignored as default.
 - Mask options to mask the content in input elements.
+- A text of elements with the class name `.rr-mask` and its children will be masked.
 
 #### Checkout
 
