@@ -202,6 +202,21 @@ exports[`[html file]: invalid-tagname.html 1`] = `
 </body></html>"
 `;
 
+exports[`[html file]: mask-text.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>Document</title>
+  </head>  <body>
+    <p class=\\"rr-mask\\">**** *</p>
+    <div class=\\"rr-mask\\">
+      <span>**** *</span>
+    </div>
+    <div class=\\"rr-mask\\">**** *</div>
+  </body></html>"
+`;
+
 exports[`[html file]: picture.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <picture>

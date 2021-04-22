@@ -86,3 +86,4 @@ export declare type SlimDOMOptions = Partial<{
     headMetaAuthorship: boolean;
     headMetaVerification: boolean;
 }>;
+export declare type MaskTextFn = (text: string) => string;
