@@ -38,6 +38,7 @@ export default entries.map((output) => ({
     file: output.file,
     format: output.format,
     name: output.name,
+    sourcemap: true,
     exports: 'auto',
   },
   plugins: [
@@ -65,7 +66,7 @@ export default entries.map((output) => ({
     }),
     commonjs(),
 
-    typescript({ sourceMap: !production }),
+    typescript(),
 
     css({
       // we'll extract any component CSS out into
