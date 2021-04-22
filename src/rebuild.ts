@@ -57,23 +57,50 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-const HOVER_SELECTOR = /([^\\]):hover/g;
+// based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+function escapeRegExp(string: string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+const HOVER_SELECTOR = /([^\\]):hover/;
+const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR, 'g');
 export function addHoverClass(cssText: string): string {
-  const ast = parse(cssText, { silent: true });
+  const ast = parse(cssText, {
+    silent: true,
+  });
+
   if (!ast.stylesheet) {
     return cssText;
   }
+
+  const selectors: string[] = [];
   ast.stylesheet.rules.forEach((rule) => {
     if ('selectors' in rule) {
       (rule.selectors || []).forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
-          const newSelector = selector.replace(HOVER_SELECTOR, '$1.\\:hover');
-          cssText = cssText.replace(selector, `${selector}, ${newSelector}`);
+          selectors.push(selector);
         }
       });
     }
   });
-  return cssText;
+
+  if (selectors.length === 0) return cssText;
+
+  const selectorMatcher = new RegExp(
+    selectors
+      .filter((selector, index) => selectors.indexOf(selector) === index)
+      .sort((a, b) => b.length - a.length)
+      .map((selector) => {
+        return escapeRegExp(selector);
+      })
+      .join('|'),
+    'g',
+  );
+
+  return cssText.replace(selectorMatcher, (selector) => {
+    const newSelector = selector.replace(HOVER_SELECTOR_GLOBAL, '$1.\\:hover');
+    return `${selector}, ${newSelector}`;
+  });
 }
 
 function buildNode(

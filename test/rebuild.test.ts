@@ -24,6 +24,13 @@ describe('add hover class to hover selector related rules', () => {
     );
   });
 
+  it('can add hover class when there is a multi selector with the same prefix', () => {
+    const cssText = '.a:hover, .a:hover::after { color: white }';
+    expect(addHoverClass(cssText)).to.equal(
+      '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
+    );
+  });
+
   it('can add hover class when :hover is not the end of selector', () => {
     const cssText = 'div:hover::after { color: white }';
     expect(addHoverClass(cssText)).to.equal(
