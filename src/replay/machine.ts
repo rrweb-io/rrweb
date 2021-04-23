@@ -243,7 +243,7 @@ export function createPlayerService(
             addDelay(event, baselineTime);
 
             let end = events.length - 1;
-            if (events[end].timestamp <= event.timestamp) {
+            if (!events[end] || events[end].timestamp <= event.timestamp) {
               // fast track
               events.push(event);
             } else {
