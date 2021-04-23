@@ -3199,8 +3199,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"assert\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:2:37\\"
+        \\"__puppeteer_evaluation_script__:2:37\\"
       ],
       \\"payload\\": [
         \\"true\\",
@@ -3214,8 +3213,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"count\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:3:37\\"
+        \\"__puppeteer_evaluation_script__:3:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"count\\\\\\"\\"
@@ -3228,8 +3226,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"countReset\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:4:37\\"
+        \\"__puppeteer_evaluation_script__:4:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"count\\\\\\"\\"
@@ -3242,8 +3239,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"debug\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:5:37\\"
+        \\"__puppeteer_evaluation_script__:5:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"debug\\\\\\"\\"
@@ -3256,8 +3252,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"dir\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:6:37\\"
+        \\"__puppeteer_evaluation_script__:6:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"dir\\\\\\"\\"
@@ -3270,8 +3265,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"dirxml\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:7:37\\"
+        \\"__puppeteer_evaluation_script__:7:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"dirxml\\\\\\"\\"
@@ -3284,8 +3278,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"group\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:8:37\\"
+        \\"__puppeteer_evaluation_script__:8:37\\"
       ],
       \\"payload\\": []
     }
@@ -3296,8 +3289,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"groupCollapsed\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:9:37\\"
+        \\"__puppeteer_evaluation_script__:9:37\\"
       ],
       \\"payload\\": []
     }
@@ -3308,8 +3300,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"info\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:10:37\\"
+        \\"__puppeteer_evaluation_script__:10:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"info\\\\\\"\\"
@@ -3322,8 +3313,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"log\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:11:37\\"
+        \\"__puppeteer_evaluation_script__:11:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"log\\\\\\"\\"
@@ -3336,8 +3326,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"table\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:12:37\\"
+        \\"__puppeteer_evaluation_script__:12:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"table\\\\\\"\\"
@@ -3350,8 +3339,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"time\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:13:37\\"
+        \\"__puppeteer_evaluation_script__:13:37\\"
       ],
       \\"payload\\": []
     }
@@ -3362,8 +3350,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"timeEnd\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:14:37\\"
+        \\"__puppeteer_evaluation_script__:14:37\\"
       ],
       \\"payload\\": []
     }
@@ -3374,8 +3361,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"timeLog\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:15:37\\"
+        \\"__puppeteer_evaluation_script__:15:37\\"
       ],
       \\"payload\\": []
     }
@@ -3386,8 +3372,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"trace\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:16:37\\"
+        \\"__puppeteer_evaluation_script__:16:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"trace\\\\\\"\\"
@@ -3400,8 +3385,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"warn\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:17:37\\"
+        \\"__puppeteer_evaluation_script__:17:37\\"
       ],
       \\"payload\\": [
         \\"\\\\\\"warn\\\\\\"\\"
@@ -3414,8 +3398,7 @@ exports[`log 1`] = `
       \\"source\\": 11,
       \\"level\\": \\"clear\\",
       \\"trace\\": [
-        \\"__puppeteer_evalu\\",
-        \\"ion_script__:18:37\\"
+        \\"__puppeteer_evaluation_script__:18:37\\"
       ],
       \\"payload\\": []
     }
