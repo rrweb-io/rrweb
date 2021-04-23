@@ -60,6 +60,9 @@ export declare type AppendedIframe = {
     mutationInQueue: addedNodeMutation;
     builtNode: HTMLIFrameINode;
 };
-export declare function isIframeINode(node: INode): node is HTMLIFrameINode;
+export declare function isIframeINode(node: INode | ShadowRoot): node is HTMLIFrameINode;
 export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
+export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
+    shadowRoot: ShadowRoot;
+};
 export {};

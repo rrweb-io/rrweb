@@ -19,6 +19,7 @@ export declare class Replayer {
     private fragmentParentMap;
     private elementStateMap;
     private imageMap;
+    private firstPlayedEvent;
     private newDocumentQueue;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
