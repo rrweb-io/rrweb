@@ -9,6 +9,7 @@ import {
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
+  extraEvents
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 
@@ -33,6 +34,7 @@ describe('replayer', function (this: ISuite) {
     await page.goto('about:blank');
     await page.evaluate(this.code);
     await page.evaluate(`let events = ${JSON.stringify(events)}`);
+    await page.evaluate(`let extraEvents = ${JSON.stringify(extraEvents)}`);
     this.page = page;
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -181,4 +183,23 @@ describe('replayer', function (this: ISuite) {
     `);
     expect(status).to.equal('live');
   });
+
+  it('invokes the metaDataSubscriber callback when new events are added', async () => {
+    const totalInvokations = await this.page.evaluate(`
+      async function evaluator() {
+        let totalMetaDataChangeInvokations = 0;
+        const { Replayer } = rrweb;
+        const replayer = new Replayer(events);
+        replayer.setMetaDataSubscriber((playerMetaData) => {
+          totalMetaDataChangeInvokations++;
+        });
+        for (extraEvent of extraEvents) {
+          await replayer.addEvent(extraEvent);
+        }
+        return totalMetaDataChangeInvokations;
+      }
+      evaluator();
+    `);
+    expect(totalInvokations).to.equal(3);
+  })
 });

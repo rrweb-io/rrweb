@@ -78,10 +78,11 @@ export function discardPriorSnapshots(
 type PlayerAssets = {
   emitter: Emitter;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
+  eventAddedCb: () => void;
 };
 export function createPlayerService(
   context: PlayerContext,
-  { getCastFn, emitter }: PlayerAssets,
+  { getCastFn, emitter, eventAddedCb }: PlayerAssets,
 ) {
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
@@ -262,7 +263,8 @@ export function createPlayerService(
               }
               events.splice(insertionIndex, 0, event);
             }
-
+            
+            eventAddedCb();
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);
             if (isSync) {

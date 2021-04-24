@@ -203,6 +203,42 @@ export const sampleEvents: eventWithTime[] = [
   },
 ];
 
+export const extraEvents: eventWithTime[] = [
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.MouseInteraction,
+      type: MouseInteractions.Click,
+      id: 1,
+      x: 0,
+      y: 0,
+    },
+    timestamp: now + 4500,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.MouseInteraction,
+      type: MouseInteractions.Click,
+      id: 1,
+      x: 0,
+      y: 0,
+    },
+    timestamp: now + 5000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.MouseInteraction,
+      type: MouseInteractions.Click,
+      id: 1,
+      x: 0,
+      y: 0,
+    },
+    timestamp: now + 5500,
+  }
+]
+
 export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
   {
     type: EventType.DomContentLoaded,
