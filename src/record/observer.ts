@@ -47,6 +47,7 @@ import MutationBuffer from './mutation';
 import { stringify } from './stringify';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
+import { StackFrame, ErrorStackParser } from './error-stack-parser';
 
 type WindowWithStoredMutationObserver = Window & {
   __rrMutationObserver?: MutationObserver;
@@ -602,20 +603,23 @@ function initLogObserver(
   if (logOptions.level!.includes('error')) {
     if (window) {
       const originalOnError = window.onerror;
-      // tslint:disable-next-line:no-any
-      window.onerror = (...args: any[]) => {
+      window.onerror = (
+        msg: Event | string,
+        file: string,
+        line: number,
+        col: number,
+        error: Error,
+      ) => {
         if (originalOnError) {
-          originalOnError.apply(this, args);
+          originalOnError.apply(this, [msg, file, line, col, error]);
         }
-        let stack: string[] = [];
-        if (args[args.length - 1] instanceof Error) {
-          // 0(the second parameter) tells parseStack that every stack in Error is useful
-          stack = parseStack(args[args.length - 1].stack, 0);
-        }
-        const payload = [stringify(args[0], logOptions.stringifyOptions)];
+        const trace: string[] = ErrorStackParser.parse(
+          error,
+        ).map((stackFrame: StackFrame) => stackFrame.toString());
+        const payload = [stringify(msg, logOptions.stringifyOptions)];
         cb({
           level: 'error',
-          trace: stack,
+          trace,
           payload,
         });
       };
@@ -642,11 +646,12 @@ function initLogObserver(
     }
     // replace the logger.{level}. return a restore function
     return patch(_logger, level, (original) => {
-      // tslint:disable-next-line:no-any
-      return (...args: any[]) => {
+      return (...args: unknown[]) => {
         original.apply(this, args);
         try {
-          const stack = parseStack(new Error().stack);
+          const trace = ErrorStackParser.parse(new Error())
+            .map((stackFrame: StackFrame) => stackFrame.toString())
+            .splice(1); // splice(1) to omit the hijacked log function
           const payload = args.map((s) =>
             stringify(s, logOptions.stringifyOptions),
           );
@@ -654,7 +659,7 @@ function initLogObserver(
           if (logCount < logOptions.lengthThreshold!) {
             cb({
               level,
-              trace: stack,
+              trace,
               payload,
             });
           } else if (logCount === logOptions.lengthThreshold) {
@@ -672,24 +677,6 @@ function initLogObserver(
         }
       };
     });
-  }
-  /**
-   * parse single stack message to an stack array.
-   * @param stack the stack message to be parsed
-   * @param omitDepth omit specific depth of useless stack. omit hijacked log function by default
-   */
-  function parseStack(
-    stack: string | undefined,
-    omitDepth: number = 1,
-  ): string[] {
-    let stacks: string[] = [];
-    if (stack) {
-      stacks = stack
-        .split('at')
-        .splice(1 + omitDepth)
-        .map((s) => s.trim());
-    }
-    return stacks;
   }
 }
 

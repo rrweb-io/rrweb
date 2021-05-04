@@ -379,7 +379,7 @@ describe('record integration tests', function (this: ISuite) {
     expect(text).to.equal('4\n3\n2\n1\n5');
   });
 
-  it('can record log mutation', async () => {
+  it('should record console messages', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
