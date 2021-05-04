@@ -276,7 +276,8 @@ exports[`[html file]: with-relative-res.html 1`] = `
   <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"\\" />
   <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/a.jpg\\" />
   <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://exmple.com/a.jpg\\" />
-  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/a.jpg 3x, http://localhost:3030/a.jpg 45x, http://localhost:3030/b.png\\" /></body></html>"
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/a.jpg 3x, http://localhost:3030/a.jpg 45x, http://localhost:3030/b.png\\" />
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/300,400/a.jpg 300w, http://localhost:3030/b.png\\" /></body></html>"
 `;
 
 exports[`[html file]: with-script.html 1`] = `

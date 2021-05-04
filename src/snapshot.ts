@@ -110,32 +110,78 @@ export function absoluteToStylesheet(
   );
 }
 
+const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/;  // Don't use \s, to avoid matching non-breaking space
+const SRCSET_COMMAS_OR_SPACES = /^[, \t\n\r\u000c]+/;
 function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+  /*
+    run absoluteToDoc over every url in the srcset
+
+    this is adapted from https://github.com/albell/parse-srcset/
+    without the parsing of the descriptors (we return these as-is)
+    parce-srcset is in turn based on
+    https://html.spec.whatwg.org/multipage/embedded-content.html#parse-a-srcset-attribute
+  */
   if (attributeValue.trim() === '') {
     return attributeValue;
   }
 
-  const srcsetValues = attributeValue.split(',');
-  // srcset attributes is defined as such:
-  // srcset = "url size,url1 size1"
-  const resultingSrcsetString = srcsetValues
-    .map((srcItem) => {
-      // removing all but middle spaces
-      const trimmedSrcItem = srcItem.trimLeft().trimRight();
-      const urlAndSize = trimmedSrcItem.split(' ');
-      // this means we have both 0:url and 1:size
-      if (urlAndSize.length === 2) {
-        const absUrl = absoluteToDoc(doc, urlAndSize[0]);
-        return `${absUrl} ${urlAndSize[1]}`;
-      } else if (urlAndSize.length === 1) {
-        const absUrl = absoluteToDoc(doc, urlAndSize[0]);
-        return `${absUrl}`;
-      }
-      return '';
-    })
-    .join(', ');
+  let pos = 0;
 
-  return resultingSrcsetString;
+  function collectCharacters(regEx: RegExp) {
+    var chars,
+    match = regEx.exec(attributeValue.substring(pos));
+    if (match) {
+      chars = match[0];
+      pos += chars.length;
+      return chars;
+    }
+    return '';
+  }
+
+  let output = [];
+  while (true) {
+    collectCharacters(SRCSET_COMMAS_OR_SPACES);
+    if (pos >= attributeValue.length) {
+      break;
+    }
+    // don't split on commas within urls
+    let url = collectCharacters(SRCSET_NOT_SPACES);
+    if (url.slice(-1) === ',') {
+      // aside: according to spec more than one comma at the end is a parse error, but we ignore that
+      url = absoluteToDoc(doc, url.substring(0, url.length - 1))
+      // the trailing comma splits the srcset, so the interpretion is that
+      // another url will follow, and the descriptor is empty
+      output.push(url);
+    } else {
+      let descriptorsStr = '';
+      url = absoluteToDoc(doc, url)
+      let inParens = false;
+      while (true) {
+        let c = attributeValue.charAt(pos);
+        if (c === '') {
+          output.push((url + descriptorsStr).trim());
+          break;
+        } else if (!inParens) {
+          if (c === ',') {
+            pos += 1;
+            output.push((url + descriptorsStr).trim());
+            break;  // parse the next url
+          } else if (c === '(') {
+            inParens = true;
+          }
+        } else {
+          // in parenthesis; ignore commas
+          // (parenthesis may be supported by future additions to spec)
+          if (c === ')') {
+            inParens = false;
+          }
+        }
+        descriptorsStr += c;
+        pos += 1;
+      }
+    }
+  }
+  return output.join(', ');
 }
 
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
