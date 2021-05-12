@@ -73,6 +73,7 @@ export declare type MaskInputOptions = Partial<{
     week: boolean;
     textarea: boolean;
     select: boolean;
+    password: boolean;
 }>;
 export declare type SlimDOMOptions = Partial<{
     script: boolean;

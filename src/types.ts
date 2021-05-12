@@ -91,6 +91,7 @@ export type MaskInputOptions = Partial<{
   // unify textarea and select element with text input
   textarea: boolean;
   select: boolean;
+  password: boolean;
 }>;
 
 export type SlimDOMOptions = Partial<{
