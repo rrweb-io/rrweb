@@ -110,7 +110,7 @@ export function absoluteToStylesheet(
   );
 }
 
-const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/;  // Don't use \s, to avoid matching non-breaking space
+const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/; // Don't use \s, to avoid matching non-breaking space
 const SRCSET_COMMAS_OR_SPACES = /^[, \t\n\r\u000c]+/;
 function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   /*
@@ -129,7 +129,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
 
   function collectCharacters(regEx: RegExp) {
     var chars,
-    match = regEx.exec(attributeValue.substring(pos));
+      match = regEx.exec(attributeValue.substring(pos));
     if (match) {
       chars = match[0];
       pos += chars.length;
@@ -148,13 +148,13 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     let url = collectCharacters(SRCSET_NOT_SPACES);
     if (url.slice(-1) === ',') {
       // aside: according to spec more than one comma at the end is a parse error, but we ignore that
-      url = absoluteToDoc(doc, url.substring(0, url.length - 1))
+      url = absoluteToDoc(doc, url.substring(0, url.length - 1));
       // the trailing comma splits the srcset, so the interpretion is that
       // another url will follow, and the descriptor is empty
       output.push(url);
     } else {
       let descriptorsStr = '';
-      url = absoluteToDoc(doc, url)
+      url = absoluteToDoc(doc, url);
       let inParens = false;
       while (true) {
         let c = attributeValue.charAt(pos);
@@ -165,7 +165,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
           if (c === ',') {
             pos += 1;
             output.push((url + descriptorsStr).trim());
-            break;  // parse the next url
+            break; // parse the next url
           } else if (c === '(') {
             inParens = true;
           }
@@ -863,9 +863,12 @@ function snapshot(
           week: true,
           textarea: true,
           select: true,
+          password: true,
         }
       : maskAllInputs === false
-      ? {}
+      ? {
+          password: true,
+        }
       : maskAllInputs;
   const slimDOMOptions: SlimDOMOptions =
     slimDOM === true || slimDOM === 'all'
