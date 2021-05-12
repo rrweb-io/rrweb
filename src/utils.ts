@@ -253,6 +253,24 @@ export function polyfill(win = window) {
     win.DOMTokenList.prototype.forEach = (Array.prototype
       .forEach as unknown) as DOMTokenList['forEach'];
   }
+
+  // https://github.com/Financial-Times/polyfill-service/pull/183
+  if (!Node.prototype.contains) {
+    Node.prototype.contains = function contains(node) {
+      if (!(0 in arguments)) {
+        throw new TypeError('1 argument is required');
+      }
+
+      do {
+        if (this === node) {
+          return true;
+        }
+        // tslint:disable-next-line: no-conditional-assignment
+      } while ((node = node && node.parentNode));
+
+      return false;
+    };
+  }
 }
 
 export function needCastInSyncMode(event: eventWithTime): boolean {
