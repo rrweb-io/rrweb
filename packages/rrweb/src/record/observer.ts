@@ -130,19 +130,20 @@ function initMoveObserver({
     | IncrementalSource.TouchMove
     | IncrementalSource.Drag;
 
-  function moveEmission() {
+  function moveEmission(now: number) {
     if (!positions.length) {
       // already emitted
       return;
     }
     ongoingMove = null;
-    const totalOffset = Date.now() - timeBaseline!;
+    const totalOffset = now - timeBaseline!;
     mousemoveCb(
       positions.map((p) => {
         p.timeOffset -= totalOffset;
         return p;
       }),
       source,
+      now,
     );
     positions = [];
     timeBaseline = null;
@@ -178,7 +179,7 @@ function initMoveObserver({
             ? IncrementalSource.MouseMove
             : IncrementalSource.TouchMove;
         ongoingMove = moveEmission;
-        throttledMoveEmission();
+        throttledMoveEmission(Date.now());
       }),
       threshold,
       {
