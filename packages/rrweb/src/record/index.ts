@@ -22,7 +22,10 @@ import {
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 
-function wrapEvent(e: event): eventWithTime {
+function wrapEvent(e: event | eventWithTime): eventWithTime {
+  if ('timestamp' in e) {
+    return e as eventWithTime;
+  }
   return {
     ...e,
     timestamp: Date.now(),
@@ -136,7 +139,7 @@ function record<T = eventWithTime>(
       // emit any ongoing (but throttled) mouse or touch move;
       // emitting now creates more events, but ensures events are emitted in
       // sequence without any overlap from the negative Move timeOffset
-      ongoingMove();
+      ongoingMove(e.timestamp);
     }
 
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
@@ -297,7 +300,7 @@ function record<T = eventWithTime>(
       return initObservers(
         {
           mutationCb: wrappedMutationEmit,
-          mousemoveCb: (positions, source) =>
+          mousemoveCb: (positions, source, timestamp) =>
             wrappedEmit(
               wrapEvent({
                 type: EventType.IncrementalSnapshot,
@@ -305,6 +308,7 @@ function record<T = eventWithTime>(
                   source,
                   positions,
                 },
+                timestamp: timestamp,
               }),
             ),
           mouseInteractionCb: (d) =>
