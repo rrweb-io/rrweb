@@ -184,9 +184,11 @@ function record<T = eventWithTime>(
     }
     return e as unknown as T;
   };
-  wrappedEmit = (r: eventWithoutTime, isCheckout?: boolean) => {
+  wrappedEmit = (r: eventWithoutTime | eventWithTime, isCheckout?: boolean) => {
     const e = r as eventWithTime;
-    e.timestamp = nowTimestamp();
+    if (!('timestamp' in e) || e.timestamp === undefined) {
+      e.timestamp = nowTimestamp();
+    }
     if (
       frozen &&
       e.type !== EventType.FullSnapshot &&
@@ -199,7 +201,7 @@ function record<T = eventWithTime>(
         // emit any ongoing (but throttled) mouse or touch move;
         // emitting now creates more events, but ensures events are emitted in
         // sequence without any overlap from the negative Move timeOffset
-        ongoingMove();
+        ongoingMove(e.timestamp);
       }
 
       // we've got a user initiated event so if we've been frozen we first need
@@ -438,14 +440,15 @@ function record<T = eventWithTime>(
       return callbackWrapper(initObservers)(
         {
           mutationCb: wrappedMutationEmit,
-          mousemoveCb: (positions, source) =>
+          mousemoveCb: (positions, source, timestamp) =>
             wrappedEmit({
               type: EventType.IncrementalSnapshot,
               data: {
                 source,
                 positions,
               },
-            }),
+              timestamp,
+            } as eventWithTime),
           mouseInteractionCb: (d) =>
             wrappedEmit({
               type: EventType.IncrementalSnapshot,

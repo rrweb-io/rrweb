@@ -425,6 +425,7 @@ export type mousemoveCallBack = (
     | IncrementalSource.MouseMove
     | IncrementalSource.TouchMove
     | IncrementalSource.Drag,
+  timestamp: number,
 ) => void;
 
 export type mousePosition = {
