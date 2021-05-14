@@ -4,7 +4,7 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import { initObservers, mutationBuffers, ongoingMove } from './observer';
 import {
   on,
   getWindowWidth,
@@ -47,6 +47,7 @@ let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
 let recording = false;
+let frozen = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
 // Try to pull a clean implementation from a newly created iframe
@@ -187,22 +188,27 @@ function record<T = eventWithTime>(
     const e = r as eventWithTime;
     e.timestamp = nowTimestamp();
     if (
+      frozen &&
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.Mutation
       )
     ) {
+      if (ongoingMove) {
+        // emit any ongoing (but throttled) mouse or touch move;
+        // emitting now creates more events, but ensures events are emitted in
+        // sequence without any overlap from the negative Move timeOffset
+        ongoingMove();
+      }
+
       // we've got a user initiated event so if we've been frozen we first need
       // to apply all DOM changes that have been buffering during paused state
       canvasManager.unfreeze();
       for (const buf of mutationBuffers) {
-        if (buf.isFrozen()) {
-          buf.unfreeze();
-        } else {
-          break; // just need to check one as they all get frozen together
-        }
+        buf.unfreeze();
       }
+      frozen = false;
     }
 
     if (inEmittingFrame) {
@@ -673,6 +679,7 @@ record.addAnnotation = (annotation: annotationData) => {
 record.freezePage = () => {
   canvasManager.freeze();
   mutationBuffers.forEach((buf) => buf.freeze());
+  frozen = true;
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {
