@@ -187,6 +187,13 @@ function record<T = eventWithTime>(
     if (!('timestamp' in e) || e.timestamp === undefined) {
       e.timestamp = nowTimestamp();
     }
+
+    if (ongoingMove) {
+      // emit any ongoing (but throttled) mouse or touch move;
+      // emitting now creates more events, but ensures events are emitted in
+      // sequence without any overlap from the negative Move timeOffset
+      ongoingMove(e.timestamp);
+    }
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -208,12 +215,6 @@ function record<T = eventWithTime>(
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
       mutationBuffers.forEach((buf) => buf.unfreeze(mtimestamp));
-    }
-    if (ongoingMove) {
-      // emit any ongoing (but throttled) mouse or touch move;
-      // emitting now creates more events, but ensures events are emitted in
-      // sequence without any overlap from the negative Move timeOffset
-      ongoingMove(e.timestamp);
     }
 
     if (inEmittingFrame) {
