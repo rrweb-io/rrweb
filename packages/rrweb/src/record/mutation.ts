@@ -217,9 +217,9 @@ export default class MutationBuffer {
     this.frozen = true;
   }
 
-  public unfreeze() {
+  public unfreeze(now: number) {
     this.frozen = false;
-    this.emit();
+    this.emit(now);
   }
 
   public isFrozen() {
@@ -240,9 +240,13 @@ export default class MutationBuffer {
     this.emit();
   };
 
-  public emit = () => {
+  public emit = (now?: number) => {
     if (this.frozen || this.locked) {
       return;
+    }
+
+    if (typeof now === 'undefined') {
+      now = Date.now();
     }
 
     // delay any modification of the mirror until this function
@@ -428,7 +432,7 @@ export default class MutationBuffer {
     this.droppedSet = new Set<Node>();
     this.movedMap = {};
 
-    this.emissionCallback(payload);
+    this.emissionCallback(payload, now);
   };
 
   private processMutation = (m: mutationRecord) => {

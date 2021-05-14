@@ -133,7 +133,7 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      mutationBuffers.forEach((buf) => buf.unfreeze(e.timestamp));
     }
     if (ongoingMove) {
       // emit any ongoing (but throttled) mouse or touch move;
@@ -167,17 +167,24 @@ function record<T = eventWithTime>(
     }
   };
 
-  const wrappedMutationEmit = (m: mutationCallbackParam) => {
-    wrappedEmit(
-      wrapEvent({
-        type: EventType.IncrementalSnapshot,
-        data: {
-          source: IncrementalSource.Mutation,
-          ...m,
-        },
-      }),
-    );
+  const wrappedMutationEmit = (m: mutationCallbackParam, timestamp?: number) => {
+    const e: event = {
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: IncrementalSource.Mutation,
+        ...m,
+      },
+    };
+    if (typeof timestamp !== 'undefined') {
+      wrappedEmit(wrapEvent({
+        timestamp: timestamp,
+        ...e,
+      }));
+    } else {
+      wrappedEmit(wrapEvent(e));
+    }
   };
+
   const wrappedScrollEmit: scrollCallback = (p) =>
     wrappedEmit(
       wrapEvent({
