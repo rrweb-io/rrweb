@@ -208,7 +208,7 @@ function record<T = eventWithTime>(
       // to apply all DOM changes that have been buffering during paused state
       canvasManager.unfreeze();
       for (const buf of mutationBuffers) {
-        buf.unfreeze();
+         buf.unfreeze(e.timestamp);
       }
       frozen = false;
     }
@@ -249,15 +249,20 @@ function record<T = eventWithTime>(
     }
   };
 
-  const wrappedMutationEmit = (m: mutationCallbackParam) => {
+  const wrappedMutationEmit = (
+    m: mutationCallbackParam,
+    timestamp?: number,
+  ) => {
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
       data: {
         source: IncrementalSource.Mutation,
         ...m,
       },
+      ...(timestamp === undefined ? {} : { timestamp }),
     });
   };
+
   const wrappedScrollEmit: scrollCallback = (p) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
