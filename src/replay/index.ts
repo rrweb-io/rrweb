@@ -26,13 +26,14 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
+  Mirror,
   ElementState,
   LogReplayConfig,
   logData,
   ReplayLogger,
 } from '../types';
 import {
-  mirror,
+  createMirror,
   polyfill,
   TreeIndex,
   queueToResolveTrees,
@@ -120,6 +121,7 @@ export class Replayer {
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
+  private mirror: Mirror = createMirror();
   /** The first time the player is playing. */
   private firstPlayedEvent: eventWithTime | null = null;
 
@@ -178,10 +180,27 @@ export class Replayer {
       for (const d of inputMap.values()) {
         this.applyInput(d);
       }
+
+      for (const [frag, parent] of this.fragmentParentMap.entries()) {
+        this.mirror.map[parent.__sn.id] = parent;
+        /**
+         * If we have already set value attribute on textarea,
+         * then we could not apply text content as default value any more.
+         */
+        if (
+          parent.__sn.type === NodeType.Element &&
+          parent.__sn.tagName === 'textarea' &&
+          frag.textContent
+        ) {
+          ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
+        }
+        parent.appendChild(frag);
+      }
+      this.fragmentParentMap.clear();
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstPlayedEvent = null;
-      mirror.reset();
+      this.mirror.reset();
     });
 
     const timer = new Timer([], config?.speed || defaultConfig.speed);
@@ -557,7 +576,7 @@ export class Replayer {
     }
     this.legacy_missingNodeRetryMap = {};
     const collected: AppendedIframe[] = [];
-    mirror.map = rebuild(event.data.node, {
+    this.mirror.map = rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
@@ -629,7 +648,7 @@ export class Replayer {
     }
     buildNodeWithSN(mutation.node, {
       doc: iframeEl.contentDocument!,
-      map: mirror.map,
+      map: this.mirror.map,
       hackCss: true,
       skipChild: false,
       afterAppend: (builtNode) => {
@@ -810,7 +829,7 @@ export class Replayer {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
-        const target = mirror.getNode(d.id);
+        const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
@@ -893,7 +912,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MediaInteraction: {
-        const target = mirror.getNode(d.id);
+        const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
@@ -921,7 +940,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.StyleSheetRule: {
-        const target = mirror.getNode(d.id);
+        const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
@@ -993,7 +1012,7 @@ export class Replayer {
         if (!this.config.UNSAFE_replayCanvas) {
           return;
         }
-        const target = mirror.getNode(d.id);
+        const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
@@ -1061,11 +1080,11 @@ export class Replayer {
 
   private applyMutation(d: mutationData, useVirtualParent: boolean) {
     d.removes.forEach((mutation) => {
-      const target = mirror.getNode(mutation.id);
+      const target = this.mirror.getNode(mutation.id);
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
-      let parent: INode | null | ShadowRoot = mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = this.mirror.getNode(mutation.parentId);
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
       }
@@ -1073,7 +1092,7 @@ export class Replayer {
         parent = parent.shadowRoot;
       }
       // target may be removed with its parents before
-      mirror.removeNodeFromMap(target);
+      this.mirror.removeNodeFromMap(target);
       if (parent) {
         const realParent =
           '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
@@ -1100,10 +1119,10 @@ export class Replayer {
     const queue: addedNodeMutation[] = [];
 
     // next not present at this moment
-    function nextNotInDOM(mutation: addedNodeMutation) {
+    const nextNotInDOM = (mutation: addedNodeMutation) => {
       let next: Node | null = null;
       if (mutation.nextId) {
-        next = mirror.getNode(mutation.nextId) as Node;
+        next = this.mirror.getNode(mutation.nextId) as Node;
       }
       // next not present at this moment
       if (
@@ -1115,13 +1134,13 @@ export class Replayer {
         return true;
       }
       return false;
-    }
+    };
 
     const appendNode = (mutation: addedNodeMutation) => {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent: INode | null | ShadowRoot = mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = this.mirror.getNode(mutation.parentId);
       if (!parent) {
         if (mutation.node.type === NodeType.Document) {
           // is newly added document, maybe the document node of an iframe
@@ -1153,7 +1172,7 @@ export class Replayer {
         !hasIframeChild
       ) {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
-        mirror.map[mutation.parentId] = virtualParent;
+        this.mirror.map[mutation.parentId] = virtualParent;
         this.fragmentParentMap.set(virtualParent, parent);
 
         // store the state, like scroll position, of child nodes before they are unmounted from dom
@@ -1172,21 +1191,21 @@ export class Replayer {
       let previous: Node | null = null;
       let next: Node | null = null;
       if (mutation.previousId) {
-        previous = mirror.getNode(mutation.previousId) as Node;
+        previous = this.mirror.getNode(mutation.previousId) as Node;
       }
       if (mutation.nextId) {
-        next = mirror.getNode(mutation.nextId) as Node;
+        next = this.mirror.getNode(mutation.nextId) as Node;
       }
       if (nextNotInDOM(mutation)) {
         return queue.push(mutation);
       }
 
-      if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
+      if (mutation.node.rootId && !this.mirror.getNode(mutation.node.rootId)) {
         return;
       }
 
       const targetDoc = mutation.node.rootId
-        ? mirror.getNode(mutation.node.rootId)
+        ? this.mirror.getNode(mutation.node.rootId)
         : this.iframe.contentDocument;
       if (isIframeINode(parent)) {
         this.attachDocumentToIframe(mutation, parent);
@@ -1194,7 +1213,7 @@ export class Replayer {
       }
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document,
-        map: mirror.map,
+        map: this.mirror.map,
         skipChild: true,
         hackCss: true,
       }) as INode;
@@ -1272,7 +1291,7 @@ export class Replayer {
         break;
       }
       for (const tree of resolveTrees) {
-        let parent = mirror.getNode(tree.value.parentId);
+        let parent = this.mirror.getNode(tree.value.parentId);
         if (!parent) {
           this.debug(
             'Drop resolve tree since there is no parent for the root node.',
@@ -1291,7 +1310,7 @@ export class Replayer {
     }
 
     d.texts.forEach((mutation) => {
-      let target = mirror.getNode(mutation.id);
+      let target = this.mirror.getNode(mutation.id);
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
@@ -1304,7 +1323,7 @@ export class Replayer {
       target.textContent = mutation.value;
     });
     d.attributes.forEach((mutation) => {
-      let target = mirror.getNode(mutation.id);
+      let target = this.mirror.getNode(mutation.id);
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
@@ -1334,7 +1353,7 @@ export class Replayer {
   }
 
   private applyScroll(d: scrollData) {
-    const target = mirror.getNode(d.id);
+    const target = this.mirror.getNode(d.id);
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
     }
@@ -1358,7 +1377,7 @@ export class Replayer {
   }
 
   private applyInput(d: inputData) {
-    const target = mirror.getNode(d.id);
+    const target = this.mirror.getNode(d.id);
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
     }
@@ -1453,7 +1472,7 @@ export class Replayer {
   }
 
   private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
-    const target = mirror.getNode(id);
+    const target = this.mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(d, id);
     }
@@ -1546,7 +1565,7 @@ export class Replayer {
    * @param parent real parent element
    */
   private restoreRealParent(frag: INode, parent: INode) {
-    mirror.map[parent.__sn.id] = parent;
+    this.mirror.map[parent.__sn.id] = parent;
     /**
      * If we have already set value attribute on textarea,
      * then we could not apply text content as default value any more.
