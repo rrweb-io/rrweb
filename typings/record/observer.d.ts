@@ -1,5 +1,9 @@
-import { observerParam, listenerHandler, hooksParam } from '../types';
+import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import { mutationCallBack, observerParam, listenerHandler, blockClass, maskTextClass, hooksParam, MaskTextFn } from '../types';
 import MutationBuffer from './mutation';
-export declare const mutationBuffer: MutationBuffer;
+import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
+export declare const mutationBuffers: MutationBuffer[];
+export declare function initMutationObserver(cb: mutationCallBack, doc: Document, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, recordCanvas: boolean, slimDOMOptions: SlimDOMOptions, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, rootEl: Node): MutationObserver;
 export declare const INPUT_TAGS: string[];
 export declare function initObservers(o: observerParam, hooks?: hooksParam): listenerHandler;

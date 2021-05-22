@@ -1,5 +1,5 @@
-import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, eventWithTime, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData } from './types';
-import { INode } from 'rrweb-snapshot';
+import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, eventWithTime, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension } from './types';
+import { INode, serializedNodeWithId } from 'rrweb-snapshot';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | Window): listenerHandler;
 export declare const mirror: Mirror;
 export declare function throttle<T>(func: (arg: T) => void, wait: number, options?: throttleOptions): (arg: T) => void;
@@ -10,6 +10,7 @@ export declare function patch(source: {
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
 export declare function isBlocked(node: Node | null, blockClass: blockClass): boolean;
+export declare function isIgnored(n: Node | INode): boolean;
 export declare function isAncestorRemoved(target: INode): boolean;
 export declare function isTouchEvent(event: MouseEvent | TouchEvent): event is TouchEvent;
 export declare function polyfill(win?: Window & typeof globalThis): void;
@@ -52,4 +53,16 @@ declare type ResolveTree = {
 };
 export declare function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[];
 export declare function iterateResolveTree(tree: ResolveTree, cb: (mutation: addedNodeMutation) => unknown): void;
+declare type HTMLIFrameINode = HTMLIFrameElement & {
+    __sn: serializedNodeWithId;
+};
+export declare type AppendedIframe = {
+    mutationInQueue: addedNodeMutation;
+    builtNode: HTMLIFrameINode;
+};
+export declare function isIframeINode(node: INode | ShadowRoot): node is HTMLIFrameINode;
+export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
+export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
+    shadowRoot: ShadowRoot;
+};
 export {};

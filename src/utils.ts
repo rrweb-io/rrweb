@@ -14,8 +14,15 @@ import {
   mutationData,
   scrollData,
   inputData,
+  DocumentDimension,
 } from './types';
-import { INode } from 'rrweb-snapshot';
+import {
+  INode,
+  IGNORED_NODE,
+  serializedNodeWithId,
+  NodeType,
+  isShadowRoot,
+} from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -52,6 +59,9 @@ export function createMirror (): Mirror {
     },
     has(id) {
       return this.map.hasOwnProperty(id);
+    },
+    reset() {
+      this.map = {};
     },
   };
 }
@@ -201,7 +211,19 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   return isBlocked(node.parentNode, blockClass);
 }
 
+export function isIgnored(n: Node | INode): boolean {
+  if ('__sn' in n) {
+    return (n as INode).__sn.id === IGNORED_NODE;
+  }
+  // The main part of the slimDOM check happens in
+  // rrweb-snapshot::serializeNodeWithId
+  return false;
+}
+
 export function isAncestorRemoved(target: INode): boolean {
+  if (isShadowRoot(target)) {
+    return false;
+  }
   const id = mirror.getId(target);
   if (!mirror.has(id)) {
     return true;
@@ -234,6 +256,24 @@ export function polyfill(win = window) {
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
     win.DOMTokenList.prototype.forEach = (Array.prototype
       .forEach as unknown) as DOMTokenList['forEach'];
+  }
+
+  // https://github.com/Financial-Times/polyfill-service/pull/183
+  if (!Node.prototype.contains) {
+    Node.prototype.contains = function contains(node) {
+      if (!(0 in arguments)) {
+        throw new TypeError('1 argument is required');
+      }
+
+      do {
+        if (this === node) {
+          return true;
+        }
+        // tslint:disable-next-line: no-conditional-assignment
+      } while ((node = node && node.parentNode));
+
+      return false;
+    };
   }
 }
 
@@ -521,4 +561,60 @@ export function iterateResolveTree(
   for (let i = tree.children.length - 1; i >= 0; i--) {
     iterateResolveTree(tree.children[i], cb);
   }
+}
+
+type HTMLIFrameINode = HTMLIFrameElement & {
+  __sn: serializedNodeWithId;
+};
+export type AppendedIframe = {
+  mutationInQueue: addedNodeMutation;
+  builtNode: HTMLIFrameINode;
+};
+
+export function isIframeINode(
+  node: INode | ShadowRoot,
+): node is HTMLIFrameINode {
+  if ('__sn' in node) {
+    return (
+      node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe'
+    );
+  }
+  // node can be document fragment when using the virtual parent feature
+  return false;
+}
+
+export function getBaseDimension(
+  node: Node,
+  rootIframe: Node,
+): DocumentDimension {
+  const frameElement = node.ownerDocument?.defaultView?.frameElement;
+  if (!frameElement || frameElement === rootIframe) {
+    return {
+      x: 0,
+      y: 0,
+      relativeScale: 1,
+      absoluteScale: 1,
+    };
+  }
+
+  const frameDimension = frameElement.getBoundingClientRect();
+  const frameBaseDimension = getBaseDimension(frameElement, rootIframe);
+  // the iframe element may have a scale transform
+  const relativeScale = frameDimension.height / frameElement.clientHeight;
+  return {
+    x:
+      frameDimension.x * frameBaseDimension.relativeScale +
+      frameBaseDimension.x,
+    y:
+      frameDimension.y * frameBaseDimension.relativeScale +
+      frameBaseDimension.y,
+    relativeScale,
+    absoluteScale: frameBaseDimension.absoluteScale * relativeScale,
+  };
+}
+
+export function hasShadowRoot<T extends Node>(
+  n: T,
+): n is T & { shadowRoot: ShadowRoot } {
+  return Boolean(((n as unknown) as Element)?.shadowRoot);
 }

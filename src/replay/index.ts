@@ -11,7 +11,7 @@ import {
   MouseInteractions,
   playerConfig,
   playerMetaData,
-  viewportResizeDimention,
+  viewportResizeDimension,
   missingNodeMap,
   addedNodeMutation,
   missingNode,
@@ -27,6 +27,10 @@ import {
   inputData,
   canvasMutationData,
   Mirror,
+  ElementState,
+  LogReplayConfig,
+  logData,
+  ReplayLogger,
 } from '../types';
 import {
   createMirror,
@@ -34,6 +38,10 @@ import {
   TreeIndex,
   queueToResolveTrees,
   iterateResolveTree,
+  AppendedIframe,
+  isIframeINode,
+  getBaseDimension,
+  hasShadowRoot,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -46,6 +54,11 @@ const SKIP_TIME_INTERVAL = 5 * 1000;
 const mitt = (mittProxy as any).default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
+const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
+
+type PatchedConsoleLog = {
+  [ORIGINAL_ATTRIBUTE_NAME]: typeof console.log;
+};
 
 const defaultMouseTailConfig = {
   duration: 500,
@@ -53,6 +66,31 @@ const defaultMouseTailConfig = {
   lineWidth: 3,
   strokeStyle: 'red',
 } as const;
+
+const defaultLogConfig: LogReplayConfig = {
+  level: [
+    'assert',
+    'clear',
+    'count',
+    'countReset',
+    'debug',
+    'dir',
+    'dirxml',
+    'error',
+    'group',
+    'groupCollapsed',
+    'groupEnd',
+    'info',
+    'log',
+    'table',
+    'time',
+    'timeEnd',
+    'timeLog',
+    'trace',
+    'warn',
+  ],
+  replayLogger: undefined,
+};
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -79,10 +117,15 @@ export class Replayer {
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
+  private elementStateMap!: Map<INode, ElementState>;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
   private mirror: Mirror = createMirror();
+  /** The first time the player is playing. */
+  private firstPlayedEvent: eventWithTime | null = null;
+
+  private newDocumentQueue: addedNodeMutation[] = [];
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -93,6 +136,7 @@ export class Replayer {
     }
     const defaultConfig: playerConfig = {
       speed: 1,
+      maxSpeed: 360,
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
@@ -103,9 +147,14 @@ export class Replayer {
       insertStyleRules: [],
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
+      pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
+      logConfig: defaultLogConfig,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    if (!this.config.logConfig.replayLogger) {
+      this.config.logConfig.replayLogger = this.getConsoleLogger();
+    }
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -115,8 +164,15 @@ export class Replayer {
 
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
+    this.elementStateMap = new Map<INode, ElementState>();
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
+
+      this.fragmentParentMap.forEach((parent, frag) =>
+        this.restoreRealParent(frag, parent),
+      );
+      this.fragmentParentMap.clear();
+      this.elementStateMap.clear();
 
       for (const d of scrollMap.values()) {
         this.applyScroll(d);
@@ -142,16 +198,22 @@ export class Replayer {
       }
       this.fragmentParentMap.clear();
     });
+    this.emitter.on(ReplayerEvents.PlayBack, () => {
+      this.firstPlayedEvent = null;
+      this.mirror.reset();
+    });
 
     const timer = new Timer([], config?.speed || defaultConfig.speed);
     this.service = createPlayerService(
       {
-        events: events.map((e) => {
-          if (config && config.unpackFn) {
-            return config.unpackFn(e as string);
-          }
-          return e as eventWithTime;
-        }),
+        events: events
+          .map((e) => {
+            if (config && config.unpackFn) {
+              return config.unpackFn(e as string);
+            }
+            return e as eventWithTime;
+          })
+          .sort((a1, a2) => a1.timestamp - a2.timestamp),
         timer,
         timeOffset: 0,
         baselineTime: 0,
@@ -197,14 +259,25 @@ export class Replayer {
       }, 0);
     }
     if (firstFullsnapshot) {
-      this.rebuildFullSnapshot(
-        firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
-      );
+      setTimeout(() => {
+        // when something has been played, there is no need to rebuild poster
+        if (this.firstPlayedEvent) {
+          return;
+        }
+        this.firstPlayedEvent = firstFullsnapshot;
+        this.rebuildFullSnapshot(
+          firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
+        );
+        this.iframe.contentWindow!.scrollTo(
+          (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
+        );
+      }, 1);
     }
   }
 
   public on(event: string, handler: Handler) {
     this.emitter.on(event, handler);
+    return this;
   }
 
   public setConfig(config: Partial<playerConfig>) {
@@ -222,6 +295,22 @@ export class Replayer {
           speed: config.speed!,
         },
       });
+    }
+    if (typeof config.mouseTail !== 'undefined') {
+      if (config.mouseTail === false) {
+        if (this.mouseTail) {
+          this.mouseTail.style.display = 'none';
+        }
+      } else {
+        if (!this.mouseTail) {
+          this.mouseTail = document.createElement('canvas');
+          this.mouseTail.width = Number.parseFloat(this.iframe.width);
+          this.mouseTail.height = Number.parseFloat(this.iframe.height);
+          this.mouseTail.classList.add('replayer-mouse-tail');
+          this.wrapper.insertBefore(this.mouseTail, this.iframe);
+        }
+        this.mouseTail.style.display = 'inherit';
+      }
     }
   }
 
@@ -262,6 +351,9 @@ export class Replayer {
       this.service.send({ type: 'PAUSE' });
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      .classList.remove('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Start);
   }
 
@@ -273,6 +365,9 @@ export class Replayer {
       this.play(timeOffset);
       this.service.send({ type: 'PAUSE' });
     }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      .classList.add('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -319,7 +414,7 @@ export class Replayer {
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
       this.mouseTail.classList.add('replayer-mouse-tail');
-      this.mouseTail.style.display = 'none';
+      this.mouseTail.style.display = 'inherit';
       this.wrapper.appendChild(this.mouseTail);
     }
 
@@ -343,12 +438,12 @@ export class Replayer {
     }
   }
 
-  private handleResize(dimension: viewportResizeDimention) {
+  private handleResize(dimension: viewportResizeDimension) {
+    this.iframe.style.display = 'inherit';
     for (const el of [this.mouseTail, this.iframe]) {
       if (!el) {
         continue;
       }
-      el.style.display = 'inherit';
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
     }
@@ -379,6 +474,10 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
+          // Don't build a full snapshot during the first play through since we've already built it when the player was mounted.
+          if (this.firstPlayedEvent && this.firstPlayedEvent === event) {
+            return;
+          }
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
         };
@@ -414,7 +513,10 @@ export class Replayer {
               const skipTime =
                 this.nextUserInteractionEvent.delay! - event.delay!;
               const payload = {
-                speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),
+                speed: Math.min(
+                  Math.round(skipTime / SKIP_TIME_INTERVAL),
+                  this.config.maxSpeed,
+                ),
               };
               this.speedService.send({ type: 'FAST_FORWARD', payload });
               this.emitter.emit(ReplayerEvents.SkipStart, payload);
@@ -429,6 +531,8 @@ export class Replayer {
         castFn();
       }
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
+
+      // events are kept sorted by timestamp, check if this is the last event
       if (
         event ===
         this.service.state.context.events[
@@ -448,7 +552,7 @@ export class Replayer {
           // defer finish event if the last event is a mouse move
           setTimeout(() => {
             finish();
-          }, Math.max(0, -event.data.positions[0].timeOffset));
+          }, Math.max(0, -event.data.positions[0].timeOffset + 50)); // Add 50 to make sure the timer would check the last mousemove event. Otherwise, the timer may be stopped by the service before checking the last event.
         } else {
           finish();
         }
@@ -471,15 +575,29 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    this.mirror.map = rebuild(event.data.node, this.iframe.contentDocument)[1];
-    const styleEl = document.createElement('style');
+    const collected: AppendedIframe[] = [];
+    this.mirror.map = rebuild(event.data.node, {
+      doc: this.iframe.contentDocument,
+      afterAppend: (builtNode) => {
+        this.collectIframeAndAttachDocument(collected, builtNode);
+      },
+    })[1];
+    for (const { mutationInQueue, builtNode } of collected) {
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
+      this.newDocumentQueue = this.newDocumentQueue.filter(
+        (m) => m !== mutationInQueue,
+      );
+      if (builtNode.contentDocument) {
+        const { documentElement, head } = builtNode.contentDocument;
+        this.insertStyleRules(documentElement, head);
+      }
+    }
     const { documentElement, head } = this.iframe.contentDocument;
-    documentElement!.insertBefore(styleEl, head);
-    const injectStylesRules = getInjectStyleRules(
-      this.config.blockClass,
-    ).concat(this.config.insertStyleRules);
-    for (let idx = 0; idx < injectStylesRules.length; idx++) {
-      (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
+    this.insertStyleRules(documentElement, head);
+    if (!this.service.state.matches('playing')) {
+      this.iframe.contentDocument
+        .getElementsByTagName('html')[0]
+        .classList.add('rrweb-paused');
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
     if (!isSync) {
@@ -487,6 +605,79 @@ export class Replayer {
     }
     if (this.config.UNSAFE_replayCanvas) {
       this.preloadAllImages();
+    }
+  }
+
+  private insertStyleRules(
+    documentElement: HTMLElement,
+    head: HTMLHeadElement,
+  ) {
+    const styleEl = document.createElement('style');
+    documentElement!.insertBefore(styleEl, head);
+    const injectStylesRules = getInjectStyleRules(
+      this.config.blockClass,
+    ).concat(this.config.insertStyleRules);
+    if (this.config.pauseAnimation) {
+      injectStylesRules.push(
+        'html.rrweb-paused * { animation-play-state: paused !important; }',
+      );
+    }
+    for (let idx = 0; idx < injectStylesRules.length; idx++) {
+      (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
+    }
+  }
+
+  private attachDocumentToIframe(
+    mutation: addedNodeMutation,
+    iframeEl: HTMLIFrameElement,
+  ) {
+    const collected: AppendedIframe[] = [];
+    // If iframeEl is detached from dom, iframeEl.contentDocument is null.
+    if (!iframeEl.contentDocument) {
+      let parent = iframeEl.parentNode;
+      while (parent) {
+        // The parent of iframeEl is virtual parent and we need to mount it on the dom.
+        if (this.fragmentParentMap.has((parent as unknown) as INode)) {
+          const frag = (parent as unknown) as INode;
+          const realParent = this.fragmentParentMap.get(frag)!;
+          this.restoreRealParent(frag, realParent);
+          break;
+        }
+        parent = parent.parentNode;
+      }
+    }
+    buildNodeWithSN(mutation.node, {
+      doc: iframeEl.contentDocument!,
+      map: this.mirror.map,
+      hackCss: true,
+      skipChild: false,
+      afterAppend: (builtNode) => {
+        this.collectIframeAndAttachDocument(collected, builtNode);
+      },
+    });
+    for (const { mutationInQueue, builtNode } of collected) {
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
+      this.newDocumentQueue = this.newDocumentQueue.filter(
+        (m) => m !== mutationInQueue,
+      );
+      if (builtNode.contentDocument) {
+        const { documentElement, head } = builtNode.contentDocument;
+        this.insertStyleRules(documentElement, head);
+      }
+    }
+  }
+
+  private collectIframeAndAttachDocument(
+    collected: AppendedIframe[],
+    builtNode: INode,
+  ) {
+    if (isIframeINode(builtNode)) {
+      const mutationInQueue = this.newDocumentQueue.find(
+        (m) => m.parentId === builtNode.__sn.id,
+      );
+      if (mutationInQueue) {
+        collected.push({ mutationInQueue, builtNode });
+      }
     }
   }
 
@@ -773,20 +964,27 @@ export class Replayer {
           domParent!.appendChild(target);
         }
 
-        const styleSheet = <CSSStyleSheet> styleEl.sheet;
+        const styleSheet: CSSStyleSheet = styleEl.sheet!;
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
-            const _index =
-              index === undefined
-                ? undefined
-                : Math.min(index, styleSheet.rules.length);
             try {
-              styleSheet.insertRule(rule, _index);
+              const _index =
+                index === undefined
+                  ? undefined
+                  : Math.min(index, styleSheet.rules.length);
+              try {
+                styleSheet.insertRule(rule, _index);
+              } catch (e) {
+                /**
+                 * sometimes we may capture rules with browser prefix
+                 * insert rule with prefixs in other browsers may cause Error
+                 */
+              }
             } catch (e) {
               /**
-               * sometimes we may capture rules with browser prefix
-               * insert rule with prefixs in other browsers may cause Error
+               * accessing styleSheet rules may cause SecurityError
+               * for specific access control settings
                */
             }
           });
@@ -863,6 +1061,19 @@ export class Replayer {
         }
         break;
       }
+      case IncrementalSource.Log: {
+        try {
+          const logData = e.data as logData;
+          const replayLogger = this.config.logConfig.replayLogger!;
+          if (typeof replayLogger[logData.level] === 'function') {
+            replayLogger[logData.level]!(logData);
+          }
+        } catch (error) {
+          if (this.config.showWarning) {
+            console.warn(error);
+          }
+        }
+      }
       default:
     }
   }
@@ -873,23 +1084,35 @@ export class Replayer {
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
-      const parent = this.mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = this.mirror.getNode(mutation.parentId);
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
+      }
+      if (mutation.isShadow && hasShadowRoot(parent)) {
+        parent = parent.shadowRoot;
       }
       // target may be removed with its parents before
       this.mirror.removeNodeFromMap(target);
       if (parent) {
-        const realParent = this.fragmentParentMap.get(parent);
+        const realParent =
+          '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
         if (realParent && realParent.contains(target)) {
           realParent.removeChild(target);
+        } else if (this.fragmentParentMap.has(target)) {
+          /**
+           * the target itself is a fragment document and it's not in the dom
+           * so we should remove the real target from its parent
+           */
+          const realTarget = this.fragmentParentMap.get(target)!;
+          parent.removeChild(realTarget);
+          this.fragmentParentMap.delete(target);
         } else {
           parent.removeChild(target);
         }
       }
     });
 
-    // tslint:disable-next-line:variable-name
+    // tslint:disable-next-line: variable-name
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
@@ -917,8 +1140,12 @@ export class Replayer {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent = this.mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = this.mirror.getNode(mutation.parentId);
       if (!parent) {
+        if (mutation.node.type === NodeType.Document) {
+          // is newly added document, maybe the document node of an iframe
+          return this.newDocumentQueue.push(mutation);
+        }
         return queue.push(mutation);
       }
 
@@ -931,14 +1158,34 @@ export class Replayer {
         parentInDocument = this.iframe.contentDocument.body.contains(parent);
       }
 
-      if (useVirtualParent && parentInDocument) {
+      const hasIframeChild =
+        ((parent as unknown) as HTMLElement).getElementsByTagName?.('iframe')
+          .length > 0;
+      /**
+       * Why !isIframeINode(parent)? If parent element is an iframe, iframe document can't be appended to virtual parent.
+       * Why !hasIframeChild? If we move iframe elements from dom to fragment document, we will lose the contentDocument of iframe. So we need to disable the virtual dom optimization if a parent node contains iframe elements.
+       */
+      if (
+        useVirtualParent &&
+        parentInDocument &&
+        !isIframeINode(parent) &&
+        !hasIframeChild
+      ) {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
         this.mirror.map[mutation.parentId] = virtualParent;
         this.fragmentParentMap.set(virtualParent, parent);
+
+        // store the state, like scroll position, of child nodes before they are unmounted from dom
+        this.storeState(parent);
+
         while (parent.firstChild) {
           virtualParent.appendChild(parent.firstChild);
         }
         parent = virtualParent;
+      }
+
+      if (mutation.node.isShadow && hasShadowRoot(parent)) {
+        parent = parent.shadowRoot;
       }
 
       let previous: Node | null = null;
@@ -953,12 +1200,23 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      const target = buildNodeWithSN(
-        mutation.node,
-        this.iframe.contentDocument,
-        this.mirror.map,
-        true,
-      ) as Node;
+      if (mutation.node.rootId && !this.mirror.getNode(mutation.node.rootId)) {
+        return;
+      }
+
+      const targetDoc = mutation.node.rootId
+        ? this.mirror.getNode(mutation.node.rootId)
+        : this.iframe.contentDocument;
+      if (isIframeINode(parent)) {
+        this.attachDocumentToIframe(mutation, parent);
+        return;
+      }
+      const target = buildNodeWithSN(mutation.node, {
+        doc: targetDoc as Document,
+        map: this.mirror.map,
+        skipChild: true,
+        hackCss: true,
+      }) as INode;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -978,7 +1236,32 @@ export class Replayer {
           ? parent.insertBefore(target, next)
           : parent.insertBefore(target, null);
       } else {
+        /**
+         * Sometimes the document changes and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded. After the change of document, we may get another mutation which adds a new html element, while the old html element still exists in the dom, and we need to remove the old html element first to avoid collision.
+         */
+        if (parent === targetDoc) {
+          while (targetDoc.firstChild) {
+            targetDoc.removeChild(targetDoc.firstChild);
+          }
+        }
+
         parent.appendChild(target);
+      }
+
+      if (isIframeINode(target)) {
+        const mutationInQueue = this.newDocumentQueue.find(
+          (m) => m.parentId === target.__sn.id,
+        );
+        if (mutationInQueue) {
+          this.attachDocumentToIframe(mutationInQueue, target);
+          this.newDocumentQueue = this.newDocumentQueue.filter(
+            (m) => m !== mutationInQueue,
+          );
+        }
+        if (target.contentDocument) {
+          const { documentElement, head } = target.contentDocument;
+          this.insertStyleRules(documentElement, head);
+        }
       }
 
       if (mutation.previousId || mutation.nextId) {
@@ -1106,6 +1389,59 @@ export class Replayer {
     }
   }
 
+  /**
+   * format the trace data to a string
+   * @param data the log data
+   */
+  private formatMessage(data: logData): string {
+    if (data.trace.length === 0) {
+      return '';
+    }
+    const stackPrefix = '\n\tat ';
+    let result = stackPrefix;
+    result += data.trace.join(stackPrefix);
+    return result;
+  }
+
+  /**
+   * generate a console log replayer which implement the interface ReplayLogger
+   */
+  private getConsoleLogger(): ReplayLogger {
+    const replayLogger: ReplayLogger = {};
+    for (const level of this.config.logConfig.level!) {
+      if (level === 'trace') {
+        replayLogger[level] = (data: logData) => {
+          const logger = ((console.log as unknown) as PatchedConsoleLog)[
+            ORIGINAL_ATTRIBUTE_NAME
+          ]
+            ? ((console.log as unknown) as PatchedConsoleLog)[
+                ORIGINAL_ATTRIBUTE_NAME
+              ]
+            : console.log;
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+      } else {
+        replayLogger[level] = (data: logData) => {
+          const logger = ((console[level] as unknown) as PatchedConsoleLog)[
+            ORIGINAL_ATTRIBUTE_NAME
+          ]
+            ? ((console[level] as unknown) as PatchedConsoleLog)[
+                ORIGINAL_ATTRIBUTE_NAME
+              ]
+            : console[level];
+          logger(
+            ...data.payload.map((s) => JSON.parse(s)),
+            this.formatMessage(data),
+          );
+        };
+      }
+    }
+    return replayLogger;
+  }
+
   private legacy_resolveMissingNode(
     map: missingNodeMap,
     parent: Node,
@@ -1136,14 +1472,18 @@ export class Replayer {
   }
 
   private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
-    this.mouse.style.left = `${x}px`;
-    this.mouse.style.top = `${y}px`;
-    this.drawMouseTail({ x, y });
-
     const target = this.mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(d, id);
     }
+
+    const base = getBaseDimension(target, this.iframe);
+    const _x = x * base.absoluteScale + base.x;
+    const _y = y * base.absoluteScale + base.y;
+
+    this.mouse.style.left = `${_x}px`;
+    this.mouse.style.top = `${_y}px`;
+    this.drawMouseTail({ x: _x, y: _y });
     this.hoverElements((target as Node) as Element);
   }
 
@@ -1180,7 +1520,7 @@ export class Replayer {
     setTimeout(() => {
       this.tailPositions = this.tailPositions.filter((p) => p !== position);
       draw();
-    }, duration);
+    }, duration / this.speedService.state.context.timer.speed);
   }
 
   private hoverElements(el: Element) {
@@ -1217,6 +1557,75 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.SkipEnd, {
       speed: this.speedService.state.context.normalSpeed,
     });
+  }
+
+  /**
+   * Replace the virtual parent with the real parent.
+   * @param frag fragment document, the virtual parent
+   * @param parent real parent element
+   */
+  private restoreRealParent(frag: INode, parent: INode) {
+    this.mirror.map[parent.__sn.id] = parent;
+    /**
+     * If we have already set value attribute on textarea,
+     * then we could not apply text content as default value any more.
+     */
+    if (
+      parent.__sn.type === NodeType.Element &&
+      parent.__sn.tagName === 'textarea' &&
+      frag.textContent
+    ) {
+      ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
+    }
+    parent.appendChild(frag);
+    // restore state of elements after they are mounted
+    this.restoreState(parent);
+  }
+
+  /**
+   * store state of elements before unmounted from dom recursively
+   * the state should be restored in the handler of event ReplayerEvents.Flush
+   * e.g. browser would lose scroll position after the process that we add children of parent node to Fragment Document as virtual dom
+   */
+  private storeState(parent: INode) {
+    if (parent) {
+      if (parent.nodeType === parent.ELEMENT_NODE) {
+        const parentElement = (parent as unknown) as HTMLElement;
+        if (parentElement.scrollLeft || parentElement.scrollTop) {
+          // store scroll position state
+          this.elementStateMap.set(parent, {
+            scroll: [parentElement.scrollLeft, parentElement.scrollTop],
+          });
+        }
+        const children = parentElement.children;
+        for (const child of Array.from(children)) {
+          this.storeState((child as unknown) as INode);
+        }
+      }
+    }
+  }
+
+  /**
+   * restore the state of elements recursively, which was stored before elements were unmounted from dom in virtual parent mode
+   * this function corresponds to function storeState
+   */
+  private restoreState(parent: INode) {
+    if (parent.nodeType === parent.ELEMENT_NODE) {
+      const parentElement = (parent as unknown) as HTMLElement;
+      if (this.elementStateMap.has(parent)) {
+        const storedState = this.elementStateMap.get(parent)!;
+        // restore scroll position
+        if (storedState.scroll) {
+          parentElement.scrollLeft = storedState.scroll[0];
+          parentElement.scrollTop = storedState.scroll[1];
+        }
+        this.elementStateMap.delete(parent);
+      }
+      const children = parentElement.children;
+      for (const child of Array.from(children)) {
+        this.restoreState((child as unknown) as INode);
+      }
+    }
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

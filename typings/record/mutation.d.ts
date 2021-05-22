@@ -1,7 +1,10 @@
-import { MaskInputOptions } from 'rrweb-snapshot';
-import { mutationRecord, blockClass, mutationCallBack } from '../types';
+import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import { mutationRecord, blockClass, maskTextClass, mutationCallBack, MaskTextFn } from '../types';
+import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
 export default class MutationBuffer {
     private frozen;
+    private locked;
     private texts;
     private attributes;
     private removes;
@@ -12,13 +15,23 @@ export default class MutationBuffer {
     private droppedSet;
     private emissionCallback;
     private blockClass;
+    private blockSelector;
+    private maskTextClass;
+    private maskTextSelector;
     private inlineStylesheet;
     private maskInputOptions;
+    private maskTextFn;
     private recordCanvas;
-    init(cb: mutationCallBack, blockClass: blockClass, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, recordCanvas: boolean): void;
+    private slimDOMOptions;
+    private doc;
+    private iframeManager;
+    private shadowDomManager;
+    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, recordCanvas: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, iframeManager: IframeManager, shadowDomManager: ShadowDomManager): void;
     freeze(): void;
     unfreeze(): void;
     isFrozen(): boolean;
+    lock(): void;
+    unlock(): void;
     processMutations: (mutations: mutationRecord[]) => void;
     emit: () => void;
     private processMutation;

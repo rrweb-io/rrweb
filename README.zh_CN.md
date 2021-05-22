@@ -7,6 +7,10 @@
 
 # rrweb
 
+**[🚀 Storyteller, 基于 rrweb 开发的无代码交互式教程编辑器](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
+
+**[rrweb 社区新的征程](http://www.myriptide.com/rrweb-community-cn/)**
+
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)

@@ -33,6 +33,8 @@ interface IWindow extends Window {
 }
 
 describe('record', function (this: ISuite) {
+  this.timeout(10_000);
+
   before(async () => {
     this.browser = await launchPuppeteer();
 
@@ -138,11 +140,12 @@ describe('record', function (this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(500);
-    expect(this.events.length).to.equal(33);
+    await this.page.waitFor(300);
+    expect(this.events.length).to.equal(33); // before first automatic snapshot
+    await this.page.waitFor(200);  // could be 33 or 35 events by now depending on speed of test env
     await this.page.type('input', 'a');
     await this.page.waitFor(10);
-    expect(this.events.length).to.equal(36);
+    expect(this.events.length).to.equal(36);  // additionally includes the 2 checkout events
     expect(
       this.events.filter(
         (event: eventWithTime) => event.type === EventType.Meta,
@@ -179,7 +182,7 @@ describe('record', function (this: ISuite) {
         document.body.appendChild(span);
       }, 10);
     });
-    await this.page.waitFor(50);
+    await this.page.waitFor(100);
     assertSnapshot(this.events, __filename, 'async-checkout');
   });
 
@@ -223,7 +226,7 @@ describe('record', function (this: ISuite) {
         styleSheet.insertRule('body { color: #ccc; }');
       }, 10);
     });
-    await this.page.waitFor(10);
+    await this.page.waitFor(50);
     const styleSheetRuleEvents = this.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&

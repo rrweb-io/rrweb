@@ -3,17 +3,32 @@ import {
   serializeNodeWithId,
   transformAttribute,
   MaskInputOptions,
+  SlimDOMOptions,
+  IGNORED_NODE,
+  isShadowRoot,
+  needMaskingText,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
   blockClass,
+  maskTextClass,
   mutationCallBack,
   textCursor,
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
+  MaskTextFn,
 } from '../types';
-import { mirror, isBlocked, isAncestorRemoved } from '../utils';
+import {
+  mirror,
+  isBlocked,
+  isAncestorRemoved,
+  isIgnored,
+  isIframeINode,
+  hasShadowRoot,
+} from '../utils';
+import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -58,7 +73,11 @@ class DoubleLinkedList {
       if (current) {
         current.previous = node;
       }
-    } else if (n.nextSibling && isNodeInLinkedList(n.nextSibling)) {
+    } else if (
+      n.nextSibling &&
+      isNodeInLinkedList(n.nextSibling) &&
+      n.nextSibling.__ln.previous
+    ) {
       const current = n.nextSibling.__ln.previous;
       node.previous = current;
       node.next = n.nextSibling.__ln;
@@ -110,6 +129,7 @@ function isINode(n: Node | INode): n is INode {
  */
 export default class MutationBuffer {
   private frozen: boolean = false;
+  private locked: boolean = false;
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
@@ -141,22 +161,47 @@ export default class MutationBuffer {
 
   private emissionCallback: mutationCallBack;
   private blockClass: blockClass;
+  private blockSelector: string | null;
+  private maskTextClass: maskTextClass;
+  private maskTextSelector: string | null;
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
+  private maskTextFn: MaskTextFn | undefined;
   private recordCanvas: boolean;
+  private slimDOMOptions: SlimDOMOptions;
+  private doc: Document;
+
+  private iframeManager: IframeManager;
+  private shadowDomManager: ShadowDomManager;
 
   public init(
     cb: mutationCallBack,
     blockClass: blockClass,
+    blockSelector: string | null,
+    maskTextClass: maskTextClass,
+    maskTextSelector: string | null,
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
+    maskTextFn: MaskTextFn | undefined,
     recordCanvas: boolean,
+    slimDOMOptions: SlimDOMOptions,
+    doc: Document,
+    iframeManager: IframeManager,
+    shadowDomManager: ShadowDomManager,
   ) {
     this.blockClass = blockClass;
+    this.blockSelector = blockSelector;
+    this.maskTextClass = maskTextClass;
+    this.maskTextSelector = maskTextSelector;
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
+    this.maskTextFn = maskTextFn;
     this.recordCanvas = recordCanvas;
+    this.slimDOMOptions = slimDOMOptions;
     this.emissionCallback = cb;
+    this.doc = doc;
+    this.iframeManager = iframeManager;
+    this.shadowDomManager = shadowDomManager;
   }
 
   public freeze() {
@@ -165,20 +210,32 @@ export default class MutationBuffer {
 
   public unfreeze() {
     this.frozen = false;
+    this.emit();
   }
 
   public isFrozen() {
     return this.frozen;
   }
 
+  public lock() {
+    this.locked = true;
+  }
+
+  public unlock() {
+    this.locked = false;
+    this.emit();
+  }
+
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation);
-    if (!this.frozen) {
-      this.emit();
-    }
+    this.emit();
   };
 
   public emit = () => {
+    if (this.frozen || this.locked) {
+      return;
+    }
+
     // delay any modification of the mirror until this function
     // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
 
@@ -190,38 +247,64 @@ export default class MutationBuffer {
      */
     const addList = new DoubleLinkedList();
     const getNextId = (n: Node): number | null => {
-      let nextId =
-        n.nextSibling && mirror.getId((n.nextSibling as unknown) as INode);
+      let ns: Node | null = n;
+      let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
+      while (nextId === IGNORED_NODE) {
+        ns = ns && ns.nextSibling;
+        nextId = ns && mirror.getId((ns as unknown) as INode);
+      }
       if (nextId === -1 && isBlocked(n.nextSibling, this.blockClass)) {
         nextId = null;
       }
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (!n.parentNode) {
+      const shadowHost: Element | null = n.getRootNode
+        ? (n.getRootNode() as ShadowRoot)?.host
+        : null;
+      const notInDoc = !this.doc.contains(n) && !this.doc.contains(shadowHost);
+      if (!n.parentNode || notInDoc) {
         return;
       }
-      const parentId = mirror.getId((n.parentNode as Node) as INode);
+      const parentId = isShadowRoot(n.parentNode)
+        ? mirror.getId((shadowHost as unknown) as INode)
+        : mirror.getId((n.parentNode as Node) as INode);
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
-      adds.push({
-        parentId,
-        nextId,
-        node: serializeNodeWithId(
-          n,
-          document,
-          mirror.map,
-          this.blockClass,
-          null,
-          true,
-          this.inlineStylesheet,
-          this.maskInputOptions,
-          undefined,
-          this.recordCanvas,
-        )!,
+      let sn = serializeNodeWithId(n, {
+        doc: this.doc,
+        map: mirror.map,
+        blockClass: this.blockClass,
+        blockSelector: this.blockSelector,
+        maskTextClass: this.maskTextClass,
+        maskTextSelector: this.maskTextSelector,
+        skipChild: true,
+        inlineStylesheet: this.inlineStylesheet,
+        maskInputOptions: this.maskInputOptions,
+        maskTextFn: this.maskTextFn,
+        slimDOMOptions: this.slimDOMOptions,
+        recordCanvas: this.recordCanvas,
+        onSerialize: (currentN) => {
+          if (isIframeINode(currentN)) {
+            this.iframeManager.addIframe(currentN);
+          }
+          if (hasShadowRoot(n)) {
+            this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
+          }
+        },
+        onIframeLoad: (iframe, childSn) => {
+          this.iframeManager.attachIframe(iframe, childSn);
+        },
       });
+      if (sn) {
+        adds.push({
+          parentId,
+          nextId,
+          node: sn,
+        });
+      }
     };
 
     while (this.mapRemoves.length) {
@@ -282,6 +365,9 @@ export default class MutationBuffer {
          * it may be a bug or corner case. We need to escape the
          * dead while loop at once.
          */
+        while (addList.head) {
+          addList.removeNode(addList.head.value);
+        }
         break;
       }
       candidate = node.previous;
@@ -305,7 +391,7 @@ export default class MutationBuffer {
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => mirror.has(attribute.id)),
       removes: this.removes,
-      adds: adds,
+      adds,
     };
     // payload may be empty if the mutations happened in some blocked elements
     if (
@@ -330,12 +416,24 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
+    if (isIgnored(m.target)) {
+      return;
+    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
         if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
           this.texts.push({
-            value,
+            value:
+              needMaskingText(
+                m.target,
+                this.maskTextClass,
+                this.maskTextSelector,
+              ) && value
+                ? this.maskTextFn
+                  ? this.maskTextFn(value)
+                  : value.replace(/[\S]/g, '*')
+                : value,
             node: m.target,
           });
         }
@@ -358,7 +456,8 @@ export default class MutationBuffer {
         }
         // overwrite attribute if the mutations was triggered in same time
         item.attributes[m.attributeName!] = transformAttribute(
-          document,
+          this.doc,
+          (m.target as HTMLElement).tagName,
           m.attributeName!,
           value!,
         );
@@ -368,10 +467,13 @@ export default class MutationBuffer {
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
           const nodeId = mirror.getId(n as INode);
-          const parentId = mirror.getId(m.target as INode);
+          const parentId = isShadowRoot(m.target)
+            ? mirror.getId((m.target.host as unknown) as INode)
+            : mirror.getId(m.target as INode);
           if (
             isBlocked(n, this.blockClass) ||
-            isBlocked(m.target, this.blockClass)
+            isBlocked(m.target, this.blockClass) ||
+            isIgnored(n)
           ) {
             return;
           }
@@ -403,6 +505,7 @@ export default class MutationBuffer {
             this.removes.push({
               parentId,
               id: nodeId,
+              isShadow: isShadowRoot(m.target) ? true : undefined,
             });
           }
           this.mapRemoves.push(n);
@@ -418,7 +521,13 @@ export default class MutationBuffer {
     if (isBlocked(n, this.blockClass)) {
       return;
     }
+    if (target && isBlocked(target, this.blockClass)) {
+      return;
+    }
     if (isINode(n)) {
+      if (isIgnored(n)) {
+        return;
+      }
       this.movedSet.add(n);
       let targetId: number | null = null;
       if (target && isINode(target)) {

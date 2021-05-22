@@ -8,7 +8,7 @@ import { Suite } from 'mocha';
 import {
   launchPuppeteer,
   sampleEvents as events,
-  sampleStyleSheetRemoveEvents as stylesheetRemoveEvents
+  sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 
@@ -127,17 +127,19 @@ describe('replayer', function (this: ISuite) {
     `);
     const currentTime = await this.page.evaluate(`
       replayer.getCurrentTime();
-    `)
+    `);
     const currentState = await this.page.evaluate(`
       replayer['service']['state']['value'];
-    `)
-    expect(actionLength).to.equal(0)
+    `);
+    expect(actionLength).to.equal(0);
     expect(currentTime).to.equal(2500);
     expect(currentState).to.equal('paused');
   });
 
   it('can fast forward past StyleSheetRule changes on virtual elements', async () => {
-    await this.page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
     const actionLength = await this.page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
@@ -145,12 +147,16 @@ describe('replayer', function (this: ISuite) {
       replayer['timer']['actions'].length;
     `);
     expect(actionLength).to.equal(
-      styleSheetRuleEvents.filter((e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500).length,
+      styleSheetRuleEvents.filter(
+        (e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500,
+      ).length,
     );
   });
 
   it('can handle removing style elements', async () => {
-    await this.page.evaluate(`events = ${JSON.stringify(stylesheetRemoveEvents)}`);
+    await this.page.evaluate(
+      `events = ${JSON.stringify(stylesheetRemoveEvents)}`,
+    );
     const actionLength = await this.page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
@@ -158,7 +164,9 @@ describe('replayer', function (this: ISuite) {
       replayer['timer']['actions'].length;
     `);
     expect(actionLength).to.equal(
-      stylesheetRemoveEvents.filter((e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500).length,
+      stylesheetRemoveEvents.filter(
+        (e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500,
+      ).length,
     );
   });
 

@@ -30,16 +30,16 @@ export class Timer {
    * @param actions
    */
   public addActions(actions: actionWithDelay[]) {
-    this.actions.push(...actions);
+    this.actions = this.actions.concat(actions);
   }
 
   public start() {
-    this.actions.sort((a1, a2) => a1.delay - a2.delay);
     this.timeOffset = 0;
     let lastTimestamp = performance.now();
     const { actions } = this;
     const self = this;
-    function check(time: number) {
+    function check() {
+      const time = performance.now();
       self.timeOffset += (time - lastTimestamp) * self.speed;
       lastTimestamp = time;
       while (actions.length) {
