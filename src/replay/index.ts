@@ -180,23 +180,6 @@ export class Replayer {
       for (const d of inputMap.values()) {
         this.applyInput(d);
       }
-
-      for (const [frag, parent] of this.fragmentParentMap.entries()) {
-        this.mirror.map[parent.__sn.id] = parent;
-        /**
-         * If we have already set value attribute on textarea,
-         * then we could not apply text content as default value any more.
-         */
-        if (
-          parent.__sn.type === NodeType.Element &&
-          parent.__sn.tagName === 'textarea' &&
-          frag.textContent
-        ) {
-          ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
-        }
-        parent.appendChild(frag);
-      }
-      this.fragmentParentMap.clear();
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstPlayedEvent = null;
@@ -1084,7 +1067,9 @@ export class Replayer {
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
-      let parent: INode | null | ShadowRoot = this.mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = this.mirror.getNode(
+        mutation.parentId,
+      );
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
       }
@@ -1140,7 +1125,9 @@ export class Replayer {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent: INode | null | ShadowRoot = this.mirror.getNode(mutation.parentId);
+      let parent: INode | null | ShadowRoot = this.mirror.getNode(
+        mutation.parentId,
+      );
       if (!parent) {
         if (mutation.node.type === NodeType.Document) {
           // is newly added document, maybe the document node of an iframe
