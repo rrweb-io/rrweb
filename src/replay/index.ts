@@ -779,7 +779,7 @@ export class Replayer {
           d.adds.forEach((m) => this.treeIndex.add(m));
           d.texts.forEach((m) => this.treeIndex.text(m));
           d.attributes.forEach((m) => this.treeIndex.attribute(m));
-          d.removes.forEach((m) => this.treeIndex.remove(m));
+          d.removes.forEach((m) => this.treeIndex.remove(m, this.mirror));
         }
         this.applyMutation(d, isSync);
         break;

@@ -168,6 +168,7 @@ export declare type observerParam = {
     collectFonts: boolean;
     slimDOMOptions: SlimDOMOptions;
     doc: Document;
+    mirror: Mirror;
     iframeManager: IframeManager;
     shadowDomManager: ShadowDomManager;
 };

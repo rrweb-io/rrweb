@@ -68,8 +68,12 @@ export function createMirror(): Mirror {
 
 // https://github.com/rrweb-io/rrweb/pull/407
 const DEPARTED_MIRROR_ACCESS_WARNING =
-  'Please stop import mirror directly. Instead of that, now you can use replayer.getMirror() to access the mirror instance of a replayer.';
-export let mirror: Mirror = {
+  'Please stop import mirror directly. Instead of that,' +
+  '\r\n' +
+  'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
+  '\r\n' +
+  'or you can use record.mirror to access the mirror instance during recording.';
+export let _mirror: Mirror = {
   map: {},
   getId() {
     console.error(DEPARTED_MIRROR_ACCESS_WARNING);
@@ -90,8 +94,8 @@ export let mirror: Mirror = {
     console.error(DEPARTED_MIRROR_ACCESS_WARNING);
   },
 };
-if (window.Proxy && window.Reflect) {
-  mirror = new Proxy(mirror, {
+if (typeof window !== 'undefined' && window.Proxy && window.Reflect) {
+  _mirror = new Proxy(_mirror, {
     get(target, prop, receiver) {
       if (prop === 'map') {
         console.error(DEPARTED_MIRROR_ACCESS_WARNING);
@@ -253,7 +257,7 @@ export function isIgnored(n: Node | INode): boolean {
   return false;
 }
 
-export function isAncestorRemoved(target: INode): boolean {
+export function isAncestorRemoved(target: INode, mirror: Mirror): boolean {
   if (isShadowRoot(target)) {
     return false;
   }
@@ -271,7 +275,7 @@ export function isAncestorRemoved(target: INode): boolean {
   if (!target.parentNode) {
     return true;
   }
-  return isAncestorRemoved((target.parentNode as unknown) as INode);
+  return isAncestorRemoved((target.parentNode as unknown) as INode, mirror);
 }
 
 export function isTouchEvent(
@@ -382,7 +386,7 @@ export class TreeIndex {
     this.indexes.set(treeNode.id, treeNode);
   }
 
-  public remove(mutation: removedNodeMutation) {
+  public remove(mutation: removedNodeMutation, mirror: Mirror) {
     const parentTreeNode = this.indexes.get(mutation.parentId);
     const treeNode = this.indexes.get(mutation.id);
 

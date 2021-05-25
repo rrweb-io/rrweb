@@ -1,4 +1,10 @@
-import { mutationCallBack, blockClass, maskTextClass, MaskTextFn } from '../types';
+import {
+  mutationCallBack,
+  blockClass,
+  maskTextClass,
+  MaskTextFn,
+  Mirror,
+} from '../types';
 import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
 import { initMutationObserver } from './observer';
@@ -19,13 +25,16 @@ type BypassOptions = {
 export class ShadowDomManager {
   private mutationCb: mutationCallBack;
   private bypassOptions: BypassOptions;
+  private mirror: Mirror;
 
   constructor(options: {
     mutationCb: mutationCallBack;
     bypassOptions: BypassOptions;
+    mirror: Mirror;
   }) {
     this.mutationCb = options.mutationCb;
     this.bypassOptions = options.bypassOptions;
+    this.mirror = this.mirror;
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
@@ -41,6 +50,7 @@ export class ShadowDomManager {
       this.bypassOptions.maskTextFn,
       this.bypassOptions.recordCanvas,
       this.bypassOptions.slimDOMOptions,
+      this.mirror,
       this.bypassOptions.iframeManager,
       this,
       shadowRoot,

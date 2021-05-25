@@ -1,4 +1,4 @@
-import { mutationCallBack, blockClass, maskTextClass, MaskTextFn } from '../types';
+import { mutationCallBack, blockClass, maskTextClass, MaskTextFn, Mirror } from '../types';
 import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
 declare type BypassOptions = {
@@ -16,9 +16,11 @@ declare type BypassOptions = {
 export declare class ShadowDomManager {
     private mutationCb;
     private bypassOptions;
+    private mirror;
     constructor(options: {
         mutationCb: mutationCallBack;
         bypassOptions: BypassOptions;
+        mirror: Mirror;
     });
     addShadowRoot(shadowRoot: ShadowRoot, doc: Document): void;
 }

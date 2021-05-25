@@ -1,7 +1,6 @@
 import { INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
-  mirror,
   throttle,
   on,
   hookSetter,
@@ -42,6 +41,7 @@ import {
   LogRecordOptions,
   Logger,
   LogLevel,
+  Mirror,
 } from '../types';
 import MutationBuffer from './mutation';
 import { stringify } from './stringify';
@@ -72,6 +72,7 @@ export function initMutationObserver(
   maskTextFn: MaskTextFn | undefined,
   recordCanvas: boolean,
   slimDOMOptions: SlimDOMOptions,
+  mirror: Mirror,
   iframeManager: IframeManager,
   shadowDomManager: ShadowDomManager,
   rootEl: Node,
@@ -91,6 +92,7 @@ export function initMutationObserver(
     recordCanvas,
     slimDOMOptions,
     doc,
+    mirror,
     iframeManager,
     shadowDomManager,
   );
@@ -137,6 +139,7 @@ function initMoveObserver(
   cb: mousemoveCallBack,
   sampling: SamplingStrategy,
   doc: Document,
+  mirror: Mirror,
 ): listenerHandler {
   if (sampling.mousemove === false) {
     return () => {};
@@ -212,6 +215,7 @@ function initMoveObserver(
 function initMouseInteractionObserver(
   cb: mouseInteractionCallBack,
   doc: Document,
+  mirror: Mirror,
   blockClass: blockClass,
   sampling: SamplingStrategy,
 ): listenerHandler {
@@ -264,6 +268,7 @@ function initMouseInteractionObserver(
 function initScrollObserver(
   cb: scrollCallback,
   doc: Document,
+  mirror: Mirror,
   blockClass: blockClass,
   sampling: SamplingStrategy,
 ): listenerHandler {
@@ -315,6 +320,7 @@ const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
   cb: inputCallback,
   doc: Document,
+  mirror: Mirror,
   blockClass: blockClass,
   ignoreClass: string,
   maskInputOptions: MaskInputOptions,
@@ -419,7 +425,10 @@ function initInputObserver(
   };
 }
 
-function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
+function initStyleSheetObserver(
+  cb: styleSheetRuleCallback,
+  mirror: Mirror,
+): listenerHandler {
   const insertRule = CSSStyleSheet.prototype.insertRule;
   CSSStyleSheet.prototype.insertRule = function (rule: string, index?: number) {
     const id = mirror.getId(this.ownerNode as INode);
@@ -453,6 +462,7 @@ function initStyleSheetObserver(cb: styleSheetRuleCallback): listenerHandler {
 function initMediaInteractionObserver(
   mediaInteractionCb: mediaInteractionCallback,
   blockClass: blockClass,
+  mirror: Mirror,
 ): listenerHandler {
   const handler = (type: 'play' | 'pause') => (event: Event) => {
     const { target } = event;
@@ -473,6 +483,7 @@ function initMediaInteractionObserver(
 function initCanvasMutationObserver(
   cb: canvasMutationCallback,
   blockClass: blockClass,
+  mirror: Mirror,
 ): listenerHandler {
   const props = Object.getOwnPropertyNames(CanvasRenderingContext2D.prototype);
   const handlers: listenerHandler[] = [];
@@ -779,20 +790,28 @@ export function initObservers(
     o.maskTextFn,
     o.recordCanvas,
     o.slimDOMOptions,
+    o.mirror,
     o.iframeManager,
     o.shadowDomManager,
     o.doc,
   );
-  const mousemoveHandler = initMoveObserver(o.mousemoveCb, o.sampling, o.doc);
+  const mousemoveHandler = initMoveObserver(
+    o.mousemoveCb,
+    o.sampling,
+    o.doc,
+    o.mirror,
+  );
   const mouseInteractionHandler = initMouseInteractionObserver(
     o.mouseInteractionCb,
     o.doc,
+    o.mirror,
     o.blockClass,
     o.sampling,
   );
   const scrollHandler = initScrollObserver(
     o.scrollCb,
     o.doc,
+    o.mirror,
     o.blockClass,
     o.sampling,
   );
@@ -800,6 +819,7 @@ export function initObservers(
   const inputHandler = initInputObserver(
     o.inputCb,
     o.doc,
+    o.mirror,
     o.blockClass,
     o.ignoreClass,
     o.maskInputOptions,
@@ -809,10 +829,14 @@ export function initObservers(
   const mediaInteractionHandler = initMediaInteractionObserver(
     o.mediaInteractionCb,
     o.blockClass,
+    o.mirror,
   );
-  const styleSheetObserver = initStyleSheetObserver(o.styleSheetRuleCb);
+  const styleSheetObserver = initStyleSheetObserver(
+    o.styleSheetRuleCb,
+    o.mirror,
+  );
   const canvasMutationObserver = o.recordCanvas
-    ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass)
+    ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass, o.mirror)
     : () => {};
   const fontObserver = o.collectFonts ? initFontObserver(o.fontCb) : () => {};
   const logObserver = o.logOptions

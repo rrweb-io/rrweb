@@ -1,13 +1,13 @@
 import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
-  mirror,
   on,
   getWindowWidth,
   getWindowHeight,
   polyfill,
   isIframeINode,
   hasShadowRoot,
+  createMirror,
 } from '../utils';
 import {
   EventType,
@@ -33,6 +33,7 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 
+const mirror = createMirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -215,6 +216,7 @@ function record<T = eventWithTime>(
       slimDOMOptions,
       iframeManager,
     },
+    mirror,
   });
 
   takeFullSnapshot = (isCheckout = false) => {
@@ -418,6 +420,7 @@ function record<T = eventWithTime>(
           logOptions,
           blockSelector,
           slimDOMOptions,
+          mirror,
           iframeManager,
           shadowDomManager,
         },
@@ -489,5 +492,7 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
   }
   takeFullSnapshot(isCheckout);
 };
+
+record.mirror = mirror;
 
 export default record;
