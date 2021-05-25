@@ -34,7 +34,7 @@ export class ShadowDomManager {
   }) {
     this.mutationCb = options.mutationCb;
     this.bypassOptions = options.bypassOptions;
-    this.mirror = this.mirror;
+    this.mirror = options.mirror;
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
