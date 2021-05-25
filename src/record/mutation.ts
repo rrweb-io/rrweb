@@ -316,7 +316,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n) &&
+        isParentRemoved(this.removes, n, this.mirror) &&
         !this.movedSet.has(n.parentNode!)
       ) {
         continue;
@@ -327,7 +327,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n)
+        !isParentRemoved(this.removes, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -419,6 +419,7 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
+    console.log({ m });
     if (isIgnored(m.target)) {
       return;
     }
@@ -558,16 +559,20 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
   n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(removes: removedNodeMutation[], n: Node): boolean {
+function isParentRemoved(
+  removes: removedNodeMutation[],
+  n: Node,
+  mirror: Mirror,
+): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
   }
-  const parentId = this.mirror.getId((parentNode as Node) as INode);
+  const parentId = mirror.getId((parentNode as Node) as INode);
   if (removes.some((r) => r.id === parentId)) {
     return true;
   }
-  return isParentRemoved(removes, parentNode);
+  return isParentRemoved(removes, parentNode, mirror);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
