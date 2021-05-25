@@ -34,7 +34,7 @@ export function on(
   return () => target.removeEventListener(type, fn, options);
 }
 
-export function createMirror (): Mirror {
+export function createMirror(): Mirror {
   return {
     map: {},
     getId(n) {
@@ -66,7 +66,40 @@ export function createMirror (): Mirror {
   };
 }
 
-export const mirror: Mirror = createMirror();
+// https://github.com/rrweb-io/rrweb/pull/407
+const DEPARTED_MIRROR_ACCESS_WARNING =
+  'Please stop import mirror directly. Instead of that, now you can use replayer.getMirror() to access the mirror instance of a replayer.';
+export let mirror: Mirror = {
+  map: {},
+  getId() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return -1;
+  },
+  getNode() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return null;
+  },
+  removeNodeFromMap() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+  },
+  has() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return false;
+  },
+  reset() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+  },
+};
+if (window.Proxy && window.Reflect) {
+  mirror = new Proxy(mirror, {
+    get(target, prop, receiver) {
+      if (prop === 'map') {
+        console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+}
 
 // copy from underscore and modified
 export function throttle<T>(

@@ -318,6 +318,10 @@ export class Replayer {
     return baselineTime - events[0].timestamp;
   }
 
+  public getMirror(): Mirror {
+    return this.mirror;
+  }
+
   /**
    * This API was designed to be used as play at any time offset.
    * Since we minimized the data collected from recorder, we do not
