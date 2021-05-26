@@ -1746,53 +1746,6 @@ exports[`iframe 1`] = `
     }
   },
   {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 19,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 0,
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"html\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"head\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 20,
-                    \\"id\\": 22
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"body\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 20,
-                    \\"id\\": 23
-                  }
-                ],
-                \\"rootId\\": 20,
-                \\"id\\": 21
-              }
-            ],
-            \\"id\\": 20
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"isAttachIframe\\": true
-    }
-  },
-  {
     \\"type\\": 2,
     \\"data\\": {
       \\"node\\": {
@@ -1969,6 +1922,53 @@ exports[`iframe 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 19,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 20,
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 20,
+                    \\"id\\": 23
+                  }
+                ],
+                \\"rootId\\": 20,
+                \\"id\\": 21
+              }
+            ],
+            \\"id\\": 20
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
     }
   },
   {
