@@ -294,10 +294,19 @@ describe('record iframes', function (this: ISuite) {
       });
     });
     await this.page.waitFor(10);
-    console.log(JSON.stringify(this.events));
+    // console.log(JSON.stringify(this.events));
 
     expect(this.events.length).to.equal(3);
-    expect(this.events[1].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[2].type).to.equal(EventType.IncrementalSnapshot);
+    const eventTypes = this.events
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot ||
+          e.type === EventType.FullSnapshot,
+      )
+      .map((e) => e.type);
+    expect(eventTypes).to.have.ordered.members([
+      EventType.FullSnapshot,
+      EventType.IncrementalSnapshot,
+    ]);
   });
 });
