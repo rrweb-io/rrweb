@@ -252,7 +252,7 @@ function record<T = eventWithTime>(
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn);
+        setTimeout(() => iframeManager.attachIframe(iframe, childSn), 0);
       },
     });
 
