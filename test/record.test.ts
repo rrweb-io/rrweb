@@ -244,3 +244,60 @@ describe('record', function (this: ISuite) {
     assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
 });
+
+describe('record iframes', function (this: ISuite) {
+  this.timeout(10_000);
+
+  before(async () => {
+    this.browser = await launchPuppeteer();
+
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    this.code = fs.readFileSync(bundlePath, 'utf8');
+  });
+
+  beforeEach(async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(`
+      <html>
+        <body>
+          <iframe srcdoc="<button>Mysterious Button</button>" />
+        </body>
+      </html>
+    `);
+    await page.evaluate(this.code);
+    this.page = page;
+    this.events = [];
+    await this.page.exposeFunction('emit', (e: eventWithTime) => {
+      if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
+        return;
+      }
+      this.events.push(e);
+    });
+
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+  });
+
+  afterEach(async () => {
+    await this.page.close();
+  });
+
+  after(async () => {
+    await this.browser.close();
+  });
+
+  it('captures iframe content in correct order', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    await this.page.waitFor(10);
+    console.log(JSON.stringify(this.events));
+
+    expect(this.events.length).to.equal(3);
+    expect(this.events[1].type).to.equal(EventType.FullSnapshot);
+    expect(this.events[2].type).to.equal(EventType.IncrementalSnapshot);
+  });
+});
