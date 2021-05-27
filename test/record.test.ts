@@ -293,6 +293,7 @@ describe('record iframes', function (this: ISuite) {
         emit: ((window as unknown) as IWindow).emit,
       });
     });
+
     await this.page.waitFor(10);
     // console.log(JSON.stringify(this.events));
 
