@@ -166,7 +166,7 @@ function record<T = eventWithTime>(
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
     } else if (e.type === EventType.IncrementalSnapshot) {
-      // attch iframe should be considered as full snapshot
+      // attach iframe should be considered as full snapshot
       if (
         e.data.source === IncrementalSource.Mutation &&
         e.data.isAttachIframe
@@ -252,7 +252,7 @@ function record<T = eventWithTime>(
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        setTimeout(() => iframeManager.attachIframe(iframe, childSn), 0);
+        iframeManager.attachIframe(iframe, childSn);
       },
     });
 
