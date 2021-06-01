@@ -39,7 +39,7 @@ export function createMirror(): Mirror {
     map: {},
     getId(n) {
       // if n is not a serialized INode, use -1 as its id.
-      if (!n.__sn) {
+      if (!n || !n.__sn) {
         return -1;
       }
       return n.__sn.id;
