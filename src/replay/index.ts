@@ -462,9 +462,10 @@ export class Replayer {
       case EventType.FullSnapshot:
         castFn = () => {
           // Don't build a full snapshot during the first play through since we've already built it when the player was mounted.
-          if (this.firstPlayedEvent && this.firstPlayedEvent === event) {
+          if (this.firstPlayedEvent) {
             return;
           }
+          this.firstPlayedEvent = event
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
         };
