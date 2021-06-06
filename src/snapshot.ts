@@ -327,7 +327,9 @@ function onceIframeLoaded(
     iframeEl.src === blankUrl ||
     iframeEl.src === ''
   ) {
-    listener();
+    // iframe was already loaded, make sure we wait to trigger the listener
+    // till _after_ the mutation that found this iframe has had time to process
+    setTimeout(listener, 0);
     return;
   }
   // use default listener
