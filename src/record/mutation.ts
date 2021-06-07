@@ -419,7 +419,6 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
-    console.log({ m });
     if (isIgnored(m.target)) {
       return;
     }
