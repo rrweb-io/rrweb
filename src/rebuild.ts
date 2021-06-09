@@ -169,6 +169,15 @@ function buildNode(
               // as setting them triggers a console.error (which shows up despite the try/catch)
               // Assumption: these attributes are not used to css
               node.setAttribute('_' + name, value);
+            } else if (
+              tagName === 'meta' &&
+              n.attributes['http-equiv'] === 'Content-Security-Policy' &&
+              name == 'content'
+            ) {
+              // If CSP contains style-src and inline-style is disabled, there will be an error "Refused to apply inline style because it violates the following Content Security Policy directive: style-src '*'".
+              // And the function insertStyleRules in rrweb replayer will throw an error "Uncaught TypeError: Cannot read property 'insertRule' of null".
+              node.setAttribute('csp-content', value);
+              continue;
             } else {
               node.setAttribute(name, value);
             }
@@ -255,7 +264,7 @@ export function buildNodeWithSN(
   }
   if (n.rootId) {
     console.assert(
-      ((map[n.rootId] as unknown) as Document) === doc,
+      (map[n.rootId] as unknown as Document) === doc,
       'Target document should has the same root id.',
     );
   }
@@ -318,7 +327,7 @@ function handleScroll(node: INode) {
   if (n.type !== NodeType.Element) {
     return;
   }
-  const el = (node as Node) as HTMLElement;
+  const el = node as Node as HTMLElement;
   for (const name in n.attributes) {
     if (!(n.attributes.hasOwnProperty(name) && name.startsWith('rr_'))) {
       continue;
