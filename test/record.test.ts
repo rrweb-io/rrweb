@@ -74,7 +74,7 @@ describe('record', function (this: ISuite) {
     `
       <html>
         <body>
-          <input type="text" />
+          <input type="text" size="40" />
         </body>
       </html>
     `,

@@ -42,7 +42,8 @@ exports[`async-checkout 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"input\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"text\\"
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 6
@@ -283,7 +284,8 @@ exports[`custom-event 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"input\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"text\\"
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 6
@@ -369,7 +371,8 @@ exports[`stylesheet-rules 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"input\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"text\\"
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 6
