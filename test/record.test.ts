@@ -91,7 +91,7 @@ describe('record', function (this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(10);
+    await this.page.waitForTimeout(10);
     expect(this.events.length).to.equal(33);
     expect(
       this.events.filter(
@@ -117,7 +117,7 @@ describe('record', function (this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(10);
+    await this.page.waitForTimeout(10);
     expect(this.events.length).to.equal(39);
     expect(
       this.events.filter(
@@ -147,11 +147,11 @@ describe('record', function (this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(300);
+    await this.page.waitForTimeout(300);
     expect(this.events.length).to.equal(33); // before first automatic snapshot
-    await this.page.waitFor(200); // could be 33 or 35 events by now depending on speed of test env
+    await this.page.waitForTimeout(200); // could be 33 or 35 events by now depending on speed of test env
     await this.page.type('input', 'a');
-    await this.page.waitFor(10);
+    await this.page.waitForTimeout(10);
     expect(this.events.length).to.equal(36); // additionally includes the 2 checkout events
     expect(
       this.events.filter(
@@ -189,7 +189,7 @@ describe('record', function (this: ISuite) {
         document.body.appendChild(span);
       }, 10);
     });
-    await this.page.waitFor(100);
+    await this.page.waitForTimeout(100);
     assertSnapshot(this.events, __filename, 'async-checkout');
   });
 
@@ -204,7 +204,7 @@ describe('record', function (this: ISuite) {
         a: 'b',
       });
     });
-    await this.page.waitFor(50);
+    await this.page.waitForTimeout(50);
     assertSnapshot(this.events, __filename, 'custom-event');
   });
 
@@ -233,7 +233,7 @@ describe('record', function (this: ISuite) {
         styleSheet.insertRule('body { color: #ccc; }');
       }, 10);
     });
-    await this.page.waitFor(50);
+    await this.page.waitForTimeout(50);
     const styleSheetRuleEvents = this.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
@@ -273,7 +273,7 @@ describe('record iframes', function (this: ISuite) {
         emit: ((window as unknown) as IWindow).emit,
       });
     });
-    await this.page.waitFor(10);
+    await this.page.waitForTimeout(10);
     // console.log(JSON.stringify(this.events));
 
     expect(this.events.length).to.equal(3);
