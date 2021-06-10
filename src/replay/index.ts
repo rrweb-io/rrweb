@@ -749,18 +749,12 @@ export class Replayer {
         !this.imageMap.has(event)
       ) {
         count++;
-        const image = document.createElement('img');
-        image.src = event.data.args[0];
-        this.imageMap.set(event, image);
-        image.onload = () => {
-          resolved++;
-          if (resolved === count) {
-            if (beforeLoadState.matches('playing')) {
-              this.play(this.getCurrentTime());
-            }
-            unsubscribe();
-          }
-        };
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d')
+        var imgd = ctx?.createImageData(canvas.width, canvas.height)
+        var d = imgd?.data                     
+        d = JSON.parse(event.data.args[0])
+        ctx?.putImageData(imgd!, 0, 0)
       }
     }
     if (count !== resolved) {
