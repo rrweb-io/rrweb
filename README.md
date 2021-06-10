@@ -1,5 +1,7 @@
 *Psst — looking for a shareable component template? Go here --> [sveltejs/component-template](https://github.com/sveltejs/component-template)*
 
+*Looking for a Vue.js version? Go here --> [@preflight-hq/rrweb-player-vue](https://github.com/Preflight-HQ/rrweb-player-vue)*
+
 ---
 
 # svelte app
