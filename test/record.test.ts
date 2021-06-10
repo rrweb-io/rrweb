@@ -69,13 +69,16 @@ const setup = async function (this: ISuite, content: string) {
 describe('record', function (this: ISuite) {
   this.timeout(10_000);
 
-  setup.bind(this)(`
+  setup.call(
+    this,
+    `
       <html>
         <body>
           <input type="text" />
         </body>
       </html>
-    `);
+    `,
+  );
 
   it('will only have one full snapshot without checkout config', async () => {
     await this.page.evaluate(() => {
@@ -252,13 +255,16 @@ describe('record', function (this: ISuite) {
 describe('record iframes', function (this: ISuite) {
   this.timeout(10_000);
 
-  setup.bind(this)(`
+  setup.call(
+    this,
+    `
       <html>
         <body>
           <iframe srcdoc="<button>Mysterious Button</button>" />
         </body>
       </html>
-    `);
+    `,
+  );
 
   it('captures iframe content in correct order', async () => {
     await this.page.evaluate(() => {
