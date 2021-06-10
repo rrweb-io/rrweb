@@ -60,6 +60,25 @@ type WindowWithAngularZone = Window & {
 
 export const mutationBuffers: MutationBuffer[] = [];
 
+function getEventTarget(event: Event): EventTarget | null {
+  try {
+    if ('composedPath' in event) {
+      const path = event.composedPath();
+      if (path.length) {
+        return path[0];
+      }
+    } else if (
+      'path' in event &&
+      (event as { path: EventTarget[] }).path.length
+    ) {
+      return (event as { path: EventTarget[] }).path[0];
+    }
+    return event.target;
+  } catch {
+    return event.target;
+  }
+}
+
 export function initMutationObserver(
   cb: mutationCallBack,
   doc: Document,
@@ -176,7 +195,7 @@ function initMoveObserver(
   );
   const updatePosition = throttle<MouseEvent | TouchEvent | DragEvent>(
     (evt) => {
-      const { target } = evt;
+      const target = getEventTarget(evt);
       const { clientX, clientY } = isTouchEvent(evt)
         ? evt.changedTouches[0]
         : evt;
@@ -231,14 +250,15 @@ function initMouseInteractionObserver(
   const handlers: listenerHandler[] = [];
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
-      if (isBlocked(event.target as Node, blockClass)) {
+      const target = getEventTarget(event) as Node;
+      if (isBlocked(target as Node, blockClass)) {
         return;
       }
       const e = isTouchEvent(event) ? event.changedTouches[0] : event;
       if (!e) {
         return;
       }
-      const id = mirror.getId(event.target as INode);
+      const id = mirror.getId(target as INode);
       const { clientX, clientY } = e;
       cb({
         type: MouseInteractions[eventKey],
@@ -265,7 +285,7 @@ function initMouseInteractionObserver(
   };
 }
 
-function initScrollObserver(
+export function initScrollObserver(
   cb: scrollCallback,
   doc: Document,
   mirror: Mirror,
@@ -273,11 +293,12 @@ function initScrollObserver(
   sampling: SamplingStrategy,
 ): listenerHandler {
   const updatePosition = throttle<UIEvent>((evt) => {
-    if (!evt.target || isBlocked(evt.target as Node, blockClass)) {
+    const target = getEventTarget(evt);
+    if (!target || isBlocked(target as Node, blockClass)) {
       return;
     }
-    const id = mirror.getId(evt.target as INode);
-    if (evt.target === doc) {
+    const id = mirror.getId(target as INode);
+    if (target === doc) {
       const scrollEl = (doc.scrollingElement || doc.documentElement)!;
       cb({
         id,
@@ -287,12 +308,12 @@ function initScrollObserver(
     } else {
       cb({
         id,
-        x: (evt.target as HTMLElement).scrollLeft,
-        y: (evt.target as HTMLElement).scrollTop,
+        x: (target as HTMLElement).scrollLeft,
+        y: (target as HTMLElement).scrollTop,
       });
     }
   }, sampling.scroll || 100);
-  return on('scroll', updatePosition);
+  return on('scroll', updatePosition, doc);
 }
 
 function initViewportResizeObserver(
@@ -328,7 +349,7 @@ function initInputObserver(
   sampling: SamplingStrategy,
 ): listenerHandler {
   function eventHandler(event: Event) {
-    const { target } = event;
+    const target = getEventTarget(event);
     if (
       !target ||
       !(target as Element).tagName ||
@@ -465,7 +486,7 @@ function initMediaInteractionObserver(
   mirror: Mirror,
 ): listenerHandler {
   const handler = (type: 'play' | 'pause') => (event: Event) => {
-    const { target } = event;
+    const target = getEventTarget(event);
     if (!target || isBlocked(target as Node, blockClass)) {
       return;
     }
@@ -512,7 +533,11 @@ function initCanvasMutationObserver(
                     recordArgs[0] &&
                     recordArgs[0] instanceof HTMLCanvasElement
                   ) {
-                    recordArgs[0] = recordArgs[0].toDataURL();
+                    const canvas = recordArgs[0]
+                    const ctx = canvas.getContext('2d')
+                    let imgd = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+                    let pix = imgd?.data;
+                    recordArgs[0] = JSON.stringify(pix)
                   }
                 }
                 cb({

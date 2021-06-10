@@ -18,6 +18,7 @@ import {
   listenerHandler,
   LogRecordOptions,
   mutationCallbackParam,
+  scrollCallback,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -197,6 +198,16 @@ function record<T = eventWithTime>(
       }),
     );
   };
+  const wrappedScrollEmit: scrollCallback = (p) =>
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.Scroll,
+          ...p,
+        },
+      }),
+    );
 
   const iframeManager = new IframeManager({
     mutationCb: wrappedMutationEmit,
@@ -204,6 +215,7 @@ function record<T = eventWithTime>(
 
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
+    scrollCb: wrappedScrollEmit,
     bypassOptions: {
       blockClass,
       blockSelector,
@@ -213,6 +225,7 @@ function record<T = eventWithTime>(
       maskInputOptions,
       maskTextFn,
       recordCanvas,
+      sampling,
       slimDOMOptions,
       iframeManager,
     },
@@ -325,16 +338,7 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
-          scrollCb: (p) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Scroll,
-                  ...p,
-                },
-              }),
-            ),
+          scrollCb: wrappedScrollEmit,
           viewportResizeCb: (d) =>
             wrappedEmit(
               wrapEvent({
