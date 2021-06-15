@@ -263,6 +263,11 @@ export class Replayer {
     return this;
   }
 
+  public off(event: string, handler: Handler) {
+    this.emitter.off(event, handler);
+    return this;
+  }
+
   public setConfig(config: Partial<playerConfig>) {
     Object.keys(config).forEach((key) => {
       // @ts-ignore
@@ -750,11 +755,11 @@ export class Replayer {
       ) {
         count++;
         var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d')
-        var imgd = ctx?.createImageData(canvas.width, canvas.height)
-        var d = imgd?.data                     
-        d = JSON.parse(event.data.args[0])
-        ctx?.putImageData(imgd!, 0, 0)
+        var ctx = canvas.getContext('2d');
+        var imgd = ctx?.createImageData(canvas.width, canvas.height);
+        var d = imgd?.data;
+        d = JSON.parse(event.data.args[0]);
+        ctx?.putImageData(imgd!, 0, 0);
       }
     }
     if (count !== resolved) {
