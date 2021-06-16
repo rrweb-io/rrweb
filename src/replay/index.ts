@@ -754,10 +754,10 @@ export class Replayer {
         !this.imageMap.has(event)
       ) {
         count++;
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
-        var imgd = ctx?.createImageData(canvas.width, canvas.height);
-        var d = imgd?.data;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgd = ctx?.createImageData(canvas.width, canvas.height);
+        let d = imgd?.data;
         d = JSON.parse(event.data.args[0]);
         ctx?.putImageData(imgd!, 0, 0);
       }

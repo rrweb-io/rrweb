@@ -1,4 +1,4 @@
-import { mutationCallBack, blockClass, maskTextClass, MaskTextFn, Mirror } from '../types';
+import { mutationCallBack, blockClass, maskTextClass, MaskTextFn, Mirror, scrollCallback, SamplingStrategy } from '../types';
 import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
 declare type BypassOptions = {
@@ -10,15 +10,18 @@ declare type BypassOptions = {
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     recordCanvas: boolean;
+    sampling: SamplingStrategy;
     slimDOMOptions: SlimDOMOptions;
     iframeManager: IframeManager;
 };
 export declare class ShadowDomManager {
     private mutationCb;
+    private scrollCb;
     private bypassOptions;
     private mirror;
     constructor(options: {
         mutationCb: mutationCallBack;
+        scrollCb: scrollCallback;
         bypassOptions: BypassOptions;
         mirror: Mirror;
     });
