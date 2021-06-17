@@ -324,7 +324,7 @@ describe('record integration tests', function (this: ISuite) {
         recordCanvas: true,
       }),
     );
-    await page.waitFor(50);
+    await page.waitForTimeout(50);
     const snapshots = await page.evaluate('window.snapshots');
     for (const event of snapshots) {
       if (event.type === EventType.FullSnapshot) {
@@ -417,7 +417,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto(`http://localhost:3030/html`);
     await page.setContent(getHtml.call(this, 'main.html'));
 
-    await page.waitFor(500);
+    await page.waitForTimeout(500);
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'iframe');
   });
@@ -453,7 +453,7 @@ describe('record integration tests', function (this: ISuite) {
             '123';
         });
     });
-    await page.waitFor(50);
+    await page.waitForTimeout(50);
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'shadow-dom');
