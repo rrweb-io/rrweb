@@ -2775,7 +2775,7 @@ rollup@^2.3.3:
 
 rrweb-snapshot@^1.1.4:
   version "1.1.4"
-  resolved "http://192.168.26.29:7001/rrweb-snapshot/download/rrweb-snapshot-1.1.4.tgz#a71d812004c340aaa5313d313a7bd343eb8c260d"
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.1.4.tgz#a71d812004c340aaa5313d313a7bd343eb8c260d"
   integrity sha1-px2BIATDQKqlMT0xOnvTQ+uMJg0=
 
 run-async@^2.2.0:
