@@ -784,6 +784,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.Drag:
+      case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove:
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
