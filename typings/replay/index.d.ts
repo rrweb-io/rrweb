@@ -24,6 +24,7 @@ export declare class Replayer {
     private newDocumentQueue;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
+    off(event: string, handler: Handler): this;
     setConfig(config: Partial<playerConfig>): void;
     getMetaData(): playerMetaData;
     getCurrentTime(): number;

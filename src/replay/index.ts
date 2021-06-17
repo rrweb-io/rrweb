@@ -263,6 +263,11 @@ export class Replayer {
     return this;
   }
 
+  public off(event: string, handler: Handler) {
+    this.emitter.off(event, handler);
+    return this;
+  }
+
   public setConfig(config: Partial<playerConfig>) {
     Object.keys(config).forEach((key) => {
       // @ts-ignore
@@ -749,12 +754,12 @@ export class Replayer {
         !this.imageMap.has(event)
       ) {
         count++;
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d')
-        var imgd = ctx?.createImageData(canvas.width, canvas.height)
-        var d = imgd?.data                     
-        d = JSON.parse(event.data.args[0])
-        ctx?.putImageData(imgd!, 0, 0)
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgd = ctx?.createImageData(canvas.width, canvas.height);
+        let d = imgd?.data;
+        d = JSON.parse(event.data.args[0]);
+        ctx?.putImageData(imgd!, 0, 0);
       }
     }
     if (count !== resolved) {
@@ -778,6 +783,8 @@ export class Replayer {
         this.applyMutation(d, isSync);
         break;
       }
+      case IncrementalSource.Drag:
+      case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove:
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
