@@ -209,10 +209,10 @@ function initMoveObserver(
         timeOffset: Date.now() - timeBaseline,
       });
       wrappedCb(
-        evt instanceof MouseEvent
-          ? IncrementalSource.MouseMove
-          : evt instanceof DragEvent
+        evt instanceof DragEvent
           ? IncrementalSource.Drag
+          : evt instanceof MouseEvent
+          ? IncrementalSource.MouseMove
           : IncrementalSource.TouchMove,
       );
     },
