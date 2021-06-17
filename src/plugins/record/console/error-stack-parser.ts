@@ -1,3 +1,4 @@
+// tslint:disable
 /**
  * Class StackFrame is a fork of https://github.com/stacktracejs/stackframe/blob/master/stackframe.js
  * I fork it because:
