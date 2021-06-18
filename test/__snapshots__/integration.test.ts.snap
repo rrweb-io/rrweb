@@ -27,7 +27,9 @@ exports[`attributes 1`] = `
           {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"class\\": \\"test\\"
+            },
             \\"childNodes\\": [
               {
                 \\"type\\": 2,

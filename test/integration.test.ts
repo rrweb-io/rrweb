@@ -163,6 +163,7 @@ describe('record integration tests', function (this: ISuite) {
       li.setAttribute('foo', 'bar');
       document.body.removeChild(ul);
       document.body.setAttribute('test', 'true');
+      document.documentElement.className = 'test';
     });
 
     const snapshots = await page.evaluate('window.snapshots');
