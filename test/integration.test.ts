@@ -177,8 +177,7 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     // toggle the select box
-    await page.click('.select2-container');
-    await page.click('.select2-container');
+    await page.click('.select2-container', { clickCount: 2, delay: 100 });
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'select2');

@@ -7308,14 +7308,6 @@ exports[`select2 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 70
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 5,
       \\"text\\": \\"\\",
       \\"isChecked\\": false,
@@ -7335,103 +7327,8 @@ exports[`select2 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 2,
-      \\"type\\": 1,
-      \\"id\\": 70
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 35
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 70,
-          \\"attributes\\": {
-            \\"style\\": \\"display: none;\\"
-          }
-        },
-        {
-          \\"id\\": 36,
-          \\"attributes\\": {
-            \\"id\\": null,
-            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: none;\\"
-          }
-        },
-        {
-          \\"id\\": 25,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-container select2-container-active\\"
-          }
-        },
-        {
-          \\"id\\": 35,
-          \\"attributes\\": {
-            \\"disabled\\": null
-          }
-        },
-        {
-          \\"id\\": 42,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-input\\"
-          }
-        }
-      ],
-      \\"removes\\": [
-        {
-          \\"parentId\\": 18,
-          \\"id\\": 70
-        },
-        {
-          \\"parentId\\": 45,
-          \\"id\\": 72
-        },
-        {
-          \\"parentId\\": 45,
-          \\"id\\": 67
-        }
-      ],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 18,
-          \\"nextId\\": 36,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {
-              \\"id\\": \\"select2-drop-mask\\",
-              \\"class\\": \\"select2-drop-mask\\",
-              \\"style\\": \\"display: none;\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 70
-          }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 26
+      \\"id\\": 70
     }
   }
 ]"
