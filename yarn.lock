@@ -1222,21 +1222,21 @@ rollup@^1.20.0:
     "@types/node" "*"
     acorn "^7.1.0"
 
-rrweb-snapshot@^1.0.3:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.0.7.tgz#9d334590089af4a857970ef4e9e978d986a122d1"
-  integrity sha512-6fu9+KiQlFPkFk2SdahIDsV+yu1juiAR/o+kOiwKPbXur1TiFGMPAfaQNCkqLc8Nvyx3ItkJmrIldyxnAalEag==
+rrweb-snapshot@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.1.4.tgz#a71d812004c340aaa5313d313a7bd343eb8c260d"
+  integrity sha512-0iVRbsWSVOVEjgE8MA0+zYwlLMSwkVsUA7KhmvVaBK+viYcbx79SKRB8PkeFz1/1Jnn9fnkzPHlh42F+xFuwbQ==
 
-rrweb@^0.9.14:
-  version "0.9.14"
-  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-0.9.14.tgz#09bec604fc44c74801e4fe910606e5a6cde008ec"
-  integrity sha512-nm2rrVNoyWFPrbGQmcvTTlA7XjbbgPIgO7qsW0Zyr5iOURIFJDGPHFmOVLRyLpWiriVtEoXh6a+x+D1sj+qwWg==
+rrweb@^1.0.0-beta.0:
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-1.0.0-beta.0.tgz#c781794ac4cf80e55e4c240090f246891b8bf704"
+  integrity sha512-mCDDCEEJpIDNsmL9kNMl0FYMtoMlza8/wpjcK1uWOVk09jGANyxRVc0+jjUl1D83k9KlFXx0kj1TTSTYHdanMw==
   dependencies:
     "@types/css-font-loading-module" "0.0.4"
     "@xstate/fsm" "^1.4.0"
     fflate "^0.4.4"
     mitt "^1.1.3"
-    rrweb-snapshot "^1.0.3"
+    rrweb-snapshot "^1.1.4"
 
 sade@^1.4.0:
   version "1.7.3"
