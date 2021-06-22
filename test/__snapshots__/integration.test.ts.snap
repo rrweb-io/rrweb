@@ -1229,8 +1229,42 @@ exports[`form 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"textContent\\": \\"\\\\n    \\",
                         \\"id\\": 51
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"password\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"password\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 54
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"id\\": 55
+                          }
+                        ],
+                        \\"id\\": 52
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 56
                       }
                     ],
                     \\"id\\": 18
@@ -1238,7 +1272,7 @@ exports[`form 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 52
+                    \\"id\\": 57
                   },
                   {
                     \\"type\\": 2,
@@ -1248,15 +1282,15 @@ exports[`form 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 54
+                        \\"id\\": 59
                       }
                     ],
-                    \\"id\\": 53
+                    \\"id\\": 58
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 55
+                    \\"id\\": 60
                   }
                 ],
                 \\"id\\": 16
@@ -2576,7 +2610,7 @@ exports[`ignore 1`] = `
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
                         \\"attributes\\": {
-                          \\"for\\": \\"password\\"
+                          \\"for\\": \\"ignore text\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -2588,7 +2622,8 @@ exports[`ignore 1`] = `
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"password\\"
+                              \\"type\\": \\"text\\",
+                              \\"class\\": \\"rr-ignore\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 22
@@ -2603,43 +2638,8 @@ exports[`ignore 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 24
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"ignore text\\"
-                        },
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\" \\",
-                            \\"id\\": 26
-                          },
-                          {
-                            \\"type\\": 2,
-                            \\"tagName\\": \\"input\\",
-                            \\"attributes\\": {
-                              \\"type\\": \\"text\\",
-                              \\"class\\": \\"rr-ignore\\"
-                            },
-                            \\"childNodes\\": [],
-                            \\"id\\": 27
-                          },
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\" \\",
-                            \\"id\\": 28
-                          }
-                        ],
-                        \\"id\\": 25
-                      },
-                      {
-                        \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 29
+                        \\"id\\": 24
                       }
                     ],
                     \\"id\\": 18
@@ -2647,7 +2647,7 @@ exports[`ignore 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 30
+                    \\"id\\": 25
                   },
                   {
                     \\"type\\": 2,
@@ -2657,15 +2657,15 @@ exports[`ignore 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 32
+                        \\"id\\": 27
                       }
                     ],
-                    \\"id\\": 31
+                    \\"id\\": 26
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 33
+                    \\"id\\": 28
                   }
                 ],
                 \\"id\\": 16
@@ -2688,345 +2688,6 @@ exports[`ignore 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 22
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
-    }
-  }
-]"
-`;
-
-exports[`log`] = `
-"[
-  {
-    \\"type\\": 0,
-    \\"data\\": {}
-  },
-  {
-    \\"type\\": 1,
-    \\"data\\": {}
-  },
-  {
-    \\"type\\": 4,
-    \\"data\\": {
-      \\"href\\": \\"about:blank\\",
-      \\"width\\": 1920,
-      \\"height\\": 1080
-    }
-  },
-  {
-    \\"type\\": 2,
-    \\"data\\": {
-      \\"node\\": {
-        \\"type\\": 0,
-        \\"childNodes\\": [
-          {
-            \\"type\\": 1,
-            \\"name\\": \\"html\\",
-            \\"publicId\\": \\"\\",
-            \\"systemId\\": \\"\\",
-            \\"id\\": 2
-          },
-          {
-            \\"type\\": 2,
-            \\"tagName\\": \\"html\\",
-            \\"attributes\\": {
-              \\"lang\\": \\"en\\"
-            },
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"head\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 5
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"charset\\": \\"UTF-8\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 6
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 7
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"name\\": \\"viewport\\",
-                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 8
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 9
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"http-equiv\\": \\"X-UA-Compatible\\",
-                      \\"content\\": \\"ie=edge\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 10
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 11
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"title\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"Log record\\",
-                        \\"id\\": 13
-                      }
-                    ],
-                    \\"id\\": 12
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 14
-                  }
-                ],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 15
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 17
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 19
-                      }
-                    ],
-                    \\"id\\": 18
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 20
-                  }
-                ],
-                \\"id\\": 16
-              }
-            ],
-            \\"id\\": 3
-          }
-        ],
-        \\"id\\": 1
-      },
-      \\"initialOffset\\": {
-        \\"left\\": 0,
-        \\"top\\": 0
-      }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"assert\\",
-      \\"payload\\": [
-        \\"true\\",
-        \\"\\"assert\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"count\\",
-      \\"payload\\": [
-        \\"\\"count\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"countReset\\",
-      \\"payload\\": [
-        \\"\\"count\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"debug\\",
-      \\"payload\\": [
-        \\"\\"debug\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"dir\\",
-      \\"payload\\": [
-        \\"\\"dir\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"dirxml\\",
-      \\"payload\\": [
-        \\"\\"dirxml\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"group\\",
-      \\"payload\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"groupCollapsed\\",
-      \\"payload\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"info\\",
-      \\"payload\\": [
-        \\"\\"info\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"log\\",
-      \\"payload\\": [
-        \\"\\"log\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"table\\",
-      \\"payload\\": [
-        \\"\\"table\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"time\\",
-      \\"payload\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"timeEnd\\",
-      \\"payload\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"timeLog\\",
-      \\"payload\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"trace\\",
-      \\"payload\\": [
-        \\"\\"trace\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"warn\\",
-      \\"payload\\": [
-        \\"\\"warn\\"\\"
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"clear\\",
-      \\"payload\\": []
     }
   }
 ]"
@@ -3763,8 +3424,42 @@ exports[`mask 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"textContent\\": \\"\\\\n    \\",
                         \\"id\\": 51
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"password\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"password\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 54
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"id\\": 55
+                          }
+                        ],
+                        \\"id\\": 52
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 56
                       }
                     ],
                     \\"id\\": 18
@@ -3772,7 +3467,7 @@ exports[`mask 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 52
+                    \\"id\\": 57
                   },
                   {
                     \\"type\\": 2,
@@ -3782,15 +3477,15 @@ exports[`mask 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 54
+                        \\"id\\": 59
                       }
                     ],
-                    \\"id\\": 53
+                    \\"id\\": 58
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 55
+                    \\"id\\": 60
                   }
                 ],
                 \\"id\\": 16
@@ -3955,6 +3650,94 @@ exports[`mask 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 32
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 54
     }
   },
   {
@@ -5191,8 +4974,42 @@ exports[`maskInputOptions 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"textContent\\": \\"\\\\n    \\",
                         \\"id\\": 51
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"password\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"password\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 54
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"id\\": 55
+                          }
+                        ],
+                        \\"id\\": 52
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 56
                       }
                     ],
                     \\"id\\": 18
@@ -5200,7 +5017,7 @@ exports[`maskInputOptions 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 52
+                    \\"id\\": 57
                   },
                   {
                     \\"type\\": 2,
@@ -5210,15 +5027,15 @@ exports[`maskInputOptions 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 54
+                        \\"id\\": 59
                       }
                     ],
-                    \\"id\\": 53
+                    \\"id\\": 58
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 55
+                    \\"id\\": 60
                   }
                 ],
                 \\"id\\": 16
@@ -5508,6 +5325,94 @@ exports[`maskInputOptions 1`] = `
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
       \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
     }
   },
   {
@@ -7403,14 +7308,6 @@ exports[`select2 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 70
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 5,
       \\"text\\": \\"\\",
       \\"isChecked\\": false,
@@ -7430,103 +7327,8 @@ exports[`select2 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 2,
-      \\"type\\": 1,
-      \\"id\\": 70
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 35
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 70,
-          \\"attributes\\": {
-            \\"style\\": \\"display: none;\\"
-          }
-        },
-        {
-          \\"id\\": 36,
-          \\"attributes\\": {
-            \\"id\\": null,
-            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: none;\\"
-          }
-        },
-        {
-          \\"id\\": 25,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-container select2-container-active\\"
-          }
-        },
-        {
-          \\"id\\": 35,
-          \\"attributes\\": {
-            \\"disabled\\": null
-          }
-        },
-        {
-          \\"id\\": 42,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-input\\"
-          }
-        }
-      ],
-      \\"removes\\": [
-        {
-          \\"parentId\\": 18,
-          \\"id\\": 70
-        },
-        {
-          \\"parentId\\": 45,
-          \\"id\\": 72
-        },
-        {
-          \\"parentId\\": 45,
-          \\"id\\": 67
-        }
-      ],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 18,
-          \\"nextId\\": 36,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {
-              \\"id\\": \\"select2-drop-mask\\",
-              \\"class\\": \\"select2-drop-mask\\",
-              \\"style\\": \\"display: none;\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 70
-          }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 26
+      \\"id\\": 70
     }
   }
 ]"
