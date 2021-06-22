@@ -53,17 +53,17 @@ And there are some ways to listen rrweb-player's state:
 ```js
 // get current timing
 rrwebPlayer.addEventListener('ui-update-current-time', (event) => {
-  console.log(event.detail.payload);
+  console.log(event.payload);
 });
 
 // get current state
 rrwebPlayer.addEventListener('ui-update-player-state', (event) => {
-  console.log(event.detail.payload);
+  console.log(event.payload);
 });
 
 // get current progress
 rrwebPlayer.addEventListener('ui-update-progress', (event) => {
-  console.log(event.detail.payload);
+  console.log(event.payload);
 });
 ```
 

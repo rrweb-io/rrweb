@@ -21,6 +21,7 @@ import {
   IGNORED_NODE,
   serializedNodeWithId,
   NodeType,
+  isShadowRoot,
 } from 'rrweb-snapshot';
 
 export function on(
@@ -33,32 +34,76 @@ export function on(
   return () => target.removeEventListener(type, fn, options);
 }
 
-export const mirror: Mirror = {
+export function createMirror(): Mirror {
+  return {
+    map: {},
+    getId(n) {
+      // if n is not a serialized INode, use -1 as its id.
+      if (!n.__sn) {
+        return -1;
+      }
+      return n.__sn.id;
+    },
+    getNode(id) {
+      return this.map[id] || null;
+    },
+    // TODO: use a weakmap to get rid of manually memory management
+    removeNodeFromMap(n) {
+      const id = n.__sn && n.__sn.id;
+      delete this.map[id];
+      if (n.childNodes) {
+        n.childNodes.forEach((child) =>
+          this.removeNodeFromMap((child as Node) as INode),
+        );
+      }
+    },
+    has(id) {
+      return this.map.hasOwnProperty(id);
+    },
+    reset() {
+      this.map = {};
+    },
+  };
+}
+
+// https://github.com/rrweb-io/rrweb/pull/407
+const DEPARTED_MIRROR_ACCESS_WARNING =
+  'Please stop import mirror directly. Instead of that,' +
+  '\r\n' +
+  'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
+  '\r\n' +
+  'or you can use record.mirror to access the mirror instance during recording.';
+export let _mirror: Mirror = {
   map: {},
-  getId(n) {
-    // if n is not a serialized INode, use -1 as its id.
-    if (!n.__sn) {
-      return -1;
-    }
-    return n.__sn.id;
+  getId() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return -1;
   },
-  getNode(id) {
-    return mirror.map[id] || null;
+  getNode() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return null;
   },
-  // TODO: use a weakmap to get rid of manually memory management
-  removeNodeFromMap(n) {
-    const id = n.__sn && n.__sn.id;
-    delete mirror.map[id];
-    if (n.childNodes) {
-      n.childNodes.forEach((child) =>
-        mirror.removeNodeFromMap((child as Node) as INode),
-      );
-    }
+  removeNodeFromMap() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
   },
-  has(id) {
-    return mirror.map.hasOwnProperty(id);
+  has() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return false;
+  },
+  reset() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
   },
 };
+if (typeof window !== 'undefined' && window.Proxy && window.Reflect) {
+  _mirror = new Proxy(_mirror, {
+    get(target, prop, receiver) {
+      if (prop === 'map') {
+        console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+}
 
 // copy from underscore and modified
 export function throttle<T>(
@@ -212,7 +257,10 @@ export function isIgnored(n: Node | INode): boolean {
   return false;
 }
 
-export function isAncestorRemoved(target: INode): boolean {
+export function isAncestorRemoved(target: INode, mirror: Mirror): boolean {
+  if (isShadowRoot(target)) {
+    return false;
+  }
   const id = mirror.getId(target);
   if (!mirror.has(id)) {
     return true;
@@ -227,7 +275,7 @@ export function isAncestorRemoved(target: INode): boolean {
   if (!target.parentNode) {
     return true;
   }
-  return isAncestorRemoved((target.parentNode as unknown) as INode);
+  return isAncestorRemoved((target.parentNode as unknown) as INode, mirror);
 }
 
 export function isTouchEvent(
@@ -245,6 +293,24 @@ export function polyfill(win = window) {
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
     win.DOMTokenList.prototype.forEach = (Array.prototype
       .forEach as unknown) as DOMTokenList['forEach'];
+  }
+
+  // https://github.com/Financial-Times/polyfill-service/pull/183
+  if (!Node.prototype.contains) {
+    Node.prototype.contains = function contains(node) {
+      if (!(0 in arguments)) {
+        throw new TypeError('1 argument is required');
+      }
+
+      do {
+        if (this === node) {
+          return true;
+        }
+        // tslint:disable-next-line: no-conditional-assignment
+      } while ((node = node && node.parentNode));
+
+      return false;
+    };
   }
 }
 
@@ -320,7 +386,7 @@ export class TreeIndex {
     this.indexes.set(treeNode.id, treeNode);
   }
 
-  public remove(mutation: removedNodeMutation) {
+  public remove(mutation: removedNodeMutation, mirror: Mirror) {
     const parentTreeNode = this.indexes.get(mutation.parentId);
     const treeNode = this.indexes.get(mutation.id);
 
@@ -542,27 +608,50 @@ export type AppendedIframe = {
   builtNode: HTMLIFrameINode;
 };
 
-export function isIframeINode(node: INode): node is HTMLIFrameINode {
-  // node can be document fragment when using the virtual parent feature
-  if (!node.__sn) {
-    return false;
+export function isIframeINode(
+  node: INode | ShadowRoot,
+): node is HTMLIFrameINode {
+  if ('__sn' in node) {
+    return (
+      node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe'
+    );
   }
-  return node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe';
+  // node can be document fragment when using the virtual parent feature
+  return false;
 }
 
-export function getBaseDimension(node: Node): DocumentDimension {
+export function getBaseDimension(
+  node: Node,
+  rootIframe: Node,
+): DocumentDimension {
   const frameElement = node.ownerDocument?.defaultView?.frameElement;
-  if (!frameElement) {
+  if (!frameElement || frameElement === rootIframe) {
     return {
       x: 0,
       y: 0,
+      relativeScale: 1,
+      absoluteScale: 1,
     };
   }
 
   const frameDimension = frameElement.getBoundingClientRect();
-  const frameBaseDimension = getBaseDimension(frameElement);
+  const frameBaseDimension = getBaseDimension(frameElement, rootIframe);
+  // the iframe element may have a scale transform
+  const relativeScale = frameDimension.height / frameElement.clientHeight;
   return {
-    x: frameDimension.x + frameBaseDimension.x,
-    y: frameDimension.y + frameBaseDimension.y,
+    x:
+      frameDimension.x * frameBaseDimension.relativeScale +
+      frameBaseDimension.x,
+    y:
+      frameDimension.y * frameBaseDimension.relativeScale +
+      frameBaseDimension.y,
+    relativeScale,
+    absoluteScale: frameBaseDimension.absoluteScale * relativeScale,
   };
+}
+
+export function hasShadowRoot<T extends Node>(
+  n: T,
+): n is T & { shadowRoot: ShadowRoot } {
+  return Boolean(((n as unknown) as Element)?.shadowRoot);
 }

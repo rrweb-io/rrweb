@@ -53,17 +53,17 @@ rrwebPlayer.goto(3000);
 ```js
 // 当前播放时间
 rrwebPlayer.addEventListener('ui-update-current-time', (event) => {
-  console.log(event.detail.payload);
+  console.log(event.payload);
 });
 
 // 当前播放状态
 rrwebPlayer.addEventListener('ui-update-player-state', (event) => {
-  console.log(event.detail.payload);
+  console.log(event.payload);
 });
 
 // 当前播放进度
 rrwebPlayer.addEventListener('ui-update-progress', (event) => {
-  console.log(event.detail.payload);
+  console.log(event.payload);
 });
 ```
 

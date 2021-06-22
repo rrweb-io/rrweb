@@ -1,6 +1,6 @@
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
-import { eventWithTime, playerConfig, playerMetaData, Handler } from '../types';
+import { eventWithTime, playerConfig, playerMetaData, Handler, Mirror } from '../types';
 import './styles/style.css';
 export declare class Replayer {
     wrapper: HTMLDivElement;
@@ -19,13 +19,17 @@ export declare class Replayer {
     private fragmentParentMap;
     private elementStateMap;
     private imageMap;
+    private mirror;
+    private firstPlayedEvent;
     private newDocumentQueue;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
+    off(event: string, handler: Handler): this;
     setConfig(config: Partial<playerConfig>): void;
     getMetaData(): playerMetaData;
     getCurrentTime(): number;
     getTimeOffset(): number;
+    getMirror(): Mirror;
     play(timeOffset?: number): void;
     pause(timeOffset?: number): void;
     resume(timeOffset?: number): void;
@@ -54,6 +58,7 @@ export declare class Replayer {
     private hoverElements;
     private isUserInteraction;
     private backToNormal;
+    private restoreRealParent;
     private storeState;
     private restoreState;
     private warnNodeNotFound;

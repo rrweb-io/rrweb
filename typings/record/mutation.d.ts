@@ -1,6 +1,7 @@
 import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
-import { mutationRecord, blockClass, mutationCallBack } from '../types';
+import { mutationRecord, blockClass, maskTextClass, mutationCallBack, MaskTextFn, Mirror } from '../types';
 import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
 export default class MutationBuffer {
     private frozen;
     private locked;
@@ -15,13 +16,18 @@ export default class MutationBuffer {
     private emissionCallback;
     private blockClass;
     private blockSelector;
+    private maskTextClass;
+    private maskTextSelector;
     private inlineStylesheet;
     private maskInputOptions;
+    private maskTextFn;
     private recordCanvas;
     private slimDOMOptions;
     private doc;
+    private mirror;
     private iframeManager;
-    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, recordCanvas: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, iframeManager: IframeManager): void;
+    private shadowDomManager;
+    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, recordCanvas: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager): void;
     freeze(): void;
     unfreeze(): void;
     isFrozen(): boolean;

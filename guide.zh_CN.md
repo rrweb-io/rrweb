@@ -286,7 +286,7 @@ replayer.pause(5000);
 | showDebug           | false         | 是否在回放过程中打印 debug 信息                                                                                                                                                                      |
 | blockClass          | 'rr-block'    | 需要在回放时展示为隐藏区域的元素类名                                                                                                                                                                 |
 | liveMode            | false         | 是否开启直播模式                                                                                                                                                                                     |
-| inertStyleRules     | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式                                                                                                                                       |
+| insertStyleRules     | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式                                                                                                                                       |
 | triggerFocus        | true          | 回放时是否回放 focus 交互                                                                                                                                                                            |
 | UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险**                                                                                                                                 |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
@@ -376,9 +376,9 @@ replayer.on(EVENT_NAME, (payload) => {
 
 | 事件类型               | 描述           | 值                      |
 | ---------------------- | -------------- | ----------------------- |
-| ui-update-current-time | 当前回放时间点 | { detail: { payload } } |
-| ui-update-player-state | 当前回放状态   | { detail: { payload } } |
-| ui-update-progress     | 当前回放百分比 | { detail: { payload } } |
+| ui-update-current-time | 当前回放时间点 | { payload } |
+| ui-update-player-state | 当前回放状态   | { payload } |
+| ui-update-progress     | 当前回放百分比 | { payload } |
 
 ## REPL 工具
 
