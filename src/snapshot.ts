@@ -363,8 +363,8 @@ function serializeNode(
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  if (((doc as unknown) as INode).__sn) {
-    const docId = ((doc as unknown) as INode).__sn.id;
+  if ((doc as unknown as INode).__sn) {
+    const docId = (doc as unknown as INode).__sn.id;
     rootId = docId === 1 ? undefined : docId;
   }
   switch (n.nodeType) {
@@ -464,7 +464,7 @@ function serializeNode(
         attributes.rr_mediaState = (n as HTMLMediaElement).paused
           ? 'paused'
           : 'played';
-        attributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime
+        attributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime;
       }
       // scroll
       if ((n as HTMLElement).scrollLeft) {

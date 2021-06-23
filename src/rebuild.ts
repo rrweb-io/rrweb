@@ -203,12 +203,15 @@ function buildNode(
             (node as HTMLElement).style.height = value;
           }
           if (name === 'rr_mediaCurrentTime') {
-            (node as HTMLMediaElement).currentTime = n.attributes.rr_mediaCurrentTime as number
+            (node as HTMLMediaElement).currentTime = n.attributes
+              .rr_mediaCurrentTime as number;
           }
           if (name === 'rr_mediaState') {
             switch (value) {
               case 'played':
-                (node as HTMLMediaElement).play().catch(e => console.warn("media playback error", e));
+                (node as HTMLMediaElement)
+                  .play()
+                  .catch((e) => console.warn('media playback error', e));
                 break;
               case 'paused':
                 (node as HTMLMediaElement).pause();
