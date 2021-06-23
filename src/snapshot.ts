@@ -464,6 +464,7 @@ function serializeNode(
         attributes.rr_mediaState = (n as HTMLMediaElement).paused
           ? 'paused'
           : 'played';
+        attributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime
       }
       // scroll
       if ((n as HTMLElement).scrollLeft) {

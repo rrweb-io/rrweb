@@ -202,10 +202,14 @@ function buildNode(
           if (name === 'rr_height') {
             (node as HTMLElement).style.height = value;
           }
+          if (name === 'rr_mediaCurrentTime') {
+            (node as HTMLMediaElement).currentTime = n.attributes.rr_mediaCurrentTime as number
+          }
           if (name === 'rr_mediaState') {
             switch (value) {
               case 'played':
-                (node as HTMLMediaElement).play();
+                (node as HTMLMediaElement).play().catch(e => console.warn("media playback error", e));
+                break;
               case 'paused':
                 (node as HTMLMediaElement).pause();
                 break;
