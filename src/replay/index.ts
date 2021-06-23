@@ -910,13 +910,14 @@ export class Replayer {
             mediaEl.pause();
           }
           if (d.type === MediaInteractions.Play) {
-            if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-              mediaEl.play();
-            } else {
-              mediaEl.addEventListener('canplay', () => {
-                mediaEl.play();
-              });
-            }
+            mediaEl.currentTime = d.attributes.currentTime;
+            // remove listener for 'canplay' event because play() is async and returns a promise
+            // i.e. media will evntualy start to play when data is loaded
+            // 'canplay' event fires even when currentTime attribute changes which may lead to 
+            // unexpeted behavior
+            mediaEl.play();
+          } else if (d.type === MediaInteractions.Seeked) {
+            mediaEl.currentTime = d.attributes.currentTime;
           }
         } catch (error) {
           if (this.config.showWarning) {

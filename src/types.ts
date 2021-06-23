@@ -474,11 +474,15 @@ export type inputCallback = (v: inputValue & { id: number }) => void;
 export const enum MediaInteractions {
   Play,
   Pause,
+  Seeked,
 }
 
 export type mediaInteractionParam = {
   type: MediaInteractions;
   id: number;
+  attributes: {
+    currentTime: number
+  };
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;

@@ -334,11 +334,15 @@ export declare type inputCallback = (v: inputValue & {
 }) => void;
 export declare const enum MediaInteractions {
     Play = 0,
-    Pause = 1
+    Pause = 1,
+    Seeked = 2
 }
 export declare type mediaInteractionParam = {
     type: MediaInteractions;
     id: number;
+    attributes: {
+        currentTime: number;
+    };
 };
 export declare type mediaInteractionCallback = (p: mediaInteractionParam) => void;
 export declare type DocumentDimension = {
