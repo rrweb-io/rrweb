@@ -1319,6 +1319,10 @@ export class Replayer {
       if (!target) {
         return this.warnNodeNotFound(d, mutation.id);
       }
+      // fix 回放时，给iframe添加src属性，导致跨域时iframe内容不展示
+      if (isIframeINode(target)) {
+        return;
+      }
       if (this.fragmentParentMap.has(target)) {
         target = this.fragmentParentMap.get(target)!;
       }
@@ -1357,8 +1361,14 @@ export class Replayer {
       });
     } else {
       try {
-        ((target as Node) as Element).scrollTop = d.y;
-        ((target as Node) as Element).scrollLeft = d.x;
+        // fix iframe内容不能滚动
+        if (((target as Node) as Document).documentElement) {
+          ((target as Node) as Document).documentElement.scrollTop = d.y;
+          ((target as Node) as Document).documentElement.scrollLeft = d.x;
+        } else {
+          ((target as Node) as Element).scrollTop = d.y;
+          ((target as Node) as Element).scrollLeft = d.x;
+        }
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before

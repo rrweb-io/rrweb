@@ -266,7 +266,10 @@ function record<T = eventWithTime>(
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn);
+        // fix 有几率iframe增量快照 在全量快照前
+        setTimeout(() => {
+          iframeManager.attachIframe(iframe, childSn);
+        }, 0)
       },
     });
 

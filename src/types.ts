@@ -588,6 +588,7 @@ export enum ReplayerEvents {
   Flush = 'flush',
   StateChange = 'state-change',
   PlayBack = 'play-back',
+  AddEventEnd='add-event-end'
 }
 
 export type MaskInputFn = (text: string) => string;

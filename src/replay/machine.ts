@@ -221,6 +221,8 @@ export function createPlayerService(
           ctx.timer.clear();
         },
         resetLastPlayedEvent: assign((ctx) => {
+          // fix SPA多个页面录制 播放结束后  重新播放异常
+          emitter.emit(ReplayerEvents.PlayBack);
           return {
             ...ctx,
             lastPlayedEvent: null,
@@ -262,6 +264,8 @@ export function createPlayerService(
               }
               events.splice(insertionIndex, 0, event);
             }
+            // fix 使用addEvent添加事件后 rrweb-replayer播放器 总时长异常
+            emitter.emit(ReplayerEvents.AddEventEnd, event);
 
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);
