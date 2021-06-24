@@ -482,17 +482,22 @@ function initMediaInteractionObserver(
   blockClass: blockClass,
   mirror: Mirror,
 ): listenerHandler {
-  const handler = (type: 'play' | 'pause') => (event: Event) => {
+  const handler = (type: MediaInteractions ) => (event: Event) => {
     const target = getEventTarget(event);
     if (!target || isBlocked(target as Node, blockClass)) {
       return;
     }
     mediaInteractionCb({
-      type: type === 'play' ? MediaInteractions.Play : MediaInteractions.Pause,
+      type,
       id: mirror.getId(target as INode),
+      currentTime: (target as HTMLMediaElement).currentTime
     });
   };
-  const handlers = [on('play', handler('play')), on('pause', handler('pause'))];
+  const handlers = [
+    on('play', handler(MediaInteractions.Play)), 
+    on('pause', handler(MediaInteractions.Pause)), 
+    on('seeked', handler(MediaInteractions.Seeked))
+  ];
   return () => {
     handlers.forEach((h) => h());
   };

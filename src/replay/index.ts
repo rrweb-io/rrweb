@@ -906,17 +906,18 @@ export class Replayer {
         }
         const mediaEl = (target as Node) as HTMLMediaElement;
         try {
+          if (d.currentTime) {
+            mediaEl.currentTime = d.currentTime;
+          }
           if (d.type === MediaInteractions.Pause) {
             mediaEl.pause();
           }
           if (d.type === MediaInteractions.Play) {
-            if (mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-              mediaEl.play();
-            } else {
-              mediaEl.addEventListener('canplay', () => {
-                mediaEl.play();
-              });
-            }
+            // remove listener for 'canplay' event because play() is async and returns a promise
+            // i.e. media will evntualy start to play when data is loaded
+            // 'canplay' event fires even when currentTime attribute changes which may lead to 
+            // unexpeted behavior
+            mediaEl.play();
           }
         } catch (error) {
           if (this.config.showWarning) {
