@@ -340,9 +340,7 @@ export declare const enum MediaInteractions {
 export declare type mediaInteractionParam = {
     type: MediaInteractions;
     id: number;
-    attributes: {
-        currentTime: number;
-    };
+    currentTime?: number;
 };
 export declare type mediaInteractionCallback = (p: mediaInteractionParam) => void;
 export declare type DocumentDimension = {

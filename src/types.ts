@@ -480,9 +480,7 @@ export const enum MediaInteractions {
 export type mediaInteractionParam = {
   type: MediaInteractions;
   id: number;
-  attributes: {
-    currentTime: number
-  };
+  currentTime?: number
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;

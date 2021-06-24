@@ -490,9 +490,7 @@ function initMediaInteractionObserver(
     mediaInteractionCb({
       type,
       id: mirror.getId(target as INode),
-      attributes: {
-        currentTime: (target as HTMLMediaElement).currentTime
-      },
+      currentTime: (target as HTMLMediaElement).currentTime
     });
   };
   const handlers = [
