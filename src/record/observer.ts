@@ -193,21 +193,43 @@ function initMoveObserver(
     },
     callbackThreshold,
   );
-  const updatePosition = throttle<MouseEvent | TouchEvent | DragEvent>(
+
+  // update position for mouse, touch, and drag events (drag event extends mouse event)
+  function handleUpdatePositionEvent(evt: MouseEvent | TouchEvent) {
+    const target = getEventTarget(evt);
+    const { clientX, clientY } = isTouchEvent(evt)
+      ? evt.changedTouches[0]
+      : evt;
+    if (!timeBaseline) {
+      timeBaseline = Date.now();
+    }
+    positions.push({
+      x: clientX,
+      y: clientY,
+      id: mirror.getId(target as INode),
+      timeOffset: Date.now() - timeBaseline,
+    });
+  }
+
+  // separate call for non-drag events, in case DragEvent is not defined
+  const updatePosition = throttle<MouseEvent | TouchEvent>(
     (evt) => {
-      const target = getEventTarget(evt);
-      const { clientX, clientY } = isTouchEvent(evt)
-        ? evt.changedTouches[0]
-        : evt;
-      if (!timeBaseline) {
-        timeBaseline = Date.now();
-      }
-      positions.push({
-        x: clientX,
-        y: clientY,
-        id: mirror.getId(target as INode),
-        timeOffset: Date.now() - timeBaseline,
-      });
+      handleUpdatePositionEvent(evt);
+      wrappedCb(
+        evt instanceof MouseEvent
+          ? IncrementalSource.MouseMove
+          : IncrementalSource.TouchMove,
+      );
+    },
+    threshold,
+    {
+      trailing: false,
+    },
+  );
+  // call for drag events, when DragEvent is defined
+  const updateDragPosition = throttle<MouseEvent | TouchEvent | DragEvent>(
+    (evt) => {
+      handleUpdatePositionEvent(evt);
       wrappedCb(
         evt instanceof DragEvent
           ? IncrementalSource.Drag
@@ -224,7 +246,7 @@ function initMoveObserver(
   const handlers = [
     on('mousemove', updatePosition, doc),
     on('touchmove', updatePosition, doc),
-    on('drag', updatePosition, doc),
+    on('drag', updateDragPosition, doc),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -530,11 +552,16 @@ function initCanvasMutationObserver(
                     recordArgs[0] &&
                     recordArgs[0] instanceof HTMLCanvasElement
                   ) {
-                    const canvas = recordArgs[0]
-                    const ctx = canvas.getContext('2d')
-                    let imgd = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+                    const canvas = recordArgs[0];
+                    const ctx = canvas.getContext('2d');
+                    let imgd = ctx?.getImageData(
+                      0,
+                      0,
+                      canvas.width,
+                      canvas.height,
+                    );
                     let pix = imgd?.data;
-                    recordArgs[0] = JSON.stringify(pix)
+                    recordArgs[0] = JSON.stringify(pix);
                   }
                 }
                 cb({

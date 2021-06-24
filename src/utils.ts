@@ -301,7 +301,6 @@ export function polyfill(win = window) {
       if (!(0 in arguments)) {
         throw new TypeError('1 argument is required');
       }
-
       do {
         if (this === node) {
           return true;
