@@ -483,7 +483,7 @@ function initMediaInteractionObserver(
   mirror: Mirror,
 ): listenerHandler {
   const handler = (type: MediaInteractions ) => (event: Event) => {
-    const { target } = event;
+    const target = getEventTarget(event);
     if (!target || isBlocked(target as Node, blockClass)) {
       return;
     }
