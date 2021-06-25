@@ -1310,13 +1310,11 @@ export class Replayer {
       for (const attributeName in mutation.attributes) {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
-          if (typeof value === 'string') {
+          if (value === null) {
+            ((target as Node) as Element).removeAttribute(attributeName);
+          } else if (typeof value === 'string') {
             try {
-              if (value !== null) {
-                ((target as Node) as Element).setAttribute(attributeName, value);
-              } else {
-                ((target as Node) as Element).removeAttribute(attributeName);
-              }
+              ((target as Node) as Element).setAttribute(attributeName, value);
             } catch (error) {
               if (this.config.showWarning) {
                 console.warn(
