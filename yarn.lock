@@ -2874,9 +2874,10 @@ rollup@^2.3.3:
   optionalDependencies:
     fsevents "~2.3.2"
 
-"rrweb-snapshot@git+https://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:x-oauth-basic@github.com/noibu/rrweb-snapshot#NoibuRRWeb-Snapshot":
+rrweb-snapshot@^1.1.4:
   version "1.1.4"
-  resolved "git+https://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:x-oauth-basic@github.com/noibu/rrweb-snapshot#d9d3e5461aa2e9eaf13b598019d6d48ded3f1135"
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.1.4.tgz#a71d812004c340aaa5313d313a7bd343eb8c260d"
+  integrity sha512-0iVRbsWSVOVEjgE8MA0+zYwlLMSwkVsUA7KhmvVaBK+viYcbx79SKRB8PkeFz1/1Jnn9fnkzPHlh42F+xFuwbQ==
 
 run-async@^2.2.0:
   version "2.4.1"
