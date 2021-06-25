@@ -7,12 +7,18 @@
 
 # rrweb
 
+**[🚀 Try storyteller, a no-code interactive tutorial builder build with rrweb](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
+
+**[The new adventure of the rrweb community](http://www.myriptide.com/rrweb-community/)**
+
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
 
 [中文文档](./README.zh_CN.md)
+
+> I have joined Github Sponsors and highly appreciate your sponsorship.
 
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
@@ -22,11 +28,13 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 [**📚 Read the rrweb guide here. 📚**](./guide.md)
 
+[**Recipes**](./docs/recipes/index.md)
+
 ## Project Structure
 
 rrweb is mainly composed of 3 parts:
 
-- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb-snapshot)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with an unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM.
+- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb-snapshot)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM.
 - **[rrweb](https://github.com/rrweb-io/rrweb)**, including two functions, record and replay. The record function is used to record all the mutations in the DOM; the replay is to replay the recorded mutations one by one according to the corresponding timestamp.
 - **[rrweb-player](https://github.com/rrweb-io/rrweb-player)**, is a player UI for rrweb, providing GUI-based functions like pause, fast-forward, drag and drop to play at any time.
 

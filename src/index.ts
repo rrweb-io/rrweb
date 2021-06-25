@@ -1,6 +1,7 @@
 import record from './record';
 import { Replayer } from './replay';
-import { mirror } from './utils';
+import { _mirror } from './utils';
+import * as utils from './utils';
 
 export {
   EventType,
@@ -10,5 +11,13 @@ export {
 } from './types';
 
 const { addCustomEvent } = record;
+const { freezePage } = record;
 
-export { record, addCustomEvent, Replayer, mirror };
+export {
+  record,
+  addCustomEvent,
+  freezePage,
+  Replayer,
+  _mirror as mirror,
+  utils,
+};

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "target": "ES5",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
@@ -13,5 +14,9 @@
   },
   "compileOnSave": true,
   "exclude": ["test"],
-  "include": ["src", "test.d.ts"]
+  "include": [
+    "src",
+    "test.d.ts",
+    "node_modules/@types/css-font-loading-module/index.d.ts"
+  ]
 }

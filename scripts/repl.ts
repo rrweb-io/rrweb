@@ -81,7 +81,11 @@ function getCode(): string {
         width: 1600,
         height: 900,
       },
-      args: ['--start-maximized'],
+      args: [
+        '--start-maximized',
+        '--ignore-certificate-errors',
+        '--no-sandbox',
+      ],
     });
     const page = await browser.newPage();
     await page.goto(url, {
@@ -94,7 +98,9 @@ function getCode(): string {
     await page.evaluate(`;${code}
       window.__IS_RECORDING__ = true
       rrweb.record({
-        emit: event => window._replLog(event)
+        emit: event => window._replLog(event),
+        recordCanvas: true,
+        collectFonts: true
       });
     `);
     page.on('framenavigated', async () => {
@@ -103,14 +109,15 @@ function getCode(): string {
         await page.evaluate(`;${code}
           window.__IS_RECORDING__ = true
           rrweb.record({
-            emit: event => window._replLog(event)
+            emit: event => window._replLog(event),
+            recordCanvas: true,
+            collectFonts: true
           });
         `);
       }
     });
 
-    emitter.once('done', async shouldReplay => {
-      console.log(`Recorded ${events.length} events`);
+    emitter.once('done', async (shouldReplay) => {
       await browser.close();
       if (shouldReplay) {
         await replay();
@@ -125,7 +132,7 @@ function getCode(): string {
         width: 1600,
         height: 900,
       },
-      args: ['--start-maximized'],
+      args: ['--start-maximized', '--no-sandbox'],
     });
     const page = await browser.newPage();
     await page.goto('about:blank');
@@ -170,7 +177,9 @@ function getCode(): string {
         '<\\/script>',
       )};
       /*-->*/
-      const replayer = new rrweb.Replayer(events);
+      const replayer = new rrweb.Replayer(events, {
+        UNSAFE_replayCanvas: true
+      });
       replayer.play();
     </script>
   </body>
@@ -182,10 +191,10 @@ function getCode(): string {
   }
 
   process
-    .on('uncaughtException', error => {
+    .on('uncaughtException', (error) => {
       console.error(error);
     })
-    .on('unhandledRejection', error => {
+    .on('unhandledRejection', (error) => {
       console.error(error);
     });
 })();

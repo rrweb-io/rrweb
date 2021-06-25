@@ -7,10 +7,16 @@
 
 # rrweb
 
+**[🚀 Storyteller, 基于 rrweb 开发的无代码交互式教程编辑器](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
+
+**[rrweb 社区新的征程](http://www.myriptide.com/rrweb-community-cn/)**
+
 [![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
 [![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
+
+> 我已开通 Github Sponsor， 您可以通过赞助的形式帮助 rrweb 的开发。
 
 rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
 
@@ -19,6 +25,8 @@ rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所
 ## 指南
 
 [**📚 rrweb 使用指南 📚**](./guide.zh_CN.md)
+
+[**场景示例**](./docs/recipes/index.zh_CN.md)
 
 ## 项目结构
 

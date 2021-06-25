@@ -4,8 +4,25 @@ import {
   listenerHandler,
   hookResetter,
   blockClass,
+  eventWithTime,
+  EventType,
+  IncrementalSource,
+  addedNodeMutation,
+  removedNodeMutation,
+  textMutation,
+  attributeMutation,
+  mutationData,
+  scrollData,
+  inputData,
+  DocumentDimension,
 } from './types';
-import { INode } from 'rrweb-snapshot';
+import {
+  INode,
+  IGNORED_NODE,
+  serializedNodeWithId,
+  NodeType,
+  isShadowRoot,
+} from 'rrweb-snapshot';
 
 export function on(
   type: string,
@@ -17,32 +34,76 @@ export function on(
   return () => target.removeEventListener(type, fn, options);
 }
 
-export const mirror: Mirror = {
+export function createMirror(): Mirror {
+  return {
+    map: {},
+    getId(n) {
+      // if n is not a serialized INode, use -1 as its id.
+      if (!n.__sn) {
+        return -1;
+      }
+      return n.__sn.id;
+    },
+    getNode(id) {
+      return this.map[id] || null;
+    },
+    // TODO: use a weakmap to get rid of manually memory management
+    removeNodeFromMap(n) {
+      const id = n.__sn && n.__sn.id;
+      delete this.map[id];
+      if (n.childNodes) {
+        n.childNodes.forEach((child) =>
+          this.removeNodeFromMap((child as Node) as INode),
+        );
+      }
+    },
+    has(id) {
+      return this.map.hasOwnProperty(id);
+    },
+    reset() {
+      this.map = {};
+    },
+  };
+}
+
+// https://github.com/rrweb-io/rrweb/pull/407
+const DEPARTED_MIRROR_ACCESS_WARNING =
+  'Please stop import mirror directly. Instead of that,' +
+  '\r\n' +
+  'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
+  '\r\n' +
+  'or you can use record.mirror to access the mirror instance during recording.';
+export let _mirror: Mirror = {
   map: {},
-  getId(n) {
-    // if n is not a serialized INode, use -1 as its id.
-    if (!n.__sn) {
-      return -1;
-    }
-    return n.__sn.id;
+  getId() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return -1;
   },
-  getNode(id) {
-    return mirror.map[id] || null;
+  getNode() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return null;
   },
-  // TODO: use a weakmap to get rid of manually memory management
-  removeNodeFromMap(n) {
-    const id = n.__sn && n.__sn.id;
-    delete mirror.map[id];
-    if (n.childNodes) {
-      n.childNodes.forEach(child =>
-        mirror.removeNodeFromMap((child as Node) as INode),
-      );
-    }
+  removeNodeFromMap() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
   },
-  has(id) {
-    return mirror.map.hasOwnProperty(id);
+  has() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+    return false;
+  },
+  reset() {
+    console.error(DEPARTED_MIRROR_ACCESS_WARNING);
   },
 };
+if (typeof window !== 'undefined' && window.Proxy && window.Reflect) {
+  _mirror = new Proxy(_mirror, {
+    get(target, prop, receiver) {
+      if (prop === 'map') {
+        console.error(DEPARTED_MIRROR_ACCESS_WARNING);
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+}
 
 // copy from underscore and modified
 export function throttle<T>(
@@ -53,7 +114,7 @@ export function throttle<T>(
   let timeout: number | null = null;
   let previous = 0;
   // tslint:disable-next-line: only-arrow-functions
-  return function(arg: T) {
+  return function (arg: T) {
     let now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
@@ -83,9 +144,10 @@ export function hookSetter<T>(
   key: string | number | symbol,
   d: PropertyDescriptor,
   isRevoked?: boolean,
+  win = window,
 ): hookResetter {
-  const original = Object.getOwnPropertyDescriptor(target, key);
-  Object.defineProperty(
+  const original = win.Object.getOwnPropertyDescriptor(target, key);
+  win.Object.defineProperty(
     target,
     key,
     isRevoked
@@ -103,6 +165,47 @@ export function hookSetter<T>(
         },
   );
   return () => hookSetter(target, key, original || {}, true);
+}
+
+// copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
+export function patch(
+  // tslint:disable-next-line:no-any
+  source: { [key: string]: any },
+  name: string,
+  // tslint:disable-next-line:no-any
+  replacement: (...args: any[]) => any,
+): () => void {
+  try {
+    if (!(name in source)) {
+      return () => {};
+    }
+
+    const original = source[name] as () => unknown;
+    const wrapped = replacement(original);
+
+    // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
+    // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
+    // tslint:disable-next-line:strict-type-predicates
+    if (typeof wrapped === 'function') {
+      wrapped.prototype = wrapped.prototype || {};
+      Object.defineProperties(wrapped, {
+        __rrweb_original__: {
+          enumerable: false,
+          value: original,
+        },
+      });
+    }
+
+    source[name] = wrapped;
+
+    return () => {
+      source[name] = original;
+    };
+  } catch {
+    return () => {};
+    // This can throw if multiple fill happens on a global object like XMLHttpRequest
+    // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
+  }
 }
 
 export function getWindowHeight(): number {
@@ -130,7 +233,7 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
     if (typeof blockClass === 'string') {
       needBlock = (node as HTMLElement).classList.contains(blockClass);
     } else {
-      (node as HTMLElement).classList.forEach(className => {
+      (node as HTMLElement).classList.forEach((className) => {
         if (blockClass.test(className)) {
           needBlock = true;
         }
@@ -138,10 +241,26 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
     }
     return needBlock || isBlocked(node.parentNode, blockClass);
   }
+  if (node.nodeType === node.TEXT_NODE) {
+    // check parent node since text node do not have class name
+    return isBlocked(node.parentNode, blockClass);
+  }
   return isBlocked(node.parentNode, blockClass);
 }
 
-export function isAncestorRemoved(target: INode): boolean {
+export function isIgnored(n: Node | INode): boolean {
+  if ('__sn' in n) {
+    return (n as INode).__sn.id === IGNORED_NODE;
+  }
+  // The main part of the slimDOM check happens in
+  // rrweb-snapshot::serializeNodeWithId
+  return false;
+}
+
+export function isAncestorRemoved(target: INode, mirror: Mirror): boolean {
+  if (isShadowRoot(target)) {
+    return false;
+  }
   const id = mirror.getId(target);
   if (!mirror.has(id)) {
     return true;
@@ -156,7 +275,7 @@ export function isAncestorRemoved(target: INode): boolean {
   if (!target.parentNode) {
     return true;
   }
-  return isAncestorRemoved((target.parentNode as unknown) as INode);
+  return isAncestorRemoved((target.parentNode as unknown) as INode, mirror);
 }
 
 export function isTouchEvent(
@@ -165,9 +284,373 @@ export function isTouchEvent(
   return Boolean((event as TouchEvent).changedTouches);
 }
 
-export function polyfill() {
-  if ('NodeList' in window && !NodeList.prototype.forEach) {
-    NodeList.prototype.forEach = (Array.prototype
+export function polyfill(win = window) {
+  if ('NodeList' in win && !win.NodeList.prototype.forEach) {
+    win.NodeList.prototype.forEach = (Array.prototype
       .forEach as unknown) as NodeList['forEach'];
   }
+
+  if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
+    win.DOMTokenList.prototype.forEach = (Array.prototype
+      .forEach as unknown) as DOMTokenList['forEach'];
+  }
+
+  // https://github.com/Financial-Times/polyfill-service/pull/183
+  if (!Node.prototype.contains) {
+    Node.prototype.contains = function contains(node) {
+      if (!(0 in arguments)) {
+        throw new TypeError('1 argument is required');
+      }
+      do {
+        if (this === node) {
+          return true;
+        }
+        // tslint:disable-next-line: no-conditional-assignment
+      } while ((node = node && node.parentNode));
+
+      return false;
+    };
+  }
+}
+
+export function needCastInSyncMode(event: eventWithTime): boolean {
+  switch (event.type) {
+    case EventType.DomContentLoaded:
+    case EventType.Load:
+    case EventType.Custom:
+      return false;
+    case EventType.FullSnapshot:
+    case EventType.Meta:
+      return true;
+    default:
+      break;
+  }
+
+  switch (event.data.source) {
+    case IncrementalSource.MouseMove:
+    case IncrementalSource.MouseInteraction:
+    case IncrementalSource.TouchMove:
+    case IncrementalSource.MediaInteraction:
+      return false;
+    case IncrementalSource.ViewportResize:
+    case IncrementalSource.StyleSheetRule:
+    case IncrementalSource.Scroll:
+    case IncrementalSource.Input:
+      return true;
+    default:
+      break;
+  }
+
+  return true;
+}
+
+export type TreeNode = {
+  id: number;
+  mutation: addedNodeMutation;
+  parent?: TreeNode;
+  children: Record<number, TreeNode>;
+  texts: textMutation[];
+  attributes: attributeMutation[];
+};
+export class TreeIndex {
+  public tree!: Record<number, TreeNode>;
+
+  private removeNodeMutations!: removedNodeMutation[];
+  private textMutations!: textMutation[];
+  private attributeMutations!: attributeMutation[];
+  private indexes!: Map<number, TreeNode>;
+  private removeIdSet!: Set<number>;
+  private scrollMap!: Map<number, scrollData>;
+  private inputMap!: Map<number, inputData>;
+
+  constructor() {
+    this.reset();
+  }
+
+  public add(mutation: addedNodeMutation) {
+    const parentTreeNode = this.indexes.get(mutation.parentId);
+    const treeNode: TreeNode = {
+      id: mutation.node.id,
+      mutation,
+      children: [],
+      texts: [],
+      attributes: [],
+    };
+    if (!parentTreeNode) {
+      this.tree[treeNode.id] = treeNode;
+    } else {
+      treeNode.parent = parentTreeNode;
+      parentTreeNode.children[treeNode.id] = treeNode;
+    }
+    this.indexes.set(treeNode.id, treeNode);
+  }
+
+  public remove(mutation: removedNodeMutation, mirror: Mirror) {
+    const parentTreeNode = this.indexes.get(mutation.parentId);
+    const treeNode = this.indexes.get(mutation.id);
+
+    const deepRemoveFromMirror = (id: number) => {
+      this.removeIdSet.add(id);
+      const node = mirror.getNode(id);
+      node?.childNodes.forEach((childNode) => {
+        if ('__sn' in childNode) {
+          deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id);
+        }
+      });
+    };
+    const deepRemoveFromTreeIndex = (node: TreeNode) => {
+      this.removeIdSet.add(node.id);
+      Object.values(node.children).forEach((n) => deepRemoveFromTreeIndex(n));
+      const _treeNode = this.indexes.get(node.id);
+      if (_treeNode) {
+        const _parentTreeNode = _treeNode.parent;
+        if (_parentTreeNode) {
+          delete _treeNode.parent;
+          delete _parentTreeNode.children[_treeNode.id];
+          this.indexes.delete(mutation.id);
+        }
+      }
+    };
+
+    if (!treeNode) {
+      this.removeNodeMutations.push(mutation);
+      deepRemoveFromMirror(mutation.id);
+    } else if (!parentTreeNode) {
+      delete this.tree[treeNode.id];
+      this.indexes.delete(treeNode.id);
+      deepRemoveFromTreeIndex(treeNode);
+    } else {
+      delete treeNode.parent;
+      delete parentTreeNode.children[treeNode.id];
+      this.indexes.delete(mutation.id);
+      deepRemoveFromTreeIndex(treeNode);
+    }
+  }
+
+  public text(mutation: textMutation) {
+    const treeNode = this.indexes.get(mutation.id);
+    if (treeNode) {
+      treeNode.texts.push(mutation);
+    } else {
+      this.textMutations.push(mutation);
+    }
+  }
+
+  public attribute(mutation: attributeMutation) {
+    const treeNode = this.indexes.get(mutation.id);
+    if (treeNode) {
+      treeNode.attributes.push(mutation);
+    } else {
+      this.attributeMutations.push(mutation);
+    }
+  }
+
+  public scroll(d: scrollData) {
+    this.scrollMap.set(d.id, d);
+  }
+
+  public input(d: inputData) {
+    this.inputMap.set(d.id, d);
+  }
+
+  public flush(): {
+    mutationData: mutationData;
+    scrollMap: TreeIndex['scrollMap'];
+    inputMap: TreeIndex['inputMap'];
+  } {
+    const {
+      tree,
+      removeNodeMutations,
+      textMutations,
+      attributeMutations,
+    } = this;
+
+    const batchMutationData: mutationData = {
+      source: IncrementalSource.Mutation,
+      removes: removeNodeMutations,
+      texts: textMutations,
+      attributes: attributeMutations,
+      adds: [],
+    };
+
+    const walk = (treeNode: TreeNode, removed: boolean) => {
+      if (removed) {
+        this.removeIdSet.add(treeNode.id);
+      }
+      batchMutationData.texts = batchMutationData.texts
+        .concat(removed ? [] : treeNode.texts)
+        .filter((m) => !this.removeIdSet.has(m.id));
+      batchMutationData.attributes = batchMutationData.attributes
+        .concat(removed ? [] : treeNode.attributes)
+        .filter((m) => !this.removeIdSet.has(m.id));
+      if (
+        !this.removeIdSet.has(treeNode.id) &&
+        !this.removeIdSet.has(treeNode.mutation.parentId) &&
+        !removed
+      ) {
+        batchMutationData.adds.push(treeNode.mutation);
+        if (treeNode.children) {
+          Object.values(treeNode.children).forEach((n) => walk(n, false));
+        }
+      } else {
+        Object.values(treeNode.children).forEach((n) => walk(n, true));
+      }
+    };
+
+    Object.values(tree).forEach((n) => walk(n, false));
+
+    for (const id of this.scrollMap.keys()) {
+      if (this.removeIdSet.has(id)) {
+        this.scrollMap.delete(id);
+      }
+    }
+    for (const id of this.inputMap.keys()) {
+      if (this.removeIdSet.has(id)) {
+        this.inputMap.delete(id);
+      }
+    }
+
+    const scrollMap = new Map(this.scrollMap);
+    const inputMap = new Map(this.inputMap);
+
+    this.reset();
+
+    return {
+      mutationData: batchMutationData,
+      scrollMap,
+      inputMap,
+    };
+  }
+
+  private reset() {
+    this.tree = [];
+    this.indexes = new Map();
+    this.removeNodeMutations = [];
+    this.textMutations = [];
+    this.attributeMutations = [];
+    this.removeIdSet = new Set();
+    this.scrollMap = new Map();
+    this.inputMap = new Map();
+  }
+}
+
+type ResolveTree = {
+  value: addedNodeMutation;
+  children: ResolveTree[];
+  parent: ResolveTree | null;
+};
+
+export function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[] {
+  const queueNodeMap: Record<number, ResolveTree> = {};
+  const putIntoMap = (
+    m: addedNodeMutation,
+    parent: ResolveTree | null,
+  ): ResolveTree => {
+    const nodeInTree: ResolveTree = {
+      value: m,
+      parent,
+      children: [],
+    };
+    queueNodeMap[m.node.id] = nodeInTree;
+    return nodeInTree;
+  };
+
+  const queueNodeTrees: ResolveTree[] = [];
+  for (const mutation of queue) {
+    const { nextId, parentId } = mutation;
+    if (nextId && nextId in queueNodeMap) {
+      const nextInTree = queueNodeMap[nextId];
+      if (nextInTree.parent) {
+        const idx = nextInTree.parent.children.indexOf(nextInTree);
+        nextInTree.parent.children.splice(
+          idx,
+          0,
+          putIntoMap(mutation, nextInTree.parent),
+        );
+      } else {
+        const idx = queueNodeTrees.indexOf(nextInTree);
+        queueNodeTrees.splice(idx, 0, putIntoMap(mutation, null));
+      }
+      continue;
+    }
+    if (parentId in queueNodeMap) {
+      const parentInTree = queueNodeMap[parentId];
+      parentInTree.children.push(putIntoMap(mutation, parentInTree));
+      continue;
+    }
+    queueNodeTrees.push(putIntoMap(mutation, null));
+  }
+
+  return queueNodeTrees;
+}
+
+export function iterateResolveTree(
+  tree: ResolveTree,
+  cb: (mutation: addedNodeMutation) => unknown,
+) {
+  cb(tree.value);
+  /**
+   * The resolve tree was designed to reflect the DOM layout,
+   * but we need append next sibling first, so we do a reverse
+   * loop here.
+   */
+  for (let i = tree.children.length - 1; i >= 0; i--) {
+    iterateResolveTree(tree.children[i], cb);
+  }
+}
+
+type HTMLIFrameINode = HTMLIFrameElement & {
+  __sn: serializedNodeWithId;
+};
+export type AppendedIframe = {
+  mutationInQueue: addedNodeMutation;
+  builtNode: HTMLIFrameINode;
+};
+
+export function isIframeINode(
+  node: INode | ShadowRoot,
+): node is HTMLIFrameINode {
+  if ('__sn' in node) {
+    return (
+      node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe'
+    );
+  }
+  // node can be document fragment when using the virtual parent feature
+  return false;
+}
+
+export function getBaseDimension(
+  node: Node,
+  rootIframe: Node,
+): DocumentDimension {
+  const frameElement = node.ownerDocument?.defaultView?.frameElement;
+  if (!frameElement || frameElement === rootIframe) {
+    return {
+      x: 0,
+      y: 0,
+      relativeScale: 1,
+      absoluteScale: 1,
+    };
+  }
+
+  const frameDimension = frameElement.getBoundingClientRect();
+  const frameBaseDimension = getBaseDimension(frameElement, rootIframe);
+  // the iframe element may have a scale transform
+  const relativeScale = frameDimension.height / frameElement.clientHeight;
+  return {
+    x:
+      frameDimension.x * frameBaseDimension.relativeScale +
+      frameBaseDimension.x,
+    y:
+      frameDimension.y * frameBaseDimension.relativeScale +
+      frameBaseDimension.y,
+    relativeScale,
+    absoluteScale: frameBaseDimension.absoluteScale * relativeScale,
+  };
+}
+
+export function hasShadowRoot<T extends Node>(
+  n: T,
+): n is T & { shadowRoot: ShadowRoot } {
+  return Boolean(((n as unknown) as Element)?.shadowRoot);
 }

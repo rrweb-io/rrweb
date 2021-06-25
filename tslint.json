@@ -15,7 +15,13 @@
       "check-format",
       "allow-leading-underscore"
     ],
-    "arrow-parens": false
+    "arrow-parens": false,
+    "only-arrow-functions": false,
+    "max-line-length": false,
+    "no-empty": false,
+    "max-classes-per-file": false,
+    "semicolon": false,
+    "trailing-comma": false
   },
   "rulesDirectory": []
 }

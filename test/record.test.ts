@@ -9,8 +9,10 @@ import {
   listenerHandler,
   eventWithTime,
   EventType,
+  IncrementalSource,
+  styleSheetRuleData,
 } from '../src/types';
-import { assertSnapshot } from './utils';
+import { assertSnapshot, launchPuppeteer } from './utils';
 import { Suite } from 'mocha';
 
 interface ISuite extends Suite {
@@ -22,18 +24,17 @@ interface ISuite extends Suite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: (options: recordOptions) => listenerHandler | undefined;
+    record: (
+      options: recordOptions<eventWithTime>,
+    ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
 }
 
-describe('record', function(this: ISuite) {
+const setup = async function (this: ISuite, content: string) {
   before(async () => {
-    this.browser = await puppeteer.launch({
-      headless: false,
-      args: ['--no-sandbox'],
-    });
+    this.browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
     this.code = fs.readFileSync(bundlePath, 'utf8');
@@ -42,13 +43,7 @@ describe('record', function(this: ISuite) {
   beforeEach(async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(`
-      <html>
-        <body>
-          <input type="text" />
-        </body>
-      </html>
-    `);
+    await page.setContent(content);
     await page.evaluate(this.code);
     this.page = page;
     this.events = [];
@@ -59,7 +54,7 @@ describe('record', function(this: ISuite) {
       this.events.push(e);
     });
 
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
 
   afterEach(async () => {
@@ -69,6 +64,21 @@ describe('record', function(this: ISuite) {
   after(async () => {
     await this.browser.close();
   });
+};
+
+describe('record', function (this: ISuite) {
+  this.timeout(10_000);
+
+  setup.call(
+    this,
+    `
+      <html>
+        <body>
+          <input type="text" size="40" />
+        </body>
+      </html>
+    `,
+  );
 
   it('will only have one full snapshot without checkout config', async () => {
     await this.page.evaluate(() => {
@@ -81,7 +91,7 @@ describe('record', function(this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(10);
+    await this.page.waitForTimeout(10);
     expect(this.events.length).to.equal(33);
     expect(
       this.events.filter(
@@ -107,7 +117,7 @@ describe('record', function(this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(10);
+    await this.page.waitForTimeout(10);
     expect(this.events.length).to.equal(39);
     expect(
       this.events.filter(
@@ -137,11 +147,12 @@ describe('record', function(this: ISuite) {
     while (count--) {
       await this.page.type('input', 'a');
     }
-    await this.page.waitFor(500);
-    expect(this.events.length).to.equal(33);
+    await this.page.waitForTimeout(300);
+    expect(this.events.length).to.equal(33); // before first automatic snapshot
+    await this.page.waitForTimeout(200); // could be 33 or 35 events by now depending on speed of test env
     await this.page.type('input', 'a');
-    await this.page.waitFor(10);
-    expect(this.events.length).to.equal(36);
+    await this.page.waitForTimeout(10);
+    expect(this.events.length).to.equal(36); // additionally includes the 2 checkout events
     expect(
       this.events.filter(
         (event: eventWithTime) => event.type === EventType.Meta,
@@ -178,7 +189,7 @@ describe('record', function(this: ISuite) {
         document.body.appendChild(span);
       }, 10);
     });
-    await this.page.waitFor(50);
+    await this.page.waitForTimeout(100);
     assertSnapshot(this.events, __filename, 'async-checkout');
   });
 
@@ -193,7 +204,89 @@ describe('record', function(this: ISuite) {
         a: 'b',
       });
     });
-    await this.page.waitFor(50);
+    await this.page.waitForTimeout(50);
     assertSnapshot(this.events, __filename, 'custom-event');
+  });
+
+  it('captures stylesheet rules', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
+      const ruleIdx1 = styleSheet.insertRule('body { background: #111; }');
+      styleSheet.deleteRule(ruleIdx1);
+      setTimeout(() => {
+        styleSheet.insertRule('body { color: #fff; }');
+      }, 0);
+      setTimeout(() => {
+        styleSheet.deleteRule(ruleIdx0);
+      }, 5);
+      setTimeout(() => {
+        styleSheet.insertRule('body { color: #ccc; }');
+      }, 10);
+    });
+    await this.page.waitForTimeout(50);
+    const styleSheetRuleEvents = this.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.StyleSheetRule,
+    );
+    const addRuleCount = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    ).length;
+    const removeRuleCount = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).removes),
+    ).length;
+    // sync insert/delete should be ignored
+    expect(addRuleCount).to.equal(2);
+    expect(removeRuleCount).to.equal(1);
+    assertSnapshot(this.events, __filename, 'stylesheet-rules');
+  });
+});
+
+describe('record iframes', function (this: ISuite) {
+  this.timeout(10_000);
+
+  setup.call(
+    this,
+    `
+      <html>
+        <body>
+          <iframe srcdoc="<button>Mysterious Button</button>" />
+        </body>
+      </html>
+    `,
+  );
+
+  it('captures iframe content in correct order', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    await this.page.waitForTimeout(10);
+    // console.log(JSON.stringify(this.events));
+
+    expect(this.events.length).to.equal(3);
+    const eventTypes = this.events
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot ||
+          e.type === EventType.FullSnapshot,
+      )
+      .map((e) => e.type);
+    expect(eventTypes).to.have.ordered.members([
+      EventType.FullSnapshot,
+      EventType.IncrementalSnapshot,
+    ]);
   });
 });

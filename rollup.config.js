@@ -1,8 +1,8 @@
 import typescript from 'rollup-plugin-typescript';
-import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
+import renameNodeModules from 'rollup-plugin-rename-node-modules';
 import pkg from './package.json';
 
 function toRecordPath(path) {
@@ -11,176 +11,144 @@ function toRecordPath(path) {
     .replace('rrweb', 'rrweb-record');
 }
 
+function toRecordPackPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/record/')
+    .replace('rrweb', 'rrweb-record-pack');
+}
+
+function toReplayPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/replay/')
+    .replace('rrweb', 'rrweb-replay');
+}
+
+function toReplayUnpackPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/replay/')
+    .replace('rrweb', 'rrweb-replay-unpack');
+}
+
+function toAllPath(path) {
+  return path.replace('rrweb', 'rrweb-all');
+}
+
 function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
 
-let configs = [
-  // browser(record only)
+const baseConfigs = [
+  // record only
   {
     input: './src/record/index.ts',
-    plugins: [resolve(), commonjs(), typescript()],
-    output: [
-      {
-        name: 'rrwebRecord',
-        format: 'iife',
-        file: toRecordPath(pkg.unpkg),
-      },
-    ],
+    name: 'rrwebRecord',
+    pathFn: toRecordPath,
   },
+  // record and pack
   {
-    input: './src/record/index.ts',
-    plugins: [resolve(), commonjs(), typescript(), terser()],
-    output: [
-      {
-        name: 'rrwebRecord',
-        format: 'iife',
-        file: toMinPath(toRecordPath(pkg.unpkg)),
-        sourcemap: true,
-      },
-    ],
+    input: './src/entries/record-pack.ts',
+    name: 'rrwebRecord',
+    pathFn: toRecordPackPath,
   },
-  // CommonJS(record only)
+  // replay only
   {
-    input: './src/record/index.ts',
-    plugins: [resolve(), commonjs(), typescript()],
-    output: [
-      {
-        format: 'cjs',
-        file: toRecordPath(pkg.main),
-      },
-    ],
+    input: './src/replay/index.ts',
+    name: 'rrwebReplay',
+    pathFn: toReplayPath,
   },
-  // ES module(record only)
+  // replay and unpack
   {
-    input: './src/record/index.ts',
-    plugins: [resolve(), commonjs(), typescript()],
-    output: [
-      {
-        format: 'esm',
-        file: toRecordPath(pkg.module),
-      },
-    ],
+    input: './src/entries/replay-unpack.ts',
+    name: 'rrwebReplay',
+    pathFn: toReplayUnpackPath,
   },
+  // record and replay
   {
-    input: './src/record/index.ts',
-    plugins: [resolve(), commonjs(), typescript(), terser()],
-    output: [
-      {
-        format: 'esm',
-        file: toMinPath(toRecordPath(pkg.module)),
-        sourcemap: true,
-      },
-    ],
+    input: './src/index.ts',
+    name: 'rrweb',
+    pathFn: (p) => p,
   },
+  // all in one
+  {
+    input: './src/entries/all.ts',
+    name: 'rrweb',
+    pathFn: toAllPath,
+  },
+];
+
+let configs = [];
+
+for (const c of baseConfigs) {
+  const basePlugins = [resolve({ browser: true }), typescript()];
+  const plugins = basePlugins.concat(
+    postcss({
+      extract: false,
+      inject: false,
+    }),
+  );
   // browser
-  {
-    input: './src/index.ts',
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript(),
-      postcss({
-        extract: false,
-        inject: false,
-      }),
-    ],
+  configs.push({
+    input: c.input,
+    plugins,
     output: [
       {
-        name: 'rrweb',
+        name: c.name,
         format: 'iife',
-        file: pkg.unpkg,
+        file: c.pathFn(pkg.unpkg),
       },
     ],
-  },
-  {
-    input: './src/index.ts',
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript(),
+  });
+  // browser + minify
+  configs.push({
+    input: c.input,
+    plugins: basePlugins.concat(
       postcss({
         extract: true,
         minimize: true,
         sourceMap: true,
       }),
       terser(),
-    ],
+    ),
     output: [
       {
-        name: 'rrweb',
+        name: c.name,
         format: 'iife',
-        file: toMinPath(pkg.unpkg),
+        file: toMinPath(c.pathFn(pkg.unpkg)),
         sourcemap: true,
       },
     ],
-  },
+  });
   // CommonJS
-  {
-    input: './src/index.ts',
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript(),
-      postcss({
-        extract: false,
-        inject: false,
-      }),
-    ],
+  configs.push({
+    input: c.input,
+    plugins,
     output: [
       {
         format: 'cjs',
-        file: pkg.main,
+        file: c.pathFn('lib/rrweb.js'),
       },
     ],
-  },
+  });
   // ES module
-  {
-    input: './src/index.ts',
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript(),
-      postcss({
-        extract: false,
-        inject: false,
-      }),
-    ],
+  configs.push({
+    input: c.input,
+    plugins,
+    preserveModules: true,
     output: [
       {
         format: 'esm',
-        file: pkg.module,
+        dir: 'es/rrweb',
+        plugins: [renameNodeModules('ext')],
       },
     ],
-  },
-  {
-    input: './src/index.ts',
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript(),
-      postcss({
-        extract: false,
-        inject: false,
-      }),
-      terser(),
-    ],
-    output: [
-      {
-        format: 'esm',
-        file: toMinPath(pkg.module),
-        sourcemap: true,
-      },
-    ],
-  },
-];
+  });
+}
 
 if (process.env.BROWSER_ONLY) {
   configs = {
     input: './src/index.ts',
     plugins: [
-      resolve(),
-      commonjs(),
+      resolve({ browser: true }),
       typescript(),
       postcss({
         extract: true,

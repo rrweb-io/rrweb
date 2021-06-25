@@ -6,8 +6,8 @@ exports[`async-checkout 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -42,7 +42,8 @@ exports[`async-checkout 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"input\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"text\\"
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 6
@@ -82,7 +83,6 @@ exports[`async-checkout 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 4,
-          \\"previousId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -94,7 +94,6 @@ exports[`async-checkout 1`] = `
         },
         {
           \\"parentId\\": 8,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -117,7 +116,6 @@ exports[`async-checkout 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 9,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -132,8 +130,8 @@ exports[`async-checkout 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -220,7 +218,6 @@ exports[`async-checkout 1`] = `
       \\"adds\\": [
         {
           \\"parentId\\": 4,
-          \\"previousId\\": 8,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -232,7 +229,6 @@ exports[`async-checkout 1`] = `
         },
         {
           \\"parentId\\": 9,
-          \\"previousId\\": null,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
@@ -252,8 +248,8 @@ exports[`custom-event 1`] = `
     \\"type\\": 4,
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
-      \\"width\\": 800,
-      \\"height\\": 600
+      \\"width\\": 1920,
+      \\"height\\": 1080
     }
   },
   {
@@ -288,7 +284,8 @@ exports[`custom-event 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"input\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"text\\"
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 6
@@ -327,6 +324,137 @@ exports[`custom-event 1`] = `
       \\"payload\\": {
         \\"a\\": \\"b\\"
       }
+    }
+  }
+]"
+`;
+
+exports[`stylesheet-rules 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 7
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 3,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"style\\",
+            \\"attributes\\": {
+              \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 8
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": 8,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { color: #fff; }\\"
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": 8,
+      \\"removes\\": [
+        {
+          \\"index\\": 0
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": 8,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { color: #ccc; }\\"
+        }
+      ]
     }
   }
 ]"
