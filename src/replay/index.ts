@@ -739,10 +739,6 @@ export class Replayer {
     };
     this.emitter.on(ReplayerEvents.Start, stateHandler);
     this.emitter.on(ReplayerEvents.Pause, stateHandler);
-    const unsubscribe = () => {
-      this.emitter.off(ReplayerEvents.Start, stateHandler);
-      this.emitter.off(ReplayerEvents.Pause, stateHandler);
-    };
     let count = 0;
     let resolved = 0;
     for (const event of this.service.state.context.events) {
@@ -915,7 +911,7 @@ export class Replayer {
           if (d.type === MediaInteractions.Play) {
             // remove listener for 'canplay' event because play() is async and returns a promise
             // i.e. media will evntualy start to play when data is loaded
-            // 'canplay' event fires even when currentTime attribute changes which may lead to 
+            // 'canplay' event fires even when currentTime attribute changes which may lead to
             // unexpeted behavior
             mediaEl.play();
           }
