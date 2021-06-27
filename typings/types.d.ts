@@ -43,10 +43,6 @@ export declare type metaEvent = {
         height: number;
     };
 };
-export declare type logEvent = {
-    type: EventType.IncrementalSnapshot;
-    data: incrementalData;
-};
 export declare type customEvent<T = unknown> = {
     type: EventType.Custom;
     data: {
@@ -110,7 +106,7 @@ export declare type fontData = {
     source: IncrementalSource.Font;
 } & fontParam;
 export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData | fontData;
-export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | logEvent | customEvent | pluginEvent;
+export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent | pluginEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;

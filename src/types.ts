@@ -56,12 +56,6 @@ export type metaEvent = {
   };
 };
 
-// departed
-export type logEvent = {
-  type: EventType.IncrementalSnapshot;
-  data: incrementalData;
-};
-
 export type customEvent<T = unknown> = {
   type: EventType.Custom;
   data: {
@@ -159,7 +153,6 @@ export type event =
   | fullSnapshotEvent
   | incrementalSnapshotEvent
   | metaEvent
-  | logEvent
   | customEvent
   | pluginEvent;
 

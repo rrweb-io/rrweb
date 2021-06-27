@@ -122,8 +122,7 @@ export const getLogReplayPlugin: (options?: LogReplayConfig) => ReplayPlugin = (
         event.data.source === (IncrementalSource.Log as IncrementalSource)
       ) {
         logData = (event.data as unknown) as LogData;
-      }
-      if (
+      } else if (
         event.type === EventType.Plugin &&
         event.data.plugin === PLUGIN_NAME
       ) {
