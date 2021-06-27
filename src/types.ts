@@ -618,3 +618,5 @@ export type LogRecordOptions = {
   stringifyOptions?: StringifyOptions;
   logger?: Logger;
 };
+
+export type MetaDataSubscriberCb = (metaData: playerMetaData) => void;

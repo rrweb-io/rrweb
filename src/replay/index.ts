@@ -31,6 +31,7 @@ import {
   LogReplayConfig,
   logData,
   ReplayLogger,
+  MetaDataSubscriberCb
 } from '../types';
 import {
   createMirror,
@@ -126,6 +127,7 @@ export class Replayer {
   private firstPlayedEvent: eventWithTime | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
+  private metaDataSubscriber: MetaDataSubscriberCb;
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -156,6 +158,7 @@ export class Replayer {
       this.config.logConfig.replayLogger = this.getConsoleLogger();
     }
 
+    this.eventAddedCb = this.eventAddedCb.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
@@ -205,6 +208,7 @@ export class Replayer {
       {
         getCastFn: this.getCastFn,
         emitter: this.emitter,
+        eventAddedCb: this.eventAddedCb
       },
     );
     this.service.start();
@@ -302,6 +306,16 @@ export class Replayer {
     }
   }
 
+  private eventAddedCb(): void {
+    if (this.metaDataSubscriber) {
+      this.metaDataSubscriber(this.getMetaData());
+    }
+  }
+
+  public setMetaDataSubscriber(metaDataSubscriber: MetaDataSubscriberCb): void {
+    this.metaDataSubscriber = metaDataSubscriber;
+  } 
+
   public getMetaData(): playerMetaData {
     const firstEvent = this.service.state.context.events[0];
     const lastEvent = this.service.state.context.events[
@@ -375,11 +389,11 @@ export class Replayer {
     this.service.send({ type: 'TO_LIVE', payload: { baselineTime } });
   }
 
-  public addEvent(rawEvent: eventWithTime | string) {
+  public addEvent(rawEvent: eventWithTime | string): Promise<void> {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
-    Promise.resolve().then(() =>
+    return Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
   }
