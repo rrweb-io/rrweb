@@ -1,4 +1,4 @@
-import { IncrementalSource, listenerHandler } from '../../../types';
+import { listenerHandler } from '../../../types';
 import { stringify } from './stringify';
 import { StackFrame, ErrorStackParser } from './error-stack-parser';
 import { patch } from '../../../utils';
@@ -46,17 +46,13 @@ const defaultLogOptions: LogRecordOptions = {
   logger: console,
 };
 
-export type LogParam = {
+export type LogData = {
   level: LogLevel;
   trace: string[];
   payload: string[];
 };
 
-export type logData = {
-  source: IncrementalSource.Log;
-} & LogParam;
-
-type logCallback = (p: LogParam) => void;
+type logCallback = (p: LogData) => void;
 
 export type LogLevel =
   | 'assert'
@@ -127,9 +123,9 @@ function initLogObserver(
         if (originalOnError) {
           originalOnError.apply(this, [msg, file, line, col, error]);
         }
-        const trace: string[] = ErrorStackParser.parse(
-          error,
-        ).map((stackFrame: StackFrame) => stackFrame.toString());
+        const trace: string[] = ErrorStackParser.parse(error).map(
+          (stackFrame: StackFrame) => stackFrame.toString(),
+        );
         const payload = [stringify(msg, logOptions.stringifyOptions)];
         cb({
           level: 'error',
@@ -194,9 +190,7 @@ function initLogObserver(
   }
 }
 
-export const getRecordConsolePlugin: (
-  options?: LogRecordOptions,
-) => {
+export const getRecordConsolePlugin: (options?: LogRecordOptions) => {
   name: string;
   observer: Function;
   options: LogRecordOptions;

@@ -1,11 +1,11 @@
-import { LogLevel, logData } from '../../record/console';
-import { eventWithTime, EventType, IncrementalSource } from '../../../types';
+import { LogLevel, LogData } from '../../record/console';
+import { eventWithTime, EventType } from '../../../types';
 
 /**
  * define an interface to replay log records
  * (data: logData) => void> function to display the log data
  */
-type ReplayLogger = Partial<Record<LogLevel, (data: logData) => void>>;
+type ReplayLogger = Partial<Record<LogLevel, (data: LogData) => void>>;
 
 type LogReplayConfig = {
   level?: LogLevel[] | undefined;
@@ -56,11 +56,11 @@ class LogReplayPlugin {
     const replayLogger: ReplayLogger = {};
     for (const level of this.config.level!) {
       if (level === 'trace') {
-        replayLogger[level] = (data: logData) => {
-          const logger = ((console.log as unknown) as PatchedConsoleLog)[
+        replayLogger[level] = (data: LogData) => {
+          const logger = (console.log as unknown as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? ((console.log as unknown) as PatchedConsoleLog)[
+            ? (console.log as unknown as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console.log;
@@ -70,11 +70,11 @@ class LogReplayPlugin {
           );
         };
       } else {
-        replayLogger[level] = (data: logData) => {
-          const logger = ((console[level] as unknown) as PatchedConsoleLog)[
+        replayLogger[level] = (data: LogData) => {
+          const logger = (console[level] as unknown as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? ((console[level] as unknown) as PatchedConsoleLog)[
+            ? (console[level] as unknown as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console[level];
@@ -92,7 +92,7 @@ class LogReplayPlugin {
    * format the trace data to a string
    * @param data the log data
    */
-  private formatMessage(data: logData): string {
+  private formatMessage(data: LogData): string {
     if (data.trace.length === 0) {
       return '';
     }
@@ -103,9 +103,7 @@ class LogReplayPlugin {
   }
 }
 
-export const getLogReplayPlugin: (
-  options?: LogReplayConfig,
-) => {
+export const getLogReplayPlugin: (options?: LogReplayConfig) => {
   handler: (event: eventWithTime, isSync: boolean) => void;
 } = (options) => {
   const replayLogger =
@@ -113,12 +111,9 @@ export const getLogReplayPlugin: (
 
   return {
     handler(event: eventWithTime) {
-      if (
-        event.type === EventType.IncrementalSnapshot &&
-        event.data.source === (IncrementalSource.Log as IncrementalSource)
-      ) {
+      if (event.type === EventType.Plugin && event.data.plugin === 'console') {
         try {
-          const logData = (event.data as unknown) as logData;
+          const logData = event.data.payload as unknown as LogData;
           if (typeof replayLogger[logData.level] === 'function') {
             replayLogger[logData.level]!(logData);
           }
