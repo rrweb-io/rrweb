@@ -1,5 +1,10 @@
-import { LogLevel, LogData } from '../record';
-import { eventWithTime, EventType } from '../../../types';
+import { LogLevel, LogData, PLUGIN_NAME } from '../record';
+import {
+  eventWithTime,
+  EventType,
+  IncrementalSource,
+  ReplayPlugin,
+} from '../../../types';
 
 /**
  * define an interface to replay log records
@@ -57,10 +62,10 @@ class LogReplayPlugin {
     for (const level of this.config.level!) {
       if (level === 'trace') {
         replayLogger[level] = (data: LogData) => {
-          const logger = (console.log as unknown as PatchedConsoleLog)[
+          const logger = ((console.log as unknown) as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? (console.log as unknown as PatchedConsoleLog)[
+            ? ((console.log as unknown) as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console.log;
@@ -71,10 +76,10 @@ class LogReplayPlugin {
         };
       } else {
         replayLogger[level] = (data: LogData) => {
-          const logger = (console[level] as unknown as PatchedConsoleLog)[
+          const logger = ((console[level] as unknown) as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? (console[level] as unknown as PatchedConsoleLog)[
+            ? ((console[level] as unknown) as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console[level];
@@ -103,22 +108,34 @@ class LogReplayPlugin {
   }
 }
 
-export const getLogReplayPlugin: (options?: LogReplayConfig) => {
-  handler: (event: eventWithTime, isSync: boolean) => void;
-} = (options) => {
+export const getLogReplayPlugin: (options?: LogReplayConfig) => ReplayPlugin = (
+  options,
+) => {
   const replayLogger =
     options?.replayLogger || new LogReplayPlugin(options).getConsoleLogger();
 
   return {
-    handler(event: eventWithTime) {
-      if (event.type === EventType.Plugin && event.data.plugin === 'console') {
+    handler(event: eventWithTime, _isSync, context) {
+      let logData: LogData | null = null;
+      if (
+        event.type === EventType.IncrementalSnapshot &&
+        event.data.source === (IncrementalSource.Log as IncrementalSource)
+      ) {
+        logData = (event.data as unknown) as LogData;
+      }
+      if (
+        event.type === EventType.Plugin &&
+        event.data.plugin === PLUGIN_NAME
+      ) {
+        logData = event.data.payload as LogData;
+      }
+      if (logData) {
         try {
-          const logData = event.data.payload as unknown as LogData;
           if (typeof replayLogger[logData.level] === 'function') {
             replayLogger[logData.level]!(logData);
           }
         } catch (error) {
-          if (this.config.showWarning) {
+          if (context.replayer.config.showWarning) {
             console.warn(error);
           }
         }

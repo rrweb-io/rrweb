@@ -1,4 +1,4 @@
-import { listenerHandler } from '../../../types';
+import { listenerHandler, RecordPlugin } from '../../../types';
 import { stringify } from './stringify';
 import { StackFrame, ErrorStackParser } from './error-stack-parser';
 import { patch } from '../../../utils';
@@ -123,9 +123,9 @@ function initLogObserver(
         if (originalOnError) {
           originalOnError.apply(this, [msg, file, line, col, error]);
         }
-        const trace: string[] = ErrorStackParser.parse(error).map(
-          (stackFrame: StackFrame) => stackFrame.toString(),
-        );
+        const trace: string[] = ErrorStackParser.parse(
+          error,
+        ).map((stackFrame: StackFrame) => stackFrame.toString());
         const payload = [stringify(msg, logOptions.stringifyOptions)];
         cb({
           level: 'error',
@@ -190,12 +190,12 @@ function initLogObserver(
   }
 }
 
-export const getRecordConsolePlugin: (options?: LogRecordOptions) => {
-  name: string;
-  observer: Function;
-  options: LogRecordOptions;
-} = (options) => ({
-  name: 'console',
+export const PLUGIN_NAME = 'rrweb/console@1';
+
+export const getRecordConsolePlugin: (
+  options?: LogRecordOptions,
+) => RecordPlugin = (options) => ({
+  name: PLUGIN_NAME,
   observer: initLogObserver,
   options: options
     ? Object.assign({}, defaultLogOptions, options)

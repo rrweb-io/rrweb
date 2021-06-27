@@ -2857,7 +2857,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"assert\\",
         \\"trace\\": [
@@ -2873,7 +2873,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"count\\",
         \\"trace\\": [
@@ -2888,7 +2888,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"countReset\\",
         \\"trace\\": [
@@ -2903,7 +2903,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"debug\\",
         \\"trace\\": [
@@ -2918,7 +2918,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"dir\\",
         \\"trace\\": [
@@ -2933,7 +2933,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"dirxml\\",
         \\"trace\\": [
@@ -2948,7 +2948,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"group\\",
         \\"trace\\": [
@@ -2961,7 +2961,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"groupCollapsed\\",
         \\"trace\\": [
@@ -2974,7 +2974,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"info\\",
         \\"trace\\": [
@@ -2989,7 +2989,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
@@ -3004,7 +3004,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"table\\",
         \\"trace\\": [
@@ -3019,7 +3019,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"time\\",
         \\"trace\\": [
@@ -3032,7 +3032,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"timeEnd\\",
         \\"trace\\": [
@@ -3045,7 +3045,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"timeLog\\",
         \\"trace\\": [
@@ -3058,7 +3058,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"trace\\",
         \\"trace\\": [
@@ -3073,7 +3073,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"warn\\",
         \\"trace\\": [
@@ -3088,7 +3088,7 @@ exports[`log 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"console\\",
+      \\"plugin\\": \\"rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"clear\\",
         \\"trace\\": [

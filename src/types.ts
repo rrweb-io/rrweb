@@ -198,6 +198,12 @@ export type SamplingStrategy = Partial<{
   input: 'all' | 'last';
 }>;
 
+export type RecordPlugin<TOptions = unknown> = {
+  name: string;
+  observer: (cb: Function, options: TOptions) => listenerHandler;
+  options: TOptions;
+};
+
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
@@ -218,15 +224,9 @@ export type recordOptions<T> = {
   sampling?: SamplingStrategy;
   recordCanvas?: boolean;
   collectFonts?: boolean;
-  plugins?: Array<{
-    name: string;
-    observer: Function;
-    options: unknown;
-  }>;
+  plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
-  // FIXME: departed
-  // recordLog?: boolean | LogRecordOptions;
 };
 
 export type observerParam = {
@@ -467,6 +467,13 @@ export type throttleOptions = {
 export type listenerHandler = () => void;
 export type hookResetter = () => void;
 
+export type ReplayPlugin = {
+  handler: (
+    event: eventWithTime,
+    isSync: boolean,
+    context: { replayer: Replayer },
+  ) => void;
+};
 export type playerConfig = {
   speed: number;
   maxSpeed: number;
@@ -490,15 +497,7 @@ export type playerConfig = {
         strokeStyle?: string;
       };
   unpackFn?: UnpackFn;
-  plugins?: Array<{
-    handler: (
-      event: eventWithTime,
-      isSync: boolean,
-      context: { replayer: Replayer },
-    ) => void;
-  }>;
-  // FIXME: departed
-  // logConfig: LogReplayConfig;
+  plugins?: ReplayPlugin[];
 };
 
 export type playerMetaData = {
