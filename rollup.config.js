@@ -83,12 +83,12 @@ const baseConfigs = [
   },
   {
     input: './src/plugins/console/record/index.ts',
-    name: 'rrwebConsole',
+    name: 'rrwebConsoleRecord',
     pathFn: toPluginPath('console', 'record'),
   },
   {
     input: './src/plugins/console/replay/index.ts',
-    name: 'rrwebConsole',
+    name: 'rrwebConsoleReplay',
     pathFn: toPluginPath('console', 'replay'),
   },
 ];

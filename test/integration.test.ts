@@ -390,7 +390,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'log.html', {
-        plugins: '[rrwebConsole.getRecordConsolePlugin()]',
+        plugins: '[rrwebConsoleRecord.getRecordConsolePlugin()]',
       }),
     );
 
