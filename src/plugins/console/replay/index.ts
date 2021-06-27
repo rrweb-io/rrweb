@@ -1,4 +1,4 @@
-import { LogLevel, LogData } from '../../record/console';
+import { LogLevel, LogData } from '../record';
 import { eventWithTime, EventType } from '../../../types';
 
 /**

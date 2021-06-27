@@ -2855,213 +2855,247 @@ exports[`log 1`] = `
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"assert\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:2:37\\"
-      ],
-      \\"payload\\": [
-        \\"true\\",
-        \\"\\\\\\"assert\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"assert\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:2:37\\"
+        ],
+        \\"payload\\": [
+          \\"true\\",
+          \\"\\\\\\"assert\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"count\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:3:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"count\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"count\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:3:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"count\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"countReset\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:4:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"count\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"countReset\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:4:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"count\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"debug\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:5:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"debug\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"debug\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:5:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"debug\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"dir\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:6:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"dir\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"dir\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:6:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"dir\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"dirxml\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:7:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"dirxml\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"dirxml\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:7:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"dirxml\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"group\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:8:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"group\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:8:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"groupCollapsed\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:9:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"groupCollapsed\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:9:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"info\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:10:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"info\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"info\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:10:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"info\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"log\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:11:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"log\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:11:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"log\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"table\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:12:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"table\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"table\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:12:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"table\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"time\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:13:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"time\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:13:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"timeEnd\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:14:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"timeEnd\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:14:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"timeLog\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:15:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"timeLog\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:15:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"trace\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:16:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"trace\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"trace\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:16:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"trace\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"warn\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:17:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"warn\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"warn\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:17:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"warn\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"clear\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:18:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"console\\",
+      \\"payload\\": {
+        \\"level\\": \\"clear\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:18:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   }
 ]"

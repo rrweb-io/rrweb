@@ -77,7 +77,7 @@ describe('record integration tests', function (this: ISuite) {
         maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
         maskTextFn: ${options.maskTextFn},
         recordCanvas: ${options.recordCanvas},
-        recordLog: ${options.recordLog},
+        plugins: ${options.plugins}        
       });
     </script>
     </body>
@@ -90,7 +90,12 @@ describe('record integration tests', function (this: ISuite) {
     this.browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
-    this.code = fs.readFileSync(bundlePath, 'utf8');
+    const pluginsCode = [
+      path.resolve(__dirname, '../dist/plugins/console-record.min.js'),
+    ]
+      .map((path) => fs.readFileSync(path, 'utf8'))
+      .join();
+    this.code = fs.readFileSync(bundlePath, 'utf8') + pluginsCode;
   });
 
   after(async () => {
@@ -385,7 +390,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'log.html', {
-        recordLog: true,
+        plugins: '[rrwebConsole.getRecordConsolePlugin()]',
       }),
     );
 

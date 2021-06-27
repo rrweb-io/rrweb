@@ -3,7 +3,7 @@ import { stringify } from './stringify';
 import { StackFrame, ErrorStackParser } from './error-stack-parser';
 import { patch } from '../../../utils';
 
-type StringifyOptions = {
+export type StringifyOptions = {
   // limit of string length
   stringLengthLimit?: number;
   /**
