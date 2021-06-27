@@ -4,7 +4,7 @@
  *
  */
 
-import { StringifyOptions } from '../types';
+import { StringifyOptions } from './index';
 
 /**
  * transfer the node path in Event to string

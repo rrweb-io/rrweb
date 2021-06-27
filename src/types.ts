@@ -9,6 +9,7 @@ import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
+import type { Replayer } from './replay';
 
 export enum EventType {
   DomContentLoaded,
@@ -17,6 +18,7 @@ export enum EventType {
   IncrementalSnapshot,
   Meta,
   Custom,
+  Plugin,
 }
 
 export type domContentLoadedEvent = {
@@ -54,15 +56,18 @@ export type metaEvent = {
   };
 };
 
-export type logEvent = {
-  type: EventType.IncrementalSnapshot;
-  data: incrementalData;
-};
-
 export type customEvent<T = unknown> = {
   type: EventType.Custom;
   data: {
     tag: string;
+    payload: T;
+  };
+};
+
+export type pluginEvent<T = unknown> = {
+  type: EventType.Plugin;
+  data: {
+    plugin: string;
     payload: T;
   };
 };
@@ -130,10 +135,6 @@ export type fontData = {
   source: IncrementalSource.Font;
 } & fontParam;
 
-export type logData = {
-  source: IncrementalSource.Log;
-} & LogParam;
-
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -144,8 +145,7 @@ export type incrementalData =
   | mediaInteractionData
   | styleSheetRuleData
   | canvasMutationData
-  | fontData
-  | logData;
+  | fontData;
 
 export type event =
   | domContentLoadedEvent
@@ -153,8 +153,8 @@ export type event =
   | fullSnapshotEvent
   | incrementalSnapshotEvent
   | metaEvent
-  | logEvent
-  | customEvent;
+  | customEvent
+  | pluginEvent;
 
 export type eventWithTime = event & {
   timestamp: number;
@@ -191,6 +191,12 @@ export type SamplingStrategy = Partial<{
   input: 'all' | 'last';
 }>;
 
+export type RecordPlugin<TOptions = unknown> = {
+  name: string;
+  observer: (cb: Function, options: TOptions) => listenerHandler;
+  options: TOptions;
+};
+
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
@@ -211,9 +217,9 @@ export type recordOptions<T> = {
   sampling?: SamplingStrategy;
   recordCanvas?: boolean;
   collectFonts?: boolean;
+  plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
-  recordLog?: boolean | LogRecordOptions;
 };
 
 export type observerParam = {
@@ -236,8 +242,6 @@ export type observerParam = {
   styleSheetRuleCb: styleSheetRuleCallback;
   canvasMutationCb: canvasMutationCallback;
   fontCb: fontCallback;
-  logCb: logCallback;
-  logOptions: LogRecordOptions;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
   collectFonts: boolean;
@@ -246,6 +250,11 @@ export type observerParam = {
   mirror: Mirror;
   iframeManager: IframeManager;
   shadowDomManager: ShadowDomManager;
+  plugins: Array<{
+    observer: Function;
+    callback: Function;
+    options: unknown;
+  }>;
 };
 
 export type hooksParam = {
@@ -259,7 +268,6 @@ export type hooksParam = {
   styleSheetRule?: styleSheetRuleCallback;
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
-  log?: logCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -396,66 +404,7 @@ export type fontParam = {
   descriptors?: FontFaceDescriptors;
 };
 
-export type LogLevel =
-  | 'assert'
-  | 'clear'
-  | 'count'
-  | 'countReset'
-  | 'debug'
-  | 'dir'
-  | 'dirxml'
-  | 'error'
-  | 'group'
-  | 'groupCollapsed'
-  | 'groupEnd'
-  | 'info'
-  | 'log'
-  | 'table'
-  | 'time'
-  | 'timeEnd'
-  | 'timeLog'
-  | 'trace'
-  | 'warn';
-
-/* fork from interface Console */
-// all kinds of console functions
-export type Logger = {
-  assert?: typeof console.assert;
-  clear?: typeof console.clear;
-  count?: typeof console.count;
-  countReset?: typeof console.countReset;
-  debug?: typeof console.debug;
-  dir?: typeof console.dir;
-  dirxml?: typeof console.dirxml;
-  error?: typeof console.error;
-  group?: typeof console.group;
-  groupCollapsed?: typeof console.groupCollapsed;
-  groupEnd?: () => void;
-  info?: typeof console.info;
-  log?: typeof console.log;
-  table?: typeof console.table;
-  time?: typeof console.time;
-  timeEnd?: typeof console.timeEnd;
-  timeLog?: typeof console.timeLog;
-  trace?: typeof console.trace;
-  warn?: typeof console.warn;
-};
-
-/**
- * define an interface to replay log records
- * (data: logData) => void> function to display the log data
- */
-export type ReplayLogger = Partial<Record<LogLevel, (data: logData) => void>>;
-
-export type LogParam = {
-  level: LogLevel;
-  trace: string[];
-  payload: string[];
-};
-
 export type fontCallback = (p: fontParam) => void;
-
-export type logCallback = (p: LogParam) => void;
 
 export type viewportResizeDimension = {
   width: number;
@@ -480,7 +429,7 @@ export const enum MediaInteractions {
 export type mediaInteractionParam = {
   type: MediaInteractions;
   id: number;
-  currentTime?: number
+  currentTime?: number;
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;
@@ -511,6 +460,13 @@ export type throttleOptions = {
 export type listenerHandler = () => void;
 export type hookResetter = () => void;
 
+export type ReplayPlugin = {
+  handler: (
+    event: eventWithTime,
+    isSync: boolean,
+    context: { replayer: Replayer },
+  ) => void;
+};
 export type playerConfig = {
   speed: number;
   maxSpeed: number;
@@ -534,12 +490,7 @@ export type playerConfig = {
         strokeStyle?: string;
       };
   unpackFn?: UnpackFn;
-  logConfig: LogReplayConfig;
-};
-
-export type LogReplayConfig = {
-  level?: LogLevel[] | undefined;
-  replayLogger: ReplayLogger | undefined;
+  plugins?: ReplayPlugin[];
 };
 
 export type playerMetaData = {
@@ -600,21 +551,4 @@ export type MaskTextFn = (text: string) => string;
 export type ElementState = {
   // [scrollLeft,scrollTop]
   scroll?: [number, number];
-};
-
-export type StringifyOptions = {
-  // limit of string length
-  stringLengthLimit?: number;
-  /**
-   * limit of number of keys in an object
-   * if an object contains more keys than this limit, we would call its toString function directly
-   */
-  numOfKeysLimit: number;
-};
-
-export type LogRecordOptions = {
-  level?: LogLevel[] | undefined;
-  lengthThreshold?: number;
-  stringifyOptions?: StringifyOptions;
-  logger?: Logger;
 };

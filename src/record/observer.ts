@@ -37,17 +37,11 @@ import {
   fontParam,
   MaskInputFn,
   MaskTextFn,
-  logCallback,
-  LogRecordOptions,
-  Logger,
-  LogLevel,
   Mirror,
 } from '../types';
 import MutationBuffer from './mutation';
-import { stringify } from './stringify';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
-import { StackFrame, ErrorStackParser } from './error-stack-parser';
 
 type WindowWithStoredMutationObserver = Window & {
   __rrMutationObserver?: MutationObserver;
@@ -535,11 +529,16 @@ function initCanvasMutationObserver(
                     recordArgs[0] &&
                     recordArgs[0] instanceof HTMLCanvasElement
                   ) {
-                    const canvas = recordArgs[0]
-                    const ctx = canvas.getContext('2d')
-                    let imgd = ctx?.getImageData(0, 0, canvas.width, canvas.height)
+                    const canvas = recordArgs[0];
+                    const ctx = canvas.getContext('2d');
+                    let imgd = ctx?.getImageData(
+                      0,
+                      0,
+                      canvas.width,
+                      canvas.height,
+                    );
                     let pix = imgd?.data;
-                    recordArgs[0] = JSON.stringify(pix)
+                    recordArgs[0] = JSON.stringify(pix);
                   }
                 }
                 cb({
@@ -627,97 +626,6 @@ function initFontObserver(cb: fontCallback): listenerHandler {
   };
 }
 
-function initLogObserver(
-  cb: logCallback,
-  logOptions: LogRecordOptions,
-): listenerHandler {
-  const logger = logOptions.logger;
-  if (!logger) {
-    return () => {};
-  }
-  let logCount = 0;
-  const cancelHandlers: listenerHandler[] = [];
-  // add listener to thrown errors
-  if (logOptions.level!.includes('error')) {
-    if (window) {
-      const originalOnError = window.onerror;
-      window.onerror = (
-        msg: Event | string,
-        file: string,
-        line: number,
-        col: number,
-        error: Error,
-      ) => {
-        if (originalOnError) {
-          originalOnError.apply(this, [msg, file, line, col, error]);
-        }
-        const trace: string[] = ErrorStackParser.parse(
-          error,
-        ).map((stackFrame: StackFrame) => stackFrame.toString());
-        const payload = [stringify(msg, logOptions.stringifyOptions)];
-        cb({
-          level: 'error',
-          trace,
-          payload,
-        });
-      };
-      cancelHandlers.push(() => {
-        window.onerror = originalOnError;
-      });
-    }
-  }
-  for (const levelType of logOptions.level!) {
-    cancelHandlers.push(replace(logger, levelType));
-  }
-  return () => {
-    cancelHandlers.forEach((h) => h());
-  };
-
-  /**
-   * replace the original console function and record logs
-   * @param logger the logger object such as Console
-   * @param level the name of log function to be replaced
-   */
-  function replace(_logger: Logger, level: LogLevel) {
-    if (!_logger[level]) {
-      return () => {};
-    }
-    // replace the logger.{level}. return a restore function
-    return patch(_logger, level, (original) => {
-      return (...args: unknown[]) => {
-        original.apply(this, args);
-        try {
-          const trace = ErrorStackParser.parse(new Error())
-            .map((stackFrame: StackFrame) => stackFrame.toString())
-            .splice(1); // splice(1) to omit the hijacked log function
-          const payload = args.map((s) =>
-            stringify(s, logOptions.stringifyOptions),
-          );
-          logCount++;
-          if (logCount < logOptions.lengthThreshold!) {
-            cb({
-              level,
-              trace,
-              payload,
-            });
-          } else if (logCount === logOptions.lengthThreshold) {
-            // notify the user
-            cb({
-              level: 'warn',
-              trace: [],
-              payload: [
-                stringify('The number of log records reached the threshold.'),
-              ],
-            });
-          }
-        } catch (error) {
-          original('rrweb logger error:', error, ...args);
-        }
-      };
-    });
-  }
-}
-
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -730,7 +638,6 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     styleSheetRuleCb,
     canvasMutationCb,
     fontCb,
-    logCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -791,12 +698,6 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
       hooks.font(...p);
     }
     fontCb(...p);
-  };
-  o.logCb = (...p: Arguments<logCallback>) => {
-    if (hooks.log) {
-      hooks.log(...p);
-    }
-    logCb(...p);
   };
 }
 
@@ -866,9 +767,11 @@ export function initObservers(
     ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass, o.mirror)
     : () => {};
   const fontObserver = o.collectFonts ? initFontObserver(o.fontCb) : () => {};
-  const logObserver = o.logOptions
-    ? initLogObserver(o.logCb, o.logOptions)
-    : () => {};
+  // plugins
+  const pluginHandlers: listenerHandler[] = [];
+  for (const plugin of o.plugins) {
+    pluginHandlers.push(plugin.observer(plugin.callback, plugin.options));
+  }
 
   return () => {
     mutationObserver.disconnect();
@@ -881,6 +784,6 @@ export function initObservers(
     styleSheetObserver();
     canvasMutationObserver();
     fontObserver();
-    logObserver();
+    pluginHandlers.forEach((h) => h());
   };
 }

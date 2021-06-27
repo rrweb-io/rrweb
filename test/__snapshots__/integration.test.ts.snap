@@ -2855,213 +2855,247 @@ exports[`log 1`] = `
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"assert\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:2:37\\"
-      ],
-      \\"payload\\": [
-        \\"true\\",
-        \\"\\\\\\"assert\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"assert\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:2:37\\"
+        ],
+        \\"payload\\": [
+          \\"true\\",
+          \\"\\\\\\"assert\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"count\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:3:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"count\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"count\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:3:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"count\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"countReset\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:4:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"count\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"countReset\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:4:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"count\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"debug\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:5:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"debug\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"debug\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:5:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"debug\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"dir\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:6:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"dir\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"dir\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:6:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"dir\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"dirxml\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:7:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"dirxml\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"dirxml\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:7:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"dirxml\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"group\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:8:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"group\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:8:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"groupCollapsed\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:9:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"groupCollapsed\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:9:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"info\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:10:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"info\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"info\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:10:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"info\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"log\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:11:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"log\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:11:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"log\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"table\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:12:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"table\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"table\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:12:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"table\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"time\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:13:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"time\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:13:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"timeEnd\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:14:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"timeEnd\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:14:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"timeLog\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:15:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"timeLog\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:15:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"trace\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:16:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"trace\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"trace\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:16:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"trace\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"warn\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:17:37\\"
-      ],
-      \\"payload\\": [
-        \\"\\\\\\"warn\\\\\\"\\"
-      ]
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"warn\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:17:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"warn\\\\\\"\\"
+        ]
+      }
     }
   },
   {
-    \\"type\\": 3,
+    \\"type\\": 6,
     \\"data\\": {
-      \\"source\\": 11,
-      \\"level\\": \\"clear\\",
-      \\"trace\\": [
-        \\"__puppeteer_evaluation_script__:18:37\\"
-      ],
-      \\"payload\\": []
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"clear\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:18:37\\"
+        ],
+        \\"payload\\": []
+      }
     }
   }
 ]"

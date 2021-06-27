@@ -3,13 +3,15 @@ import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
+import type { Replayer } from './replay';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
     FullSnapshot = 2,
     IncrementalSnapshot = 3,
     Meta = 4,
-    Custom = 5
+    Custom = 5,
+    Plugin = 6
 }
 export declare type domContentLoadedEvent = {
     type: EventType.DomContentLoaded;
@@ -41,14 +43,17 @@ export declare type metaEvent = {
         height: number;
     };
 };
-export declare type logEvent = {
-    type: EventType.IncrementalSnapshot;
-    data: incrementalData;
-};
 export declare type customEvent<T = unknown> = {
     type: EventType.Custom;
     data: {
         tag: string;
+        payload: T;
+    };
+};
+export declare type pluginEvent<T = unknown> = {
+    type: EventType.Plugin;
+    data: {
+        plugin: string;
         payload: T;
     };
 };
@@ -100,11 +105,8 @@ export declare type canvasMutationData = {
 export declare type fontData = {
     source: IncrementalSource.Font;
 } & fontParam;
-export declare type logData = {
-    source: IncrementalSource.Log;
-} & LogParam;
-export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData | fontData | logData;
-export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | logEvent | customEvent;
+export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData | fontData;
+export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent | pluginEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;
@@ -118,6 +120,11 @@ export declare type SamplingStrategy = Partial<{
     scroll: number;
     input: 'all' | 'last';
 }>;
+export declare type RecordPlugin<TOptions = unknown> = {
+    name: string;
+    observer: (cb: Function, options: TOptions) => listenerHandler;
+    options: TOptions;
+};
 export declare type recordOptions<T> = {
     emit?: (e: T, isCheckout?: boolean) => void;
     checkoutEveryNth?: number;
@@ -138,8 +145,8 @@ export declare type recordOptions<T> = {
     sampling?: SamplingStrategy;
     recordCanvas?: boolean;
     collectFonts?: boolean;
+    plugins?: RecordPlugin[];
     mousemoveWait?: number;
-    recordLog?: boolean | LogRecordOptions;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -161,8 +168,6 @@ export declare type observerParam = {
     styleSheetRuleCb: styleSheetRuleCallback;
     canvasMutationCb: canvasMutationCallback;
     fontCb: fontCallback;
-    logCb: logCallback;
-    logOptions: LogRecordOptions;
     sampling: SamplingStrategy;
     recordCanvas: boolean;
     collectFonts: boolean;
@@ -171,6 +176,11 @@ export declare type observerParam = {
     mirror: Mirror;
     iframeManager: IframeManager;
     shadowDomManager: ShadowDomManager;
+    plugins: Array<{
+        observer: Function;
+        callback: Function;
+        options: unknown;
+    }>;
 };
 export declare type hooksParam = {
     mutation?: mutationCallBack;
@@ -183,7 +193,6 @@ export declare type hooksParam = {
     styleSheetRule?: styleSheetRuleCallback;
     canvasMutation?: canvasMutationCallback;
     font?: fontCallback;
-    log?: logCallback;
 };
 export declare type mutationRecord = {
     type: string;
@@ -290,36 +299,7 @@ export declare type fontParam = {
     buffer: boolean;
     descriptors?: FontFaceDescriptors;
 };
-export declare type LogLevel = 'assert' | 'clear' | 'count' | 'countReset' | 'debug' | 'dir' | 'dirxml' | 'error' | 'group' | 'groupCollapsed' | 'groupEnd' | 'info' | 'log' | 'table' | 'time' | 'timeEnd' | 'timeLog' | 'trace' | 'warn';
-export declare type Logger = {
-    assert?: typeof console.assert;
-    clear?: typeof console.clear;
-    count?: typeof console.count;
-    countReset?: typeof console.countReset;
-    debug?: typeof console.debug;
-    dir?: typeof console.dir;
-    dirxml?: typeof console.dirxml;
-    error?: typeof console.error;
-    group?: typeof console.group;
-    groupCollapsed?: typeof console.groupCollapsed;
-    groupEnd?: () => void;
-    info?: typeof console.info;
-    log?: typeof console.log;
-    table?: typeof console.table;
-    time?: typeof console.time;
-    timeEnd?: typeof console.timeEnd;
-    timeLog?: typeof console.timeLog;
-    trace?: typeof console.trace;
-    warn?: typeof console.warn;
-};
-export declare type ReplayLogger = Partial<Record<LogLevel, (data: logData) => void>>;
-export declare type LogParam = {
-    level: LogLevel;
-    trace: string[];
-    payload: string[];
-};
 export declare type fontCallback = (p: fontParam) => void;
-export declare type logCallback = (p: LogParam) => void;
 export declare type viewportResizeDimension = {
     width: number;
     height: number;
@@ -363,6 +343,11 @@ export declare type throttleOptions = {
 };
 export declare type listenerHandler = () => void;
 export declare type hookResetter = () => void;
+export declare type ReplayPlugin = {
+    handler: (event: eventWithTime, isSync: boolean, context: {
+        replayer: Replayer;
+    }) => void;
+};
 export declare type playerConfig = {
     speed: number;
     maxSpeed: number;
@@ -384,11 +369,7 @@ export declare type playerConfig = {
         strokeStyle?: string;
     };
     unpackFn?: UnpackFn;
-    logConfig: LogReplayConfig;
-};
-export declare type LogReplayConfig = {
-    level?: LogLevel[] | undefined;
-    replayLogger: ReplayLogger | undefined;
+    plugins?: ReplayPlugin[];
 };
 export declare type playerMetaData = {
     startTime: number;
@@ -435,15 +416,5 @@ export declare type MaskInputFn = (text: string) => string;
 export declare type MaskTextFn = (text: string) => string;
 export declare type ElementState = {
     scroll?: [number, number];
-};
-export declare type StringifyOptions = {
-    stringLengthLimit?: number;
-    numOfKeysLimit: number;
-};
-export declare type LogRecordOptions = {
-    level?: LogLevel[] | undefined;
-    lengthThreshold?: number;
-    stringifyOptions?: StringifyOptions;
-    logger?: Logger;
 };
 export {};

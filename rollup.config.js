@@ -33,6 +33,13 @@ function toAllPath(path) {
   return path.replace('rrweb', 'rrweb-all');
 }
 
+function toPluginPath(pluginName, stage) {
+  return (path) =>
+    path
+      .replace(/^([\w]+)\//, '$1/plugins/')
+      .replace('rrweb', `${pluginName}-${stage}`);
+}
+
 function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
@@ -73,6 +80,16 @@ const baseConfigs = [
     input: './src/entries/all.ts',
     name: 'rrweb',
     pathFn: toAllPath,
+  },
+  {
+    input: './src/plugins/console/record/index.ts',
+    name: 'rrwebConsoleRecord',
+    pathFn: toPluginPath('console', 'record'),
+  },
+  {
+    input: './src/plugins/console/replay/index.ts',
+    name: 'rrwebConsoleReplay',
+    pathFn: toPluginPath('console', 'replay'),
   },
 ];
 
