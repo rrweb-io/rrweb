@@ -6,6 +6,7 @@ import {
   Mirror,
   scrollCallback,
   SamplingStrategy,
+  MaskInputFn,
 } from '../types';
 import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
@@ -19,6 +20,7 @@ type BypassOptions = {
   inlineStylesheet: boolean;
   maskInputOptions: MaskInputOptions;
   maskTextFn: MaskTextFn | undefined;
+  maskInputFn: MaskInputFn | undefined;
   recordCanvas: boolean;
   sampling: SamplingStrategy;
   slimDOMOptions: SlimDOMOptions;
@@ -54,6 +56,7 @@ export class ShadowDomManager {
       this.bypassOptions.inlineStylesheet,
       this.bypassOptions.maskInputOptions,
       this.bypassOptions.maskTextFn,
+      this.bypassOptions.maskInputFn,
       this.bypassOptions.recordCanvas,
       this.bypassOptions.slimDOMOptions,
       this.mirror,

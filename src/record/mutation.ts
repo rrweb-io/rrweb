@@ -19,6 +19,7 @@ import {
   addedNodeMutation,
   MaskTextFn,
   Mirror,
+  MaskInputFn,
 } from '../types';
 import {
   isBlocked,
@@ -26,6 +27,7 @@ import {
   isIgnored,
   isIframeINode,
   hasShadowRoot,
+  maskInputValue,
 } from '../utils';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -167,6 +169,7 @@ export default class MutationBuffer {
   private inlineStylesheet: boolean;
   private maskInputOptions: MaskInputOptions;
   private maskTextFn: MaskTextFn | undefined;
+  private maskInputFn: MaskInputFn | undefined;
   private recordCanvas: boolean;
   private slimDOMOptions: SlimDOMOptions;
   private doc: Document;
@@ -184,6 +187,7 @@ export default class MutationBuffer {
     inlineStylesheet: boolean,
     maskInputOptions: MaskInputOptions,
     maskTextFn: MaskTextFn | undefined,
+    maskInputFn: MaskInputFn | undefined,
     recordCanvas: boolean,
     slimDOMOptions: SlimDOMOptions,
     doc: Document,
@@ -198,6 +202,7 @@ export default class MutationBuffer {
     this.inlineStylesheet = inlineStylesheet;
     this.maskInputOptions = maskInputOptions;
     this.maskTextFn = maskTextFn;
+    this.maskInputFn = maskInputFn;
     this.recordCanvas = recordCanvas;
     this.slimDOMOptions = slimDOMOptions;
     this.emissionCallback = cb;
@@ -443,7 +448,16 @@ export default class MutationBuffer {
         break;
       }
       case 'attributes': {
-        const value = (m.target as HTMLElement).getAttribute(m.attributeName!);
+        let value = (m.target as HTMLElement).getAttribute(m.attributeName!);
+        if (m.attributeName === 'value') {
+          value = maskInputValue({
+            maskInputOptions: this.maskInputOptions,
+            tagName: (m.target as HTMLElement).tagName,
+            type: (m.target as HTMLElement).getAttribute('type'),
+            value,
+            maskInputFn: this.maskInputFn,
+          });
+        }
         if (isBlocked(m.target, this.blockClass) || value === m.oldValue) {
           return;
         }

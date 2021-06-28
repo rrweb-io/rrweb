@@ -83,6 +83,7 @@ export function initMutationObserver(
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
   maskTextFn: MaskTextFn | undefined,
+  maskInputFn: MaskInputFn | undefined,
   recordCanvas: boolean,
   slimDOMOptions: SlimDOMOptions,
   mirror: Mirror,
@@ -102,6 +103,7 @@ export function initMutationObserver(
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
+    maskInputFn,
     recordCanvas,
     slimDOMOptions,
     doc,
@@ -476,7 +478,7 @@ function initMediaInteractionObserver(
   blockClass: blockClass,
   mirror: Mirror,
 ): listenerHandler {
-  const handler = (type: MediaInteractions ) => (event: Event) => {
+  const handler = (type: MediaInteractions) => (event: Event) => {
     const target = getEventTarget(event);
     if (!target || isBlocked(target as Node, blockClass)) {
       return;
@@ -484,13 +486,13 @@ function initMediaInteractionObserver(
     mediaInteractionCb({
       type,
       id: mirror.getId(target as INode),
-      currentTime: (target as HTMLMediaElement).currentTime
+      currentTime: (target as HTMLMediaElement).currentTime,
     });
   };
   const handlers = [
-    on('play', handler(MediaInteractions.Play)), 
-    on('pause', handler(MediaInteractions.Pause)), 
-    on('seeked', handler(MediaInteractions.Seeked))
+    on('play', handler(MediaInteractions.Play)),
+    on('pause', handler(MediaInteractions.Pause)),
+    on('seeked', handler(MediaInteractions.Seeked)),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -716,6 +718,7 @@ export function initObservers(
     o.inlineStylesheet,
     o.maskInputOptions,
     o.maskTextFn,
+    o.maskInputFn,
     o.recordCanvas,
     o.slimDOMOptions,
     o.mirror,

@@ -15,6 +15,7 @@ import {
   scrollData,
   inputData,
   DocumentDimension,
+  MaskInputFn,
 } from './types';
 import {
   INode,
@@ -22,6 +23,7 @@ import {
   serializedNodeWithId,
   NodeType,
   isShadowRoot,
+  MaskInputOptions,
 } from 'rrweb-snapshot';
 
 export function on(
@@ -651,4 +653,31 @@ export function hasShadowRoot<T extends Node>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
   return Boolean((n as unknown as Element)?.shadowRoot);
+}
+
+export function maskInputValue({
+  maskInputOptions,
+  tagName,
+  type,
+  value,
+  maskInputFn,
+}: {
+  maskInputOptions: MaskInputOptions;
+  tagName: string;
+  type: string | null;
+  value: string | null;
+  maskInputFn?: MaskInputFn;
+}): string {
+  let text = value || '';
+  if (
+    maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
+    maskInputOptions[type as keyof MaskInputOptions]
+  ) {
+    if (maskInputFn) {
+      text = maskInputFn(text);
+    } else {
+      text = '*'.repeat(text.length);
+    }
+  }
+  return text;
 }
