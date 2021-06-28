@@ -146,7 +146,7 @@ The parameter of `rrweb.record` accepts the following options.
 | maskTextClass    | 'rr-mask'          | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter                                                            |
 | maskTextSelector | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter                                                                      |
 | maskAllInputs    | false              | mask all input content as \*                                                                                                                                             |
-| maskInputOptions | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L72)          |
+| maskInputOptions | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/0bb95f1ee77fef03166a68f75b959ad997171442/src/types.ts#L77-L95)          |
 | maskInputFn      | -                  | customize mask input content recording logic                                                                                                                             |
 | maskTextFn       | -                  | customize mask text content recording logic                                                                                                                              |
 | slimDOMOptions   | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L91) |
