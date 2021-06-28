@@ -55,7 +55,7 @@ export function createMirror(): Mirror {
       delete this.map[id];
       if (n.childNodes) {
         n.childNodes.forEach((child) =>
-          this.removeNodeFromMap(child as Node as INode),
+          this.removeNodeFromMap((child as Node) as INode),
         );
       }
     },
@@ -277,7 +277,7 @@ export function isAncestorRemoved(target: INode, mirror: Mirror): boolean {
   if (!target.parentNode) {
     return true;
   }
-  return isAncestorRemoved(target.parentNode as unknown as INode, mirror);
+  return isAncestorRemoved((target.parentNode as unknown) as INode, mirror);
 }
 
 export function isTouchEvent(
@@ -288,13 +288,13 @@ export function isTouchEvent(
 
 export function polyfill(win = window) {
   if ('NodeList' in win && !win.NodeList.prototype.forEach) {
-    win.NodeList.prototype.forEach = Array.prototype
-      .forEach as unknown as NodeList['forEach'];
+    win.NodeList.prototype.forEach = (Array.prototype
+      .forEach as unknown) as NodeList['forEach'];
   }
 
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
-    win.DOMTokenList.prototype.forEach = Array.prototype
-      .forEach as unknown as DOMTokenList['forEach'];
+    win.DOMTokenList.prototype.forEach = (Array.prototype
+      .forEach as unknown) as DOMTokenList['forEach'];
   }
 
   // https://github.com/Financial-Times/polyfill-service/pull/183
@@ -398,7 +398,7 @@ export class TreeIndex {
       const node = mirror.getNode(id);
       node?.childNodes.forEach((childNode) => {
         if ('__sn' in childNode) {
-          deepRemoveFromMirror((childNode as unknown as INode).__sn.id);
+          deepRemoveFromMirror(((childNode as unknown) as INode).__sn.id);
         }
       });
     };
@@ -462,8 +462,12 @@ export class TreeIndex {
     scrollMap: TreeIndex['scrollMap'];
     inputMap: TreeIndex['inputMap'];
   } {
-    const { tree, removeNodeMutations, textMutations, attributeMutations } =
-      this;
+    const {
+      tree,
+      removeNodeMutations,
+      textMutations,
+      attributeMutations,
+    } = this;
 
     const batchMutationData: mutationData = {
       source: IncrementalSource.Mutation,
@@ -652,9 +656,11 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean((n as unknown as Element)?.shadowRoot);
+  return Boolean(((n as unknown) as Element)?.shadowRoot);
 }
 
+// TODO: move me to rrweb-snapshot
+// we are doing similar things there as well, would be best to keep things consistent
 export function maskInputValue({
   maskInputOptions,
   tagName,
