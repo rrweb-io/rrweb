@@ -162,27 +162,46 @@ for (const c of baseConfigs) {
 }
 
 if (process.env.BROWSER_ONLY) {
-  configs = {
-    input: './src/index.ts',
-    plugins: [
+  const browserOnlyBaseConfigs = [
+    {
+      input: './src/index.ts',
+      name: 'rrweb',
+      pathFn: (p) => p,
+    },
+    {
+      input: './src/plugins/console/record/index.ts',
+      name: 'rrwebConsoleRecord',
+      pathFn: toPluginPath('console', 'record'),
+    },
+  ];
+
+  configs = [];
+
+  for (const c of browserOnlyBaseConfigs) {
+    const plugins = [
       resolve({ browser: true }),
       typescript(),
       postcss({
-        extract: true,
-        minimize: true,
+        extract: false,
+        inject: false,
         sourceMap: true,
       }),
       terser(),
-    ],
-    output: [
-      {
-        name: 'rrweb',
-        format: 'iife',
-        file: toMinPath(pkg.unpkg),
-        sourcemap: true,
-      },
-    ],
-  };
+    ];
+
+    configs.push({
+      input: c.input,
+      plugins,
+      output: [
+        {
+          name: c.name,
+          format: 'iife',
+          file: toMinPath(c.pathFn(pkg.unpkg)),
+          sourcemap: true,
+        },
+      ],
+    });
+  }
 }
 
 export default configs;
