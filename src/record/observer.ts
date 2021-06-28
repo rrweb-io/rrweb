@@ -9,6 +9,7 @@ import {
   isBlocked,
   isTouchEvent,
   patch,
+  maskInputValue,
 } from '../utils';
 import {
   mutationCallBack,
@@ -368,11 +369,13 @@ function initInputObserver(
       ] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
-      if (maskInputFn) {
-        text = maskInputFn(text);
-      } else {
-        text = '*'.repeat(text.length);
-      }
+      text = maskInputValue({
+        maskInputOptions: this.maskInputOptions,
+        tagName: (target as HTMLElement).tagName,
+        type,
+        value: text,
+        maskInputFn,
+      });
     }
     cbWithDedup(target, { text, isChecked });
     // if a radio was checked
