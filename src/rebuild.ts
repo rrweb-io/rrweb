@@ -154,9 +154,7 @@ function buildNode(
             node.appendChild(child);
             continue;
           }
-          if (tagName === 'iframe' && name === 'src') {
-            continue;
-          }
+          
           try {
             if (n.isSVG && name === 'xlink:href') {
               node.setAttributeNS('http://www.w3.org/1999/xlink', name, value);
