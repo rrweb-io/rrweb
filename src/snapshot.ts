@@ -362,12 +362,12 @@ function serializeNode(
     maskInputOptions = {},
     maskTextFn,
     recordCanvas,
-    keepIframeSrcFn
+    keepIframeSrcFn,
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  if ((doc as unknown as INode).__sn) {
-    const docId = (doc as unknown as INode).__sn.id;
+  if (((doc as unknown) as INode).__sn) {
+    const docId = ((doc as unknown) as INode).__sn.id;
     rootId = docId === 1 ? undefined : docId;
   }
   switch (n.nodeType) {

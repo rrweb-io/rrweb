@@ -154,7 +154,7 @@ function buildNode(
             node.appendChild(child);
             continue;
           }
-          
+
           try {
             if (n.isSVG && name === 'xlink:href') {
               node.setAttributeNS('http://www.w3.org/1999/xlink', name, value);
@@ -269,7 +269,7 @@ export function buildNodeWithSN(
   }
   if (n.rootId) {
     console.assert(
-      (map[n.rootId] as unknown as Document) === doc,
+      ((map[n.rootId] as unknown) as Document) === doc,
       'Target document should has the same root id.',
     );
   }
@@ -332,7 +332,7 @@ function handleScroll(node: INode) {
   if (n.type !== NodeType.Element) {
     return;
   }
-  const el = node as Node as HTMLElement;
+  const el = (node as Node) as HTMLElement;
   for (const name in n.attributes) {
     if (!(n.attributes.hasOwnProperty(name) && name.startsWith('rr_'))) {
       continue;
