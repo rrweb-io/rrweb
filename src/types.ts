@@ -222,6 +222,7 @@ export type recordOptions<T> = {
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
+  keepIframeSrcFn?: KeepIframeSrcFn;
 };
 
 export type observerParam = {
@@ -550,3 +551,5 @@ export type ElementState = {
   // [scrollLeft,scrollTop]
   scroll?: [number, number];
 };
+
+export type KeepIframeSrcFn = (src: string) => boolean;

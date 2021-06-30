@@ -59,6 +59,7 @@ function record<T = eventWithTime>(
     recordCanvas = false,
     collectFonts = false,
     plugins,
+    keepIframeSrcFn = () => false,
   } = options;
   // runtime checks for user options
   if (!emit) {
@@ -237,6 +238,7 @@ function record<T = eventWithTime>(
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
       },
+      keepIframeSrcFn,
     });
 
     if (!node) {

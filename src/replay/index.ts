@@ -493,13 +493,16 @@ export class Replayer {
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
 
       // events are kept sorted by timestamp, check if this is the last event
+      let last_index = this.service.state.context.events.length - 1;
       if (
         event ===
-        this.service.state.context.events[
-          this.service.state.context.events.length - 1
-        ]
+        this.service.state.context.events[last_index]
       ) {
         const finish = () => {
+          if (last_index < this.service.state.context.events.length - 1) {
+            // more events have been added since the setTimeout
+            return;
+          }
           this.backToNormal();
           this.service.send('END');
           this.emitter.emit(ReplayerEvents.Finish);
