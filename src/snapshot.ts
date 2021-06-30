@@ -8,9 +8,10 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   MaskTextFn,
+  MaskInputFn,
   KeepIframeSrcFn,
 } from './types';
-import { isElement, isShadowRoot } from './utils';
+import { isElement, isShadowRoot, maskInputValue } from './utils';
 
 let _id = 1;
 const tagNameRegex = RegExp('[^a-z0-9-_:]');
@@ -348,6 +349,7 @@ function serializeNode(
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
+    maskInputFn: MaskInputFn | undefined;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
   },
@@ -361,13 +363,14 @@ function serializeNode(
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
+    maskInputFn,
     recordCanvas,
     keepIframeSrcFn,
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  if (((doc as unknown) as INode).__sn) {
-    const docId = ((doc as unknown) as INode).__sn.id;
+  if ((doc as unknown as INode).__sn) {
+    const docId = (doc as unknown as INode).__sn.id;
     rootId = docId === 1 ? undefined : docId;
   }
   switch (n.nodeType) {
@@ -443,11 +446,13 @@ function serializeNode(
           attributes.type !== 'button' &&
           value
         ) {
-          attributes.value =
-            maskInputOptions[attributes.type as keyof MaskInputOptions] ||
-            maskInputOptions[tagName as keyof MaskInputOptions]
-              ? '*'.repeat(value.length)
-              : value;
+          attributes.value = maskInputValue({
+            type: attributes.type,
+            tagName,
+            value,
+            maskInputOptions,
+            maskInputFn,
+          });
         } else if ((n as HTMLInputElement).checked) {
           attributes.checked = (n as HTMLInputElement).checked;
         }
@@ -650,6 +655,7 @@ export function serializeNodeWithId(
     inlineStylesheet: boolean;
     maskInputOptions?: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
+    maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
     recordCanvas?: boolean;
@@ -670,6 +676,7 @@ export function serializeNodeWithId(
     inlineStylesheet = true,
     maskInputOptions = {},
     maskTextFn,
+    maskInputFn,
     slimDOMOptions,
     recordCanvas = false,
     onSerialize,
@@ -687,6 +694,7 @@ export function serializeNodeWithId(
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
+    maskInputFn,
     recordCanvas,
     keepIframeSrcFn,
   });
@@ -750,6 +758,7 @@ export function serializeNodeWithId(
       inlineStylesheet,
       maskInputOptions,
       maskTextFn,
+      maskInputFn,
       slimDOMOptions,
       recordCanvas,
       preserveWhiteSpace,
@@ -801,6 +810,7 @@ export function serializeNodeWithId(
             inlineStylesheet,
             maskInputOptions,
             maskTextFn,
+            maskInputFn,
             slimDOMOptions,
             recordCanvas,
             preserveWhiteSpace,
@@ -832,6 +842,7 @@ function snapshot(
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
+    maskInputFn?: MaskTextFn;
     slimDOM?: boolean | SlimDOMOptions;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
@@ -850,6 +861,7 @@ function snapshot(
     recordCanvas = false,
     maskAllInputs = false,
     maskTextFn,
+    maskInputFn,
     slimDOM = false,
     preserveWhiteSpace,
     onSerialize,
@@ -913,6 +925,7 @@ function snapshot(
       inlineStylesheet,
       maskInputOptions,
       maskTextFn,
+      maskInputFn,
       slimDOMOptions,
       recordCanvas,
       preserveWhiteSpace,
