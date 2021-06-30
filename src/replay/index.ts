@@ -208,6 +208,7 @@ export class Replayer {
       setTimeout(() => {
         // when something has been played, there is no need to rebuild poster
         if (this.firstFullSnapshot) {
+          // true if any other fullSnapshot has been executed by Timer already
           return;
         }
         this.firstFullSnapshot = firstFullsnapshot;
@@ -431,12 +432,13 @@ export class Replayer {
         castFn = () => {
           if (this.firstFullSnapshot) {
             if (this.firstFullSnapshot === event) {
-              // we've already built it when the player was mounted.
+              // we've already built this exact FullSnapshot when the player was mounted, and haven't built any other FullSnapshot since
+              this.firstFullSnapshot = true; // forget as we might need to re-execute this FullSnapshot later e.g. to rebuild after scrubbing
               return;
             }
           } else {
             // Timer (requestAnimationFrame) can be faster than setTimeout(..., 1)
-            this.firstFullSnapshot = event;
+            this.firstFullSnapshot = true;
           }
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
