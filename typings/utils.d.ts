@@ -1,5 +1,5 @@
-import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, eventWithTime, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, MaskInputFn } from './types';
-import { INode, serializedNodeWithId, MaskInputOptions } from 'rrweb-snapshot';
+import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, eventWithTime, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension } from './types';
+import { INode, serializedNodeWithId } from 'rrweb-snapshot';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | Window): listenerHandler;
 export declare function createMirror(): Mirror;
 export declare let _mirror: Mirror;
@@ -66,11 +66,4 @@ export declare function getBaseDimension(node: Node, rootIframe: Node): Document
 export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
     shadowRoot: ShadowRoot;
 };
-export declare function maskInputValue({ maskInputOptions, tagName, type, value, maskInputFn, }: {
-    maskInputOptions: MaskInputOptions;
-    tagName: string;
-    type: string | null;
-    value: string | null;
-    maskInputFn?: MaskInputFn;
-}): string;
 export {};

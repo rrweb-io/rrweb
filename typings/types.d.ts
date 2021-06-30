@@ -1,4 +1,4 @@
-import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
@@ -412,8 +412,6 @@ export declare enum ReplayerEvents {
     StateChange = "state-change",
     PlayBack = "play-back"
 }
-export declare type MaskInputFn = (text: string) => string;
-export declare type MaskTextFn = (text: string) => string;
 export declare type ElementState = {
     scroll?: [number, number];
 };

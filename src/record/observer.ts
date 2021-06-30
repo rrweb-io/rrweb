@@ -1,4 +1,11 @@
-import { INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  INode,
+  MaskInputOptions,
+  SlimDOMOptions,
+  maskInputValue,
+  MaskInputFn,
+  MaskTextFn,
+} from 'rrweb-snapshot';
 import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -9,7 +16,6 @@ import {
   isBlocked,
   isTouchEvent,
   patch,
-  maskInputValue,
 } from '../utils';
 import {
   mutationCallBack,
@@ -36,8 +42,6 @@ import {
   canvasMutationCallback,
   fontCallback,
   fontParam,
-  MaskInputFn,
-  MaskTextFn,
   Mirror,
 } from '../types';
 import MutationBuffer from './mutation';

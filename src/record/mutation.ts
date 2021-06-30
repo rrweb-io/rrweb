@@ -7,6 +7,9 @@ import {
   IGNORED_NODE,
   isShadowRoot,
   needMaskingText,
+  maskInputValue,
+  MaskTextFn,
+  MaskInputFn,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
@@ -17,9 +20,7 @@ import {
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
-  MaskTextFn,
   Mirror,
-  MaskInputFn,
 } from '../types';
 import {
   isBlocked,
@@ -27,7 +28,6 @@ import {
   isIgnored,
   isIframeINode,
   hasShadowRoot,
-  maskInputValue,
 } from '../utils';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -292,6 +292,7 @@ export default class MutationBuffer {
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
         maskTextFn: this.maskTextFn,
+        maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
         recordCanvas: this.recordCanvas,
         onSerialize: (currentN) => {

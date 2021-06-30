@@ -1,5 +1,5 @@
-import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
-import { mutationRecord, blockClass, maskTextClass, mutationCallBack, MaskTextFn, Mirror, MaskInputFn } from '../types';
+import { MaskInputOptions, SlimDOMOptions, MaskTextFn, MaskInputFn } from 'rrweb-snapshot';
+import { mutationRecord, blockClass, maskTextClass, mutationCallBack, Mirror } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 export default class MutationBuffer {

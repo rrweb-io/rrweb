@@ -4,6 +4,8 @@ import {
   INode,
   MaskInputOptions,
   SlimDOMOptions,
+  MaskInputFn,
+  MaskTextFn,
 } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { FontFaceDescriptors } from 'css-font-loading-module';
@@ -542,10 +544,6 @@ export enum ReplayerEvents {
   StateChange = 'state-change',
   PlayBack = 'play-back',
 }
-
-export type MaskInputFn = (text: string) => string;
-
-export type MaskTextFn = (text: string) => string;
 
 // store the state that would be changed during the process(unmount from dom and mount again)
 export type ElementState = {

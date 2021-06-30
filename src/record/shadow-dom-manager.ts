@@ -2,13 +2,16 @@ import {
   mutationCallBack,
   blockClass,
   maskTextClass,
-  MaskTextFn,
   Mirror,
   scrollCallback,
   SamplingStrategy,
-  MaskInputFn,
 } from '../types';
-import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  MaskInputOptions,
+  SlimDOMOptions,
+  MaskTextFn,
+  MaskInputFn,
+} from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
 import { initMutationObserver, initScrollObserver } from './observer';
 
