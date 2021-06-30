@@ -147,6 +147,7 @@ export declare type recordOptions<T> = {
     collectFonts?: boolean;
     plugins?: RecordPlugin[];
     mousemoveWait?: number;
+    keepIframeSrcFn?: KeepIframeSrcFn;
 };
 export declare type observerParam = {
     mutationCb: mutationCallBack;
@@ -417,4 +418,5 @@ export declare type MaskTextFn = (text: string) => string;
 export declare type ElementState = {
     scroll?: [number, number];
 };
+export declare type KeepIframeSrcFn = (src: string) => boolean;
 export {};
