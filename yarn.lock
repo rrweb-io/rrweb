@@ -2845,10 +2845,10 @@ rollup@^2.3.3:
   optionalDependencies:
     fsevents "~2.1.2"
 
-rrweb-snapshot@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.1.4.tgz#a71d812004c340aaa5313d313a7bd343eb8c260d"
-  integrity sha512-0iVRbsWSVOVEjgE8MA0+zYwlLMSwkVsUA7KhmvVaBK+viYcbx79SKRB8PkeFz1/1Jnn9fnkzPHlh42F+xFuwbQ==
+rrweb-snapshot@^1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.1.5.tgz#7784a01e7d2ccd067ec56cdec38a1fc2a77cbe86"
+  integrity sha512-U5mfiySoK85WkLCljFTh+ShgTDrOMXWrh1qpou8WwW3AEXba7CSv/sTtoXp3QfG5oxe1YOc+fC3tB4kHMdI00w==
 
 run-async@^2.2.0:
   version "2.4.1"
