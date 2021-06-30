@@ -1,4 +1,11 @@
-import { INode, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  INode,
+  MaskInputOptions,
+  SlimDOMOptions,
+  maskInputValue,
+  MaskInputFn,
+  MaskTextFn,
+} from 'rrweb-snapshot';
 import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -35,8 +42,6 @@ import {
   canvasMutationCallback,
   fontCallback,
   fontParam,
-  MaskInputFn,
-  MaskTextFn,
   Mirror,
 } from '../types';
 import MutationBuffer from './mutation';
@@ -83,6 +88,7 @@ export function initMutationObserver(
   inlineStylesheet: boolean,
   maskInputOptions: MaskInputOptions,
   maskTextFn: MaskTextFn | undefined,
+  maskInputFn: MaskInputFn | undefined,
   recordCanvas: boolean,
   slimDOMOptions: SlimDOMOptions,
   mirror: Mirror,
@@ -102,6 +108,7 @@ export function initMutationObserver(
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
+    maskInputFn,
     recordCanvas,
     slimDOMOptions,
     doc,
@@ -366,11 +373,13 @@ function initInputObserver(
       ] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
-      if (maskInputFn) {
-        text = maskInputFn(text);
-      } else {
-        text = '*'.repeat(text.length);
-      }
+      text = maskInputValue({
+        maskInputOptions,
+        tagName: (target as HTMLElement).tagName,
+        type,
+        value: text,
+        maskInputFn,
+      });
     }
     cbWithDedup(target, { text, isChecked });
     // if a radio was checked
@@ -476,7 +485,7 @@ function initMediaInteractionObserver(
   blockClass: blockClass,
   mirror: Mirror,
 ): listenerHandler {
-  const handler = (type: MediaInteractions ) => (event: Event) => {
+  const handler = (type: MediaInteractions) => (event: Event) => {
     const target = getEventTarget(event);
     if (!target || isBlocked(target as Node, blockClass)) {
       return;
@@ -484,13 +493,13 @@ function initMediaInteractionObserver(
     mediaInteractionCb({
       type,
       id: mirror.getId(target as INode),
-      currentTime: (target as HTMLMediaElement).currentTime
+      currentTime: (target as HTMLMediaElement).currentTime,
     });
   };
   const handlers = [
-    on('play', handler(MediaInteractions.Play)), 
-    on('pause', handler(MediaInteractions.Pause)), 
-    on('seeked', handler(MediaInteractions.Seeked))
+    on('play', handler(MediaInteractions.Play)),
+    on('pause', handler(MediaInteractions.Pause)),
+    on('seeked', handler(MediaInteractions.Seeked)),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -716,6 +725,7 @@ export function initObservers(
     o.inlineStylesheet,
     o.maskInputOptions,
     o.maskTextFn,
+    o.maskInputFn,
     o.recordCanvas,
     o.slimDOMOptions,
     o.mirror,

@@ -267,6 +267,23 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots, __filename, 'maskInputOptions');
   });
 
+  it('should mask value attribute with maskInputOptions', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'password.html', {
+        maskInputOptions: {
+          password: true,
+        },
+      }),
+    );
+
+    await page.type('input[type="password"]', 'secr3t');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'maskPassword');
+  });
+
   it('should not record blocked elements and its child nodes', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto('about:blank');

@@ -2,12 +2,16 @@ import {
   mutationCallBack,
   blockClass,
   maskTextClass,
-  MaskTextFn,
   Mirror,
   scrollCallback,
   SamplingStrategy,
 } from '../types';
-import { MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  MaskInputOptions,
+  SlimDOMOptions,
+  MaskTextFn,
+  MaskInputFn,
+} from 'rrweb-snapshot';
 import { IframeManager } from './iframe-manager';
 import { initMutationObserver, initScrollObserver } from './observer';
 
@@ -19,6 +23,7 @@ type BypassOptions = {
   inlineStylesheet: boolean;
   maskInputOptions: MaskInputOptions;
   maskTextFn: MaskTextFn | undefined;
+  maskInputFn: MaskInputFn | undefined;
   recordCanvas: boolean;
   sampling: SamplingStrategy;
   slimDOMOptions: SlimDOMOptions;
@@ -54,6 +59,7 @@ export class ShadowDomManager {
       this.bypassOptions.inlineStylesheet,
       this.bypassOptions.maskInputOptions,
       this.bypassOptions.maskTextFn,
+      this.bypassOptions.maskInputFn,
       this.bypassOptions.recordCanvas,
       this.bypassOptions.slimDOMOptions,
       this.mirror,

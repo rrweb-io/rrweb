@@ -194,6 +194,7 @@ function record<T = eventWithTime>(
       inlineStylesheet,
       maskInputOptions,
       maskTextFn,
+      maskInputFn,
       recordCanvas,
       sampling,
       slimDOMOptions,
