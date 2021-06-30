@@ -89,8 +89,8 @@ export class Replayer {
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
   private mirror: Mirror = createMirror();
-  /** The first time the player is playing. */
-  private firstPlayedEvent: eventWithTime | null = null;
+
+  private firstFullSnapshot: eventWithTime | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
@@ -145,7 +145,7 @@ export class Replayer {
       }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
-      this.firstPlayedEvent = null;
+      this.firstFullSnapshot = null;
       this.mirror.reset();
     });
 
@@ -207,10 +207,10 @@ export class Replayer {
     if (firstFullsnapshot) {
       setTimeout(() => {
         // when something has been played, there is no need to rebuild poster
-        if (this.firstPlayedEvent) {
+        if (this.firstFullSnapshot) {
           return;
         }
-        this.firstPlayedEvent = firstFullsnapshot;
+        this.firstFullSnapshot = firstFullsnapshot;
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
@@ -429,9 +429,14 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          // Don't build a full snapshot during the first play through since we've already built it when the player was mounted.
-          if (this.firstPlayedEvent && this.firstPlayedEvent === event) {
-            return;
+          if (this.firstFullSnapshot) {
+            if (this.firstFullSnapshot === event) {
+              // we've already built it when the player was mounted.
+              return;
+            }
+          } else {
+            // Timer (requestAnimationFrame) can be faster than setTimeout(..., 1)
+            this.firstFullSnapshot = event;
           }
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
