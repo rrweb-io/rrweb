@@ -80,7 +80,9 @@ const baseConfigs = [
     input: './src/entries/all.ts',
     name: 'rrweb',
     pathFn: toAllPath,
+    esm: true,
   },
+  // plugins
   {
     input: './src/plugins/console/record/index.ts',
     name: 'rrwebConsoleRecord',
@@ -146,19 +148,21 @@ for (const c of baseConfigs) {
       },
     ],
   });
-  // ES module
-  configs.push({
-    input: c.input,
-    plugins,
-    preserveModules: true,
-    output: [
-      {
-        format: 'esm',
-        dir: 'es/rrweb',
-        plugins: [renameNodeModules('ext')],
-      },
-    ],
-  });
+  if (c.esm) {
+    // ES module
+    configs.push({
+      input: c.input,
+      plugins,
+      preserveModules: true,
+      output: [
+        {
+          format: 'esm',
+          dir: 'es/rrweb',
+          plugins: [renameNodeModules('ext')],
+        },
+      ],
+    });
+  }
 }
 
 if (process.env.BROWSER_ONLY) {
