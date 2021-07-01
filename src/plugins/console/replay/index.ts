@@ -108,9 +108,9 @@ class LogReplayPlugin {
   }
 }
 
-export const getLogReplayPlugin: (options?: LogReplayConfig) => ReplayPlugin = (
-  options,
-) => {
+export const getReplayConsolePlugin: (
+  options?: LogReplayConfig,
+) => ReplayPlugin = (options) => {
   const replayLogger =
     options?.replayLogger || new LogReplayPlugin(options).getConsoleLogger();
 

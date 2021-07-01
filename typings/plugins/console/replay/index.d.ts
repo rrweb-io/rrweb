@@ -5,5 +5,5 @@ declare type LogReplayConfig = {
     level?: LogLevel[] | undefined;
     replayLogger: ReplayLogger | undefined;
 };
-export declare const getLogReplayPlugin: (options?: LogReplayConfig) => ReplayPlugin;
+export declare const getReplayConsolePlugin: (options?: LogReplayConfig) => ReplayPlugin;
 export {};
