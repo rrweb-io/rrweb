@@ -768,7 +768,11 @@ export class Replayer {
           d.attributes.forEach((m) => this.treeIndex.attribute(m));
           d.removes.forEach((m) => this.treeIndex.remove(m, this.mirror));
         }
-        this.applyMutation(d, isSync);
+        try {
+          this.applyMutation(d, isSync);
+        } catch (error) {
+          this.warn(`Exception in mutation ${error.message || error}`, d);
+        }
         break;
       }
       case IncrementalSource.Drag:
@@ -1069,20 +1073,28 @@ export class Replayer {
       // target may be removed with its parents before
       this.mirror.removeNodeFromMap(target);
       if (parent) {
+        let realTarget = null;
         const realParent =
           '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
         if (realParent && realParent.contains(target)) {
-          realParent.removeChild(target);
+          parent = realParent;
         } else if (this.fragmentParentMap.has(target)) {
           /**
            * the target itself is a fragment document and it's not in the dom
            * so we should remove the real target from its parent
            */
-          const realTarget = this.fragmentParentMap.get(target)!;
-          parent.removeChild(realTarget);
+          realTarget = this.fragmentParentMap.get(target)!;
           this.fragmentParentMap.delete(target);
-        } else {
+          target = realTarget;
+        }
+        try {
           parent.removeChild(target);
+        } catch (error) {
+          if (error instanceof DOMException) {
+            this.warn('parent could not remove child in mutation', parent, realParent, target, realTarget , d);
+          } else {
+            throw error;
+          }
         }
       }
     });
