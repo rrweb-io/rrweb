@@ -1569,7 +1569,11 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
-    this.warn(`Node with id '${id}' not found in`, d);
+    if (this.treeIndex.removeIdSet.has(id)) {
+      this.warn(`Node with id '${id}' was previously removed. `, d);
+    } else {
+      this.warn(`Node with id '${id}' not found. `, d);
+    }
   }
 
   private warnCanvasMutationFailed(
@@ -1587,7 +1591,11 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+    if (this.treeIndex.removeIdSet.has(id)) {
+      this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' was previously removed. `, d);
+    } else {
+      this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
+    }
   }
 
   private warn(...args: Parameters<typeof console.warn>) {
