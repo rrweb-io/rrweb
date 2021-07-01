@@ -88,7 +88,9 @@ export class Timer {
       } else if (this.actions[mid].delay > action.delay) {
         end = mid - 1;
       } else {
-        return mid;
+        // already an action with same delay (timestamp)
+        // the plus one will splice the new one after the existing one
+        return mid + 1;
       }
     }
     return start;
