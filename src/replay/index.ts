@@ -90,7 +90,7 @@ export class Replayer {
 
   private mirror: Mirror = createMirror();
 
-  private firstFullSnapshot: eventWithTime | null = null;
+  private firstFullSnapshot: eventWithTime | true | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
