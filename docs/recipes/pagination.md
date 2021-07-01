@@ -12,7 +12,7 @@ replayer.addEvent(NEW_EVENT);
 
 When calling the `addEvent` API to add a new event, rrweb will resolve its timestamp and replay it as need.
 
-If you need to load several events, you can do a lool like this:
+If you need to load several events, you can do a loop like this:
 
 ```js
 const replayer = new rrweb.Replayer(events);
