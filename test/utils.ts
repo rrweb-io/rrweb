@@ -8,6 +8,7 @@ import {
   MouseInteractions,
 } from '../src/types';
 import * as puppeteer from 'puppeteer';
+import { TidyDoc } from 'node-libtidy';
 
 export async function launchPuppeteer() {
   return await puppeteer.launch({
@@ -61,7 +62,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.data.href = 'about:blank';
         }
         // FIXME: travis coordinates seems different with my laptop
-        const coordinatesReg = /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g
+        const coordinatesReg = /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g;
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseInteraction
@@ -78,7 +79,10 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               'style' in a.attributes &&
               coordinatesReg.test(a.attributes.style!)
             ) {
-              a.attributes.style = a.attributes.style!.replace(coordinatesReg, '$1: Npx');
+              a.attributes.style = a.attributes.style!.replace(
+                coordinatesReg,
+                '$1: Npx',
+              );
             }
           });
           s.data.adds.forEach((add) => {
@@ -88,7 +92,10 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               typeof add.node.attributes.style === 'string' &&
               coordinatesReg.test(add.node.attributes.style)
             ) {
-              add.node.attributes.style = add.node.attributes.style.replace(coordinatesReg, '$1: Npx');
+              add.node.attributes.style = add.node.attributes.style.replace(
+                coordinatesReg,
+                '$1: Npx',
+              );
             }
           });
         }
@@ -100,12 +107,77 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
   );
 }
 
+function stringifyDomSnapshot(mhtml: string): string {
+  const { Parser } = require('fast-mhtml');
+  const resources: string[] = [];
+  const p = new Parser({
+    rewriteFn: (filename: string): string => {
+      const index = resources.indexOf(filename);
+      const prefix = /^\w+/.exec(filename);
+      if (index !== -1) {
+        return `file-${prefix}-${index}`;
+      } else {
+        return `file-${prefix}-${resources.push(filename) - 1}`;
+      }
+    },
+  });
+  const result = p
+    .parse(mhtml) // parse file
+    .rewrite() // rewrite all links
+    .spit(); // return all contents
+
+  const newResult: { filename: string; content: string }[] = result.map(
+    (asset: { filename: string; content: string }) => {
+      let { filename, content } = asset;
+      let res: string | undefined;
+      if (filename.includes('frame')) {
+        const doc = TidyDoc();
+        doc.options = {
+          indent: 'auto',
+          indent_spaces: 2,
+          wrap: 80,
+          markup: true,
+          output_xml: false,
+          numeric_entities: true,
+          quote_marks: true,
+          quote_nbsp: false,
+          // 'show_body_only': true,
+          quote_ampersand: false,
+          break_before_br: true,
+          uppercase_tags: false,
+          // 'uppercase_attributes': false,
+          // 'drop_font_tags': true,
+          tidy_mark: false,
+        };
+        doc.parseBufferSync(Buffer.from(content));
+        res = doc.saveBufferSync().toString();
+      }
+      return { filename, content: res || content };
+    },
+  );
+  return newResult.map((asset) => Object.values(asset).join('\n')).join('\n\n');
+}
+
 export function assertSnapshot(
   snapshots: eventWithTime[],
   filename: string,
   name: string,
 ) {
   const result = matchSnapshot(stringifySnapshots(snapshots), filename, name);
+  assert(result.pass, result.pass ? '' : result.report());
+}
+
+export async function assertDomSnapshot(
+  page: puppeteer.Page,
+  filename: string,
+  name: string,
+) {
+  const cdp = await page.target().createCDPSession();
+  const { data } = await cdp.send('Page.captureSnapshot', {
+    format: 'mhtml',
+  });
+
+  const result = matchSnapshot(stringifyDomSnapshot(data), filename, name);
   assert(result.pass, result.pass ? '' : result.report());
 }
 
@@ -241,23 +313,23 @@ export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
                 childNodes: [
                   {
                     type: 2,
-                    tagName: "style",
+                    tagName: 'style',
                     attributes: {
-                      "data-jss": "",
-                      "data-meta": "OverlayDrawer",
-                      _cssText: ".OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}"
+                      'data-jss': '',
+                      'data-meta': 'OverlayDrawer',
+                      _cssText:
+                        '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
                     },
                     childNodes: [
                       {
                         type: 3,
-                        textContent: "\n",
+                        textContent: '\n',
                         isStyle: true,
-                        id: 5
+                        id: 5,
                       },
                     ],
-                    id: 4
+                    id: 4,
                   },
-
                 ],
                 id: 3,
               },
@@ -290,10 +362,10 @@ export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
       removes: [
         {
           parentId: 3,
-          id: 4
-        }
+          id: 4,
+        },
       ],
-      adds: []
+      adds: [],
     },
     timestamp: now + 2000,
   },

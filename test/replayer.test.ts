@@ -6,6 +6,7 @@ import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
 import { Suite } from 'mocha';
 import {
+  assertDomSnapshot,
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
@@ -147,6 +148,12 @@ describe('replayer', function (this: ISuite) {
       replayer['timer']['actions'].length;
     `);
 
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-rule-events-1500',
+    );
+
     const result = await this.page.evaluate(`
       const rules = Array.from(replayer.iframe.contentDocument.head.children)
         .filter(x=>x.nodeName === 'STYLE')
@@ -158,12 +165,12 @@ describe('replayer', function (this: ISuite) {
         rules.some(x=>x.selectorText === ".css-1fbxx79")
     `);
 
-    expect(result).to.equal(true);
     expect(actionLength).to.equal(
       styleSheetRuleEvents.filter(
         (e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500,
       ).length,
     );
+    expect(result).to.equal(true);
   });
 
   it('can handle removing style elements', async () => {
