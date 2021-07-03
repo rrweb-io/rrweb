@@ -91,8 +91,8 @@ export class Replayer {
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
   private mirror: Mirror = createMirror();
-  /** The first time the player is playing. */
-  private firstPlayedEvent: eventWithTime | null = null;
+
+  private firstFullSnapshot: eventWithTime | true | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
@@ -154,7 +154,7 @@ export class Replayer {
       }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
-      this.firstPlayedEvent = null;
+      this.firstFullSnapshot = null;
       this.mirror.reset();
     });
 
@@ -216,10 +216,11 @@ export class Replayer {
     if (firstFullsnapshot) {
       setTimeout(() => {
         // when something has been played, there is no need to rebuild poster
-        if (this.firstPlayedEvent) {
+        if (this.firstFullSnapshot) {
+          // true if any other fullSnapshot has been executed by Timer already
           return;
         }
-        this.firstPlayedEvent = firstFullsnapshot;
+        this.firstFullSnapshot = firstFullsnapshot;
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
@@ -438,9 +439,15 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          // Don't build a full snapshot during the first play through since we've already built it when the player was mounted.
-          if (this.firstPlayedEvent && this.firstPlayedEvent === event) {
-            return;
+          if (this.firstFullSnapshot) {
+            if (this.firstFullSnapshot === event) {
+              // we've already built this exact FullSnapshot when the player was mounted, and haven't built any other FullSnapshot since
+              this.firstFullSnapshot = true; // forget as we might need to re-execute this FullSnapshot later e.g. to rebuild after scrubbing
+              return;
+            }
+          } else {
+            // Timer (requestAnimationFrame) can be faster than setTimeout(..., 1)
+            this.firstFullSnapshot = true;
           }
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
