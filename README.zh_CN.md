@@ -7,14 +7,12 @@
 
 # rrweb
 
-**[🚀 Storyteller, 基于 rrweb 开发的无代码交互式教程编辑器](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
-
 **[rrweb 社区新的征程](http://www.myriptide.com/rrweb-community-cn/)**
 
-[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
-[![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
+[![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
 > 我已开通 Github Sponsor， 您可以通过赞助的形式帮助 rrweb 的开发。
 
@@ -75,6 +73,53 @@ rrweb 主要由 3 部分组成：
 除了添加集成测试和单元测试之外，rrweb 还提供了交互式的测试工具。
 
 [使用 REPL 工具](./guide.zh_CN.md#REPL-工具)
+
+## Core Team Members
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Yuyz0112">
+        <img
+          src="https://avatars.githubusercontent.com/u/13651389?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Yuyz0112</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Mark-Fenng">
+        <img
+          src="https://avatars.githubusercontent.com/u/27533910?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Mark-Fenng</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/eoghanmurray">
+        <img
+          src="https://avatars.githubusercontent.com/u/156780?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>eoghanmurray</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Juice10">
+        <img
+          src="https://avatars.githubusercontent.com/u/4106?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Juice10</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## Who's using rrweb
 

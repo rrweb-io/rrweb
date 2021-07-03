@@ -7,14 +7,12 @@
 
 # rrweb
 
-**[🚀 Try storyteller, a no-code interactive tutorial builder build with rrweb](https://storyteller.webzard.io/?utm_source=rrweb&utm_medium=github)**
-
 **[The new adventure of the rrweb community](http://www.myriptide.com/rrweb-community/)**
 
-[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb)
-[![Join the chat at https://gitter.im/rrweb-io/rrweb](https://badges.gitter.im/rrweb-io/rrweb.svg)](https://gitter.im/rrweb-io/rrweb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
+[![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
 [中文文档](./README.zh_CN.md)
 
@@ -74,6 +72,53 @@ Since we want the record and replay sides to share a strongly typed data structu
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
 [Using the REPL tool](./guide.md#REPL-tool)
+
+## Core Team Members
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Yuyz0112">
+        <img
+          src="https://avatars.githubusercontent.com/u/13651389?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Yuyz0112</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Mark-Fenng">
+        <img
+          src="https://avatars.githubusercontent.com/u/27533910?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Mark-Fenng</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/eoghanmurray">
+        <img
+          src="https://avatars.githubusercontent.com/u/156780?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>eoghanmurray</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Juice10">
+        <img
+          src="https://avatars.githubusercontent.com/u/4106?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Juice10</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## Who's using rrweb
 
