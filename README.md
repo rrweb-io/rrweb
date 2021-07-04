@@ -20,13 +20,11 @@
 
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
-**Currently, rrweb has already solved many difficult problems in recording and replaying, but the data structure may still be changed before the release of Version 1.0. So please be cautious to use rrweb in the production environment.**
-
 ## Guide
 
 [**📚 Read the rrweb guide here. 📚**](./guide.md)
 
-[**Recipes**](./docs/recipes/index.md)
+[**🍳 Recipes 🍳**](./docs/recipes/index.md)
 
 ## Project Structure
 
@@ -38,18 +36,15 @@ rrweb is mainly composed of 3 parts:
 
 ## Roadmap
 
-- rrweb
-  - handle cross-domain request errors
-  - record in web worker
-  - implement transmission data compression
-  - verify recording in mobile browser
-- rrweb-player
-  - implement efficient progress bar drag and drop control
-  - add full screen mode
-- extensions
-  - hijack the console API and record corresponding events
-  - hijack Ajax/fetch API and record request events
-  - use TraceKit to log exception events
+- rrdom: an ad-hoc DOM for rrweb session data [#419](https://github.com/rrweb-io/rrweb/issues/419)
+- storage engine: do deduplication on a large number of rrweb sessions
+- more end-to-end tests
+- compact mutation data in common patterns
+- provide plugins via the new plugin API, including:
+  - XHR plugin
+  - fetch plugin
+  - GraphQL plugin
+  - ...
 
 ## Internal Design
 

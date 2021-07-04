@@ -18,13 +18,11 @@
 
 rrweb 是 'record and replay the web' 的简写，旨在利用现代浏览器所提供的强大 API 录制并回放任意 web 界面中的用户操作。
 
-**目前 rrweb 已经解决了许多录制与回放中的难点问题，但在 1.0 版本 release 之前数据结构仍有可能发生变化，请谨慎用于生产环境中。**
-
 ## 指南
 
 [**📚 rrweb 使用指南 📚**](./guide.zh_CN.md)
 
-[**场景示例**](./docs/recipes/index.zh_CN.md)
+[**🍳 场景示例 🍳**](./docs/recipes/index.zh_CN.md)
 
 ## 项目结构
 
@@ -36,21 +34,15 @@ rrweb 主要由 3 部分组成：
 
 ## Roadmap
 
-- rrweb
-  - 处理跨域请求错误
-  - 转移至 web worker 中执行
-  - 实现传输数据压缩
-  - 验证移动端录制效果
-- rrweb-player
-  - 实现高效的进度条拖拽功能
-  - 增加全屏模式
-- extensions
-  - 劫持 console API，记录对应的事件
-  - 劫持 Ajax/fetch API，记录请求事件
-  - 封装 TraceKit，记录异常事件
-- 测试
-  - 补充更多单元测试
-  - 随机在更多网站上运行集成测试
+- rrdom: rrweb 数据专用的 DOM 实现 [#419](https://github.com/rrweb-io/rrweb/issues/419)
+- storage engine: 对大规模 rrweb 数据进行去重
+- 更多的 E2E 测试
+- 在常见场景下对 mutation 数据进行压缩
+- 基于新的插件 API 提供更多插件，包括:
+  - XHR 插件
+  - fetch 插件
+  - GraphQL 插件
+  - ...
 
 ## Internal Design
 
