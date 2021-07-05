@@ -42,6 +42,10 @@ import {
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
+import {
+  applyVirtualStyleRulesToNode,
+  VirtualStyleRulesMap,
+} from './virtual-styles';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -86,7 +90,7 @@ export class Replayer {
   private fragmentParentMap!: Map<INode, INode>;
   private elementStateMap!: Map<INode, ElementState>;
   // Hold the list of CSSRules during in-memory state restoration
-  private virtualStyleRulesMap!: Map<INode, CSSRule[]>;
+  private virtualStyleRulesMap!: VirtualStyleRulesMap;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -130,7 +134,7 @@ export class Replayer {
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
     this.elementStateMap = new Map<INode, ElementState>();
-    this.virtualStyleRulesMap = new Map<INode, CSSRule[]>();
+    this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
@@ -946,14 +950,21 @@ export class Replayer {
           if (!this.virtualStyleRulesMap.has(target)) {
             this.virtualStyleRulesMap.set(
               target,
-              Array.from(styleEl.sheet?.rules || []),
+              Array.from(styleEl.sheet?.cssRules || []).map((rule, index) => [
+                rule,
+                index,
+              ]), // <!== always sets an empty array as .sheet is always nothing while using virtual parent
             );
           }
 
           const existingRules = this.virtualStyleRulesMap.get(target);
           if (existingRules) {
-            existingRules.forEach((rule, index) => {
-              styleSheet?.insertRule(rule.cssText, index);
+            existingRules.forEach(([rule, index]) => {
+              if (rule) {
+                styleSheet?.insertRule(rule.cssText, index);
+              } else {
+                styleSheet?.deleteRule(index);
+              }
             });
           }
         }
@@ -964,7 +975,7 @@ export class Replayer {
               const _index =
                 index === undefined
                   ? undefined
-                  : Math.min(index, styleSheet.rules.length);
+                  : Math.min(index, styleSheet.cssRules.length);
               try {
                 styleSheet.insertRule(rule, _index);
               } catch (e) {
@@ -984,6 +995,8 @@ export class Replayer {
 
         if (d.removes) {
           d.removes.forEach(({ index }) => {
+            if (usingVirtualParent) {
+            }
             try {
               styleSheet.deleteRule(index);
             } catch (e) {
@@ -997,7 +1010,10 @@ export class Replayer {
           // Update rules list according to new styleSheet
           this.virtualStyleRulesMap.set(
             target,
-            Array.from(styleSheet?.rules || []),
+            Array.from(styleSheet?.cssRules || []).map((rule, index) => [
+              rule,
+              index,
+            ]),
           );
         }
         if (usingVirtualParent && placeholderNode) {
@@ -1571,24 +1587,7 @@ export class Replayer {
 
     const styleNode = (node as unknown) as HTMLStyleElement;
 
-    storedRules.forEach((rule, index) => {
-      // Esnure consistency of rules list
-      if (styleNode?.sheet?.rules[index]) {
-        styleNode.sheet?.deleteRule(index);
-      }
-      styleNode.sheet?.insertRule(rule.cssText, index);
-    });
-    // Avoid situation, when your Node has more styles, than it should
-    // Otherwise, inserting will be broken
-    if (styleNode.sheet && styleNode.sheet.rules.length > storedRules.length) {
-      for (
-        let i = styleNode.sheet.rules.length - 1;
-        i < storedRules.length - 1;
-        i--
-      ) {
-        styleNode.sheet.removeRule(i);
-      }
-    }
+    applyVirtualStyleRulesToNode(storedRules, styleNode);
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

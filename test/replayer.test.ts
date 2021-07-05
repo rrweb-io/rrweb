@@ -148,28 +148,41 @@ describe('replayer', function (this: ISuite) {
       replayer['timer']['actions'].length;
     `);
 
-    await assertDomSnapshot(
-      this.page,
-      __filename,
-      'style-sheet-rule-events-1500',
-    );
-
-    const result = await this.page.evaluate(`
-      const rules = Array.from(replayer.iframe.contentDocument.head.children)
-        .filter(x=>x.nodeName === 'STYLE')
-        .reduce((acc, node) => {
-          acc.push(...node.sheet.rules);
-          return acc;
-        }, []);
-
-        rules.some(x=>x.selectorText === ".css-1fbxx79")
-    `);
-
     expect(actionLength).to.equal(
       styleSheetRuleEvents.filter(
         (e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500,
       ).length,
     );
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-rule-events-play-at-1500',
+    );
+    const result = await this.page.evaluate(`
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => sheet.rules,
+      );
+      rules.some((x) => x.selectorText === '.css-1fbxx79');
+    `);
+
+    expect(result).to.equal(true);
+  });
+
+  it('should apply fast forwarded StyleSheetRules that where added', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
+    const result = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1500);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-1fbxx79');
+    `);
+
     expect(result).to.equal(true);
   });
 
@@ -188,6 +201,12 @@ describe('replayer', function (this: ISuite) {
         (e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500,
       ).length,
     );
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-remove-events-play-at-2500',
+    );
   });
 
   it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
@@ -201,15 +220,25 @@ describe('replayer', function (this: ISuite) {
       replayer['timer']['actions'].length;
     `);
 
-    const result = await this.page.evaluate(`
-      const rules = Array.from(replayer.iframe.contentDocument.head.children)
-        .filter(x=>x.nodeName === 'STYLE')
-        .reduce((acc, node) => {
-          acc.push(...node.sheet.rules);
-          return acc;
-        }, []);
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-rule-events-pause-at-2500',
+    );
+  });
 
-        rules.some(x=>x.selectorText === ".css-1fbxx79")
+  it('should delete fast forwarded StyleSheetRules that where deleted', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
+    const result = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2500);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-1fbxx79');
     `);
 
     expect(result).to.equal(false);
