@@ -68,7 +68,7 @@ Canvas is a special HTML element, which will not be recorded by rrweb by default
 
 ### Console Recorder and Replayer
 
-Starting with a later version of v0.9.11, we add the ability to record and play back console output.
+Starting from v1.0.0, we add the plugin to record and play back console output.
 This feature aims to provide developers with more information about the bug scene. There are some options for recording and replaying console output.
 
 [link](./console.md)
