@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
