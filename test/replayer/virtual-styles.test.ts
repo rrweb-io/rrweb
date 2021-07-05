@@ -16,9 +16,7 @@ describe('virtual styles', () => {
       const styleEl = dom.window.document.getElementsByTagName('style')[0];
 
       const cssRule = '.x {border: 1px solid yellow;}';
-      const virtualStyleRules: VirtualStyleRules = [
-        [{ cssText: cssRule } as CSSRule, 0],
-      ];
+      const virtualStyleRules: VirtualStyleRules = [[cssRule, 0]];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
       expect(styleEl.sheet?.cssRules?.length).to.equal(1);
@@ -35,9 +33,7 @@ describe('virtual styles', () => {
       const styleEl = dom.window.document.getElementsByTagName('style')[0];
 
       const cssRule = '.x {border: 1px solid yellow;}';
-      const virtualStyleRules: VirtualStyleRules = [
-        [{ cssText: cssRule } as CSSRule, 0],
-      ];
+      const virtualStyleRules: VirtualStyleRules = [[cssRule, 0]];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
       expect(styleEl.sheet?.cssRules?.length).to.equal(3);
