@@ -219,7 +219,7 @@ describe('replayer', function (this: ISuite) {
     );
   });
 
-  it('should delete fast forwarded StyleSheetRules that where deleted', async () => {
+  it('should delete fast forwarded StyleSheetRules that where removed', async () => {
     await this.page.evaluate(
       `events = ${JSON.stringify(styleSheetRuleEvents)}`,
     );
