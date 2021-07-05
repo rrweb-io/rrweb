@@ -1,6 +1,8 @@
 import { INode } from 'rrweb-snapshot';
 
-export type VirtualStyleRules = [CSSRule | false, number][];
+type Rule = string | false;
+type Index = number | undefined;
+export type VirtualStyleRules = [Rule, Index][];
 export type VirtualStyleRulesMap = Map<INode, VirtualStyleRules>;
 
 export function applyVirtualStyleRulesToNode(
@@ -8,14 +10,10 @@ export function applyVirtualStyleRulesToNode(
   styleNode: HTMLStyleElement,
 ) {
   storedRules.forEach(([rule, index]) => {
-    // Ensure consistency of cssRules list
-    // if (styleNode?.sheet?.cssRules[index]) {
-    // styleNode.sheet?.deleteRule(index);
-    // }
     if (rule) {
-      styleNode.sheet?.insertRule(rule.cssText, index);
+      styleNode.sheet?.insertRule(rule, index);
     } else {
-      styleNode.sheet?.deleteRule(index);
+      if (index !== undefined) styleNode.sheet?.deleteRule(index);
     }
   });
   // Avoid situation, when your Node has more styles, than it should

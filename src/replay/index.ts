@@ -44,6 +44,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import {
   applyVirtualStyleRulesToNode,
+  VirtualStyleRules,
   VirtualStyleRulesMap,
 } from './virtual-styles';
 
@@ -142,8 +143,8 @@ export class Replayer {
       this.fragmentParentMap.forEach((parent, frag) =>
         this.restoreRealParent(frag, parent),
       );
-      for (const [node] of this.virtualStyleRulesMap.entries()) {
-        // restore css rules of elements after they are mounted
+      for (const node of this.virtualStyleRulesMap.keys()) {
+        // restore css rules of style elements after they are mounted
         this.restoreNodeSheet(node);
       }
       this.fragmentParentMap.clear();
@@ -924,71 +925,51 @@ export class Replayer {
 
         /**
          * Always use existing DOM node, when it's there.
-         * In in-memory replay, there is virtual node, but it's `sheet` will be removed during replacement.
-         * Hence, we re-create it and re-populate it on each run to not miss pre-existing styles and previously inserted
+         * In in-memory replay, there is virtual node, but it's `sheet` is inaccessible.
+         * Hence, we buffer all style changes in virtualStyleRulesMap.
          */
-        const styleSheet = usingVirtualParent
-          ? new CSSStyleSheet()
-          : styleEl.sheet
-          ? styleEl.sheet
-          : new CSSStyleSheet();
-        let placeholderNode;
+        const styleSheet = usingVirtualParent ? null : styleEl.sheet;
+        let rules: VirtualStyleRules;
 
-        if (usingVirtualParent) {
+        if (!styleSheet) {
           /**
            * styleEl.sheet is only accessible if the styleEl is part of the
-           * dom. This doesn't work on DocumentFragments so we have to re-add
-           * it to the dom temporarily.
+           * dom. This doesn't work on DocumentFragments so we have to add the
+           * style mutations to the virtualStyleRulesMap.
            */
-          const domParent = this.fragmentParentMap.get(
-            (target.parentNode as unknown) as INode,
-          );
-          placeholderNode = document.createTextNode('');
-          parent.replaceChild(placeholderNode, target);
-          domParent!.appendChild(target);
 
-          if (!this.virtualStyleRulesMap.has(target)) {
-            this.virtualStyleRulesMap.set(
-              target,
-              Array.from(styleEl.sheet?.cssRules || []).map((rule, index) => [
-                rule,
-                index,
-              ]), // <!== always sets an empty array as .sheet is always nothing while using virtual parent
-            );
-          }
-
-          const existingRules = this.virtualStyleRulesMap.get(target);
-          if (existingRules) {
-            existingRules.forEach(([rule, index]) => {
-              if (rule) {
-                styleSheet?.insertRule(rule.cssText, index);
-              } else {
-                styleSheet?.deleteRule(index);
-              }
-            });
+          if (this.virtualStyleRulesMap.has(target)) {
+            rules = this.virtualStyleRulesMap.get(target) as VirtualStyleRules;
+          } else {
+            rules = [];
+            this.virtualStyleRulesMap.set(target, rules);
           }
         }
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
-            try {
-              const _index =
-                index === undefined
-                  ? undefined
-                  : Math.min(index, styleSheet.cssRules.length);
+            if (styleSheet) {
               try {
-                styleSheet.insertRule(rule, _index);
+                const _index =
+                  index === undefined
+                    ? undefined
+                    : Math.min(index, styleSheet.cssRules.length);
+                try {
+                  styleSheet.insertRule(rule, _index);
+                } catch (e) {
+                  /**
+                   * sometimes we may capture rules with browser prefix
+                   * insert rule with prefixs in other browsers may cause Error
+                   */
+                }
               } catch (e) {
                 /**
-                 * sometimes we may capture rules with browser prefix
-                 * insert rule with prefixs in other browsers may cause Error
+                 * accessing styleSheet rules may cause SecurityError
+                 * for specific access control settings
                  */
               }
-            } catch (e) {
-              /**
-               * accessing styleSheet rules may cause SecurityError
-               * for specific access control settings
-               */
+            } else {
+              rules?.push([rule, index]);
             }
           });
         }
@@ -996,28 +977,17 @@ export class Replayer {
         if (d.removes) {
           d.removes.forEach(({ index }) => {
             if (usingVirtualParent) {
-            }
-            try {
-              styleSheet.deleteRule(index);
-            } catch (e) {
-              /**
-               * same as insertRule
-               */
+              rules?.push([false, index]);
+            } else {
+              try {
+                styleSheet?.deleteRule(index);
+              } catch (e) {
+                /**
+                 * same as insertRule
+                 */
+              }
             }
           });
-        }
-        if (usingVirtualParent) {
-          // Update rules list according to new styleSheet
-          this.virtualStyleRulesMap.set(
-            target,
-            Array.from(styleSheet?.cssRules || []).map((rule, index) => [
-              rule,
-              index,
-            ]),
-          );
-        }
-        if (usingVirtualParent && placeholderNode) {
-          parent.replaceChild(target, placeholderNode);
         }
         break;
       }

@@ -107,6 +107,12 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
   );
 }
 
+function replaceMHTMLCID(string: string): string {
+  const linebreakAt = string.indexOf('=');
+  const output = 'cid:________________________________________@mhtml.blink';
+  return output.slice(0, linebreakAt) + '=\n' + output.slice(linebreakAt);
+}
+
 function stringifyDomSnapshot(mhtml: string): string {
   const { Parser } = require('fast-mhtml');
   const resources: string[] = [];
@@ -137,16 +143,8 @@ function stringifyDomSnapshot(mhtml: string): string {
           indent_spaces: 2,
           wrap: 80,
           markup: true,
-          output_xml: false,
-          numeric_entities: true,
           quote_marks: true,
-          quote_nbsp: false,
-          // 'show_body_only': true,
-          quote_ampersand: false,
           break_before_br: true,
-          uppercase_tags: false,
-          // 'uppercase_attributes': false,
-          // 'drop_font_tags': true,
           tidy_mark: false,
         };
         doc.parseBufferSync(Buffer.from(content));
@@ -156,6 +154,23 @@ function stringifyDomSnapshot(mhtml: string): string {
     },
   );
   return newResult.map((asset) => Object.values(asset).join('\n')).join('\n\n');
+  // return mhtml
+  //   .replace(/\r?\n/gm, '\n')
+  //   .replace(/Date: .+/, 'Date:')
+  //   .replace(
+  //     /----MultipartBoundary--\w+----/g,
+  //     '----MultipartBoundary--test----',
+  //   )
+  //   .replace(
+  //     /cid:[\w-]{40}@mhtml\.blink/g,
+  //     'cid:________________________________________@mhtml.blink',
+  //   )
+  //   .replace(
+  //     /frame-[\w]{32}@mhtml\.blink/g,
+  //     'frame-________________________________@mhtml.blink',
+  //   )
+  //   .replace(/c[^@]{45,46}@mhtml\.blink/gm, replaceMHTMLCID)
+  //   .replace(/cid:[\w\-]{40}@[\w\.=\n\r]{12,13}k/gm, replaceMHTMLCID);
 }
 
 export function assertSnapshot(

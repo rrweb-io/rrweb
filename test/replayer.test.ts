@@ -159,14 +159,6 @@ describe('replayer', function (this: ISuite) {
       __filename,
       'style-sheet-rule-events-play-at-1500',
     );
-    const result = await this.page.evaluate(`
-      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
-        (sheet) => sheet.rules,
-      );
-      rules.some((x) => x.selectorText === '.css-1fbxx79');
-    `);
-
-    expect(result).to.equal(true);
   });
 
   it('should apply fast forwarded StyleSheetRules that where added', async () => {
@@ -180,7 +172,7 @@ describe('replayer', function (this: ISuite) {
       const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
-      rules.some((x) => x.selectorText === '.css-1fbxx79');
+      rules.some((x) => x.selectorText === '.css-added-at-1000-deleted-at-2500');
     `);
 
     expect(result).to.equal(true);
@@ -234,11 +226,11 @@ describe('replayer', function (this: ISuite) {
     const result = await this.page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
-      replayer.pause(2500);
+      replayer.pause(3000);
       const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
-      rules.some((x) => x.selectorText === '.css-1fbxx79');
+      rules.some((x) => x.selectorText === '.css-added-at-1000-deleted-at-2500');
     `);
 
     expect(result).to.equal(false);

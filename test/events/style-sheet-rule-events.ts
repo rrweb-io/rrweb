@@ -85,7 +85,7 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'a',
                     attributes: {
-                      class: 'css-1fbxx79',
+                      class: 'css-added-at-1000-deleted-at-2500',
                     },
                     childNodes: [
                       {
@@ -148,7 +148,7 @@ const events: eventWithTime[] = [
       adds: [
         {
           rule:
-            '.css-1fbxx79{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
+            '.css-added-at-1000-deleted-at-2500{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
           index: 2,
         },
       ],
