@@ -3726,6 +3726,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3735,6 +3736,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3744,6 +3746,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3753,6 +3756,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3762,6 +3766,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3771,6 +3776,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3780,6 +3786,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -3789,6 +3796,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5140,6 +5148,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 22
     }
   },
@@ -5149,6 +5158,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 22
     }
   },
@@ -5158,6 +5168,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"tes\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 22
     }
   },
@@ -5167,6 +5178,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"test\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 22
     }
   },
@@ -5292,6 +5304,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5301,6 +5314,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5310,6 +5324,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5319,6 +5334,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5328,6 +5344,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5337,6 +5354,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5346,6 +5364,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5355,6 +5374,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5364,6 +5384,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5373,6 +5394,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5382,6 +5404,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5391,6 +5414,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5400,6 +5424,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 37
     }
   },
@@ -5425,6 +5450,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5434,6 +5460,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5443,6 +5470,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5452,6 +5480,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5461,6 +5490,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5470,6 +5500,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5479,6 +5510,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5488,6 +5520,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 54
     }
   },
@@ -5497,6 +5530,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"1\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": false,
       \\"id\\": 42
     }
   }
@@ -5704,6 +5738,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 17
     }
   },
@@ -5730,6 +5765,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 17
     }
   },
@@ -5756,6 +5792,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 17
     }
   },
@@ -5782,6 +5819,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 17
     }
   },
@@ -5808,6 +5846,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 17
     }
   },
@@ -5834,6 +5873,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
+      \\"userTriggered\\": true,
       \\"id\\": 17
     }
   },
