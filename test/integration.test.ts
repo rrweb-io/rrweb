@@ -75,6 +75,7 @@ describe('record integration tests', function (this: ISuite) {
         maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
         maskAllInputs: ${options.maskAllInputs},
         maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
+        userTriggeredOnInput: ${options.userTriggeredOnInput},
         maskTextFn: ${options.maskTextFn},
         recordCanvas: ${options.recordCanvas},
         plugins: ${options.plugins}        
@@ -282,6 +283,24 @@ describe('record integration tests', function (this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'maskPassword');
+  });
+
+  it('should record input userTriggered values if userTriggeredOnInput is enabled', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'form.html', { userTriggeredOnInput: true }),
+    );
+
+    await page.type('input[type="text"]', 'test');
+    await page.click('input[type="radio"]');
+    await page.click('input[type="checkbox"]');
+    await page.type('input[type="password"]', 'password');
+    await page.type('textarea', 'textarea test');
+    await page.select('select', '1');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'userTriggered');
   });
 
   it('should not record blocked elements and its child nodes', async () => {
