@@ -1227,10 +1227,10 @@ rrweb-snapshot@^1.1.6:
   resolved "https://registry.npmjs.org/rrweb-snapshot/download/rrweb-snapshot-1.1.6.tgz#e598510e387b9b2c62ce0cfc586a37c89549b228"
   integrity sha1-5ZhRDjh7myxizgz8WGo3yJVJsig=
 
-rrweb@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/rrweb/download/rrweb-1.0.0.tgz#563b0dde4fd485fbdf4c0453e00446a8a3d41245"
-  integrity sha1-VjsN3k/UhfvfTART4ARGqKPUEkU=
+rrweb@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-1.0.1.tgz#4a1fab4ab7fec4d7308443f012e591f9c1e4d209"
+  integrity sha512-T7aH4qcJt1KUK6utF7XzfRgMLgGqntzZ5IUZw36CQ8lrsO1UQm2gyzgMFSLbDV4EgplN0oIenAT29RKT9ET3Ig==
   dependencies:
     "@types/css-font-loading-module" "0.0.4"
     "@xstate/fsm" "^1.4.0"
