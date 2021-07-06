@@ -44,6 +44,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import {
   applyVirtualStyleRulesToNode,
+  storeCSSRules,
   StyleRuleType,
   VirtualStyleRules,
   VirtualStyleRulesMap,
@@ -1519,21 +1520,11 @@ export class Replayer {
             scroll: [parentElement.scrollLeft, parentElement.scrollTop],
           });
         }
-        if (parentElement.tagName === 'STYLE') {
-          try {
-            const cssTexts = Array.from(
-              (parentElement as HTMLStyleElement).sheet?.cssRules || [],
-            ).map((rule) => rule.cssText);
-            this.virtualStyleRulesMap.set(parent, [
-              {
-                type: StyleRuleType.Snapshot,
-                cssTexts,
-              },
-            ]);
-          } catch (e) {
-            // we where not allowed to access stylesheet cssRules, probably due to CORS
-          }
-        }
+        if (parentElement.tagName === 'STYLE')
+          storeCSSRules(
+            parentElement as HTMLStyleElement,
+            this.virtualStyleRulesMap,
+          );
         const children = parentElement.children;
         for (const child of Array.from(children)) {
           this.storeState((child as unknown) as INode);

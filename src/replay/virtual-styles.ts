@@ -47,7 +47,6 @@ function restoreSnapshotOfStyleRulesToNode(
   );
   const existingRulesReversed = Object.entries(existingRules).reverse();
   let lastMatch = existingRules.length;
-
   existingRulesReversed.forEach(([index, rule]) => {
     const indexOf = cssTexts.indexOf(rule);
     if (indexOf === -1 || indexOf > lastMatch) {
@@ -55,10 +54,28 @@ function restoreSnapshotOfStyleRulesToNode(
     }
     lastMatch = indexOf;
   });
-
   cssTexts.forEach((cssText, index) => {
     if (styleNode.sheet?.cssRules[index]?.cssText !== cssText) {
       styleNode.sheet?.insertRule(cssText, index);
     }
   });
+}
+
+export function storeCSSRules(
+  parentElement: HTMLStyleElement,
+  virtualStyleRulesMap: VirtualStyleRulesMap,
+) {
+  try {
+    const cssTexts = Array.from(
+      (parentElement as HTMLStyleElement).sheet?.cssRules || [],
+    ).map((rule) => rule.cssText);
+    virtualStyleRulesMap.set((parentElement as unknown) as INode, [
+      {
+        type: StyleRuleType.Snapshot,
+        cssTexts,
+      },
+    ]);
+  } catch (e) {
+    // we were not allowed to access stylesheet cssRules, probably due to CORS
+  }
 }

@@ -215,7 +215,7 @@ describe('replayer', function (this: ISuite) {
     await assertDomSnapshot(
       this.page,
       __filename,
-      'style-sheet-rule-events-pause-at-2500',
+      'style-sheet-rule-events-play-at-2500',
     );
   });
 
