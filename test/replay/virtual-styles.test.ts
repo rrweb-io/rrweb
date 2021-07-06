@@ -1,6 +1,4 @@
 import { expect } from 'chai';
-import { INode } from 'rrweb-snapshot';
-import { Replayer } from '../../src/replay';
 import { JSDOM } from 'jsdom';
 import {
   applyVirtualStyleRulesToNode,
@@ -16,7 +14,7 @@ describe('virtual styles', () => {
       `);
       const styleEl = dom.window.document.getElementsByTagName('style')[0];
 
-      const cssText = '.x {border: 1px solid yellow;}';
+      const cssText = '.added-rule {border: 1px solid yellow;}';
 
       const virtualStyleRules: VirtualStyleRules = [
         { cssText, index: 0, type: StyleRuleType.Insert },
@@ -36,7 +34,7 @@ describe('virtual styles', () => {
       `);
       const styleEl = dom.window.document.getElementsByTagName('style')[0];
 
-      const cssText = '.x {border: 1px solid yellow;}';
+      const cssText = '.added-rule {border: 1px solid yellow;}';
       const virtualStyleRules: VirtualStyleRules = [
         { cssText, index: 0, type: StyleRuleType.Insert },
       ];
@@ -106,10 +104,6 @@ describe('virtual styles', () => {
       ];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
-      console.log(
-        'y',
-        Array.from(styleEl.sheet?.cssRules || []).map((rule) => rule.cssText),
-      );
       expect(styleEl.sheet?.cssRules?.length).to.equal(2);
       expect(
         Array.from(styleEl.sheet?.cssRules || []).map((rule) => rule.cssText),
