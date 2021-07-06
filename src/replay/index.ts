@@ -44,6 +44,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import {
   applyVirtualStyleRulesToNode,
+  StyleRuleType,
   VirtualStyleRules,
   VirtualStyleRulesMap,
 } from './virtual-styles';
@@ -969,7 +970,7 @@ export class Replayer {
                  */
               }
             } else {
-              rules?.push([rule, index]);
+              rules?.push({ cssText: rule, index, type: StyleRuleType.Insert });
             }
           });
         }
@@ -977,7 +978,7 @@ export class Replayer {
         if (d.removes) {
           d.removes.forEach(({ index }) => {
             if (usingVirtualParent) {
-              rules?.push([false, index]);
+              rules?.push({ index, type: StyleRuleType.Remove });
             } else {
               try {
                 styleSheet?.deleteRule(index);
@@ -1517,6 +1518,21 @@ export class Replayer {
           this.elementStateMap.set(parent, {
             scroll: [parentElement.scrollLeft, parentElement.scrollTop],
           });
+        }
+        if (parentElement.tagName === 'STYLE') {
+          try {
+            const cssTexts = Array.from(
+              (parentElement as HTMLStyleElement).sheet?.cssRules || [],
+            ).map((rule) => rule.cssText);
+            this.virtualStyleRulesMap.set(parent, [
+              {
+                type: StyleRuleType.Snapshot,
+                cssTexts,
+              },
+            ]);
+          } catch (e) {
+            // we where not allowed to access stylesheet cssRules, probably due to CORS
+          }
         }
         const children = parentElement.children;
         for (const child of Array.from(children)) {

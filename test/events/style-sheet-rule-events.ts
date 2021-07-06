@@ -46,8 +46,7 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'style',
                     attributes: {
-                      'data-jss': '',
-                      'data-meta': 'sk, Unthemed, Static',
+                      'data-meta': 'from full-snapshot, gets rule added at 500',
                     },
                     childNodes: [
                       {
@@ -105,6 +104,21 @@ const events: eventWithTime[] = [
     },
     type: EventType.FullSnapshot,
     timestamp: now + 100,
+  },
+  // mutation that adds style rule to existing stylesheet
+  {
+    data: {
+      id: 101,
+      adds: [
+        {
+          rule: '.css-added-at-400{border: 1px solid blue;}',
+          index: 1,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 400,
   },
   // mutation that adds stylesheet
   {
