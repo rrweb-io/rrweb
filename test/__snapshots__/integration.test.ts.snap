@@ -917,7 +917,7 @@ exports[`form 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 5
                   },
                   {
@@ -931,7 +931,7 @@ exports[`form 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 7
                   },
                   {
@@ -946,7 +946,7 @@ exports[`form 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 9
                   },
                   {
@@ -961,7 +961,7 @@ exports[`form 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 11
                   },
                   {
@@ -979,7 +979,7 @@ exports[`form 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
                   }
                 ],
@@ -987,7 +987,7 @@ exports[`form 1`] = `
               },
               {
                 \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n\\\\n\\",
+                \\"textContent\\": \\"\\\\n\\\\n  \\",
                 \\"id\\": 15
               },
               {
@@ -997,7 +997,7 @@ exports[`form 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 17
                   },
                   {
@@ -1007,7 +1007,7 @@ exports[`form 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 19
                       },
                       {
@@ -1019,7 +1019,7 @@ exports[`form 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 21
                           },
                           {
@@ -1033,7 +1033,7 @@ exports[`form 1`] = `
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 23
                           }
                         ],
@@ -1041,33 +1041,33 @@ exports[`form 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"radio\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"radio\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"on\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 28
                           }
                         ],
@@ -1075,8 +1075,43 @@ exports[`form 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 29
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 31
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"off\\",
+                              \\"checked\\": true
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 32
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 33
+                          }
+                        ],
+                        \\"id\\": 30
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 34
                       },
                       {
                         \\"type\\": 2,
@@ -1087,8 +1122,8 @@ exports[`form 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 31
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 36
                           },
                           {
                             \\"type\\": 2,
@@ -1097,20 +1132,20 @@ exports[`form 1`] = `
                               \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 32
+                            \\"id\\": 37
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 33
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 38
                           }
                         ],
-                        \\"id\\": 30
+                        \\"id\\": 35
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 34
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 39
                       },
                       {
                         \\"type\\": 2,
@@ -1121,8 +1156,8 @@ exports[`form 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 36
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 41
                           },
                           {
                             \\"type\\": 2,
@@ -1134,20 +1169,20 @@ exports[`form 1`] = `
                               \\"rows\\": \\"10\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 37
+                            \\"id\\": 42
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 38
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 43
                           }
                         ],
-                        \\"id\\": 35
+                        \\"id\\": 40
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 39
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 44
                       },
                       {
                         \\"type\\": 2,
@@ -1158,8 +1193,8 @@ exports[`form 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 41
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 46
                           },
                           {
                             \\"type\\": 2,
@@ -1172,8 +1207,8 @@ exports[`form 1`] = `
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 43
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 48
                               },
                               {
                                 \\"type\\": 2,
@@ -1186,15 +1221,15 @@ exports[`form 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
-                                    \\"id\\": 45
+                                    \\"id\\": 50
                                   }
                                 ],
-                                \\"id\\": 44
+                                \\"id\\": 49
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 46
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 51
                               },
                               {
                                 \\"type\\": 2,
@@ -1206,31 +1241,31 @@ exports[`form 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"2\\",
-                                    \\"id\\": 48
+                                    \\"id\\": 53
                                   }
                                 ],
-                                \\"id\\": 47
+                                \\"id\\": 52
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n      \\",
-                                \\"id\\": 49
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 54
                               }
                             ],
-                            \\"id\\": 42
+                            \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 50
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 55
                           }
                         ],
-                        \\"id\\": 40
+                        \\"id\\": 45
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 51
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 56
                       },
                       {
                         \\"type\\": 2,
@@ -1241,8 +1276,8 @@ exports[`form 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 53
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 58
                           },
                           {
                             \\"type\\": 2,
@@ -1251,28 +1286,28 @@ exports[`form 1`] = `
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 54
+                            \\"id\\": 59
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 55
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 60
                           }
                         ],
-                        \\"id\\": 52
+                        \\"id\\": 57
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 56
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 61
                       }
                     ],
                     \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 57
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 62
                   },
                   {
                     \\"type\\": 2,
@@ -1282,15 +1317,15 @@ exports[`form 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 59
+                        \\"id\\": 64
                       }
                     ],
-                    \\"id\\": 58
+                    \\"id\\": 63
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 60
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 65
                   }
                 ],
                 \\"id\\": 16
@@ -1403,9 +1438,18 @@ exports[`form 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 32
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -1421,7 +1465,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -1429,7 +1473,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -1437,7 +1481,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -1446,7 +1490,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"on\\",
       \\"isChecked\\": true,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -1454,7 +1498,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -1462,7 +1506,7 @@ exports[`form 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1471,7 +1515,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1480,7 +1524,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1489,7 +1533,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1498,7 +1542,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1507,7 +1551,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1516,7 +1560,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1525,7 +1569,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1534,7 +1578,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1543,7 +1587,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1552,7 +1596,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1561,7 +1605,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1570,7 +1614,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1579,7 +1623,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -1588,7 +1632,7 @@ exports[`form 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"1\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 47
     }
   }
 ]"
@@ -3146,7 +3190,7 @@ exports[`mask 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 5
                   },
                   {
@@ -3160,7 +3204,7 @@ exports[`mask 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 7
                   },
                   {
@@ -3175,7 +3219,7 @@ exports[`mask 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 9
                   },
                   {
@@ -3190,7 +3234,7 @@ exports[`mask 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 11
                   },
                   {
@@ -3208,7 +3252,7 @@ exports[`mask 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
                   }
                 ],
@@ -3216,7 +3260,7 @@ exports[`mask 1`] = `
               },
               {
                 \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n\\\\n\\",
+                \\"textContent\\": \\"\\\\n\\\\n  \\",
                 \\"id\\": 15
               },
               {
@@ -3226,7 +3270,7 @@ exports[`mask 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 17
                   },
                   {
@@ -3236,7 +3280,7 @@ exports[`mask 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 19
                       },
                       {
@@ -3248,7 +3292,7 @@ exports[`mask 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 21
                           },
                           {
@@ -3262,7 +3306,7 @@ exports[`mask 1`] = `
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 23
                           }
                         ],
@@ -3270,33 +3314,33 @@ exports[`mask 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"radio\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"radio\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"on\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 28
                           }
                         ],
@@ -3304,8 +3348,43 @@ exports[`mask 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 29
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 31
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"off\\",
+                              \\"checked\\": true
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 32
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 33
+                          }
+                        ],
+                        \\"id\\": 30
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 34
                       },
                       {
                         \\"type\\": 2,
@@ -3316,8 +3395,8 @@ exports[`mask 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 31
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 36
                           },
                           {
                             \\"type\\": 2,
@@ -3326,20 +3405,20 @@ exports[`mask 1`] = `
                               \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 32
+                            \\"id\\": 37
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 33
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 38
                           }
                         ],
-                        \\"id\\": 30
+                        \\"id\\": 35
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 34
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 39
                       },
                       {
                         \\"type\\": 2,
@@ -3350,8 +3429,8 @@ exports[`mask 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 36
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 41
                           },
                           {
                             \\"type\\": 2,
@@ -3363,20 +3442,20 @@ exports[`mask 1`] = `
                               \\"rows\\": \\"10\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 37
+                            \\"id\\": 42
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 38
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 43
                           }
                         ],
-                        \\"id\\": 35
+                        \\"id\\": 40
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 39
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 44
                       },
                       {
                         \\"type\\": 2,
@@ -3387,8 +3466,8 @@ exports[`mask 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 41
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 46
                           },
                           {
                             \\"type\\": 2,
@@ -3401,8 +3480,8 @@ exports[`mask 1`] = `
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 43
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 48
                               },
                               {
                                 \\"type\\": 2,
@@ -3415,15 +3494,15 @@ exports[`mask 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
-                                    \\"id\\": 45
+                                    \\"id\\": 50
                                   }
                                 ],
-                                \\"id\\": 44
+                                \\"id\\": 49
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 46
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 51
                               },
                               {
                                 \\"type\\": 2,
@@ -3435,31 +3514,31 @@ exports[`mask 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"2\\",
-                                    \\"id\\": 48
+                                    \\"id\\": 53
                                   }
                                 ],
-                                \\"id\\": 47
+                                \\"id\\": 52
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n      \\",
-                                \\"id\\": 49
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 54
                               }
                             ],
-                            \\"id\\": 42
+                            \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 50
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 55
                           }
                         ],
-                        \\"id\\": 40
+                        \\"id\\": 45
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 51
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 56
                       },
                       {
                         \\"type\\": 2,
@@ -3470,8 +3549,8 @@ exports[`mask 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 53
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 58
                           },
                           {
                             \\"type\\": 2,
@@ -3480,28 +3559,28 @@ exports[`mask 1`] = `
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 54
+                            \\"id\\": 59
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 55
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 60
                           }
                         ],
-                        \\"id\\": 52
+                        \\"id\\": 57
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 56
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 61
                       }
                     ],
                     \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 57
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 62
                   },
                   {
                     \\"type\\": 2,
@@ -3511,15 +3590,15 @@ exports[`mask 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 59
+                        \\"id\\": 64
                       }
                     ],
-                    \\"id\\": 58
+                    \\"id\\": 63
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 60
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 65
                   }
                 ],
                 \\"id\\": 16
@@ -3632,9 +3711,18 @@ exports[`mask 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 32
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -3650,7 +3738,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -3658,7 +3746,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -3666,7 +3754,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -3675,7 +3763,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"on\\",
       \\"isChecked\\": true,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -3683,7 +3771,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -3691,7 +3779,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3700,7 +3788,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3709,7 +3797,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3718,7 +3806,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3727,7 +3815,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3736,7 +3824,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3745,7 +3833,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3754,7 +3842,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3763,7 +3851,7 @@ exports[`mask 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3771,7 +3859,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -3779,124 +3867,7 @@ exports[`mask 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"**\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"***\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"********\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*********\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"**********\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"***********\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"************\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*************\\",
-      \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -3906,6 +3877,123 @@ exports[`mask 1`] = `
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
       \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*\\",
+      \\"isChecked\\": false,
+      \\"id\\": 47
     }
   }
 ]"
@@ -4696,7 +4784,7 @@ exports[`maskInputOptions 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 5
                   },
                   {
@@ -4710,7 +4798,7 @@ exports[`maskInputOptions 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 7
                   },
                   {
@@ -4725,7 +4813,7 @@ exports[`maskInputOptions 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 9
                   },
                   {
@@ -4740,7 +4828,7 @@ exports[`maskInputOptions 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 11
                   },
                   {
@@ -4758,7 +4846,7 @@ exports[`maskInputOptions 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
                   }
                 ],
@@ -4766,7 +4854,7 @@ exports[`maskInputOptions 1`] = `
               },
               {
                 \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n\\\\n\\",
+                \\"textContent\\": \\"\\\\n\\\\n  \\",
                 \\"id\\": 15
               },
               {
@@ -4776,7 +4864,7 @@ exports[`maskInputOptions 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 17
                   },
                   {
@@ -4786,7 +4874,7 @@ exports[`maskInputOptions 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 19
                       },
                       {
@@ -4798,7 +4886,7 @@ exports[`maskInputOptions 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 21
                           },
                           {
@@ -4812,7 +4900,7 @@ exports[`maskInputOptions 1`] = `
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 23
                           }
                         ],
@@ -4820,33 +4908,33 @@ exports[`maskInputOptions 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"radio\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"radio\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"on\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 28
                           }
                         ],
@@ -4854,8 +4942,43 @@ exports[`maskInputOptions 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 29
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 31
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"off\\",
+                              \\"checked\\": true
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 32
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 33
+                          }
+                        ],
+                        \\"id\\": 30
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 34
                       },
                       {
                         \\"type\\": 2,
@@ -4866,8 +4989,8 @@ exports[`maskInputOptions 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 31
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 36
                           },
                           {
                             \\"type\\": 2,
@@ -4876,20 +4999,20 @@ exports[`maskInputOptions 1`] = `
                               \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 32
+                            \\"id\\": 37
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 33
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 38
                           }
                         ],
-                        \\"id\\": 30
+                        \\"id\\": 35
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 34
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 39
                       },
                       {
                         \\"type\\": 2,
@@ -4900,8 +5023,8 @@ exports[`maskInputOptions 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 36
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 41
                           },
                           {
                             \\"type\\": 2,
@@ -4913,20 +5036,20 @@ exports[`maskInputOptions 1`] = `
                               \\"rows\\": \\"10\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 37
+                            \\"id\\": 42
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 38
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 43
                           }
                         ],
-                        \\"id\\": 35
+                        \\"id\\": 40
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 39
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 44
                       },
                       {
                         \\"type\\": 2,
@@ -4937,8 +5060,8 @@ exports[`maskInputOptions 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 41
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 46
                           },
                           {
                             \\"type\\": 2,
@@ -4951,8 +5074,8 @@ exports[`maskInputOptions 1`] = `
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 43
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 48
                               },
                               {
                                 \\"type\\": 2,
@@ -4965,15 +5088,15 @@ exports[`maskInputOptions 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
-                                    \\"id\\": 45
+                                    \\"id\\": 50
                                   }
                                 ],
-                                \\"id\\": 44
+                                \\"id\\": 49
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 46
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 51
                               },
                               {
                                 \\"type\\": 2,
@@ -4985,31 +5108,31 @@ exports[`maskInputOptions 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"2\\",
-                                    \\"id\\": 48
+                                    \\"id\\": 53
                                   }
                                 ],
-                                \\"id\\": 47
+                                \\"id\\": 52
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n      \\",
-                                \\"id\\": 49
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 54
                               }
                             ],
-                            \\"id\\": 42
+                            \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 50
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 55
                           }
                         ],
-                        \\"id\\": 40
+                        \\"id\\": 45
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 51
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 56
                       },
                       {
                         \\"type\\": 2,
@@ -5020,8 +5143,8 @@ exports[`maskInputOptions 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 53
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 58
                           },
                           {
                             \\"type\\": 2,
@@ -5030,28 +5153,28 @@ exports[`maskInputOptions 1`] = `
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 54
+                            \\"id\\": 59
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 55
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 60
                           }
                         ],
-                        \\"id\\": 52
+                        \\"id\\": 57
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 56
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 61
                       }
                     ],
                     \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 57
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 62
                   },
                   {
                     \\"type\\": 2,
@@ -5061,15 +5184,15 @@ exports[`maskInputOptions 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 59
+                        \\"id\\": 64
                       }
                     ],
-                    \\"id\\": 58
+                    \\"id\\": 63
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 60
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 65
                   }
                 ],
                 \\"id\\": 16
@@ -5182,9 +5305,18 @@ exports[`maskInputOptions 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 32
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -5200,7 +5332,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -5208,7 +5340,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -5216,7 +5348,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -5225,7 +5357,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"on\\",
       \\"isChecked\\": true,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -5233,7 +5365,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -5241,7 +5373,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5250,7 +5382,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5259,7 +5391,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5268,7 +5400,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5277,7 +5409,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5286,7 +5418,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5295,7 +5427,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5304,7 +5436,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5313,7 +5445,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5322,7 +5454,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5331,7 +5463,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5340,7 +5472,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5349,7 +5481,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5358,7 +5490,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5366,7 +5498,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -5374,7 +5506,7 @@ exports[`maskInputOptions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5383,7 +5515,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5392,7 +5524,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5401,7 +5533,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5410,7 +5542,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5419,7 +5551,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5428,7 +5560,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5437,7 +5569,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5446,7 +5578,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -5455,7 +5587,7 @@ exports[`maskInputOptions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"1\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 47
     }
   }
 ]"
@@ -8347,7 +8479,7 @@ exports[`userTriggered 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 5
                   },
                   {
@@ -8361,7 +8493,7 @@ exports[`userTriggered 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 7
                   },
                   {
@@ -8376,7 +8508,7 @@ exports[`userTriggered 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 9
                   },
                   {
@@ -8391,7 +8523,7 @@ exports[`userTriggered 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 11
                   },
                   {
@@ -8409,7 +8541,7 @@ exports[`userTriggered 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
                   }
                 ],
@@ -8417,7 +8549,7 @@ exports[`userTriggered 1`] = `
               },
               {
                 \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n\\\\n\\",
+                \\"textContent\\": \\"\\\\n\\\\n  \\",
                 \\"id\\": 15
               },
               {
@@ -8427,7 +8559,7 @@ exports[`userTriggered 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 17
                   },
                   {
@@ -8437,7 +8569,7 @@ exports[`userTriggered 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 19
                       },
                       {
@@ -8449,7 +8581,7 @@ exports[`userTriggered 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 21
                           },
                           {
@@ -8463,7 +8595,7 @@ exports[`userTriggered 1`] = `
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 23
                           }
                         ],
@@ -8471,33 +8603,33 @@ exports[`userTriggered 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"radio\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"textContent\\": \\"\\\\n        \\",
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"radio\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"on\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 28
                           }
                         ],
@@ -8505,8 +8637,43 @@ exports[`userTriggered 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 29
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 31
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"off\\",
+                              \\"checked\\": true
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 32
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 33
+                          }
+                        ],
+                        \\"id\\": 30
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 34
                       },
                       {
                         \\"type\\": 2,
@@ -8517,8 +8684,8 @@ exports[`userTriggered 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 31
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 36
                           },
                           {
                             \\"type\\": 2,
@@ -8527,20 +8694,20 @@ exports[`userTriggered 1`] = `
                               \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 32
+                            \\"id\\": 37
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 33
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 38
                           }
                         ],
-                        \\"id\\": 30
+                        \\"id\\": 35
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 34
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 39
                       },
                       {
                         \\"type\\": 2,
@@ -8551,8 +8718,8 @@ exports[`userTriggered 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 36
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 41
                           },
                           {
                             \\"type\\": 2,
@@ -8564,20 +8731,20 @@ exports[`userTriggered 1`] = `
                               \\"rows\\": \\"10\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 37
+                            \\"id\\": 42
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 38
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 43
                           }
                         ],
-                        \\"id\\": 35
+                        \\"id\\": 40
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 39
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 44
                       },
                       {
                         \\"type\\": 2,
@@ -8588,8 +8755,8 @@ exports[`userTriggered 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 41
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 46
                           },
                           {
                             \\"type\\": 2,
@@ -8602,8 +8769,8 @@ exports[`userTriggered 1`] = `
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 43
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 48
                               },
                               {
                                 \\"type\\": 2,
@@ -8616,15 +8783,15 @@ exports[`userTriggered 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
-                                    \\"id\\": 45
+                                    \\"id\\": 50
                                   }
                                 ],
-                                \\"id\\": 44
+                                \\"id\\": 49
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 46
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 51
                               },
                               {
                                 \\"type\\": 2,
@@ -8636,31 +8803,31 @@ exports[`userTriggered 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"2\\",
-                                    \\"id\\": 48
+                                    \\"id\\": 53
                                   }
                                 ],
-                                \\"id\\": 47
+                                \\"id\\": 52
                               },
                               {
                                 \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n      \\",
-                                \\"id\\": 49
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 54
                               }
                             ],
-                            \\"id\\": 42
+                            \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 50
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 55
                           }
                         ],
-                        \\"id\\": 40
+                        \\"id\\": 45
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 51
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 56
                       },
                       {
                         \\"type\\": 2,
@@ -8671,8 +8838,8 @@ exports[`userTriggered 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 53
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 58
                           },
                           {
                             \\"type\\": 2,
@@ -8681,28 +8848,28 @@ exports[`userTriggered 1`] = `
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 54
+                            \\"id\\": 59
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 55
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 60
                           }
                         ],
-                        \\"id\\": 52
+                        \\"id\\": 57
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 56
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 61
                       }
                     ],
                     \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 57
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 62
                   },
                   {
                     \\"type\\": 2,
@@ -8712,15 +8879,15 @@ exports[`userTriggered 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 59
+                        \\"id\\": 64
                       }
                     ],
-                    \\"id\\": 58
+                    \\"id\\": 63
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\\\n\\",
-                    \\"id\\": 60
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 65
                   }
                 ],
                 \\"id\\": 16
@@ -8838,9 +9005,19 @@ exports[`userTriggered 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"off\\",
+      \\"isChecked\\": false,
+      \\"userTriggered\\": false,
+      \\"id\\": 32
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -8856,7 +9033,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -8864,7 +9041,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -8872,7 +9049,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -8882,7 +9059,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"on\\",
       \\"isChecked\\": true,
       \\"userTriggered\\": true,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -8890,7 +9067,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 32
+      \\"id\\": 37
     }
   },
   {
@@ -8898,7 +9075,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8908,7 +9085,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8918,7 +9095,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8928,7 +9105,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8938,7 +9115,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8948,7 +9125,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8958,7 +9135,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8968,7 +9145,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8978,7 +9155,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8986,7 +9163,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 54
+      \\"id\\": 59
     }
   },
   {
@@ -8994,7 +9171,7 @@ exports[`userTriggered 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9004,7 +9181,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9014,7 +9191,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9024,7 +9201,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9034,7 +9211,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9044,7 +9221,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9054,7 +9231,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9064,7 +9241,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9074,7 +9251,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9084,7 +9261,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9094,7 +9271,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9104,7 +9281,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9114,7 +9291,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9124,7 +9301,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -9134,7 +9311,7 @@ exports[`userTriggered 1`] = `
       \\"text\\": \\"1\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": false,
-      \\"id\\": 42
+      \\"id\\": 47
     }
   }
 ]"
