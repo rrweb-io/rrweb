@@ -20,7 +20,7 @@ export declare class Replayer {
     private elementStateMap;
     private imageMap;
     private mirror;
-    private firstPlayedEvent;
+    private firstFullSnapshot;
     private newDocumentQueue;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
