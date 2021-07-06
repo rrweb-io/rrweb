@@ -92,7 +92,7 @@ export class Replayer {
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
   private elementStateMap!: Map<INode, ElementState>;
-  // Hold the list of CSSRules during in-memory state restoration
+  // Hold the list of CSSRules for in-memory state restoration
   private virtualStyleRulesMap!: VirtualStyleRulesMap;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();

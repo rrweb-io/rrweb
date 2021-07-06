@@ -29,9 +29,23 @@ export function applyVirtualStyleRulesToNode(
 ) {
   storedRules.forEach((rule) => {
     if (rule.type === StyleRuleType.Insert) {
-      styleNode.sheet?.insertRule(rule.cssText, rule.index);
+      try {
+        styleNode.sheet?.insertRule(rule.cssText, rule.index);
+      } catch (e) {
+        /**
+         * sometimes we may capture rules with browser prefix
+         * insert rule with prefixs in other browsers may cause Error
+         */
+      }
     } else if (rule.type === StyleRuleType.Remove) {
-      styleNode.sheet?.deleteRule(rule.index);
+      try {
+        styleNode.sheet?.deleteRule(rule.index);
+      } catch (e) {
+        /**
+         * accessing styleSheet rules may cause SecurityError
+         * for specific access control settings
+         */
+      }
     } else if (rule.type === StyleRuleType.Snapshot) {
       restoreSnapshotOfStyleRulesToNode(rule.cssTexts, styleNode);
     }
@@ -42,23 +56,44 @@ function restoreSnapshotOfStyleRulesToNode(
   cssTexts: string[],
   styleNode: HTMLStyleElement,
 ) {
-  const existingRules = Array.from(styleNode.sheet?.cssRules || []).map(
-    (rule) => rule.cssText,
-  );
-  const existingRulesReversed = Object.entries(existingRules).reverse();
-  let lastMatch = existingRules.length;
-  existingRulesReversed.forEach(([index, rule]) => {
-    const indexOf = cssTexts.indexOf(rule);
-    if (indexOf === -1 || indexOf > lastMatch) {
-      styleNode.sheet?.deleteRule(Number(index));
-    }
-    lastMatch = indexOf;
-  });
-  cssTexts.forEach((cssText, index) => {
-    if (styleNode.sheet?.cssRules[index]?.cssText !== cssText) {
-      styleNode.sheet?.insertRule(cssText, index);
-    }
-  });
+  try {
+    const existingRules = Array.from(styleNode.sheet?.cssRules || []).map(
+      (rule) => rule.cssText,
+    );
+    const existingRulesReversed = Object.entries(existingRules).reverse();
+    let lastMatch = existingRules.length;
+    existingRulesReversed.forEach(([index, rule]) => {
+      const indexOf = cssTexts.indexOf(rule);
+      if (indexOf === -1 || indexOf > lastMatch) {
+        try {
+          styleNode.sheet?.deleteRule(Number(index));
+        } catch (e) {
+          /**
+           * accessing styleSheet rules may cause SecurityError
+           * for specific access control settings
+           */
+        }
+      }
+      lastMatch = indexOf;
+    });
+    cssTexts.forEach((cssText, index) => {
+      try {
+        if (styleNode.sheet?.cssRules[index]?.cssText !== cssText) {
+          styleNode.sheet?.insertRule(cssText, index);
+        }
+      } catch (e) {
+        /**
+         * sometimes we may capture rules with browser prefix
+         * insert rule with prefixs in other browsers may cause Error
+         */
+      }
+    });
+  } catch (e) {
+    /**
+     * accessing styleSheet rules may cause SecurityError
+     * for specific access control settings
+     */
+  }
 }
 
 export function storeCSSRules(
@@ -76,6 +111,9 @@ export function storeCSSRules(
       },
     ]);
   } catch (e) {
-    // we were not allowed to access stylesheet cssRules, probably due to CORS
+    /**
+     * accessing styleSheet rules may cause SecurityError
+     * for specific access control settings
+     */
   }
 }
