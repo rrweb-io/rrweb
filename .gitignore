@@ -11,3 +11,5 @@ lib
 temp
 
 *.log
+
+.env
