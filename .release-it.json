@@ -5,5 +5,8 @@
   },
   "git": {
     "requireCleanWorkingDir": false
+  },
+  "github": {
+    "release": true
   }
 }
