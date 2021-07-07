@@ -1059,6 +1059,10 @@ export class Replayer {
     d.removes.forEach((mutation) => {
       const target = this.mirror.getNode(mutation.id);
       if (!target) {
+        if (d.removes.find((r) => r.id === mutation.parentId)) {
+          // no need to warn, parent was already removed
+          return;
+        }
         return this.warnNodeNotFound(d, mutation.id);
       }
       let parent: INode | null | ShadowRoot = this.mirror.getNode(
@@ -1301,6 +1305,10 @@ export class Replayer {
     d.texts.forEach((mutation) => {
       let target = this.mirror.getNode(mutation.id);
       if (!target) {
+        if (d.removes.find((r) => r.id === mutation.id)) {
+          // no need to warn, element was already removed
+          return;
+        }
         return this.warnNodeNotFound(d, mutation.id);
       }
       /**
@@ -1314,6 +1322,10 @@ export class Replayer {
     d.attributes.forEach((mutation) => {
       let target = this.mirror.getNode(mutation.id);
       if (!target) {
+        if (d.removes.find((r) => r.id === mutation.id)) {
+          // no need to warn, element was already removed
+          return;
+        }
         return this.warnNodeNotFound(d, mutation.id);
       }
       if (this.fragmentParentMap.has(target)) {
