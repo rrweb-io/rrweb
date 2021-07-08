@@ -218,6 +218,7 @@ export type recordOptions<T> = {
   packFn?: PackFn;
   sampling?: SamplingStrategy;
   recordCanvas?: boolean;
+  userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
@@ -247,6 +248,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
+  userTriggeredOnInput: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
   doc: Document;
@@ -419,6 +421,12 @@ export type viewportResizeCallback = (d: viewportResizeDimension) => void;
 export type inputValue = {
   text: string;
   isChecked: boolean;
+
+  // `userTriggered` indicates if this event was triggered directly by user (userTriggered: true)
+  // or was triggered indirectly (userTriggered: false)
+  // Example of `userTriggered` in action:
+  // User clicks on radio element (userTriggered: true) which triggers the other radio element to change (userTriggered: false)
+  userTriggered?: boolean;
 };
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
@@ -484,6 +492,7 @@ export type playerConfig = {
   triggerFocus: boolean;
   UNSAFE_replayCanvas: boolean;
   pauseAnimation?: boolean;
+  userTriggeredOnInput: boolean;
   mouseTail:
     | boolean
     | {

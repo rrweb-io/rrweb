@@ -337,6 +337,15 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, window);
 }
 
+function wrapEventWithUserTriggeredFlag(
+  v: inputValue,
+  enable: boolean,
+): inputValue {
+  const value = { ...v };
+  if (!enable) delete value.userTriggered;
+  return value;
+}
+
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver(
@@ -348,9 +357,11 @@ function initInputObserver(
   maskInputOptions: MaskInputOptions,
   maskInputFn: MaskInputFn | undefined,
   sampling: SamplingStrategy,
+  userTriggeredOnInput: boolean,
 ): listenerHandler {
   function eventHandler(event: Event) {
     const target = getEventTarget(event);
+    const userTriggered = event.isTrusted;
     if (
       !target ||
       !(target as Element).tagName ||
@@ -381,7 +392,13 @@ function initInputObserver(
         maskInputFn,
       });
     }
-    cbWithDedup(target, { text, isChecked });
+    cbWithDedup(
+      target,
+      wrapEventWithUserTriggeredFlag(
+        { text, isChecked, userTriggered },
+        userTriggeredOnInput,
+      ),
+    );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
     const name: string | undefined = (target as HTMLInputElement).name;
@@ -390,10 +407,17 @@ function initInputObserver(
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
-            cbWithDedup(el, {
-              text: (el as HTMLInputElement).value,
-              isChecked: !isChecked,
-            });
+            cbWithDedup(
+              el,
+              wrapEventWithUserTriggeredFlag(
+                {
+                  text: (el as HTMLInputElement).value,
+                  isChecked: !isChecked,
+                  userTriggered: false,
+                },
+                userTriggeredOnInput,
+              ),
+            );
           }
         });
     }
@@ -763,6 +787,7 @@ export function initObservers(
     o.maskInputOptions,
     o.maskInputFn,
     o.sampling,
+    o.userTriggeredOnInput,
   );
   const mediaInteractionHandler = initMediaInteractionObserver(
     o.mediaInteractionCb,
