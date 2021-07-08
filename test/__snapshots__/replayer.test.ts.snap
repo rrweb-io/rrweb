@@ -1,0 +1,187 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`style-sheet-remove-events-play-at-2500 1`] = `
+"file-frame-1
+<html>
+<head>
+  <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+  <title></title>
+</head>
+<body>
+  <div class=\\"replayer-wrapper\\">
+    <div class=\\"replayer-mouse\\"></div>
+    <canvas class=\\"replayer-mouse-tail\\" width=\\"1000\\" height=\\"800\\" style=
+    \\"display: inherit;\\"></canvas><iframe sandbox=\\"allow-same-origin\\" scrolling=
+    \\"no\\" width=\\"1000\\" height=\\"800\\" style=
+    \\"display: inherit; pointer-events: none;\\"></iframe>
+  </div>
+</body>
+</html>
+
+
+file-frame-2
+<html>
+<head>
+  <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-0\\">
+  <title></title>
+</head>
+<body>
+</body>
+</html>
+
+
+file-cid-0
+@charset \\"utf-8\\";
+
+.rr-block { background: rgb(204, 204, 204); }
+
+noscript { display: none !important; }
+
+html.rrweb-paused * { animation-play-state: paused !important; }
+"
+`;
+
+exports[`style-sheet-rule-events-pause-at-2500 1`] = `
+"file-frame-4
+<html>
+<head>
+  <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+  <title></title>
+</head>
+<body>
+  <div class=\\"replayer-wrapper\\">
+    <div class=\\"replayer-mouse\\"></div>
+    <canvas class=\\"replayer-mouse-tail\\" width=\\"1000\\" height=\\"800\\" style=
+    \\"display: inherit;\\"></canvas><iframe sandbox=\\"allow-same-origin\\" scrolling=
+    \\"no\\" width=\\"1000\\" height=\\"800\\" style=
+    \\"display: inherit; pointer-events: none;\\"></iframe>
+  </div>
+</body>
+</html>
+
+
+file-frame-5
+<!DOCTYPE html>
+<html lang=\\"en\\">
+<head>
+  <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-0\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-1\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-2\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-3\\">
+  <title></title>
+</head>
+<body>
+  <a class=\\"css-added-at-1000-deleted-at-2500\\">string</a>
+</body>
+</html>
+
+
+file-cid-0
+@charset \\"utf-8\\";
+
+.rr-block { background: rgb(204, 204, 204); }
+
+noscript { display: none !important; }
+
+html.rrweb-paused * { animation-play-state: paused !important; }
+
+
+file-cid-1
+@charset \\"utf-8\\";
+
+.c011xx { padding: 1.3125rem; flex: 0 0 auto; width: 100%; }
+
+
+file-cid-2
+@charset \\"utf-8\\";
+
+.c01x { opacity: 1; transform: translateX(0px); }
+
+.css-added-at-400 { border: 1px solid blue; }
+
+
+file-cid-3
+@charset \\"utf-8\\";
+
+.css-1uxxxx3 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }
+
+.css-1c9xxxx { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }
+
+.css-lsxxx { padding-left: 4rem; }
+"
+`;
+
+exports[`style-sheet-rule-events-play-at-1500 1`] = `
+"file-frame-4
+<html>
+<head>
+  <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+  <title></title>
+</head>
+<body>
+  <div class=\\"replayer-wrapper\\">
+    <div class=\\"replayer-mouse\\"></div>
+    <canvas class=\\"replayer-mouse-tail\\" width=\\"1000\\" height=\\"800\\" style=
+    \\"display: inherit;\\"></canvas><iframe sandbox=\\"allow-same-origin\\" scrolling=
+    \\"no\\" width=\\"1000\\" height=\\"800\\" style=
+    \\"display: inherit; pointer-events: none;\\"></iframe>
+  </div>
+</body>
+</html>
+
+
+file-frame-5
+<!DOCTYPE html>
+<html lang=\\"en\\">
+<head>
+  <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-0\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-1\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-2\\">
+  <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-3\\">
+  <title></title>
+</head>
+<body>
+  <a class=\\"css-added-at-1000-deleted-at-2500\\">string</a>
+</body>
+</html>
+
+
+file-cid-0
+@charset \\"utf-8\\";
+
+.rr-block { background: rgb(204, 204, 204); }
+
+noscript { display: none !important; }
+
+html.rrweb-paused * { animation-play-state: paused !important; }
+
+
+file-cid-1
+@charset \\"utf-8\\";
+
+.c011xx { padding: 1.3125rem; flex: 0 0 auto; width: 100%; }
+
+
+file-cid-2
+@charset \\"utf-8\\";
+
+.c01x { opacity: 1; transform: translateX(0px); }
+
+.css-added-at-400 { border: 1px solid blue; }
+
+
+file-cid-3
+@charset \\"utf-8\\";
+
+.css-1uxxxx3 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }
+
+.css-1c9xxxx { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }
+
+.css-added-at-1000-deleted-at-2500 { display: flex; flex-direction: column; min-width: 60rem; min-height: 100vh; color: blue; }
+
+.css-lsxxx { padding-left: 4rem; }
+"
+`;

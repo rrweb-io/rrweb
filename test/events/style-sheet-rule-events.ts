@@ -46,8 +46,7 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'style',
                     attributes: {
-                      'data-jss': '',
-                      'data-meta': 'sk, Unthemed, Static',
+                      'data-meta': 'from full-snapshot, gets rule added at 500',
                     },
                     childNodes: [
                       {
@@ -79,7 +78,23 @@ const events: eventWithTime[] = [
                 type: 2,
                 tagName: 'body',
                 attributes: {},
-                childNodes: [],
+                childNodes: [
+                  {
+                    id: 108,
+                    type: 2,
+                    tagName: 'a',
+                    attributes: {
+                      class: 'css-added-at-1000-deleted-at-2500',
+                    },
+                    childNodes: [
+                      {
+                        id: 109,
+                        type: 3,
+                        textContent: 'string',
+                      },
+                    ],
+                  },
+                ],
               },
             ],
           },
@@ -89,6 +104,21 @@ const events: eventWithTime[] = [
     },
     type: EventType.FullSnapshot,
     timestamp: now + 100,
+  },
+  // mutation that adds style rule to existing stylesheet
+  {
+    data: {
+      id: 101,
+      adds: [
+        {
+          rule: '.css-added-at-400{border: 1px solid blue;}',
+          index: 1,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 400,
   },
   // mutation that adds stylesheet
   {
@@ -132,7 +162,7 @@ const events: eventWithTime[] = [
       adds: [
         {
           rule:
-            '.css-1fbxx79{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;}',
+            '.css-added-at-1000-deleted-at-2500{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
           index: 2,
         },
       ],
@@ -140,6 +170,19 @@ const events: eventWithTime[] = [
     },
     type: EventType.IncrementalSnapshot,
     timestamp: now + 1000,
+  },
+  {
+    data: {
+      id: 105,
+      removes: [
+        {
+          index: 2,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 2500,
   },
 ];
 

@@ -42,6 +42,13 @@ import {
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
+import {
+  applyVirtualStyleRulesToNode,
+  storeCSSRules,
+  StyleRuleType,
+  VirtualStyleRules,
+  VirtualStyleRulesMap,
+} from './virtual-styles';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -85,6 +92,8 @@ export class Replayer {
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
   private elementStateMap!: Map<INode, ElementState>;
+  // Hold the list of CSSRules for in-memory state restoration
+  private virtualStyleRulesMap!: VirtualStyleRulesMap;
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -129,14 +138,21 @@ export class Replayer {
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
     this.elementStateMap = new Map<INode, ElementState>();
+    this.virtualStyleRulesMap = new Map();
+
     this.emitter.on(ReplayerEvents.Flush, () => {
       const { scrollMap, inputMap } = this.treeIndex.flush();
 
       this.fragmentParentMap.forEach((parent, frag) =>
         this.restoreRealParent(frag, parent),
       );
+      for (const node of this.virtualStyleRulesMap.keys()) {
+        // restore css rules of style elements after they are mounted
+        this.restoreNodeSheet(node);
+      }
       this.fragmentParentMap.clear();
       this.elementStateMap.clear();
+      this.virtualStyleRulesMap.clear();
 
       for (const d of scrollMap.values()) {
         this.applyScroll(d);
@@ -909,64 +925,73 @@ export class Replayer {
         const styleEl = (target as Node) as HTMLStyleElement;
         const parent = (target.parentNode as unknown) as INode;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
-        let placeholderNode;
 
-        if (usingVirtualParent) {
+        /**
+         * Always use existing DOM node, when it's there.
+         * In in-memory replay, there is virtual node, but it's `sheet` is inaccessible.
+         * Hence, we buffer all style changes in virtualStyleRulesMap.
+         */
+        const styleSheet = usingVirtualParent ? null : styleEl.sheet;
+        let rules: VirtualStyleRules;
+
+        if (!styleSheet) {
           /**
            * styleEl.sheet is only accessible if the styleEl is part of the
-           * dom. This doesn't work on DocumentFragments so we have to re-add
-           * it to the dom temporarily.
+           * dom. This doesn't work on DocumentFragments so we have to add the
+           * style mutations to the virtualStyleRulesMap.
            */
-          const domParent = this.fragmentParentMap.get(
-            (target.parentNode as unknown) as INode,
-          );
-          placeholderNode = document.createTextNode('');
-          parent.replaceChild(placeholderNode, target);
-          domParent!.appendChild(target);
-        }
 
-        const styleSheet: CSSStyleSheet = styleEl.sheet!;
+          if (this.virtualStyleRulesMap.has(target)) {
+            rules = this.virtualStyleRulesMap.get(target) as VirtualStyleRules;
+          } else {
+            rules = [];
+            this.virtualStyleRulesMap.set(target, rules);
+          }
+        }
 
         if (d.adds) {
           d.adds.forEach(({ rule, index }) => {
-            try {
-              const _index =
-                index === undefined
-                  ? undefined
-                  : Math.min(index, styleSheet.rules.length);
+            if (styleSheet) {
               try {
-                styleSheet.insertRule(rule, _index);
+                const _index =
+                  index === undefined
+                    ? undefined
+                    : Math.min(index, styleSheet.cssRules.length);
+                try {
+                  styleSheet.insertRule(rule, _index);
+                } catch (e) {
+                  /**
+                   * sometimes we may capture rules with browser prefix
+                   * insert rule with prefixs in other browsers may cause Error
+                   */
+                }
               } catch (e) {
                 /**
-                 * sometimes we may capture rules with browser prefix
-                 * insert rule with prefixs in other browsers may cause Error
+                 * accessing styleSheet rules may cause SecurityError
+                 * for specific access control settings
                  */
               }
-            } catch (e) {
-              /**
-               * accessing styleSheet rules may cause SecurityError
-               * for specific access control settings
-               */
+            } else {
+              rules?.push({ cssText: rule, index, type: StyleRuleType.Insert });
             }
           });
         }
 
         if (d.removes) {
           d.removes.forEach(({ index }) => {
-            try {
-              styleSheet.deleteRule(index);
-            } catch (e) {
-              /**
-               * same as insertRule
-               */
+            if (usingVirtualParent) {
+              rules?.push({ index, type: StyleRuleType.Remove });
+            } else {
+              try {
+                styleSheet?.deleteRule(index);
+              } catch (e) {
+                /**
+                 * same as insertRule
+                 */
+              }
             }
           });
         }
-
-        if (usingVirtualParent && placeholderNode) {
-          parent.replaceChild(target, placeholderNode);
-        }
-
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -1496,6 +1521,11 @@ export class Replayer {
             scroll: [parentElement.scrollLeft, parentElement.scrollTop],
           });
         }
+        if (parentElement.tagName === 'STYLE')
+          storeCSSRules(
+            parentElement as HTMLStyleElement,
+            this.virtualStyleRulesMap,
+          );
         const children = parentElement.children;
         for (const child of Array.from(children)) {
           this.storeState((child as unknown) as INode);
@@ -1525,6 +1555,17 @@ export class Replayer {
         this.restoreState((child as unknown) as INode);
       }
     }
+  }
+
+  private restoreNodeSheet(node: INode) {
+    const storedRules = this.virtualStyleRulesMap.get(node);
+    if (node.nodeName !== 'STYLE') return;
+
+    if (!storedRules) return;
+
+    const styleNode = (node as unknown) as HTMLStyleElement;
+
+    applyVirtualStyleRulesToNode(storedRules, styleNode);
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

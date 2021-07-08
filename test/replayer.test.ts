@@ -6,6 +6,7 @@ import * as puppeteer from 'puppeteer';
 import { expect } from 'chai';
 import { Suite } from 'mocha';
 import {
+  assertDomSnapshot,
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
@@ -146,11 +147,35 @@ describe('replayer', function (this: ISuite) {
       replayer.play(1500);
       replayer['timer']['actions'].length;
     `);
+
     expect(actionLength).to.equal(
       styleSheetRuleEvents.filter(
         (e) => e.timestamp - styleSheetRuleEvents[0].timestamp >= 1500,
       ).length,
     );
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-rule-events-play-at-1500',
+    );
+  });
+
+  it('should apply fast forwarded StyleSheetRules that where added', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
+    const result = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1500);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-1000-deleted-at-2500');
+    `);
+
+    expect(result).to.equal(true);
   });
 
   it('can handle removing style elements', async () => {
@@ -168,6 +193,47 @@ describe('replayer', function (this: ISuite) {
         (e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500,
       ).length,
     );
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-remove-events-play-at-2500',
+    );
+  });
+
+  it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
+    const actionLength = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'style-sheet-rule-events-play-at-2500',
+    );
+  });
+
+  it('should delete fast forwarded StyleSheetRules that where removed', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(styleSheetRuleEvents)}`,
+    );
+    const result = await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3000);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-1000-deleted-at-2500');
+    `);
+
+    expect(result).to.equal(false);
   });
 
   it('can stream events in live mode', async () => {
