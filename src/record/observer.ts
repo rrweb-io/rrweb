@@ -243,10 +243,13 @@ function initMoveObserver(
       trailing: false,
     },
   );
+  // it is possible DragEvent is undefined even on devices
+  // that support event 'drag'
+  const dragEventDefined = typeof DragEvent !== 'undefined';
   const handlers = [
     on('mousemove', updatePosition, doc),
     on('touchmove', updatePosition, doc),
-    on('drag', updateDragPosition, doc),
+    on('drag', dragEventDefined ? updateDragPosition : updatePosition, doc),
   ];
   return () => {
     handlers.forEach((h) => h());

@@ -37,7 +37,7 @@ let takeFullSnapshot!: (isCheckout?: boolean) => void;
 // check if iframe is accessible
 // a cross-origin frame will not be accessible
 function canAccessIFrame(iframe: HTMLIFrameElement) {
-  var html = null;
+  let html = null;
   try {
     html = iframe.contentDocument!.body.innerHTML;
   } catch (err) {
