@@ -89,6 +89,14 @@ describe('absolute url to stylesheet', () => {
     ).to.equal(
       'url(\'data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>\')',
     );
+    expect(
+      absoluteToStylesheet(
+        'url("data:image/svg+xml;utf8,<svg width=\"28\" height=\"32\" viewBox=\"0 0 28 32\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M27 14C28\" fill=\"white\"/></svg>")',
+        href,
+      ),
+    ).to.equal(
+      'url("data:image/svg+xml;utf8,<svg width=\"28\" height=\"32\" viewBox=\"0 0 28 32\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M27 14C28\" fill=\"white\"/></svg>")',
+    );
   });
   it('can handle empty path', () => {
     expect(absoluteToStylesheet(`url('')`, href)).to.equal(`url('')`);
