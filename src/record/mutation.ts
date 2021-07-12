@@ -355,13 +355,16 @@ export default class MutationBuffer {
       if (!node) {
         for (let index = addList.length - 1; index >= 0; index--) {
           const _node = addList.get(index)!;
-          const parentId = this.mirror.getId(
-            (_node.value.parentNode as Node) as INode,
-          );
-          const nextId = getNextId(_node.value);
-          if (parentId !== -1 && nextId !== -1) {
-            node = _node;
-            break;
+          // ensure _node is defined before attempting to find value
+          if (_node) {
+            const parentId = this.mirror.getId(
+              (_node.value.parentNode as Node) as INode,
+            );
+            const nextId = getNextId(_node.value);
+            if (parentId !== -1 && nextId !== -1) {
+              node = _node;
+              break;
+            }
           }
         }
       }

@@ -34,6 +34,19 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 
+// check if iframe is accessible
+// a cross-origin frame will not be accessible
+function canAccessIFrame(iframe: HTMLIFrameElement) {
+  let html = null;
+  try {
+    html = iframe.contentDocument!.body.innerHTML;
+  } catch (err) {
+    // expect an error to be thrown if the iframe is not accessible
+    // do nothing
+  }
+  return html !== null;
+}
+
 const mirror = createMirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
@@ -434,7 +447,10 @@ function record<T = eventWithTime>(
     };
 
     iframeManager.addLoadListener((iframeEl) => {
-      handlers.push(observe(iframeEl.contentDocument!));
+      // ensure frame is accessible and not cross origin
+      if (canAccessIFrame(iframeEl)) {
+        handlers.push(observe(iframeEl.contentDocument!));
+      }
     });
 
     const init = () => {
