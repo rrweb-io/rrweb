@@ -369,8 +369,8 @@ function serializeNode(
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  if ((doc as unknown as INode).__sn) {
-    const docId = (doc as unknown as INode).__sn.id;
+  if (((doc as unknown) as INode).__sn) {
+    const docId = ((doc as unknown) as INode).__sn.id;
     rootId = docId === 1 ? undefined : docId;
   }
   switch (n.nodeType) {
@@ -568,10 +568,17 @@ function slimDOMExcluded(
   } else if (sn.type === NodeType.Element) {
     if (
       slimDOMOptions.script &&
+      // script tag
       (sn.tagName === 'script' ||
+        // preload link
         (sn.tagName === 'link' &&
           sn.attributes.rel === 'preload' &&
-          sn.attributes.as === 'script'))
+          sn.attributes.as === 'script') ||
+        // prefetch link
+        (sn.tagName === 'link' &&
+          sn.attributes.rel === 'prefetch' &&
+          typeof sn.attributes.href === 'string' &&
+          sn.attributes.href.endsWith('.js')))
     ) {
       return true;
     } else if (
