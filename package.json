@@ -42,7 +42,7 @@
     "@types/inquirer": "0.0.43",
     "@types/jsdom": "^16.2.12",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^10.11.7",
+    "@types/node": "^12.20.16",
     "@types/puppeteer": "^5.4.3",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
