@@ -28,6 +28,7 @@ import {
   isIgnored,
   isIframeINode,
   hasShadowRoot,
+  styleAttributeValue,
 } from '../utils';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -475,10 +476,14 @@ export default class MutationBuffer {
         }
         if (m.attributeName === 'style') {
           const old = this.doc.createElement('span');
-          old.setAttribute('style', m.oldValue);
-          if (item.attributes['style'] === undefined) {
+          if (m.oldValue) {
+            old.setAttribute('style', m.oldValue);
+          }
+          if (item.attributes['style'] === undefined ||
+              item.attributes['style'] === null) {
             item.attributes['style'] = {};
           }
+          const style_obj = (item.attributes['style'] as styleAttributeValue);
           for (let i=0; i<target.style.length; i++) {
             let pname = target.style[i];
             const newValue = target.style.getPropertyValue(pname);
@@ -486,9 +491,9 @@ export default class MutationBuffer {
             if (newValue != old.style.getPropertyValue(pname) ||
                 newPriority != old.style.getPropertyPriority(pname)) {
               if (newPriority == '') {
-                item.attributes['style'][pname] = newValue;
+                style_obj[pname] = newValue;
               } else {
-                item.attributes['style'][pname] = [newValue, newPriority];
+                style_obj[pname] = [newValue, newPriority];
               }
             }
           }
@@ -497,7 +502,7 @@ export default class MutationBuffer {
             if (target.style.getPropertyValue(pname) === '' ||
                 !target.style.getPropertyValue(pname)  // covering potential non-standard browsers
                ) {
-              item.attributes['style'][pname] = false;  // delete
+              style_obj[pname] = false;  // delete
             }
           }
         } else {

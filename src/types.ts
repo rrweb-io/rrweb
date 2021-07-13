@@ -295,8 +295,10 @@ export type textMutation = {
 };
 
 export type styleAttributeValue = {
-  [key:string]: [string, string] | string | false;
+  [key:string]: styleValueWithPriority | string | false;
 };
+
+export type styleValueWithPriority = [string, string];
 
 export type attributeCursor = {
   node: Node;
