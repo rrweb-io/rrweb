@@ -11,7 +11,8 @@
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
-    "typings": "tsc -d --declarationDir typings"
+    "typings": "tsc -d --declarationDir typings",
+    "check-types": "tsc -noEmit"
   },
   "repository": {
     "type": "git",
