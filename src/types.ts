@@ -496,7 +496,6 @@ export type playerConfig = {
   triggerFocus: boolean;
   UNSAFE_replayCanvas: boolean;
   pauseAnimation?: boolean;
-  userTriggeredOnInput: boolean;
   mouseTail:
     | boolean
     | {
