@@ -124,7 +124,6 @@ export class Replayer {
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
-      userTriggeredOnInput: true,
       mouseTail: defaultMouseTailConfig,
     };
     this.config = Object.assign({}, defaultConfig, config);
