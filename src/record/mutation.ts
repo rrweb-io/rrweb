@@ -483,7 +483,7 @@ export default class MutationBuffer {
               item.attributes['style'] === null) {
             item.attributes['style'] = {};
           }
-          const style_obj = (item.attributes['style'] as styleAttributeValue);
+          const styleObj = (item.attributes['style'] as styleAttributeValue);
           for (let i=0; i<target.style.length; i++) {
             let pname = target.style[i];
             const newValue = target.style.getPropertyValue(pname);
@@ -491,9 +491,9 @@ export default class MutationBuffer {
             if (newValue != old.style.getPropertyValue(pname) ||
                 newPriority != old.style.getPropertyPriority(pname)) {
               if (newPriority == '') {
-                style_obj[pname] = newValue;
+                styleObj[pname] = newValue;
               } else {
-                style_obj[pname] = [newValue, newPriority];
+                styleObj[pname] = [newValue, newPriority];
               }
             }
           }
@@ -502,7 +502,7 @@ export default class MutationBuffer {
             if (target.style.getPropertyValue(pname) === '' ||
                 !target.style.getPropertyValue(pname)  // covering potential non-standard browsers
                ) {
-              style_obj[pname] = false;  // delete
+              styleObj[pname] = false;  // delete
             }
           }
         } else {

@@ -1326,17 +1326,17 @@ export class Replayer {
               }
             }
           } else if (attributeName === 'style') {
-            let sv = (value as styleAttributeValue);
-            const htarget = ((target as Node) as HTMLElement);
-            for (var s in sv) {
-              if (sv[s] === false) {
-                htarget.style.removeProperty(s);
-              } else if (sv[s] instanceof Array) {
-                const svp = (sv[s] as styleValueWithPriority);
-                htarget.style.setProperty(s, svp[0], svp[1]);
+            let styleValues = (value as styleAttributeValue);
+            const targetEl = ((target as Node) as HTMLElement);
+            for (var s in styleValues) {
+              if (styleValues[s] === false) {
+                targetEl.style.removeProperty(s);
+              } else if (styleValues[s] instanceof Array) {
+                const svp = (styleValues[s] as styleValueWithPriority);
+                targetEl.style.setProperty(s, svp[0], svp[1]);
               } else {
-                const svs = (sv[s] as string)
-                htarget.style.setProperty(s, svs);
+                const svs = (styleValues[s] as string)
+                targetEl.style.setProperty(s, svs);
               }
             }
           }
