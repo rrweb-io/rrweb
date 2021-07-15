@@ -28,6 +28,8 @@ import {
   canvasMutationData,
   Mirror,
   ElementState,
+  styleAttributeValue,
+  styleValueWithPriority,
 } from '../types';
 import {
   createMirror,
@@ -1323,13 +1325,17 @@ export class Replayer {
               }
             }
           } else if (attributeName === 'style') {
-            for (var s in value) {
-              if (value[s] === false) {
-                ((target as Node) as Element).style.removeProperty(s);
-              } else if (Array.isArray(value[s])) {
-                ((target as Node) as Element).style.setProperty(s, value[s][0], value[s][1]);
+            let styleValues = (value as styleAttributeValue);
+            const targetEl = ((target as Node) as HTMLElement);
+            for (var s in styleValues) {
+              if (styleValues[s] === false) {
+                targetEl.style.removeProperty(s);
+              } else if (styleValues[s] instanceof Array) {
+                const svp = (styleValues[s] as styleValueWithPriority);
+                targetEl.style.setProperty(s, svp[0], svp[1]);
               } else {
-                ((target as Node) as Element).style.setProperty(s, value[s]);
+                const svs = (styleValues[s] as string)
+                targetEl.style.setProperty(s, svs);
               }
             }
           }
