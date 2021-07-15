@@ -18,6 +18,7 @@ export declare class Replayer {
     private treeIndex;
     private fragmentParentMap;
     private elementStateMap;
+    private virtualStyleRulesMap;
     private imageMap;
     private mirror;
     private firstFullSnapshot;
@@ -59,6 +60,7 @@ export declare class Replayer {
     private restoreRealParent;
     private storeState;
     private restoreState;
+    private restoreNodeSheet;
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;

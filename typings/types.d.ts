@@ -144,6 +144,7 @@ export declare type recordOptions<T> = {
     packFn?: PackFn;
     sampling?: SamplingStrategy;
     recordCanvas?: boolean;
+    userTriggeredOnInput?: boolean;
     collectFonts?: boolean;
     plugins?: RecordPlugin[];
     mousemoveWait?: number;
@@ -171,6 +172,7 @@ export declare type observerParam = {
     fontCb: fontCallback;
     sampling: SamplingStrategy;
     recordCanvas: boolean;
+    userTriggeredOnInput: boolean;
     collectFonts: boolean;
     slimDOMOptions: SlimDOMOptions;
     doc: Document;
@@ -313,6 +315,7 @@ export declare type viewportResizeCallback = (d: viewportResizeDimension) => voi
 export declare type inputValue = {
     text: string;
     isChecked: boolean;
+    userTriggered?: boolean;
 };
 export declare type inputCallback = (v: inputValue & {
     id: number;
