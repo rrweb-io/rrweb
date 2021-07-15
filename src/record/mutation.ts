@@ -21,6 +21,7 @@ import {
   removedNodeMutation,
   addedNodeMutation,
   Mirror,
+  styleAttributeValue,
 } from '../types';
 import {
   isBlocked,
@@ -28,7 +29,6 @@ import {
   isIgnored,
   isIframeINode,
   hasShadowRoot,
-  styleAttributeValue,
 } from '../utils';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -450,7 +450,7 @@ export default class MutationBuffer {
         break;
       }
       case 'attributes': {
-        const target = (m.target as HTMLElement);
+        const target = m.target as HTMLElement;
         let value = (m.target as HTMLElement).getAttribute(m.attributeName!);
         if (m.attributeName === 'value') {
           value = maskInputValue({
@@ -479,17 +479,21 @@ export default class MutationBuffer {
           if (m.oldValue) {
             old.setAttribute('style', m.oldValue);
           }
-          if (item.attributes['style'] === undefined ||
-              item.attributes['style'] === null) {
+          if (
+            item.attributes['style'] === undefined ||
+            item.attributes['style'] === null
+          ) {
             item.attributes['style'] = {};
           }
-          const styleObj = (item.attributes['style'] as styleAttributeValue);
-          for (let i=0; i<target.style.length; i++) {
+          const styleObj = item.attributes['style'] as styleAttributeValue;
+          for (let i = 0; i < target.style.length; i++) {
             let pname = target.style[i];
             const newValue = target.style.getPropertyValue(pname);
             const newPriority = target.style.getPropertyPriority(pname);
-            if (newValue != old.style.getPropertyValue(pname) ||
-                newPriority != old.style.getPropertyPriority(pname)) {
+            if (
+              newValue != old.style.getPropertyValue(pname) ||
+              newPriority != old.style.getPropertyPriority(pname)
+            ) {
               if (newPriority == '') {
                 styleObj[pname] = newValue;
               } else {
@@ -497,12 +501,13 @@ export default class MutationBuffer {
               }
             }
           }
-          for (let i=0; i<old.style.length; i++) {
+          for (let i = 0; i < old.style.length; i++) {
             let pname = old.style[i];
-            if (target.style.getPropertyValue(pname) === '' ||
-                !target.style.getPropertyValue(pname)  // covering potential non-standard browsers
-               ) {
-              styleObj[pname] = false;  // delete
+            if (
+              target.style.getPropertyValue(pname) === '' ||
+              !target.style.getPropertyValue(pname) // covering potential non-standard browsers
+            ) {
+              styleObj[pname] = false; // delete
             }
           }
         } else {
