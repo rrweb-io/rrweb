@@ -8,7 +8,7 @@ import {
   MouseInteractions,
 } from '../src/types';
 import * as puppeteer from 'puppeteer';
-import { TidyDoc } from 'node-libtidy';
+import { format } from 'prettier';
 
 export async function launchPuppeteer() {
   return await puppeteer.launch({
@@ -75,20 +75,24 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.data.source === IncrementalSource.Mutation
         ) {
           s.data.attributes.forEach((a) => {
-            if ('style' in a.attributes && a.attributes.style && typeof a.attributes.style === 'object') {
-	            for (const [k, v] of Object.entries(a.attributes.style)) {
-		            if (Array.isArray(v)) {
-		              if (coordinatesReg.test(k + ': ' + v[0])) {
-		                // TODO: could round the number here instead depending on what's coming out of various test envs
-		                a.attributes.style[k] = ['Npx', v[1]];
-		              }
-		            } else if (typeof v === 'string') {
-		              if (coordinatesReg.test(k + ': ' + v)) {
-		                a.attributes.style[k] = 'Npx';
-		              }
-		            }
-		            coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
-	            }
+            if (
+              'style' in a.attributes &&
+              a.attributes.style &&
+              typeof a.attributes.style === 'object'
+            ) {
+              for (const [k, v] of Object.entries(a.attributes.style)) {
+                if (Array.isArray(v)) {
+                  if (coordinatesReg.test(k + ': ' + v[0])) {
+                    // TODO: could round the number here instead depending on what's coming out of various test envs
+                    a.attributes.style[k] = ['Npx', v[1]];
+                  }
+                } else if (typeof v === 'string') {
+                  if (coordinatesReg.test(k + ': ' + v)) {
+                    a.attributes.style[k] = 'Npx';
+                  }
+                }
+                coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
+              }
             }
           });
           s.data.adds.forEach((add) => {
@@ -138,18 +142,9 @@ function stringifyDomSnapshot(mhtml: string): string {
       let { filename, content } = asset;
       let res: string | undefined;
       if (filename.includes('frame')) {
-        const doc = TidyDoc();
-        doc.options = {
-          indent: 'auto',
-          indent_spaces: 2,
-          wrap: 80,
-          markup: true,
-          quote_marks: true,
-          break_before_br: true,
-          tidy_mark: false,
-        };
-        doc.parseBufferSync(Buffer.from(content));
-        res = doc.saveBufferSync().toString();
+        res = format(content, {
+          parser: 'html',
+        });
       }
       return { filename, content: res || content };
     },
