@@ -1058,7 +1058,7 @@ export class Replayer {
 
   private applyMutation(d: mutationData, useVirtualParent: boolean) {
     d.removes.forEach((mutation) => {
-      const target = this.mirror.getNode(mutation.id);
+      let target = this.mirror.getNode(mutation.id);
       if (!target) {
         if (d.removes.find((r) => r.id === mutation.parentId)) {
           // no need to warn, parent was already removed
@@ -1096,7 +1096,14 @@ export class Replayer {
           parent.removeChild(target);
         } catch (error) {
           if (error instanceof DOMException) {
-            this.warn('parent could not remove child in mutation', parent, realParent, target, realTarget , d);
+            this.warn(
+              'parent could not remove child in mutation',
+              parent,
+              realParent,
+              target,
+              realTarget,
+              d,
+            );
           } else {
             throw error;
           }
@@ -1349,16 +1356,16 @@ export class Replayer {
               }
             }
           } else if (attributeName === 'style') {
-            let styleValues = (value as styleAttributeValue);
-            const targetEl = ((target as Node) as HTMLElement);
+            let styleValues = value as styleAttributeValue;
+            const targetEl = (target as Node) as HTMLElement;
             for (var s in styleValues) {
               if (styleValues[s] === false) {
                 targetEl.style.removeProperty(s);
               } else if (styleValues[s] instanceof Array) {
-                const svp = (styleValues[s] as styleValueWithPriority);
+                const svp = styleValues[s] as styleValueWithPriority;
                 targetEl.style.setProperty(s, svp[0], svp[1]);
               } else {
-                const svs = (styleValues[s] as string)
+                const svs = styleValues[s] as string;
                 targetEl.style.setProperty(s, svs);
               }
             }
@@ -1598,9 +1605,13 @@ export class Replayer {
 
   private restoreNodeSheet(node: INode) {
     const storedRules = this.virtualStyleRulesMap.get(node);
-    if (node.nodeName !== 'STYLE') return;
+    if (node.nodeName !== 'STYLE') {
+      return;
+    }
 
-    if (!storedRules) return;
+    if (!storedRules) {
+      return;
+    }
 
     const styleNode = (node as unknown) as HTMLStyleElement;
 
@@ -1608,7 +1619,7 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
-    if (this.treeIndex.removeIdSet.has(id)) {
+    if (this.treeIndex['removeIdSet'].has(id)) {
       this.warn(`Node with id '${id}' was previously removed. `, d);
     } else {
       this.warn(`Node with id '${id}' not found. `, d);
@@ -1630,8 +1641,12 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    if (this.treeIndex.removeIdSet.has(id)) {
-      this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' was previously removed. `, d);
+    if (this.treeIndex['removeIdSet'].has(id)) {
+      this.debug(
+        REPLAY_CONSOLE_PREFIX,
+        `Node with id '${id}' was previously removed. `,
+        d,
+      );
     } else {
       this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
     }
