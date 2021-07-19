@@ -534,6 +534,10 @@ export class TreeIndex {
     this.scrollMap = new Map();
     this.inputMap = new Map();
   }
+
+  public idRemoved(id: number): boolean {
+    return this.removeIdSet.has(id);
+  }
 }
 
 type ResolveTree = {

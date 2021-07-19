@@ -1619,7 +1619,7 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
-    if (this.treeIndex['removeIdSet'].has(id)) {
+    if (this.treeIndex.idRemoved(id)) {
       this.warn(`Node with id '${id}' was previously removed. `, d);
     } else {
       this.warn(`Node with id '${id}' not found. `, d);
@@ -1641,7 +1641,7 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    if (this.treeIndex['removeIdSet'].has(id)) {
+    if (this.treeIndex.idRemoved(id)) {
       this.debug(
         REPLAY_CONSOLE_PREFIX,
         `Node with id '${id}' was previously removed. `,
