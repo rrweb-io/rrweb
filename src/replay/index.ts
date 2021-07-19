@@ -769,7 +769,11 @@ export class Replayer {
           d.attributes.forEach((m) => this.treeIndex.attribute(m));
           d.removes.forEach((m) => this.treeIndex.remove(m, this.mirror));
         }
-        this.applyMutation(d, isSync);
+        try {
+          this.applyMutation(d, isSync);
+        } catch (error) {
+          this.warn(`Exception in mutation ${error.message || error}`, d);
+        }
         break;
       }
       case IncrementalSource.Drag:
@@ -1056,6 +1060,10 @@ export class Replayer {
     d.removes.forEach((mutation) => {
       const target = this.mirror.getNode(mutation.id);
       if (!target) {
+        if (d.removes.find((r) => r.id === mutation.parentId)) {
+          // no need to warn, parent was already removed
+          return;
+        }
         return this.warnNodeNotFound(d, mutation.id);
       }
       let parent: INode | null | ShadowRoot = this.mirror.getNode(
@@ -1070,20 +1078,28 @@ export class Replayer {
       // target may be removed with its parents before
       this.mirror.removeNodeFromMap(target);
       if (parent) {
+        let realTarget = null;
         const realParent =
           '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
         if (realParent && realParent.contains(target)) {
-          realParent.removeChild(target);
+          parent = realParent;
         } else if (this.fragmentParentMap.has(target)) {
           /**
            * the target itself is a fragment document and it's not in the dom
            * so we should remove the real target from its parent
            */
-          const realTarget = this.fragmentParentMap.get(target)!;
-          parent.removeChild(realTarget);
+          realTarget = this.fragmentParentMap.get(target)!;
           this.fragmentParentMap.delete(target);
-        } else {
+          target = realTarget;
+        }
+        try {
           parent.removeChild(target);
+        } catch (error) {
+          if (error instanceof DOMException) {
+            this.warn('parent could not remove child in mutation', parent, realParent, target, realTarget , d);
+          } else {
+            throw error;
+          }
         }
       }
     });
@@ -1290,6 +1306,10 @@ export class Replayer {
     d.texts.forEach((mutation) => {
       let target = this.mirror.getNode(mutation.id);
       if (!target) {
+        if (d.removes.find((r) => r.id === mutation.id)) {
+          // no need to warn, element was already removed
+          return;
+        }
         return this.warnNodeNotFound(d, mutation.id);
       }
       /**
@@ -1303,6 +1323,10 @@ export class Replayer {
     d.attributes.forEach((mutation) => {
       let target = this.mirror.getNode(mutation.id);
       if (!target) {
+        if (d.removes.find((r) => r.id === mutation.id)) {
+          // no need to warn, element was already removed
+          return;
+        }
         return this.warnNodeNotFound(d, mutation.id);
       }
       if (this.fragmentParentMap.has(target)) {
@@ -1584,7 +1608,11 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
-    this.warn(`Node with id '${id}' not found in`, d);
+    if (this.treeIndex.removeIdSet.has(id)) {
+      this.warn(`Node with id '${id}' was previously removed. `, d);
+    } else {
+      this.warn(`Node with id '${id}' not found. `, d);
+    }
   }
 
   private warnCanvasMutationFailed(
@@ -1602,7 +1630,11 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found in`, d);
+    if (this.treeIndex.removeIdSet.has(id)) {
+      this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' was previously removed. `, d);
+    } else {
+      this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
+    }
   }
 
   private warn(...args: Parameters<typeof console.warn>) {
