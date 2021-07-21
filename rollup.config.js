@@ -6,6 +6,7 @@ import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import pkg from './package.json';
+import css from 'rollup-plugin-css-only';
 
 // eslint-disable-next-line no-undef
 const production = !process.env.ROLLUP_WATCH;
@@ -33,14 +34,19 @@ const entries = (production
 
 export default entries.map((output) => ({
   input: 'src/main.ts',
-  output,
+  output: {
+    file: output.file,
+    format: output.format,
+    name: output.name,
+    sourcemap: true,
+    exports: 'auto',
+  },
   plugins: [
     svelte({
-      // enable run-time checks when not in production
-      dev: !production,
-      // we'll extract any component CSS out into
-      // a separate file — better for performance
-      css: output.css && ((css) => css.write(output.css)),
+      compilerOptions: {
+        // enable run-time checks when not in production
+        dev: !production,
+      },
       preprocess: sveltePreprocess({
         postcss: {
           // eslint-disable-next-line no-undef
@@ -60,7 +66,13 @@ export default entries.map((output) => ({
     }),
     commonjs(),
 
-    typescript({ sourceMap: !production }),
+    typescript(),
+
+    css({
+      // we'll extract any component CSS out into
+      // a separate file — better for performance
+      output: output.css,
+    }),
 
     // In dev mode, call `npm run start` once
     // the bundle has been generated
