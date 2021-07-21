@@ -141,13 +141,14 @@
     replayer.pause();
   };
 
-  export const goto = (timeOffset: number) => {
+  export const goto = (timeOffset: number, play?: boolean) => {
     currentTime = timeOffset;
-    const isPlaying = playerState === 'playing';
-    replayer.pause();
-    replayer.play(timeOffset);
-    if (!isPlaying) {
-      replayer.pause();
+    const resumePlaying =
+      typeof play === 'boolean' ? play : playerState === 'playing';
+    if (resumePlaying) {
+      replayer.play(timeOffset);
+    } else {
+      replayer.pause(timeOffset);
     }
   };
 

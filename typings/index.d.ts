@@ -32,5 +32,5 @@ export default class rrwebPlayer extends SvelteComponent {
   triggerResize: () => void;
   play: () => void;
   pause: () => void;
-  goto: (timeOffset: number) => void;
+  goto: (timeOffset: number, play?: boolean) => void;
 }
