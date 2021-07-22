@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "rrweb": "^1.0.1"
+    "rrweb": "^1.0.2"
   },
   "scripts": {
     "build": "rollup -c",

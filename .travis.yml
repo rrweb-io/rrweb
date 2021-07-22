@@ -11,5 +11,9 @@ install:
   - yarn
 
 script:
+  - cd packages/rrweb-snapshot
+  - yarn bundle
+  - yarn test
+  - cd ../rrweb
   - yarn check-types
-  - xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+  - xvfb-run --server-args="-screen 0 1920x1080x24" yarn test 
