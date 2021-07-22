@@ -1,4 +1,11 @@
-import { rebuild, buildNodeWithSN, INode, NodeType } from 'rrweb-snapshot';
+import {
+  rebuild,
+  buildNodeWithSN,
+  INode,
+  NodeType,
+  BuildCache,
+  createCache,
+} from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -96,6 +103,9 @@ export class Replayer {
   private elementStateMap!: Map<INode, ElementState>;
   // Hold the list of CSSRules for in-memory state restoration
   private virtualStyleRulesMap!: VirtualStyleRulesMap;
+
+  // The replayer uses the cache to speed up replay and scrubbing.
+  private cache: BuildCache = createCache();
 
   private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
 
@@ -376,6 +386,14 @@ export class Replayer {
     this.iframe.style.pointerEvents = 'none';
   }
 
+  /**
+   * Empties the replayer's cache and reclaims memory.
+   * The replayer will use this cache to speed up the playback.
+   */
+  public resetCache() {
+    this.cache = createCache();
+  }
+
   private setupDom() {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
@@ -566,6 +584,7 @@ export class Replayer {
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
       },
+      cache: this.cache,
     })[1];
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
@@ -639,6 +658,7 @@ export class Replayer {
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
       },
+      cache: this.cache,
     });
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
@@ -1217,6 +1237,7 @@ export class Replayer {
         map: this.mirror.map,
         skipChild: true,
         hackCss: true,
+        cache: this.cache,
       }) as INode;
 
       // legacy data, we should not have -1 siblings any more
