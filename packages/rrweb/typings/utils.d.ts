@@ -46,6 +46,7 @@ export declare class TreeIndex {
         inputMap: TreeIndex['inputMap'];
     };
     private reset;
+    idRemoved(id: number): boolean;
 }
 declare type ResolveTree = {
     value: addedNodeMutation;

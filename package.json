@@ -1,19 +1,5 @@
 {
-  "name": "rrweb",
-  "version": "1.0.2",
   "description": "record and replay the web",
-  "scripts": {
-    "prepare": "npm run prepack",
-    "prepack": "npm run bundle",
-    "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register -r ignore-styles -r jsdom-global/register test/**.test.ts",
-    "test:headless": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true PUPPETEER_HEADLESS=true mocha -r ts-node/register -r ignore-styles -r jsdom-global/register test/**.test.ts",
-    "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch --watch-extensions js,ts",
-    "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
-    "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
-    "bundle": "rollup --config",
-    "typings": "tsc -d --declarationDir typings",
-    "check-types": "tsc -noEmit"
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
@@ -21,59 +7,16 @@
   "keywords": [
     "rrweb"
   ],
-  "main": "lib/rrweb-all.js",
-  "module": "es/rrweb/src/entries/all.js",
-  "unpkg": "dist/rrweb.js",
-  "sideEffects": false,
-  "typings": "typings/entries/all.d.ts",
-  "files": [
-    "dist",
-    "lib",
-    "es",
-    "typings"
-  ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
+  "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
-  "devDependencies": {
-    "@types/chai": "^4.1.6",
-    "@types/inquirer": "0.0.43",
-    "@types/jsdom": "^16.2.12",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^12.20.16",
-    "@types/prettier": "^2.3.2",
-    "@types/puppeteer": "^5.4.3",
-    "chai": "^4.2.0",
-    "cross-env": "^5.2.0",
-    "fast-mhtml": "^1.1.9",
-    "ignore-styles": "^5.0.1",
-    "inquirer": "^6.2.1",
-    "jest-snapshot": "^23.6.0",
-    "jsdom": "^16.6.0",
-    "jsdom-global": "^3.0.2",
-    "mocha": "^5.2.0",
-    "prettier": "2.2.1",
-    "puppeteer": "^9.1.1",
-    "rollup": "^2.3.3",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "rollup-plugin-postcss": "^3.1.1",
-    "rollup-plugin-rename-node-modules": "^1.1.0",
-    "rollup-plugin-terser": "^5.3.0",
-    "rollup-plugin-typescript": "^1.0.0",
-    "ts-node": "^7.0.1",
-    "tslib": "^1.9.3",
-    "tslint": "^4.5.1",
-    "typescript": "^3.9.5"
-  },
-  "dependencies": {
-    "@types/css-font-loading-module": "0.0.4",
-    "@xstate/fsm": "^1.4.0",
-    "fflate": "^0.4.4",
-    "mitt": "^1.1.3",
-    "rrweb-snapshot": "^1.1.7"
-  }
+  "workspaces": [
+    "packages/rrweb",
+    "packages/rrweb-snapshot",
+    "packages/rrweb-player"
+  ]
 }

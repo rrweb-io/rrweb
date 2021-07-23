@@ -1,0 +1,25 @@
+{
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2019,
+    "sourceType": "module"
+  },
+  "rules": {
+    "require-jsdoc": "off",
+    "arrow-parens": "off",
+    "object-curly-spacing": "off",
+    "indent": "off"
+  },
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "plugins": ["svelte3", "@typescript-eslint"],
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "processor": "svelte3/svelte3"
+    }
+  ]
+}
