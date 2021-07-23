@@ -111,3 +111,7 @@ export type MaskTextFn = (text: string) => string;
 export type MaskInputFn = (text: string) => string;
 
 export type KeepIframeSrcFn = (src: string) => boolean;
+
+export type BuildCache = {
+  stylesWithHoverClass: Map<string, string>;
+};
