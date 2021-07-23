@@ -46,7 +46,7 @@
   "typings": "typings/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb-player.git"
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
     "rrweb"
@@ -54,7 +54,7 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb-player/issues"
+    "url": "https://github.com/rrweb-io/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb-player#readme"
+  "homepage": "https://github.com/rrweb-io/rrweb#readme"
 }
