@@ -123,7 +123,7 @@ function buildNode(
   options: {
     doc: Document;
     hackCss: boolean;
-    cache?: BuildCache;
+    cache: BuildCache;
   },
 ): Node | null {
   const { doc, hackCss, cache } = options;
@@ -291,7 +291,7 @@ export function buildNodeWithSN(
     skipChild?: boolean;
     hackCss: boolean;
     afterAppend?: (n: INode) => unknown;
-    cache?: BuildCache;
+    cache: BuildCache;
   },
 ): INode | null {
   const {
@@ -394,7 +394,7 @@ function rebuild(
     onVisit?: (node: INode) => unknown;
     hackCss?: boolean;
     afterAppend?: (n: INode) => unknown;
-    cache?: BuildCache;
+    cache: BuildCache;
   },
 ): [Node | null, idNodeMap] {
   const { doc, onVisit, hackCss = true, afterAppend, cache } = options;
