@@ -6,6 +6,7 @@ import {
   elementNode,
   idNodeMap,
   INode,
+  BuildCache,
 } from './types';
 import { isElement } from './utils';
 
@@ -64,7 +65,10 @@ function escapeRegExp(str: string) {
 
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR, 'g');
-export function addHoverClass(cssText: string): string {
+export function addHoverClass(cssText: string, cache: BuildCache): string {
+  const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
+  if (cachedStyle) return cachedStyle;
+
   const ast = parse(cssText, {
     silent: true,
   });
@@ -99,10 +103,19 @@ export function addHoverClass(cssText: string): string {
     'g',
   );
 
-  return cssText.replace(selectorMatcher, (selector) => {
+  const result = cssText.replace(selectorMatcher, (selector) => {
     const newSelector = selector.replace(HOVER_SELECTOR_GLOBAL, '$1.\\:hover');
     return `${selector}, ${newSelector}`;
   });
+  cache?.stylesWithHoverClass.set(cssText, result);
+  return result;
+}
+
+export function createCache(): BuildCache {
+  const stylesWithHoverClass: Map<string, string> = new Map();
+  return {
+    stylesWithHoverClass,
+  };
 }
 
 function buildNode(
@@ -110,9 +123,10 @@ function buildNode(
   options: {
     doc: Document;
     hackCss: boolean;
+    cache: BuildCache;
   },
 ): Node | null {
-  const { doc, hackCss } = options;
+  const { doc, hackCss, cache } = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -143,7 +157,7 @@ function buildNode(
           const isRemoteOrDynamicCss =
             tagName === 'style' && name === '_cssText';
           if (isRemoteOrDynamicCss && hackCss) {
-            value = addHoverClass(value);
+            value = addHoverClass(value, cache);
           }
           if (isTextarea || isRemoteOrDynamicCss) {
             const child = doc.createTextNode(value);
@@ -256,7 +270,9 @@ function buildNode(
       return node;
     case NodeType.Text:
       return doc.createTextNode(
-        n.isStyle && hackCss ? addHoverClass(n.textContent) : n.textContent,
+        n.isStyle && hackCss
+          ? addHoverClass(n.textContent, cache)
+          : n.textContent,
       );
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
@@ -275,10 +291,18 @@ export function buildNodeWithSN(
     skipChild?: boolean;
     hackCss: boolean;
     afterAppend?: (n: INode) => unknown;
+    cache: BuildCache;
   },
 ): INode | null {
-  const { doc, map, skipChild = false, hackCss = true, afterAppend } = options;
-  let node = buildNode(n, { doc, hackCss });
+  const {
+    doc,
+    map,
+    skipChild = false,
+    hackCss = true,
+    afterAppend,
+    cache,
+  } = options;
+  let node = buildNode(n, { doc, hackCss, cache });
   if (!node) {
     return null;
   }
@@ -310,6 +334,7 @@ export function buildNodeWithSN(
         skipChild: false,
         hackCss,
         afterAppend,
+        cache,
       });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
@@ -369,9 +394,10 @@ function rebuild(
     onVisit?: (node: INode) => unknown;
     hackCss?: boolean;
     afterAppend?: (n: INode) => unknown;
+    cache: BuildCache;
   },
 ): [Node | null, idNodeMap] {
-  const { doc, onVisit, hackCss = true, afterAppend } = options;
+  const { doc, onVisit, hackCss = true, afterAppend, cache } = options;
   const idNodeMap: idNodeMap = {};
   const node = buildNodeWithSN(n, {
     doc,
@@ -379,6 +405,7 @@ function rebuild(
     skipChild: false,
     hackCss,
     afterAppend,
+    cache,
   });
   visit(idNodeMap, (visitedNode) => {
     if (onVisit) {
