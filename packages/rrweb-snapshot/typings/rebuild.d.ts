@@ -1,5 +1,5 @@
 import { serializedNodeWithId, idNodeMap, INode, BuildCache } from './types';
-export declare function addHoverClass(cssText: string, cache?: BuildCache): string;
+export declare function addHoverClass(cssText: string, cache: BuildCache): string;
 export declare function createCache(): BuildCache;
 export declare function buildNodeWithSN(n: serializedNodeWithId, options: {
     doc: Document;
