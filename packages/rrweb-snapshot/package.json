@@ -7,6 +7,7 @@
     "prepack": "npm run bundle && npm run typings",
     "test": "cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
     "bundle": "rollup --config",
+    "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "typings": "tsc -d --declarationDir typings"
   },
   "repository": {
