@@ -142,10 +142,10 @@ setInterval(save, 10 * 1000);
 | maskTextClass        | 'rr-mask'          | 字符串或正则表达式，可用于自定义忽略元素 text 内容的类名，详见[“隐私”](#隐私)章节                                                                                      |
 | maskTextSelector     | null               | 所有 element.matches(maskTextSelector)为 true 的元素及其子元素的 text 内容将会被屏蔽                                                                                   |
 | maskAllInputs        | false              | 将所有输入内容记录为 \*                                                                                                                                                |
-| maskInputOptions     | { password: true } | 选择将特定类型的输入框内容记录为 \*<br />类型详见[列表](https://github.com/rrweb-io/rrweb-snapshot/blob/0bb95f1ee77fef03166a68f75b959ad997171442/src/types.ts#L77-L95) |
+| maskInputOptions     | { password: true } | 选择将特定类型的输入框内容记录为 \*<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L77-L95) |
 | maskInputFn          | -                  | 自定义特定类型的输入框内容记录逻辑                                                                                                                                     |
 | maskTextFn           | -                  | 自定义文字内容的记录逻辑                                                                                                                                               |
-| slimDOMOptions       | {}                 | 去除 DOM 中不必要的部分 <br />类型详见[列表](https://github.com/rrweb-io/rrweb-snapshot/blob/6728d12b3cddd96951c86d948578f99ada5749ff/src/types.ts#L91)                |
+| slimDOMOptions       | {}                 | 去除 DOM 中不必要的部分 <br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)                |
 | inlineStylesheet     | true               | 是否将样式表内联                                                                                                                                                       |
 | hooks                | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                  |
 | packFn               | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                             |
