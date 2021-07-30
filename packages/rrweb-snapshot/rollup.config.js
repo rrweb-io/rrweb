@@ -6,7 +6,20 @@ function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
 
-export default [
+let configs = [
+  // ES module - for building rrweb
+  {
+    input: './src/index.ts',
+    plugins: [typescript()],
+    output: [
+      {
+        format: 'esm',
+        file: pkg.module,
+      },
+    ],
+  },
+];
+let extra_configs = [
   // browser
   {
     input: './src/index.ts',
@@ -42,17 +55,7 @@ export default [
       },
     ],
   },
-  // ES module
-  {
-    input: './src/index.ts',
-    plugins: [typescript()],
-    output: [
-      {
-        format: 'esm',
-        file: pkg.module,
-      },
-    ],
-  },
+  // ES module (packed)
   {
     input: './src/index.ts',
     plugins: [typescript(), terser()],
@@ -65,3 +68,9 @@ export default [
     ],
   },
 ];
+
+if (!process.env.ES_ONLY) {
+  configs.push(...extra_configs);
+}
+
+export default configs;
