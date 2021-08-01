@@ -9,3 +9,5 @@ temp
 *.log
 
 .env
+
+.DS_Store
