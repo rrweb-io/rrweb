@@ -1,0 +1,60 @@
+{
+  "name": "rrweb-player",
+  "version": "0.7.4",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.0",
+    "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-typescript": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
+    "eslint": "^7.5.0",
+    "eslint-config-google": "^0.11.0",
+    "eslint-plugin-svelte3": "^2.7.3",
+    "postcss-easy-import": "^3.0.0",
+    "rollup": "^2.45.2",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-svelte": "^7.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "sirv-cli": "^0.4.4",
+    "svelte": "^3.2.0",
+    "svelte-check": "^1.4.0",
+    "svelte-preprocess": "^4.0.0",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "@tsconfig/svelte": "^1.0.0",
+    "rrweb": "^1.0.2"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "prepublishOnly": "yarn build",
+    "start": "sirv public",
+    "validate": "svelte-check"
+  },
+  "description": "rrweb's replayer UI",
+  "main": "lib/index.js",
+  "module": "dist/index.mjs",
+  "unpkg": "dist/index.js",
+  "files": [
+    "lib",
+    "dist",
+    "typings"
+  ],
+  "typings": "typings/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme"
+}

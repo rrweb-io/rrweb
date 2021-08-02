@@ -3,11 +3,11 @@
 node_modules
 package-lock.json
 # yarn.lock
-build
-dist
-es
-lib
 
 temp
 
 *.log
+
+.env
+
+.DS_Store

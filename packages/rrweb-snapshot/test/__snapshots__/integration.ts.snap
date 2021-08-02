@@ -1,0 +1,838 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`[html file]: about-mozilla.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head>
+  <title>The Book of Mozilla, 11:9</title>
+  <style type=\\"text/css\\">
+    html {
+      background: maroon;
+      color: white;
+      font-style: italic;
+    }    #moztext {
+      margin-top: 15%;
+      font-size: 1.1em;
+      font-family: serif;
+      text-align: center;
+      line-height: 1.5;
+    }    #from {
+      font-size: 1.95em;
+      font-family: serif;
+      text-align: right;
+    }    em {
+      font-size: 1.3em;
+      line-height: 0;
+    }    a {
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head><body>  <p id=\\"moztext\\">
+    Mammon slept. And the <em>beast reborn</em> spread over the earth and its numbers
+    grew legion. And they proclaimed the times and <em>sacrificed</em> crops unto the
+    fire, with the <em>cunning of foxes</em>. And they built a new world in their own
+    image as promised by the <em><a href=\\"http://www.mozilla.org/about/mozilla-manifesto.html\\">
+        sacred words</a></em>, and <em><a href=\\"http://wiki.mozilla.org/About:mozilla\\">spoke
+      </a></em> of the beast with their children. Mammon awoke, and lo! it was
+    <em>naught</em> but a follower.
+  </p>  <p id=\\"from\\">
+    from <strong>The Book of Mozilla,</strong> 11:9<br /><small>(10th Edition)</small>
+  </p></body></html>"
+`;
+
+exports[`[html file]: basic.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>Document</title>
+</head><body>
+  <h1>Title</h1></body></html>"
+`;
+
+exports[`[html file]: block-element.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>Document</title>
+    <style>
+      .big {
+        width: 50px;
+        height: 50px;
+      }
+      .small {
+        width: 50px;
+        height: 100px;
+        float: left;
+      }
+    </style>
+  </head>  <body>
+    <div class=\\"rr-block big\\" style=\\"width: 50px; height: 50px;\\"></div>
+    <div>record 2</div>
+    <div class=\\"rr-block small\\" style=\\"width: 50px; height: 100px;\\"></div>
+    <div class=\\"rr-block\\" style=\\"width: 100px; height: 200px;\\"></div>
+  </body></html>"
+`;
+
+exports[`[html file]: cors-style-sheet.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>with style sheet</title>
+    <link rel=\\"stylesheet\\" href=\\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\" />
+    <link rel=\\"stylesheet\\" href=\\"\\" />
+  </head>
+  <body></body></html>"
+`;
+
+exports[`[html file]: dynamic-stylesheet.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>dynamic stylesheet</title>
+    <style>body { margin: 0px; }p { background: lightpink; }</style>
+    <noscript>SCRIPT_PLACEHOLDER</noscript>
+  </head>
+  <body>
+    <p>p tag</p>
+  </body></html>"
+`;
+
+exports[`[html file]: form-fields.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>form fields</title>
+  </head>  <body>
+    <form>
+      <label for=\\"text\\">
+        <input type=\\"text\\" value=\\"1\\" />
+      </label>
+      <label for=\\"radio\\">
+        <input type=\\"radio\\" checked=\\"\\" />
+      </label>
+      <label for=\\"checkbox\\">
+        <input type=\\"checkbox\\" checked=\\"\\" />
+      </label>
+      <label for=\\"textarea\\">
+        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
+      </label>
+      <label for=\\"select\\">
+        <select name=\\"\\" id=\\"\\" value=\\"2\\">
+          <option value=\\"1\\">1</option>
+          <option value=\\"2\\" selected=\\"\\">2</option>
+        </select>
+      </label>
+      <label>
+        <input name=\\"tagName\\" />
+      </label>
+    </form>
+  
+  <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
+`;
+
+exports[`[html file]: hover.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>hover selector</title>
+  <style>    div:hover, div.\\\\:hover {
+      background: orange;
+    }    div:hover::after, div.\\\\:hover::after {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      content: 'dropdown';
+      width: 100px;
+      height: 200px;
+      background: lightblue;
+    }
+  </style>
+</head><body>
+  <div>hover me</div>
+</body></html>"
+`;
+
+exports[`[html file]: iframe.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>iframe</title>
+</head>
+<body>
+  <iframe width=\\"100\\" height=\\"50\\"></iframe>
+</body></html>"
+`;
+
+exports[`[html file]: iframe-inner.html 1`] = `
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body><button>inner iframe button</button>
+</body></html>"
+`;
+
+exports[`[html file]: invalid-attribute.html 1`] = `
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\" foo=\\"bar\\"><head></head><body>
+</body></html>"
+`;
+
+exports[`[html file]: invalid-doctype.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <title>Invalid Doctype</title>
+  </head>
+  <body></body></html>"
+`;
+
+exports[`[html file]: invalid-tagname.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>Document</title>
+</head>
+<body>
+  <div>Hello</div>
+  <div>Hello</div>
+  <div></div>
+</body></html>"
+`;
+
+exports[`[html file]: mask-text.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>Document</title>
+  </head>  <body>
+    <p class=\\"rr-mask\\">**** *</p>
+    <div class=\\"rr-mask\\">
+      <span>**** *</span>
+    </div>
+    <div class=\\"rr-mask\\">**** *</div>
+  </body></html>"
+`;
+
+exports[`[html file]: picture.html 1`] = `
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <picture>
+      <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
+      <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
+    </picture>
+  </body></html>"
+`;
+
+exports[`[html file]: preload.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <title>Document</title>
+    <link />
+    <link />
+  </head>
+  <body></body></html>"
+`;
+
+exports[`[html file]: shadow-dom.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <title>shadow DOM</title>
+  </head>
+  <body>
+    <fancy-tabs background=\\"\\" role=\\"tablist\\" selected=\\"1\\">
+      <button slot=\\"title\\" role=\\"tab\\" tabindex=\\"-1\\" aria-selected=\\"false\\">Tab 1</button>
+      <button slot=\\"title\\" selected=\\"\\" role=\\"tab\\" tabindex=\\"0\\" aria-selected=\\"true\\">Tab 2</button>
+      <button slot=\\"title\\" role=\\"tab\\" tabindex=\\"-1\\" aria-selected=\\"false\\">Tab 3</button>
+      <section role=\\"tabpanel\\" tabindex=\\"0\\" aria-hidden=\\"true\\">content panel 1</section>
+      <section role=\\"tabpanel\\" tabindex=\\"0\\" aria-hidden=\\"false\\">content panel 2</section>
+      <section role=\\"tabpanel\\" tabindex=\\"0\\" aria-hidden=\\"true\\">content panel 3</section>
+    </fancy-tabs>
+    <noscript>SCRIPT_PLACEHOLDER</noscript>
+  </body></html>"
+`;
+
+exports[`[html file]: video.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>video</title>
+  </head>
+  <body>
+    <video controls=\\"\\">
+      <source src=\\"http://techslides.com/demos/sample-videos/small.webm\\" type=\\"video/webm\\" /> <source src=\\"http://techslides.com/demos/sample-videos/small.ogv\\" type=\\"video/ogg\\" />
+      <source src=\\"http://techslides.com/demos/sample-videos/small.mp4\\" type=\\"video/mp4\\" /> <source src=\\"http://techslides.com/demos/sample-videos/small.3gp\\" type=\\"video/3gp\\" />
+    </video>
+  </body></html>"
+`;
+
+exports[`[html file]: with-relative-res.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>Document</title>
+</head>
+<body>
+  <a href=\\"http://localhost:3030/basic.html\\"></a>
+  <div>Hello</div>
+  <alt34>Hello</alt34>
+  <div>Hello</div>
+  <div></div>
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"\\" />
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/a.jpg\\" />
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://exmple.com/a.jpg\\" />
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/a.jpg 3x, http://localhost:3030/a.jpg 45x, http://localhost:3030/b.png\\" />
+  <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/300,400/a.jpg 300w, http://localhost:3030/b.png\\" /></body></html>"
+`;
+
+exports[`[html file]: with-script.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>with script</title>
+</head><body>
+  <noscript src=\\"http://localhost:3030/js/a.js\\"></noscript>
+  <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
+`;
+
+exports[`[html file]: with-style-sheet.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>with style sheet</title>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
+</head><body>
+</body></html>"
+`;
+
+exports[`[html file]: with-style-sheet-with-import.html 1`] = `
+"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+  <meta charset=\\"UTF-8\\" />
+  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+  <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+  <title>with style sheet with import</title>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
+</head><body>
+</body></html>"
+`;
+
+exports[`iframe integration tests 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 1,
+      \\"name\\": \\"html\\",
+      \\"publicId\\": \\"\\",
+      \\"systemId\\": \\"\\",
+      \\"id\\": 2
+    },
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {
+        \\"lang\\": \\"en\\"
+      },
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"charset\\": \\"UTF-8\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 7
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"name\\": \\"viewport\\",
+                \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 8
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 9
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"title\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"Main\\",
+                  \\"id\\": 11
+                }
+              ],
+              \\"id\\": 10
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\",
+              \\"id\\": 12
+            }
+          ],
+          \\"id\\": 4
+        },
+        {
+          \\"type\\": 3,
+          \\"textContent\\": \\"\\\\n  \\",
+          \\"id\\": 13
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 15
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"iframe\\",
+              \\"attributes\\": {
+                \\"id\\": \\"one\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 16
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 17
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"iframe\\",
+              \\"attributes\\": {
+                \\"id\\": \\"two\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 18
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 19
+            }
+          ],
+          \\"id\\": 14
+        }
+      ],
+      \\"id\\": 3
+    }
+  ],
+  \\"id\\": 1
+}"
+`;
+
+exports[`shadown DOM integration tests 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 1,
+      \\"name\\": \\"html\\",
+      \\"publicId\\": \\"\\",
+      \\"systemId\\": \\"\\",
+      \\"id\\": 2
+    },
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {
+        \\"lang\\": \\"en\\"
+      },
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"charset\\": \\"UTF-8\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 7
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"name\\": \\"viewport\\",
+                \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 8
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 9
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"title\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"shadow DOM\\",
+                  \\"id\\": 11
+                }
+              ],
+              \\"id\\": 10
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\",
+              \\"id\\": 12
+            }
+          ],
+          \\"id\\": 4
+        },
+        {
+          \\"type\\": 3,
+          \\"textContent\\": \\"\\\\n  \\",
+          \\"id\\": 13
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 15
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"fancy-tabs\\",
+              \\"attributes\\": {
+                \\"background\\": \\"\\",
+                \\"role\\": \\"tablist\\",
+                \\"selected\\": \\"1\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 17
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"button\\",
+                  \\"attributes\\": {
+                    \\"slot\\": \\"title\\",
+                    \\"role\\": \\"tab\\",
+                    \\"tabindex\\": \\"-1\\",
+                    \\"aria-selected\\": \\"false\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"Tab 1\\",
+                      \\"id\\": 19
+                    }
+                  ],
+                  \\"id\\": 18
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 20
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"button\\",
+                  \\"attributes\\": {
+                    \\"slot\\": \\"title\\",
+                    \\"selected\\": \\"\\",
+                    \\"role\\": \\"tab\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-selected\\": \\"true\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"Tab 2\\",
+                      \\"id\\": 22
+                    }
+                  ],
+                  \\"id\\": 21
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 23
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"button\\",
+                  \\"attributes\\": {
+                    \\"slot\\": \\"title\\",
+                    \\"role\\": \\"tab\\",
+                    \\"tabindex\\": \\"-1\\",
+                    \\"aria-selected\\": \\"false\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"Tab 3\\",
+                      \\"id\\": 25
+                    }
+                  ],
+                  \\"id\\": 24
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 26
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"section\\",
+                  \\"attributes\\": {
+                    \\"role\\": \\"tabpanel\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-hidden\\": \\"true\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"content panel 1\\",
+                      \\"id\\": 28
+                    }
+                  ],
+                  \\"id\\": 27
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 29
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"section\\",
+                  \\"attributes\\": {
+                    \\"role\\": \\"tabpanel\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-hidden\\": \\"false\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"content panel 2\\",
+                      \\"id\\": 31
+                    }
+                  ],
+                  \\"id\\": 30
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 32
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"section\\",
+                  \\"attributes\\": {
+                    \\"role\\": \\"tabpanel\\",
+                    \\"tabindex\\": \\"0\\",
+                    \\"aria-hidden\\": \\"true\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"content panel 3\\",
+                      \\"id\\": 34
+                    }
+                  ],
+                  \\"id\\": 33
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n    \\",
+                  \\"id\\": 35
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n            \\",
+                  \\"id\\": 36,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"style\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n              :host {\\\\n                display: inline-block;\\\\n                width: 650px;\\\\n                font-family: 'Roboto Slab';\\\\n                contain: content;\\\\n              }\\\\n              :host([background]) {\\\\n                background: var(--background-color, #9E9E9E);\\\\n                border-radius: 10px;\\\\n                padding: 10px;\\\\n              }\\\\n              #panels {\\\\n                box-shadow: 0 2px 2px rgba(0, 0, 0, .3);\\\\n                background: white;\\\\n                border-radius: 3px;\\\\n                padding: 16px;\\\\n                height: 250px;\\\\n                overflow: auto;\\\\n              }\\\\n              #tabs {\\\\n                display: inline-flex;\\\\n                -webkit-user-select: none;\\\\n                user-select: none;\\\\n              }\\\\n              #tabs slot {\\\\n                display: inline-flex; /* Safari bug. Treats <slot> as a parent */\\\\n              }\\\\n              /* Safari does not support #id prefixes on ::slotted\\\\n                 See https://bugs.webkit.org/show_bug.cgi?id=160538 */\\\\n              #tabs ::slotted(*) {\\\\n                font: 400 16px/22px 'Roboto';\\\\n                padding: 16px 8px;\\\\n                margin: 0;\\\\n                text-align: center;\\\\n                width: 100px;\\\\n                text-overflow: ellipsis;\\\\n                white-space: nowrap;\\\\n                overflow: hidden;\\\\n                cursor: pointer;\\\\n                border-top-left-radius: 3px;\\\\n                border-top-right-radius: 3px;\\\\n                background: linear-gradient(#fafafa, #eee);\\\\n                border: none; /* if the user users a <button> */\\\\n              }\\\\n              #tabs ::slotted([aria-selected=\\\\\\"true\\\\\\"]) {\\\\n                font-weight: 600;\\\\n                background: white;\\\\n                box-shadow: none;\\\\n              }\\\\n              #tabs ::slotted(:focus) {\\\\n                z-index: 1; /* make sure focus ring doesn't get buried */\\\\n              }\\\\n              #panels ::slotted([aria-hidden=\\\\\\"true\\\\\\"]) {\\\\n                display: none;\\\\n              }\\\\n            \\",
+                      \\"isStyle\\": true,
+                      \\"id\\": 38
+                    }
+                  ],
+                  \\"id\\": 37,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n            \\",
+                  \\"id\\": 39,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"div\\",
+                  \\"attributes\\": {
+                    \\"id\\": \\"tabs\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n              \\",
+                      \\"id\\": 41
+                    },
+                    {
+                      \\"type\\": 2,
+                      \\"tagName\\": \\"slot\\",
+                      \\"attributes\\": {
+                        \\"id\\": \\"tabsSlot\\",
+                        \\"name\\": \\"title\\"
+                      },
+                      \\"childNodes\\": [],
+                      \\"id\\": 42
+                    },
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n            \\",
+                      \\"id\\": 43
+                    }
+                  ],
+                  \\"id\\": 40,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n            \\",
+                  \\"id\\": 44,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"div\\",
+                  \\"attributes\\": {
+                    \\"id\\": \\"panels\\"
+                  },
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n              \\",
+                      \\"id\\": 46
+                    },
+                    {
+                      \\"type\\": 2,
+                      \\"tagName\\": \\"slot\\",
+                      \\"attributes\\": {
+                        \\"id\\": \\"panelsSlot\\"
+                      },
+                      \\"childNodes\\": [],
+                      \\"id\\": 47
+                    },
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"\\\\n            \\",
+                      \\"id\\": 48
+                    }
+                  ],
+                  \\"id\\": 45,
+                  \\"isShadow\\": true
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n          \\",
+                  \\"id\\": 49,
+                  \\"isShadow\\": true
+                }
+              ],
+              \\"id\\": 16,
+              \\"isShadowHost\\": true
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 50
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"script\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                  \\"id\\": 52
+                }
+              ],
+              \\"id\\": 51
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 53
+            }
+          ],
+          \\"id\\": 14
+        }
+      ],
+      \\"id\\": 3
+    }
+  ],
+  \\"id\\": 1
+}"
+`;

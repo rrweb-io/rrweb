@@ -1,5 +1,9 @@
 language: node_js
 
+os: linux
+
+dist: focal
+
 node_js:
   - 12
 
@@ -7,4 +11,9 @@ install:
   - yarn
 
 script:
-  - xvfb-run --server-args="-screen 0 1920x1080x24" npm test
+  - cd packages/rrweb-snapshot
+  - yarn bundle
+  - yarn test
+  - cd ../rrweb
+  - yarn check-types
+  - xvfb-run --server-args="-screen 0 1920x1080x24" yarn test 
