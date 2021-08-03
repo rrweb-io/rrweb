@@ -131,9 +131,15 @@ function record<T = eventWithTime>(
         e.data.source === IncrementalSource.Mutation
       )
     ) {
+      let mtimestamp = e.timestamp;
+      if ('positions' in e.data && e.data.positions[0].timeOffset) {
+        // assign the mutation timestamp to the beginning
+        // of mouse/touch movement
+        mtimestamp += e.data.positions[0].timeOffset;
+      }
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze(e.timestamp));
+      mutationBuffers.forEach((buf) => buf.unfreeze(mtimestamp));
     }
     if (ongoingMove) {
       // emit any ongoing (but throttled) mouse or touch move;
