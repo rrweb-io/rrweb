@@ -49,6 +49,26 @@ function pathToSelector(node: HTMLElement): string | '' {
 }
 
 /**
+ * judge the object's depth
+ */
+function isObjTooDeep(obj: any, limit: number): boolean {
+  if (limit === 0) {
+    return true;
+  }
+
+  const keys = Object.keys(obj);
+  for (const key of keys) {
+    if (typeof obj[key] === 'object') {
+      if (isObjTooDeep(obj[key], limit - 1)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
  * stringify any js object
  * @param obj the object to stringify
  */
@@ -58,10 +78,23 @@ export function stringify(
 ): string {
   const options: StringifyOptions = {
     numOfKeysLimit: 50,
+    depthOfLimit: 4,
   };
   Object.assign(options, stringifyOptions);
   const stack: any[] = [];
   const keys: any[] = [];
+
+  /**
+   * judge object's depth to avoid browser's OOM
+   *
+   * issues: https://github.com/rrweb-io/rrweb/issues/653
+   */
+  if (typeof obj === 'object' && isObjTooDeep(obj, options.depthOfLimit)) {
+    return `(log contains ${
+      Object.keys(obj).length
+    } items...) The info was discarded because the object was nested too deeply`;
+  }
+
   return JSON.stringify(obj, function (key, value) {
     /**
      * forked from https://github.com/moll/json-stringify-safe/blob/master/stringify.js

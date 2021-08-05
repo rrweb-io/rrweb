@@ -11,3 +11,6 @@ temp
 .env
 
 .DS_Store
+
+build
+dist
