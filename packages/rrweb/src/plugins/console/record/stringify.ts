@@ -88,18 +88,6 @@ export function stringify(
   Object.assign(options, stringifyOptions);
   const stack: any[] = [];
   const keys: any[] = [];
-
-  /**
-   * judge object's depth to avoid browser's OOM
-   *
-   * issues: https://github.com/rrweb-io/rrweb/issues/653
-   */
-  if (typeof obj === 'object' && isObjTooDeep(obj, options.depthOfLimit)) {
-    return `(log contains ${
-      Object.keys(obj).length
-    } items...) The info was discarded because the object was nested too deeply`;
-  }
-
   return JSON.stringify(obj, function (key, value) {
     /**
      * forked from https://github.com/moll/json-stringify-safe/blob/master/stringify.js
