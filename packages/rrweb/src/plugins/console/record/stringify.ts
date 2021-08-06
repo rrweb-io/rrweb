@@ -153,7 +153,7 @@ export function stringify(
   });
 
   /**
-   * whether we should ignore obj's info and parse it to string
+   * whether we should ignore obj's info and call toString() function instead
    */
   function shouldIgnore(_obj: object): boolean {
     // outof keys limit
