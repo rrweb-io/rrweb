@@ -12,6 +12,7 @@ export type StringifyOptions = {
    */
   numOfKeysLimit: number;
   /**
+   * limit number of depth in an object
    * if an object is too deep, toString process may cause browser OOM
    */
   depthOfLimit: number;

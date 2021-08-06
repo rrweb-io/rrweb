@@ -49,6 +49,13 @@ function pathToSelector(node: HTMLElement): string | '' {
 }
 
 /**
+ * judge is object
+ */
+function isObject(obj: any): boolean {
+  return Object.prototype.toString.call(obj) === '[object Object]';
+}
+
+/**
  * judge the object's depth
  */
 function isObjTooDeep(obj: any, limit: number): boolean {
@@ -58,10 +65,8 @@ function isObjTooDeep(obj: any, limit: number): boolean {
 
   const keys = Object.keys(obj);
   for (const key of keys) {
-    if (typeof obj[key] === 'object') {
-      if (isObjTooDeep(obj[key], limit - 1)) {
-        return true;
-      }
+    if (isObject(obj[key]) && isObjTooDeep(obj[key], limit - 1)) {
+      return true;
     }
   }
 
@@ -122,7 +127,7 @@ export function stringify(
     if (value === null || value === undefined) {
       return value;
     }
-    if (shouldToString(value)) {
+    if (shouldIgnore(value)) {
       return toString(value);
     }
     if (value instanceof Event) {
@@ -148,18 +153,28 @@ export function stringify(
   });
 
   /**
-   * whether we should call toString function of this object
+   * whether we should ignore obj's info and parse it to string
    */
-  function shouldToString(_obj: object): boolean {
-    if (
-      typeof _obj === 'object' &&
-      Object.keys(_obj).length > options.numOfKeysLimit
-    ) {
+  function shouldIgnore(_obj: object): boolean {
+    // outof keys limit
+    if (isObject(_obj) && Object.keys(_obj).length > options.numOfKeysLimit) {
       return true;
     }
+
+    // is function
     if (typeof _obj === 'function') {
       return true;
     }
+
+    /**
+     * judge object's depth to avoid browser's OOM
+     *
+     * issues: https://github.com/rrweb-io/rrweb/issues/653
+     */
+    if (isObject(_obj) && isObjTooDeep(_obj, options.depthOfLimit)) {
+      return true;
+    }
+
     return false;
   }
 
