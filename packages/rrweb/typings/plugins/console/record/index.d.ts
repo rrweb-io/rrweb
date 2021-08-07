@@ -2,6 +2,7 @@ import { RecordPlugin } from '../../../types';
 export declare type StringifyOptions = {
     stringLengthLimit?: number;
     numOfKeysLimit: number;
+    depthOfLimit: number;
 };
 declare type LogRecordOptions = {
     level?: LogLevel[] | undefined;
@@ -38,4 +39,5 @@ export declare type Logger = {
 };
 export declare const PLUGIN_NAME = "rrweb/console@1";
 export declare const getRecordConsolePlugin: (options?: LogRecordOptions) => RecordPlugin;
-export {};
+export { };
+

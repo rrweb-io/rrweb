@@ -38,6 +38,7 @@ rrweb.record({
     stringifyOptions: {
       stringLengthLimit: 1000,
       numOfKeysLimit: 100,
+      depthOfLimit: 1
     },
     logger: window.console,
   })],
@@ -45,12 +46,12 @@ rrweb.record({
 ```
 
 All recordLog options are described below:
-| key | default | description |
-| ---------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| level | ['log','warn','error',...] | Default value contains names of all console functions. You can override it by setting console levels you need. |
-| lengthThreshold | 1000 | Maximum number of records of console output. |
-| stringifyOptions | { stringLengthLimit: undefined, numOfKeysLimit: 50 } | If console output includes js objects, we need to stringify them. `stringLengthLimit` limits the string length of single value. `numOfKeysLimit` limits the number of keys in an object. If an object contains more keys than this limit, we would only save object's name. You can reduce the size of events by setting these options. |
-| logger | window.console | the console object we would record.You can set a console object from another execution environment where you would like to record. |
+| key              | default                                                               | description                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| level            | ['log','warn','error',...]                                            | Default value contains names of all console functions. You can override it by setting console levels you need.                                                                                                                                                                                                                                                                     |
+| lengthThreshold  | 1000                                                                  | Maximum number of records of console output.                                                                                                                                                                                                                                                                                                                                       |
+| stringifyOptions | { stringLengthLimit: undefined, numOfKeysLimit: 50, depthOfLimit: 4 } | If console output includes js objects, we need to stringify them. `stringLengthLimit` limits the string length of single value. `numOfKeysLimit` limits the number of keys in an object. `depthOfLimit` limits the depth of object. If an object contains more keys than this limit, we would only save object's name. You can reduce the size of events by setting these options. |
+| logger           | window.console                                                        | the console object we would record.You can set a console object from another execution environment where you would like to record.                                                                                                                                                                                                                                                 |
 
 ## replay console
 

@@ -1,7 +1,7 @@
 import { listenerHandler, RecordPlugin } from '../../../types';
-import { stringify } from './stringify';
-import { StackFrame, ErrorStackParser } from './error-stack-parser';
 import { patch } from '../../../utils';
+import { ErrorStackParser, StackFrame } from './error-stack-parser';
+import { stringify } from './stringify';
 
 export type StringifyOptions = {
   // limit of string length
@@ -11,6 +11,11 @@ export type StringifyOptions = {
    * if an object contains more keys than this limit, we would call its toString function directly
    */
   numOfKeysLimit: number;
+  /**
+   * limit number of depth in an object
+   * if an object is too deep, toString process may cause browser OOM
+   */
+  depthOfLimit: number;
 };
 
 type LogRecordOptions = {
