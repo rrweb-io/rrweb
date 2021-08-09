@@ -12,6 +12,7 @@ import {
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
+import orderingEvents from './events/ordering';
 
 interface ISuite extends Suite {
   code: string;
@@ -247,4 +248,44 @@ describe('replayer', function (this: ISuite) {
     `);
     expect(status).to.equal('live');
   });
+
+  it('replays same timestamp events in correct order', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(orderingEvents)}`,
+    );
+    await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play();
+    `);
+    await this.page.waitForTimeout(50);
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'ordering-events',
+    );
+  });
+
+  it('replays same timestamp events in correct order (with addAction)', async () => {
+    await this.page.evaluate(
+      `events = ${JSON.stringify(orderingEvents)}`,
+    );
+    await this.page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events.slice(0, events.length-2));
+      replayer.play();
+      replayer.addEvent(events[events.length-2]);
+      replayer.addEvent(events[events.length-1]);
+    `);
+    await this.page.waitForTimeout(50);
+
+    await assertDomSnapshot(
+      this.page,
+      __filename,
+      'ordering-events',
+    );
+  });
+
+
 });
