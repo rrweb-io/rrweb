@@ -365,14 +365,18 @@ export enum MouseInteractions {
   TouchEnd,
 }
 
-type mouseInteractionParam = {
+export type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
   x: number;
   y: number;
 };
 
-export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
+export type clickParam = mouseInteractionParam & {
+  href?: string;
+};
+
+export type mouseInteractionCallBack = (d: mouseInteractionParam | clickParam) => void;
 
 export type scrollPosition = {
   id: number;
