@@ -62,6 +62,17 @@ describe('record integration tests', function (this: ISuite) {
     server.close();
   });
 
+  it('can record clicks', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'link.html'));
+    await page.click('span');
+    await page.click('a');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('can record form interactions', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
