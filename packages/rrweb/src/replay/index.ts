@@ -76,6 +76,13 @@ const defaultMouseTailConfig = {
   strokeStyle: 'red',
 } as const;
 
+function indicatesTouchDevice(e: eventWithTime) {
+  return e.type == EventType.IncrementalSnapshot &&
+    (e.data.source == IncrementalSource.TouchMove ||
+     (e.data.source == IncrementalSource.MouseInteraction &&
+      e.data.type == MouseInteractions.TouchStart));
+}
+
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
@@ -253,6 +260,10 @@ export class Replayer {
         );
       }, 1);
     }
+    if (this.service.state.context.events.find(indicatesTouchDevice)) {
+      this.mouse.classList.add('touch-device');
+    }
+
   }
 
   public on(event: string, handler: Handler) {
@@ -376,6 +387,9 @@ export class Replayer {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
+    if (indicatesTouchDevice(event)) {
+      this.mouse.classList.add('touch-device');
+    }
     Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
@@ -905,17 +919,29 @@ export class Replayer {
               };
             } else {
               this.moveAndHover(d.x, d.y, d.id, isSync, d);
-              /**
-               * Click has no visual impact when replaying and may
-               * trigger navigation when apply to an <a> link.
-               * So we will not call click(), instead we add an
-               * animation to the mouse element which indicate user
-               * clicked at this moment.
-               */
-              this.mouse.classList.remove('active');
-              // tslint:disable-next-line
-              void this.mouse.offsetWidth;
-              this.mouse.classList.add('active');
+              if (d.type === MouseInteractions.Click) {
+                /*
+                 * don't want target.click() here as could trigger an iframe navigation
+                 * instead any effects of the click should already be covered by mutations
+                 */
+                /*
+                 * removal and addition of .active class (along with void line to trigger repaint)
+                 * triggers the 'click' css animation in styles/style.css
+                 */
+                this.mouse.classList.remove('active');
+                // tslint:disable-next-line
+                void this.mouse.offsetWidth;
+                this.mouse.classList.add('active');
+              } else if (d.type === MouseInteractions.TouchStart) {
+                this.mouse.classList.add('touch-active');
+              } else if (d.type === MouseInteractions.TouchEnd) {
+                this.mouse.classList.remove('touch-active');
+              }
+            }
+            break;
+        case MouseInteractions.TouchCancel:
+            if (!isSync) {
+              this.mouse.classList.remove('touch-active');
             }
             break;
           default:

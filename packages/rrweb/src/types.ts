@@ -370,6 +370,7 @@ export enum MouseInteractions {
   TouchStart,
   TouchMove_Departed, // we will start a separate observer for touch move event
   TouchEnd,
+  TouchCancel,
 }
 
 type mouseInteractionParam = {
