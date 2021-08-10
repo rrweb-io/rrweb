@@ -16,9 +16,9 @@
   display: inline-block;
   width: 20px;
   height: 20px;
-  border-radius: 10px;
   background: rgb(73, 80, 246);
-  transform: translate(-10px, -10px);
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
   opacity: 0.3;
 }
 .replayer-mouse.active::after {
@@ -34,14 +34,10 @@
     opacity: 0.3;
     width: 20px;
     height: 20px;
-    border-radius: 10px;
-    transform: translate(-10px, -10px);
   }
   50% {
     opacity: 0.5;
     width: 10px;
     height: 10px;
-    border-radius: 5px;
-    transform: translate(-5px, -5px);
   }
 }
