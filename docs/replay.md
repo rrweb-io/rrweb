@@ -37,6 +37,6 @@ The specific method includes two parts:
 2. When playing back the mouse up mouse interaction event, add the `.:hover` class name to the event target and all its ancestors, and remove it when the mouse moves away again.
 
 ## Play from any point in time
-In addition to the basic replay features, we also want players like `rrweb-player` to provide similar functionality to video players, such as dragging and dropping to the progress bar to any point in time.
+In addition to the basic replay features, we also want players like `rrweb-playback-ui` to provide similar functionality to video players, such as dragging and dropping to the progress bar to any point in time.
 
 In actual implementation, we pass a start time to the method. We can then divide the snapshot chain into two parts: The parts before and the part after the start time. Then, the snapshot chain before the start time is executed synchronously, and then the snapshot chain after the starting times uses the normal asynchronous execution. This way we can achieve starting replay from any point in time.

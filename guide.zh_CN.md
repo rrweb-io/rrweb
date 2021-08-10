@@ -298,31 +298,31 @@ replayer.pause(5000);
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
 | logConfig           | -             | console logger 数据播放设置，详见[console 录制和播放](./docs/recipes/console.zh_CN.md)                                                                                                               |
 
-#### 使用 rrweb-player
+#### 使用 rrweb-playback-ui
 
-rrweb 自带的回放只提供所有的 JS API 以及最基本的 UI，如果需要功能更强的回放播放器 UI，可以使用 rrweb-player。
+rrweb 自带的回放只提供所有的 JS API 以及最基本的 UI，如果需要功能更强的回放播放器 UI，可以使用 rrweb-playback-ui。
 
 ##### 安装
 
-rrweb-player 同样可以使用 CDN 方式安装：
+rrweb-playback-ui 同样可以使用 CDN 方式安装：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb-playback-ui@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-playback-ui@latest/dist/index.js"></script>
 ```
 
 或者通过 npm 安装：
 
 ```shell
-npm install --save rrweb-player
+npm install --save rrweb-playback-ui
 ```
 
 ```js
-import rrwebPlayer from 'rrweb-player';
-import 'rrweb-player/dist/style.css';
+import rrwebPlaybackUi from 'rrweb-playback-ui';
+import 'rrweb-playback-ui/dist/style.css';
 ```
 
 ##### 使用
@@ -330,7 +330,7 @@ import 'rrweb-player/dist/style.css';
 通过 props 传入 events 数据及配置项
 
 ```js
-new rrwebPlayer({
+new rrwebPlaybackUi({
   target: document.body, // 可以自定义 DOM 元素
   // 配置项
   props: {
@@ -382,7 +382,7 @@ replayer.on(EVENT_NAME, (payload) => {
 | event-cast             | 回放 event             | event             |
 | custom-event           | 回放自定义事件         | event             |
 
-使用 `rrweb-player` 时，也可以通过 `addEventListener` API 使用相同的事件功能，并且会获得 3 个额外的事件：
+使用 `rrweb-playback-ui` 时，也可以通过 `addEventListener` API 使用相同的事件功能，并且会获得 3 个额外的事件：
 
 | 事件类型               | 描述           | 值          |
 | ---------------------- | -------------- | ----------- |

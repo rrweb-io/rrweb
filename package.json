@@ -17,6 +17,6 @@
   "workspaces": [
     "packages/rrweb",
     "packages/rrweb-snapshot",
-    "packages/rrweb-player"
+    "packages/rrweb-playback-ui"
   ]
 }

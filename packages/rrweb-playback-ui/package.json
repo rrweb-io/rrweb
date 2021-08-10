@@ -1,5 +1,5 @@
 {
-  "name": "rrweb-player",
+  "name": "rrweb-playback-ui",
   "version": "0.7.4",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",
