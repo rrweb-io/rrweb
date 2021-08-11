@@ -24,7 +24,7 @@ rrweb.record.addCustomEvent('some-error', {
 
 `addCustomEvent` 接收两个参数，第一个是字符串类型的 `tag`，第二个是任意类型的 `payload`。
 
-在回放时我们可以通过监听事件获取对应的事件，也可以通过配置 rrweb-player 在回放器 UI 的时间轴中展示对应事件。
+在回放时我们可以通过监听事件获取对应的事件，也可以通过配置 rrweb-playback-ui 在回放器 UI 的时间轴中展示对应事件。
 
 **获取对应事件**
 
@@ -36,10 +36,10 @@ replayer.on('custom-event', (event) => {
 });
 ```
 
-**在 rrweb-player 中展示**
+**在 rrweb-playback-ui 中展示**
 
 ```js
-new rrwebPlayer({
+new rrwebPlaybackUi({
   target: document.body,
   props: {
     events,

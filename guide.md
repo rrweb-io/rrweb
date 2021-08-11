@@ -302,37 +302,37 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | unpackFn            | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
 | logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
 
-#### Use rrweb-player
+#### Use rrweb-playback-ui
 
 Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
 
 ##### Installation
 
-rrweb-player can also be included with `<script>`：
+rrweb-playback-ui can also be included with `<script>`：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb-playback-ui@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-playback-ui@latest/dist/index.js"></script>
 ```
 
 Or installed by using NPM：
 
 ```shell
-npm install --save rrweb-player
+npm install --save rrweb-playback-ui
 ```
 
 ```js
-import rrwebPlayer from 'rrweb-player';
-import 'rrweb-player/dist/style.css';
+import rrwebPlaybackUi from 'rrweb-playback-ui';
+import 'rrweb-playback-ui/dist/style.css';
 ```
 
 ##### Usage
 
 ```js
-new rrwebPlayer({
+new rrwebPlaybackUi({
   target: document.body, // customizable root element
   props: {
     events,

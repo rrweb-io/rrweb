@@ -2,7 +2,7 @@ import { eventWithTime, playerConfig } from 'rrweb/typings/types';
 import { Replayer, mirror } from 'rrweb';
 import { SvelteComponent } from 'svelte';
 
-export type RRwebPlayerOptions = {
+export type rrwebPlaybackUiOptions = {
   target: HTMLElement;
   props: {
     events: eventWithTime[];
@@ -16,8 +16,8 @@ export type RRwebPlayerOptions = {
   } & Partial<playerConfig>;
 };
 
-export default class rrwebPlayer extends SvelteComponent {
-  constructor(options: RRwebPlayerOptions);
+export default class rrwebPlaybackUi extends SvelteComponent {
+  constructor(options: rrwebPlaybackUiOptions);
 
   addEventListener(event: string, handler: (params: any) => unknown): void;
 

@@ -42,7 +42,7 @@ By default, the UI could not interact during replay. But you can use API to enab
 
 ### Customize The Replayer
 
-When rrweb's Replayer and the rrweb-player UI do not fit your need, you can customize your own replayer UI.
+When rrweb's Replayer and the rrweb-playback-ui UI do not fit your need, you can customize your own replayer UI.
 
 [link](./customize-replayer.md)
 

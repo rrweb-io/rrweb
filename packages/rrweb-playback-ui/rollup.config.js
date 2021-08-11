@@ -18,7 +18,7 @@ const entries = (production
       {
         file: pkg.unpkg,
         format: 'iife',
-        name: 'rrwebPlayer',
+        name: 'rrwebPlaybackUi',
         css: 'style.css',
       },
     ]
@@ -27,7 +27,7 @@ const entries = (production
   {
     file: 'public/bundle.js',
     format: 'iife',
-    name: 'rrwebPlayer',
+    name: 'rrwebPlaybackUi',
     css: 'bundle.css',
   },
 ]);

@@ -42,7 +42,7 @@
 
 ### 自定义回放 UI
 
-当 rrweb Replayer 和 rrweb-player 的 UI 不能满足需求时，可以通过自定义回放 UI 制作属于你自己的回放器。
+当 rrweb Replayer 和 rrweb-playback-ui 的 UI 不能满足需求时，可以通过自定义回放 UI 制作属于你自己的回放器。
 
 [链接](./customize-replayer.zh_CN.md)
 
