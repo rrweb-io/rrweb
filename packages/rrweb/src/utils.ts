@@ -314,38 +314,6 @@ export function polyfill(win = window) {
   }
 }
 
-export function needCastInSyncMode(event: eventWithTime): boolean {
-  switch (event.type) {
-    case EventType.DomContentLoaded:
-    case EventType.Load:
-    case EventType.Custom:
-      return false;
-    case EventType.FullSnapshot:
-    case EventType.Meta:
-    case EventType.Plugin:
-      return true;
-    default:
-      break;
-  }
-
-  switch (event.data.source) {
-    case IncrementalSource.MouseMove:
-    case IncrementalSource.MouseInteraction:
-    case IncrementalSource.TouchMove:
-    case IncrementalSource.MediaInteraction:
-      return false;
-    case IncrementalSource.ViewportResize:
-    case IncrementalSource.StyleSheetRule:
-    case IncrementalSource.Scroll:
-    case IncrementalSource.Input:
-      return true;
-    default:
-      break;
-  }
-
-  return true;
-}
-
 export type TreeNode = {
   id: number;
   mutation: addedNodeMutation;
