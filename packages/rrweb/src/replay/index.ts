@@ -939,6 +939,10 @@ export class Replayer {
                 touchActive: touchActive,
               };
             } else {
+              if (d.type === MouseInteractions.TouchStart) {
+                // don't draw a trail as user has lifted finger and is placing at a new point
+                this.tailPositions.length = 0;
+              }
               this.moveAndHover(d.x, d.y, d.id, isSync, d);
               if (d.type === MouseInteractions.Click) {
                 /*
@@ -954,6 +958,7 @@ export class Replayer {
                 void this.mouse.offsetWidth;
                 this.mouse.classList.add('active');
               } else if (d.type === MouseInteractions.TouchStart) {
+                void this.mouse.offsetWidth;  // needed for the position update of moveAndHover to apply without the .touch-active transition
                 this.mouse.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.mouse.classList.remove('touch-active');
