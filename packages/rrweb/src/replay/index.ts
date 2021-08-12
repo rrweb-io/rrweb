@@ -142,6 +142,7 @@ export class Replayer {
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
+    this.applyEventsSynchronously = this.applyEventsSynchronously.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
     this.setupDom();
@@ -195,6 +196,7 @@ export class Replayer {
       },
       {
         getCastFn: this.getCastFn,
+        applyEventsSynchronously: this.applyEventsSynchronously,
         emitter: this.emitter,
       },
     );
@@ -438,6 +440,36 @@ export class Replayer {
       }
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
+    }
+  }
+
+  private applyEventsSynchronously(events: Array<eventWithTime>) {
+    for (const event of events) {
+      switch (event.type) {
+        case EventType.DomContentLoaded:
+        case EventType.Load:
+        case EventType.Custom:
+          continue;
+        case EventType.FullSnapshot:
+        case EventType.Meta:
+        case EventType.Plugin:
+          break;
+        case EventType.IncrementalSnapshot:
+          switch (event.data.source) {
+            case IncrementalSource.MouseMove:
+            case IncrementalSource.MouseInteraction:
+            case IncrementalSource.TouchMove:
+            case IncrementalSource.MediaInteraction:
+              continue;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
+      }
+      const castFn = this.getCastFn(event, true);
+      castFn();
     }
   }
 

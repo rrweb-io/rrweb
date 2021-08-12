@@ -15,7 +15,6 @@ export declare function isIgnored(n: Node | INode): boolean;
 export declare function isAncestorRemoved(target: INode, mirror: Mirror): boolean;
 export declare function isTouchEvent(event: MouseEvent | TouchEvent): event is TouchEvent;
 export declare function polyfill(win?: Window & typeof globalThis): void;
-export declare function needCastInSyncMode(event: eventWithTime): boolean;
 export declare type TreeNode = {
     id: number;
     mutation: addedNodeMutation;
