@@ -352,6 +352,13 @@ export type mousePosition = {
   timeOffset: number;
 };
 
+export type mouseState = {
+  x: number;
+  y: number;
+  id: number;
+  debugData: incrementalData;
+};
+
 export enum MouseInteractions {
   MouseUp,
   MouseDown,
