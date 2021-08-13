@@ -495,6 +495,23 @@ function initInputObserver(
   };
 }
 
+function getNestedCSSRulePositions(rule: CSSStyleRule): number[] {
+  const positions: Array<number> = [];
+  function recurse(rule: CSSRule, pos: number[]) {
+    if (rule.parentRule instanceof CSSGroupingRule) {
+      const rules = Array.from((rule.parentRule as CSSGroupingRule).cssRules);
+      const index = rules.indexOf(rule);
+      pos.unshift(index);
+    } else {
+      const rules = Array.from(rule.parentStyleSheet!.cssRules);
+      const index = rules.indexOf(rule);
+      pos.unshift(index);
+    }
+    return pos;
+  }
+  return recurse(rule, positions);
+}
+
 function initStyleSheetObserver(
   cb: styleSheetRuleCallback,
   mirror: Mirror,
@@ -523,9 +540,46 @@ function initStyleSheetObserver(
     return deleteRule.apply(this, arguments);
   };
 
+  const groupingInsertRule = CSSGroupingRule.prototype.insertRule;
+  CSSGroupingRule.prototype.insertRule = function (
+    rule: string,
+    index?: number,
+  ) {
+    const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
+    if (id !== -1) {
+      cb({
+        id,
+        adds: [
+          {
+            rule,
+            index: [
+              ...getNestedCSSRulePositions(this),
+              index || 0, // defaults to 0
+            ],
+          },
+        ],
+      });
+    }
+    return groupingInsertRule.apply(this, arguments);
+  };
+
+  const groupingDeleteRule = CSSGroupingRule.prototype.deleteRule;
+  CSSGroupingRule.prototype.deleteRule = function (index: number) {
+    const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
+    if (id !== -1) {
+      cb({
+        id,
+        removes: [{ index: [...getNestedCSSRulePositions(this), index] }],
+      });
+    }
+    return groupingDeleteRule.apply(this, arguments);
+  };
+
   return () => {
     CSSStyleSheet.prototype.insertRule = insertRule;
     CSSStyleSheet.prototype.deleteRule = deleteRule;
+    CSSGroupingRule.prototype.insertRule = groupingInsertRule;
+    CSSGroupingRule.prototype.deleteRule = groupingDeleteRule;
   };
 }
 
