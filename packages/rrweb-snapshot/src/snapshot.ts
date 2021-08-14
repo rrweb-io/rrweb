@@ -458,9 +458,12 @@ function serializeNode(
         }
       }
       if (tagName === 'option') {
-        const selectValue = (n as HTMLOptionElement).parentElement;
-        if (attributes.value === (selectValue as HTMLSelectElement).value) {
-          attributes.selected = (n as HTMLOptionElement).selected;
+        if ((n as HTMLOptionElement).selected) {
+          attributes.selected = true;
+        } else {
+          // ignore the html attribute (which corresponds to DOM (n as HTMLOptionElement).defaultSelected)
+          // if it's already been changed
+          delete attributes.selected;
         }
       }
       // canvas image data
