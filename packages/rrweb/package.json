@@ -12,7 +12,8 @@
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
     "typings": "tsc -d --declarationDir typings",
-    "check-types": "tsc -noEmit"
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run typings && npm run bundle"
   },
   "repository": {
     "type": "git",

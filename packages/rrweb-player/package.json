@@ -32,7 +32,8 @@
     "dev": "rollup -c -w",
     "prepublishOnly": "yarn build",
     "start": "sirv public",
-    "validate": "svelte-check"
+    "validate": "svelte-check",
+    "prepublish": "yarn build"
   },
   "description": "rrweb's replayer UI",
   "main": "lib/index.js",
