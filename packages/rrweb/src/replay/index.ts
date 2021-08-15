@@ -57,6 +57,7 @@ import {
   StyleRuleType,
   VirtualStyleRules,
   VirtualStyleRulesMap,
+  getNestedRule,
 } from './virtual-styles';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
@@ -978,19 +979,26 @@ export class Replayer {
           d.adds.forEach(({ rule, index }) => {
             if (styleSheet) {
               try {
-                const _index =
+                if (Array.isArray(index)) {
+                  const positions = [...index];
+                  const insertAt = positions.pop();
+                  const nestedRule = getNestedRule(
+                    styleSheet.cssRules,
+                    positions,
+                  );
+                  nestedRule.insertRule(rule, insertAt);
+                } else {
+                  const _index =
                   index === undefined
                     ? undefined
                     : Math.min(index, styleSheet.cssRules.length);
-                try {
                   styleSheet.insertRule(rule, _index);
-                } catch (e) {
-                  /**
-                   * sometimes we may capture rules with browser prefix
-                   * insert rule with prefixs in other browsers may cause Error
-                   */
                 }
               } catch (e) {
+                /**
+                 * sometimes we may capture rules with browser prefix
+                 * insert rule with prefixs in other browsers may cause Error
+                 */
                 /**
                  * accessing styleSheet rules may cause SecurityError
                  * for specific access control settings
@@ -1008,7 +1016,17 @@ export class Replayer {
               rules?.push({ index, type: StyleRuleType.Remove });
             } else {
               try {
-                styleSheet?.deleteRule(index);
+                if (Array.isArray(index)) {
+                  const positions = [...index];
+                  const deleteAt = positions.pop();
+                  const nestedRule = getNestedRule(
+                    styleSheet!.cssRules,
+                    positions,
+                  );
+                  nestedRule.deleteRule(deleteAt || 0);
+                } else {
+                  styleSheet?.deleteRule(index);
+                }
               } catch (e) {
                 /**
                  * same as insertRule

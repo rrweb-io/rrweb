@@ -23,7 +23,7 @@ type SnapshotRule = {
 export type VirtualStyleRules = Array<InsertRule | RemoveRule | SnapshotRule>;
 export type VirtualStyleRulesMap = Map<INode, VirtualStyleRules>;
 
-function getNestedRule(
+export function getNestedRule(
   rules: CSSRuleList,
   position: number[],
 ): CSSGroupingRule {
