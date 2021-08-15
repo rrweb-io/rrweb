@@ -282,10 +282,10 @@ export declare type scrollPosition = {
 export declare type scrollCallback = (p: scrollPosition) => void;
 export declare type styleSheetAddRule = {
     rule: string;
-    index?: number;
+    index?: number | number[];
 };
 export declare type styleSheetDeleteRule = {
-    index: number;
+    index: number | number[];
 };
 export declare type styleSheetRuleParam = {
     id: number;

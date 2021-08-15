@@ -58,6 +58,7 @@ import {
   VirtualStyleRules,
   VirtualStyleRulesMap,
   getNestedRule,
+  getPositionsAndIndex,
 } from './virtual-styles';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
@@ -976,23 +977,24 @@ export class Replayer {
         }
 
         if (d.adds) {
-          d.adds.forEach(({ rule, index }) => {
+          d.adds.forEach(({ rule, index: nestedIndex }) => {
             if (styleSheet) {
               try {
-                if (Array.isArray(index)) {
-                  const positions = [...index];
-                  const insertAt = positions.pop();
+                if (Array.isArray(nestedIndex)) {
+                  const { positions, index } = getPositionsAndIndex(
+                    nestedIndex,
+                  );
                   const nestedRule = getNestedRule(
                     styleSheet.cssRules,
                     positions,
                   );
-                  nestedRule.insertRule(rule, insertAt);
+                  nestedRule.insertRule(rule, index);
                 } else {
-                  const _index =
-                  index === undefined
-                    ? undefined
-                    : Math.min(index, styleSheet.cssRules.length);
-                  styleSheet.insertRule(rule, _index);
+                  const index =
+                    nestedIndex === undefined
+                      ? undefined
+                      : Math.min(nestedIndex, styleSheet.cssRules.length);
+                  styleSheet.insertRule(rule, index);
                 }
               } catch (e) {
                 /**
@@ -1005,27 +1007,32 @@ export class Replayer {
                  */
               }
             } else {
-              rules?.push({ cssText: rule, index, type: StyleRuleType.Insert });
+              rules?.push({
+                cssText: rule,
+                index: nestedIndex,
+                type: StyleRuleType.Insert,
+              });
             }
           });
         }
 
         if (d.removes) {
-          d.removes.forEach(({ index }) => {
+          d.removes.forEach(({ index: nestedIndex }) => {
             if (usingVirtualParent) {
-              rules?.push({ index, type: StyleRuleType.Remove });
+              rules?.push({ index: nestedIndex, type: StyleRuleType.Remove });
             } else {
               try {
-                if (Array.isArray(index)) {
-                  const positions = [...index];
-                  const deleteAt = positions.pop();
+                if (Array.isArray(nestedIndex)) {
+                  const { positions, index } = getPositionsAndIndex(
+                    nestedIndex,
+                  );
                   const nestedRule = getNestedRule(
                     styleSheet!.cssRules,
                     positions,
                   );
-                  nestedRule.deleteRule(deleteAt || 0);
+                  nestedRule.deleteRule(index || 0);
                 } else {
-                  styleSheet?.deleteRule(index);
+                  styleSheet?.deleteRule(nestedIndex);
                 }
               } catch (e) {
                 /**

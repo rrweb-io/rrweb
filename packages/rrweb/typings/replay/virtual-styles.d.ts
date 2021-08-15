@@ -7,11 +7,11 @@ export declare enum StyleRuleType {
 declare type InsertRule = {
     cssText: string;
     type: StyleRuleType.Insert;
-    index?: number;
+    index?: number | number[];
 };
 declare type RemoveRule = {
     type: StyleRuleType.Remove;
-    index: number;
+    index: number | number[];
 };
 declare type SnapshotRule = {
     type: StyleRuleType.Snapshot;
@@ -19,6 +19,7 @@ declare type SnapshotRule = {
 };
 export declare type VirtualStyleRules = Array<InsertRule | RemoveRule | SnapshotRule>;
 export declare type VirtualStyleRulesMap = Map<INode, VirtualStyleRules>;
+export declare function getNestedRule(rules: CSSRuleList, position: number[]): CSSGroupingRule;
 export declare function applyVirtualStyleRulesToNode(storedRules: VirtualStyleRules, styleNode: HTMLStyleElement): void;
 export declare function storeCSSRules(parentElement: HTMLStyleElement, virtualStyleRulesMap: VirtualStyleRulesMap): void;
 export {};
