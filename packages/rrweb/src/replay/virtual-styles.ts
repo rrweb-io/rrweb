@@ -39,6 +39,12 @@ export function getNestedRule(
   }
 }
 
+export function getPositionsAndIndex(nestedIndex: number[]) {
+  const positions = [...nestedIndex];
+  const index = positions.pop();
+  return { positions, index };
+}
+
 export function applyVirtualStyleRulesToNode(
   storedRules: VirtualStyleRules,
   styleNode: HTMLStyleElement,
@@ -47,13 +53,12 @@ export function applyVirtualStyleRulesToNode(
     if (rule.type === StyleRuleType.Insert) {
       try {
         if (Array.isArray(rule.index)) {
-          const positions = [...rule.index];
-          const insertAt = positions.pop();
+          const { positions, index } = getPositionsAndIndex(rule.index);
           const nestedRule = getNestedRule(
             styleNode.sheet!.cssRules,
             positions,
           );
-          nestedRule.insertRule(rule.cssText, insertAt);
+          nestedRule.insertRule(rule.cssText, index);
         } else {
           styleNode.sheet?.insertRule(rule.cssText, rule.index);
         }
@@ -66,13 +71,12 @@ export function applyVirtualStyleRulesToNode(
     } else if (rule.type === StyleRuleType.Remove) {
       try {
         if (Array.isArray(rule.index)) {
-          const positions = [...rule.index];
-          const deleteAt = positions.pop();
+          const { positions, index } = getPositionsAndIndex(rule.index);
           const nestedRule = getNestedRule(
             styleNode.sheet!.cssRules,
             positions,
           );
-          nestedRule.deleteRule(deleteAt || 0);
+          nestedRule.deleteRule(index || 0);
         } else {
           styleNode.sheet?.deleteRule(rule.index);
         }
