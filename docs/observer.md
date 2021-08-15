@@ -1,4 +1,5 @@
 # Incremental snapshots
+
 After completing a full snapshot, we need to record events that change the state.
 
 Right now, rrweb records the following events (we will expand upon this):
@@ -18,9 +19,11 @@ Right now, rrweb records the following events (we will expand upon this):
 - Input
 
 ## Mutation Observer
+
 Since we don't execute any JavaScript during replay, we instead need to record all changes scripts make to the document.
 
 Consider this example:
+
 > User clicks a button. A dropdown menu appears. User selects the first item. The dropdown menu disappears.
 
 During replay, the dropdown menu does not automatically appear after the "click button" is executed, because the original JavaScript is not part of the recording. Thus, we need to record the creation of the dropdown menu DOM nodes, the selection of the first item, and subsequent deletion of the dropdown menu DOM nodes. This is the most difficult part.
@@ -33,9 +36,10 @@ The first thing to understand is that MutationObserver uses a **Bulk Asynchronou
 
 This mechanism is not problematic for normal use, because we do not only have the mutation record, but we can also directly access the DOM object of the mutated node as well as any parent, child and sibling nodes.
 
-However in rrweb, since we have a serialization process, we need more sophisticated soluation to be able to deal with various scenarios.
+However in rrweb, since we have a serialization process, we need more sophisticated solution to be able to deal with various scenarios.
 
 ### Add node
+
 For example, the following two operations generate the same DOM structure, but produce a different set of mutation records:
 
 ```
@@ -63,32 +67,40 @@ We already introduced in the [serialization design document](./serialization.md)
 As you can see, since we have delayed serialization of the newly added nodes, all mutation records also need to be processed first, and only then the new nodes can be de-duplicated without causing trouble.
 
 ### Remove node
+
 When processing mutation records, we may encounter a removed node that has not yet been serialized. That indicates that it is a newly added node, and the "add node" mutation record is also somewhere in the mutation records we received. We label these nodes as "dropped nodes".
 
 There are two cases we need to handle here:
+
 1. Since the node was removed already, there is no need to replay it, and thus we remove it from the newly added node pool.
 2. This also applies to descendants of the dropped node, thus when processing newly added nodes we need to check if it has a dropped node as an ancestor.
 
 ### Attribute change
+
 Although MutationObserver is an asynchronous batch callback, we can still assume that the time interval between mutations occurring in a callback is extremely short, so we can optimize the size of the incremental snapshot by overwriting some data when recording the DOM property changes.
 
 For example, resizing a `<textarea>` will trigger a large number of mutation records with varying width and height properties. While a full record will make replay more realistic, it can also result in a large increase in the number of incremental snapshots. After making a trade-off, we think that only the final value of an attribute of the same node needs to be recorded in a single mutation callback, that is, each subsequent mutation record will overwrite the attribute change part of the mutation record that existing before the write.
 
 ## Mouse movement
+
 By recording the mouse movement position, we can simulate the mouse movement trajectory during replay.
 
 Try to ensure that the mouse moves smoothly during replay and also minimize the number of corresponding incremental snapshots, so we need to perform two layers of throttling while listening to mousemove. The first layer records the mouse coordinates at most once every 20 ms, the second layer transmits the mouse coordinate set at most once every 500 ms to ensure a single snapshot doesn't accumulate a lot of mouse position data and becomes too large.
 
 ### Time reversal
+
 We record a timestamp when each incremental snapshot is generated so that during replay it can be applied at the correct time. However, due to the effect of throttling, the timestamps of the mouse movement corresponding to the incremental snapshot will be later than the actual recording time, so we need to record a negative time difference for correction and time calibration during replay.
 
 ## Input
+
 We need to observe the input of the three elements `<input>`, `<textarea>`, `<select>`, including human input and programmatic changes.
 
 ### Human input
+
 For human input, we mainly rely on listening to the input and change events. It is necessary to deduplicate different events triggered for the same the human input action. In addition, `<input type="radio" />` is also a special kind of control. If the multiple radio elements have the same name attribute, then when one is selected, the others will be reversed, but no event will be triggered on those others, so this needs to be handled separately.
 
 ### Programmatic changes
+
 Setting the properties of these elements directly through the code will not trigger the MutationObserver. We can still achieve monitoring by hijacking the setter of the corresponding property. The sample code is as follows:
 
 ```typescript

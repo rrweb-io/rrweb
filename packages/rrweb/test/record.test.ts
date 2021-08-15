@@ -250,6 +250,52 @@ describe('record', function (this: ISuite) {
     expect(removeRuleCount).to.equal(1);
     assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
+
+  it('captures nested stylesheet rules', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      styleSheet.insertRule('@media {}');
+      const atMediaRule = styleSheet.cssRules[0] as CSSMediaRule;
+
+      const ruleIdx0 = atMediaRule.insertRule('body { background: #000; }', 0);
+      const ruleIdx1 = atMediaRule.insertRule('body { background: #111; }', 0);
+      atMediaRule.deleteRule(ruleIdx1);
+      setTimeout(() => {
+        atMediaRule.insertRule('body { color: #fff; }', 0);
+      }, 0);
+      setTimeout(() => {
+        atMediaRule.deleteRule(ruleIdx0);
+      }, 5);
+      setTimeout(() => {
+        atMediaRule.insertRule('body { color: #ccc; }', 0);
+      }, 10);
+    });
+    await this.page.waitForTimeout(50);
+    const styleSheetRuleEvents = this.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.StyleSheetRule,
+    );
+    const addRuleCount = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    ).length;
+    const removeRuleCount = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).removes),
+    ).length;
+    // sync insert/delete should be ignored
+    expect(addRuleCount).to.equal(2);
+    expect(removeRuleCount).to.equal(1);
+    assertSnapshot(this.events, __filename, 'nested-stylesheet-rules');
+  });
 });
 
 describe('record iframes', function (this: ISuite) {

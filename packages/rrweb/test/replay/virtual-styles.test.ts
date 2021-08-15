@@ -44,7 +44,7 @@ describe('virtual styles', () => {
       expect(styleEl.sheet?.cssRules[0].cssText).to.equal(cssText);
     });
 
-    it('should delete rule at index 1', () => {
+    it('should delete rule at index 0', () => {
       const dom = new JSDOM(`
         <style>
           a {color: blue;}
@@ -108,6 +108,61 @@ describe('virtual styles', () => {
       expect(
         Array.from(styleEl.sheet?.cssRules || []).map((rule) => rule.cssText),
       ).to.have.ordered.members(cssTexts);
+    });
+
+    // JSDOM/CSSOM is currently broken for this test
+    // remove '.skip' once https://github.com/NV/CSSOM/pull/113#issue-712485075 is merged
+    it.skip('should insert rule at index [0,0] and keep exsisting rules', () => {
+      const dom = new JSDOM(`
+        <style>
+          @media {
+            a {color: blue}
+            div {color: black}
+          }
+        </style>
+      `);
+      const styleEl = dom.window.document.getElementsByTagName('style')[0];
+
+      const cssText = '.added-rule {border: 1px solid yellow;}';
+      const virtualStyleRules: VirtualStyleRules = [
+        { cssText, index: [0, 0], type: StyleRuleType.Insert },
+      ];
+      applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
+
+      console.log(
+        Array.from((styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules),
+      );
+
+      expect(
+        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
+      ).to.equal(3);
+      expect(
+        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
+      ).to.equal(cssText);
+    });
+
+    it('should delete rule at index [0,1]', () => {
+      const dom = new JSDOM(`
+        <style>
+          @media {
+            a {color: blue;}
+            div {color: black;}
+          }
+        </style>
+      `);
+      const styleEl = dom.window.document.getElementsByTagName('style')[0];
+
+      const virtualStyleRules: VirtualStyleRules = [
+        { index: [0, 1], type: StyleRuleType.Remove },
+      ];
+      applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
+
+      expect(
+        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
+      ).to.equal(1);
+      expect(
+        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
+      ).to.equal('a {color: blue;}');
     });
   });
 });
