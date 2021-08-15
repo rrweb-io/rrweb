@@ -18,5 +18,8 @@
     "packages/rrweb",
     "packages/rrweb-snapshot",
     "packages/rrweb-player"
-  ]
+  ],
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
 }

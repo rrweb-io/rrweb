@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -8,7 +8,8 @@
     "test": "cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register test/**/*.ts",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
-    "typings": "tsc -d --declarationDir typings"
+    "typings": "tsc -d --declarationDir typings",
+    "prepublish": "npm run typings && npm run bundle"
   },
   "repository": {
     "type": "git",

@@ -149,6 +149,10 @@ function buildNode(
           continue;
         }
         let value = n.attributes[name];
+        if (tagName === 'option' && name === 'selected' && value === false) {
+          // legacy fix (TODO: if `value === false` can be generated for other attrs, should we also omit those other attrs from build?)
+          continue;
+        }
         value =
           typeof value === 'boolean' || typeof value === 'number' ? '' : value;
         // attribute names start with rr_ are internal attributes added by rrweb

@@ -194,45 +194,25 @@ function initMoveObserver(
     },
     callbackThreshold,
   );
-
-  // update position for mouse, touch, and drag events (drag event extends mouse event)
-  function handleUpdatePositionEvent(evt: MouseEvent | TouchEvent) {
-    const target = getEventTarget(evt);
-    const { clientX, clientY } = isTouchEvent(evt)
-      ? evt.changedTouches[0]
-      : evt;
-    if (!timeBaseline) {
-      timeBaseline = Date.now();
-    }
-    positions.push({
-      x: clientX,
-      y: clientY,
-      id: mirror.getId(target as INode),
-      timeOffset: Date.now() - timeBaseline,
-    });
-  }
-
-  // separate call for non-drag events, in case DragEvent is not defined
-  const updatePosition = throttle<MouseEvent | TouchEvent>(
+  const updatePosition = throttle<MouseEvent | TouchEvent | DragEvent>(
     (evt) => {
-      handleUpdatePositionEvent(evt);
+      const target = getEventTarget(evt);
+      const { clientX, clientY } = isTouchEvent(evt)
+        ? evt.changedTouches[0]
+        : evt;
+      if (!timeBaseline) {
+        timeBaseline = Date.now();
+      }
+      positions.push({
+        x: clientX,
+        y: clientY,
+        id: mirror.getId(target as INode),
+        timeOffset: Date.now() - timeBaseline,
+      });
+      // it is possible DragEvent is undefined even on devices
+      // that support event 'drag'
       wrappedCb(
-        evt instanceof MouseEvent
-          ? IncrementalSource.MouseMove
-          : IncrementalSource.TouchMove,
-      );
-    },
-    threshold,
-    {
-      trailing: false,
-    },
-  );
-  // call for drag events, when DragEvent is defined
-  const updateDragPosition = throttle<MouseEvent | TouchEvent | DragEvent>(
-    (evt) => {
-      handleUpdatePositionEvent(evt);
-      wrappedCb(
-        evt instanceof DragEvent
+        typeof DragEvent !== 'undefined' && evt instanceof DragEvent
           ? IncrementalSource.Drag
           : evt instanceof MouseEvent
           ? IncrementalSource.MouseMove
@@ -244,13 +224,10 @@ function initMoveObserver(
       trailing: false,
     },
   );
-  // it is possible DragEvent is undefined even on devices
-  // that support event 'drag'
-  const dragEventDefined = typeof DragEvent !== 'undefined';
   const handlers = [
     on('mousemove', updatePosition, doc),
     on('touchmove', updatePosition, doc),
-    on('drag', dragEventDefined ? updateDragPosition : updatePosition, doc),
+    on('drag', updatePosition, doc),
   ];
   return () => {
     handlers.forEach((h) => h());

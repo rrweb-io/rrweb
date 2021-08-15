@@ -39,5 +39,4 @@ export declare type Logger = {
 };
 export declare const PLUGIN_NAME = "rrweb/console@1";
 export declare const getRecordConsolePlugin: (options?: LogRecordOptions) => RecordPlugin;
-export { };
-
+export {};

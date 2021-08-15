@@ -19,6 +19,7 @@ export declare class Replayer {
     private fragmentParentMap;
     private elementStateMap;
     private virtualStyleRulesMap;
+    private cache;
     private imageMap;
     private mirror;
     private firstFullSnapshot;
@@ -38,6 +39,7 @@ export declare class Replayer {
     addEvent(rawEvent: eventWithTime | string): void;
     enableInteract(): void;
     disableInteract(): void;
+    resetCache(): void;
     private setupDom;
     private handleResize;
     private getCastFn;
