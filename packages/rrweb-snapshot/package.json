@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
