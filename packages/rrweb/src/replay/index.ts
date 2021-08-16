@@ -472,7 +472,13 @@ export class Replayer {
       castFn();
     }
     if (this.mousePos !== null) {
-      this.moveAndHover(this.mousePos.x, this.mousePos.y, this.mousePos.id, true, this.mousePos.debugData);
+      this.moveAndHover(
+        this.mousePos.x,
+        this.mousePos.y,
+        this.mousePos.id,
+        true,
+        this.mousePos.debugData,
+      );
       this.mousePos = null;
     }
   }
@@ -1510,7 +1516,13 @@ export class Replayer {
     }
   }
 
-  private moveAndHover(x: number, y: number, id: number, isSync: boolean, debugData: incrementalData) {
+  private moveAndHover(
+    x: number,
+    y: number,
+    id: number,
+    isSync: boolean,
+    debugData: incrementalData,
+  ) {
     const target = this.mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(debugData, id);
