@@ -352,16 +352,11 @@ export type mousePosition = {
   timeOffset: number;
 };
 
-type mousePos = {
+export type mouseMovePos = {
   x: number;
   y: number;
   id: number;
   debugData: incrementalData;
-};
-
-export type mouseState = {
-  pos?: mousePos;
-  touchActive?: boolean;
 };
 
 export enum MouseInteractions {

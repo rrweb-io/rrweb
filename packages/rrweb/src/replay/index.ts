@@ -37,7 +37,7 @@ import {
   ElementState,
   styleAttributeValue,
   styleValueWithPriority,
-  mouseState,
+  mouseMovePos,
 } from '../types';
 import {
   createMirror,
@@ -123,7 +123,8 @@ export class Replayer {
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
-  private mouseState: mouseState | null = null;
+  private mousePos: mouseMovePos | null = null;
+  private touchActive: boolean | null = null;
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -485,17 +486,16 @@ export class Replayer {
       const castFn = this.getCastFn(event, true);
       castFn();
     }
-    if (this.mouseState !== null) {
-      if (this.mouseState.pos) {
-        this.moveAndHover(this.mouseState.pos.x, this.mouseState.pos.y, this.mouseState.pos.id, true, this.mouseState.pos.debugData);
-      }
-      if (this.mouseState.touchActive === true) {
-        this.mouse.classList.add('touch-active');
-      } else if (this.mouseState.touchActive === false) {
-        this.mouse.classList.remove('touch-active');
-      }
-      this.mouseState = null;
+    if (this.mousePos) {
+      this.moveAndHover(this.mousePos.x, this.mousePos.y, this.mousePos.id, true, this.mousePos.debugData);
     }
+    this.mousePos = null;
+    if (this.touchActive === true) {
+      this.mouse.classList.add('touch-active');
+    } else if (this.touchActive === false) {
+      this.mouse.classList.remove('touch-active');
+    }
+    this.touchActive = null;
   }
 
   private getCastFn(event: eventWithTime, isSync = false) {
@@ -858,14 +858,11 @@ export class Replayer {
       case IncrementalSource.MouseMove:
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
-          this.mouseState = {
-            pos: {
-              x: lastPosition.x,
-              y: lastPosition.y,
-              id: lastPosition.id,
-              debugData: d,
-            },
-            touchActive: this.mouseState?.touchActive,
+          this.mousePos = {
+            x: lastPosition.x,
+            y: lastPosition.y,
+            id: lastPosition.id,
+            debugData: d,
           };
         } else {
           d.positions.forEach((p) => {
@@ -923,20 +920,15 @@ export class Replayer {
             if (isSync) {
               let touchActive: boolean | undefined;
               if (d.type === MouseInteractions.TouchStart) {
-                touchActive = true;
+                this.touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
-                touchActive = false;
-              } else if (this.mouseState !== null) {
-                touchActive = this.mouseState.touchActive;
+                this.touchActive = false;
               }
-              this.mouseState = {
-                pos: {
-                  x: d.x,
-                  y: d.y,
-                  id: d.id,
-                  debugData: d,
-                },
-                touchActive: touchActive,
+              this.mousePos = {
+                x: d.x,
+                y: d.y,
+                id: d.id,
+                debugData: d,
               };
             } else {
               if (d.type === MouseInteractions.TouchStart) {
@@ -967,10 +959,7 @@ export class Replayer {
             break;
         case MouseInteractions.TouchCancel:
             if (isSync) {
-              this.mouseState = {
-                pos: this.mouseState?.pos,
-                touchActive: false,
-              };
+              this.touchActive = false;
             } else {
               this.mouse.classList.remove('touch-active');
             }
