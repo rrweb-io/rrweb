@@ -9,7 +9,6 @@ import {
   IncrementalSource,
 } from '../types';
 import { Timer, addDelay } from './timer';
-import { needCastInSyncMode } from '../utils';
 
 export type PlayerContext = {
   events: eventWithTime[];
@@ -77,11 +76,12 @@ export function discardPriorSnapshots(
 
 type PlayerAssets = {
   emitter: Emitter;
+  applyEventsSynchronously(events: Array<eventWithTime>): void;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
 };
 export function createPlayerService(
   context: PlayerContext,
-  { getCastFn, emitter }: PlayerAssets,
+  { getCastFn, applyEventsSynchronously, emitter }: PlayerAssets,
 ) {
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
@@ -186,6 +186,7 @@ export function createPlayerService(
             emitter.emit(ReplayerEvents.PlayBack);
           }
 
+          const syncEvents = new Array<eventWithTime>();
           const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
             if (
@@ -196,14 +197,10 @@ export function createPlayerService(
             ) {
               continue;
             }
-            const isSync = event.timestamp < baselineTime;
-            if (isSync && !needCastInSyncMode(event)) {
-              continue;
-            }
-            const castFn = getCastFn(event, isSync);
-            if (isSync) {
-              castFn();
+            if (event.timestamp < baselineTime) {
+              syncEvents.push(event);
             } else {
+              const castFn = getCastFn(event, false);
               actions.push({
                 doAction: () => {
                   castFn();
@@ -213,6 +210,7 @@ export function createPlayerService(
               });
             }
           }
+          applyEventsSynchronously(syncEvents);
           emitter.emit(ReplayerEvents.Flush);
           timer.addActions(actions);
           timer.start();

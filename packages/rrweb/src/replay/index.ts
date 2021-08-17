@@ -37,6 +37,7 @@ import {
   ElementState,
   styleAttributeValue,
   styleValueWithPriority,
+  mouseMovePos,
 } from '../types';
 import {
   createMirror,
@@ -76,6 +77,13 @@ const defaultMouseTailConfig = {
   lineWidth: 3,
   strokeStyle: 'red',
 } as const;
+
+function indicatesTouchDevice(e: eventWithTime) {
+  return e.type == EventType.IncrementalSnapshot &&
+    (e.data.source == IncrementalSource.TouchMove ||
+     (e.data.source == IncrementalSource.MouseInteraction &&
+      e.data.type == MouseInteractions.TouchStart));
+}
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -117,6 +125,9 @@ export class Replayer {
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
+  private mousePos: mouseMovePos | null = null;
+  private touchActive: boolean | null = null;
+
   constructor(
     events: Array<eventWithTime | string>,
     config?: Partial<playerConfig>,
@@ -144,6 +155,7 @@ export class Replayer {
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
+    this.applyEventsSynchronously = this.applyEventsSynchronously.bind(this);
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
     this.setupDom();
@@ -197,6 +209,7 @@ export class Replayer {
       },
       {
         getCastFn: this.getCastFn,
+        applyEventsSynchronously: this.applyEventsSynchronously,
         emitter: this.emitter,
       },
     );
@@ -250,6 +263,10 @@ export class Replayer {
         );
       }, 1);
     }
+    if (this.service.state.context.events.find(indicatesTouchDevice)) {
+      this.mouse.classList.add('touch-device');
+    }
+
   }
 
   public on(event: string, handler: Handler) {
@@ -373,6 +390,9 @@ export class Replayer {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
+    if (indicatesTouchDevice(event)) {
+      this.mouse.classList.add('touch-device');
+    }
     Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
@@ -441,6 +461,43 @@ export class Replayer {
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
     }
+  }
+
+  private applyEventsSynchronously(events: Array<eventWithTime>) {
+    for (const event of events) {
+      switch (event.type) {
+        case EventType.DomContentLoaded:
+        case EventType.Load:
+        case EventType.Custom:
+          continue;
+        case EventType.FullSnapshot:
+        case EventType.Meta:
+        case EventType.Plugin:
+          break;
+        case EventType.IncrementalSnapshot:
+          switch (event.data.source) {
+            case IncrementalSource.MediaInteraction:
+              continue;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
+      }
+      const castFn = this.getCastFn(event, true);
+      castFn();
+    }
+    if (this.mousePos) {
+      this.moveAndHover(this.mousePos.x, this.mousePos.y, this.mousePos.id, true, this.mousePos.debugData);
+    }
+    this.mousePos = null;
+    if (this.touchActive === true) {
+      this.mouse.classList.add('touch-active');
+    } else if (this.touchActive === false) {
+      this.mouse.classList.remove('touch-active');
+    }
+    this.touchActive = null;
   }
 
   private getCastFn(event: eventWithTime, isSync = false) {
@@ -803,12 +860,17 @@ export class Replayer {
       case IncrementalSource.MouseMove:
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
-          this.moveAndHover(d, lastPosition.x, lastPosition.y, lastPosition.id);
+          this.mousePos = {
+            x: lastPosition.x,
+            y: lastPosition.y,
+            id: lastPosition.id,
+            debugData: d,
+          };
         } else {
           d.positions.forEach((p) => {
             const action = {
               doAction: () => {
-                this.moveAndHover(d, p.x, p.y, p.id);
+                this.moveAndHover(p.x, p.y, p.id, isSync, d);
               },
               delay:
                 p.timeOffset +
@@ -857,19 +919,51 @@ export class Replayer {
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
-            /**
-             * Click has no visual impact when replaying and may
-             * trigger navigation when apply to an <a> link.
-             * So we will not call click(), instead we add an
-             * animation to the mouse element which indicate user
-             * clicked at this moment.
-             */
-            if (!isSync) {
-              this.moveAndHover(d, d.x, d.y, d.id);
-              this.mouse.classList.remove('active');
-              // tslint:disable-next-line
-              void this.mouse.offsetWidth;
-              this.mouse.classList.add('active');
+            if (isSync) {
+              let touchActive: boolean | undefined;
+              if (d.type === MouseInteractions.TouchStart) {
+                this.touchActive = true;
+              } else if (d.type === MouseInteractions.TouchEnd) {
+                this.touchActive = false;
+              }
+              this.mousePos = {
+                x: d.x,
+                y: d.y,
+                id: d.id,
+                debugData: d,
+              };
+            } else {
+              if (d.type === MouseInteractions.TouchStart) {
+                // don't draw a trail as user has lifted finger and is placing at a new point
+                this.tailPositions.length = 0;
+              }
+              this.moveAndHover(d.x, d.y, d.id, isSync, d);
+              if (d.type === MouseInteractions.Click) {
+                /*
+                 * don't want target.click() here as could trigger an iframe navigation
+                 * instead any effects of the click should already be covered by mutations
+                 */
+                /*
+                 * removal and addition of .active class (along with void line to trigger repaint)
+                 * triggers the 'click' css animation in styles/style.css
+                 */
+                this.mouse.classList.remove('active');
+                // tslint:disable-next-line
+                void this.mouse.offsetWidth;
+                this.mouse.classList.add('active');
+              } else if (d.type === MouseInteractions.TouchStart) {
+                void this.mouse.offsetWidth;  // needed for the position update of moveAndHover to apply without the .touch-active transition
+                this.mouse.classList.add('touch-active');
+              } else if (d.type === MouseInteractions.TouchEnd) {
+                this.mouse.classList.remove('touch-active');
+              }
+            }
+            break;
+        case MouseInteractions.TouchCancel:
+            if (isSync) {
+              this.touchActive = false;
+            } else {
+              this.mouse.classList.remove('touch-active');
             }
             break;
           default:
@@ -1487,10 +1581,10 @@ export class Replayer {
     }
   }
 
-  private moveAndHover(d: incrementalData, x: number, y: number, id: number) {
+  private moveAndHover(x: number, y: number, id: number, isSync: boolean, debugData: incrementalData) {
     const target = this.mirror.getNode(id);
     if (!target) {
-      return this.debugNodeNotFound(d, id);
+      return this.debugNodeNotFound(debugData, id);
     }
 
     const base = getBaseDimension(target, this.iframe);
@@ -1499,7 +1593,9 @@ export class Replayer {
 
     this.mouse.style.left = `${_x}px`;
     this.mouse.style.top = `${_y}px`;
-    this.drawMouseTail({ x: _x, y: _y });
+    if (!isSync) {
+      this.drawMouseTail({ x: _x, y: _y });
+    }
     this.hoverElements((target as Node) as Element);
   }
 
