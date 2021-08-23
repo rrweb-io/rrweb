@@ -352,6 +352,16 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
+          styleDeclarationCb: (r) =>
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.StyleDeclaration,
+                  ...r,
+                },
+              }),
+            ),
           canvasMutationCb: (p) =>
             wrappedEmit(
               wrapEvent({

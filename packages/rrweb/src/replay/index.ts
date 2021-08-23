@@ -79,10 +79,12 @@ const defaultMouseTailConfig = {
 } as const;
 
 function indicatesTouchDevice(e: eventWithTime) {
-  return e.type == EventType.IncrementalSnapshot &&
+  return (
+    e.type == EventType.IncrementalSnapshot &&
     (e.data.source == IncrementalSource.TouchMove ||
-     (e.data.source == IncrementalSource.MouseInteraction &&
-      e.data.type == MouseInteractions.TouchStart));
+      (e.data.source == IncrementalSource.MouseInteraction &&
+        e.data.type == MouseInteractions.TouchStart))
+  );
 }
 
 export class Replayer {
@@ -266,7 +268,6 @@ export class Replayer {
     if (this.service.state.context.events.find(indicatesTouchDevice)) {
       this.mouse.classList.add('touch-device');
     }
-
   }
 
   public on(event: string, handler: Handler) {
@@ -489,7 +490,13 @@ export class Replayer {
       castFn();
     }
     if (this.mousePos) {
-      this.moveAndHover(this.mousePos.x, this.mousePos.y, this.mousePos.id, true, this.mousePos.debugData);
+      this.moveAndHover(
+        this.mousePos.x,
+        this.mousePos.y,
+        this.mousePos.id,
+        true,
+        this.mousePos.debugData,
+      );
     }
     this.mousePos = null;
     if (this.touchActive === true) {
@@ -952,14 +959,14 @@ export class Replayer {
                 void this.mouse.offsetWidth;
                 this.mouse.classList.add('active');
               } else if (d.type === MouseInteractions.TouchStart) {
-                void this.mouse.offsetWidth;  // needed for the position update of moveAndHover to apply without the .touch-active transition
+                void this.mouse.offsetWidth; // needed for the position update of moveAndHover to apply without the .touch-active transition
                 this.mouse.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.mouse.classList.remove('touch-active');
               }
             }
             break;
-        case MouseInteractions.TouchCancel:
+          case MouseInteractions.TouchCancel:
             if (isSync) {
               this.touchActive = false;
             } else {
@@ -1135,6 +1142,62 @@ export class Replayer {
               }
             }
           });
+        }
+        break;
+      }
+      case IncrementalSource.StyleDeclaration: {
+        // same with StyleSheetRule
+        const target = this.mirror.getNode(d.id);
+        if (!target) {
+          return this.debugNodeNotFound(d, d.id);
+        }
+
+        const styleEl = (target as Node) as HTMLStyleElement;
+        const parent = (target.parentNode as unknown) as INode;
+        const usingVirtualParent = this.fragmentParentMap.has(parent);
+
+        const styleSheet = usingVirtualParent ? null : styleEl.sheet;
+        let rules: VirtualStyleRules = [];
+
+        if (!styleSheet) {
+          if (this.virtualStyleRulesMap.has(target)) {
+            rules = this.virtualStyleRulesMap.get(target) as VirtualStyleRules;
+          } else {
+            rules = [];
+            this.virtualStyleRulesMap.set(target, rules);
+          }
+        }
+
+        if (d.set) {
+          if (styleSheet) {
+            const rule = (getNestedRule(
+              styleSheet.rules,
+              d.index,
+            ) as unknown) as CSSStyleRule;
+            rule.style.setProperty(d.set.property, d.set.value, d.set.priority);
+          } else {
+            rules.push({
+              type: StyleRuleType.SetProperty,
+              index: d.index,
+              ...d.set,
+            });
+          }
+        }
+
+        if (d.remove) {
+          if (styleSheet) {
+            const rule = (getNestedRule(
+              styleSheet.rules,
+              d.index,
+            ) as unknown) as CSSStyleRule;
+            rule.style.removeProperty(d.remove.property);
+          } else {
+            rules.push({
+              type: StyleRuleType.RemoveProperty,
+              index: d.index,
+              ...d.remove,
+            });
+          }
         }
         break;
       }
@@ -1581,7 +1644,13 @@ export class Replayer {
     }
   }
 
-  private moveAndHover(x: number, y: number, id: number, isSync: boolean, debugData: incrementalData) {
+  private moveAndHover(
+    x: number,
+    y: number,
+    id: number,
+    isSync: boolean,
+    debugData: incrementalData,
+  ) {
     const target = this.mirror.getNode(id);
     if (!target) {
       return this.debugNodeNotFound(debugData, id);

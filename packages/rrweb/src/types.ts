@@ -90,6 +90,7 @@ export enum IncrementalSource {
   Font,
   Log,
   Drag,
+  StyleDeclaration,
 }
 
 export type mutationData = {
@@ -129,6 +130,10 @@ export type styleSheetRuleData = {
   source: IncrementalSource.StyleSheetRule;
 } & styleSheetRuleParam;
 
+export type styleDeclarationData = {
+  source: IncrementalSource.StyleDeclaration;
+} & styleDeclarationParam;
+
 export type canvasMutationData = {
   source: IncrementalSource.CanvasMutation;
 } & canvasMutationParam;
@@ -147,7 +152,8 @@ export type incrementalData =
   | mediaInteractionData
   | styleSheetRuleData
   | canvasMutationData
-  | fontData;
+  | fontData
+  | styleDeclarationData;
 
 export type event =
   | domContentLoadedEvent
@@ -244,6 +250,7 @@ export type observerParam = {
   maskTextFn?: MaskTextFn;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
+  styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
@@ -271,6 +278,7 @@ export type hooksParam = {
   input?: inputCallback;
   mediaInteaction?: mediaInteractionCallback;
   styleSheetRule?: styleSheetRuleCallback;
+  styleDeclaration?: styleDeclarationCallback;
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
 };
@@ -406,6 +414,21 @@ export type styleSheetRuleParam = {
 };
 
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
+
+export type styleDeclarationParam = {
+  id: number;
+  index: number[];
+  set?: {
+    property: string;
+    value: string | null;
+    priority: string | undefined;
+  };
+  remove?: {
+    property: string;
+  };
+};
+
+export type styleDeclarationCallback = (s: styleDeclarationParam) => void;
 
 export type canvasMutationCallback = (p: canvasMutationParam) => void;
 

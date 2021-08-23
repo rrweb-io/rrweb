@@ -43,6 +43,7 @@ import {
   fontCallback,
   fontParam,
   Mirror,
+  styleDeclarationCallback,
 } from '../types';
 import MutationBuffer from './mutation';
 import { IframeManager } from './iframe-manager';
@@ -472,16 +473,18 @@ function initInputObserver(
   };
 }
 
-function getNestedCSSRulePositions(rule: CSSStyleRule): number[] {
-  const positions: Array<number> = [];
-  function recurse(rule: CSSRule, pos: number[]) {
-    if (rule.parentRule instanceof CSSGroupingRule) {
-      const rules = Array.from((rule.parentRule as CSSGroupingRule).cssRules);
-      const index = rules.indexOf(rule);
+function getNestedCSSRulePositions(rule: CSSRule): number[] {
+  const positions: number[] = [];
+  function recurse(childRule: CSSRule, pos: number[]) {
+    if (childRule.parentRule instanceof CSSGroupingRule) {
+      const rules = Array.from(
+        (childRule.parentRule as CSSGroupingRule).cssRules,
+      );
+      const index = rules.indexOf(childRule);
       pos.unshift(index);
     } else {
-      const rules = Array.from(rule.parentStyleSheet!.cssRules);
-      const index = rules.indexOf(rule);
+      const rules = Array.from(childRule.parentStyleSheet!.cssRules);
+      const index = rules.indexOf(childRule);
       pos.unshift(index);
     }
     return pos;
@@ -557,6 +560,60 @@ function initStyleSheetObserver(
     CSSStyleSheet.prototype.deleteRule = deleteRule;
     CSSGroupingRule.prototype.insertRule = groupingInsertRule;
     CSSGroupingRule.prototype.deleteRule = groupingDeleteRule;
+  };
+}
+
+function initStyleDeclarationObserver(
+  cb: styleDeclarationCallback,
+  mirror: Mirror,
+): listenerHandler {
+  const setProperty = CSSStyleDeclaration.prototype.setProperty;
+  CSSStyleDeclaration.prototype.setProperty = function (
+    this: CSSStyleDeclaration,
+    property,
+    value,
+    priority,
+  ) {
+    const id = mirror.getId(
+      (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
+    );
+    if (id !== -1) {
+      cb({
+        id,
+        set: {
+          property,
+          value,
+          priority,
+        },
+        index: getNestedCSSRulePositions(this.parentRule!),
+      });
+    }
+    return setProperty.apply(this, arguments);
+  };
+
+  const removeProperty = CSSStyleDeclaration.prototype.removeProperty;
+  CSSStyleDeclaration.prototype.removeProperty = function (
+    this: CSSStyleDeclaration,
+    property,
+  ) {
+    const id = mirror.getId(
+      (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
+    );
+    if (id !== -1) {
+      cb({
+        id,
+        remove: {
+          property,
+        },
+        index: getNestedCSSRulePositions(this.parentRule!),
+      });
+    }
+    return removeProperty.apply(this, arguments);
+  };
+
+  return () => {
+    CSSStyleDeclaration.prototype.setProperty = setProperty;
+    CSSStyleDeclaration.prototype.removeProperty = removeProperty;
   };
 }
 
@@ -725,6 +782,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     inputCb,
     mediaInteractionCb,
     styleSheetRuleCb,
+    styleDeclarationCb,
     canvasMutationCb,
     fontCb,
   } = o;
@@ -775,6 +833,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
       hooks.styleSheetRule(...p);
     }
     styleSheetRuleCb(...p);
+  };
+  o.styleDeclarationCb = (...p: Arguments<styleDeclarationCallback>) => {
+    if (hooks.styleDeclaration) {
+      hooks.styleDeclaration(...p);
+    }
+    styleDeclarationCb(...p);
   };
   o.canvasMutationCb = (...p: Arguments<canvasMutationCallback>) => {
     if (hooks.canvasMutation) {
@@ -854,6 +918,10 @@ export function initObservers(
     o.styleSheetRuleCb,
     o.mirror,
   );
+  const styleDeclarationObserver = initStyleDeclarationObserver(
+    o.styleDeclarationCb,
+    o.mirror,
+  );
   const canvasMutationObserver = o.recordCanvas
     ? initCanvasMutationObserver(o.canvasMutationCb, o.blockClass, o.mirror)
     : () => {};
@@ -873,6 +941,7 @@ export function initObservers(
     inputHandler();
     mediaInteractionHandler();
     styleSheetObserver();
+    styleDeclarationObserver();
     canvasMutationObserver();
     fontObserver();
     pluginHandlers.forEach((h) => h());
