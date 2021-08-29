@@ -71,7 +71,8 @@ export declare enum IncrementalSource {
     CanvasMutation = 9,
     Font = 10,
     Log = 11,
-    Drag = 12
+    Drag = 12,
+    StyleDeclaration = 13
 }
 export declare type mutationData = {
     source: IncrementalSource.Mutation;
@@ -99,13 +100,16 @@ export declare type mediaInteractionData = {
 export declare type styleSheetRuleData = {
     source: IncrementalSource.StyleSheetRule;
 } & styleSheetRuleParam;
+export declare type styleDeclarationData = {
+    source: IncrementalSource.StyleDeclaration;
+} & styleDeclarationParam;
 export declare type canvasMutationData = {
     source: IncrementalSource.CanvasMutation;
 } & canvasMutationParam;
 export declare type fontData = {
     source: IncrementalSource.Font;
 } & fontParam;
-export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData | fontData;
+export declare type incrementalData = mutationData | mousemoveData | mouseInteractionData | scrollData | viewportResizeData | inputData | mediaInteractionData | styleSheetRuleData | canvasMutationData | fontData | styleDeclarationData;
 export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEvent | incrementalSnapshotEvent | metaEvent | customEvent | pluginEvent;
 export declare type eventWithTime = event & {
     timestamp: number;
@@ -168,6 +172,7 @@ export declare type observerParam = {
     maskTextFn?: MaskTextFn;
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
+    styleDeclarationCb: styleDeclarationCallback;
     canvasMutationCb: canvasMutationCallback;
     fontCb: fontCallback;
     sampling: SamplingStrategy;
@@ -194,6 +199,7 @@ export declare type hooksParam = {
     input?: inputCallback;
     mediaInteaction?: mediaInteractionCallback;
     styleSheetRule?: styleSheetRuleCallback;
+    styleDeclaration?: styleDeclarationCallback;
     canvasMutation?: canvasMutationCallback;
     font?: fontCallback;
 };
@@ -255,6 +261,12 @@ export declare type mousePosition = {
     id: number;
     timeOffset: number;
 };
+export declare type mouseMovePos = {
+    x: number;
+    y: number;
+    id: number;
+    debugData: incrementalData;
+};
 export declare enum MouseInteractions {
     MouseUp = 0,
     MouseDown = 1,
@@ -265,7 +277,8 @@ export declare enum MouseInteractions {
     Blur = 6,
     TouchStart = 7,
     TouchMove_Departed = 8,
-    TouchEnd = 9
+    TouchEnd = 9,
+    TouchCancel = 10
 }
 declare type mouseInteractionParam = {
     type: MouseInteractions;
@@ -293,6 +306,19 @@ export declare type styleSheetRuleParam = {
     adds?: styleSheetAddRule[];
 };
 export declare type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
+export declare type styleDeclarationParam = {
+    id: number;
+    index: number[];
+    set?: {
+        property: string;
+        value: string | null;
+        priority: string | undefined;
+    };
+    remove?: {
+        property: string;
+    };
+};
+export declare type styleDeclarationCallback = (s: styleDeclarationParam) => void;
 export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
 export declare type canvasMutationParam = {
     id: number;

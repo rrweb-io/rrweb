@@ -24,6 +24,8 @@ export declare class Replayer {
     private mirror;
     private firstFullSnapshot;
     private newDocumentQueue;
+    private mousePos;
+    private touchActive;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
     off(event: string, handler: Handler): this;
@@ -42,6 +44,7 @@ export declare class Replayer {
     resetCache(): void;
     private setupDom;
     private handleResize;
+    private applyEventsSynchronously;
     private getCastFn;
     private rebuildFullSnapshot;
     private insertStyleRules;

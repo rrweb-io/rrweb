@@ -46,9 +46,10 @@ export declare type PlayerState = {
 export declare function discardPriorSnapshots(events: eventWithTime[], baselineTime: number): eventWithTime[];
 declare type PlayerAssets = {
     emitter: Emitter;
+    applyEventsSynchronously(events: Array<eventWithTime>): void;
     getCastFn(event: eventWithTime, isSync: boolean): () => void;
 };
-export declare function createPlayerService(context: PlayerContext, { getCastFn, emitter }: PlayerAssets): StateMachine.Service<PlayerContext, PlayerEvent, PlayerState>;
+export declare function createPlayerService(context: PlayerContext, { getCastFn, applyEventsSynchronously, emitter }: PlayerAssets): StateMachine.Service<PlayerContext, PlayerEvent, PlayerState>;
 export declare type SpeedContext = {
     normalSpeed: playerConfig['speed'];
     timer: Timer;
