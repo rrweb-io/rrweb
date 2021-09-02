@@ -818,8 +818,6 @@ export class Replayer {
     };
     this.emitter.on(ReplayerEvents.Start, stateHandler);
     this.emitter.on(ReplayerEvents.Pause, stateHandler);
-    let count = 0;
-    let resolved = 0;
     for (const event of this.service.state.context.events) {
       if (
         event.type === EventType.IncrementalSnapshot &&
@@ -828,7 +826,6 @@ export class Replayer {
         typeof event.data.args[0] === 'string' &&
         !this.imageMap.has(event)
       ) {
-        count++;
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const imgd = ctx?.createImageData(canvas.width, canvas.height);
@@ -836,9 +833,6 @@ export class Replayer {
         d = JSON.parse(event.data.args[0]);
         ctx?.putImageData(imgd!, 0, 0);
       }
-    }
-    if (count !== resolved) {
-      this.service.send({ type: 'PAUSE' });
     }
   }
 
