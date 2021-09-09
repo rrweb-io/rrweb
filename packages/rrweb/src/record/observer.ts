@@ -60,6 +60,8 @@ type WindowWithAngularZone = Window & {
 
 export const mutationBuffers: MutationBuffer[] = [];
 
+const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== "undefined"
+
 function getEventTarget(event: Event): EventTarget | null {
   try {
     if ('composedPath' in event) {
@@ -476,7 +478,7 @@ function initInputObserver(
 function getNestedCSSRulePositions(rule: CSSRule): number[] {
   const positions: number[] = [];
   function recurse(childRule: CSSRule, pos: number[]) {
-    if (childRule.parentRule instanceof CSSGroupingRule) {
+    if (isCSSGroupingRuleSupported && childRule.parentRule instanceof CSSGroupingRule) {
       const rules = Array.from(
         (childRule.parentRule as CSSGroupingRule).cssRules,
       );
@@ -519,6 +521,13 @@ function initStyleSheetObserver(
     }
     return deleteRule.apply(this, arguments);
   };
+
+  if (!isCSSGroupingRuleSupported) {
+    return () => {
+      CSSStyleSheet.prototype.insertRule = insertRule;
+      CSSStyleSheet.prototype.deleteRule = deleteRule;
+    };
+  }
 
   const groupingInsertRule = CSSGroupingRule.prototype.insertRule;
   CSSGroupingRule.prototype.insertRule = function (
