@@ -4,7 +4,7 @@
   "useWorkspaces": true,
   "command": {
     "publish": {
-      "message": "chore(release): publish %s"
+      "message": "chore(release): publish new version"
     }
   }
 }
