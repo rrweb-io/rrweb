@@ -597,7 +597,7 @@ export default class MutationBuffer {
     }
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
-    // but we have to remove it's children
+    // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass))
       n.childNodes.forEach((childN) => this.genAdds(childN));
   };
