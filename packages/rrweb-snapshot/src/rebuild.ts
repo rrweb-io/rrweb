@@ -321,6 +321,11 @@ export function buildNodeWithSN(
     // close before open to make sure document was closed
     doc.close();
     doc.open();
+    if (n.compatMode === 'BackCompat') {
+      // Trigger compatMode in the iframe
+      // this is needed as document.createElement('iframe') otherwise inherits a CSS1Compat mode from the parent replayer environment
+      doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">');
+    }
     node = doc;
   }
 

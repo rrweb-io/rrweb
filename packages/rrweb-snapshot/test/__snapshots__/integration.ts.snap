@@ -170,12 +170,12 @@ exports[`[html file]: iframe.html 1`] = `
 `;
 
 exports[`[html file]: iframe-inner.html 1`] = `
-"<html><head></head><body><button>inner iframe button</button>
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><html><head></head><body><button>inner iframe button</button>
 </body></html>"
 `;
 
 exports[`[html file]: invalid-attribute.html 1`] = `
-"<html foo=\\"bar\\"><head></head><body>
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><html foo=\\"bar\\"><head></head><body>
 </body></html>"
 `;
 
@@ -218,7 +218,7 @@ exports[`[html file]: mask-text.html 1`] = `
 `;
 
 exports[`[html file]: picture.html 1`] = `
-"<html><head></head><body>
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><html><head></head><body>
     <picture>
       <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />

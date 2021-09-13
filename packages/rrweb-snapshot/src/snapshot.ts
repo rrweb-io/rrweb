@@ -10,6 +10,7 @@ import {
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
+  documentNode,
 } from './types';
 import { isElement, isShadowRoot, maskInputValue } from './utils';
 
@@ -375,11 +376,20 @@ function serializeNode(
   }
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
-      return {
-        type: NodeType.Document,
-        childNodes: [],
-        rootId,
-      };
+      if ((n as HTMLDocument).compatMode !== 'CSS1Compat') {
+        return {
+          type: NodeType.Document,
+          childNodes: [],
+          compatMode: (n as HTMLDocument).compatMode,  // probably "BackCompat"
+          rootId,
+        }
+      } else {
+        return {
+          type: NodeType.Document,
+          childNodes: [],
+          rootId,
+        }
+      }
     case n.DOCUMENT_TYPE_NODE:
       return {
         type: NodeType.DocumentType,

@@ -10,6 +10,7 @@ export enum NodeType {
 export type documentNode = {
   type: NodeType.Document;
   childNodes: serializedNodeWithId[];
+  compatMode?: string;
 };
 
 export type documentTypeNode = {
