@@ -185,7 +185,9 @@ describe('record integration tests', function (this: ISuite) {
     // toggle the select box
     await page.click('.select2-container', { clickCount: 2, delay: 100 });
     // test storage of !important style
-    await page.evaluate('document.getElementById("select2-drop").setAttribute("style", document.getElementById("select2-drop").style.cssText + "color:black !important")');
+    await page.evaluate(
+      'document.getElementById("select2-drop").setAttribute("style", document.getElementById("select2-drop").style.cssText + "color:black !important")',
+    );
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'select2');
   });
@@ -315,6 +317,26 @@ describe('record integration tests', function (this: ISuite) {
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'block');
+  });
+
+  it('should not record blocked elements dynamically added', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'block.html'));
+
+    await page.evaluate(() => {
+      const el = document.createElement('button');
+      el.className = 'rr-block';
+      el.style.width = '100px';
+      el.style.height = '100px';
+      el.innerText = 'Should not be recorded';
+
+      const nextElement = document.querySelector('.rr-block')!;
+      nextElement.parentNode!.insertBefore(el, nextElement);
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots, __filename, 'block 2');
   });
 
   it('should record DOM node movement 1', async () => {

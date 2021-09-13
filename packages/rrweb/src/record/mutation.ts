@@ -262,9 +262,6 @@ export default class MutationBuffer {
         ns = ns && ns.nextSibling;
         nextId = ns && this.mirror.getId((ns as unknown) as INode);
       }
-      if (nextId === -1 && isBlocked(n.nextSibling, this.blockClass)) {
-        nextId = null;
-      }
       return nextId;
     };
     const pushAdd = (n: Node) => {
@@ -534,11 +531,7 @@ export default class MutationBuffer {
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId((m.target.host as unknown) as INode)
             : this.mirror.getId(m.target as INode);
-          if (
-            isBlocked(n, this.blockClass) ||
-            isBlocked(m.target, this.blockClass) ||
-            isIgnored(n)
-          ) {
+          if (isBlocked(m.target, this.blockClass) || isIgnored(n)) {
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set
@@ -582,9 +575,7 @@ export default class MutationBuffer {
   };
 
   private genAdds = (n: Node | INode, target?: Node | INode) => {
-    if (isBlocked(n, this.blockClass)) {
-      return;
-    }
+    // parent was blocked, so we can ignore this node
     if (target && isBlocked(target, this.blockClass)) {
       return;
     }
@@ -604,7 +595,11 @@ export default class MutationBuffer {
       this.addedSet.add(n);
       this.droppedSet.delete(n);
     }
-    n.childNodes.forEach((childN) => this.genAdds(childN));
+
+    // if this node is blocked `serializeNode` will turn it into a placeholder element
+    // but we have to remove it's children otherwise they will be added as placeholders too
+    if (!isBlocked(n, this.blockClass))
+      n.childNodes.forEach((childN) => this.genAdds(childN));
   };
 }
 
