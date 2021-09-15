@@ -13,8 +13,8 @@ import {
 type ReplayLogger = Partial<Record<LogLevel, (data: LogData) => void>>;
 
 type LogReplayConfig = {
-  level?: LogLevel[] | undefined;
-  replayLogger: ReplayLogger | undefined;
+  level?: LogLevel[];
+  replayLogger?: ReplayLogger;
 };
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';

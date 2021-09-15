@@ -5,7 +5,7 @@ export declare type StringifyOptions = {
     depthOfLimit: number;
 };
 declare type LogRecordOptions = {
-    level?: LogLevel[] | undefined;
+    level?: LogLevel[];
     lengthThreshold?: number;
     stringifyOptions?: StringifyOptions;
     logger?: Logger;
