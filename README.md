@@ -60,7 +60,7 @@ Since we want the record and replay sides to share a strongly typed data structu
 [Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
 1. Fork the rrweb component repository you want to patch.
-2. Run `npm install` to install required dependencies.
+2. Run `yarn install` to install required dependencies.
 3. Patch the code and pass all the tests.
 4. Push the code and create a pull request.
 

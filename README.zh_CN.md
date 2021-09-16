@@ -58,7 +58,7 @@ rrweb 主要由 3 部分组成：
 [Typescript 手册](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
 1. Fork 需要修改的 rrweb 组件仓库
-2. `npm install` 安装所需依赖
+2. `yarn install` 安装所需依赖
 3. 修改代码并通过测试
 4. 提交代码，创建 pull request
 
