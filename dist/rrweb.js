@@ -2202,7 +2202,8 @@ var rrweb = (function (exports) {
                         ns = ns && ns.nextSibling;
                         nextId = ns && _this.mirror.getId(ns);
                     }
-                    if (nextId === -1 && isBlocked(n.nextSibling, _this.blockClass, _this.blockSelector)) {
+                    if (nextId === -1 &&
+                        isBlocked(n.nextSibling, _this.blockClass, _this.blockSelector)) {
                         nextId = null;
                     }
                     return nextId;
@@ -2369,7 +2370,8 @@ var rrweb = (function (exports) {
                 switch (m.type) {
                     case 'characterData': {
                         var value = m.target.textContent;
-                        if (!isBlocked(m.target, _this.blockClass, _this.blockSelector) && value !== m.oldValue) {
+                        if (!isBlocked(m.target, _this.blockClass, _this.blockSelector) &&
+                            value !== m.oldValue) {
                             _this.texts.push({
                                 value: needMaskingText(m.target, _this.maskTextClass, _this.maskTextSelector) && value
                                     ? _this.maskTextFn
@@ -2383,7 +2385,8 @@ var rrweb = (function (exports) {
                     }
                     case 'attributes': {
                         var value = m.target.getAttribute(m.attributeName);
-                        if (isBlocked(m.target, _this.blockClass, _this.blockSelector) || value === m.oldValue) {
+                        if (isBlocked(m.target, _this.blockClass, _this.blockSelector) ||
+                            value === m.oldValue) {
                             return;
                         }
                         var item = _this.attributes.find(function (a) { return a.node === m.target; });
