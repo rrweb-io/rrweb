@@ -251,7 +251,7 @@ describe('record', function (this: ISuite) {
     assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
 
-  it('captures nested stylesheet rules', async () => {
+  const captureNestedStylesheetRulesTest = async () => {
     await this.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
 
@@ -295,6 +295,21 @@ describe('record', function (this: ISuite) {
     expect(addRuleCount).to.equal(2);
     expect(removeRuleCount).to.equal(1);
     assertSnapshot(this.events, __filename, 'nested-stylesheet-rules');
+  };
+  it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
+
+  describe('without CSSGroupingRule support', () => {
+    // Safari currently doesn't support CSSGroupingRule, let's test without that
+    // https://caniuse.com/?search=CSSGroupingRule
+    beforeEach(async () => {
+      await this.page.evaluate(() => {
+        /* @ts-ignore: override CSSGroupingRule */
+        CSSGroupingRule = undefined;
+      });
+      // load a fresh rrweb recorder without CSSGroupingRule
+      await this.page.evaluate(this.code);
+    });
+    it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
   });
 });
 

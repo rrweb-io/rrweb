@@ -60,7 +60,10 @@ type WindowWithAngularZone = Window & {
 
 export const mutationBuffers: MutationBuffer[] = [];
 
-const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== "undefined"
+const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== 'undefined';
+const isCSSMediaRuleSupported = typeof CSSMediaRule !== 'undefined';
+const isCSSSupportsRuleSupported = typeof CSSSupportsRule !== 'undefined';
+const isCSSConditionRuleSupported = typeof CSSConditionRule !== 'undefined';
 
 function getEventTarget(event: Event): EventTarget | null {
   try {
@@ -475,12 +478,32 @@ function initInputObserver(
   };
 }
 
+type GroupingCSSRule =
+  | CSSGroupingRule
+  | CSSMediaRule
+  | CSSSupportsRule
+  | CSSConditionRule;
+type GroupingCSSRuleTypes =
+  | typeof CSSGroupingRule
+  | typeof CSSMediaRule
+  | typeof CSSSupportsRule
+  | typeof CSSConditionRule;
+
 function getNestedCSSRulePositions(rule: CSSRule): number[] {
   const positions: number[] = [];
   function recurse(childRule: CSSRule, pos: number[]) {
-    if (isCSSGroupingRuleSupported && childRule.parentRule instanceof CSSGroupingRule) {
+    if (
+      (isCSSGroupingRuleSupported &&
+        childRule.parentRule instanceof CSSGroupingRule) ||
+      (isCSSMediaRuleSupported &&
+        childRule.parentRule instanceof CSSMediaRule) ||
+      (isCSSSupportsRuleSupported &&
+        childRule.parentRule instanceof CSSSupportsRule) ||
+      (isCSSConditionRuleSupported &&
+        childRule.parentRule instanceof CSSConditionRule)
+    ) {
       const rules = Array.from(
-        (childRule.parentRule as CSSGroupingRule).cssRules,
+        (childRule.parentRule as GroupingCSSRule).cssRules,
       );
       const index = rules.indexOf(childRule);
       pos.unshift(index);
@@ -522,53 +545,78 @@ function initStyleSheetObserver(
     return deleteRule.apply(this, arguments);
   };
 
-  if (!isCSSGroupingRuleSupported) {
-    return () => {
-      CSSStyleSheet.prototype.insertRule = insertRule;
-      CSSStyleSheet.prototype.deleteRule = deleteRule;
-    };
+  const supportedNestedCSSRuleTypes: {
+    [key: string]: GroupingCSSRuleTypes;
+  } = {};
+  if (isCSSGroupingRuleSupported) {
+    supportedNestedCSSRuleTypes['CSSGroupingRule'] = CSSGroupingRule;
+  } else {
+    // Some browsers (Safari) don't support CSSGroupingRule
+    // https://caniuse.com/?search=cssgroupingrule
+    // fall back to monkey patching classes that would have inherited from CSSGroupingRule
+
+    if (isCSSMediaRuleSupported) {
+      supportedNestedCSSRuleTypes['CSSMediaRule'] = CSSMediaRule;
+    }
+    if (isCSSConditionRuleSupported) {
+      supportedNestedCSSRuleTypes['CSSConditionRule'] = CSSConditionRule;
+    }
+    if (isCSSSupportsRuleSupported) {
+      supportedNestedCSSRuleTypes['CSSSupportsRule'] = CSSSupportsRule;
+    }
   }
 
-  const groupingInsertRule = CSSGroupingRule.prototype.insertRule;
-  CSSGroupingRule.prototype.insertRule = function (
-    rule: string,
-    index?: number,
-  ) {
-    const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
-    if (id !== -1) {
-      cb({
-        id,
-        adds: [
-          {
-            rule,
-            index: [
-              ...getNestedCSSRulePositions(this),
-              index || 0, // defaults to 0
-            ],
-          },
-        ],
-      });
-    }
-    return groupingInsertRule.apply(this, arguments);
-  };
+  const unmodifiedFunctions: {
+    [key: string]: {
+      insertRule: (rule: string, index?: number) => number;
+      deleteRule: (index: number) => void;
+    };
+  } = {};
 
-  const groupingDeleteRule = CSSGroupingRule.prototype.deleteRule;
-  CSSGroupingRule.prototype.deleteRule = function (index: number) {
-    const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
-    if (id !== -1) {
-      cb({
-        id,
-        removes: [{ index: [...getNestedCSSRulePositions(this), index] }],
-      });
-    }
-    return groupingDeleteRule.apply(this, arguments);
-  };
+  Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
+    unmodifiedFunctions[typeKey] = {
+      insertRule: (type as GroupingCSSRuleTypes).prototype.insertRule,
+      deleteRule: (type as GroupingCSSRuleTypes).prototype.deleteRule,
+    };
+
+    type.prototype.insertRule = function (rule: string, index?: number) {
+      const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
+      if (id !== -1) {
+        cb({
+          id,
+          adds: [
+            {
+              rule,
+              index: [
+                ...getNestedCSSRulePositions(this),
+                index || 0, // defaults to 0
+              ],
+            },
+          ],
+        });
+      }
+      return unmodifiedFunctions[typeKey].insertRule.apply(this, arguments);
+    };
+
+    type.prototype.deleteRule = function (index: number) {
+      const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
+      if (id !== -1) {
+        cb({
+          id,
+          removes: [{ index: [...getNestedCSSRulePositions(this), index] }],
+        });
+      }
+      return unmodifiedFunctions[typeKey].deleteRule.apply(this, arguments);
+    };
+  });
 
   return () => {
     CSSStyleSheet.prototype.insertRule = insertRule;
     CSSStyleSheet.prototype.deleteRule = deleteRule;
-    CSSGroupingRule.prototype.insertRule = groupingInsertRule;
-    CSSGroupingRule.prototype.deleteRule = groupingDeleteRule;
+    Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
+      type.prototype.insertRule = unmodifiedFunctions[typeKey].insertRule;
+      type.prototype.deleteRule = unmodifiedFunctions[typeKey].deleteRule;
+    });
   };
 }
 
