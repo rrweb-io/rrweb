@@ -256,7 +256,10 @@ export default class MutationBuffer {
         ns = ns && ns.nextSibling;
         nextId = ns && this.mirror.getId((ns as unknown) as INode);
       }
-      if (nextId === -1 && isBlocked(n.nextSibling, this.blockClass)) {
+      if (
+        nextId === -1 &&
+        isBlocked(n.nextSibling, this.blockClass, this.blockSelector)
+      ) {
         nextId = null;
       }
       return nextId;
@@ -431,7 +434,10 @@ export default class MutationBuffer {
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
-        if (!isBlocked(m.target, this.blockClass) && value !== m.oldValue) {
+        if (
+          !isBlocked(m.target, this.blockClass, this.blockSelector) &&
+          value !== m.oldValue
+        ) {
           this.texts.push({
             value:
               needMaskingText(
@@ -450,7 +456,10 @@ export default class MutationBuffer {
       }
       case 'attributes': {
         const value = (m.target as HTMLElement).getAttribute(m.attributeName!);
-        if (isBlocked(m.target, this.blockClass) || value === m.oldValue) {
+        if (
+          isBlocked(m.target, this.blockClass, this.blockSelector) ||
+          value === m.oldValue
+        ) {
           return;
         }
         let item: attributeCursor | undefined = this.attributes.find(
@@ -480,8 +489,8 @@ export default class MutationBuffer {
             ? this.mirror.getId((m.target.host as unknown) as INode)
             : this.mirror.getId(m.target as INode);
           if (
-            isBlocked(n, this.blockClass) ||
-            isBlocked(m.target, this.blockClass) ||
+            isBlocked(n, this.blockClass, this.blockSelector) ||
+            isBlocked(m.target, this.blockClass, this.blockSelector) ||
             isIgnored(n)
           ) {
             return;
@@ -527,10 +536,10 @@ export default class MutationBuffer {
   };
 
   private genAdds = (n: Node | INode, target?: Node | INode) => {
-    if (isBlocked(n, this.blockClass)) {
+    if (isBlocked(n, this.blockClass, this.blockSelector)) {
       return;
     }
-    if (target && isBlocked(target, this.blockClass)) {
+    if (target && isBlocked(target, this.blockClass, this.blockSelector)) {
       return;
     }
     if (isINode(n)) {
