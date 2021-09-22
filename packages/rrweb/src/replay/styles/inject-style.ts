@@ -1,5 +1,5 @@
 const rules: (blockClass: string) => string[] = (blockClass: string) => [
-  `.${blockClass} { background: #ccc }`,
+  `.${blockClass} { background: currentColor }`,
   'noscript { display: none !important; }',
 ];
 
