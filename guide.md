@@ -146,10 +146,10 @@ The parameter of `rrweb.record` accepts the following options.
 | maskTextClass        | 'rr-mask'          | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter                                                                                 |
 | maskTextSelector     | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter                                                                                           |
 | maskAllInputs        | false              | mask all input content as \*                                                                                                                                                                  |
-| maskInputOptions     | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L77-L95)                           |
+| maskInputOptions     | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L77-L95)            |
 | maskInputFn          | -                  | customize mask input content recording logic                                                                                                                                                  |
 | maskTextFn           | -                  | customize mask text content recording logic                                                                                                                                                   |
-| slimDOMOptions       | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)                      |
+| slimDOMOptions       | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)  |
 | inlineStylesheet     | true               | whether to inline the stylesheet in the events                                                                                                                                                |
 | hooks                | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                  |
 | packFn               | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
@@ -191,7 +191,7 @@ rrweb.record({
   checkoutEveryNth: 200, // checkout every 200 events
 });
 
-// send last two events array to the backend
+// send the last two events array to the backend
 window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
@@ -226,7 +226,7 @@ rrweb.record({
   checkoutEveryNms: 5 * 60 * 1000, // checkout every 5 minutes
 });
 
-// send last two events array to the backend
+// send the last two events array to the backend
 window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);

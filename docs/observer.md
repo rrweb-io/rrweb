@@ -1,6 +1,6 @@
 # Incremental snapshots
 
-After completing a full snapshot, we need to record events that change the state.
+After completing a full snapshot, we need to look at all the events that could cause the view to changed base on the current view state.
 
 Right now, rrweb records the following events (we will expand upon this):
 
@@ -20,11 +20,11 @@ Right now, rrweb records the following events (we will expand upon this):
 
 ## Mutation Observer
 
-Since we don't execute any JavaScript during replay, we instead need to record all changes scripts make to the document.
+Since we don't execute any JavaScript during replay, we instead need to record all the user actions.
 
-Consider this example:
+Consider this scenario:
 
-> User clicks a button. A dropdown menu appears. User selects the first item. The dropdown menu disappears.
+> User clicks a button and the dropdown menu appears. Then, user selects the first item and the dropdown menu disappears.
 
 During replay, the dropdown menu does not automatically appear after the "click button" is executed, because the original JavaScript is not part of the recording. Thus, we need to record the creation of the dropdown menu DOM nodes, the selection of the first item, and subsequent deletion of the dropdown menu DOM nodes. This is the most difficult part.
 
@@ -89,7 +89,7 @@ Try to ensure that the mouse moves smoothly during replay and also minimize the 
 
 ### Time reversal
 
-We record a timestamp when each incremental snapshot is generated so that during replay it can be applied at the correct time. However, due to the effect of throttling, the timestamps of the mouse movement corresponding to the incremental snapshot will be later than the actual recording time, so we need to record a negative time difference for correction and time calibration during replay.
+We record a timestamp when each snapshot is generated so that during replay it can be applied at the correct time. However, due to the effect of throttling, the timestamps of the mouse movement corresponding to the incremental snapshot will be later than the actual recording time, so we need to record a negative time difference for correction and time calibration during replay.
 
 ## Input
 

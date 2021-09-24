@@ -22,8 +22,8 @@ $('body').replaceWith(snapshot);
 
 1. 去脚本化。被录制页面中的所有 JavaScript 都不应该被执行，例如我们会在重建快照时将 `script` 标签改为 `noscript` 标签，此时 script 内部的内容就不再重要，录制时可以简单记录一个标记值而不需要将可能存在的大量脚本内容全部记录。
 2. 记录没有反映在 HTML 中的视图状态。例如 `<input type="text" />` 输入后的值不会反映在其 HTML 中，而是通过 `value` 属性记录，我们在序列化时就需要读出该值并且以属性的形式回放成 `<input type="text" value="recordValue" />`。
-3. 相对路径转换为绝对路径。回放时我们会将被录制的页面放置在一个 `<iframe>` 中，此时的页面 URL为重放页面的地址，如果被录制页面中有一些相对路径就会产生错误，所以在录制时就要将相对路径进行转换，同样的 CSS 样式表中的相对路径也需要转换。
-4. 尽量记录 CSS 样式表的内容。如果被录制页面加载了一些同源的 样式表，我们则可以获取到解析好的 CSS rules，录制时将能获取到的样式都 inline 化，这样可以让一些内网环境（如 localhost）的录制也有比较好的效果。
+3. 相对路径转换为绝对路径。回放时我们会将被录制的页面放置在一个 `<iframe>` 中，此时的页面 URL 为重放页面的地址，如果被录制页面中有一些相对路径就会产生错误，所以在录制时就要将相对路径进行转换，同样的 CSS 样式表中的相对路径也需要转换。
+4. 尽量记录 CSS 样式表的内容。如果被录制页面加载了一些外源样式表，我们则可以获取到解析好的 CSS 规则，录制时将能获取到的样式都 inline 化，这样可以让一些内网环境（如 localhost）的录制也有比较好的效果。
 
 ## 唯一标识
 
@@ -34,8 +34,7 @@ $('body').replaceWith(snapshot);
 ```html
 <html>
   <body>
-    <header>
-    </header>
+    <header></header>
   </body>
 </html>
 ```
@@ -99,12 +98,12 @@ $('body').replaceWith(snapshot);
 
 想象一下如果我们在同页面中记录一次点击按钮的操作并回放，我们可以用以下格式记录该操作（也就是我们所说的一次增量快照）：
 
-```javascript
+```typescript
 type clickSnapshot = {
   source: 'MouseInteraction';
   type: 'Click';
   node: HTMLButtonElement;
-}
+};
 ```
 
 再通过 `snapshot.node.click()` 就能将操作再执行一次。
@@ -120,6 +119,5 @@ type clickSnapshot = {
   source: 'MouseInteraction';
   type: 'Click';
   id: Number;
-}
+};
 ```
-

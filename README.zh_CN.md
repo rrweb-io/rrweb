@@ -32,7 +32,7 @@ rrweb 主要由 3 部分组成：
 - **[rrweb](https://github.com/rrweb-io/rrweb)**，包含 record 和 replay 两个功能。record 用于记录 DOM 中的所有变更（mutation）；replay 则是将记录的变更按照对应的时间一一重放。
 - **[rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/)**，为 rrweb 提供一套 UI 控件，提供基于 GUI 的暂停、快进、拖拽至任意时间点播放等功能。
 
-## Roadmap
+## 路线图
 
 - rrdom: rrweb 数据专用的 DOM 实现 [#419](https://github.com/rrweb-io/rrweb/issues/419)
 - storage engine: 对大规模 rrweb 数据进行去重
@@ -44,14 +44,14 @@ rrweb 主要由 3 部分组成：
   - GraphQL 插件
   - ...
 
-## Internal Design
+## 内部构造
 
 - [序列化](./docs/serialization.zh_CN.md)
 - [增量快照](./docs/observer.zh_CN.md)
 - [回放](./docs/replay.zh_CN.md)
 - [沙盒](./docs/sandbox.zh_CN.md)
 
-## Contribute Guide
+## 提交代码指南
 
 为了保证录制和回放时可以对应到一致的数据结构，rrweb 采用 typescript 开发以提供更强的类型支持。
 
@@ -66,7 +66,7 @@ rrweb 主要由 3 部分组成：
 
 [使用 REPL 工具](./guide.zh_CN.md#REPL-工具)
 
-## Core Team Members
+## 核心成员
 
 <table>
   <tr>
@@ -113,7 +113,7 @@ rrweb 主要由 3 部分组成：
   </tr>
 </table>
 
-## Who's using rrweb
+## rrweb 用户
 
 <p align="center">
   <a href="http://www.smartx.com/" target="_blank">
