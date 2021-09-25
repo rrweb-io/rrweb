@@ -43,7 +43,7 @@ file-frame-2
 file-cid-0
 @charset \\"utf-8\\";
 
-.rr-block { background: rgb(204, 204, 204); }
+.rr-block { background: currentcolor; }
 
 noscript { display: none !important; }
 
@@ -91,7 +91,7 @@ file-frame-2
 file-cid-0
 @charset \\"utf-8\\";
 
-.rr-block { background: rgb(204, 204, 204); }
+.rr-block { background: currentcolor; }
 
 noscript { display: none !important; }
 
@@ -138,7 +138,7 @@ file-frame-5
 file-cid-0
 @charset \\"utf-8\\";
 
-.rr-block { background: rgb(204, 204, 204); }
+.rr-block { background: currentcolor; }
 
 noscript { display: none !important; }
 
@@ -216,7 +216,7 @@ file-frame-5
 file-cid-0
 @charset \\"utf-8\\";
 
-.rr-block { background: rgb(204, 204, 204); }
+.rr-block { background: currentcolor; }
 
 noscript { display: none !important; }
 
@@ -296,7 +296,7 @@ file-frame-5
 file-cid-0
 @charset \\"utf-8\\";
 
-.rr-block { background: rgb(204, 204, 204); }
+.rr-block { background: currentcolor; }
 
 noscript { display: none !important; }
 
