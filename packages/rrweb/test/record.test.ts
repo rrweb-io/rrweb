@@ -314,6 +314,30 @@ describe('record', function (this: ISuite) {
     });
     it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
   });
+
+  it('captures style property changes', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      styleSheet.insertRule('body { background: #000; }');
+      setTimeout(() => {
+        (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        (styleSheet.cssRules[0] as CSSStyleRule).style.removeProperty('background');
+      }, 0);
+    });
+    await this.page.waitForTimeout(50);
+    assertSnapshot(this.events, __filename, 'stylesheet-properties');
+  });
+
+
 });
 
 describe('record iframes', function (this: ISuite) {
