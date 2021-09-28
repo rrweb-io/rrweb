@@ -220,9 +220,11 @@ describe('record', function (this: ISuite) {
       document.head.appendChild(styleElement);
 
       const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      // begin: pre-serialization
       const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
       const ruleIdx1 = styleSheet.insertRule('body { background: #111; }');
       styleSheet.deleteRule(ruleIdx1);
+      // end: pre-serialization
       setTimeout(() => {
         styleSheet.insertRule('body { color: #fff; }');
       }, 0);
@@ -239,14 +241,15 @@ describe('record', function (this: ISuite) {
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.StyleSheetRule,
     );
-    const addRuleCount = styleSheetRuleEvents.filter((e) =>
+    const addRules = styleSheetRuleEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).adds),
-    ).length;
+    );
     const removeRuleCount = styleSheetRuleEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
-    // sync insert/delete should be ignored
-    expect(addRuleCount).to.equal(2);
+    // pre-serialization insert/delete should be ignored
+    expect(addRules.length).to.equal(2);
+    expect((addRules[0].data as styleSheetRuleData).adds).to.deep.include({rule: "body { color: #fff; }"});
     expect(removeRuleCount).to.equal(1);
     assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
