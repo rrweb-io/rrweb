@@ -820,7 +820,7 @@ function initFontObserver(cb: fontCallback): listenerHandler {
 
   handlers.push(() => {
     // tslint:disable-next-line: no-any
-    (window as any).FonFace = originalFontFace;
+    (window as any).FontFace = originalFontFace;
   });
   handlers.push(restoreHandler);
 
