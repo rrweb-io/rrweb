@@ -8,6 +8,7 @@ export declare function hookSetter<T>(target: T, key: string | number | symbol, 
 export declare function patch(source: {
     [key: string]: any;
 }, name: string, replacement: (...args: any[]) => any): () => void;
+export declare function getTopWindow(): Window;
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
 export declare function isBlocked(node: Node | null, blockClass: blockClass): boolean;

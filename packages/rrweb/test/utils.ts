@@ -58,9 +58,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
         return true;
       })
       .map((s) => {
-        if (s.type === EventType.Meta) {
-          s.data.href = 'about:blank';
-        }
+
         // FIXME: travis coordinates seems different with my laptop
         const coordinatesReg = /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g;
         if (
