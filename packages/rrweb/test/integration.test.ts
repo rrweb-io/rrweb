@@ -487,6 +487,7 @@ describe('record integration tests', function (this: ISuite) {
   it('should nest record iframe', async () => {
     const page: puppeteer.Page = await this.browser.newPage();
     await page.goto(`http://localhost:3030/html`);
+    await page.waitForTimeout(10);
     await page.setContent(getHtml.call(this, 'main.html'));
 
     await page.waitForTimeout(500);
