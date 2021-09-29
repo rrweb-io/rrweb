@@ -998,7 +998,11 @@ export function initObservers(
   // plugins
   const pluginHandlers: listenerHandler[] = [];
   for (const plugin of o.plugins) {
-    pluginHandlers.push(plugin.observer(plugin.callback, plugin.options));
+    pluginHandlers.push(plugin.observer(
+      plugin.callback,
+      currentWindow,
+      plugin.options,
+    ));
   }
 
   return () => {

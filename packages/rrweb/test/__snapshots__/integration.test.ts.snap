@@ -3347,6 +3347,88 @@ exports[`log 1`] = `
         \\"payload\\": []
       }
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 21
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 21,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 22,
+                    \\"id\\": 24
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 22,
+                    \\"id\\": 25
+                  }
+                ],
+                \\"rootId\\": 22,
+                \\"id\\": 23
+              }
+            ],
+            \\"id\\": 22
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [],
+        \\"payload\\": [
+          \\"\\\\\\"from iframe\\\\\\"\\"
+        ]
+      }
+    }
   }
 ]"
 `;
