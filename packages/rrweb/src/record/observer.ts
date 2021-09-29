@@ -522,8 +522,8 @@ function initStyleSheetObserver(
   win: Window,
   mirror: Mirror,
 ): listenerHandler {
-  const insertRule = win.CSSStyleSheet.prototype.insertRule;
-  win.CSSStyleSheet.prototype.insertRule = function (rule: string, index?: number) {
+  const insertRule = (win as any).CSSStyleSheet.prototype.insertRule;
+  (win as any).CSSStyleSheet.prototype.insertRule = function (rule: string, index?: number) {
     const id = mirror.getId(this.ownerNode as INode);
     if (id !== -1) {
       cb({
@@ -534,8 +534,8 @@ function initStyleSheetObserver(
     return insertRule.apply(this, arguments);
   };
 
-  const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
-  win.CSSStyleSheet.prototype.deleteRule = function (index: number) {
+  const deleteRule = (win as any).CSSStyleSheet.prototype.deleteRule;
+  (win as any).CSSStyleSheet.prototype.deleteRule = function (index: number) {
     const id = mirror.getId(this.ownerNode as INode);
     if (id !== -1) {
       cb({
@@ -547,23 +547,23 @@ function initStyleSheetObserver(
   };
 
   const supportedNestedCSSRuleTypes: {
-    [key: string]: win.GroupingCSSRuleTypes;
+    [key: string]: GroupingCSSRuleTypes;
   } = {};
   if (isCSSGroupingRuleSupported) {
-    supportedNestedCSSRuleTypes['CSSGroupingRule'] = win.CSSGroupingRule;
+    supportedNestedCSSRuleTypes['CSSGroupingRule'] = (win as any).CSSGroupingRule;
   } else {
     // Some browsers (Safari) don't support CSSGroupingRule
     // https://caniuse.com/?search=cssgroupingrule
     // fall back to monkey patching classes that would have inherited from CSSGroupingRule
 
     if (isCSSMediaRuleSupported) {
-      supportedNestedCSSRuleTypes['CSSMediaRule'] = win.CSSMediaRule;
+      supportedNestedCSSRuleTypes['CSSMediaRule'] = (win as any).CSSMediaRule;
     }
     if (isCSSConditionRuleSupported) {
-      supportedNestedCSSRuleTypes['CSSConditionRule'] = win.CSSConditionRule;
+      supportedNestedCSSRuleTypes['CSSConditionRule'] = (win as any).CSSConditionRule;
     }
     if (isCSSSupportsRuleSupported) {
-      supportedNestedCSSRuleTypes['CSSSupportsRule'] = win.CSSSupportsRule;
+      supportedNestedCSSRuleTypes['CSSSupportsRule'] = (win as any).CSSSupportsRule;
     }
   }
 
@@ -576,8 +576,8 @@ function initStyleSheetObserver(
 
   Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
     unmodifiedFunctions[typeKey] = {
-      insertRule: (type as win.GroupingCSSRuleTypes).prototype.insertRule,
-      deleteRule: (type as win.GroupingCSSRuleTypes).prototype.deleteRule,
+      insertRule: (type as GroupingCSSRuleTypes).prototype.insertRule,
+      deleteRule: (type as GroupingCSSRuleTypes).prototype.deleteRule,
     };
 
     type.prototype.insertRule = function (rule: string, index?: number) {
@@ -612,8 +612,8 @@ function initStyleSheetObserver(
   });
 
   return () => {
-    win.CSSStyleSheet.prototype.insertRule = insertRule;
-    win.CSSStyleSheet.prototype.deleteRule = deleteRule;
+    (win as any).CSSStyleSheet.prototype.insertRule = insertRule;
+    (win as any).CSSStyleSheet.prototype.deleteRule = deleteRule;
     Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
       type.prototype.insertRule = unmodifiedFunctions[typeKey].insertRule;
       type.prototype.deleteRule = unmodifiedFunctions[typeKey].deleteRule;
@@ -626,12 +626,12 @@ function initStyleDeclarationObserver(
   win: Window,
   mirror: Mirror,
 ): listenerHandler {
-  const setProperty = win.CSSStyleDeclaration.prototype.setProperty;
-  win.CSSStyleDeclaration.prototype.setProperty = function (
-    this: win.CSSStyleDeclaration,
-    property,
-    value,
-    priority,
+  const setProperty = (win as any).CSSStyleDeclaration.prototype.setProperty;
+  (win as any).CSSStyleDeclaration.prototype.setProperty = function (
+    this: CSSStyleDeclaration,
+    property: string,
+    value: string,
+    priority: string,
   ) {
     const id = mirror.getId(
       (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
@@ -650,10 +650,10 @@ function initStyleDeclarationObserver(
     return setProperty.apply(this, arguments);
   };
 
-  const removeProperty = win.CSSStyleDeclaration.prototype.removeProperty;
-  win.CSSStyleDeclaration.prototype.removeProperty = function (
-    this: win.CSSStyleDeclaration,
-    property,
+  const removeProperty = (win as any).CSSStyleDeclaration.prototype.removeProperty;
+  (win as any).CSSStyleDeclaration.prototype.removeProperty = function (
+    this: CSSStyleDeclaration,
+    property: string,
   ) {
     const id = mirror.getId(
       (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
@@ -671,8 +671,8 @@ function initStyleDeclarationObserver(
   };
 
   return () => {
-    win.CSSStyleDeclaration.prototype.setProperty = setProperty;
-    win.CSSStyleDeclaration.prototype.removeProperty = removeProperty;
+    (win as any).CSSStyleDeclaration.prototype.setProperty = setProperty;
+    (win as any).CSSStyleDeclaration.prototype.removeProperty = removeProperty;
   };
 }
 
@@ -708,23 +708,23 @@ function initCanvasMutationObserver(
   blockClass: blockClass,
   mirror: Mirror,
 ): listenerHandler {
-  const props = Object.getOwnPropertyNames(win.CanvasRenderingContext2D.prototype);
+  const props = Object.getOwnPropertyNames((win as any).CanvasRenderingContext2D.prototype);
   const handlers: listenerHandler[] = [];
   for (const prop of props) {
     try {
       if (
-        typeof win.CanvasRenderingContext2D.prototype[
-          prop as keyof win.CanvasRenderingContext2D
+        typeof (win as any).CanvasRenderingContext2D.prototype[
+          prop as keyof CanvasRenderingContext2D
         ] !== 'function'
       ) {
         continue;
       }
       const restoreHandler = patch(
-        win.CanvasRenderingContext2D.prototype,
+        (win as any).CanvasRenderingContext2D.prototype,
         prop,
         function (original) {
           return function (
-            this: win.CanvasRenderingContext2D,
+            this: CanvasRenderingContext2D,
             ...args: Array<unknown>
           ) {
             if (!isBlocked(this.canvas, blockClass)) {
@@ -760,8 +760,8 @@ function initCanvasMutationObserver(
       );
       handlers.push(restoreHandler);
     } catch {
-      const hookHandler = hookSetter<win.CanvasRenderingContext2D>(
-        win.CanvasRenderingContext2D.prototype,
+      const hookHandler = hookSetter<CanvasRenderingContext2D>(
+        (win as any).CanvasRenderingContext2D.prototype,
         prop,
         {
           set(v) {
@@ -975,7 +975,7 @@ export function initObservers(
     o.mirror,
   );
 
-  const currentWindow = o.doc.defaultView;  // basically document.window
+  const currentWindow = o.doc.defaultView as Window;  // basically document.window
 
   const styleSheetObserver = initStyleSheetObserver(
     o.styleSheetRuleCb,
