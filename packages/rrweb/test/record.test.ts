@@ -377,4 +377,61 @@ describe('record iframes', function (this: ISuite) {
       EventType.IncrementalSnapshot,
     ]);
   });
+
+  it('captures stylesheet mutations in iframes', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        // need to reference window.top for when we are in an iframe!
+        emit: ((window.top as unknown) as IWindow).emit,
+      });
+
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      // outer timeout is needed to wait for initStyleSheetObserver on iframe to be set up
+      setTimeout(() => {
+
+        const idoc = (iframe as HTMLIFrameElement).contentDocument!;
+        const styleElement = idoc.createElement('style');
+
+        idoc.head.appendChild(styleElement);
+
+        const styleSheet = <CSSStyleSheet>styleElement.sheet;
+        styleSheet.insertRule('@media {}');
+        const atMediaRule = styleSheet.cssRules[0] as CSSMediaRule;
+        const atRuleIdx0 = atMediaRule.insertRule('body { background: #000; }', 0);
+        const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');  // inserted before above
+        // pre-serialization insert/delete above should be ignored
+        setTimeout(() => {
+          styleSheet.insertRule('body { color: #fff; }');
+          atMediaRule.insertRule('body { color: #ccc; }', 0);
+        }, 0);
+        setTimeout(() => {
+          styleSheet.deleteRule(ruleIdx0);
+          (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        }, 5);
+        setTimeout(() =>{
+          atMediaRule.deleteRule(atRuleIdx0);
+        }, 10);
+      }, 10);
+    });
+    await this.page.waitForTimeout(50);
+    const styleRelatedEvents = this.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        (e.data.source === IncrementalSource.StyleSheetRule ||
+         e.data.source === IncrementalSource.StyleDeclaration),
+    );
+    const addRuleCount = styleRelatedEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    ).length;
+    const removeRuleCount = styleRelatedEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).removes),
+    ).length;
+    expect(styleRelatedEvents.length).to.equal(5);
+    expect(addRuleCount).to.equal(2);
+    expect(removeRuleCount).to.equal(2);
+    assertSnapshot(this.events, __filename, 'iframe-stylesheet-mutations');
+  });
+
 });
