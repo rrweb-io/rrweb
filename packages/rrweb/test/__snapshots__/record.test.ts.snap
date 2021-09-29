@@ -401,28 +401,6 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"removes\\": [],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 4,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"iframe\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 8
-          }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
       \\"adds\\": [
         {
           \\"parentId\\": 6,
@@ -440,8 +418,8 @@ exports[`iframe-stylesheet-mutations 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 9,
-                    \\"id\\": 11
+                    \\"rootId\\": 8,
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 2,
@@ -456,70 +434,23 @@ exports[`iframe-stylesheet-mutations 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Mysterious Button\\",
-                            \\"rootId\\": 9,
-                            \\"id\\": 14
+                            \\"rootId\\": 8,
+                            \\"id\\": 13
                           }
                         ],
-                        \\"rootId\\": 9,
-                        \\"id\\": 13
+                        \\"rootId\\": 8,
+                        \\"id\\": 12
                       }
                     ],
-                    \\"rootId\\": 9,
-                    \\"id\\": 12
+                    \\"rootId\\": 8,
+                    \\"id\\": 11
                   }
                 ],
-                \\"rootId\\": 9,
-                \\"id\\": 10
+                \\"rootId\\": 8,
+                \\"id\\": 9
               }
             ],
-            \\"id\\": 9
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"isAttachIframe\\": true
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 8,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 0,
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"html\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"head\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 15,
-                    \\"id\\": 17
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"body\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 15,
-                    \\"id\\": 18
-                  }
-                ],
-                \\"rootId\\": 15,
-                \\"id\\": 16
-              }
-            ],
-            \\"id\\": 15
+            \\"id\\": 8
           }
         }
       ],
@@ -538,7 +469,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 17,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -547,8 +478,8 @@ exports[`iframe-stylesheet-mutations 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }@media  {\\\\n  body { background: rgb(0, 0, 0); }\\\\n}\\"
             },
             \\"childNodes\\": [],
-            \\"rootId\\": 15,
-            \\"id\\": 19
+            \\"rootId\\": 8,
+            \\"id\\": 14
           }
         }
       ]
@@ -558,7 +489,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 19,
+      \\"id\\": 14,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\"
@@ -570,7 +501,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 19,
+      \\"id\\": 14,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\",
@@ -586,7 +517,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 19,
+      \\"id\\": 14,
       \\"removes\\": [
         {
           \\"index\\": 0
@@ -598,7 +529,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 19,
+      \\"id\\": 14,
       \\"set\\": {
         \\"property\\": \\"color\\",
         \\"value\\": \\"green\\"
@@ -612,7 +543,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 19,
+      \\"id\\": 14,
       \\"removes\\": [
         {
           \\"index\\": [

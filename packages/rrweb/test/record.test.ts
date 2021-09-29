@@ -386,8 +386,7 @@ describe('record iframes', function (this: ISuite) {
         emit: ((window.top as unknown) as IWindow).emit,
       });
 
-      const iframe = document.createElement('iframe');
-      document.body.appendChild(iframe);
+      const iframe = document.querySelector('iframe');
       // outer timeout is needed to wait for initStyleSheetObserver on iframe to be set up
       setTimeout(() => {
 
