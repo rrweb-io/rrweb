@@ -483,29 +483,27 @@ export default class MutationBuffer {
             old.setAttribute('style', m.oldValue);
           }
           if (
-            item.attributes['style'] === undefined ||
-            item.attributes['style'] === null
+            item.attributes.style === undefined ||
+            item.attributes.style === null
           ) {
-            item.attributes['style'] = {};
+            item.attributes.style = {};
           }
-          const styleObj = item.attributes['style'] as styleAttributeValue;
-          for (let i = 0; i < target.style.length; i++) {
-            let pname = target.style[i];
+          const styleObj = item.attributes.style as styleAttributeValue;
+          for (const pname of Array.from(target.style)) {
             const newValue = target.style.getPropertyValue(pname);
             const newPriority = target.style.getPropertyPriority(pname);
             if (
-              newValue != old.style.getPropertyValue(pname) ||
-              newPriority != old.style.getPropertyPriority(pname)
+              newValue !== old.style.getPropertyValue(pname) ||
+              newPriority !== old.style.getPropertyPriority(pname)
             ) {
-              if (newPriority == '') {
+              if (newPriority === '') {
                 styleObj[pname] = newValue;
               } else {
                 styleObj[pname] = [newValue, newPriority];
               }
             }
           }
-          for (let i = 0; i < old.style.length; i++) {
-            let pname = old.style[i];
+          for (const pname of Array.from(old.style)) {
             if (
               target.style.getPropertyValue(pname) === '' ||
               !target.style.getPropertyValue(pname) // covering potential non-standard browsers
