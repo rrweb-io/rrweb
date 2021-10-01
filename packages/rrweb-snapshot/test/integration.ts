@@ -143,6 +143,37 @@ describe('integration tests', function (this: ISuite) {
       assert(result.pass, result.pass ? '' : result.report());
     }).timeout(5000);
   }
+
+  it('correctly triggers backCompat mode and rendering', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    // console for debug
+    // tslint:disable-next-line: no-console
+    page.on('console', (msg) => console.log(msg.text()));
+
+    await page.goto('http://localhost:3030/html/compat-mode.html', {
+      waitUntil: 'load',
+    });
+    const compatMode = await page.evaluate('document.compatMode');
+    assert(compatMode === 'BackCompat', compatMode + ' for compat-mode.html should be BackCompat as DOCTYPE is deliberately omitted');
+    const renderedHeight = await page.evaluate('document.querySelector("center").clientHeight');
+    // can remove following assertion if dimensions of page change
+    assert(renderedHeight < 400, `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`)
+    const rebuildRenderedHeight = await page.evaluate(`${this.code}
+const [snap] = rrweb.snapshot(document);
+const iframe = document.createElement('iframe');
+iframe.setAttribute('width', document.body.clientWidth)
+iframe.setAttribute('height', document.body.clientHeight)
+iframe.style.transform = 'scale(0.3)'; // mini-me
+document.body.appendChild(iframe);
+// magic here! rebuild in a new iframe
+const rebuildNode = rrweb.rebuild(snap, { doc: iframe.contentDocument })[0];
+iframe.contentDocument.querySelector('center').clientHeight
+`);
+    const rebuildCompatMode = await page.evaluate('document.querySelector("iframe").contentDocument.compatMode');
+    assert(rebuildCompatMode === 'BackCompat', 'rebuilt compatMode should match source compatMode, but doesn\'t: ' + rebuildCompatMode);
+    assert(rebuildRenderedHeight === renderedHeight, 'rebuilt height (${rebuildRenderedHeight}) should equal original height (${renderedHeight})')
+    }).timeout(5000);
+
 });
 
 describe('iframe integration tests', function (this: ISuite) {

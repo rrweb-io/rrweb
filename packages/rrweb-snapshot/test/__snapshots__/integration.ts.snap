@@ -74,6 +74,20 @@ exports[`[html file]: block-element.html 1`] = `
   </body></html>"
 `;
 
+exports[`[html file]: compat-mode.html 1`] = `
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><!-- no doctype! --><html><head>
+  <title>Compat Mode; image resizing</title>
+</head>
+<body>
+  <center>
+	<a href=\\"http://localhost:3030/html#\\" class=\\"should-be-square-shaped\\">
+	  <img width=\\"40%\\" height=\\"35%\\" src=\\"http://localhost:3030/images/compat-top-left.png\\" />
+	  <img width=\\"40%\\" height=\\"35%\\" src=\\"http://localhost:3030/images/compat-top-right.png\\" />
+	  <br /><img width=\\"80%\\" height=\\"20%\\" src=\\"http://localhost:3030/images/compat-bottom.png\\" /></a>
+  </center>
+</body></html>"
+`;
+
 exports[`[html file]: cors-style-sheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
