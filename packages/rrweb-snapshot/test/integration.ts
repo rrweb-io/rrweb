@@ -175,7 +175,7 @@ describe('iframe integration tests', function (this: ISuite) {
   }).timeout(5000);
 });
 
-describe('shadown DOM integration tests', function (this: ISuite) {
+describe('shadow DOM integration tests', function (this: ISuite) {
   const shadowDomHtml = path.join(__dirname, 'html/shadow-dom.html');
   const raw = fs.readFileSync(shadowDomHtml, 'utf-8');
 

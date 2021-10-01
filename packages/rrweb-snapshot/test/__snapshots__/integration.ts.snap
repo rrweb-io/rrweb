@@ -456,7 +456,7 @@ exports[`iframe integration tests 1`] = `
 }"
 `;
 
-exports[`shadown DOM integration tests 1`] = `
+exports[`shadow DOM integration tests 1`] = `
 "{
   \\"type\\": 0,
   \\"childNodes\\": [
