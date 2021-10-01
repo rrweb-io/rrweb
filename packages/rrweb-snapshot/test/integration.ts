@@ -97,6 +97,9 @@ describe('integration tests', function (this: ISuite) {
   });
 
   for (const html of htmls) {
+    if (html.filePath.substring(html.filePath.length - 1) === '~') {
+      continue;
+    }
     const title = '[html file]: ' + html.filePath;
     it(title, async () => {
       const page: puppeteer.Page = await this.browser.newPage();
