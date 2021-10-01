@@ -201,7 +201,7 @@ export type SamplingStrategy = Partial<{
 
 export type RecordPlugin<TOptions = unknown> = {
   name: string;
-  observer: (cb: Function, win: Window, options: TOptions) => listenerHandler;
+  observer: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
   options: TOptions;
 };
 
@@ -598,3 +598,11 @@ export type ElementState = {
 };
 
 export type KeepIframeSrcFn = (src: string) => boolean;
+
+declare global {
+  interface Window {
+    FontFace: typeof FontFace;
+  }
+}
+
+export type IWindow = Window & typeof globalThis;

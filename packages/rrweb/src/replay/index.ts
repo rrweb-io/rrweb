@@ -38,6 +38,7 @@ import {
   styleAttributeValue,
   styleValueWithPriority,
   mouseMovePos,
+  IWindow,
 } from '../types';
 import {
   createMirror,
@@ -449,7 +450,7 @@ export class Replayer {
         this.iframe.contentDocument,
       );
 
-      polyfill(this.iframe.contentWindow as Window & typeof globalThis);
+      polyfill(this.iframe.contentWindow as IWindow);
     }
   }
 

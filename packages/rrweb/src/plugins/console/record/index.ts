@@ -1,4 +1,4 @@
-import { listenerHandler, RecordPlugin } from '../../../types';
+import { listenerHandler, RecordPlugin, IWindow } from '../../../types';
 import { patch } from '../../../utils';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
@@ -22,7 +22,7 @@ type LogRecordOptions = {
   level?: LogLevel[];
   lengthThreshold?: number;
   stringifyOptions?: StringifyOptions;
-  logger?: Logger | string;
+  logger?: Logger | 'console';
 };
 
 const defaultLogOptions: LogRecordOptions = {
@@ -106,7 +106,7 @@ export type Logger = {
 
 function initLogObserver(
   cb: logCallback,
-  win: Window,  // top window or in an iframe
+  win: IWindow, // top window or in an iframe
   logOptions: LogRecordOptions,
 ): listenerHandler {
   const loggerType = logOptions.logger;
@@ -115,7 +115,7 @@ function initLogObserver(
   }
   let logger: Logger;
   if (typeof loggerType === 'string') {
-    logger = (win as any)[loggerType];
+    logger = win[loggerType];
   } else {
     logger = loggerType;
   }
