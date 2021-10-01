@@ -719,6 +719,44 @@ exports[`loaded-from-iframe 1`] = `
       \\"isChecked\\": false,
       \\"id\\": 6
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 6,
+      \\"positions\\": [
+        {
+          \\"x\\": 147,
+          \\"y\\": 157,
+          \\"id\\": 6,
+          \\"timeOffset\\": 0
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 6
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 6
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 6
+    }
   }
 ]"
 `;

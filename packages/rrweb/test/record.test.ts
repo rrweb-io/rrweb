@@ -495,8 +495,9 @@ describe('be loaded from an iframe', function (this: ISuite) {
     });
     expect(await this.page.evaluate('typeof rrweb')).to.be.equal('undefined');
     await this.page.type('input', 'a');  // ensuring that typing in outer gets recorded by inner rrweb
+    await this.page.click('input');  // generates 4 events
     await this.page.waitForTimeout(10);
-    expect(this.events.length).to.equal(5);
+    expect(this.events.length).to.equal(9);
     expect(
       this.events.filter(
         (event: eventWithTime) => event.type === EventType.Meta,
