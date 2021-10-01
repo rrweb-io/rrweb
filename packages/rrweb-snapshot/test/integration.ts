@@ -74,6 +74,8 @@ interface ISuite extends Suite {
 }
 
 describe('integration tests', function (this: ISuite) {
+  this.timeout(10_000);
+
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
