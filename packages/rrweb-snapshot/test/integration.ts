@@ -108,10 +108,25 @@ describe('integration tests', function (this: ISuite) {
       // console for debug
       // tslint:disable-next-line: no-console
       page.on('console', (msg) => console.log(msg.text()));
-      await page.goto(`http://localhost:3030/html`);
-      await page.setContent(html.src, {
-        waitUntil: 'load',
-      });
+      if (html.filePath === 'iframe.html') {
+        // loading directly is needed to ensure we don't trigger compatMode='BackCompat'
+        // which happens before setContent can be called
+        await page.goto(`http://localhost:3030/html/${html.filePath}`, {
+          waitUntil: 'load',
+        });
+        const outerCompatMode = await page.evaluate('document.compatMode');
+        const innerCompatMode = await page.evaluate('document.querySelector("iframe").contentDocument.compatMode');
+        assert(outerCompatMode === 'CSS1Compat', outerCompatMode + ' for outer iframe.html should be CSS1Compat as it has "<!DOCTYPE html>"');
+        // inner omits a doctype so gets rendered in backwards compat mode
+        // although this was originally accidental, we'll add a synthetic doctype to the rebuild to recreate this
+        assert(innerCompatMode === 'BackCompat', innerCompatMode + ' for iframe-inner.html should be BackCompat as it lacks "<!DOCTYPE html>"');
+      } else {
+        // loading indirectly is improtant for relative path testing
+        await page.goto(`http://localhost:3030/html`);
+        await page.setContent(html.src, {
+          waitUntil: 'load',
+        });
+      }
       const rebuildHtml = (
         await page.evaluate(`${this.code}
         const x = new XMLSerializer();
@@ -131,8 +146,6 @@ describe('integration tests', function (this: ISuite) {
 });
 
 describe('iframe integration tests', function (this: ISuite) {
-  const iframeHtml = path.join(__dirname, 'iframe-html/main.html');
-  const raw = fs.readFileSync(iframeHtml, 'utf-8');
 
   before(async () => {
     this.server = await server();
@@ -161,8 +174,7 @@ describe('iframe integration tests', function (this: ISuite) {
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`http://localhost:3030/html`);
-    await page.setContent(raw, {
+    await page.goto(`http://localhost:3030/iframe-html/main.html`, {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
@@ -178,8 +190,6 @@ describe('iframe integration tests', function (this: ISuite) {
 });
 
 describe('shadow DOM integration tests', function (this: ISuite) {
-  const shadowDomHtml = path.join(__dirname, 'html/shadow-dom.html');
-  const raw = fs.readFileSync(shadowDomHtml, 'utf-8');
 
   before(async () => {
     this.server = await server();
@@ -208,8 +218,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`http://localhost:3030/html`);
-    await page.setContent(raw, {
+    await page.goto(`http://localhost:3030/html/shadow-dom.html`, {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
