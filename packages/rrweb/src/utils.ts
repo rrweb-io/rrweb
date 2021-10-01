@@ -111,7 +111,7 @@ export function throttle<T>(
   wait: number,
   options: throttleOptions = {},
 ) {
-  let timeout: number | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   let previous = 0;
   // tslint:disable-next-line: only-arrow-functions
   return function (arg: T) {
@@ -124,13 +124,13 @@ export function throttle<T>(
     let args = arguments;
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
-        window.clearTimeout(timeout);
+        clearTimeout(timeout);
         timeout = null;
       }
       previous = now;
       func.apply(context, args);
     } else if (!timeout && options.trailing !== false) {
-      timeout = window.setTimeout(() => {
+      timeout = setTimeout(() => {
         previous = options.leading === false ? 0 : Date.now();
         timeout = null;
         func.apply(context, args);

@@ -220,9 +220,11 @@ describe('record', function (this: ISuite) {
       document.head.appendChild(styleElement);
 
       const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      // begin: pre-serialization
       const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
       const ruleIdx1 = styleSheet.insertRule('body { background: #111; }');
       styleSheet.deleteRule(ruleIdx1);
+      // end: pre-serialization
       setTimeout(() => {
         styleSheet.insertRule('body { color: #fff; }');
       }, 0);
@@ -239,14 +241,15 @@ describe('record', function (this: ISuite) {
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.StyleSheetRule,
     );
-    const addRuleCount = styleSheetRuleEvents.filter((e) =>
+    const addRules = styleSheetRuleEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).adds),
-    ).length;
+    );
     const removeRuleCount = styleSheetRuleEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
-    // sync insert/delete should be ignored
-    expect(addRuleCount).to.equal(2);
+    // pre-serialization insert/delete should be ignored
+    expect(addRules.length).to.equal(2);
+    expect((addRules[0].data as styleSheetRuleData).adds).to.deep.include({rule: "body { color: #fff; }"});
     expect(removeRuleCount).to.equal(1);
     assertSnapshot(this.events, __filename, 'stylesheet-rules');
   });
@@ -311,6 +314,30 @@ describe('record', function (this: ISuite) {
     });
     it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
   });
+
+  it('captures style property changes', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      styleSheet.insertRule('body { background: #000; }');
+      setTimeout(() => {
+        (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        (styleSheet.cssRules[0] as CSSStyleRule).style.removeProperty('background');
+      }, 0);
+    });
+    await this.page.waitForTimeout(50);
+    assertSnapshot(this.events, __filename, 'stylesheet-properties');
+  });
+
+
 });
 
 describe('record iframes', function (this: ISuite) {
@@ -350,4 +377,60 @@ describe('record iframes', function (this: ISuite) {
       EventType.IncrementalSnapshot,
     ]);
   });
+
+  it('captures stylesheet mutations in iframes', async () => {
+    await this.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        // need to reference window.top for when we are in an iframe!
+        emit: ((window.top as unknown) as IWindow).emit,
+      });
+
+      const iframe = document.querySelector('iframe');
+      // outer timeout is needed to wait for initStyleSheetObserver on iframe to be set up
+      setTimeout(() => {
+
+        const idoc = (iframe as HTMLIFrameElement).contentDocument!;
+        const styleElement = idoc.createElement('style');
+
+        idoc.head.appendChild(styleElement);
+
+        const styleSheet = <CSSStyleSheet>styleElement.sheet;
+        styleSheet.insertRule('@media {}');
+        const atMediaRule = styleSheet.cssRules[0] as CSSMediaRule;
+        const atRuleIdx0 = atMediaRule.insertRule('body { background: #000; }', 0);
+        const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');  // inserted before above
+        // pre-serialization insert/delete above should be ignored
+        setTimeout(() => {
+          styleSheet.insertRule('body { color: #fff; }');
+          atMediaRule.insertRule('body { color: #ccc; }', 0);
+        }, 0);
+        setTimeout(() => {
+          styleSheet.deleteRule(ruleIdx0);
+          (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        }, 5);
+        setTimeout(() =>{
+          atMediaRule.deleteRule(atRuleIdx0);
+        }, 10);
+      }, 10);
+    });
+    await this.page.waitForTimeout(50);
+    const styleRelatedEvents = this.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        (e.data.source === IncrementalSource.StyleSheetRule ||
+         e.data.source === IncrementalSource.StyleDeclaration),
+    );
+    const addRuleCount = styleRelatedEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    ).length;
+    const removeRuleCount = styleRelatedEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).removes),
+    ).length;
+    expect(styleRelatedEvents.length).to.equal(5);
+    expect(addRuleCount).to.equal(2);
+    expect(removeRuleCount).to.equal(2);
+    assertSnapshot(this.events, __filename, 'iframe-stylesheet-mutations');
+  });
+
 });

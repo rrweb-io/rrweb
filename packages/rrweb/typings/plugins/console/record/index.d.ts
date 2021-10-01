@@ -8,7 +8,7 @@ declare type LogRecordOptions = {
     level?: LogLevel[];
     lengthThreshold?: number;
     stringifyOptions?: StringifyOptions;
-    logger?: Logger;
+    logger?: Logger | string;
 };
 export declare type LogData = {
     level: LogLevel;

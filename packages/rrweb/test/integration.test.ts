@@ -471,7 +471,14 @@ describe('record integration tests', function (this: ISuite) {
       console.trace('trace');
       console.warn('warn');
       console.clear();
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
     });
+
+    await page.frames()[1].evaluate(() => {
+      console.log('from iframe');
+    });
+
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots, __filename, 'log');
