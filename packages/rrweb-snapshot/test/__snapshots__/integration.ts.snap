@@ -218,7 +218,7 @@ exports[`[html file]: mask-text.html 1`] = `
 `;
 
 exports[`[html file]: picture.html 1`] = `
-"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><html><head></head><body>
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD XHTML 1.0 Transitional//EN\\"><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <picture>
       <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
