@@ -111,7 +111,12 @@ describe('integration tests', function (this: ISuite) {
         await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
+        let out = x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
+        if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
+          // this is just an artefact of serializeToString
+          out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
+        }
+        out;  // return
       `)
       ).replace(/\n\n/g, '');
       const result = matchSnapshot(rebuildHtml, __filename, title);

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`[html file]: about-mozilla.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head>
+"<!DOCTYPE html><html><head>
   <title>The Book of Mozilla, 11:9</title>
   <style type=\\"text/css\\">
     html {
@@ -40,7 +40,7 @@ exports[`[html file]: about-mozilla.html 1`] = `
 `;
 
 exports[`[html file]: basic.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -50,7 +50,7 @@ exports[`[html file]: basic.html 1`] = `
 `;
 
 exports[`[html file]: block-element.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -75,7 +75,7 @@ exports[`[html file]: block-element.html 1`] = `
 `;
 
 exports[`[html file]: cors-style-sheet.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -87,7 +87,7 @@ exports[`[html file]: cors-style-sheet.html 1`] = `
 `;
 
 exports[`[html file]: dynamic-stylesheet.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -101,7 +101,7 @@ exports[`[html file]: dynamic-stylesheet.html 1`] = `
 `;
 
 exports[`[html file]: form-fields.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -135,7 +135,7 @@ exports[`[html file]: form-fields.html 1`] = `
 `;
 
 exports[`[html file]: hover.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -158,7 +158,7 @@ exports[`[html file]: hover.html 1`] = `
 `;
 
 exports[`[html file]: iframe.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -170,17 +170,17 @@ exports[`[html file]: iframe.html 1`] = `
 `;
 
 exports[`[html file]: iframe-inner.html 1`] = `
-"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body><button>inner iframe button</button>
+"<html><head></head><body><button>inner iframe button</button>
 </body></html>"
 `;
 
 exports[`[html file]: invalid-attribute.html 1`] = `
-"<html xmlns=\\"http://www.w3.org/1999/xhtml\\" foo=\\"bar\\"><head></head><body>
+"<html foo=\\"bar\\"><head></head><body>
 </body></html>"
 `;
 
 exports[`[html file]: invalid-doctype.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <title>Invalid Doctype</title>
@@ -189,7 +189,7 @@ exports[`[html file]: invalid-doctype.html 1`] = `
 `;
 
 exports[`[html file]: invalid-tagname.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -203,7 +203,7 @@ exports[`[html file]: invalid-tagname.html 1`] = `
 `;
 
 exports[`[html file]: mask-text.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -218,7 +218,7 @@ exports[`[html file]: mask-text.html 1`] = `
 `;
 
 exports[`[html file]: picture.html 1`] = `
-"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+"<html><head></head><body>
     <picture>
       <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
@@ -227,7 +227,7 @@ exports[`[html file]: picture.html 1`] = `
 `;
 
 exports[`[html file]: preload.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <title>Document</title>
@@ -238,7 +238,7 @@ exports[`[html file]: preload.html 1`] = `
 `;
 
 exports[`[html file]: shadow-dom.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <title>shadow DOM</title>
@@ -257,7 +257,7 @@ exports[`[html file]: shadow-dom.html 1`] = `
 `;
 
 exports[`[html file]: video.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -272,7 +272,7 @@ exports[`[html file]: video.html 1`] = `
 `;
 
 exports[`[html file]: with-relative-res.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -292,7 +292,7 @@ exports[`[html file]: with-relative-res.html 1`] = `
 `;
 
 exports[`[html file]: with-script.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -303,7 +303,7 @@ exports[`[html file]: with-script.html 1`] = `
 `;
 
 exports[`[html file]: with-style-sheet.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
@@ -314,7 +314,7 @@ exports[`[html file]: with-style-sheet.html 1`] = `
 `;
 
 exports[`[html file]: with-style-sheet-with-import.html 1`] = `
-"<!DOCTYPE html><html xmlns=\\"http://www.w3.org/1999/xhtml\\" lang=\\"en\\"><head>
+"<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
