@@ -10,7 +10,8 @@
     "rootDir": "src",
     "outDir": "build",
     "lib": ["es6", "dom"],
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "skipLibCheck": true
   },
   "compileOnSave": true,
   "exclude": ["test"],

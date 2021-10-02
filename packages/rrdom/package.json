@@ -5,7 +5,9 @@
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
-    "test": "jest"
+    "typings": "tsc -d --declarationDir typings",
+    "test": "jest",
+    "prepublish": "npm run typings && npm run bundle"
   },
   "keywords": [
     "rrweb",
@@ -14,9 +16,14 @@
   "license": "MIT",
   "main": "lib/rrdom.js",
   "module": "es/rrdom.js",
-  "typings": "es",
+  "typings": "typings",
   "unpkg": "dist/rrdom.js",
-  "files": [],
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "typings"
+  ],
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
