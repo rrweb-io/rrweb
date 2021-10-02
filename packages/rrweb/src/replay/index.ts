@@ -922,7 +922,6 @@ export class Replayer {
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
             if (isSync) {
-              let touchActive: boolean | undefined;
               if (d.type === MouseInteractions.TouchStart) {
                 this.touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
@@ -1262,6 +1261,9 @@ export class Replayer {
           return;
         }
         return this.warnNodeNotFound(d, mutation.id);
+      }
+      if (this.virtualStyleRulesMap.has(target)) {
+        this.virtualStyleRulesMap.delete(target);
       }
       let parent: INode | null | ShadowRoot = this.mirror.getNode(
         mutation.parentId,

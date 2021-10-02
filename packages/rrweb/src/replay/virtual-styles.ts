@@ -65,18 +65,22 @@ export function applyVirtualStyleRulesToNode(
   storedRules: VirtualStyleRules,
   styleNode: HTMLStyleElement,
 ) {
+  const { sheet } = styleNode;
+  if (!sheet) {
+    // styleNode without sheet means the DOM has been removed
+    // so the rules no longer need to be applied
+    return;
+  }
+
   storedRules.forEach((rule) => {
     if (rule.type === StyleRuleType.Insert) {
       try {
         if (Array.isArray(rule.index)) {
           const { positions, index } = getPositionsAndIndex(rule.index);
-          const nestedRule = getNestedRule(
-            styleNode.sheet!.cssRules,
-            positions,
-          );
+          const nestedRule = getNestedRule(sheet.cssRules, positions);
           nestedRule.insertRule(rule.cssText, index);
         } else {
-          styleNode.sheet?.insertRule(rule.cssText, rule.index);
+          sheet.insertRule(rule.cssText, rule.index);
         }
       } catch (e) {
         /**
@@ -88,13 +92,10 @@ export function applyVirtualStyleRulesToNode(
       try {
         if (Array.isArray(rule.index)) {
           const { positions, index } = getPositionsAndIndex(rule.index);
-          const nestedRule = getNestedRule(
-            styleNode.sheet!.cssRules,
-            positions,
-          );
+          const nestedRule = getNestedRule(sheet.cssRules, positions);
           nestedRule.deleteRule(index || 0);
         } else {
-          styleNode.sheet?.deleteRule(rule.index);
+          sheet.deleteRule(rule.index);
         }
       } catch (e) {
         /**
@@ -106,13 +107,13 @@ export function applyVirtualStyleRulesToNode(
       restoreSnapshotOfStyleRulesToNode(rule.cssTexts, styleNode);
     } else if (rule.type === StyleRuleType.SetProperty) {
       const nativeRule = (getNestedRule(
-        styleNode.sheet!.cssRules,
+        sheet.cssRules,
         rule.index,
       ) as unknown) as CSSStyleRule;
       nativeRule.style.setProperty(rule.property, rule.value, rule.priority);
     } else if (rule.type === StyleRuleType.RemoveProperty) {
       const nativeRule = (getNestedRule(
-        styleNode.sheet!.cssRules,
+        sheet.cssRules,
         rule.index,
       ) as unknown) as CSSStyleRule;
       nativeRule.style.removeProperty(rule.property);
