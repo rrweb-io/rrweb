@@ -72,6 +72,7 @@ describe('record', function (this: ISuite) {
   setup.call(
     this,
     `
+      <!DOCTYPE html>
       <html>
         <body>
           <input type="text" size="40" />
@@ -346,6 +347,7 @@ describe('record iframes', function (this: ISuite) {
   setup.call(
     this,
     `
+      <!DOCTYPE html>
       <html>
         <body>
           <iframe srcdoc="<button>Mysterious Button</button>" />

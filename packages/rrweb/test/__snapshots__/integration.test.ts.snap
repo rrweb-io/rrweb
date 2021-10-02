@@ -25,6 +25,13 @@ exports[`attributes 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -34,7 +41,7 @@ exports[`attributes 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -44,7 +51,7 @@ exports[`attributes 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -54,15 +61,15 @@ exports[`attributes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"mutation observer\\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -72,27 +79,27 @@ exports[`attributes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"li\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 11
+                        \\"id\\": 12
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -102,21 +109,21 @@ exports[`attributes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 15
+                        \\"id\\": 16
                       }
                     ],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -134,7 +141,7 @@ exports[`attributes 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 4,
+          \\"id\\": 5,
           \\"attributes\\": {
             \\"test\\": \\"true\\"
           }
@@ -142,8 +149,8 @@ exports[`attributes 1`] = `
       ],
       \\"removes\\": [
         {
-          \\"parentId\\": 4,
-          \\"id\\": 9
+          \\"parentId\\": 5,
+          \\"id\\": 10
         }
       ],
       \\"adds\\": []
@@ -787,6 +794,13 @@ exports[`character-data 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -796,7 +810,7 @@ exports[`character-data 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -806,7 +820,7 @@ exports[`character-data 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -816,15 +830,15 @@ exports[`character-data 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"mutation observer\\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -834,27 +848,27 @@ exports[`character-data 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"li\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 11
+                        \\"id\\": 12
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -864,21 +878,21 @@ exports[`character-data 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 15
+                        \\"id\\": 16
                       }
                     ],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -897,22 +911,22 @@ exports[`character-data 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 4,
-          \\"id\\": 9
+          \\"parentId\\": 5,
+          \\"id\\": 10
         },
         {
-          \\"parentId\\": 6,
-          \\"id\\": 7
+          \\"parentId\\": 7,
+          \\"id\\": 8
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"mutated\\",
-            \\"id\\": 17
+            \\"id\\": 18
           }
         }
       ]
@@ -946,6 +960,13 @@ exports[`child-list 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -955,7 +976,7 @@ exports[`child-list 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -965,7 +986,7 @@ exports[`child-list 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -975,15 +996,15 @@ exports[`child-list 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"mutation observer\\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -993,27 +1014,27 @@ exports[`child-list 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"li\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 11
+                        \\"id\\": 12
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -1023,21 +1044,21 @@ exports[`child-list 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 15
+                        \\"id\\": 16
                       }
                     ],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -1056,20 +1077,20 @@ exports[`child-list 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 4,
-          \\"id\\": 9
+          \\"parentId\\": 5,
+          \\"id\\": 10
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 17
+            \\"id\\": 18
           }
         }
       ]
@@ -1869,6 +1890,13 @@ exports[`frozen 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -1878,7 +1906,7 @@ exports[`frozen 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -1888,7 +1916,7 @@ exports[`frozen 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -1898,15 +1926,15 @@ exports[`frozen 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"mutation observer\\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -1916,27 +1944,27 @@ exports[`frozen 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"li\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 11
+                        \\"id\\": 12
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -1946,21 +1974,21 @@ exports[`frozen 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 15
+                        \\"id\\": 16
                       }
                     ],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -1978,13 +2006,13 @@ exports[`frozen 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"foo\\": \\"bar\\"
           }
         },
         {
-          \\"id\\": 4,
+          \\"id\\": 5,
           \\"attributes\\": {
             \\"test\\": \\"true\\"
           }
@@ -1993,7 +2021,7 @@ exports[`frozen 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -2002,7 +2030,7 @@ exports[`frozen 1`] = `
               \\"foo\\": \\"bar\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 17
+            \\"id\\": 18
           }
         }
       ]
@@ -2245,6 +2273,7 @@ exports[`iframe 1`] = `
                 \\"id\\": 28
               }
             ],
+            \\"compatMode\\": \\"BackCompat\\",
             \\"id\\": 27
           }
         }
@@ -2481,6 +2510,7 @@ exports[`iframe 1`] = `
                 \\"id\\": 52
               }
             ],
+            \\"compatMode\\": \\"BackCompat\\",
             \\"id\\": 51
           }
         }
@@ -2705,6 +2735,7 @@ exports[`iframe 1`] = `
                 \\"id\\": 75
               }
             ],
+            \\"compatMode\\": \\"BackCompat\\",
             \\"id\\": 74
           }
         }
@@ -3407,6 +3438,7 @@ exports[`log 1`] = `
                 \\"id\\": 23
               }
             ],
+            \\"compatMode\\": \\"BackCompat\\",
             \\"id\\": 22
           }
         }
@@ -4312,6 +4344,13 @@ exports[`mask-character-data 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -4321,7 +4360,7 @@ exports[`mask-character-data 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -4331,7 +4370,7 @@ exports[`mask-character-data 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -4341,15 +4380,15 @@ exports[`mask-character-data 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"mutation observer\\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -4359,27 +4398,27 @@ exports[`mask-character-data 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"li\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 11
+                        \\"id\\": 12
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -4389,21 +4428,21 @@ exports[`mask-character-data 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 15
+                        \\"id\\": 16
                       }
                     ],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -4421,7 +4460,7 @@ exports[`mask-character-data 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 6,
+          \\"id\\": 7,
           \\"attributes\\": {
             \\"class\\": \\"rr-mask\\"
           }
@@ -4429,13 +4468,13 @@ exports[`mask-character-data 1`] = `
       ],
       \\"removes\\": [
         {
-          \\"parentId\\": 6,
-          \\"id\\": 7
+          \\"parentId\\": 7,
+          \\"id\\": 8
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -4444,25 +4483,25 @@ exports[`mask-character-data 1`] = `
               \\"class\\": \\"rr-mask\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 17
-          }
-        },
-        {
-          \\"parentId\\": 17,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"*** **** ****\\",
             \\"id\\": 18
           }
         },
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 18,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"*** **** ****\\",
+            \\"id\\": 19
+          }
+        },
+        {
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"*******\\",
-            \\"id\\": 19
+            \\"id\\": 20
           }
         }
       ]
@@ -5906,6 +5945,13 @@ exports[`maskPassword 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {
@@ -5920,7 +5966,7 @@ exports[`maskPassword 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 4
+                    \\"id\\": 5
                   },
                   {
                     \\"type\\": 2,
@@ -5929,12 +5975,12 @@ exports[`maskPassword 1`] = `
                       \\"charset\\": \\"UTF-8\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 2,
@@ -5944,12 +5990,12 @@ exports[`maskPassword 1`] = `
                       \\"content\\": \\"IE=edge\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -5959,12 +6005,12 @@ exports[`maskPassword 1`] = `
                       \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 11
                   },
                   {
                     \\"type\\": 2,
@@ -5974,23 +6020,23 @@ exports[`maskPassword 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"Document\\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 11
+                    \\"id\\": 12
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   }
                 ],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 3,
                 \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 14
+                \\"id\\": 15
               },
               {
                 \\"type\\": 2,
@@ -6000,7 +6046,7 @@ exports[`maskPassword 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 2,
@@ -6010,12 +6056,12 @@ exports[`maskPassword 1`] = `
                       \\"id\\": \\"password\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 17
+                    \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 18
+                    \\"id\\": 19
                   },
                   {
                     \\"type\\": 2,
@@ -6025,15 +6071,15 @@ exports[`maskPassword 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 20
+                        \\"id\\": 21
                       }
                     ],
-                    \\"id\\": 19
+                    \\"id\\": 20
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 21
+                    \\"id\\": 22
                   },
                   {
                     \\"type\\": 2,
@@ -6043,21 +6089,21 @@ exports[`maskPassword 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 23
+                        \\"id\\": 24
                       }
                     ],
-                    \\"id\\": 22
+                    \\"id\\": 23
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 24
+                    \\"id\\": 25
                   }
                 ],
-                \\"id\\": 15
+                \\"id\\": 16
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -6073,7 +6119,7 @@ exports[`maskPassword 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6082,7 +6128,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6092,7 +6138,7 @@ exports[`maskPassword 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"value\\": \\"*\\"
           }
@@ -6108,7 +6154,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6118,7 +6164,7 @@ exports[`maskPassword 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"value\\": \\"**\\"
           }
@@ -6134,7 +6180,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6144,7 +6190,7 @@ exports[`maskPassword 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"value\\": \\"***\\"
           }
@@ -6160,7 +6206,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6170,7 +6216,7 @@ exports[`maskPassword 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"value\\": \\"****\\"
           }
@@ -6186,7 +6232,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6196,7 +6242,7 @@ exports[`maskPassword 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"value\\": \\"*****\\"
           }
@@ -6212,7 +6258,7 @@ exports[`maskPassword 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
-      \\"id\\": 17
+      \\"id\\": 18
     }
   },
   {
@@ -6222,7 +6268,7 @@ exports[`maskPassword 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 17,
+          \\"id\\": 18,
           \\"attributes\\": {
             \\"value\\": \\"******\\"
           }
@@ -6260,6 +6306,13 @@ exports[`move-node-1 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -6269,7 +6322,7 @@ exports[`move-node-1 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -6279,7 +6332,7 @@ exports[`move-node-1 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -6289,27 +6342,27 @@ exports[`move-node-1 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"p\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 8
+                        \\"id\\": 9
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 9
+                        \\"id\\": 10
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 11
                   },
                   {
                     \\"type\\": 2,
@@ -6319,7 +6372,7 @@ exports[`move-node-1 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       },
                       {
                         \\"type\\": 2,
@@ -6329,7 +6382,7 @@ exports[`move-node-1 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 14
+                            \\"id\\": 15
                           },
                           {
                             \\"type\\": 2,
@@ -6339,31 +6392,31 @@ exports[`move-node-1 1`] = `
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"1\\",
-                                \\"id\\": 16
+                                \\"id\\": 17
                               }
                             ],
-                            \\"id\\": 15
+                            \\"id\\": 16
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 17
+                            \\"id\\": 18
                           }
                         ],
-                        \\"id\\": 13
+                        \\"id\\": 14
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 18
+                        \\"id\\": 19
                       }
                     ],
-                    \\"id\\": 11
+                    \\"id\\": 12
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 19
+                    \\"id\\": 20
                   },
                   {
                     \\"type\\": 2,
@@ -6373,21 +6426,21 @@ exports[`move-node-1 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 21
+                        \\"id\\": 22
                       }
                     ],
-                    \\"id\\": 20
+                    \\"id\\": 21
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 22
+                    \\"id\\": 23
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -6406,87 +6459,87 @@ exports[`move-node-1 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 4,
-          \\"id\\": 11
+          \\"parentId\\": 5,
+          \\"id\\": 12
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 11
-          }
-        },
-        {
-          \\"parentId\\": 11,
-          \\"nextId\\": 13,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n      \\",
             \\"id\\": 12
           }
         },
         {
-          \\"parentId\\": 11,
-          \\"nextId\\": 18,
+          \\"parentId\\": 12,
+          \\"nextId\\": 14,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n      \\",
+            \\"id\\": 13
+          }
+        },
+        {
+          \\"parentId\\": 12,
+          \\"nextId\\": 19,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"i\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 13
-          }
-        },
-        {
-          \\"parentId\\": 13,
-          \\"nextId\\": 15,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n        \\",
             \\"id\\": 14
           }
         },
         {
-          \\"parentId\\": 13,
-          \\"nextId\\": 17,
+          \\"parentId\\": 14,
+          \\"nextId\\": 16,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n        \\",
+            \\"id\\": 15
+          }
+        },
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": 18,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"b\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 15
-          }
-        },
-        {
-          \\"parentId\\": 15,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"1\\",
             \\"id\\": 16
           }
         },
         {
-          \\"parentId\\": 13,
+          \\"parentId\\": 16,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n      \\",
+            \\"textContent\\": \\"1\\",
             \\"id\\": 17
           }
         },
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 14,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n      \\",
+            \\"id\\": 18
+          }
+        },
+        {
+          \\"parentId\\": 12,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\\\n    \\",
-            \\"id\\": 18
+            \\"id\\": 19
           }
         }
       ]
@@ -6520,6 +6573,13 @@ exports[`move-node-2 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -6529,7 +6589,7 @@ exports[`move-node-2 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -6539,7 +6599,7 @@ exports[`move-node-2 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -6549,27 +6609,27 @@ exports[`move-node-2 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"p\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 8
+                        \\"id\\": 9
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 9
+                        \\"id\\": 10
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 11
                   },
                   {
                     \\"type\\": 2,
@@ -6579,7 +6639,7 @@ exports[`move-node-2 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       },
                       {
                         \\"type\\": 2,
@@ -6589,7 +6649,7 @@ exports[`move-node-2 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 14
+                            \\"id\\": 15
                           },
                           {
                             \\"type\\": 2,
@@ -6599,31 +6659,31 @@ exports[`move-node-2 1`] = `
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"1\\",
-                                \\"id\\": 16
+                                \\"id\\": 17
                               }
                             ],
-                            \\"id\\": 15
+                            \\"id\\": 16
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 17
+                            \\"id\\": 18
                           }
                         ],
-                        \\"id\\": 13
+                        \\"id\\": 14
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 18
+                        \\"id\\": 19
                       }
                     ],
-                    \\"id\\": 11
+                    \\"id\\": 12
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 19
+                    \\"id\\": 20
                   },
                   {
                     \\"type\\": 2,
@@ -6633,21 +6693,21 @@ exports[`move-node-2 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 21
+                        \\"id\\": 22
                       }
                     ],
-                    \\"id\\": 20
+                    \\"id\\": 21
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 22
+                    \\"id\\": 23
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -6666,98 +6726,98 @@ exports[`move-node-2 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 4,
-          \\"id\\": 11
+          \\"parentId\\": 5,
+          \\"id\\": 12
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 11,
-          \\"nextId\\": 13,
+          \\"parentId\\": 12,
+          \\"nextId\\": 14,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\\\n      \\",
-            \\"id\\": 12
+            \\"id\\": 13
           }
         },
         {
-          \\"parentId\\": 11,
-          \\"nextId\\": 18,
+          \\"parentId\\": 12,
+          \\"nextId\\": 19,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"i\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 13
-          }
-        },
-        {
-          \\"parentId\\": 13,
-          \\"nextId\\": 15,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n        \\",
             \\"id\\": 14
           }
         },
         {
-          \\"parentId\\": 13,
-          \\"nextId\\": 17,
+          \\"parentId\\": 14,
+          \\"nextId\\": 16,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n        \\",
+            \\"id\\": 15
+          }
+        },
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": 18,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"b\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 15
-          }
-        },
-        {
-          \\"parentId\\": 15,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"1\\",
             \\"id\\": 16
           }
         },
         {
-          \\"parentId\\": 13,
+          \\"parentId\\": 16,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n      \\",
+            \\"textContent\\": \\"1\\",
             \\"id\\": 17
           }
         },
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 14,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n    \\",
+            \\"textContent\\": \\"\\\\n      \\",
             \\"id\\": 18
           }
         },
         {
-          \\"parentId\\": 4,
+          \\"parentId\\": 12,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n    \\",
+            \\"id\\": 19
+          }
+        },
+        {
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 23
+            \\"id\\": 24
           }
         },
         {
-          \\"parentId\\": 23,
+          \\"parentId\\": 24,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 12
           }
         }
       ]
@@ -8199,6 +8259,13 @@ exports[`serialize-before-record 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -8208,7 +8275,7 @@ exports[`serialize-before-record 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -8218,7 +8285,7 @@ exports[`serialize-before-record 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -8228,15 +8295,15 @@ exports[`serialize-before-record 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"mutation observer\\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -8246,27 +8313,27 @@ exports[`serialize-before-record 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"li\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 11
+                        \\"id\\": 12
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 12
+                        \\"id\\": 13
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -8276,21 +8343,21 @@ exports[`serialize-before-record 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 15
+                        \\"id\\": 16
                       }
                     ],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 16
+                    \\"id\\": 17
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -8310,19 +8377,8 @@ exports[`serialize-before-record 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"li\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 17
-          }
-        },
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": 17,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"li\\",
@@ -8332,7 +8388,7 @@ exports[`serialize-before-record 1`] = `
           }
         },
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 10,
           \\"nextId\\": 18,
           \\"node\\": {
             \\"type\\": 2,
@@ -8340,6 +8396,17 @@ exports[`serialize-before-record 1`] = `
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 19
+          }
+        },
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": 19,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 20
           }
         }
       ]
