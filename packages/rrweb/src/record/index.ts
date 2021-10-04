@@ -19,6 +19,7 @@ import {
   listenerHandler,
   mutationCallbackParam,
   scrollCallback,
+  IWindow,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -451,7 +452,7 @@ function record<T = eventWithTime>(
             );
             init();
           },
-          twindow,
+          twindow as IWindow,
         ),
       );
     }
