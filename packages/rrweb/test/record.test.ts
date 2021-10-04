@@ -434,3 +434,85 @@ describe('record iframes', function (this: ISuite) {
   });
 
 });
+
+const iframeSetup = async function (this: ISuite, content: string) {
+  before(async () => {
+    this.browser = await launchPuppeteer();
+
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    this.code = fs.readFileSync(bundlePath, 'utf8');
+  });
+
+  beforeEach(async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    await page.goto('about:blank?outer');
+    await page.setContent(content);
+    // page.frames()[0] is the main frame
+    await page.frames()[1].evaluate(this.code);
+    this.page = page;
+    this.events = [];
+    await this.page.exposeFunction('emit', (e: eventWithTime) => {
+      if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
+        return;
+      }
+      this.events.push(e);
+    });
+
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+  });
+
+  afterEach(async () => {
+    await this.page.close();
+  });
+
+  after(async () => {
+    await this.browser.close();
+  });
+};
+
+describe('be loaded from an iframe', function (this: ISuite) {
+  this.timeout(10_000);
+
+  iframeSetup.call(
+    this,
+    `
+      <html>
+        <body>
+          <input type="text" size="40" />
+          <iframe srcdoc="<div>rrweb loaded in here!</div>" />
+        </body>
+      </html>
+    `,
+  );
+
+  it('captures activity in outer frame', async () => {
+    await this.page.frames()[1].evaluate(() => {
+      // window here is the iframe window
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window.top as unknown) as IWindow).emit,
+      });
+    });
+    expect(await this.page.evaluate('typeof rrweb')).to.be.equal('undefined');
+    await this.page.type('input', 'a');  // ensuring that typing in outer gets recorded by inner rrweb
+    if (false) {
+      // problem with non-determinism in 'positions' x/y value here
+      await this.page.click('input');  // generates 4 events
+      await this.page.waitForTimeout(10);
+      expect(this.events.length).to.equal(9);
+    } else {
+      expect(this.events.length).to.equal(5);
+    }
+    expect(
+      this.events.filter(
+        (event: eventWithTime) => event.type === EventType.Meta,
+      ).length,
+    ).to.equal(1);
+    expect(
+      this.events.filter(
+        (event: eventWithTime) => event.type === EventType.FullSnapshot,
+      ).length,
+    ).to.equal(1);
+    assertSnapshot(this.events, __filename, 'loaded-from-iframe');
+  });
+});

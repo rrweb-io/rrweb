@@ -2024,7 +2024,7 @@ exports[`iframe 1`] = `
   {
     \\"type\\": 4,
     \\"data\\": {
-      \\"href\\": \\"about:blank\\",
+      \\"href\\": \\"http://localhost:3030/html\\",
       \\"width\\": 1920,
       \\"height\\": 1080
     }

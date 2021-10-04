@@ -682,8 +682,9 @@ function initStyleDeclarationObserver(
 
 function initMediaInteractionObserver(
   mediaInteractionCb: mediaInteractionCallback,
-  blockClass: blockClass,
+  doc: Document,
   mirror: Mirror,
+  blockClass: blockClass,
 ): listenerHandler {
   const handler = (type: MediaInteractions) => (event: Event) => {
     const target = getEventTarget(event);
@@ -697,9 +698,9 @@ function initMediaInteractionObserver(
     });
   };
   const handlers = [
-    on('play', handler(MediaInteractions.Play)),
-    on('pause', handler(MediaInteractions.Pause)),
-    on('seeked', handler(MediaInteractions.Seeked)),
+    on('play', handler(MediaInteractions.Play), doc),
+    on('pause', handler(MediaInteractions.Pause), doc),
+    on('seeked', handler(MediaInteractions.Seeked), doc),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -985,8 +986,9 @@ export function initObservers(
   );
   const mediaInteractionHandler = initMediaInteractionObserver(
     o.mediaInteractionCb,
-    o.blockClass,
+    o.doc,
     o.mirror,
+    o.blockClass,
   );
 
   const styleSheetObserver = initStyleSheetObserver(

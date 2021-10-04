@@ -26,7 +26,7 @@ import {
 export function on(
   type: string,
   fn: EventListenerOrEventListenerObject,
-  target: Document | IWindow = document,
+  target: Document | IWindow,
 ): listenerHandler {
   const options = { capture: true, passive: true };
   target.addEventListener(type, fn, options);
@@ -207,19 +207,37 @@ export function patch(
   }
 }
 
+export function getTopWindow(): Window {
+  let twindow: Window = window;
+  while (twindow.parent && twindow.parent != twindow) {
+    // check each parent in case the window.top.document fails, but an intermediary one would succeed
+    try {
+      let tdoc = twindow.parent.document;  // this can fail apparently: https://stackoverflow.com/questions/2937118
+      twindow = twindow.parent as Window;
+    } catch (err) {
+      break;
+    }
+  }
+  return twindow;
+}
+
 export function getWindowHeight(): number {
+  const twindow = getTopWindow();
+  const tdoc = twindow.document;
   return (
-    window.innerHeight ||
-    (document.documentElement && document.documentElement.clientHeight) ||
-    (document.body && document.body.clientHeight)
+    twindow.innerHeight ||
+    (tdoc.documentElement && tdoc.documentElement.clientHeight) ||
+    (tdoc.body && tdoc.body.clientHeight)
   );
 }
 
 export function getWindowWidth(): number {
+  const twindow = getTopWindow();
+  const tdoc = twindow.document;
   return (
-    window.innerWidth ||
-    (document.documentElement && document.documentElement.clientWidth) ||
-    (document.body && document.body.clientWidth)
+    twindow.innerWidth ||
+    (tdoc.documentElement && tdoc.documentElement.clientWidth) ||
+    (tdoc.body && tdoc.body.clientWidth)
   );
 }
 

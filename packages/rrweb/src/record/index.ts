@@ -2,6 +2,7 @@ import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,
+  getTopWindow,
   getWindowWidth,
   getWindowHeight,
   polyfill,
@@ -18,6 +19,7 @@ import {
   listenerHandler,
   mutationCallbackParam,
   scrollCallback,
+  IWindow,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -66,6 +68,10 @@ function record<T = eventWithTime>(
   if (!emit) {
     throw new Error('emit function is required');
   }
+
+  const twindow = getTopWindow();
+  const tdoc = twindow.document;
+
   // move departed options to new options
   if (mousemoveWait !== undefined && sampling.mousemove === undefined) {
     sampling.mousemove = mousemoveWait;
@@ -209,7 +215,7 @@ function record<T = eventWithTime>(
       wrapEvent({
         type: EventType.Meta,
         data: {
-          href: window.location.href,
+          href: twindow.location.href,
           width: getWindowWidth(),
           height: getWindowHeight(),
         },
@@ -218,7 +224,7 @@ function record<T = eventWithTime>(
     );
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
-    const [node, idNodeMap] = snapshot(document, {
+    const [node, idNodeMap] = snapshot(tdoc, {
       blockClass,
       blockSelector,
       maskTextClass,
@@ -233,7 +239,7 @@ function record<T = eventWithTime>(
           iframeManager.addIframe(n);
         }
         if (hasShadowRoot(n)) {
-          shadowDomManager.addShadowRoot(n.shadowRoot, document);
+          shadowDomManager.addShadowRoot(n.shadowRoot, tdoc);
         }
       },
       onIframeLoad: (iframe, childSn) => {
@@ -254,18 +260,18 @@ function record<T = eventWithTime>(
           node,
           initialOffset: {
             left:
-              window.pageXOffset !== undefined
-                ? window.pageXOffset
-                : document?.documentElement.scrollLeft ||
-                  document?.body?.parentElement?.scrollLeft ||
-                  document?.body.scrollLeft ||
+              twindow.pageXOffset !== undefined
+                ? twindow.pageXOffset
+                : tdoc?.documentElement.scrollLeft ||
+                  tdoc?.body?.parentElement?.scrollLeft ||
+                  tdoc?.body.scrollLeft ||
                   0,
             top:
-              window.pageYOffset !== undefined
-                ? window.pageYOffset
-                : document?.documentElement.scrollTop ||
-                  document?.body?.parentElement?.scrollTop ||
-                  document?.body.scrollTop ||
+              twindow.pageYOffset !== undefined
+                ? twindow.pageYOffset
+                : tdoc?.documentElement.scrollTop ||
+                  tdoc?.body?.parentElement?.scrollTop ||
+                  tdoc?.body.scrollTop ||
                   0,
           },
         },
@@ -284,7 +290,7 @@ function record<T = eventWithTime>(
             data: {},
           }),
         );
-      }),
+      }, tdoc),
     );
 
     const observe = (doc: Document) => {
@@ -426,11 +432,11 @@ function record<T = eventWithTime>(
 
     const init = () => {
       takeFullSnapshot();
-      handlers.push(observe(document));
+      handlers.push(observe(tdoc));
     };
     if (
-      document.readyState === 'interactive' ||
-      document.readyState === 'complete'
+      tdoc.readyState === 'interactive' ||
+      tdoc.readyState === 'complete'
     ) {
       init();
     } else {
@@ -446,7 +452,7 @@ function record<T = eventWithTime>(
             );
             init();
           },
-          window,
+          twindow as IWindow,
         ),
       );
     }
