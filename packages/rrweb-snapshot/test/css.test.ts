@@ -1,5 +1,3 @@
-import 'mocha';
-import { expect } from 'chai';
 import { parse, Rule, Media } from '../src/css';
 
 describe('css parser', () => {
@@ -9,50 +7,50 @@ describe('css parser', () => {
       source: 'booty.css',
     });
 
-    expect(ast.stylesheet!.source).to.equal('booty.css');
+    expect(ast.stylesheet!.source).toEqual('booty.css');
 
     const position = ast.stylesheet!.rules[0].position!;
-    expect(position.start).to.be.ok;
-    expect(position.end).to.be.ok;
-    expect(position.source).to.equal('booty.css');
-    expect(position.content).to.equal(css);
+    expect(position.start).toBeTruthy();
+    expect(position.end).toBeTruthy();
+    expect(position.source).toEqual('booty.css');
+    expect(position.content).toEqual(css);
   });
 
   it('should throw when a selector is missing', () => {
     expect(() => {
       parse('{size: large}');
-    }).to.throw();
+    }).toThrow();
 
     expect(() => {
       parse('b { color: red; }\n{ color: green; }\na { color: blue; }');
-    }).to.throw();
+    }).toThrow();
   });
 
   it('should throw when a broken comment is found', () => {
     expect(() => {
       parse('thing { color: red; } /* b { color: blue; }');
-    }).to.throw();
+    }).toThrow();
 
     expect(() => {
       parse('/*');
-    }).to.throw();
+    }).toThrow();
 
     /* Nested comments should be fine */
     expect(() => {
       parse('/* /* */');
-    }).to.not.throw();
+    }).not.toThrow();
   });
 
   it('should allow empty property value', () => {
     expect(() => {
       parse('p { color:; }');
-    }).to.not.throw();
+    }).not.toThrow();
   });
 
   it('should not throw with silent option', () => {
     expect(() => {
       parse('thing { color: red; } /* b { color: blue; }', { silent: true });
-    }).to.not.throw();
+    }).not.toThrow();
   });
 
   it('should list the parsing errors and continue parsing', () => {
@@ -65,18 +63,18 @@ describe('css parser', () => {
     );
 
     const rules = result.stylesheet!.rules;
-    expect(rules.length).to.above(2);
+    expect(rules.length).toBeGreaterThan(2);
 
     const errors = result.stylesheet!.parsingErrors!;
-    expect(errors.length).to.equal(2);
+    expect(errors.length).toEqual(2);
 
-    expect(errors[0]).to.have.property('message');
-    expect(errors[0]).to.have.property('reason');
-    expect(errors[0]).to.have.property('filename');
-    expect(errors[0]).to.have.property('line');
-    expect(errors[0]).to.have.property('column');
-    expect(errors[0]).to.have.property('source');
-    expect(errors[0].filename).to.equal('foo.css');
+    expect(errors[0]).toHaveProperty('message');
+    expect(errors[0]).toHaveProperty('reason');
+    expect(errors[0]).toHaveProperty('filename');
+    expect(errors[0]).toHaveProperty('line');
+    expect(errors[0]).toHaveProperty('column');
+    expect(errors[0]).toHaveProperty('source');
+    expect(errors[0].filename).toEqual('foo.css');
   });
 
   it('should set parent property', () => {
@@ -85,27 +83,27 @@ describe('css parser', () => {
         '@media (min-width: 100px) { thing { test: value; } }',
     );
 
-    expect(result.parent).to.equal(null);
+    expect(result.parent).toEqual(null);
 
     const rules = result.stylesheet!.rules;
-    expect(rules.length).to.equal(2);
+    expect(rules.length).toEqual(2);
 
     let rule = rules[0] as Rule;
-    expect(rule.parent).to.equal(result);
-    expect(rule.declarations!.length).to.equal(1);
+    expect(rule.parent).toEqual(result);
+    expect(rule.declarations!.length).toEqual(1);
 
     let decl = rule.declarations![0];
-    expect(decl.parent).to.equal(rule);
+    expect(decl.parent).toEqual(rule);
 
     const media = rules[1] as Media;
-    expect(media.parent).to.equal(result);
-    expect(media.rules!.length).to.equal(1);
+    expect(media.parent).toEqual(result);
+    expect(media.rules!.length).toEqual(1);
 
     rule = media.rules![0] as Rule;
-    expect(rule.parent).to.equal(media);
+    expect(rule.parent).toEqual(media);
 
-    expect(rule.declarations!.length).to.equal(1);
+    expect(rule.declarations!.length).toEqual(1);
     decl = rule.declarations![0];
-    expect(decl.parent).to.equal(rule);
+    expect(decl.parent).toEqual(rule);
   });
 });

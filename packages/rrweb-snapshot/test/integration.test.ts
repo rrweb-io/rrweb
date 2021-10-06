@@ -2,13 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
 import * as url from 'url';
-import 'mocha';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
-import typescript = require('rollup-plugin-typescript');
-import { assert } from 'chai';
-import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
-import { Suite } from 'mocha';
+import * as typescript from '@rollup/plugin-typescript';
+import * as assert from 'assert';
+
+const _typescript = (typescript as unknown) as typeof typescript.default;
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map((filePath) => {
@@ -23,7 +22,7 @@ interface IMimeType {
   [key: string]: string;
 }
 
-const server = () =>
+const startServer = () =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
@@ -53,49 +52,40 @@ const server = () =>
     });
   });
 
-function matchSnapshot(actual: string, testFile: string, testTitle: string) {
-  const snapshotState = new SnapshotState(testFile, {
-    updateSnapshot: process.env.SNAPSHOT_UPDATE ? 'all' : 'new',
-  });
-
-  const matcher = toMatchSnapshot.bind({
-    snapshotState,
-    currentTestName: testTitle,
-  });
-  const result = matcher(actual);
-  snapshotState.save();
-  return result;
-}
-
-interface ISuite extends Suite {
+interface ISuite {
   server: http.Server;
   browser: puppeteer.Browser;
   code: string;
 }
 
 describe('integration tests', function (this: ISuite) {
-  this.timeout(10_000);
+  jest.setTimeout(30_000);
+  let server: ISuite['server'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
 
-  before(async () => {
-    this.server = await server();
-    this.browser = await puppeteer.launch({
+  beforeAll(async () => {
+    server = await startServer();
+    browser = await puppeteer.launch({
       // headless: false,
     });
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [typescript()],
+      plugins: [_typescript()],
     });
-    const { code } = await bundle.generate({
+    const {
+      output: [{ code: _code }],
+    } = await bundle.generate({
       name: 'rrweb',
       format: 'iife',
     });
-    this.code = code;
+    code = _code;
   });
 
-  after(async () => {
-    await this.browser.close();
-    await this.server.close();
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
   });
 
   for (const html of htmls) {
@@ -104,7 +94,7 @@ describe('integration tests', function (this: ISuite) {
     }
     const title = '[html file]: ' + html.filePath;
     it(title, async () => {
-      const page: puppeteer.Page = await this.browser.newPage();
+      const page: puppeteer.Page = await browser.newPage();
       // console for debug
       // tslint:disable-next-line: no-console
       page.on('console', (msg) => console.log(msg.text()));
@@ -115,11 +105,21 @@ describe('integration tests', function (this: ISuite) {
           waitUntil: 'load',
         });
         const outerCompatMode = await page.evaluate('document.compatMode');
-        const innerCompatMode = await page.evaluate('document.querySelector("iframe").contentDocument.compatMode');
-        assert(outerCompatMode === 'CSS1Compat', outerCompatMode + ' for outer iframe.html should be CSS1Compat as it has "<!DOCTYPE html>"');
+        const innerCompatMode = await page.evaluate(
+          'document.querySelector("iframe").contentDocument.compatMode',
+        );
+        assert(
+          outerCompatMode === 'CSS1Compat',
+          outerCompatMode +
+            ' for outer iframe.html should be CSS1Compat as it has "<!DOCTYPE html>"',
+        );
         // inner omits a doctype so gets rendered in backwards compat mode
         // although this was originally accidental, we'll add a synthetic doctype to the rebuild to recreate this
-        assert(innerCompatMode === 'BackCompat', innerCompatMode + ' for iframe-inner.html should be BackCompat as it lacks "<!DOCTYPE html>"');
+        assert(
+          innerCompatMode === 'BackCompat',
+          innerCompatMode +
+            ' for iframe-inner.html should be BackCompat as it lacks "<!DOCTYPE html>"',
+        );
       } else {
         // loading indirectly is improtant for relative path testing
         await page.goto(`http://localhost:3030/html`);
@@ -128,7 +128,7 @@ describe('integration tests', function (this: ISuite) {
         });
       }
       const rebuildHtml = (
-        await page.evaluate(`${this.code}
+        await page.evaluate(`${code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
         let out = x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
@@ -139,13 +139,12 @@ describe('integration tests', function (this: ISuite) {
         out;  // return
       `)
       ).replace(/\n\n/g, '');
-      const result = matchSnapshot(rebuildHtml, __filename, title);
-      assert(result.pass, result.pass ? '' : result.report());
-    }).timeout(5000);
+      expect(rebuildHtml).toMatchSnapshot();
+    });
   }
 
   it('correctly triggers backCompat mode and rendering', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
@@ -154,11 +153,20 @@ describe('integration tests', function (this: ISuite) {
       waitUntil: 'load',
     });
     const compatMode = await page.evaluate('document.compatMode');
-    assert(compatMode === 'BackCompat', compatMode + ' for compat-mode.html should be BackCompat as DOCTYPE is deliberately omitted');
-    const renderedHeight = await page.evaluate('document.querySelector("center").clientHeight');
+    assert(
+      compatMode === 'BackCompat',
+      compatMode +
+        ' for compat-mode.html should be BackCompat as DOCTYPE is deliberately omitted',
+    );
+    const renderedHeight = await page.evaluate(
+      'document.querySelector("center").clientHeight',
+    );
     // can remove following assertion if dimensions of page change
-    assert(renderedHeight < 400, `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`)
-    const rebuildRenderedHeight = await page.evaluate(`${this.code}
+    assert(
+      renderedHeight < 400,
+      `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`,
+    );
+    const rebuildRenderedHeight = await page.evaluate(`${code}
 const [snap] = rrweb.snapshot(document);
 const iframe = document.createElement('iframe');
 iframe.setAttribute('width', document.body.clientWidth)
@@ -169,39 +177,53 @@ document.body.appendChild(iframe);
 const rebuildNode = rrweb.rebuild(snap, { doc: iframe.contentDocument })[0];
 iframe.contentDocument.querySelector('center').clientHeight
 `);
-    const rebuildCompatMode = await page.evaluate('document.querySelector("iframe").contentDocument.compatMode');
-    assert(rebuildCompatMode === 'BackCompat', 'rebuilt compatMode should match source compatMode, but doesn\'t: ' + rebuildCompatMode);
-    assert(rebuildRenderedHeight === renderedHeight, 'rebuilt height (${rebuildRenderedHeight}) should equal original height (${renderedHeight})')
-    }).timeout(5000);
-
+    const rebuildCompatMode = await page.evaluate(
+      'document.querySelector("iframe").contentDocument.compatMode',
+    );
+    assert(
+      rebuildCompatMode === 'BackCompat',
+      "rebuilt compatMode should match source compatMode, but doesn't: " +
+        rebuildCompatMode,
+    );
+    assert(
+      rebuildRenderedHeight === renderedHeight,
+      'rebuilt height (${rebuildRenderedHeight}) should equal original height (${renderedHeight})',
+    );
+  });
 });
 
 describe('iframe integration tests', function (this: ISuite) {
+  jest.setTimeout(30_000);
+  let server: ISuite['server'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
 
-  before(async () => {
-    this.server = await server();
-    this.browser = await puppeteer.launch({
+  beforeAll(async () => {
+    server = await startServer();
+    browser = await puppeteer.launch({
       // headless: false,
     });
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [typescript()],
+      plugins: [_typescript()],
     });
-    const { code } = await bundle.generate({
+    const {
+      output: [{ code: _code }],
+    } = await bundle.generate({
       name: 'rrweb',
       format: 'iife',
     });
-    this.code = code;
+    code = _code;
   });
 
-  after(async () => {
-    await this.browser.close();
-    await this.server.close();
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
   });
 
   it('snapshot async iframes', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
@@ -209,43 +231,48 @@ describe('iframe integration tests', function (this: ISuite) {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
-      await page.evaluate(`${this.code};
+      await page.evaluate(`${code};
       rrweb.snapshot(document)[0];
     `),
       null,
       2,
     );
-    const result = matchSnapshot(snapshotResult, __filename, this.title);
-    assert(result.pass, result.pass ? '' : result.report());
-  }).timeout(5000);
+    expect(snapshotResult).toMatchSnapshot();
+  });
 });
 
 describe('shadow DOM integration tests', function (this: ISuite) {
+  jest.setTimeout(30_000);
+  let server: ISuite['server'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
 
-  before(async () => {
-    this.server = await server();
-    this.browser = await puppeteer.launch({
+  beforeAll(async () => {
+    server = await startServer();
+    browser = await puppeteer.launch({
       // headless: false,
     });
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [typescript()],
+      plugins: [_typescript()],
     });
-    const { code } = await bundle.generate({
+    const {
+      output: [{ code: _code }],
+    } = await bundle.generate({
       name: 'rrweb',
       format: 'iife',
     });
-    this.code = code;
+    code = _code;
   });
 
-  after(async () => {
-    await this.browser.close();
-    await this.server.close();
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
   });
 
   it('snapshot shadow DOM', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
@@ -253,13 +280,12 @@ describe('shadow DOM integration tests', function (this: ISuite) {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
-      await page.evaluate(`${this.code};
+      await page.evaluate(`${code};
       rrweb.snapshot(document)[0];
     `),
       null,
       2,
     );
-    const result = matchSnapshot(snapshotResult, __filename, this.title);
-    assert(result.pass, result.pass ? '' : result.report());
-  }).timeout(5000);
+    expect(snapshotResult).toMatchSnapshot();
+  });
 });

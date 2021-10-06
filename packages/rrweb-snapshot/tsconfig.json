@@ -11,5 +11,5 @@
     "lib": ["es6", "dom"]
   },
   "exclude": ["test"],
-  "include": ["src", "test.d.ts"]
+  "include": ["src"]
 }
