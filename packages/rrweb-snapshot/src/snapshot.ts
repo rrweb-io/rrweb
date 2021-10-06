@@ -49,9 +49,13 @@ function getCssRulesString(s: CSSStyleSheet): string | null {
 }
 
 function getCssRuleString(rule: CSSRule): string {
-  return isCSSImportRule(rule)
-    ? getCssRulesString(rule.styleSheet) || ''
-    : rule.cssText;
+  let cssStringified = rule.cssText;
+  if (isCSSImportRule(rule)) {
+    try {
+      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
+    } catch {}
+  }
+  return cssStringified;
 }
 
 function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
