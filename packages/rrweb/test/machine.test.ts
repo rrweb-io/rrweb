@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { discardPriorSnapshots } from '../src/replay/machine';
 import { sampleEvents } from './utils';
 import { EventType } from '../src/types';
@@ -17,7 +16,7 @@ const nextNextEvents = nextEvents.map((e) => ({
 
 describe('get last session', () => {
   it('will return all the events when there is only one session', () => {
-    expect(discardPriorSnapshots(events, events[0].timestamp)).to.deep.equal(events);
+    expect(discardPriorSnapshots(events, events[0].timestamp)).toEqual(events);
   });
 
   it('will return last session when there is more than one in the events', () => {
@@ -27,7 +26,7 @@ describe('get last session', () => {
         multiple,
         nextNextEvents[nextNextEvents.length - 1].timestamp,
       ),
-    ).to.deep.equal(nextNextEvents);
+    ).toEqual(nextNextEvents);
   });
 
   it('will return last session when baseline time is future time', () => {
@@ -37,11 +36,11 @@ describe('get last session', () => {
         multiple,
         nextNextEvents[nextNextEvents.length - 1].timestamp + 1000,
       ),
-    ).to.deep.equal(nextNextEvents);
+    ).toEqual(nextNextEvents);
   });
 
   it('will return all sessions when baseline time is prior time', () => {
-    expect(discardPriorSnapshots(events, events[0].timestamp - 1000)).to.deep.equal(
+    expect(discardPriorSnapshots(events, events[0].timestamp - 1000)).toEqual(
       events,
     );
   });

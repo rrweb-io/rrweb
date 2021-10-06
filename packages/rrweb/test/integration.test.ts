@@ -4,12 +4,10 @@ import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
 import { assertSnapshot, launchPuppeteer } from './utils';
-import { Suite } from 'mocha';
-import { expect } from 'chai';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
-interface ISuite extends Suite {
+interface ISuite {
   server: http.Server;
   code: string;
   browser: puppeteer.Browser;
@@ -19,7 +17,7 @@ interface IMimeType {
   [key: string]: string;
 }
 
-const server = () =>
+const startServer = () =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
@@ -53,7 +51,7 @@ const server = () =>
   });
 
 describe('record integration tests', function (this: ISuite) {
-  this.timeout(10_000);
+  jest.setTimeout(10_000);
 
   const getHtml = (
     fileName: string,
@@ -65,7 +63,7 @@ describe('record integration tests', function (this: ISuite) {
       '</body>',
       `
     <script>
-      ${this.code}
+      ${code}
       window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();
       window.snapshots = [];
       rrweb.record({
@@ -86,9 +84,13 @@ describe('record integration tests', function (this: ISuite) {
     );
   };
 
-  before(async () => {
-    this.server = await server();
-    this.browser = await launchPuppeteer();
+  let server: ISuite['server'];
+  let code: ISuite['code'];
+  let browser: ISuite['browser'];
+
+  beforeAll(async () => {
+    server = await startServer();
+    browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
     const pluginsCode = [
@@ -96,16 +98,16 @@ describe('record integration tests', function (this: ISuite) {
     ]
       .map((path) => fs.readFileSync(path, 'utf8'))
       .join();
-    this.code = fs.readFileSync(bundlePath, 'utf8') + pluginsCode;
+    code = fs.readFileSync(bundlePath, 'utf8') + pluginsCode;
   });
 
-  after(async () => {
-    await this.browser.close();
-    this.server.close();
+  afterAll(async () => {
+    await browser.close();
+    server.close();
   });
 
   it('can record form interactions', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'form.html'));
 
@@ -116,11 +118,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'form');
+    assertSnapshot(snapshots);
   });
 
   it('can record childList mutations', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
@@ -134,11 +136,11 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'child-list');
+    assertSnapshot(snapshots);
   });
 
   it('can record character data muatations', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
@@ -154,11 +156,11 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'character-data');
+    assertSnapshot(snapshots);
   });
 
   it('can record attribute mutation', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
@@ -172,11 +174,11 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'attributes');
+    assertSnapshot(snapshots);
   });
 
   it('can record node mutations', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'select2.html'), {
       waitUntil: 'networkidle0',
@@ -189,11 +191,11 @@ describe('record integration tests', function (this: ISuite) {
       'document.getElementById("select2-drop").setAttribute("style", document.getElementById("select2-drop").style.cssText + "color:black !important")',
     );
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'select2');
+    assertSnapshot(snapshots);
   });
 
   it('can freeze mutations', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
@@ -215,22 +217,22 @@ describe('record integration tests', function (this: ISuite) {
       document.body.removeChild(ul);
     });
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'frozen');
+    assertSnapshot(snapshots);
   });
 
   it('should not record input events on ignored elements', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'ignore.html'));
 
     await page.type('.rr-ignore', 'secret');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'ignore');
+    assertSnapshot(snapshots);
   });
 
   it('should not record input values if maskAllInputs is enabled', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'form.html', { maskAllInputs: true }),
@@ -244,11 +246,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'mask');
+    assertSnapshot(snapshots);
   });
 
   it('can use maskInputOptions to configure which type of inputs should be masked', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'form.html', {
@@ -268,11 +270,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'maskInputOptions');
+    assertSnapshot(snapshots);
   });
 
   it('should mask value attribute with maskInputOptions', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'password.html', {
@@ -285,11 +287,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.type('input[type="password"]', 'secr3t');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'maskPassword');
+    assertSnapshot(snapshots);
   });
 
   it('should record input userTriggered values if userTriggeredOnInput is enabled', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'form.html', { userTriggeredOnInput: true }),
@@ -303,11 +305,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.select('select', '1');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'userTriggered');
+    assertSnapshot(snapshots);
   });
 
   it('should not record blocked elements and its child nodes', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'block.html'));
 
@@ -316,11 +318,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.click('#text');
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'block');
+    assertSnapshot(snapshots);
   });
 
   it('should not record blocked elements dynamically added', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'block.html'));
 
@@ -336,11 +338,11 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'block 2');
+    assertSnapshot(snapshots);
   });
 
   it('should record DOM node movement 1', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'move-node.html'));
 
@@ -354,11 +356,11 @@ describe('record integration tests', function (this: ISuite) {
       div.appendChild(span);
     });
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'move-node-1');
+    assertSnapshot(snapshots);
   });
 
   it('should record DOM node movement 2', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'move-node.html'));
 
@@ -369,20 +371,20 @@ describe('record integration tests', function (this: ISuite) {
       div.appendChild(span);
     });
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'move-node-2');
+    assertSnapshot(snapshots);
   });
 
   it('should record dynamic CSS changes', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'react-styled-components.html'));
     await page.click('.toggle');
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'react-styled-components');
+    assertSnapshot(snapshots);
   });
 
   it('should record canvas mutations', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'canvas.html', {
@@ -400,11 +402,11 @@ describe('record integration tests', function (this: ISuite) {
         });
       }
     }
-    assertSnapshot(snapshots, __filename, 'canvas');
+    assertSnapshot(snapshots);
   });
 
   it('will serialize node before record', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
@@ -419,11 +421,11 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'serialize-before-record');
+    assertSnapshot(snapshots);
   });
 
   it('will defer missing next node mutation', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'shuffle.html'));
 
@@ -441,11 +443,11 @@ describe('record integration tests', function (this: ISuite) {
       return parent.innerText;
     });
 
-    expect(text).to.equal('4\n3\n2\n1\n5');
+    expect(text).toEqual('4\n3\n2\n1\n5');
   });
 
   it('should record console messages', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'log.html', {
@@ -454,7 +456,7 @@ describe('record integration tests', function (this: ISuite) {
     );
 
     await page.evaluate(() => {
-      console.assert(0 == 0, 'assert');
+      console.assert(0 === 0, 'assert');
       console.count('count');
       console.countReset('count');
       console.debug('debug');
@@ -479,23 +481,22 @@ describe('record integration tests', function (this: ISuite) {
       console.log('from iframe');
     });
 
-
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'log');
+    assertSnapshot(snapshots);
   });
 
   it('should nest record iframe', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto(`http://localhost:3030/html`);
     await page.setContent(getHtml.call(this, 'main.html'));
 
     await page.waitForTimeout(500);
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'iframe');
+    assertSnapshot(snapshots);
   });
 
   it('should record shadow DOM', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'shadow-dom.html'));
 
@@ -528,11 +529,11 @@ describe('record integration tests', function (this: ISuite) {
     await page.waitForTimeout(50);
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'shadow-dom');
+    assertSnapshot(snapshots);
   });
 
   it('should mask texts', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'mask-text.html', {
@@ -541,11 +542,11 @@ describe('record integration tests', function (this: ISuite) {
     );
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'mask-text');
+    assertSnapshot(snapshots);
   });
 
   it('should mask texts using maskTextFn', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'mask-text.html', {
@@ -555,11 +556,11 @@ describe('record integration tests', function (this: ISuite) {
     );
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'mask-text-fn');
+    assertSnapshot(snapshots);
   });
 
   it('can mask character data mutations', async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
+    const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'mutation-observer.html'));
 
@@ -576,6 +577,6 @@ describe('record integration tests', function (this: ISuite) {
     });
 
     const snapshots = await page.evaluate('window.snapshots');
-    assertSnapshot(snapshots, __filename, 'mask-character-data');
+    assertSnapshot(snapshots);
   });
 });

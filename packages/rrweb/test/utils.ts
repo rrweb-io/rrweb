@@ -1,6 +1,4 @@
-import { SnapshotState, toMatchSnapshot } from 'jest-snapshot';
 import { NodeType } from 'rrweb-snapshot';
-import { assert } from 'chai';
 import {
   EventType,
   IncrementalSource,
@@ -19,24 +17,6 @@ export async function launchPuppeteer() {
     },
     args: ['--no-sandbox'],
   });
-}
-
-export function matchSnapshot(
-  actual: string,
-  testFile: string,
-  testTitle: string,
-) {
-  const snapshotState = new SnapshotState(testFile, {
-    updateSnapshot: process.env.SNAPSHOT_UPDATE ? 'all' : 'new',
-  });
-
-  const matcher = toMatchSnapshot.bind({
-    snapshotState,
-    currentTestName: testTitle,
-  });
-  const result = matcher(actual);
-  snapshotState.save();
-  return result;
 }
 
 /**
@@ -137,7 +117,7 @@ function stringifyDomSnapshot(mhtml: string): string {
     .rewrite() // rewrite all links
     .spit(); // return all contents
 
-  const newResult: { filename: string; content: string }[] = result.map(
+  const newResult: Array<{ filename: string; content: string }> = result.map(
     (asset: { filename: string; content: string }) => {
       let { filename, content } = asset;
       let res: string | undefined;
@@ -152,13 +132,8 @@ function stringifyDomSnapshot(mhtml: string): string {
   return newResult.map((asset) => Object.values(asset).join('\n')).join('\n\n');
 }
 
-export function assertSnapshot(
-  snapshots: eventWithTime[],
-  filename: string,
-  name: string,
-) {
-  const result = matchSnapshot(stringifySnapshots(snapshots), filename, name);
-  assert(result.pass, result.pass ? '' : result.report());
+export function assertSnapshot(snapshots: eventWithTime[]) {
+  expect(stringifySnapshots(snapshots)).toMatchSnapshot();
 }
 
 export async function assertDomSnapshot(
@@ -171,8 +146,7 @@ export async function assertDomSnapshot(
     format: 'mhtml',
   });
 
-  const result = matchSnapshot(stringifyDomSnapshot(data), filename, name);
-  assert(result.pass, result.pass ? '' : result.report());
+  expect(stringifyDomSnapshot(data)).toMatchSnapshot();
 }
 
 const now = Date.now();

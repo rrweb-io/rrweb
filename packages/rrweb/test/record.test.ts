@@ -3,7 +3,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { expect } from 'chai';
 import {
   recordOptions,
   listenerHandler,
@@ -13,9 +12,8 @@ import {
   styleSheetRuleData,
 } from '../src/types';
 import { assertSnapshot, launchPuppeteer } from './utils';
-import { Suite } from 'mocha';
 
-interface ISuite extends Suite {
+interface ISuite {
   code: string;
   browser: puppeteer.Browser;
   page: puppeteer.Page;
@@ -32,44 +30,47 @@ interface IWindow extends Window {
   emit: (e: eventWithTime) => undefined;
 }
 
-const setup = async function (this: ISuite, content: string) {
-  before(async () => {
-    this.browser = await launchPuppeteer();
+const setup = function (this: ISuite, content: string): ISuite {
+  const ctx = {} as ISuite;
+
+  beforeAll(async () => {
+    ctx.browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
-    this.code = fs.readFileSync(bundlePath, 'utf8');
+    ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
-    const page: puppeteer.Page = await this.browser.newPage();
-    await page.goto('about:blank');
-    await page.setContent(content);
-    await page.evaluate(this.code);
-    this.page = page;
-    this.events = [];
-    await this.page.exposeFunction('emit', (e: eventWithTime) => {
+    ctx.page = await ctx.browser.newPage();
+    await ctx.page.goto('about:blank');
+    await ctx.page.setContent(content);
+    await ctx.page.evaluate(ctx.code);
+    ctx.events = [];
+    await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
         return;
       }
-      this.events.push(e);
+      ctx.events.push(e);
     });
 
-    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+    ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
 
   afterEach(async () => {
-    await this.page.close();
+    await ctx.page.close();
   });
 
-  after(async () => {
-    await this.browser.close();
+  afterAll(async () => {
+    await ctx.browser.close();
   });
+
+  return ctx;
 };
 
 describe('record', function (this: ISuite) {
-  this.timeout(10_000);
+  jest.setTimeout(10_000);
 
-  setup.call(
+  const ctx: ISuite = setup.call(
     this,
     `
       <!DOCTYPE html>
@@ -82,7 +83,7 @@ describe('record', function (this: ISuite) {
   );
 
   it('will only have one full snapshot without checkout config', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         emit: ((window as unknown) as IWindow).emit,
@@ -90,24 +91,23 @@ describe('record', function (this: ISuite) {
     });
     let count = 30;
     while (count--) {
-      await this.page.type('input', 'a');
+      await ctx.page.type('input', 'a');
     }
-    await this.page.waitForTimeout(10);
-    expect(this.events.length).to.equal(33);
+    await ctx.page.waitForTimeout(10);
+    expect(ctx.events.length).toEqual(33);
     expect(
-      this.events.filter(
-        (event: eventWithTime) => event.type === EventType.Meta,
-      ).length,
-    ).to.equal(1);
+      ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
+        .length,
+    ).toEqual(1);
     expect(
-      this.events.filter(
+      ctx.events.filter(
         (event: eventWithTime) => event.type === EventType.FullSnapshot,
       ).length,
-    ).to.equal(1);
+    ).toEqual(1);
   });
 
   it('can checkout full snapshot by count', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         emit: ((window as unknown) as IWindow).emit,
@@ -116,28 +116,27 @@ describe('record', function (this: ISuite) {
     });
     let count = 30;
     while (count--) {
-      await this.page.type('input', 'a');
+      await ctx.page.type('input', 'a');
     }
-    await this.page.waitForTimeout(10);
-    expect(this.events.length).to.equal(39);
+    await ctx.page.waitForTimeout(10);
+    expect(ctx.events.length).toEqual(39);
     expect(
-      this.events.filter(
-        (event: eventWithTime) => event.type === EventType.Meta,
-      ).length,
-    ).to.equal(4);
+      ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
+        .length,
+    ).toEqual(4);
     expect(
-      this.events.filter(
+      ctx.events.filter(
         (event: eventWithTime) => event.type === EventType.FullSnapshot,
       ).length,
-    ).to.equal(4);
-    expect(this.events[1].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[13].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[25].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[37].type).to.equal(EventType.FullSnapshot);
+    ).toEqual(4);
+    expect(ctx.events[1].type).toEqual(EventType.FullSnapshot);
+    expect(ctx.events[13].type).toEqual(EventType.FullSnapshot);
+    expect(ctx.events[25].type).toEqual(EventType.FullSnapshot);
+    expect(ctx.events[37].type).toEqual(EventType.FullSnapshot);
   });
 
   it('can checkout full snapshot by time', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         emit: ((window as unknown) as IWindow).emit,
@@ -146,30 +145,29 @@ describe('record', function (this: ISuite) {
     });
     let count = 30;
     while (count--) {
-      await this.page.type('input', 'a');
+      await ctx.page.type('input', 'a');
     }
-    await this.page.waitForTimeout(300);
-    expect(this.events.length).to.equal(33); // before first automatic snapshot
-    await this.page.waitForTimeout(200); // could be 33 or 35 events by now depending on speed of test env
-    await this.page.type('input', 'a');
-    await this.page.waitForTimeout(10);
-    expect(this.events.length).to.equal(36); // additionally includes the 2 checkout events
+    await ctx.page.waitForTimeout(300);
+    expect(ctx.events.length).toEqual(33); // before first automatic snapshot
+    await ctx.page.waitForTimeout(200); // could be 33 or 35 events by now depending on speed of test env
+    await ctx.page.type('input', 'a');
+    await ctx.page.waitForTimeout(10);
+    expect(ctx.events.length).toEqual(36); // additionally includes the 2 checkout events
     expect(
-      this.events.filter(
-        (event: eventWithTime) => event.type === EventType.Meta,
-      ).length,
-    ).to.equal(2);
+      ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
+        .length,
+    ).toEqual(2);
     expect(
-      this.events.filter(
+      ctx.events.filter(
         (event: eventWithTime) => event.type === EventType.FullSnapshot,
       ).length,
-    ).to.equal(2);
-    expect(this.events[1].type).to.equal(EventType.FullSnapshot);
-    expect(this.events[35].type).to.equal(EventType.FullSnapshot);
+    ).toEqual(2);
+    expect(ctx.events[1].type).toEqual(EventType.FullSnapshot);
+    expect(ctx.events[35].type).toEqual(EventType.FullSnapshot);
   });
 
   it('is safe to checkout during async callbacks', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         emit: ((window as unknown) as IWindow).emit,
@@ -190,12 +188,12 @@ describe('record', function (this: ISuite) {
         document.body.appendChild(span);
       }, 10);
     });
-    await this.page.waitForTimeout(100);
-    assertSnapshot(this.events, __filename, 'async-checkout');
+    await ctx.page.waitForTimeout(100);
+    assertSnapshot(ctx.events);
   });
 
   it('can add custom event', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record, addCustomEvent } = ((window as unknown) as IWindow).rrweb;
       record({
         emit: ((window as unknown) as IWindow).emit,
@@ -205,12 +203,12 @@ describe('record', function (this: ISuite) {
         a: 'b',
       });
     });
-    await this.page.waitForTimeout(50);
-    assertSnapshot(this.events, __filename, 'custom-event');
+    await ctx.page.waitForTimeout(50);
+    assertSnapshot(ctx.events);
   });
 
   it('captures stylesheet rules', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
 
       record({
@@ -236,8 +234,8 @@ describe('record', function (this: ISuite) {
         styleSheet.insertRule('body { color: #ccc; }');
       }, 10);
     });
-    await this.page.waitForTimeout(50);
-    const styleSheetRuleEvents = this.events.filter(
+    await ctx.page.waitForTimeout(50);
+    const styleSheetRuleEvents = ctx.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.StyleSheetRule,
@@ -249,14 +247,18 @@ describe('record', function (this: ISuite) {
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
     // pre-serialization insert/delete should be ignored
-    expect(addRules.length).to.equal(2);
-    expect((addRules[0].data as styleSheetRuleData).adds).to.deep.include({rule: "body { color: #fff; }"});
-    expect(removeRuleCount).to.equal(1);
-    assertSnapshot(this.events, __filename, 'stylesheet-rules');
+    expect(addRules.length).toEqual(2);
+    expect((addRules[0].data as styleSheetRuleData).adds).toEqual([
+      {
+        rule: 'body { color: #fff; }',
+      },
+    ]);
+    expect(removeRuleCount).toEqual(1);
+    assertSnapshot(ctx.events);
   });
 
   const captureNestedStylesheetRulesTest = async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
 
       record({
@@ -283,8 +285,8 @@ describe('record', function (this: ISuite) {
         atMediaRule.insertRule('body { color: #ccc; }', 0);
       }, 10);
     });
-    await this.page.waitForTimeout(50);
-    const styleSheetRuleEvents = this.events.filter(
+    await ctx.page.waitForTimeout(50);
+    const styleSheetRuleEvents = ctx.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.StyleSheetRule,
@@ -296,9 +298,9 @@ describe('record', function (this: ISuite) {
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
     // sync insert/delete should be ignored
-    expect(addRuleCount).to.equal(2);
-    expect(removeRuleCount).to.equal(1);
-    assertSnapshot(this.events, __filename, 'nested-stylesheet-rules');
+    expect(addRuleCount).toEqual(2);
+    expect(removeRuleCount).toEqual(1);
+    assertSnapshot(ctx.events);
   };
   it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
 
@@ -306,18 +308,18 @@ describe('record', function (this: ISuite) {
     // Safari currently doesn't support CSSGroupingRule, let's test without that
     // https://caniuse.com/?search=CSSGroupingRule
     beforeEach(async () => {
-      await this.page.evaluate(() => {
+      await ctx.page.evaluate(() => {
         /* @ts-ignore: override CSSGroupingRule */
         CSSGroupingRule = undefined;
       });
       // load a fresh rrweb recorder without CSSGroupingRule
-      await this.page.evaluate(this.code);
+      await ctx.page.evaluate(ctx.code);
     });
     it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
   });
 
   it('captures style property changes', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
 
       record({
@@ -330,21 +332,24 @@ describe('record', function (this: ISuite) {
       const styleSheet = <CSSStyleSheet>styleElement.sheet;
       styleSheet.insertRule('body { background: #000; }');
       setTimeout(() => {
-        (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
-        (styleSheet.cssRules[0] as CSSStyleRule).style.removeProperty('background');
+        (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty(
+          'color',
+          'green',
+        );
+        (styleSheet.cssRules[0] as CSSStyleRule).style.removeProperty(
+          'background',
+        );
       }, 0);
     });
-    await this.page.waitForTimeout(50);
-    assertSnapshot(this.events, __filename, 'stylesheet-properties');
+    await ctx.page.waitForTimeout(50);
+    assertSnapshot(ctx.events);
   });
-
-
 });
 
 describe('record iframes', function (this: ISuite) {
-  this.timeout(10_000);
+  jest.setTimeout(10_000);
 
-  setup.call(
+  const ctx: ISuite = setup.call(
     this,
     `
       <!DOCTYPE html>
@@ -357,31 +362,31 @@ describe('record iframes', function (this: ISuite) {
   );
 
   it('captures iframe content in correct order', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         emit: ((window as unknown) as IWindow).emit,
       });
     });
-    await this.page.waitForTimeout(10);
-    // console.log(JSON.stringify(this.events));
+    await ctx.page.waitForTimeout(10);
+    // console.log(JSON.stringify(ctx.events));
 
-    expect(this.events.length).to.equal(3);
-    const eventTypes = this.events
+    expect(ctx.events.length).toEqual(3);
+    const eventTypes = ctx.events
       .filter(
         (e) =>
           e.type === EventType.IncrementalSnapshot ||
           e.type === EventType.FullSnapshot,
       )
       .map((e) => e.type);
-    expect(eventTypes).to.have.ordered.members([
+    expect(eventTypes).toEqual([
       EventType.FullSnapshot,
       EventType.IncrementalSnapshot,
     ]);
   });
 
   it('captures stylesheet mutations in iframes', async () => {
-    await this.page.evaluate(() => {
+    await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         // need to reference window.top for when we are in an iframe!
@@ -391,7 +396,6 @@ describe('record iframes', function (this: ISuite) {
       const iframe = document.querySelector('iframe');
       // outer timeout is needed to wait for initStyleSheetObserver on iframe to be set up
       setTimeout(() => {
-
         const idoc = (iframe as HTMLIFrameElement).contentDocument!;
         const styleElement = idoc.createElement('style');
 
@@ -400,8 +404,11 @@ describe('record iframes', function (this: ISuite) {
         const styleSheet = <CSSStyleSheet>styleElement.sheet;
         styleSheet.insertRule('@media {}');
         const atMediaRule = styleSheet.cssRules[0] as CSSMediaRule;
-        const atRuleIdx0 = atMediaRule.insertRule('body { background: #000; }', 0);
-        const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');  // inserted before above
+        const atRuleIdx0 = atMediaRule.insertRule(
+          'body { background: #000; }',
+          0,
+        );
+        const ruleIdx0 = styleSheet.insertRule('body { background: #000; }'); // inserted before above
         // pre-serialization insert/delete above should be ignored
         setTimeout(() => {
           styleSheet.insertRule('body { color: #fff; }');
@@ -409,19 +416,22 @@ describe('record iframes', function (this: ISuite) {
         }, 0);
         setTimeout(() => {
           styleSheet.deleteRule(ruleIdx0);
-          (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+          (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty(
+            'color',
+            'green',
+          );
         }, 5);
-        setTimeout(() =>{
+        setTimeout(() => {
           atMediaRule.deleteRule(atRuleIdx0);
         }, 10);
       }, 10);
     });
-    await this.page.waitForTimeout(50);
-    const styleRelatedEvents = this.events.filter(
+    await ctx.page.waitForTimeout(50);
+    const styleRelatedEvents = ctx.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
         (e.data.source === IncrementalSource.StyleSheetRule ||
-         e.data.source === IncrementalSource.StyleDeclaration),
+          e.data.source === IncrementalSource.StyleDeclaration),
     );
     const addRuleCount = styleRelatedEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).adds),
@@ -429,10 +439,9 @@ describe('record iframes', function (this: ISuite) {
     const removeRuleCount = styleRelatedEvents.filter((e) =>
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
-    expect(styleRelatedEvents.length).to.equal(5);
-    expect(addRuleCount).to.equal(2);
-    expect(removeRuleCount).to.equal(2);
-    assertSnapshot(this.events, __filename, 'iframe-stylesheet-mutations');
+    expect(styleRelatedEvents.length).toEqual(5);
+    expect(addRuleCount).toEqual(2);
+    expect(removeRuleCount).toEqual(2);
+    assertSnapshot(ctx.events);
   });
-
 });

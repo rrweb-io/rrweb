@@ -13,9 +13,5 @@
     "downlevelIteration": true
   },
   "exclude": ["test"],
-  "include": [
-    "src",
-    "test.d.ts",
-    "node_modules/@types/css-font-loading-module/index.d.ts"
-  ]
+  "include": ["src", "node_modules/@types/css-font-loading-module/index.d.ts"]
 }
