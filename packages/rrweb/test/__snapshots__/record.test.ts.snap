@@ -17,6 +17,13 @@ exports[`async-checkout 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -26,7 +33,7 @@ exports[`async-checkout 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -36,7 +43,7 @@ exports[`async-checkout 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -46,18 +53,18 @@ exports[`async-checkout 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -76,31 +83,31 @@ exports[`async-checkout 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 4,
-          \\"id\\": 6
+          \\"parentId\\": 5,
+          \\"id\\": 7
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 4,
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"p\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         },
         {
-          \\"parentId\\": 8,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 9
+            \\"id\\": 10
           }
         }
       ]
@@ -115,12 +122,12 @@ exports[`async-checkout 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"test\\",
-            \\"id\\": 10
+            \\"id\\": 11
           }
         }
       ]
@@ -141,6 +148,13 @@ exports[`async-checkout 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -150,7 +164,7 @@ exports[`async-checkout 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -160,12 +174,12 @@ exports[`async-checkout 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -180,19 +194,19 @@ exports[`async-checkout 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"test\\",
-                            \\"id\\": 10
+                            \\"id\\": 11
                           }
                         ],
-                        \\"id\\": 9
+                        \\"id\\": 10
                       }
                     ],
-                    \\"id\\": 8
+                    \\"id\\": 9
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -211,29 +225,29 @@ exports[`async-checkout 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 8,
-          \\"id\\": 9
+          \\"parentId\\": 9,
+          \\"id\\": 10
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 4,
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 9
+            \\"id\\": 10
           }
         },
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"test\\",
-            \\"id\\": 10
+            \\"id\\": 11
           }
         }
       ]
@@ -259,6 +273,13 @@ exports[`custom-event 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -268,7 +289,7 @@ exports[`custom-event 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -278,7 +299,7 @@ exports[`custom-event 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -288,18 +309,18 @@ exports[`custom-event 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -346,6 +367,13 @@ exports[`iframe-stylesheet-mutations 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -355,7 +383,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -365,7 +393,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -377,16 +405,16 @@ exports[`iframe-stylesheet-mutations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n        </body>\\\\n      </html>\\\\n    \\",
-                        \\"id\\": 7
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -403,7 +431,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -418,8 +446,8 @@ exports[`iframe-stylesheet-mutations 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 8,
-                    \\"id\\": 10
+                    \\"rootId\\": 9,
+                    \\"id\\": 11
                   },
                   {
                     \\"type\\": 2,
@@ -434,23 +462,23 @@ exports[`iframe-stylesheet-mutations 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Mysterious Button\\",
-                            \\"rootId\\": 8,
-                            \\"id\\": 13
+                            \\"rootId\\": 9,
+                            \\"id\\": 14
                           }
                         ],
-                        \\"rootId\\": 8,
-                        \\"id\\": 12
+                        \\"rootId\\": 9,
+                        \\"id\\": 13
                       }
                     ],
-                    \\"rootId\\": 8,
-                    \\"id\\": 11
+                    \\"rootId\\": 9,
+                    \\"id\\": 12
                   }
                 ],
-                \\"rootId\\": 8,
-                \\"id\\": 9
+                \\"rootId\\": 9,
+                \\"id\\": 10
               }
             ],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         }
       ],
@@ -469,7 +497,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 10,
+          \\"parentId\\": 11,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -478,8 +506,8 @@ exports[`iframe-stylesheet-mutations 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }@media  {\\\\n  body { background: rgb(0, 0, 0); }\\\\n}\\"
             },
             \\"childNodes\\": [],
-            \\"rootId\\": 8,
-            \\"id\\": 14
+            \\"rootId\\": 9,
+            \\"id\\": 15
           }
         }
       ]
@@ -489,7 +517,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 14,
+      \\"id\\": 15,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\"
@@ -501,7 +529,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 14,
+      \\"id\\": 15,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\",
@@ -517,7 +545,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 14,
+      \\"id\\": 15,
       \\"removes\\": [
         {
           \\"index\\": 0
@@ -529,7 +557,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 14,
+      \\"id\\": 15,
       \\"set\\": {
         \\"property\\": \\"color\\",
         \\"value\\": \\"green\\"
@@ -543,7 +571,7 @@ exports[`iframe-stylesheet-mutations 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 14,
+      \\"id\\": 15,
       \\"removes\\": [
         {
           \\"index\\": [
@@ -574,6 +602,13 @@ exports[`nested-stylesheet-rules 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -583,7 +618,7 @@ exports[`nested-stylesheet-rules 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -593,7 +628,7 @@ exports[`nested-stylesheet-rules 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -603,18 +638,18 @@ exports[`nested-stylesheet-rules 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -634,7 +669,7 @@ exports[`nested-stylesheet-rules 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 3,
+          \\"parentId\\": 4,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -643,7 +678,7 @@ exports[`nested-stylesheet-rules 1`] = `
               \\"_cssText\\": \\"@media  {\\\\n  body { background: rgb(0, 0, 0); }\\\\n}\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         }
       ]
@@ -653,7 +688,7 @@ exports[`nested-stylesheet-rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\",
@@ -669,7 +704,7 @@ exports[`nested-stylesheet-rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"removes\\": [
         {
           \\"index\\": [
@@ -684,7 +719,7 @@ exports[`nested-stylesheet-rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\",
@@ -716,6 +751,13 @@ exports[`stylesheet-properties 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -725,7 +767,7 @@ exports[`stylesheet-properties 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -735,7 +777,7 @@ exports[`stylesheet-properties 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -745,18 +787,18 @@ exports[`stylesheet-properties 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -776,7 +818,7 @@ exports[`stylesheet-properties 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 3,
+          \\"parentId\\": 4,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -785,7 +827,7 @@ exports[`stylesheet-properties 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         }
       ]
@@ -795,7 +837,7 @@ exports[`stylesheet-properties 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"set\\": {
         \\"property\\": \\"color\\",
         \\"value\\": \\"green\\"
@@ -809,7 +851,7 @@ exports[`stylesheet-properties 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"remove\\": {
         \\"property\\": \\"background\\"
       },
@@ -838,6 +880,13 @@ exports[`stylesheet-rules 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -847,7 +896,7 @@ exports[`stylesheet-rules 1`] = `
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
                 \\"childNodes\\": [],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -857,7 +906,7 @@ exports[`stylesheet-rules 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 5
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -867,18 +916,18 @@ exports[`stylesheet-rules 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 6
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 4
+                \\"id\\": 5
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
         \\"id\\": 1
@@ -898,7 +947,7 @@ exports[`stylesheet-rules 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 3,
+          \\"parentId\\": 4,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -907,7 +956,7 @@ exports[`stylesheet-rules 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         }
       ]
@@ -917,7 +966,7 @@ exports[`stylesheet-rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\"
@@ -929,7 +978,7 @@ exports[`stylesheet-rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"removes\\": [
         {
           \\"index\\": 0
@@ -941,7 +990,7 @@ exports[`stylesheet-rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 8,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\"

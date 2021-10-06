@@ -74,6 +74,8 @@ interface ISuite extends Suite {
 }
 
 describe('integration tests', function (this: ISuite) {
+  this.timeout(10_000);
+
   before(async () => {
     this.server = await server();
     this.browser = await puppeteer.launch({
@@ -97,32 +99,84 @@ describe('integration tests', function (this: ISuite) {
   });
 
   for (const html of htmls) {
+    if (html.filePath.substring(html.filePath.length - 1) === '~') {
+      continue;
+    }
     const title = '[html file]: ' + html.filePath;
     it(title, async () => {
       const page: puppeteer.Page = await this.browser.newPage();
       // console for debug
       // tslint:disable-next-line: no-console
       page.on('console', (msg) => console.log(msg.text()));
-      await page.goto(`http://localhost:3030/html`);
-      await page.setContent(html.src, {
-        waitUntil: 'load',
-      });
+      if (html.filePath === 'iframe.html') {
+        // loading directly is needed to ensure we don't trigger compatMode='BackCompat'
+        // which happens before setContent can be called
+        await page.goto(`http://localhost:3030/html/${html.filePath}`, {
+          waitUntil: 'load',
+        });
+        const outerCompatMode = await page.evaluate('document.compatMode');
+        const innerCompatMode = await page.evaluate('document.querySelector("iframe").contentDocument.compatMode');
+        assert(outerCompatMode === 'CSS1Compat', outerCompatMode + ' for outer iframe.html should be CSS1Compat as it has "<!DOCTYPE html>"');
+        // inner omits a doctype so gets rendered in backwards compat mode
+        // although this was originally accidental, we'll add a synthetic doctype to the rebuild to recreate this
+        assert(innerCompatMode === 'BackCompat', innerCompatMode + ' for iframe-inner.html should be BackCompat as it lacks "<!DOCTYPE html>"');
+      } else {
+        // loading indirectly is improtant for relative path testing
+        await page.goto(`http://localhost:3030/html`);
+        await page.setContent(html.src, {
+          waitUntil: 'load',
+        });
+      }
       const rebuildHtml = (
         await page.evaluate(`${this.code}
         const x = new XMLSerializer();
         const [snap] = rrweb.snapshot(document);
-        x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
+        let out = x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
+        if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
+          // this is just an artefact of serializeToString
+          out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
+        }
+        out;  // return
       `)
       ).replace(/\n\n/g, '');
       const result = matchSnapshot(rebuildHtml, __filename, title);
       assert(result.pass, result.pass ? '' : result.report());
     }).timeout(5000);
   }
+
+  it('correctly triggers backCompat mode and rendering', async () => {
+    const page: puppeteer.Page = await this.browser.newPage();
+    // console for debug
+    // tslint:disable-next-line: no-console
+    page.on('console', (msg) => console.log(msg.text()));
+
+    await page.goto('http://localhost:3030/html/compat-mode.html', {
+      waitUntil: 'load',
+    });
+    const compatMode = await page.evaluate('document.compatMode');
+    assert(compatMode === 'BackCompat', compatMode + ' for compat-mode.html should be BackCompat as DOCTYPE is deliberately omitted');
+    const renderedHeight = await page.evaluate('document.querySelector("center").clientHeight');
+    // can remove following assertion if dimensions of page change
+    assert(renderedHeight < 400, `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`)
+    const rebuildRenderedHeight = await page.evaluate(`${this.code}
+const [snap] = rrweb.snapshot(document);
+const iframe = document.createElement('iframe');
+iframe.setAttribute('width', document.body.clientWidth)
+iframe.setAttribute('height', document.body.clientHeight)
+iframe.style.transform = 'scale(0.3)'; // mini-me
+document.body.appendChild(iframe);
+// magic here! rebuild in a new iframe
+const rebuildNode = rrweb.rebuild(snap, { doc: iframe.contentDocument })[0];
+iframe.contentDocument.querySelector('center').clientHeight
+`);
+    const rebuildCompatMode = await page.evaluate('document.querySelector("iframe").contentDocument.compatMode');
+    assert(rebuildCompatMode === 'BackCompat', 'rebuilt compatMode should match source compatMode, but doesn\'t: ' + rebuildCompatMode);
+    assert(rebuildRenderedHeight === renderedHeight, 'rebuilt height (${rebuildRenderedHeight}) should equal original height (${renderedHeight})')
+    }).timeout(5000);
+
 });
 
 describe('iframe integration tests', function (this: ISuite) {
-  const iframeHtml = path.join(__dirname, 'iframe-html/main.html');
-  const raw = fs.readFileSync(iframeHtml, 'utf-8');
 
   before(async () => {
     this.server = await server();
@@ -151,8 +205,7 @@ describe('iframe integration tests', function (this: ISuite) {
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`http://localhost:3030/html`);
-    await page.setContent(raw, {
+    await page.goto(`http://localhost:3030/iframe-html/main.html`, {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
@@ -167,9 +220,7 @@ describe('iframe integration tests', function (this: ISuite) {
   }).timeout(5000);
 });
 
-describe('shadown DOM integration tests', function (this: ISuite) {
-  const shadowDomHtml = path.join(__dirname, 'html/shadow-dom.html');
-  const raw = fs.readFileSync(shadowDomHtml, 'utf-8');
+describe('shadow DOM integration tests', function (this: ISuite) {
 
   before(async () => {
     this.server = await server();
@@ -198,8 +249,7 @@ describe('shadown DOM integration tests', function (this: ISuite) {
     // console for debug
     // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`http://localhost:3030/html`);
-    await page.setContent(raw, {
+    await page.goto(`http://localhost:3030/html/shadow-dom.html`, {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
