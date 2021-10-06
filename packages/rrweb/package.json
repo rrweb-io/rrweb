@@ -5,9 +5,9 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run bundle",
-    "test": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true mocha -r ts-node/register -r ignore-styles -r jsdom-global/register test/**.test.ts",
-    "test:headless": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true PUPPETEER_HEADLESS=true mocha -r ts-node/register -r ignore-styles -r jsdom-global/register test/**.test.ts",
-    "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch --watch-extensions js,ts",
+    "test": "npm run bundle:browser && jest",
+    "test:headless": "npm run bundle:browser && PUPPETEER_HEADLESS=true jest",
+    "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch",
     "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",

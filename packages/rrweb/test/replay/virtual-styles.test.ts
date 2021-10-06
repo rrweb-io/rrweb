@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
 import {
   applyVirtualStyleRulesToNode,
@@ -21,8 +20,8 @@ describe('virtual styles', () => {
       ];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
-      expect(styleEl.sheet?.cssRules?.length).to.equal(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).to.equal(cssText);
+      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
+      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
     });
 
     it('should insert rule at index 0 and keep exsisting rules', () => {
@@ -40,8 +39,8 @@ describe('virtual styles', () => {
       ];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
-      expect(styleEl.sheet?.cssRules?.length).to.equal(3);
-      expect(styleEl.sheet?.cssRules[0].cssText).to.equal(cssText);
+      expect(styleEl.sheet?.cssRules?.length).toEqual(3);
+      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
     });
 
     it('should delete rule at index 0', () => {
@@ -58,10 +57,8 @@ describe('virtual styles', () => {
       ];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
-      expect(styleEl.sheet?.cssRules?.length).to.equal(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).to.equal(
-        'div {color: black;}',
-      );
+      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
+      expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
     });
 
     it('should restore a snapshot by inserting missing rules', () => {
@@ -82,7 +79,7 @@ describe('virtual styles', () => {
       ];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
-      expect(styleEl.sheet?.cssRules?.length).to.equal(2);
+      expect(styleEl.sheet?.cssRules?.length).toEqual(2);
     });
 
     it('should restore a snapshot by fixing order of rules', () => {
@@ -104,10 +101,10 @@ describe('virtual styles', () => {
       ];
       applyVirtualStyleRulesToNode(virtualStyleRules, styleEl);
 
-      expect(styleEl.sheet?.cssRules?.length).to.equal(2);
+      expect(styleEl.sheet?.cssRules?.length).toEqual(2);
       expect(
         Array.from(styleEl.sheet?.cssRules || []).map((rule) => rule.cssText),
-      ).to.have.ordered.members(cssTexts);
+      ).toEqual(cssTexts);
     });
 
     // JSDOM/CSSOM is currently broken for this test
@@ -135,10 +132,10 @@ describe('virtual styles', () => {
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).to.equal(3);
+      ).toEqual(3);
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).to.equal(cssText);
+      ).toEqual(cssText);
     });
 
     it('should delete rule at index [0,1]', () => {
@@ -159,10 +156,10 @@ describe('virtual styles', () => {
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).to.equal(1);
+      ).toEqual(1);
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).to.equal('a {color: blue;}');
+      ).toEqual('a {color: blue;}');
     });
   });
 });
