@@ -117,8 +117,17 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 ## Who's using rrweb
 
-<p align="center">
-  <a href="http://www.smartx.com/" target="_blank">
-    <img width="260px" src="https://www.rrweb.io/logos/smartx.png">
-  </a>
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <a href="http://www.smartx.com/" target="_blank">
+        <img width="260px" src="https://www.rrweb.io/logos/smartx.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
+        <img width="260px" src="https://www.rrweb.io/logos/posthog.png">
+      </a>
+    </td>
+  </tr>
+</table>
