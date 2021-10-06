@@ -126,7 +126,7 @@ export declare type SamplingStrategy = Partial<{
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
-    observer: (cb: Function, win: Window, options: TOptions) => listenerHandler;
+    observer: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
     options: TOptions;
 };
 export declare type recordOptions<T> = {
@@ -450,4 +450,10 @@ export declare type ElementState = {
     scroll?: [number, number];
 };
 export declare type KeepIframeSrcFn = (src: string) => boolean;
+declare global {
+    interface Window {
+        FontFace: typeof FontFace;
+    }
+}
+export declare type IWindow = Window & typeof globalThis;
 export {};

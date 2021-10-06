@@ -1,9 +1,10 @@
-import typescript from 'rollup-plugin-typescript';
-import resolve from 'rollup-plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
+import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import renameNodeModules from 'rollup-plugin-rename-node-modules';
 import pkg from './package.json';
+const tsConfig = require('./tsconfig.json');
 
 function toRecordPath(path) {
   return path
@@ -46,35 +47,35 @@ function toMinPath(path) {
 
 const baseConfigs = [
   // record only
-  {
-    input: './src/record/index.ts',
-    name: 'rrwebRecord',
-    pathFn: toRecordPath,
-  },
-  // record and pack
-  {
-    input: './src/entries/record-pack.ts',
-    name: 'rrwebRecord',
-    pathFn: toRecordPackPath,
-  },
-  // replay only
-  {
-    input: './src/replay/index.ts',
-    name: 'rrwebReplay',
-    pathFn: toReplayPath,
-  },
-  // replay and unpack
-  {
-    input: './src/entries/replay-unpack.ts',
-    name: 'rrwebReplay',
-    pathFn: toReplayUnpackPath,
-  },
-  // record and replay
-  {
-    input: './src/index.ts',
-    name: 'rrweb',
-    pathFn: (p) => p,
-  },
+  // {
+  //   input: './src/record/index.ts',
+  //   name: 'rrwebRecord',
+  //   pathFn: toRecordPath,
+  // },
+  // // record and pack
+  // {
+  //   input: './src/entries/record-pack.ts',
+  //   name: 'rrwebRecord',
+  //   pathFn: toRecordPackPath,
+  // },
+  // // replay only
+  // {
+  //   input: './src/replay/index.ts',
+  //   name: 'rrwebReplay',
+  //   pathFn: toReplayPath,
+  // },
+  // // replay and unpack
+  // {
+  //   input: './src/entries/replay-unpack.ts',
+  //   name: 'rrwebReplay',
+  //   pathFn: toReplayUnpackPath,
+  // },
+  // // record and replay
+  // {
+  //   input: './src/index.ts',
+  //   name: 'rrweb',
+  //   pathFn: (p) => p,
+  // },
   // all in one
   {
     input: './src/entries/all.ts',
@@ -83,22 +84,28 @@ const baseConfigs = [
     esm: true,
   },
   // plugins
-  {
-    input: './src/plugins/console/record/index.ts',
-    name: 'rrwebConsoleRecord',
-    pathFn: toPluginPath('console', 'record'),
-  },
-  {
-    input: './src/plugins/console/replay/index.ts',
-    name: 'rrwebConsoleReplay',
-    pathFn: toPluginPath('console', 'replay'),
-  },
+  // {
+  //   input: './src/plugins/console/record/index.ts',
+  //   name: 'rrwebConsoleRecord',
+  //   pathFn: toPluginPath('console', 'record'),
+  // },
+  // {
+  //   input: './src/plugins/console/replay/index.ts',
+  //   name: 'rrwebConsoleReplay',
+  //   pathFn: toPluginPath('console', 'replay'),
+  // },
 ];
 
 let configs = [];
 
 for (const c of baseConfigs) {
-  const basePlugins = [resolve({ browser: true }), typescript()];
+  const basePlugins = [
+    resolve({ browser: true }),
+    typescript({
+      // a trick to avoid @rollup/plugin-typescript error
+      outDir: 'es/rrweb',
+    }),
+  ];
   const plugins = basePlugins.concat(
     postcss({
       extract: false,
@@ -184,7 +191,9 @@ if (process.env.BROWSER_ONLY) {
   for (const c of browserOnlyBaseConfigs) {
     const plugins = [
       resolve({ browser: true }),
-      typescript(),
+      typescript({
+        outDir: null,
+      }),
       postcss({
         extract: false,
         inject: false,

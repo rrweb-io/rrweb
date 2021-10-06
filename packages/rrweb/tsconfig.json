@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "target": "ES5",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "sourceMap": true,
     "rootDir": "src",
     "outDir": "build",
     "lib": ["es6", "dom"],
     "downlevelIteration": true
   },
-  "compileOnSave": true,
   "exclude": ["test"],
   "include": [
     "src",

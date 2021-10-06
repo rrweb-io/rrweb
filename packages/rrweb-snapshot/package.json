@@ -37,6 +37,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.2.5",
     "@types/chai": "^4.1.4",
     "@types/jsdom": "^16.2.4",
     "@types/mocha": "^5.2.5",
@@ -48,12 +49,11 @@
     "jsdom": "^16.4.0",
     "mocha": "^5.2.0",
     "puppeteer": "^1.15.0",
-    "rollup": "^0.66.4",
-    "rollup-plugin-terser": "^3.0.0",
-    "rollup-plugin-typescript": "^1.0.0",
+    "rollup": "^2.45.2",
+    "rollup-plugin-terser": "^7.0.2",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "tslint": "^4.5.1",
-    "typescript": "^3.4.1"
+    "typescript": "^3.9.7"
   }
 }
