@@ -959,8 +959,8 @@
 
 "@rollup/plugin-typescript@^8.2.5":
   version "8.2.5"
-  resolved "http://192.168.26.29:7001/@rollup/plugin-typescript/download/@rollup/plugin-typescript-8.2.5.tgz#e0319761b2b5105615e5a0c371ae05bc2984b7de"
-  integrity sha1-4DGXYbK1EFYV5aDDca4FvCmEt94=
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-typescript/-/plugin-typescript-8.2.5.tgz#e0319761b2b5105615e5a0c371ae05bc2984b7de"
+  integrity sha512-QL/LvDol/PAGB2O0S7/+q2HpSUNodpw7z6nGn9BfoVCPOZ0r4EALrojFU29Bkoi2Hr2jgTocTejJ5GGWZfOxbQ==
   dependencies:
     "@rollup/pluginutils" "^3.1.0"
     resolve "^1.17.0"

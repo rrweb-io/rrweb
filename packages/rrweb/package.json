@@ -40,6 +40,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-typescript": "^8.2.5",
     "@types/chai": "^4.1.6",
     "@types/inquirer": "0.0.43",
@@ -60,7 +61,6 @@
     "prettier": "2.2.1",
     "puppeteer": "^9.1.1",
     "rollup": "^2.45.2",
-    "@rollup/plugin-node-resolve": "^7.0.0",
     "rollup-plugin-postcss": "^3.1.1",
     "rollup-plugin-rename-node-modules": "^1.1.0",
     "rollup-plugin-terser": "^7.0.2",
