@@ -391,8 +391,8 @@ function record<T = eventWithTime>(
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
       },
-      onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn);
+      onIframeLoad: (iframe, iframeid, childSn) => {
+        iframeManager.attachIframe(iframe, iframeid, childSn);
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {

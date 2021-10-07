@@ -55,12 +55,13 @@ export class IframeManager {
 
   public attachIframe(
     iframeEl: HTMLIFrameElement,
+    parentId: number,
     childSn: serializedNodeWithId,
   ) {
     this.mutationCb({
       adds: [
         {
-          parentId: this.mirror.getId(iframeEl),
+          parentId: parentId,
           nextId: null,
           node: childSn,
         },
