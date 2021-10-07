@@ -207,7 +207,7 @@ exports[`integration tests [html file]: block-element.html 1`] = `
 `;
 
 exports[`integration tests [html file]: compat-mode.html 1`] = `
-"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><!-- no doctype! --><html><head>
+"<!-- no doctype! --><html><head>
   <title>Compat Mode; image resizing</title>
 </head>
 <body>
@@ -316,12 +316,12 @@ exports[`integration tests [html file]: iframe.html 1`] = `
 `;
 
 exports[`integration tests [html file]: iframe-inner.html 1`] = `
-"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><html><head></head><body><button>inner iframe button</button>
+"<html><head></head><body><button>inner iframe button</button>
 </body></html>"
 `;
 
 exports[`integration tests [html file]: invalid-attribute.html 1`] = `
-"<!DOCTYPE html PUBLIC \\"-//W3C//DTD HTML 4.0 Transitional//EN\\"><html foo=\\"bar\\"><head></head><body>
+"<html foo=\\"bar\\"><head></head><body>
 </body></html>"
 `;
 
@@ -364,7 +364,7 @@ exports[`integration tests [html file]: mask-text.html 1`] = `
 `;
 
 exports[`integration tests [html file]: picture.html 1`] = `
-"<!DOCTYPE html PUBLIC \\"-//W3C//DTD XHTML 1.0 Transitional//EN\\"><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <picture>
       <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
