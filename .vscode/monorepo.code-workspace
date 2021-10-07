@@ -1,0 +1,26 @@
+{
+  "folders": [
+    {
+      "name": "Monorepo",
+      "path": ".."
+    },
+    {
+      "path": "../packages/rrdom"
+    },
+    {
+      "path": "../packages/rrweb"
+    },
+    {
+      "path": "../packages/rrweb-player"
+    },
+    {
+      "path": "../packages/rrweb-snapshot"
+    }
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": [
+      "Monorepo",
+      "rrweb-player"
+    ]
+  }
+}
