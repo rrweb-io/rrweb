@@ -1,28 +1,27 @@
 /* tslint:disable: no-console */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as EventEmitter from 'events';
-import * as inquirer from 'inquirer';
-import * as puppeteer from 'puppeteer';
-import { eventWithTime } from '../src/types';
+const fs = require('fs');
+const path = require('path');
+const EventEmitter = require('events');
+const inquirer = require('inquirer');
+const puppeteer = require('puppeteer');
 
 const emitter = new EventEmitter();
 
-function getCode(): string {
+function getCode() {
   const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
 (async () => {
   const code = getCode();
-  let events: eventWithTime[] = [];
+  let events = [];
 
   start();
 
   async function start() {
     events = [];
-    const { url } = await inquirer.prompt<{ url: string }>([
+    const { url } = await inquirer.prompt([
       {
         type: 'input',
         name: 'url',
@@ -35,7 +34,7 @@ function getCode(): string {
     await record(url);
     console.log('Ready to record. You can do any interaction on the page.');
 
-    const { shouldReplay } = await inquirer.prompt<{ shouldReplay: boolean }>([
+    const { shouldReplay } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'shouldReplay',
@@ -45,7 +44,7 @@ function getCode(): string {
 
     emitter.emit('done', shouldReplay);
 
-    const { shouldStore } = await inquirer.prompt<{ shouldStore: boolean }>([
+    const { shouldStore } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'shouldStore',
@@ -57,9 +56,7 @@ function getCode(): string {
       saveEvents();
     }
 
-    const { shouldRecordAnother } = await inquirer.prompt<{
-      shouldRecordAnother: boolean;
-    }>([
+    const { shouldRecordAnother } = await inquirer.prompt([
       {
         type: 'confirm',
         name: 'shouldRecordAnother',
@@ -74,7 +71,7 @@ function getCode(): string {
     }
   }
 
-  async function record(url: string) {
+  async function record(url) {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: {
@@ -90,9 +87,10 @@ function getCode(): string {
     const page = await browser.newPage();
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
+      timeout: 300000,
     });
 
-    await page.exposeFunction('_replLog', (event: eventWithTime) => {
+    await page.exposeFunction('_replLog', (event) => {
       events.push(event);
     });
     await page.evaluate(`;${code}
