@@ -23,6 +23,7 @@
     "lerna": "^4.0.0"
   },
   "scripts": {
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "repl": "cd packages/rrweb && npm run repl"
   }
 }

@@ -8,7 +8,7 @@
     "test": "npm run bundle:browser && jest",
     "test:headless": "npm run bundle:browser && PUPPETEER_HEADLESS=true jest",
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch",
-    "repl": "npm run bundle:browser && cross-env TS_NODE_CACHE=false TS_NODE_FILES=true ts-node scripts/repl.ts",
+    "repl": "npm run bundle:browser && node scripts/repl.js",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
     "typings": "tsc -d --declarationDir typings",
