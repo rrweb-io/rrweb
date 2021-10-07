@@ -304,8 +304,8 @@ export default class MutationBuffer {
             this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
           }
         },
-        onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn);
+        onIframeLoad: (iframe, iframeId, childSn) => {
+          this.iframeManager.attachIframe(iframe, iframeId, childSn);
         },
       });
       if (sn) {
