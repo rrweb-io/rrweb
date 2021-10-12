@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -74,6 +74,6 @@
     "@xstate/fsm": "^1.4.0",
     "fflate": "^0.4.4",
     "mitt": "^1.1.3",
-    "rrweb-snapshot": "^1.1.8"
+    "rrweb-snapshot": "^1.1.9"
   }
 }
