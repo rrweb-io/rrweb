@@ -1,0 +1,15 @@
+{
+  "hooks": {},
+  "git": {
+    "commit": false,
+    "tag": false,
+    "push": false
+  },
+  "npm": {
+    "publish": false
+  },
+  "github": {
+    "release": true,
+    "releaseName": "Release ${version}"
+  }
+}
