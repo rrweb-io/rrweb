@@ -165,6 +165,7 @@
       percent = 1;
     }
     const timeOffset = meta.totalTime * percent;
+    finished = false
     goto(timeOffset);
   };
 
