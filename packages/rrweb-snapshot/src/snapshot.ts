@@ -509,7 +509,12 @@ function serializeNode(
       }
       // iframe
       if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
-        delete attributes.src;
+        if (!(n as HTMLIFrameElement).contentWindow) {
+          // we can't record it directly as we can't see into it
+          // preserve the src attribute so a decision can be taken at replay time
+          attributes.rr_src = attributes.src;
+        }
+        delete attributes.src;  // prevent auto loading
       }
       return {
         type: NodeType.Element,
