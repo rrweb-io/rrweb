@@ -127,5 +127,10 @@ rrweb 主要由 3 部分组成：
         <img width="260px" src="https://www.rrweb.io/logos/posthog.png">
       </a>
     </td>
+    <td align="center">
+      <a href="https://statcounter.com/session-replay/" target="_blank">
+        <img width="260px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
+      </a>
+    </td>
   </tr>
 </table>
