@@ -121,17 +121,22 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="260px" src="https://www.rrweb.io/logos/smartx.png">
+        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
       </a>
     </td>
     <td align="center">
       <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="260px" src="https://www.rrweb.io/logos/posthog.png">
+        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
       </a>
     </td>
     <td align="center">
       <a href="https://statcounter.com/session-replay/" target="_blank">
-        <img width="260px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
+        <img width="195px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://cux.io" target="_blank">
+        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://static.cux.io/logo.svg">
       </a>
     </td>
   </tr>
