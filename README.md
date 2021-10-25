@@ -140,4 +140,11 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
   </tr>
+    <tr>
+    <td align="center">
+      <a href="https://recordonce.com/" target="_blank">
+        <img width="195px" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
+      </a>
+    </td>
+  </tr>
 </table>
