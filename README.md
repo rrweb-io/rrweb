@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[The rrweb documentary(in Chinese, with English subtitle)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
 
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
