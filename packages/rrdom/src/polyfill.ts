@@ -1,4 +1,4 @@
-import { RRDocument } from './document';
+import { RRDocument, RRNode } from './document';
 
 /**
  * Polyfill the performance for nodejs.
@@ -52,6 +52,23 @@ export function polyfillRAF() {
     typeof globalThis).requestAnimationFrame = requestAnimationFrame;
   (global as Window &
     typeof globalThis).cancelAnimationFrame = cancelAnimationFrame;
+}
+
+/**
+ * Try to polyfill Event type.
+ * The implementation of Event so far is empty because rrweb doesn't strongly depend on it in nodejs mode.
+ */
+export function polyfillEvent() {
+  if (typeof Event !== 'undefined') return;
+  (global.Event as unknown) = function () {};
+}
+
+/**
+ * Polyfill Node type with RRNode for nodejs.
+ */
+export function polyfillNode() {
+  if (typeof Node !== 'undefined') return;
+  (global.Node as unknown) = RRNode;
 }
 
 /**

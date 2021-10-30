@@ -473,6 +473,8 @@ export class RRElement extends RRNode {
       else style[normalizedName] = value;
       this.attributes.style = toCSSText(style);
     };
+    // This is used to bypass the smoothscroll polyfill in rrweb player.
+    style.scrollBehavior = '';
     return style;
   }
 
