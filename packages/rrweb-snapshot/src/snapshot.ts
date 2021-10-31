@@ -13,6 +13,7 @@ import {
   documentNode,
 } from './types';
 import { isElement, isShadowRoot, maskInputValue } from './utils';
+import { values } from 'puppeteer/DeviceDescriptors';
 
 let _id = 1;
 const tagNameRegex = RegExp('[^a-z0-9-_:]');
@@ -218,7 +219,10 @@ export function transformAttribute(
   value: string,
 ): string {
   // relative path in attribute
-  if (name === 'src' || ((name === 'href' || name === 'xlink:href') && value)) {
+  if (name === 'src' || (name === 'href' && value)) {
+    return absoluteToDoc(doc, value);
+  } else if (name === 'xlink:href' && value && value[0] !== '#') {
+    // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
   } else if (
     name === 'background' &&
@@ -384,15 +388,15 @@ function serializeNode(
         return {
           type: NodeType.Document,
           childNodes: [],
-          compatMode: (n as HTMLDocument).compatMode,  // probably "BackCompat"
+          compatMode: (n as HTMLDocument).compatMode, // probably "BackCompat"
           rootId,
-        }
+        };
       } else {
         return {
           type: NodeType.Document,
           childNodes: [],
           rootId,
-        }
+        };
       }
     case n.DOCUMENT_TYPE_NODE:
       return {
@@ -514,7 +518,7 @@ function serializeNode(
           // preserve the src attribute so a decision can be taken at replay time
           attributes.rr_src = attributes.src;
         }
-        delete attributes.src;  // prevent auto loading
+        delete attributes.src; // prevent auto loading
       }
       return {
         type: NodeType.Element,
