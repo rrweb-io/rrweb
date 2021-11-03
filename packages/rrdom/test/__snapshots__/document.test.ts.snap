@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RRDocument buildFromDom should create an RRDocument from a html document 1`] = `
+"-1 RRDocument
+  -2 RRDocumentType
+  -3 HTML lang=\\"en\\" 
+    -4 HEAD 
+      -5 RRText text=\\"\\\\n    \\"
+      -6 META charset=\\"UTF-8\\" 
+      -7 RRText text=\\"\\\\n    \\"
+      -8 META name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" 
+      -9 RRText text=\\"\\\\n    \\"
+      -10 TITLE 
+        -11 RRText text=\\"Main\\"
+      -12 RRText text=\\"\\\\n    \\"
+      -13 STYLE 
+        -14 RRText text=\\"\\\\n      h1...\\"
+      -15 RRText text=\\"\\\\n  \\"
+    -16 RRText text=\\"\\\\n  \\"
+    -17 BODY 
+      -18 RRText text=\\"\\\\n    \\"
+      -19 H1 
+        -20 RRText text=\\"This is a ...\\"
+      -21 RRText text=\\"\\\\n    \\"
+      -22 H1 style=\\"font-size: 16px\\" 
+        -23 RRText text=\\"This is a ...\\"
+      -24 RRText text=\\"\\\\n    \\"
+      -25 DIV id=\\"block1\\" class=\\"blocks blocks1\\" 
+        -26 RRText text=\\"\\\\n      \\"
+        -27 DIV id=\\"block2\\" class=\\"blocks blocks1\\" 
+          -28 RRText text=\\"\\\\n        ...\\"
+          -29 DIV id=\\"block3\\" 
+            -30 RRText text=\\"\\\\n        ...\\"
+            -31 P 
+              -32 RRText text=\\"This is a ...\\"
+            -33 RRText text=\\"\\\\n        ...\\"
+            -34 BUTTON 
+              -35 RRText text=\\"button1\\"
+            -36 RRText text=\\"\\\\n        \\"
+          -37 RRText text=\\"\\\\n        ...\\"
+        -38 RRText text=\\"\\\\n      \\"
+        -39 IMG src=\\"somelink\\" alt=\\"This is an image\\" 
+        -40 RRText text=\\"\\\\n    \\"
+      -41 RRText text=\\"\\\\n  
+
+\\"
+"
+`;
