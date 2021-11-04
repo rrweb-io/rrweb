@@ -72,4 +72,4 @@ replayer.play();
 | key          | 默认值                                                                 | 功能                                                                                                        |
 | ------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | level        | ['log','warn','error',...]                                             | 与 recordLog 设置选项的含义相同，你可以只播放想要的 console 函数类型                                        |
-| replayLogger | 一个基于 console 的对接口[ReplayLogger](../../src/types.ts#L417)的实现 | 你也可以通过传入一个`ReplayLogger`接口的自己的实现，用 html 模拟一个浏览器控制台，来播放录制的 console 数据 |
+| replayLogger | 一个基于 console 的对接口[ReplayLogger](../../packages/rrweb/src/plugins/console/replay/index.ts#L13)的实现 | 你也可以通过传入一个`ReplayLogger`接口的自己的实现，用 html 模拟一个浏览器控制台，来播放录制的 console 数据 |
