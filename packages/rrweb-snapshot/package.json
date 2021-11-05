@@ -6,8 +6,10 @@
     "prepare": "npm run prepack",
     "prepack": "npm run bundle && npm run typings",
     "test": "jest",
+    "test:watch": "jest --watch",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
+    "dev": "yarn bundle:es-only --watch",
     "typings": "tsc -d --declarationDir typings",
     "prepublish": "npm run typings && npm run bundle"
   },

@@ -59,10 +59,14 @@ Since we want the record and replay sides to share a strongly typed data structu
 
 [Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
-1. Fork the rrweb component repository you want to patch.
-2. Run `yarn install` to install required dependencies.
-3. Patch the code and pass all the tests.
-4. Push the code and create a pull request.
+1. Fork this repository.
+2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
+3. Run `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
+4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
+5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything.
+6. Push the code and create a pull request.
+
+Protip: You can run `yarn test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
