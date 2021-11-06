@@ -9,6 +9,7 @@
     "test:headless": "npm run bundle:browser && PUPPETEER_HEADLESS=true jest",
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch",
     "repl": "npm run bundle:browser && node scripts/repl.js",
+    "dev": "yarn bundle:browser --watch",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
     "typings": "tsc -d --declarationDir typings",
