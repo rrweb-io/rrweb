@@ -1601,6 +1601,13 @@ export class Replayer {
         left: d.x,
         behavior: 'smooth',
       });
+    } else if (target.__sn.type === NodeType.Document) {
+      // nest iframe content document
+      ((target as unknown) as Document).defaultView!.scrollTo({
+        top: d.y,
+        left: d.x,
+        behavior: 'smooth',
+      });
     } else {
       try {
         ((target as Node) as Element).scrollTop = d.y;
