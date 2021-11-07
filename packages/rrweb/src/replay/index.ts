@@ -1428,6 +1428,21 @@ export class Replayer {
         return;
       }
 
+      if (
+        '__sn' in parent &&
+        parent.__sn.type === NodeType.Element &&
+        parent.__sn.tagName === 'textarea' &&
+        mutation.node.type === NodeType.Text
+      ) {
+        // https://github.com/rrweb-io/rrweb/issues/745
+        // parent is textarea, will only keep one child node as the value
+        for (const c of Array.from(parent.childNodes)) {
+          if (c.nodeType === parent.TEXT_NODE) {
+            parent.removeChild(c);
+          }
+        }
+      }
+
       if (previous && previous.nextSibling && previous.nextSibling.parentNode) {
         parent.insertBefore(target, previous.nextSibling);
       } else if (next && next.parentNode) {

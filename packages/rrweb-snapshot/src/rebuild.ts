@@ -321,18 +321,26 @@ export function buildNodeWithSN(
     // close before open to make sure document was closed
     doc.close();
     doc.open();
-    if (n.compatMode === 'BackCompat' &&
-        (n.childNodes && n.childNodes[0].type !== NodeType.DocumentType)  // there isn't one already defined
-       ) {
+    if (
+      n.compatMode === 'BackCompat' &&
+      n.childNodes &&
+      n.childNodes[0].type !== NodeType.DocumentType // there isn't one already defined
+    ) {
       // Trigger compatMode in the iframe
       // this is needed as document.createElement('iframe') otherwise inherits a CSS1Compat mode from the parent replayer environment
-      if (n.childNodes[0].type === NodeType.Element &&
-          'xmlns' in n.childNodes[0].attributes &&
-          n.childNodes[0].attributes.xmlns === 'http://www.w3.org/1999/xhtml') {
+      if (
+        n.childNodes[0].type === NodeType.Element &&
+        'xmlns' in n.childNodes[0].attributes &&
+        n.childNodes[0].attributes.xmlns === 'http://www.w3.org/1999/xhtml'
+      ) {
         // might as well use an xhtml doctype if we've got an xhtml namespace
-        doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">');
+        doc.write(
+          '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">',
+        );
       } else {
-        doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">');
+        doc.write(
+          '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">',
+        );
       }
     }
     node = doc;
