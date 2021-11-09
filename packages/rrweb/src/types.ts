@@ -381,6 +381,11 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum CanvasContext {
+  '2D',
+  WebGL,
+}
+
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
@@ -434,6 +439,7 @@ export type canvasMutationCallback = (p: canvasMutationParam) => void;
 
 export type canvasMutationParam = {
   id: number;
+  type: CanvasContext;
   property: string;
   args: Array<unknown>;
   setter?: true;

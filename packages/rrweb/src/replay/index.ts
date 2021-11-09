@@ -39,6 +39,7 @@ import {
   styleValueWithPriority,
   mouseMovePos,
   IWindow,
+  CanvasContext,
 } from '../types';
 import {
   createMirror,
@@ -1203,9 +1204,15 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
+        let contextType: '2d' | 'webgl' = '2d';
         try {
+          if (d.type === CanvasContext['2D']) {
+            contextType = '2d';
+          } else if (d.type === CanvasContext.WebGL) {
+            contextType = 'webgl';
+          }
           const ctx = ((target as unknown) as HTMLCanvasElement).getContext(
-            '2d',
+            contextType,
           )!;
           if (d.setter) {
             // skip some read-only type checks
@@ -1214,8 +1221,9 @@ export class Replayer {
             return;
           }
           const original = ctx[
-            d.property as keyof CanvasRenderingContext2D
+            d.property as Exclude<keyof typeof ctx, 'canvas'>
           ] as Function;
+
           /**
            * We have serialized the image source into base64 string during recording,
            * which has been preloaded before replay.

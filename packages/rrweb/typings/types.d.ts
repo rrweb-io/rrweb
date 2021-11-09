@@ -280,6 +280,10 @@ export declare enum MouseInteractions {
     TouchEnd = 9,
     TouchCancel = 10
 }
+export declare enum CanvasContext {
+    '2D' = 0,
+    WebGL = 1
+}
 declare type mouseInteractionParam = {
     type: MouseInteractions;
     id: number;
@@ -322,6 +326,7 @@ export declare type styleDeclarationCallback = (s: styleDeclarationParam) => voi
 export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
 export declare type canvasMutationParam = {
     id: number;
+    type: CanvasContext;
     property: string;
     args: Array<unknown>;
     setter?: true;
