@@ -1204,11 +1204,10 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
+        // default is '2d' for backwards compatibility (rrweb below 1.1.x)
         let contextType: '2d' | 'webgl' = '2d';
         try {
-          if (d.type === CanvasContext['2D']) {
-            contextType = '2d';
-          } else if (d.type === CanvasContext.WebGL) {
+          if (d.type === CanvasContext.WebGL) {
             contextType = 'webgl';
           }
           const ctx = ((target as unknown) as HTMLCanvasElement).getContext(
