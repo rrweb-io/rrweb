@@ -4505,7 +4505,7 @@ exports[`record integration tests should nest record iframe 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n      iframe {\\\\n        width: 500px;\\\\n        height: 500px;\\\\n      }\\\\n    \\",
+                        \\"textContent\\": \\"iframe { width: 500px; height: 500px; }\\",
                         \\"isStyle\\": true,
                         \\"id\\": 14
                       }
@@ -9219,7 +9219,7 @@ exports[`record integration tests should record shadow DOM 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n      .my-element {\\\\n        margin: 0 0 1rem 0;\\\\n      }\\\\n      iframe {\\\\n        border: 0;\\\\n        width: 100%;\\\\n        padding: 0;\\\\n      }\\\\n\\\\n      body {\\\\n        max-width: 400px;\\\\n        margin: 1rem auto;\\\\n        padding: 0 1rem;\\\\n        font-family: 'comic sans ms';\\\\n      }\\\\n    \\",
+                        \\"textContent\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\",
                         \\"isStyle\\": true,
                         \\"id\\": 14
                       }
@@ -9302,7 +9302,7 @@ exports[`record integration tests should record shadow DOM 1`] = `
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    body { /* for fallback iframe */\\\\n      margin: 0;\\\\n    }\\\\n    p { \\\\n      border: 1px solid #ccc;\\\\n      padding: 1rem;\\\\n      color: red;\\\\n      font-family: sans-serif;\\\\n    }\\\\n  \\",
+                            \\"textContent\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\",
                             \\"isStyle\\": true,
                             \\"id\\": 28
                           }
