@@ -347,6 +347,14 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
+function stringifyStyleSheet(sheet: CSSStyleSheet): string {
+  return sheet.cssRules
+    ? Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText || '')
+        .join('')
+    : '';
+}
+
 function serializeNode(
   n: Node,
   options: {
@@ -538,6 +546,16 @@ function serializeNode(
       const isStyle = parentTagName === 'STYLE' ? true : undefined;
       const isScript = parentTagName === 'SCRIPT' ? true : undefined;
       if (isStyle && textContent) {
+        try {
+          // try to read style sheet
+          if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
+            textContent = stringifyStyleSheet(
+              (n.parentNode as HTMLStyleElement).sheet!,
+            );
+          }
+        } catch {
+          // ignore error
+        }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
       if (isScript) {
