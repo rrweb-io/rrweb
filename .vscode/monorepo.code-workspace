@@ -1,7 +1,7 @@
 {
   "folders": [
     {
-      "name": "Monorepo",
+      "name": "RRWeb Monorepo",
       "path": ".."
     },
     {
@@ -18,9 +18,6 @@
     }
   ],
   "settings": {
-    "jest.disabledWorkspaceFolders": [
-      "Monorepo",
-      "rrweb-player"
-    ]
+    "jest.disabledWorkspaceFolders": ["RRWeb Monorepo", "rrweb-player", "rrdom"]
   }
 }
