@@ -484,8 +484,12 @@ function serializeNode(
           delete attributes.selected;
         }
       }
-      // canvas image data
-      if (tagName === 'canvas' && recordCanvas) {
+      // 2d canvas image data
+      if (
+        tagName === 'canvas' &&
+        recordCanvas &&
+        (n as HTMLCanvasElement).getContext('2d')
+      ) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
       }
       // media elements
