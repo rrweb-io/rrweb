@@ -135,29 +135,7 @@ exports[`iframe integration tests snapshot async iframes 1`] = `
 exports[`integration tests [html file]: about-mozilla.html 1`] = `
 "<!DOCTYPE html><html><head>
   <title>The Book of Mozilla, 11:9</title>
-  <style type=\\"text/css\\">
-    html {
-      background: maroon;
-      color: white;
-      font-style: italic;
-    }    #moztext {
-      margin-top: 15%;
-      font-size: 1.1em;
-      font-family: serif;
-      text-align: center;
-      line-height: 1.5;
-    }    #from {
-      font-size: 1.95em;
-      font-family: serif;
-      text-align: right;
-    }    em {
-      font-size: 1.3em;
-      line-height: 0;
-    }    a {
-      text-decoration: none;
-      color: white;
-    }
-  </style>
+  <style type=\\"text/css\\">html { background: maroon; color: white; font-style: italic; }#moztext { margin-top: 15%; font-size: 1.1em; font-family: serif; text-align: center; line-height: 1.5; }#from { font-size: 1.95em; font-family: serif; text-align: right; }em { font-size: 1.3em; line-height: 0; }a { text-decoration: none; color: white; }</style>
 </head><body>  <p id=\\"moztext\\">
     Mammon slept. And the <em>beast reborn</em> spread over the earth and its numbers
     grew legion. And they proclaimed the times and <em>sacrificed</em> crops unto the
@@ -187,17 +165,7 @@ exports[`integration tests [html file]: block-element.html 1`] = `
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
     <title>Document</title>
-    <style>
-      .big {
-        width: 50px;
-        height: 50px;
-      }
-      .small {
-        width: 50px;
-        height: 100px;
-        float: left;
-      }
-    </style>
+    <style>.big { width: 50px; height: 50px; }.small { width: 50px; height: 100px; float: left; }</style>
   </head>  <body>
     <div class=\\"rr-block big\\" style=\\"width: 50px; height: 50px;\\"></div>
     <div>record 2</div>
@@ -286,18 +254,7 @@ exports[`integration tests [html file]: hover.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>hover selector</title>
-  <style>    div:hover, div.\\\\:hover {
-      background: orange;
-    }    div:hover::after, div.\\\\:hover::after {
-      position: absolute;
-      left: 0;
-      top: 100%;
-      content: 'dropdown';
-      width: 100px;
-      height: 200px;
-      background: lightblue;
-    }
-  </style>
+  <style>div:hover, div.\\\\:hover { background: orange; }div:hover::after, div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
 </head><body>
   <div>hover me</div>
 </body></html>"
@@ -759,7 +716,7 @@ exports[`shadow DOM integration tests snapshot shadow DOM 1`] = `
                   \\"childNodes\\": [
                     {
                       \\"type\\": 3,
-                      \\"textContent\\": \\"\\\\n              :host {\\\\n                display: inline-block;\\\\n                width: 650px;\\\\n                font-family: 'Roboto Slab';\\\\n                contain: content;\\\\n              }\\\\n              :host([background]) {\\\\n                background: var(--background-color, #9E9E9E);\\\\n                border-radius: 10px;\\\\n                padding: 10px;\\\\n              }\\\\n              #panels {\\\\n                box-shadow: 0 2px 2px rgba(0, 0, 0, .3);\\\\n                background: white;\\\\n                border-radius: 3px;\\\\n                padding: 16px;\\\\n                height: 250px;\\\\n                overflow: auto;\\\\n              }\\\\n              #tabs {\\\\n                display: inline-flex;\\\\n                -webkit-user-select: none;\\\\n                user-select: none;\\\\n              }\\\\n              #tabs slot {\\\\n                display: inline-flex; /* Safari bug. Treats <slot> as a parent */\\\\n              }\\\\n              /* Safari does not support #id prefixes on ::slotted\\\\n                 See https://bugs.webkit.org/show_bug.cgi?id=160538 */\\\\n              #tabs ::slotted(*) {\\\\n                font: 400 16px/22px 'Roboto';\\\\n                padding: 16px 8px;\\\\n                margin: 0;\\\\n                text-align: center;\\\\n                width: 100px;\\\\n                text-overflow: ellipsis;\\\\n                white-space: nowrap;\\\\n                overflow: hidden;\\\\n                cursor: pointer;\\\\n                border-top-left-radius: 3px;\\\\n                border-top-right-radius: 3px;\\\\n                background: linear-gradient(#fafafa, #eee);\\\\n                border: none; /* if the user users a <button> */\\\\n              }\\\\n              #tabs ::slotted([aria-selected=\\\\\\"true\\\\\\"]) {\\\\n                font-weight: 600;\\\\n                background: white;\\\\n                box-shadow: none;\\\\n              }\\\\n              #tabs ::slotted(:focus) {\\\\n                z-index: 1; /* make sure focus ring doesn't get buried */\\\\n              }\\\\n              #panels ::slotted([aria-hidden=\\\\\\"true\\\\\\"]) {\\\\n                display: none;\\\\n              }\\\\n            \\",
+                      \\"textContent\\": \\":host { display: inline-block; width: 650px; font-family: \\\\\\"Roboto Slab\\\\\\"; contain: content; }:host([background]) { background: var(--background-color, #9E9E9E); border-radius: 10px; padding: 10px; }#panels { box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 2px; background: white; border-radius: 3px; padding: 16px; height: 250px; overflow: auto; }#tabs { display: inline-flex; user-select: none; }#tabs slot { display: inline-flex; }#tabs ::slotted(*) { font: 400 16px/22px Roboto; padding: 16px 8px; margin: 0px; text-align: center; width: 100px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: pointer; border-top-left-radius: 3px; border-top-right-radius: 3px; background: linear-gradient(rgb(250, 250, 250), rgb(238, 238, 238)); border: none; }#tabs ::slotted([aria-selected=\\\\\\"true\\\\\\"]) { font-weight: 600; background: white; box-shadow: none; }#tabs ::slotted(:focus) { z-index: 1; }#panels ::slotted([aria-hidden=\\\\\\"true\\\\\\"]) { display: none; }\\",
                       \\"isStyle\\": true,
                       \\"id\\": 38
                     }
