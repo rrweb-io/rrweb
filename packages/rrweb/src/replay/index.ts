@@ -1211,7 +1211,7 @@ export class Replayer {
           mutation: d,
           target: (target as unknown) as HTMLCanvasElement,
           imageMap: this.imageMap,
-          errorHandler: this.warnCanvasMutationFailed,
+          errorHandler: this.warnCanvasMutationFailed.bind(this),
         });
 
         break;
