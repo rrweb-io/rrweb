@@ -50,7 +50,7 @@ describe('replayer', function () {
   });
 
   describe('webgl', () => {
-    it('should doutput simple webgl object', async () => {
+    it('should output simple webgl object', async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events, {
