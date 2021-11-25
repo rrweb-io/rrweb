@@ -384,6 +384,7 @@ export enum MouseInteractions {
 export enum CanvasContext {
   '2D',
   WebGL,
+  WebGL2,
 }
 
 type mouseInteractionParam = {
