@@ -76,13 +76,11 @@ export default function webglMutation({
     ] as Function;
 
     const args = mutation.args.map((arg: any) => {
-      if (typeof arg === 'string') {
-        if (arg.startsWith('$')) {
-          const [name, index] = arg.slice(1).split('#');
-          return variableListFor(name)[Number(index)];
-        }
-        return arg;
+      if (typeof arg === 'string' && arg.startsWith('$')) {
+        const [name, index] = arg.slice(1).split('#');
+        return variableListFor(name)[Number(index)];
       }
+      return arg;
     });
     const result = original.apply(ctx, args);
 
