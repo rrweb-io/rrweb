@@ -45,7 +45,7 @@ const startServer = () =>
         res.end();
       }
     });
-    s.listen(3030).on('listening', () => {
+    s.listen(3031).on('listening', () => {
       resolve(s);
     });
   });
@@ -500,7 +500,7 @@ describe('record integration tests', function (this: ISuite) {
 
   it('should nest record iframe', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    await page.goto(`http://localhost:3030/html`);
+    await page.goto(`http://localhost:3031/html`);
     await page.setContent(getHtml.call(this, 'main.html'));
 
     await page.waitForTimeout(500);
