@@ -63,6 +63,7 @@ import {
   getNestedRule,
   getPositionsAndIndex,
 } from './virtual-styles';
+import canvasMutation from './canvas';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -1204,40 +1205,15 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
-        // default is '2d' for backwards compatibility (rrweb below 1.1.x)
-        let contextType: '2d' | 'webgl' = '2d';
-        try {
-          if (d.type === CanvasContext.WebGL) {
-            contextType = 'webgl';
-          }
-          const ctx = ((target as unknown) as HTMLCanvasElement).getContext(
-            contextType,
-          )!;
-          if (d.setter) {
-            // skip some read-only type checks
-            // tslint:disable-next-line:no-any
-            (ctx as any)[d.property] = d.args[0];
-            return;
-          }
-          const original = ctx[
-            d.property as Exclude<keyof typeof ctx, 'canvas'>
-          ] as Function;
 
-          /**
-           * We have serialized the image source into base64 string during recording,
-           * which has been preloaded before replay.
-           * So we can get call drawImage SYNCHRONOUSLY which avoid some fragile cast.
-           */
-          if (d.property === 'drawImage' && typeof d.args[0] === 'string') {
-            const image = this.imageMap.get(e);
-            d.args[0] = image;
-            original.apply(ctx, d.args);
-          } else {
-            original.apply(ctx, d.args);
-          }
-        } catch (error) {
-          this.warnCanvasMutationFailed(d, d.id, error);
-        }
+        canvasMutation({
+          event: e,
+          mutation: d,
+          target: (target as unknown) as HTMLCanvasElement,
+          imageMap: this.imageMap,
+          errorHandler: this.warnCanvasMutationFailed,
+        });
+
         break;
       }
       case IncrementalSource.Font: {
@@ -1863,12 +1839,8 @@ export class Replayer {
     }
   }
 
-  private warnCanvasMutationFailed(
-    d: canvasMutationData,
-    id: number,
-    error: unknown,
-  ) {
-    this.warn(`Has error on update canvas '${id}'`, d, error);
+  private warnCanvasMutationFailed(d: canvasMutationData, error: unknown) {
+    this.warn(`Has error on canvas update`, error, 'canvas mutation:', d);
   }
 
   private debugNodeNotFound(d: incrementalData, id: number) {
