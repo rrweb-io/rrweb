@@ -42,7 +42,7 @@ const WebGLVariableConstructorsNames = WebGLVariableConstructors.map(
 );
 
 function saveToWebGLVarMap(result: any) {
-  if (result?.constructor) return; // probably null or undefined
+  if (!result?.constructor) return; // probably null or undefined
 
   const { name } = result.constructor;
   if (!WebGLVariableConstructorsNames.includes(name)) return; // not a WebGL variable
