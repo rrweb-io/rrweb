@@ -429,7 +429,7 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
-    if (isIgnored(m.target)) {
+    if (isIgnored(m.target, this.slimDOMOptions)) {
       return;
     }
     switch (m.type) {
@@ -529,7 +529,7 @@ export default class MutationBuffer {
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId((m.target.host as unknown) as INode)
             : this.mirror.getId(m.target as INode);
-          if (isBlocked(m.target, this.blockClass) || isIgnored(n)) {
+          if (isBlocked(m.target, this.blockClass) || isIgnored(n, this.slimDOMOptions)) {
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set
@@ -578,7 +578,7 @@ export default class MutationBuffer {
       return;
     }
     if (isINode(n)) {
-      if (isIgnored(n)) {
+      if (isIgnored(n, this.slimDOMOptions)) {
         return;
       }
       this.movedSet.add(n);
