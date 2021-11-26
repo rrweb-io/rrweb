@@ -387,6 +387,21 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedWebGlArg =
+  | {
+      rr_type: string;
+      args: Array<SerializedWebGlArg>;
+    }
+  | {
+      rr_type: string;
+      index: number;
+    }
+  | string
+  | number
+  | boolean
+  | null
+  | SerializedWebGlArg[];
+
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;

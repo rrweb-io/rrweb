@@ -1,5 +1,9 @@
 import { Replayer } from '../../../typings/entries/all';
-import { CanvasContext, canvasMutationData } from '../../types';
+import {
+  CanvasContext,
+  canvasMutationData,
+  SerializedWebGlArg,
+} from '../../types';
 
 const webGLVarMap: Map<string, any[]> = new Map();
 function variableListFor(ctor: string) {
@@ -49,6 +53,26 @@ function saveToWebGLVarMap(result: any) {
 
   const variables = variableListFor(name);
   if (!variables.includes(result)) variables.push(result);
+}
+
+export function deserializeArg(arg: SerializedWebGlArg): any {
+  if (arg && typeof arg === 'object' && 'rr_type' in arg) {
+    if ('index' in arg) {
+      const { rr_type: name, index } = arg;
+      return variableListFor(name)[index];
+    } else if ('args' in arg) {
+      const { rr_type: name, args } = arg;
+
+      // @ts-ignore
+      const ctor = window[name] as unknown;
+
+      // @ts-ignore
+      return new ctor(...args.map(deserializeArg));
+    }
+  } else if (Array.isArray(arg)) {
+    return arg.map(deserializeArg);
+  }
+  return arg;
 }
 
 export default function webglMutation({
