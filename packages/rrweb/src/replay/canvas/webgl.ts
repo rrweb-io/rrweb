@@ -5,8 +5,9 @@ import {
   SerializedWebGlArg,
 } from '../../types';
 
+// TODO: add ability to wipe this list
 const webGLVarMap: Map<string, any[]> = new Map();
-function variableListFor(ctor: string) {
+export function variableListFor(ctor: string) {
   if (!webGLVarMap.has(ctor)) {
     webGLVarMap.set(ctor, []);
   }
@@ -99,13 +100,7 @@ export default function webglMutation({
       mutation.property as Exclude<keyof typeof ctx, 'canvas'>
     ] as Function;
 
-    const args = mutation.args.map((arg: any) => {
-      if (typeof arg === 'string' && arg.startsWith('$')) {
-        const [name, index] = arg.slice(1).split('#');
-        return variableListFor(name)[Number(index)];
-      }
-      return arg;
-    });
+    const args = mutation.args.map(deserializeArg);
     const result = original.apply(ctx, args);
 
     saveToWebGLVarMap(result);

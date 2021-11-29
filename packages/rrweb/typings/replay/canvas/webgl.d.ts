@@ -1,4 +1,8 @@
-import { INode } from 'rrweb-snapshot';
 import { Replayer } from '../../../typings/entries/all';
-import { canvasMutationData } from '../../types';
-export default function webglMutation(d: canvasMutationData, target: INode, warnCanvasMutationFailed: Replayer['warnCanvasMutationFailed']): void;
+import { canvasMutationData, SerializedWebGlArg } from '../../types';
+export declare function deserializeArg(arg: SerializedWebGlArg): any;
+export default function webglMutation({ mutation, target, errorHandler, }: {
+    mutation: canvasMutationData;
+    target: HTMLCanvasElement;
+    errorHandler: Replayer['warnCanvasMutationFailed'];
+}): void;

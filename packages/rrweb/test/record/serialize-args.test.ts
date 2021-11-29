@@ -1,26 +1,10 @@
 /**
  * @jest-environment jsdom
  */
-import { serializeArg } from '../../src/record/observers/canvas-web-gl';
+import { polyfillWebGLGlobals } from '../utils';
+polyfillWebGLGlobals();
 
-// polyfill as jsdom does not have support for these classes
-// consider replacing for https://www.npmjs.com/package/canvas
-class FakeConstructor {
-  constructor() {}
-}
-global.WebGLActiveInfo = FakeConstructor as any;
-global.WebGLBuffer = FakeConstructor as any;
-global.WebGLFramebuffer = FakeConstructor as any;
-class WebGLProgram {
-  constructor() {}
-}
-global.WebGLProgram = WebGLProgram as any;
-global.WebGLRenderbuffer = FakeConstructor as any;
-global.WebGLShader = FakeConstructor as any;
-global.WebGLShaderPrecisionFormat = FakeConstructor as any;
-global.WebGLTexture = FakeConstructor as any;
-global.WebGLUniformLocation = FakeConstructor as any;
-global.WebGLVertexArrayObject = FakeConstructor as any;
+import { serializeArg } from '../../src/record/observers/canvas-web-gl';
 
 describe('serializeArg', () => {
   it('should serialize Float32Array values', async () => {
