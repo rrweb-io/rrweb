@@ -70,8 +70,8 @@ export function deserializeArg(arg: SerializedWebGlArg): any {
 
       // @ts-ignore
       return new ctor(...args.map(deserializeArg));
-    } else if ('contents' in arg) {
-      return decode(arg.contents);
+    } else if ('base64' in arg) {
+      return decode(arg.base64);
     }
   } else if (Array.isArray(arg)) {
     return arg.map(deserializeArg);
