@@ -389,6 +389,10 @@ export enum CanvasContext {
 
 export type SerializedWebGlArg =
   | {
+      rr_type: 'ArrayBuffer';
+      base64: string; // base64
+    }
+  | {
       rr_type: string;
       args: Array<SerializedWebGlArg>;
     }

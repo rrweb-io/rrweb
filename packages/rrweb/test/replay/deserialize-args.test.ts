@@ -77,13 +77,13 @@ describe('deserializeArg', () => {
   });
 
   it('should deserialize ArrayBuffer values', async () => {
-    const arrayBuffer = new ArrayBuffer(16);
+    const contents = [1, 2, 0, 4];
     expect(
       deserializeArg({
         rr_type: 'ArrayBuffer',
-        args: [16],
+        base64: 'AQIABA==',
       }),
-    ).toEqual(new ArrayBuffer(16));
+    ).toStrictEqual(new Uint8Array(contents).buffer);
   });
 
   it('should deserialize DataView values', async () => {
@@ -93,13 +93,13 @@ describe('deserializeArg', () => {
         args: [
           {
             rr_type: 'ArrayBuffer',
-            args: [16],
+            base64: 'AAAAAAAAAAAAAAAAAAAAAA==',
           },
           0,
           16,
         ],
       }),
-    ).toEqual(new DataView(new ArrayBuffer(16), 0, 16));
+    ).toStrictEqual(new DataView(new ArrayBuffer(16), 0, 16));
   });
 
   it('should leave arrays intact', async () => {
@@ -123,7 +123,7 @@ describe('deserializeArg', () => {
       5,
       6,
     ];
-    expect(deserializeArg(serializedArg)).toEqual([
+    expect(deserializeArg(serializedArg)).toStrictEqual([
       new DataView(new ArrayBuffer(16), 0, 16),
       5,
       6,

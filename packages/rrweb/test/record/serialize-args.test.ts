@@ -27,10 +27,10 @@ describe('serializeArg', () => {
   });
 
   it('should serialize ArrayBuffer values', async () => {
-    const arrayBuffer = new ArrayBuffer(16);
+    const arrayBuffer = new Uint8Array([1, 2, 0, 4]).buffer;
     const expected = {
       rr_type: 'ArrayBuffer',
-      args: [16],
+      base64: 'AQIABA==',
     };
 
     expect(serializeArg(arrayBuffer)).toEqual(expected);
@@ -43,7 +43,7 @@ describe('serializeArg', () => {
       args: [
         {
           rr_type: 'ArrayBuffer',
-          args: [16],
+          base64: 'AAAAAAAAAAAAAAAAAAAAAA==',
         },
         0,
         16,
@@ -66,7 +66,7 @@ describe('serializeArg', () => {
         args: [
           {
             rr_type: 'ArrayBuffer',
-            args: [16],
+            base64: 'AAAAAAAAAAAAAAAAAAAAAA==',
           },
           0,
           16,
@@ -77,6 +77,16 @@ describe('serializeArg', () => {
     ];
 
     expect(serializeArg(dataView)).toEqual(expected);
+  });
+
+  it('should serialize arraybuffer contents', async () => {
+    const buffer = new Float32Array([1, 2, 3, 4]).buffer;
+    const expected = {
+      rr_type: 'ArrayBuffer',
+      base64: 'AACAPwAAAEAAAEBAAACAQA==',
+    };
+
+    expect(serializeArg(buffer)).toEqual(expected);
   });
 
   it('should leave null as-is', async () => {

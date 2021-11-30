@@ -1,3 +1,4 @@
+import { encode } from 'base64-arraybuffer';
 import { INode } from 'rrweb-snapshot';
 import {
   blockClass,
@@ -39,10 +40,12 @@ export function serializeArg(value: any): SerializedWebGlArg {
     // value instanceof SharedArrayBuffer ||
     value instanceof ArrayBuffer
   ) {
-    const name = value.constructor.name;
+    const name = value.constructor.name as 'ArrayBuffer';
+    const base64 = encode(value);
+
     return {
       rr_type: name,
-      args: [value.byteLength],
+      base64,
     };
   } else if (value instanceof DataView) {
     const name = value.constructor.name;

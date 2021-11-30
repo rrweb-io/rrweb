@@ -1,3 +1,4 @@
+import { decode } from 'base64-arraybuffer';
 import { Replayer } from '../../../typings/entries/all';
 import {
   CanvasContext,
@@ -69,6 +70,8 @@ export function deserializeArg(arg: SerializedWebGlArg): any {
 
       // @ts-ignore
       return new ctor(...args.map(deserializeArg));
+    } else if ('contents' in arg) {
+      return decode(arg.contents);
     }
   } else if (Array.isArray(arg)) {
     return arg.map(deserializeArg);
