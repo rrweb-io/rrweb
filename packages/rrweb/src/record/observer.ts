@@ -49,8 +49,9 @@ import {
 import MutationBuffer from './mutation';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
-import initCanvas2DMutationObserver from './observers/canvas-2d';
-import initCanvasWebGLMutationObserver from './observers/canvas-web-gl';
+import initCanvas2DMutationObserver from './observers/canvas/2d';
+import initCanvasWebGLMutationObserver from './observers/canvas/webgl';
+import initCanvasWebGL2MutationObserver from './observers/canvas/webgl2';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -728,9 +729,17 @@ function initCanvasMutationObserver(
     mirror,
   );
 
+  const canvasWebGL2Reset = initCanvasWebGL2MutationObserver(
+    cb,
+    win,
+    blockClass,
+    mirror,
+  );
+
   return () => {
     canvas2DReset();
     canvasWebGLReset();
+    canvasWebGL2Reset();
   };
 }
 

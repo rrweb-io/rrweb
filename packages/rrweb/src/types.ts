@@ -394,6 +394,10 @@ export type SerializedWebGlArg =
     }
   | {
       rr_type: string;
+      src: string; // url of image
+    }
+  | {
+      rr_type: string;
       args: Array<SerializedWebGlArg>;
     }
   | {

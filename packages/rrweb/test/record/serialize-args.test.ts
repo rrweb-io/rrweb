@@ -4,7 +4,7 @@
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
-import { serializeArg } from '../../src/record/observers/canvas-web-gl';
+import { serializeArg } from '../../src/record/observers/canvas/serialize-args';
 
 describe('serializeArg', () => {
   it('should serialize Float32Array values', async () => {
@@ -13,7 +13,7 @@ describe('serializeArg', () => {
       rr_type: 'Float32Array',
       args: [[-1, -1, 3, -1, -1, 3]],
     };
-    expect(serializeArg(float32Array)).toEqual(expected);
+    expect(serializeArg(float32Array)).toStrictEqual(expected);
   });
 
   it('should serialize Float64Array values', async () => {
@@ -23,7 +23,7 @@ describe('serializeArg', () => {
       args: [[-1, -1, 3, -1, -1, 3]],
     };
 
-    expect(serializeArg(float64Array)).toEqual(expected);
+    expect(serializeArg(float64Array)).toStrictEqual(expected);
   });
 
   it('should serialize ArrayBuffer values', async () => {
@@ -33,7 +33,17 @@ describe('serializeArg', () => {
       base64: 'AQIABA==',
     };
 
-    expect(serializeArg(arrayBuffer)).toEqual(expected);
+    expect(serializeArg(arrayBuffer)).toStrictEqual(expected);
+  });
+
+  it('should serialize Uint8Array values', async () => {
+    const object = new Uint8Array([1, 2, 0, 4]);
+    const expected = {
+      rr_type: 'Uint8Array',
+      args: [[1, 2, 0, 4]],
+    };
+
+    expect(serializeArg(object)).toStrictEqual(expected);
   });
 
   it('should serialize DataView values', async () => {
@@ -50,12 +60,12 @@ describe('serializeArg', () => {
       ],
     };
 
-    expect(serializeArg(dataView)).toEqual(expected);
+    expect(serializeArg(dataView)).toStrictEqual(expected);
   });
 
   it('should leave arrays intact', async () => {
     const array = [1, 2, 3, 4];
-    expect(serializeArg(array)).toEqual(array);
+    expect(serializeArg(array)).toStrictEqual(array);
   });
 
   it('should serialize complex objects', async () => {
@@ -76,7 +86,7 @@ describe('serializeArg', () => {
       6,
     ];
 
-    expect(serializeArg(dataView)).toEqual(expected);
+    expect(serializeArg(dataView)).toStrictEqual(expected);
   });
 
   it('should serialize arraybuffer contents', async () => {
@@ -86,7 +96,7 @@ describe('serializeArg', () => {
       base64: 'AACAPwAAAEAAAEBAAACAQA==',
     };
 
-    expect(serializeArg(buffer)).toEqual(expected);
+    expect(serializeArg(buffer)).toStrictEqual(expected);
   });
 
   it('should leave null as-is', async () => {
@@ -95,9 +105,18 @@ describe('serializeArg', () => {
 
   it('should support indexed variables', async () => {
     const webGLProgram = new WebGLProgram();
-    expect(serializeArg(webGLProgram)).toEqual({
+    expect(serializeArg(webGLProgram)).toStrictEqual({
       rr_type: 'WebGLProgram',
       index: 0,
+    });
+  });
+
+  it('should support HTMLImageElements', async () => {
+    const image = new Image();
+    image.src = 'http://example.com/image.png';
+    expect(serializeArg(image)).toStrictEqual({
+      rr_type: 'HTMLImageElement',
+      src: 'http://example.com/image.png',
     });
   });
 });

@@ -133,4 +133,15 @@ describe('deserializeArg', () => {
   it('should leave null as-is', async () => {
     expect(deserializeArg(null)).toStrictEqual(null);
   });
+
+  it('should support HTMLImageElements', async () => {
+    const image = new Image();
+    image.src = 'http://example.com/image.png';
+    expect(
+      deserializeArg({
+        rr_type: 'HTMLImageElement',
+        src: 'http://example.com/image.png',
+      }),
+    ).toStrictEqual(image);
+  });
 });

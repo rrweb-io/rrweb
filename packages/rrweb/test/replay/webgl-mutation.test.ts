@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
+import { polyfillWebGLGlobals } from '../utils';
+polyfillWebGLGlobals();
+
 import webglMutation, { variableListFor } from '../../src/replay/canvas/webgl';
 import { CanvasContext, IncrementalSource } from '../../src/types';
-import { polyfillWebGLGlobals } from '../utils';
-
-polyfillWebGLGlobals();
 
 let canvas: HTMLCanvasElement;
 describe('webglMutation', () => {

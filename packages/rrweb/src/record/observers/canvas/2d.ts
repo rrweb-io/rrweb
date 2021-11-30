@@ -6,8 +6,8 @@ import {
   IWindow,
   listenerHandler,
   Mirror,
-} from '../../types';
-import { hookSetter, isBlocked, patch } from '../../utils';
+} from '../../../types';
+import { hookSetter, isBlocked, patch } from '../../../utils';
 
 export default function initCanvas2DMutationObserver(
   cb: canvasMutationCallback,

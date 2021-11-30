@@ -72,6 +72,10 @@ export function deserializeArg(arg: SerializedWebGlArg): any {
       return new ctor(...args.map(deserializeArg));
     } else if ('base64' in arg) {
       return decode(arg.base64);
+    } else if ('src' in arg) {
+      const image = new Image();
+      image.src = arg.src;
+      return image;
     }
   } else if (Array.isArray(arg)) {
     return arg.map(deserializeArg);
