@@ -492,13 +492,20 @@ function serializeNode(
           delete attributes.selected;
         }
       }
-      // 2d canvas image data
-      if (
-        tagName === 'canvas' &&
-        recordCanvas &&
-        (n as HTMLCanvasElement).getContext('2d')
-      ) {
-        attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
+      // canvas image data
+      if (tagName === 'canvas' && recordCanvas) {
+        const canvasDataURL = (n as HTMLCanvasElement).toDataURL();
+
+        // create blank canvas of same dimensions
+        const blankCanvas = document.createElement('canvas');
+        blankCanvas.width = (n as HTMLCanvasElement).width;
+        blankCanvas.height = (n as HTMLCanvasElement).height;
+        const blankCanvasDataURL = blankCanvas.toDataURL();
+
+        // no need to save dataURL if it's the same as blank canvas
+        if (canvasDataURL !== blankCanvasDataURL) {
+          attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
+        }
       }
       // media elements
       if (tagName === 'audio' || tagName === 'video') {
