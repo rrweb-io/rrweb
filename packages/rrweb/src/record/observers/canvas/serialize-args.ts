@@ -16,7 +16,8 @@ export function serializeArg(value: any): SerializedWebGlArg {
     value instanceof Uint8Array ||
     value instanceof Uint16Array ||
     value instanceof Int16Array ||
-    value instanceof Int8Array
+    value instanceof Int8Array ||
+    value instanceof Uint8ClampedArray
   ) {
     const name = value.constructor.name;
     return {
@@ -48,6 +49,12 @@ export function serializeArg(value: any): SerializedWebGlArg {
     return {
       rr_type: name,
       src,
+    };
+  } else if (value instanceof ImageData) {
+    const name = value.constructor.name;
+    return {
+      rr_type: name,
+      args: [serializeArg(value.data), value.width, value.height],
     };
   } else if (
     value instanceof WebGLActiveInfo ||

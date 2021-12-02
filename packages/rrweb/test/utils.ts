@@ -392,4 +392,17 @@ export const polyfillWebGLGlobals = () => {
   }
 
   global.WebGLVertexArrayObject = WebGLVertexArrayObject as any;
+
+  class ImageData {
+    public data: Uint8ClampedArray;
+    public width: number;
+    public height: number;
+    constructor(data: Uint8ClampedArray, width: number, height: number) {
+      this.data = data;
+      this.width = width;
+      this.height = height;
+    }
+  }
+
+  global.ImageData = ImageData as any;
 };
