@@ -16,7 +16,7 @@ import { isElement, isShadowRoot, maskInputValue } from './utils';
 import { values } from 'puppeteer/DeviceDescriptors';
 
 let _id = 1;
-const tagNameRegex = RegExp('[^a-z0-9-_:]');
+const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
 export const IGNORED_NODE = -2;
 
