@@ -168,7 +168,12 @@ describe('record webgl', function (this: ISuite) {
         source: IncrementalSource.CanvasMutation,
         property: 'linkProgram',
         type: CanvasContext.WebGL,
-        args: ['$WebGLProgram#1'], // `program1` is WebGLProgram, this is the second WebGLProgram variable (#1)
+        args: [
+          {
+            index: 1,
+            rr_type: 'WebGLProgram',
+          },
+        ], // `program1` is WebGLProgram, this is the second WebGLProgram variable (index #1)
       },
     });
   });
