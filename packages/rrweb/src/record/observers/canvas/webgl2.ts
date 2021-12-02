@@ -42,7 +42,7 @@ export default function initCanvasWebGLMutationObserver(
                 const recordArgs = serializeArgs([...args]);
                 cb({
                   id: mirror.getId((this.canvas as unknown) as INode),
-                  type: CanvasContext.WebGL,
+                  type: CanvasContext.WebGL2,
                   property: prop,
                   args: recordArgs,
                 });
