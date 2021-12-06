@@ -282,8 +282,22 @@ export declare enum MouseInteractions {
 }
 export declare enum CanvasContext {
     '2D' = 0,
-    WebGL = 1
+    WebGL = 1,
+    WebGL2 = 2
 }
+export declare type SerializedWebGlArg = {
+    rr_type: 'ArrayBuffer';
+    base64: string;
+} | {
+    rr_type: string;
+    src: string;
+} | {
+    rr_type: string;
+    args: Array<SerializedWebGlArg>;
+} | {
+    rr_type: string;
+    index: number;
+} | string | number | boolean | null | SerializedWebGlArg[];
 declare type mouseInteractionParam = {
     type: MouseInteractions;
     id: number;

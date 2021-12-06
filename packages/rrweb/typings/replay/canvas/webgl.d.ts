@@ -1,4 +1,4 @@
-import { Replayer } from '../../../typings/entries/all';
+import { Replayer } from '../';
 import { canvasMutationData, SerializedWebGlArg } from '../../types';
 export declare function variableListFor(ctor: string): any[];
 export declare function deserializeArg(arg: SerializedWebGlArg): any;
