@@ -1,5 +1,5 @@
 import { decode } from 'base64-arraybuffer';
-import { Replayer } from '../../../typings/entries/all';
+import { Replayer } from '../';
 import {
   CanvasContext,
   canvasMutationData,
@@ -95,7 +95,6 @@ export default function webglMutation({
   try {
     const ctx = getContext(target, mutation.type);
     if (!ctx) return;
-
 
     if (mutation.setter) {
       // skip some read-only type checks
