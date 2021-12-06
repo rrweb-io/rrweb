@@ -26,7 +26,6 @@
       " rrweb monorepo",
       "rrweb-player (package)",
       "rrdom (package)"
-    ],
-    "liveServer.settings.multiRootWorkspaceName": "rrweb"
+    ]
   }
 }
