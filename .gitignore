@@ -1,5 +1,5 @@
 .vscode/*
-!/.vscode/monorepo.code-workspace
+!/.vscode/rrweb-monorepo.code-workspace
 .idea
 node_modules
 package-lock.json

@@ -1,0 +1,32 @@
+{
+  "folders": [
+    {
+      "name": " rrweb monorepo", // added a space to bump it to the top
+      "path": ".."
+    },
+    {
+      "name": "rrdom (package)",
+      "path": "../packages/rrdom"
+    },
+    {
+      "name": "rrweb (package)",
+      "path": "../packages/rrweb"
+    },
+    {
+      "name": "rrweb-player (package)",
+      "path": "../packages/rrweb-player"
+    },
+    {
+      "name": "rrweb-snapshot (package)",
+      "path": "../packages/rrweb-snapshot"
+    }
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": [
+      " rrweb monorepo",
+      "rrweb-player (package)",
+      "rrdom (package)"
+    ],
+    "liveServer.settings.multiRootWorkspaceName": "rrweb"
+  }
+}
