@@ -124,29 +124,21 @@ function initLogObserver(
   // add listener to thrown errors
   if (logOptions.level!.includes('error')) {
     if (window) {
-      const originalOnError = window.onerror;
-      window.onerror = (
-        msg: Event | string,
-        file: string,
-        line: number,
-        col: number,
-        error: Error,
-      ) => {
-        if (originalOnError) {
-          originalOnError.apply(this, [msg, file, line, col, error]);
-        }
+      const errorHandler = (event: ErrorEvent) => {
+        const { message, error } = event;
         const trace: string[] = ErrorStackParser.parse(
           error,
         ).map((stackFrame: StackFrame) => stackFrame.toString());
-        const payload = [stringify(msg, logOptions.stringifyOptions)];
+        const payload = [stringify(message, logOptions.stringifyOptions)];
         cb({
           level: 'error',
           trace,
           payload,
         });
       };
+      window.addEventListener('error', errorHandler);
       cancelHandlers.push(() => {
-        window.onerror = originalOnError;
+        if (window) window.removeEventListener('error', errorHandler);
       });
     }
   }
