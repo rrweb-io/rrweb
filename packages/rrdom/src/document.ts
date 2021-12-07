@@ -221,6 +221,9 @@ export class RRDocument extends RRNode {
       case 'IMG':
         element = new RRImageElement('IMG');
         break;
+      case 'CANVAS':
+        element = new RRCanvasElement('CANVAS');
+        break;
       default:
         element = new RRElement(upperTagName);
         break;
@@ -650,6 +653,15 @@ export class RRMediaElement extends RRElement {
   }
   async pause() {
     this.paused = true;
+  }
+}
+
+export class RRCanvasElement extends RRElement {
+  /**
+   * This is just a dummy implementation to prevent rrweb replayer from drawing mouse tail. If further analysis of canvas is needed, we may implement it with node-canvas.
+   */
+  getContext(): CanvasRenderingContext2D | null {
+    return null;
   }
 }
 
