@@ -3,6 +3,7 @@ import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
 import nwsapi, { NWSAPI } from 'nwsapi';
 import * as nwsapiFactory from 'nwsapi';
 import { parseCSSText, camelize, toCSSText } from './style';
+const cssom = require('cssom');
 
 export abstract class RRNode {
   __sn: serializedNodeWithId | undefined;
@@ -223,6 +224,9 @@ export class RRDocument extends RRNode {
         break;
       case 'CANVAS':
         element = new RRCanvasElement('CANVAS');
+        break;
+      case 'STYLE':
+        element = new RRStyleElement('STYLE');
         break;
       default:
         element = new RRElement(upperTagName);
@@ -662,6 +666,21 @@ export class RRCanvasElement extends RRElement {
    */
   getContext(): CanvasRenderingContext2D | null {
     return null;
+  }
+}
+
+export class RRStyleElement extends RRElement {
+  private _sheet: CSSStyleSheet | null = null;
+
+  get sheet() {
+    if (!this._sheet) {
+      let result = '';
+      for (let child of this.childNodes)
+        if (child.nodeType === NodeType.Text)
+          result += (child as RRText).textContent;
+      this._sheet = cssom.parse(result);
+    }
+    return this._sheet;
   }
 }
 

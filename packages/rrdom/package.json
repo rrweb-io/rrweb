@@ -26,6 +26,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
+    "@types/cssom": "^0.4.1",
     "@types/jest": "^27.0.1",
     "@types/nwsapi": "^2.2.2",
     "jest": "^27.1.1",
@@ -37,6 +38,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "cssom": "^0.5.0",
     "nwsapi": "^2.2.0"
   }
 }
