@@ -1,6 +1,7 @@
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
 // @ts-ignore
-import nwsapi from 'nwsapi';
+import nwsapi, { NWSAPI } from 'nwsapi';
+import * as nwsapiFactory from 'nwsapi';
 import { parseCSSText, camelize, toCSSText } from './style';
 
 export abstract class RRNode {
@@ -75,10 +76,10 @@ export class RRWindow {
 
 export class RRDocument extends RRNode {
   private mirror: Map<number, RRNode> = new Map();
-  private _nwsapi: nwsapi.NWSAPI;
+  private _nwsapi: NWSAPI;
   get nwsapi() {
     if (!this._nwsapi) {
-      this._nwsapi = nwsapi({
+      this._nwsapi = (nwsapi || nwsapiFactory)({
         document: (this as unknown) as Document,
         DOMException: (null as unknown) as new (
           message?: string,
@@ -451,6 +452,10 @@ export class RRElement extends RRNode {
     );
   }
 
+  get className() {
+    return this.attributes.class;
+  }
+
   get textContent() {
     return '';
   }
@@ -476,6 +481,13 @@ export class RRElement extends RRNode {
     // This is used to bypass the smoothscroll polyfill in rrweb player.
     style.scrollBehavior = '';
     return style;
+  }
+
+  getAttribute(name: string) {
+    if (name in this.attributes) {
+      return this.attributes[name];
+    }
+    throw new Error(`The attribute '${name}' is not supported by RRDom.`);
   }
 
   setAttribute(name: string, attribute: string) {

@@ -9,8 +9,9 @@
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": ["es6", "dom"],    
-    "skipLibCheck": true
+    "lib": ["es6", "dom"],
+    "skipLibCheck": true,
+    "declaration": true
   },
   "compileOnSave": true,
   "exclude": ["test"],
