@@ -60,7 +60,6 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should polyfill Event type', () => {
-    expect(global.Event).toBeUndefined();
     polyfillEvent();
     expect(global.Event).toBeDefined();
     expect(Event).toBeDefined();

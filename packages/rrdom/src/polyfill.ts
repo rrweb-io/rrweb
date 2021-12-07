@@ -57,6 +57,7 @@ export function polyfillRAF() {
 /**
  * Try to polyfill Event type.
  * The implementation of Event so far is empty because rrweb doesn't strongly depend on it in nodejs mode.
+ * Note: The Event class is available through the global object from nodejs v15.0.0.
  */
 export function polyfillEvent() {
   if (typeof Event !== 'undefined') return;
