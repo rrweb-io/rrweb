@@ -96,14 +96,14 @@ export class RRDocument extends RRNode {
 
   get documentElement() {
     return this.children.filter(
-      (node) => node instanceof RRElement && node.tagName === 'html',
+      (node) => node instanceof RRElement && node.tagName === 'HTML',
     )[0];
   }
 
   get body() {
     return (
       this.documentElement?.children.filter(
-        (node) => node instanceof RRElement && node.tagName === 'body',
+        (node) => node instanceof RRElement && node.tagName === 'BODY',
       )[0] || null
     );
   }
@@ -111,7 +111,7 @@ export class RRDocument extends RRNode {
   get head() {
     return (
       this.documentElement?.children.filter(
-        (node) => node instanceof RRElement && node.tagName === 'head',
+        (node) => node instanceof RRElement && node.tagName === 'HEAD',
       )[0] || null
     );
   }
@@ -158,7 +158,7 @@ export class RRDocument extends RRNode {
 
   getElementsByTagName(tagName: string): RRElement[] {
     let elements: RRElement[] = [];
-    const normalizedTagName = tagName.toLowerCase();
+    const normalizedTagName = tagName.toUpperCase();
     if (this instanceof RRElement && this.tagName === normalizedTagName)
       elements.push(this);
     for (const child of this.children) {
@@ -195,21 +195,21 @@ export class RRDocument extends RRNode {
   ): RRElementType<K>;
   createElement(tagName: string): RRElement;
   createElement(tagName: string) {
-    const lowerTagName = tagName.toLowerCase();
+    const upperTagName = tagName.toUpperCase();
     let element;
-    switch (lowerTagName) {
-      case 'audio':
-      case 'video':
-        element = new RRMediaElement(lowerTagName);
+    switch (upperTagName) {
+      case 'AUDIO':
+      case 'VIDEO':
+        element = new RRMediaElement(upperTagName);
         break;
-      case 'iframe':
-        element = new RRIframeElement(lowerTagName);
+      case 'IFRAME':
+        element = new RRIframeElement(upperTagName);
         break;
-      case 'img':
-        element = new RRImageElement('img');
+      case 'IMG':
+        element = new RRImageElement('IMG');
         break;
       default:
-        element = new RRElement(lowerTagName);
+        element = new RRElement(upperTagName);
         break;
     }
     element.ownerDocument = this;
@@ -264,9 +264,9 @@ export class RRDocument extends RRNode {
 
     function getValidTagName(element: HTMLElement): string {
       if (element instanceof HTMLFormElement) {
-        return 'form';
+        return 'FORM';
       }
-      return element.tagName.toLowerCase().trim();
+      return element.tagName.toUpperCase().trim();
     }
 
     const walk = function (node: INode) {
@@ -309,15 +309,15 @@ export class RRDocument extends RRNode {
             }
             // form fields
             if (
-              tagName === 'input' ||
-              tagName === 'textarea' ||
-              tagName === 'select'
+              tagName === 'INPUT' ||
+              tagName === 'TEXTAREA' ||
+              tagName === 'SELECT'
             ) {
               const value = (elementNode as
                 | HTMLInputElement
                 | HTMLTextAreaElement).value;
               if (
-                ['radio', 'checkbox', 'submit', 'button'].includes(
+                ['RADIO', 'CHECKBOX', 'SUBMIT', 'BUTTON'].includes(
                   rrElement.attributes.type as string,
                 ) &&
                 value
@@ -327,7 +327,7 @@ export class RRDocument extends RRNode {
                 rrElement.attributes.checked = (elementNode as HTMLInputElement).checked;
               }
             }
-            if (tagName === 'option') {
+            if (tagName === 'OPTION') {
               const selectValue = (elementNode as HTMLOptionElement)
                 .parentElement;
               if (
@@ -338,11 +338,11 @@ export class RRDocument extends RRNode {
               }
             }
             // canvas image data
-            if (tagName === 'canvas') {
+            if (tagName === 'CANVAS') {
               rrElement.attributes.rr_dataURL = (elementNode as HTMLCanvasElement).toDataURL();
             }
             // media elements
-            if (tagName === 'audio' || tagName === 'video') {
+            if (tagName === 'AUDIO' || tagName === 'VIDEO') {
               const rrMediaElement = rrElement as RRMediaElement;
               rrMediaElement.paused = (elementNode as HTMLMediaElement).paused;
               rrMediaElement.currentTime = (elementNode as HTMLMediaElement).currentTime;
@@ -526,7 +526,7 @@ export class RRElement extends RRNode {
 
   getElementsByTagName(tagName: string): RRElement[] {
     let elements: RRElement[] = [];
-    const normalizedTagName = tagName.toLowerCase();
+    const normalizedTagName = tagName.toUpperCase();
     if (this instanceof RRElement && this.tagName === normalizedTagName)
       elements.push(this);
     for (const child of this.children) {
@@ -584,10 +584,10 @@ export class RRIframeElement extends RRElement {
 
   constructor(tagName: string) {
     super(tagName);
-    const htmlElement = this.contentDocument.createElement('html');
+    const htmlElement = this.contentDocument.createElement('HTML');
     this.contentDocument.appendChild(htmlElement);
-    htmlElement.appendChild(this.contentDocument.createElement('head'));
-    htmlElement.appendChild(this.contentDocument.createElement('body'));
+    htmlElement.appendChild(this.contentDocument.createElement('HEAD'));
+    htmlElement.appendChild(this.contentDocument.createElement('BODY'));
   }
 }
 
