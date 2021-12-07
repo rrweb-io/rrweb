@@ -17,10 +17,5 @@
       "path": "../packages/rrweb-snapshot"
     }
   ],
-  "settings": {
-    "jest.disabledWorkspaceFolders": [
-      "Monorepo",
-      "rrweb-player"
-    ]
-  }
+  "settings": {}
 }
