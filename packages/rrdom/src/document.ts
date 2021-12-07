@@ -95,10 +95,10 @@ export class RRDocument extends RRNode {
     return this._nwsapi;
   }
 
-  get documentElement() {
+  get documentElement(): RRElement {
     return this.children.filter(
       (node) => node instanceof RRElement && node.tagName === 'HTML',
-    )[0];
+    )[0] as RRElement;
   }
 
   get body() {
@@ -119,6 +119,10 @@ export class RRDocument extends RRNode {
 
   get implementation() {
     return this;
+  }
+
+  get firstElementChild() {
+    return this.documentElement;
   }
 
   appendChild(childNode: RRNode) {
@@ -158,15 +162,23 @@ export class RRDocument extends RRNode {
   }
 
   getElementsByTagName(tagName: string): RRElement[] {
-    let elements: RRElement[] = [];
-    const normalizedTagName = tagName.toUpperCase();
-    if (this instanceof RRElement && this.tagName === normalizedTagName)
-      elements.push(this);
-    for (const child of this.children) {
-      if (child instanceof RRElement)
-        elements = elements.concat(child.getElementsByTagName(tagName));
-    }
-    return elements;
+    if (this.documentElement)
+      return (this.documentElement as RRElement).getElementsByTagName(tagName);
+    return [];
+  }
+
+  getElementsByClassName(className: string): RRElement[] {
+    if (this.documentElement)
+      return (this.documentElement as RRElement).getElementsByClassName(
+        className,
+      );
+    return [];
+  }
+
+  getElementById(elementId: string): RRElement | null {
+    if (this.documentElement)
+      return (this.documentElement as RRElement).getElementById(elementId);
+    return null;
   }
 
   createDocument(
@@ -452,8 +464,12 @@ export class RRElement extends RRNode {
     );
   }
 
+  get id() {
+    return this.attributes.id;
+  }
+
   get className() {
-    return this.attributes.class;
+    return this.attributes.class || '';
   }
 
   get textContent() {
@@ -483,15 +499,34 @@ export class RRElement extends RRNode {
     return style;
   }
 
+  get firstElementChild(): RRElement | null {
+    for (let child of this.children)
+      if (child instanceof RRElement) return child;
+    return null;
+  }
+
+  get nextElementSibling(): RRElement | null {
+    let parentNode = this.parentNode;
+    if (!parentNode) return null;
+    const siblings = parentNode.children;
+    let index = siblings.indexOf(this);
+    for (let i = index + 1; i < siblings.length; i++)
+      if (siblings[i] instanceof RRElement) return siblings[i] as RRElement;
+    return null;
+  }
+
   getAttribute(name: string) {
-    if (name in this.attributes) {
-      return this.attributes[name];
-    }
-    throw new Error(`The attribute '${name}' is not supported by RRDom.`);
+    let upperName = name && name.toLowerCase();
+    if (upperName in this.attributes) return this.attributes[upperName];
+    return null;
   }
 
   setAttribute(name: string, attribute: string) {
-    this.attributes[name] = attribute;
+    this.attributes[name.toLowerCase()] = attribute;
+  }
+
+  hasAttribute(name: string) {
+    return (name && name.toLowerCase()) in this.attributes;
   }
 
   setAttributeNS(
@@ -536,6 +571,35 @@ export class RRElement extends RRNode {
       ) as unknown) as RRNode[];
     }
     return [];
+  }
+
+  getElementById(elementId: string): RRElement | null {
+    if (this instanceof RRElement && this.id === elementId) return this;
+    for (const child of this.children) {
+      if (child instanceof RRElement) {
+        const result = child.getElementById(elementId);
+        if (result !== null) return result;
+      }
+    }
+    return null;
+  }
+
+  getElementsByClassName(className: string): RRElement[] {
+    let elements: RRElement[] = [];
+    const queryClassList = new ClassList(className);
+    // Make sure this element has all queried class names.
+    if (
+      this instanceof RRElement &&
+      queryClassList.filter((queriedClassName) =>
+        this.classList.some((name) => name === queriedClassName),
+      ).length == queryClassList.length
+    )
+      elements.push(this);
+    for (const child of this.children) {
+      if (child instanceof RRElement)
+        elements = elements.concat(child.getElementsByClassName(className));
+    }
+    return elements;
   }
 
   getElementsByTagName(tagName: string): RRElement[] {
@@ -614,10 +678,9 @@ export class RRText extends RRNode {
   }
 
   toString() {
-    return `${super.toString('RRText')} text="${
-      this.textContent.replace(/\n/, '\\n').slice(0, 10) +
-      (this.textContent.length > 10 ? '...' : '')
-    }"`;
+    return `${super.toString('RRText')} text=${JSON.stringify(
+      this.textContent,
+    )}`;
   }
 }
 
@@ -630,10 +693,7 @@ export class RRComment extends RRNode {
   }
 
   toString() {
-    return `${super.toString('RRComment')} data="${
-      this.data.replace(/\n/, '\\n').slice(0, 10) +
-      (this.data.length > 10 ? '...' : '')
-    }"`;
+    return `${super.toString('RRComment')} data=${JSON.stringify(this.data)}`;
   }
 }
 export class RRCDATASection extends RRNode {
@@ -645,10 +705,9 @@ export class RRCDATASection extends RRNode {
   }
 
   toString() {
-    return `${super.toString('RRCDATASection')} data="${
-      this.data.replace(/\n/, '\\n').slice(0, 10) +
-      (this.data.length > 10 ? '...' : '')
-    }"`;
+    return `${super.toString('RRCDATASection')} data=${JSON.stringify(
+      this.data,
+    )}`;
   }
 }
 
