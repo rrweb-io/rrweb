@@ -214,4 +214,3 @@ describe('record webgl', function (this: ISuite) {
     expect(context).toBe('webgl');
   });
 });
-});
