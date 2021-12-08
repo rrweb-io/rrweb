@@ -112,6 +112,38 @@ describe('record webgl', function (this: ISuite) {
         property: 'clear',
       },
     });
+    assertSnapshot(ctx.events);
+  });
+
+  it('will record changes to a webgl2 canvas element', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        recordCanvas: true,
+        emit(event: eventWithTime) {
+          ((window as unknown) as IWindow).emit(event);
+        },
+      });
+    });
+    await ctx.page.evaluate(() => {
+      var canvas = document.getElementById('canvas') as HTMLCanvasElement;
+      var gl = canvas.getContext('webgl2')!;
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    });
+
+    await ctx.page.waitForTimeout(50);
+
+    const lastEvent = ctx.events[ctx.events.length - 1];
+    expect(lastEvent).toMatchObject({
+      data: {
+        source: IncrementalSource.CanvasMutation,
+        args: [16384],
+        type: CanvasContext.WebGL2,
+        property: 'clear',
+      },
+    });
+    assertSnapshot(ctx.events);
   });
 
   it('will record changes to a canvas element before the canvas gets added', async () => {
@@ -141,7 +173,37 @@ describe('record webgl', function (this: ISuite) {
         property: 'clear',
       },
     });
-    // TODO: make this a jest snapshot
+    assertSnapshot(ctx.events);
+  });
+
+  it('will record changes to a canvas element before the canvas gets added (webgl2)', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        recordCanvas: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    await ctx.page.evaluate(() => {
+      var canvas = document.createElement('canvas');
+      var gl = canvas.getContext('webgl2')!;
+      var program = gl.createProgram()!;
+      gl.linkProgram(program);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      document.body.appendChild(canvas);
+    });
+
+    await ctx.page.waitForTimeout(50);
+
+    const lastEvent = ctx.events[ctx.events.length - 1];
+    expect(lastEvent).toMatchObject({
+      data: {
+        source: IncrementalSource.CanvasMutation,
+        type: CanvasContext.WebGL2,
+        property: 'clear',
+      },
+    });
+    assertSnapshot(ctx.events);
   });
 
   it('will record webgl variables', async () => {
