@@ -13,7 +13,7 @@ import {
   CanvasContext,
 } from '../../src/types';
 import { assertSnapshot, launchPuppeteer } from '../utils';
-import { OgmentedCanvas } from '../../src/record/observers/canvas/canvas';
+import { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
   code: string;
@@ -190,7 +190,7 @@ describe('record webgl', function (this: ISuite) {
     const context = await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       canvas.getContext('webgl')!;
-      return (canvas as OgmentedCanvas).__context;
+      return (canvas as ICanvas).__context;
     });
 
     expect(context).toBe('webgl');
@@ -208,7 +208,7 @@ describe('record webgl', function (this: ISuite) {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       canvas.getContext('webgl');
       canvas.getContext('2d'); // returns null
-      return (canvas as OgmentedCanvas).__context;
+      return (canvas as ICanvas).__context;
     });
 
     expect(context).toBe('webgl');

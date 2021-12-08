@@ -1,9 +1,6 @@
-import { INode } from 'rrweb-snapshot';
+import { INode, ICanvas } from 'rrweb-snapshot';
 import { blockClass, IWindow, listenerHandler } from '../../../types';
 import { isBlocked, patch } from '../../../utils';
-
-// TODO: replace me for ICanvas from rrweb-snapshot
-export type OgmentedCanvas = HTMLCanvasElement & { __context: string };
 
 export default function initCanvasContextObserver(
   win: IWindow,
@@ -16,13 +13,13 @@ export default function initCanvasContextObserver(
       'getContext',
       function (original) {
         return function (
-          this: OgmentedCanvas,
+          this: ICanvas,
           contextType: string,
           ...args: Array<unknown>
         ) {
           if (!isBlocked((this as unknown) as INode, blockClass)) {
             if (!('__context' in this))
-              (this as OgmentedCanvas).__context = contextType;
+              (this as ICanvas).__context = contextType;
           }
           return original.apply(this, [contextType, ...args]);
         };
