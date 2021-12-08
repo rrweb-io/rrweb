@@ -13,6 +13,7 @@ import {
   CanvasContext,
 } from '../../src/types';
 import { assertSnapshot, launchPuppeteer } from '../utils';
+import { OgmentedCanvas } from '../../src/record/observers/canvas/canvas';
 
 interface ISuite {
   code: string;
@@ -177,4 +178,40 @@ describe('record webgl', function (this: ISuite) {
       },
     });
   });
+
+  it('sets _context on canvas.getContext()', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        recordCanvas: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    const context = await ctx.page.evaluate(() => {
+      var canvas = document.getElementById('canvas') as HTMLCanvasElement;
+      canvas.getContext('webgl')!;
+      return (canvas as OgmentedCanvas).__context;
+    });
+
+    expect(context).toBe('webgl');
+  });
+
+  it('only sets _context on first canvas.getContext() call', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        recordCanvas: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    const context = await ctx.page.evaluate(() => {
+      var canvas = document.getElementById('canvas') as HTMLCanvasElement;
+      canvas.getContext('webgl');
+      canvas.getContext('2d'); // returns null
+      return (canvas as OgmentedCanvas).__context;
+    });
+
+    expect(context).toBe('webgl');
+  });
+});
 });

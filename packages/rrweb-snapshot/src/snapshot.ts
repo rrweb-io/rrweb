@@ -10,6 +10,7 @@ import {
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
+  ICanvas,
   documentNode,
 } from './types';
 import { isElement, isShadowRoot, maskInputValue } from './utils';
@@ -493,7 +494,11 @@ function serializeNode(
         }
       }
       // canvas image data
-      if (tagName === 'canvas' && recordCanvas) {
+      if (
+        tagName === 'canvas' &&
+        recordCanvas &&
+        (!('__context' in n) || (n as ICanvas).__context === '2d') // only record this on 2d canvas
+      ) {
         const canvasDataURL = (n as HTMLCanvasElement).toDataURL();
 
         // create blank canvas of same dimensions
