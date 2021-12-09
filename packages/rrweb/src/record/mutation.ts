@@ -504,10 +504,7 @@ export default class MutationBuffer {
             }
           }
           for (const pname of Array.from(old.style)) {
-            if (
-              target.style.getPropertyValue(pname) === '' ||
-              !target.style.getPropertyValue(pname) // covering potential non-standard browsers
-            ) {
+            if (target.style.getPropertyValue(pname) === '') {  // "if not set, returns the empty string"
               styleObj[pname] = false; // delete
             }
           }
