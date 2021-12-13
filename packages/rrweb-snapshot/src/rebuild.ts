@@ -226,18 +226,24 @@ function buildNode(
                 ctx.drawImage(image, 0, 0, image.width, image.height);
               }
             };
+          } else if (tagName === 'img' && name === 'rr_dataURL') {
+            const image = (node as HTMLImageElement);
+            if (!image.currentSrc.startsWith('data:')) {
+              // backup original img src
+              image.setAttribute('data-src', image.currentSrc);
+              image.src = value;
+            }
+            image.removeAttribute('rr_dataURL');
           }
+
           if (name === 'rr_width') {
             (node as HTMLElement).style.width = value;
-          }
-          if (name === 'rr_height') {
+          } else if (name === 'rr_height') {
             (node as HTMLElement).style.height = value;
-          }
-          if (name === 'rr_mediaCurrentTime') {
+          } else if (name === 'rr_mediaCurrentTime') {
             (node as HTMLMediaElement).currentTime = n.attributes
               .rr_mediaCurrentTime as number;
-          }
-          if (name === 'rr_mediaState') {
+          } else if (name === 'rr_mediaState') {
             switch (value) {
               case 'played':
                 (node as HTMLMediaElement)
