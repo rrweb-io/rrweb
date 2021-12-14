@@ -230,10 +230,10 @@ function buildNode(
             const image = (node as HTMLImageElement);
             if (!image.currentSrc.startsWith('data:')) {
               // backup original img src
-              image.setAttribute('data-src', image.currentSrc);
+              image.setAttribute('data-rrweb-src', image.currentSrc);
               image.src = value;
             }
-            image.removeAttribute('rr_dataURL');
+            image.removeAttribute(name);
           }
 
           if (name === 'rr_width') {
