@@ -92,3 +92,34 @@ export function serializeArg(value: any): SerializedWebGlArg {
 export const serializeArgs = (args: Array<any>) => {
   return [...args].map(serializeArg);
 };
+
+export const saveWebGLVar = (value: any): number | void => {
+  if (
+    !(
+      value instanceof WebGLActiveInfo ||
+      value instanceof WebGLBuffer ||
+      value instanceof WebGLFramebuffer ||
+      value instanceof WebGLProgram ||
+      value instanceof WebGLRenderbuffer ||
+      value instanceof WebGLShader ||
+      value instanceof WebGLShaderPrecisionFormat ||
+      value instanceof WebGLTexture ||
+      value instanceof WebGLUniformLocation ||
+      value instanceof WebGLVertexArrayObject ||
+      // In Chrome, value won't be an instanceof WebGLVertexArrayObject.
+      (value && value.constructor.name == 'WebGLVertexArrayObjectOES') ||
+      typeof value === 'object'
+    )
+  )
+    return;
+
+  const name = value.constructor.name;
+  const list = webGLVars[name] || (webGLVars[name] = []);
+  let index = list.indexOf(value);
+
+  if (index === -1) {
+    index = list.length;
+    list.push(value);
+  }
+  return index;
+};

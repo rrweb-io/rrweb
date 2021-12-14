@@ -9,7 +9,7 @@ import {
   SerializedWebGlArg,
 } from '../../../types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
-import { serializeArgs } from './serialize-args';
+import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 export default function initCanvasWebGLMutationObserver(
   cb: canvasMutationCallback,
@@ -47,7 +47,10 @@ export default function initCanvasWebGLMutationObserver(
                 });
               }, 0);
             }
-            return original.apply(this, args);
+
+            const result = original.apply(this, args);
+            saveWebGLVar(result);
+            return result;
           };
         },
       );

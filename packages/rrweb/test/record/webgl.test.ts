@@ -241,6 +241,41 @@ describe('record webgl', function (this: ISuite) {
     });
   });
 
+  it('will record webgl variables in reverse order', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        recordCanvas: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    await ctx.page.evaluate(() => {
+      var canvas = document.getElementById('canvas') as HTMLCanvasElement;
+      var gl = canvas.getContext('webgl')!;
+      var program0 = gl.createProgram()!;
+      var program1 = gl.createProgram()!;
+      gl.linkProgram(program1);
+      gl.linkProgram(program0);
+    });
+
+    await ctx.page.waitForTimeout(50);
+
+    const lastEvent = ctx.events[ctx.events.length - 1];
+    expect(lastEvent).toMatchObject({
+      data: {
+        source: IncrementalSource.CanvasMutation,
+        property: 'linkProgram',
+        type: CanvasContext.WebGL,
+        args: [
+          {
+            index: 0,
+            rr_type: 'WebGLProgram',
+          },
+        ], // `program0` is WebGLProgram, this is the first WebGLProgram variable (index #0)
+      },
+    });
+  });
+
   it('sets _context on canvas.getContext()', async () => {
     await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
