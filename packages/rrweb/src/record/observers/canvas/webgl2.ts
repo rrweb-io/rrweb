@@ -8,7 +8,7 @@ import {
   Mirror,
 } from '../../../types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
-import { serializeArgs } from './serialize-args';
+import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 export default function initCanvasWebGLMutationObserver(
   cb: canvasMutationCallback,
