@@ -37,6 +37,8 @@ export default function initCanvasWebGLMutationObserver(
             this: WebGL2RenderingContext,
             ...args: Array<unknown>
           ) {
+            const result = original.apply(this, args);
+            saveWebGLVar(result);
             if (!isBlocked((this.canvas as unknown) as INode, blockClass)) {
               setTimeout(() => {
                 const recordArgs = serializeArgs([...args]);
@@ -48,7 +50,7 @@ export default function initCanvasWebGLMutationObserver(
                 });
               }, 0);
             }
-            return original.apply(this, args);
+            return result;
           };
         },
       );
