@@ -20,9 +20,6 @@ const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
 export const IGNORED_NODE = -2;
 
-const canvasService: HTMLCanvasElement = document.createElement('canvas');
-const canvasCtx: CanvasRenderingContext2D | null = canvasService.getContext('2d');
-
 function genId(): number {
   return _id++;
 }
@@ -76,6 +73,20 @@ function extractOrigin(url: string): string {
   }
   origin = origin.split('?')[0];
   return origin;
+}
+
+let canvasService: HTMLCanvasElement | null;
+let canvasCtx: CanvasRenderingContext2D | null;
+
+function initCanvasService(doc: Document) {
+  if (!canvasService) {
+      canvasService = doc.createElement('canvas');
+  }
+  if (!canvasCtx) {
+      canvasCtx = canvasService.getContext('2d');
+  }
+  canvasService.width = 0;
+  canvasService.height = 0;
 }
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
@@ -502,7 +513,7 @@ function serializeNode(
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
       }
       // save image offline
-      if (tagName === 'img' && recordImages && canvasCtx) {
+      if (tagName === 'img' && recordImages && canvasService && canvasCtx) {
         const image = (n as HTMLImageElement);
         image.crossOrigin = 'anonymous';
         canvasService.width = image.naturalWidth;
@@ -816,8 +827,7 @@ export function serializeNodeWithId(
       preserveWhiteSpace = false;
     }
     if (recordImages) {
-      canvasService.width = 0;
-      canvasService.height = 0;
+      initCanvasService(doc);
     }
     const bypassOptions = {
       doc,
