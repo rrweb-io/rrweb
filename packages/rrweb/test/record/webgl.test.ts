@@ -190,7 +190,9 @@ describe('record webgl', function (this: ISuite) {
       var program = gl.createProgram()!;
       gl.linkProgram(program);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      document.body.appendChild(canvas);
+      setTimeout(() => {
+        document.body.appendChild(canvas);
+      }, 10);
     });
 
     await ctx.page.waitForTimeout(50);
