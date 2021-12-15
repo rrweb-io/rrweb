@@ -52,7 +52,6 @@ import { ShadowDomManager } from './shadow-dom-manager';
 import initCanvasContextObserver from './observers/canvas/canvas';
 import initCanvas2DMutationObserver from './observers/canvas/2d';
 import initCanvasWebGLMutationObserver from './observers/canvas/webgl';
-import initCanvasWebGL2MutationObserver from './observers/canvas/webgl2';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -724,14 +723,7 @@ function initCanvasMutationObserver(
     mirror,
   );
 
-  const canvasWebGLReset = initCanvasWebGLMutationObserver(
-    cb,
-    win,
-    blockClass,
-    mirror,
-  );
-
-  const canvasWebGL2Reset = initCanvasWebGL2MutationObserver(
+  const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
     cb,
     win,
     blockClass,
@@ -741,8 +733,7 @@ function initCanvasMutationObserver(
   return () => {
     canvasContextReset();
     canvas2DReset();
-    canvasWebGLReset();
-    canvasWebGL2Reset();
+    canvasWebGL1and2Reset();
   };
 }
 
