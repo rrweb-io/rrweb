@@ -496,13 +496,13 @@ export default class MutationBuffer {
               newValue !== old.style.getPropertyValue(pname) ||
               newPriority !== old.style.getPropertyPriority(pname)
             ) {
+              if (pname === 'background-image') {
+                // tagName parameter use 'table' in order to call `absoluteToDoc` route internal
+                newValue = transformAttribute(this.doc, 'table', 'background', newValue)
+              }
               if (newPriority === '') {
                 styleObj[pname] = newValue;
               } else {
-                if (pname === 'background-image') {
-                  // tagName parameter use 'table' in order to call `absoluteToDoc` route internal
-                  newValue = transformAttribute(this.doc, 'table', 'background', newValue)
-                }
                 styleObj[pname] = [newValue, newPriority];
               }
             }
