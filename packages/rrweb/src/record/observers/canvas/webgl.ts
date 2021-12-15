@@ -74,16 +74,27 @@ function patchGLPrototype(
             };
 
             if (id === -1) {
-              if (!pendingCanvasMutations.has(this.canvas))
-                pendingCanvasMutations.set(this.canvas, []);
+              // FIXME! THIS COULD MAYBE BE AN OFFSCREEN CANVAS
+              if (
+                !pendingCanvasMutations.has(this.canvas as HTMLCanvasElement)
+              ) {
+                pendingCanvasMutations.set(
+                  this.canvas as HTMLCanvasElement,
+                  [],
+                );
 
-              pendingCanvasMutations
-                .get(this.canvas as HTMLCanvasElement)!
-                .push(mutation);
-            } else {
-              // flush all pending mutations
-              flushPendingCanvasMutationFor(this.canvas, id, cb);
-              cb(mutation);
+                pendingCanvasMutations
+                  .get(this.canvas as HTMLCanvasElement)!
+                  .push(mutation);
+              } else {
+                // flush all pending mutations
+                flushPendingCanvasMutationFor(
+                  this.canvas as HTMLCanvasElement,
+                  id,
+                  cb,
+                );
+                cb(mutation);
+              }
             }
           }
 
