@@ -108,8 +108,10 @@ export default function webglMutation({
 
     const args = mutation.args.map(deserializeArg);
     const result = original.apply(ctx, args);
-    // const debugMode = false;
-    const debugMode = true;
+    saveToWebGLVarMap(result);
+
+    const debugMode = false;
+    // const debugMode = true;
     if (debugMode) {
       if (mutation.property === 'compileShader') {
         if (!ctx.getShaderParameter(args[0], ctx.COMPILE_STATUS))
@@ -136,8 +138,6 @@ export default function webglMutation({
         );
       }
     }
-
-    saveToWebGLVarMap(result);
   } catch (error) {
     errorHandler(mutation, error);
   }
