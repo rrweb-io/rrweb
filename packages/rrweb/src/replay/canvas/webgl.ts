@@ -108,6 +108,34 @@ export default function webglMutation({
 
     const args = mutation.args.map(deserializeArg);
     const result = original.apply(ctx, args);
+    // const debugMode = false;
+    const debugMode = true;
+    if (debugMode) {
+      if (mutation.property === 'compileShader') {
+        if (!ctx.getShaderParameter(args[0], ctx.COMPILE_STATUS))
+          console.warn(
+            'something went wrong in replay',
+            ctx.getShaderInfoLog(args[0]),
+          );
+      } else if (mutation.property === 'linkProgram') {
+        ctx.validateProgram(args[0]);
+        if (!ctx.getProgramParameter(args[0], ctx.LINK_STATUS))
+          console.warn(
+            'something went wrong in replay',
+            ctx.getProgramInfoLog(args[0]),
+          );
+      }
+      const webglError = ctx.getError();
+      if (webglError !== ctx.NO_ERROR) {
+        console.warn(
+          'WEBGL ERROR',
+          webglError,
+          'on command:',
+          mutation.property,
+          ...args,
+        );
+      }
+    }
 
     saveToWebGLVarMap(result);
   } catch (error) {
