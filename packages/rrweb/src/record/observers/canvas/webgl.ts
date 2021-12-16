@@ -11,27 +11,28 @@ import {
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
-const pendingCanvasMutations = new Map<
-  HTMLCanvasElement,
-  canvasMutationParam[]
->();
+type pendingCanvasMutationsMap = Map<HTMLCanvasElement, canvasMutationParam[]>;
 
 // FIXME: total hack here, we need to find a better way to do this
 function flushPendingCanvasMutations(
+  pendingCanvasMutations: pendingCanvasMutationsMap,
   cb: canvasMutationCallback,
   mirror: Mirror,
 ) {
   pendingCanvasMutations.forEach(
     (values: canvasMutationParam[], canvas: HTMLCanvasElement) => {
       const id = mirror.getId((canvas as unknown) as INode);
-      flushPendingCanvasMutationFor(canvas, id, cb);
+      flushPendingCanvasMutationFor(canvas, pendingCanvasMutations, id, cb);
     },
   );
-  requestAnimationFrame(() => flushPendingCanvasMutations(cb, mirror));
+  requestAnimationFrame(() =>
+    flushPendingCanvasMutations(pendingCanvasMutations, cb, mirror),
+  );
 }
 
 function flushPendingCanvasMutationFor(
   canvas: HTMLCanvasElement,
+  pendingCanvasMutations: pendingCanvasMutationsMap,
   id: number,
   cb: canvasMutationCallback,
 ) {
@@ -48,6 +49,7 @@ function patchGLPrototype(
   cb: canvasMutationCallback,
   blockClass: blockClass,
   mirror: Mirror,
+  pendingCanvasMutations: pendingCanvasMutationsMap,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
 
@@ -86,15 +88,16 @@ function patchGLPrototype(
                 pendingCanvasMutations
                   .get(this.canvas as HTMLCanvasElement)!
                   .push(mutation);
-              } else {
-                // flush all pending mutations
-                flushPendingCanvasMutationFor(
-                  this.canvas as HTMLCanvasElement,
-                  id,
-                  cb,
-                );
-                cb(mutation);
               }
+            } else {
+              // flush all pending mutations
+              flushPendingCanvasMutationFor(
+                this.canvas as HTMLCanvasElement,
+                pendingCanvasMutations,
+                id,
+                cb,
+              );
+              cb(mutation);
             }
           }
 
@@ -128,9 +131,13 @@ export default function initCanvasWebGLMutationObserver(
   mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
+  const pendingCanvasMutations: pendingCanvasMutationsMap = new Map();
+
 
   // TODO: replace me
-  requestAnimationFrame(() => flushPendingCanvasMutations(cb, mirror));
+  requestAnimationFrame(() =>
+    flushPendingCanvasMutations(pendingCanvasMutations, cb, mirror),
+  );
 
   handlers.push(
     ...patchGLPrototype(
@@ -139,6 +146,7 @@ export default function initCanvasWebGLMutationObserver(
       cb,
       blockClass,
       mirror,
+      pendingCanvasMutations,
     ),
   );
 
@@ -150,11 +158,13 @@ export default function initCanvasWebGLMutationObserver(
         cb,
         blockClass,
         mirror,
+        pendingCanvasMutations,
       ),
     );
   }
 
   return () => {
+    pendingCanvasMutations.clear();
     handlers.forEach((h) => h());
   };
 }
