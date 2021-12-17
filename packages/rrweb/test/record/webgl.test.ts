@@ -164,15 +164,6 @@ describe('record webgl', function (this: ISuite) {
     });
 
     await ctx.page.waitForTimeout(50);
-
-    const lastEvent = ctx.events[ctx.events.length - 1];
-    expect(lastEvent).toMatchObject({
-      data: {
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext.WebGL,
-        property: 'clear',
-      },
-    });
     assertSnapshot(ctx.events);
   });
 
@@ -197,14 +188,6 @@ describe('record webgl', function (this: ISuite) {
 
     await ctx.page.waitForTimeout(50);
 
-    const lastEvent = ctx.events[ctx.events.length - 1];
-    expect(lastEvent).toMatchObject({
-      data: {
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext.WebGL2,
-        property: 'clear',
-      },
-    });
     assertSnapshot(ctx.events);
   });
 
