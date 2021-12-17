@@ -84,11 +84,11 @@ function patchGLPrototype(
                   this.canvas as HTMLCanvasElement,
                   [],
                 );
-
-                pendingCanvasMutations
-                  .get(this.canvas as HTMLCanvasElement)!
-                  .push(mutation);
               }
+
+              pendingCanvasMutations
+                .get(this.canvas as HTMLCanvasElement)!
+                .push(mutation);
             } else {
               // flush all pending mutations
               flushPendingCanvasMutationFor(
