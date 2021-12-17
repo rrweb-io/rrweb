@@ -150,5 +150,10 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img width="195px" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
       </a>
     </td>
+    <td align="center">
+      <a href="https://remsupp.com" target="_blank">
+        <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
+      </a>
+    </td>
   </tr>
 </table>
