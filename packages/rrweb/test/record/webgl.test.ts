@@ -56,6 +56,14 @@ const setup = function (this: ISuite, content: string): ISuite {
     });
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        recordCanvas: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
   });
 
   afterEach(async () => {
@@ -86,15 +94,6 @@ describe('record webgl', function (this: ISuite) {
 
   it('will record changes to a canvas element', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit(event: eventWithTime) {
-          ((window as unknown) as IWindow).emit(event);
-        },
-      });
-    });
-    await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       var gl = canvas.getContext('webgl')!;
 
@@ -116,15 +115,6 @@ describe('record webgl', function (this: ISuite) {
   });
 
   it('will record changes to a webgl2 canvas element', async () => {
-    await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit(event: eventWithTime) {
-          ((window as unknown) as IWindow).emit(event);
-        },
-      });
-    });
     await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       var gl = canvas.getContext('webgl2')!;
@@ -148,13 +138,6 @@ describe('record webgl', function (this: ISuite) {
 
   it('will record changes to a canvas element before the canvas gets added', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-    });
-    await ctx.page.evaluate(() => {
       var canvas = document.createElement('canvas');
       var gl = canvas.getContext('webgl')!;
       var program = gl.createProgram()!;
@@ -169,21 +152,17 @@ describe('record webgl', function (this: ISuite) {
 
   it('will record changes to a canvas element before the canvas gets added (webgl2)', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit: ((window as unknown) as IWindow).emit,
+      return new Promise<void>((resolve) => {
+        var canvas = document.createElement('canvas');
+        var gl = canvas.getContext('webgl2')!;
+        var program = gl.createProgram()!;
+        gl.linkProgram(program);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        setTimeout(() => {
+          document.body.appendChild(canvas);
+          resolve();
+        }, 10);
       });
-    });
-    await ctx.page.evaluate(() => {
-      var canvas = document.createElement('canvas');
-      var gl = canvas.getContext('webgl2')!;
-      var program = gl.createProgram()!;
-      gl.linkProgram(program);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      setTimeout(() => {
-        document.body.appendChild(canvas);
-      }, 10);
     });
 
     // FIXME: this is a terrible way of getting this test to pass.
@@ -196,13 +175,6 @@ describe('record webgl', function (this: ISuite) {
   });
 
   it('will record webgl variables', async () => {
-    await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-    });
     await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       var gl = canvas.getContext('webgl')!;
@@ -232,13 +204,6 @@ describe('record webgl', function (this: ISuite) {
 
   it('will record webgl variables in reverse order', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-    });
-    await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       var gl = canvas.getContext('webgl')!;
       var program0 = gl.createProgram()!;
@@ -266,13 +231,6 @@ describe('record webgl', function (this: ISuite) {
   });
 
   it('sets _context on canvas.getContext()', async () => {
-    await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-    });
     const context = await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       canvas.getContext('webgl')!;
@@ -283,13 +241,6 @@ describe('record webgl', function (this: ISuite) {
   });
 
   it('only sets _context on first canvas.getContext() call', async () => {
-    await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        recordCanvas: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-    });
     const context = await ctx.page.evaluate(() => {
       var canvas = document.getElementById('canvas') as HTMLCanvasElement;
       canvas.getContext('webgl');
