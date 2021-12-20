@@ -168,8 +168,8 @@ describe('record webgl', function (this: ISuite) {
     // FIXME: this is a terrible way of getting this test to pass.
     // But I want to step over this for now.
     // When `pendingCanvasMutations` isn't run on requestAnimationFrame,
-    // this should work again without timeout 500.
-    await ctx.page.waitForTimeout(500);
+    // this should work again without timeout 100.
+    await ctx.page.waitForTimeout(100);
 
     assertSnapshot(ctx.events);
   });
