@@ -344,6 +344,7 @@ export declare type canvasMutationParam = {
     property: string;
     args: Array<unknown>;
     setter?: true;
+    newFrame?: true;
 };
 export declare type fontParam = {
     family: string;

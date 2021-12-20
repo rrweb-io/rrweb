@@ -467,6 +467,7 @@ export type canvasMutationParam = {
   property: string;
   args: Array<unknown>;
   setter?: true;
+  newFrame?: true;
 };
 
 export type fontParam = {

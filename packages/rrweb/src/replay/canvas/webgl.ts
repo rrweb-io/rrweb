@@ -96,6 +96,8 @@ export default function webglMutation({
     const ctx = getContext(target, mutation.type);
     if (!ctx) return;
 
+    if (mutation.newFrame) ctx.flush(); // flush to emulate the ending of the last request animation frame
+
     if (mutation.setter) {
       // skip some read-only type checks
       // tslint:disable-next-line:no-any

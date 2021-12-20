@@ -250,4 +250,28 @@ describe('record webgl', function (this: ISuite) {
 
     expect(context).toBe('webgl');
   });
+
+  it('should mark every RAF as `newFrame: true`', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise<void>((resolve) => {
+        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        const gl = canvas.getContext('webgl') as WebGLRenderingContext;
+        const program = gl.createProgram()!;
+        gl.linkProgram(program);
+        requestAnimationFrame(() => {
+          const program2 = gl.createProgram()!;
+          gl.linkProgram(program2);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          requestAnimationFrame(() => {
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            resolve();
+          });
+        });
+      });
+    });
+
+    await ctx.page.waitForTimeout(50);
+
+    assertSnapshot(ctx.events);
+  });
 });

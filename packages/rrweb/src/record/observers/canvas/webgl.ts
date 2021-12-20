@@ -12,6 +12,7 @@ import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 type pendingCanvasMutationsMap = Map<HTMLCanvasElement, canvasMutationParam[]>;
+type rafStampsType = { latestId: number; invokeId: number | null };
 
 // FIXME: total hack here, we need to find a better way to do this
 function flushPendingCanvasMutations(
@@ -50,6 +51,7 @@ function patchGLPrototype(
   blockClass: blockClass,
   mirror: Mirror,
   pendingCanvasMutations: pendingCanvasMutationsMap,
+  rafStamps: rafStampsType,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
 
@@ -62,18 +64,24 @@ function patchGLPrototype(
       }
       const restoreHandler = patch(prototype, prop, function (original) {
         return function (this: typeof prototype, ...args: Array<unknown>) {
+          const newFrame =
+            rafStamps.invokeId && rafStamps.latestId !== rafStamps.invokeId;
+          if (newFrame || !rafStamps.invokeId)
+            rafStamps.invokeId = rafStamps.latestId;
+
           const result = original.apply(this, args);
           saveWebGLVar(result);
           if (!isBlocked((this.canvas as unknown) as INode, blockClass)) {
             const id = mirror.getId((this.canvas as unknown) as INode);
 
             const recordArgs = serializeArgs([...args]);
-            const mutation = {
+            const mutation: canvasMutationParam = {
               id,
               type,
               property: prop,
               args: recordArgs,
             };
+            if (newFrame) mutation.newFrame = true;
 
             if (id === -1) {
               // FIXME! THIS COULD MAYBE BE AN OFFSCREEN CANVAS
@@ -133,6 +141,16 @@ export default function initCanvasWebGLMutationObserver(
   const handlers: listenerHandler[] = [];
   const pendingCanvasMutations: pendingCanvasMutationsMap = new Map();
 
+  const rafStamps: rafStampsType = {
+    latestId: 0,
+    invokeId: null,
+  };
+
+  const setLatestRAFTimestamp = (timestamp: DOMHighResTimeStamp) => {
+    rafStamps.latestId = timestamp;
+    requestAnimationFrame(setLatestRAFTimestamp);
+  };
+  requestAnimationFrame(setLatestRAFTimestamp);
 
   // TODO: replace me
   requestAnimationFrame(() =>
@@ -147,6 +165,7 @@ export default function initCanvasWebGLMutationObserver(
       blockClass,
       mirror,
       pendingCanvasMutations,
+      rafStamps,
     ),
   );
 
@@ -159,6 +178,7 @@ export default function initCanvasWebGLMutationObserver(
         blockClass,
         mirror,
         pendingCanvasMutations,
+        rafStamps,
       ),
     );
   }
