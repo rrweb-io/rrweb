@@ -77,6 +77,16 @@ const setup = function (this: ISuite, content: string): ISuite {
   return ctx;
 };
 
+async function waitForRAF(page: puppeteer.Page) {
+  return await page.evaluate(() => {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
+    });
+  });
+}
+
 describe('record webgl', function (this: ISuite) {
   jest.setTimeout(100_000);
 
@@ -146,7 +156,8 @@ describe('record webgl', function (this: ISuite) {
       document.body.appendChild(canvas);
     });
 
-    await ctx.page.waitForTimeout(50);
+    await waitForRAF(ctx.page);
+
     assertSnapshot(ctx.events);
   });
 
@@ -165,11 +176,10 @@ describe('record webgl', function (this: ISuite) {
       });
     });
 
-    // FIXME: this is a terrible way of getting this test to pass.
-    // But I want to step over this for now.
+    // FIXME: this wait deeply couples the test to the implementation
     // When `pendingCanvasMutations` isn't run on requestAnimationFrame,
-    // this should work again without timeout 100.
-    await ctx.page.waitForTimeout(100);
+    // we need to change this
+    await waitForRAF(ctx.page);
 
     assertSnapshot(ctx.events);
   });
