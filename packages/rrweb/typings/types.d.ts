@@ -440,6 +440,7 @@ export declare type missingNodeMap = {
 export declare type actionWithDelay = {
     doAction: () => void;
     delay: number;
+    newFrame: boolean;
 };
 export declare type Handler = (event?: unknown) => void;
 export declare type Emitter = {

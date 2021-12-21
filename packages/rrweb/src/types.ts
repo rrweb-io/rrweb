@@ -589,6 +589,7 @@ export type missingNodeMap = {
 export type actionWithDelay = {
   doAction: () => void;
   delay: number;
+  newFrame: boolean;
 };
 
 export type Handler = (event?: unknown) => void;

@@ -207,6 +207,8 @@ export function createPlayerService(
                   emitter.emit(ReplayerEvents.EventCast, event);
                 },
                 delay: event.delay!,
+                newFrame:
+                  ('newFrame' in event.data && event.data.newFrame) || false,
               });
             }
           }
@@ -272,6 +274,8 @@ export function createPlayerService(
                   emitter.emit(ReplayerEvents.EventCast, event);
                 },
                 delay: event.delay!,
+                newFrame:
+                  ('newFrame' in event.data && event.data.newFrame) || false,
               });
             }
           }

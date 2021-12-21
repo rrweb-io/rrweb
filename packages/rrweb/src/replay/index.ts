@@ -880,6 +880,7 @@ export class Replayer {
                 p.timeOffset +
                 e.timestamp -
                 this.service.state.context.baselineTime,
+              newFrame: false,
             };
             this.timer.addAction(action);
           });
@@ -887,6 +888,7 @@ export class Replayer {
           this.timer.addAction({
             doAction() {},
             delay: e.delay! - d.positions[0]?.timeOffset,
+            newFrame: false,
           });
         }
         break;

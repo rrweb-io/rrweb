@@ -44,7 +44,10 @@ export class Timer {
       lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
-        if (self.timeOffset >= action.delay) {
+        if (action.newFrame) {
+          action.newFrame = false;
+          break;
+        } else if (self.timeOffset >= action.delay) {
           actions.shift();
           action.doAction();
         } else {
