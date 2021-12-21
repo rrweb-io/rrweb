@@ -477,7 +477,14 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto(`${serverURL}/html`);
     await page.setContent(getHtml.call(this, 'main.html'));
 
-    await page.waitForTimeout(500);
+    await page.waitForSelector('#two');
+    const frameIdTwo = await page.frames()[2];
+    await frameIdTwo.waitForSelector('#four');
+    const frameIdFour = frameIdTwo.childFrames()[1];
+    await frameIdFour.waitForSelector('#five');
+
+    await page.waitForTimeout(50);
+
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });
