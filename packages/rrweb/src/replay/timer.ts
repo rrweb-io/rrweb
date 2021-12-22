@@ -47,7 +47,9 @@ export class Timer {
         if (action.newFrame) {
           action.newFrame = false;
           break;
-        } else if (self.timeOffset >= action.delay) {
+        }
+
+        if (self.timeOffset >= action.delay) {
           actions.shift();
           action.doAction();
         } else {

@@ -19,6 +19,9 @@ function getContext(
   target: HTMLCanvasElement,
   type: CanvasContext,
 ): WebGLRenderingContext | WebGL2RenderingContext | null {
+  // Note to whomever is going to implement support for `contextAttributes`:
+  // if `preserveDrawingBuffer` is set to true,
+  // you have to do `ctx.flush()` before every `newFrame: true`
   try {
     if (type === CanvasContext.WebGL) {
       return (
@@ -96,7 +99,9 @@ export default function webglMutation({
     const ctx = getContext(target, mutation.type);
     if (!ctx) return;
 
-    if (mutation.newFrame) ctx.flush(); // flush to emulate the ending of the last request animation frame
+    // NOTE: if `preserveDrawingBuffer` is set to true,
+    // we must flush the buffers on every newFrame: true
+    // if (mutation.newFrame) ctx.flush();
 
     if (mutation.setter) {
       // skip some read-only type checks
