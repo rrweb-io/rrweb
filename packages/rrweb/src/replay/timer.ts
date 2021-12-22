@@ -123,6 +123,8 @@ export function addDelay(
     return firstTimestamp - baselineTime;
   }
 
+  event.delay = event.timestamp - baselineTime;
+
   if (lastDelay) {
     // WebGL events need to be bundled together as much as possible so they don't
     // accidentally get split over multiple animation frames.
@@ -134,13 +136,12 @@ export function addDelay(
       !event.data.newFrame &&
       lastDelay.at
     ) {
+      // Override the current delay with the last delay
       event.delay = lastDelay.at;
-      return event.delay;
     } else {
       lastDelay.at = event.delay!;
     }
   }
 
-  event.delay = event.timestamp - baselineTime;
   return event.delay;
 }
