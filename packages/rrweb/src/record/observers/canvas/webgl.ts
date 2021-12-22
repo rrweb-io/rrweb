@@ -12,7 +12,7 @@ import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 type pendingCanvasMutationsMap = Map<HTMLCanvasElement, canvasMutationParam[]>;
-type rafStampsType = { latestId: number; invokeId: number | null };
+type RafStamps = { latestId: number; invokeId: number | null };
 
 // FIXME: total hack here, we need to find a better way to do this
 function flushPendingCanvasMutations(
@@ -51,7 +51,7 @@ function patchGLPrototype(
   blockClass: blockClass,
   mirror: Mirror,
   pendingCanvasMutations: pendingCanvasMutationsMap,
-  rafStamps: rafStampsType,
+  rafStamps: RafStamps,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
 
@@ -141,7 +141,7 @@ export default function initCanvasWebGLMutationObserver(
   const handlers: listenerHandler[] = [];
   const pendingCanvasMutations: pendingCanvasMutationsMap = new Map();
 
-  const rafStamps: rafStampsType = {
+  const rafStamps: RafStamps = {
     latestId: 0,
     invokeId: null,
   };
