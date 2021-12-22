@@ -8,7 +8,7 @@ import {
   Emitter,
   IncrementalSource,
 } from '../types';
-import { Timer, addDelay } from './timer';
+import { Timer, addDelay, LastDelay } from './timer';
 
 export type PlayerContext = {
   events: eventWithTime[];
@@ -167,9 +167,11 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
+
+          const lastDelay: LastDelay = { at: null };
           for (const event of events) {
             // TODO: improve this API
-            addDelay(event, baselineTime);
+            addDelay(event, baselineTime, lastDelay);
           }
           const neededEvents = discardPriorSnapshots(events, baselineTime);
 
