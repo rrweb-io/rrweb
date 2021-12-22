@@ -1320,7 +1320,7 @@ export class Replayer {
         return this.warnNodeNotFound(d, mutation.id);
       }
       // fix 回放时，给iframe添加src属性，导致跨域时iframe内容不展示
-      if (isIframeINode(target)) {
+      if (mutation.attributes.src && isIframeINode(target)) {
         return;
       }
       if (this.fragmentParentMap.has(target)) {
