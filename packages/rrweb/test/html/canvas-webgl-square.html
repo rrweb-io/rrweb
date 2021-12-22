@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>canvas webgl square</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      width="200"
+      height="100"
+      style="border: 1px solid #000000"
+    >
+    </canvas>
+    <script id="vertex" type="x-shader">
+      attribute vec2 aVertexPosition;
+
+      void main() {
+        gl_Position = vec4(aVertexPosition, 0.0, 1.0);
+      }
+    </script>
+    <script id="fragment" type="x-shader">
+      #ifdef GL_ES
+        precision highp float;
+      #endif
+
+      uniform vec4 uColor;
+
+      void main() {
+        gl_FragColor = uColor;
+      }
+    </script>
+    <script>
+      setTimeout(() => {
+        // example from https://www.creativebloq.com/javascript/get-started-webgl-draw-square-7112981
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('webgl2');
+        ctx.viewport(0, 0, canvas.width, canvas.height);
+        ctx.clearColor(0, 0.5, 0, 1);
+        ctx.clear(ctx.COLOR_BUFFER_BIT);
+
+        const v = document.getElementById('vertex').firstChild.nodeValue;
+        const f = document.getElementById('fragment').firstChild.nodeValue;
+
+        const vs = ctx.createShader(ctx.VERTEX_SHADER);
+        ctx.shaderSource(vs, v);
+        ctx.compileShader(vs);
+
+        const fs = ctx.createShader(ctx.FRAGMENT_SHADER);
+        ctx.shaderSource(fs, f);
+        ctx.compileShader(fs);
+
+        program = ctx.createProgram();
+        ctx.attachShader(program, vs);
+        ctx.attachShader(program, fs);
+        ctx.linkProgram(program);
+
+        if (!ctx.getShaderParameter(vs, ctx.COMPILE_STATUS))
+          console.log(ctx.getShaderInfoLog(vs));
+
+        if (!ctx.getShaderParameter(fs, ctx.COMPILE_STATUS))
+          console.log(ctx.getShaderInfoLog(fs));
+
+        if (!ctx.getProgramParameter(program, ctx.LINK_STATUS))
+          console.log(ctx.getProgramInfoLog(program));
+
+        const aspect = canvas.width / canvas.height;
+
+        const vertices = new Float32Array([
+          -0.5,
+          0.5 * aspect,
+          0.5,
+          0.5 * aspect,
+          0.5,
+          -0.5 * aspect, // Triangle 1
+          -0.5,
+          0.5 * aspect,
+          0.5,
+          -0.5 * aspect,
+          -0.5,
+          -0.5 * aspect, // Triangle 2
+        ]);
+
+        vbuffer = ctx.createBuffer();
+        ctx.bindBuffer(ctx.ARRAY_BUFFER, vbuffer);
+        ctx.bufferData(ctx.ARRAY_BUFFER, vertices, ctx.STATIC_DRAW);
+
+        itemSize = 2;
+        numItems = vertices.length / itemSize;
+
+        ctx.useProgram(program);
+
+        const uColor = ctx.getUniformLocation(program, 'uColor');
+        ctx.uniform4fv(uColor, [0.0, 0.3, 0.0, 1.0]);
+
+        const aVertexPosition = ctx.getAttribLocation(
+          program,
+          'aVertexPosition',
+        );
+        ctx.enableVertexAttribArray(aVertexPosition);
+        ctx.vertexAttribPointer(
+          aVertexPosition,
+          itemSize,
+          ctx.FLOAT,
+          false,
+          0,
+          0,
+        );
+
+        ctx.drawArrays(ctx.TRIANGLES, 0, numItems);
+      }, 10);
+    </script>
+  </body>
+</html>
