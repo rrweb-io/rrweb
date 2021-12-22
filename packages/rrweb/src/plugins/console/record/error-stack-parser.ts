@@ -60,6 +60,10 @@ export const ErrorStackParser = {
    * @return {Array} of StackFrames
    */
   parse: function (error: Error): StackFrame[] {
+    // https://github.com/rrweb-io/rrweb/issues/782
+    if (!error) {
+      return [];
+    }
     if (
       // @ts-ignore
       typeof error.stacktrace !== 'undefined' ||
