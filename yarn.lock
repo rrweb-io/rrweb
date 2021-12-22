@@ -1512,10 +1512,10 @@
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.21.tgz#9f35a5643129df132cf3b5c1ec64046ea1af0650"
   integrity sha512-yd+9qKmJxm496BOV9CMNaey8TWsikaZOwMRwPHQIjcOJM9oV+fi9ZMNw3JsVnbEEbo2gRTDnGEBv8pjyn67hNg==
 
-"@types/css-font-loading-module@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@types/css-font-loading-module/-/css-font-loading-module-0.0.4.tgz#94a835e27d1af444c65cba88523533c174463d64"
-  integrity sha512-ENdXf7MW4m9HeDojB2Ukbi7lYMIuQNBHVf98dbzaiG4EEJREBd6oleVAjrLRCrp7dm6CK1mmdmU9tcgF61acbw==
+"@types/css-font-loading-module@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@types/css-font-loading-module/-/css-font-loading-module-0.0.7.tgz#2f98ede46acc0975de85c0b7b0ebe06041d24601"
+  integrity sha512-nl09VhutdjINdWyXxHWN/w9zlNCfr60JUqJbd24YXUuCwgeL0TpFSdElCwb6cxfB6ybE19Gjj4g0jsgkXxKv1Q==
 
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"
