@@ -133,6 +133,7 @@ export function addDelay(
       lastDelay.at
     ) {
       event.delay = lastDelay.at;
+      return event.delay;
     } else {
       lastDelay.at = event.delay!;
     }
