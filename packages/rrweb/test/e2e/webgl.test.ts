@@ -155,8 +155,10 @@ describe('e2e webgl', () => {
       const replayer = new Replayer(events, {
         UNSAFE_replayCanvas: true,
       });
-      replayer.play(500);
     `);
+    // wait for iframe to get added and `preloadAllImages` to ge called
+    await page.waitForSelector('iframe');
+    await page.evaluate(`replayer.play(500);`);
     await page.waitForTimeout(50);
 
     const element = await page.$('iframe');
