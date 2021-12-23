@@ -234,6 +234,8 @@ export function transformAttribute(
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style' && value) {
     return absoluteToStylesheet(value, getHref());
+  } else if (tagName === 'object' && name === 'data' && value) {
+    return absoluteToDoc(doc, value);
   } else {
     return value;
   }
