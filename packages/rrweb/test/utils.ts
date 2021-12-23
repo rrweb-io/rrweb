@@ -57,7 +57,7 @@ export const startServer = (defaultPort: number = 3030) =>
         res.end();
       }
     });
-    s.listen()
+    s.listen(defaultPort)
       .on('listening', () => {
         resolve(s);
       })

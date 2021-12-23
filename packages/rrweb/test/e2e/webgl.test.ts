@@ -44,6 +44,7 @@ describe('e2e webgl', () => {
   });
 
   afterAll(async () => {
+    await server.close();
     await browser.close();
   });
 
