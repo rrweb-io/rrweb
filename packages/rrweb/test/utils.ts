@@ -19,7 +19,7 @@ export async function launchPuppeteer() {
       width: 1920,
       height: 1080,
     },
-    devtools: true,
+    // devtools: true,
     args: ['--no-sandbox'],
   });
 }
