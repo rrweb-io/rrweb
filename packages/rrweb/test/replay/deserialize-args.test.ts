@@ -10,7 +10,7 @@ import { deserializeArg } from '../../src/replay/canvas/webgl';
 describe('deserializeArg', () => {
   it('should deserialize Float32Array values', async () => {
     expect(
-      deserializeArg({
+      deserializeArg(new Map())({
         rr_type: 'Float32Array',
         args: [[-1, -1, 3, -1, -1, 3]],
       }),
@@ -19,7 +19,7 @@ describe('deserializeArg', () => {
 
   it('should deserialize Float64Array values', async () => {
     expect(
-      deserializeArg({
+      deserializeArg(new Map())({
         rr_type: 'Float64Array',
         args: [[-1, -1, 3, -1, -1, 3]],
       }),
@@ -29,7 +29,7 @@ describe('deserializeArg', () => {
   it('should deserialize ArrayBuffer values', async () => {
     const contents = [1, 2, 0, 4];
     expect(
-      deserializeArg({
+      deserializeArg(new Map())({
         rr_type: 'ArrayBuffer',
         base64: 'AQIABA==',
       }),
@@ -38,7 +38,7 @@ describe('deserializeArg', () => {
 
   it('should deserialize DataView values', async () => {
     expect(
-      deserializeArg({
+      deserializeArg(new Map())({
         rr_type: 'DataView',
         args: [
           {
@@ -54,7 +54,7 @@ describe('deserializeArg', () => {
 
   it('should leave arrays intact', async () => {
     const array = [1, 2, 3, 4];
-    expect(deserializeArg(array)).toEqual(array);
+    expect(deserializeArg(new Map())(array)).toEqual(array);
   });
 
   it('should deserialize complex objects', async () => {
@@ -73,7 +73,7 @@ describe('deserializeArg', () => {
       5,
       6,
     ];
-    expect(deserializeArg(serializedArg)).toStrictEqual([
+    expect(deserializeArg(new Map())(serializedArg)).toStrictEqual([
       new DataView(new ArrayBuffer(16), 0, 16),
       5,
       6,
@@ -81,17 +81,31 @@ describe('deserializeArg', () => {
   });
 
   it('should leave null as-is', async () => {
-    expect(deserializeArg(null)).toStrictEqual(null);
+    expect(deserializeArg(new Map())(null)).toStrictEqual(null);
   });
 
   it('should support HTMLImageElements', async () => {
     const image = new Image();
     image.src = 'http://example.com/image.png';
     expect(
-      deserializeArg({
+      deserializeArg(new Map())({
         rr_type: 'HTMLImageElement',
         src: 'http://example.com/image.png',
       }),
     ).toStrictEqual(image);
+  });
+
+  it('should return image from imageMap for HTMLImageElements', async () => {
+    const image = new Image();
+    image.src = 'http://example.com/image.png';
+    const imageMap = new Map();
+    imageMap.set(image.src, image);
+
+    expect(
+      deserializeArg(imageMap)({
+        rr_type: 'HTMLImageElement',
+        src: 'http://example.com/image.png',
+      }),
+    ).toBe(image);
   });
 });

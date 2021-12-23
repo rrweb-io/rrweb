@@ -122,7 +122,7 @@ export class Replayer {
   // The replayer uses the cache to speed up replay and scrubbing.
   private cache: BuildCache = createCache();
 
-  private imageMap: Map<eventWithTime, HTMLImageElement> = new Map();
+  private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
 
   private mirror: Mirror = createMirror();
 
@@ -811,6 +811,37 @@ export class Replayer {
     }
   }
 
+  private hasImageArg(args: any[]): boolean {
+    for (const arg of args) {
+      if (!arg || typeof arg !== 'object') {
+        // do nothing
+      } else if ('rr_type' in arg && 'args' in arg) {
+        if (this.hasImageArg(arg.args)) return true;
+      } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
+        return true; // has image!
+      } else if (arg instanceof Array) {
+        if (this.hasImageArg(arg)) return true;
+      }
+    }
+    return false;
+  }
+
+  private getImageArgs(args: any[]): string[] {
+    const images: string[] = [];
+    for (const arg of args) {
+      if (!arg || typeof arg !== 'object') {
+        // do nothing
+      } else if ('rr_type' in arg && 'args' in arg) {
+        images.push(...this.getImageArgs(arg.args));
+      } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
+        images.push(arg.src);
+      } else if (arg instanceof Array) {
+        images.push(...this.getImageArgs(arg));
+      }
+    }
+    return images;
+  }
+
   /**
    * pause when there are some canvas drawImage args need to be loaded
    */
@@ -835,6 +866,16 @@ export class Replayer {
         let d = imgd?.data;
         d = JSON.parse(event.data.args[0]);
         ctx?.putImageData(imgd!, 0, 0);
+      } else if (
+        event.type === EventType.IncrementalSnapshot &&
+        event.data.source === IncrementalSource.CanvasMutation &&
+        this.hasImageArg(event.data.args)
+      ) {
+        this.getImageArgs(event.data.args).forEach((url) => {
+          const image = new Image();
+          image.src = url; // this preloads the image
+          this.imageMap.set(url, image);
+        });
       }
     }
   }

@@ -18,7 +18,7 @@ export default function canvasMutation({
 }): void {
   try {
     if ([CanvasContext.WebGL, CanvasContext.WebGL2].includes(mutation.type)) {
-      return webglMutation({ mutation, target, errorHandler });
+      return webglMutation({ mutation, target, imageMap, errorHandler });
     }
     // default is '2d' for backwards compatibility (rrweb below 1.1.x)
     return canvas2DMutation({

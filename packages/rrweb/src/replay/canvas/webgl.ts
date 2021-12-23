@@ -60,39 +60,51 @@ function saveToWebGLVarMap(result: any) {
   if (!variables.includes(result)) variables.push(result);
 }
 
-export function deserializeArg(arg: SerializedWebGlArg): any {
-  if (arg && typeof arg === 'object' && 'rr_type' in arg) {
-    if ('index' in arg) {
-      const { rr_type: name, index } = arg;
-      return variableListFor(name)[index];
-    } else if ('args' in arg) {
-      const { rr_type: name, args } = arg;
+export function deserializeArg(
+  imageMap: Replayer['imageMap'],
+): (arg: SerializedWebGlArg) => any {
+  return (arg: SerializedWebGlArg): any => {
+    if (arg && typeof arg === 'object' && 'rr_type' in arg) {
+      if ('index' in arg) {
+        const { rr_type: name, index } = arg;
+        return variableListFor(name)[index];
+      } else if ('args' in arg) {
+        const { rr_type: name, args } = arg;
 
-      // @ts-ignore
-      const ctor = window[name] as unknown;
+        // @ts-ignore
+        const ctor = window[name] as unknown;
 
-      // @ts-ignore
-      return new ctor(...args.map(deserializeArg));
-    } else if ('base64' in arg) {
-      return decode(arg.base64);
-    } else if ('src' in arg) {
-      const image = new Image();
-      image.src = arg.src;
-      return image;
+        // @ts-ignore
+        return new ctor(...args.map(deserializeArg(imageMap)));
+      } else if ('base64' in arg) {
+        return decode(arg.base64);
+      } else if ('src' in arg) {
+        const image = imageMap.get(arg.src);
+        if (image) {
+          return image;
+        } else {
+          const image = new Image();
+          image.src = arg.src;
+          imageMap.set(arg.src, image);
+          return image;
+        }
+      }
+    } else if (Array.isArray(arg)) {
+      return arg.map(deserializeArg(imageMap));
     }
-  } else if (Array.isArray(arg)) {
-    return arg.map(deserializeArg);
-  }
-  return arg;
+    return arg;
+  };
 }
 
 export default function webglMutation({
   mutation,
   target,
+  imageMap,
   errorHandler,
 }: {
   mutation: canvasMutationData;
   target: HTMLCanvasElement;
+  imageMap: Replayer['imageMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
 }): void {
   try {
@@ -113,7 +125,7 @@ export default function webglMutation({
       mutation.property as Exclude<keyof typeof ctx, 'canvas'>
     ] as Function;
 
-    const args = mutation.args.map(deserializeArg);
+    const args = mutation.args.map(deserializeArg(imageMap));
     const result = original.apply(ctx, args);
     saveToWebGLVarMap(result);
 
