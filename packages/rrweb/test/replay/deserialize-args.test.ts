@@ -2,58 +2,8 @@
  * @jest-environment jsdom
  */
 
-// polyfill as jsdom does not have support for these classes
-// consider replacing with https://www.npmjs.com/package/canvas
-class WebGLActiveInfo {
-  constructor() {}
-}
-
-global.WebGLActiveInfo = WebGLActiveInfo as any;
-class WebGLBuffer {
-  constructor() {}
-}
-
-global.WebGLBuffer = WebGLBuffer as any;
-class WebGLFramebuffer {
-  constructor() {}
-}
-
-global.WebGLFramebuffer = WebGLFramebuffer as any;
-class WebGLProgram {
-  constructor() {}
-}
-
-global.WebGLProgram = WebGLProgram as any;
-class WebGLRenderbuffer {
-  constructor() {}
-}
-
-global.WebGLRenderbuffer = WebGLRenderbuffer as any;
-class WebGLShader {
-  constructor() {}
-}
-
-global.WebGLShader = WebGLShader as any;
-class WebGLShaderPrecisionFormat {
-  constructor() {}
-}
-
-global.WebGLShaderPrecisionFormat = WebGLShaderPrecisionFormat as any;
-class WebGLTexture {
-  constructor() {}
-}
-
-global.WebGLTexture = WebGLTexture as any;
-class WebGLUniformLocation {
-  constructor() {}
-}
-
-global.WebGLUniformLocation = WebGLUniformLocation as any;
-class WebGLVertexArrayObject {
-  constructor() {}
-}
-
-global.WebGLVertexArrayObject = WebGLVertexArrayObject as any;
+import { polyfillWebGLGlobals } from '../utils';
+polyfillWebGLGlobals();
 
 import { deserializeArg } from '../../src/replay/canvas/webgl';
 
