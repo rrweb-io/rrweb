@@ -38,6 +38,7 @@ describe('webglMutation', () => {
         args: [35633],
       },
       target: canvas,
+      imageMap: new Map(),
       errorHandler: () => {},
     });
 
