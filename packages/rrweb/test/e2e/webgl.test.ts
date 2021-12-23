@@ -85,11 +85,11 @@ describe('e2e webgl', () => {
         body: ' ', // non-empty string or page will load indefinitely
       });
     };
-    page.setRequestInterception(true);
+    await page.setRequestInterception(true);
     page.on('request', intercept);
     await page.goto(url);
-    page.setRequestInterception(false);
     page.off('request', intercept);
+    await page.setRequestInterception(false);
   };
 
   const hideMouseAnimation = async (page: puppeteer.Page) => {
@@ -104,6 +104,39 @@ describe('e2e webgl', () => {
 
     await page.setContent(
       getHtml.call(this, 'canvas-webgl-square.html', { recordCanvas: true }),
+    );
+
+    await page.waitForTimeout(100);
+    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+
+    page = await browser.newPage();
+
+    await page.goto('about:blank');
+    await page.evaluate(code);
+
+    await hideMouseAnimation(page);
+    await page.evaluate(`let events = ${JSON.stringify(snapshots)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, {
+        UNSAFE_replayCanvas: true,
+      });
+      replayer.play(500);
+    `);
+    await page.waitForTimeout(50);
+
+    const element = await page.$('iframe');
+    const frameImage = await element!.screenshot();
+
+    expect(frameImage).toMatchImageSnapshot();
+  });
+
+  it('will record and replay a webgl image', async () => {
+    page = await browser.newPage();
+    await fakeGoto(page, `${serverURL}/html/canvas-webgl-image.html`);
+
+    await page.setContent(
+      getHtml.call(this, 'canvas-webgl-image.html', { recordCanvas: true }),
     );
 
     await page.waitForTimeout(100);
