@@ -496,10 +496,12 @@ export default class MutationBuffer {
               newValue !== old.style.getPropertyValue(pname) ||
               newPriority !== old.style.getPropertyPriority(pname)
             ) {
-              if (pname === 'background-image') {
-                // tagName parameter use 'table' in order to call `absoluteToDoc` route internal
-                newValue = transformAttribute(this.doc, 'table', 'background', newValue)
-              }
+              newValue = transformAttribute(
+                this.doc,
+                (m.target as HTMLElement).tagName,
+                m.attributeName,
+                newValue,
+              );
               if (newPriority === '') {
                 styleObj[pname] = newValue;
               } else {
