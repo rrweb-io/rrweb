@@ -692,7 +692,7 @@ export class Replayer {
     ).concat(this.config.insertStyleRules);
     if (this.config.pauseAnimation) {
       injectStylesRules.push(
-        'html.rrweb-paused * { animation-play-state: paused !important; }',
+        'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',
       );
     }
     for (let idx = 0; idx < injectStylesRules.length; idx++) {
