@@ -19,7 +19,7 @@ export declare function serializeNodeWithId(n: Node | INode, options: {
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
-    recordImages?: boolean;
+    inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
@@ -36,7 +36,7 @@ declare function snapshot(n: Document, options?: {
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
     slimDOM?: boolean | SlimDOMOptions;
-    recordImages?: boolean;
+    inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;

@@ -202,7 +202,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     await page.waitForSelector('img', { timeout: 1000 });
 
     const snapshot = await page.evaluate(`${code}
-    const [snap] = rrweb.snapshot(document, {recordImages: true, inlineStylesheet: false});
+    const [snap] = rrweb.snapshot(document, {inlineImages: true, inlineStylesheet: false});
     JSON.stringify(snap, null, 2);
     `);
 
