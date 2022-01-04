@@ -19,6 +19,21 @@ function getCode() {
 
   start();
 
+  const fakeGoto = async (page, url) => {
+    const intercept = async (request) => {
+      await request.respond({
+        status: 200,
+        contentType: 'text/html',
+        body: ' ', // non-empty string or page will load indefinitely
+      });
+    };
+    await page.setRequestInterception(true);
+    page.on('request', intercept);
+    await page.goto(url);
+    await page.setRequestInterception(false);
+    page.off('request', intercept);
+  };
+
   async function start() {
     events = [];
     const { url } = await inquirer.prompt([
@@ -36,9 +51,17 @@ function getCode() {
 
     const { shouldReplay } = await inquirer.prompt([
       {
-        type: 'confirm',
+        type: 'list',
+        choices: [
+          { name: 'Start replay (default)', value: 'default' },
+          {
+            name: `Start replay on original url (helps when experiencing CORS issues)`,
+            value: 'replayWithFakeURL',
+          },
+          { name: 'Skip replay', value: false },
+        ],
         name: 'shouldReplay',
-        message: `Once you want to finish the recording, enter 'y' to start replay: `,
+        message: `Once you want to finish the recording, choose the following to start replay: `,
       },
     ]);
 
@@ -118,12 +141,12 @@ function getCode() {
     emitter.once('done', async (shouldReplay) => {
       await browser.close();
       if (shouldReplay) {
-        await replay();
+        await replay(url, shouldReplay === 'replayWithFakeURL');
       }
     });
   }
 
-  async function replay() {
+  async function replay(url, useSpoofedUrl) {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: {
@@ -133,7 +156,12 @@ function getCode() {
       args: ['--start-maximized', '--no-sandbox'],
     });
     const page = await browser.newPage();
-    await page.goto('about:blank');
+    if (useSpoofedUrl) {
+      await fakeGoto(page, url);
+    } else {
+      await page.goto('about:blank');
+    }
+
     await page.addStyleTag({
       path: path.resolve(__dirname, '../dist/rrweb.min.css'),
     });
