@@ -129,8 +129,8 @@ export default function webglMutation({
     const result = original.apply(ctx, args);
     saveToWebGLVarMap(result);
 
+    // Slows down replay considerably, only use for debugging
     const debugMode = false;
-    // const debugMode = true;
     if (debugMode) {
       if (mutation.property === 'compileShader') {
         if (!ctx.getShaderParameter(args[0], ctx.COMPILE_STATUS))
