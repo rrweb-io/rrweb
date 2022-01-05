@@ -70,11 +70,8 @@ export function deserializeArg(
         return variableListFor(name)[index];
       } else if ('args' in arg) {
         const { rr_type: name, args } = arg;
+        const ctor = window[name as keyof Window];
 
-        // @ts-ignore
-        const ctor = window[name] as unknown;
-
-        // @ts-ignore
         return new ctor(...args.map(deserializeArg(imageMap)));
       } else if ('base64' in arg) {
         return decode(arg.base64);
