@@ -52,6 +52,7 @@ function patchGLPrototype(
   mirror: Mirror,
   pendingCanvasMutations: pendingCanvasMutationsMap,
   rafStamps: RafStamps,
+  win: IWindow,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
 
@@ -70,11 +71,11 @@ function patchGLPrototype(
             rafStamps.invokeId = rafStamps.latestId;
 
           const result = original.apply(this, args);
-          saveWebGLVar(result);
+          saveWebGLVar(result, win);
           if (!isBlocked((this.canvas as unknown) as INode, blockClass)) {
             const id = mirror.getId((this.canvas as unknown) as INode);
 
-            const recordArgs = serializeArgs([...args]);
+            const recordArgs = serializeArgs([...args], win);
             const mutation: canvasMutationParam = {
               id,
               type,
@@ -166,6 +167,7 @@ export default function initCanvasWebGLMutationObserver(
       mirror,
       pendingCanvasMutations,
       rafStamps,
+      win,
     ),
   );
 
@@ -179,6 +181,7 @@ export default function initCanvasWebGLMutationObserver(
         mirror,
         pendingCanvasMutations,
         rafStamps,
+        win,
       ),
     );
   }

@@ -1,11 +1,11 @@
 import { encode } from 'base64-arraybuffer';
-import { SerializedWebGlArg } from '../../../types';
+import { IWindow, SerializedWebGlArg } from '../../../types';
 
 // from webgl-recorder: https://github.com/evanw/webgl-recorder/blob/bef0e65596e981ee382126587e2dcbe0fc7748e2/webgl-recorder.js#L50-L77
 const webGLVars: Record<string, Array<any>> = {};
-export function serializeArg(value: any): SerializedWebGlArg {
+export function serializeArg(value: any, win: IWindow): SerializedWebGlArg {
   if (value instanceof Array) {
-    return value.map(serializeArg);
+    return value.map((arg) => serializeArg(arg, win));
   } else if (value === null) {
     return value;
   } else if (
@@ -41,7 +41,11 @@ export function serializeArg(value: any): SerializedWebGlArg {
     const name = value.constructor.name;
     return {
       rr_type: name,
-      args: [serializeArg(value.buffer), value.byteOffset, value.byteLength],
+      args: [
+        serializeArg(value.buffer, win),
+        value.byteOffset,
+        value.byteLength,
+      ],
     };
   } else if (value instanceof HTMLImageElement) {
     const name = value.constructor.name;
@@ -54,23 +58,9 @@ export function serializeArg(value: any): SerializedWebGlArg {
     const name = value.constructor.name;
     return {
       rr_type: name,
-      args: [serializeArg(value.data), value.width, value.height],
+      args: [serializeArg(value.data, win), value.width, value.height],
     };
-  } else if (
-    value instanceof WebGLActiveInfo ||
-    value instanceof WebGLBuffer ||
-    value instanceof WebGLFramebuffer ||
-    value instanceof WebGLProgram ||
-    value instanceof WebGLRenderbuffer ||
-    value instanceof WebGLShader ||
-    value instanceof WebGLShaderPrecisionFormat ||
-    value instanceof WebGLTexture ||
-    value instanceof WebGLUniformLocation ||
-    value instanceof WebGLVertexArrayObject ||
-    // In Chrome, value won't be an instanceof WebGLVertexArrayObject.
-    (value && value.constructor.name == 'WebGLVertexArrayObjectOES') ||
-    typeof value === 'object'
-  ) {
+  } else if (isInstanceOfWebGLObject(value, win) || typeof value === 'object') {
     const name = value.constructor.name;
     const list = webGLVars[name] || (webGLVars[name] = []);
     let index = list.indexOf(value);
@@ -89,28 +79,50 @@ export function serializeArg(value: any): SerializedWebGlArg {
   return value;
 }
 
-export const serializeArgs = (args: Array<any>) => {
-  return [...args].map(serializeArg);
+export const serializeArgs = (args: Array<any>, win: IWindow) => {
+  return [...args].map((arg) => serializeArg(arg, win));
 };
 
-export const saveWebGLVar = (value: any): number | void => {
-  if (
-    !(
-      value instanceof WebGLActiveInfo ||
-      value instanceof WebGLBuffer ||
-      value instanceof WebGLFramebuffer ||
-      value instanceof WebGLProgram ||
-      value instanceof WebGLRenderbuffer ||
-      value instanceof WebGLShader ||
-      value instanceof WebGLShaderPrecisionFormat ||
-      value instanceof WebGLTexture ||
-      value instanceof WebGLUniformLocation ||
-      value instanceof WebGLVertexArrayObject ||
-      // In Chrome, value won't be an instanceof WebGLVertexArrayObject.
-      (value && value.constructor.name == 'WebGLVertexArrayObjectOES') ||
-      typeof value === 'object'
-    )
-  )
+export const isInstanceOfWebGLObject = (
+  value: any,
+  win: IWindow,
+): value is
+  | WebGLActiveInfo
+  | WebGLBuffer
+  | WebGLFramebuffer
+  | WebGLProgram
+  | WebGLRenderbuffer
+  | WebGLShader
+  | WebGLShaderPrecisionFormat
+  | WebGLTexture
+  | WebGLUniformLocation
+  | WebGLVertexArrayObject => {
+  const webGLConstructorNames: string[] = [
+    'WebGLActiveInfo',
+    'WebGLBuffer',
+    'WebGLFramebuffer',
+    'WebGLProgram',
+    'WebGLRenderbuffer',
+    'WebGLShader',
+    'WebGLShaderPrecisionFormat',
+    'WebGLTexture',
+    'WebGLUniformLocation',
+    'WebGLVertexArrayObject',
+    // In old Chrome versions, value won't be an instanceof WebGLVertexArrayObject.
+    'WebGLVertexArrayObjectOES',
+  ];
+  const supportedWebGLConstructorNames = webGLConstructorNames.filter(
+    (name: string) => typeof win[name as keyof Window] === 'function',
+  );
+  return Boolean(
+    supportedWebGLConstructorNames.find(
+      (name: string) => value instanceof win[name as keyof Window],
+    ),
+  );
+};
+
+export const saveWebGLVar = (value: any, win: IWindow): number | void => {
+  if (!(isInstanceOfWebGLObject(value, win) || typeof value === 'object'))
     return;
 
   const name = value.constructor.name;

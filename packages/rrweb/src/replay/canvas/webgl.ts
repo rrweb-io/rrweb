@@ -34,21 +34,18 @@ function getContext(
   }
 }
 
-const WebGLVariableConstructors = [
-  WebGLActiveInfo,
-  WebGLBuffer,
-  WebGLFramebuffer,
-  WebGLProgram,
-  WebGLRenderbuffer,
-  WebGLShader,
-  WebGLShaderPrecisionFormat,
-  WebGLTexture,
-  WebGLUniformLocation,
-  WebGLVertexArrayObject,
+const WebGLVariableConstructorsNames = [
+  'WebGLActiveInfo',
+  'WebGLBuffer',
+  'WebGLFramebuffer',
+  'WebGLProgram',
+  'WebGLRenderbuffer',
+  'WebGLShader',
+  'WebGLShaderPrecisionFormat',
+  'WebGLTexture',
+  'WebGLUniformLocation',
+  'WebGLVertexArrayObject',
 ];
-const WebGLVariableConstructorsNames = WebGLVariableConstructors.map(
-  (ctor) => ctor.name,
-);
 
 function saveToWebGLVarMap(result: any) {
   if (!result?.constructor) return; // probably null or undefined
