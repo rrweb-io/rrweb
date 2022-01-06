@@ -13,7 +13,7 @@ describe('serializeArg', () => {
       rr_type: 'Float32Array',
       args: [[-1, -1, 3, -1, -1, 3]],
     };
-    expect(serializeArg(float32Array)).toStrictEqual(expected);
+    expect(serializeArg(float32Array, window)).toStrictEqual(expected);
   });
 
   it('should serialize Float64Array values', async () => {
@@ -23,7 +23,7 @@ describe('serializeArg', () => {
       args: [[-1, -1, 3, -1, -1, 3]],
     };
 
-    expect(serializeArg(float64Array)).toStrictEqual(expected);
+    expect(serializeArg(float64Array, window)).toStrictEqual(expected);
   });
 
   it('should serialize ArrayBuffer values', async () => {
@@ -33,7 +33,7 @@ describe('serializeArg', () => {
       base64: 'AQIABA==',
     };
 
-    expect(serializeArg(arrayBuffer)).toStrictEqual(expected);
+    expect(serializeArg(arrayBuffer, window)).toStrictEqual(expected);
   });
 
   it('should serialize Uint8Array values', async () => {
@@ -43,7 +43,7 @@ describe('serializeArg', () => {
       args: [[1, 2, 0, 4]],
     };
 
-    expect(serializeArg(object)).toStrictEqual(expected);
+    expect(serializeArg(object, window)).toStrictEqual(expected);
   });
 
   it('should serialize DataView values', async () => {
@@ -60,12 +60,12 @@ describe('serializeArg', () => {
       ],
     };
 
-    expect(serializeArg(dataView)).toStrictEqual(expected);
+    expect(serializeArg(dataView, window)).toStrictEqual(expected);
   });
 
   it('should leave arrays intact', async () => {
     const array = [1, 2, 3, 4];
-    expect(serializeArg(array)).toStrictEqual(array);
+    expect(serializeArg(array, window)).toStrictEqual(array);
   });
 
   it('should serialize complex objects', async () => {
@@ -86,7 +86,7 @@ describe('serializeArg', () => {
       6,
     ];
 
-    expect(serializeArg(dataView)).toStrictEqual(expected);
+    expect(serializeArg(dataView, window)).toStrictEqual(expected);
   });
 
   it('should serialize arraybuffer contents', async () => {
@@ -96,16 +96,16 @@ describe('serializeArg', () => {
       base64: 'AACAPwAAAEAAAEBAAACAQA==',
     };
 
-    expect(serializeArg(buffer)).toStrictEqual(expected);
+    expect(serializeArg(buffer, window)).toStrictEqual(expected);
   });
 
   it('should leave null as-is', async () => {
-    expect(serializeArg(null)).toStrictEqual(null);
+    expect(serializeArg(null, window)).toStrictEqual(null);
   });
 
   it('should support indexed variables', async () => {
     const webGLProgram = new WebGLProgram();
-    expect(serializeArg(webGLProgram)).toStrictEqual({
+    expect(serializeArg(webGLProgram, window)).toStrictEqual({
       rr_type: 'WebGLProgram',
       index: 0,
     });
@@ -114,7 +114,7 @@ describe('serializeArg', () => {
   it('should support HTMLImageElements', async () => {
     const image = new Image();
     image.src = 'http://example.com/image.png';
-    expect(serializeArg(image)).toStrictEqual({
+    expect(serializeArg(image, window)).toStrictEqual({
       rr_type: 'HTMLImageElement',
       src: 'http://example.com/image.png',
     });
@@ -135,7 +135,7 @@ describe('serializeArg', () => {
     let imageData = new ImageData(arr, 200, 50);
 
     const contents = Array.from(arr);
-    expect(serializeArg(imageData)).toStrictEqual({
+    expect(serializeArg(imageData, window)).toStrictEqual({
       rr_type: 'ImageData',
       args: [
         {
