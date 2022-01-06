@@ -71,11 +71,11 @@ function patchGLPrototype(
             rafStamps.invokeId = rafStamps.latestId;
 
           const result = original.apply(this, args);
-          saveWebGLVar(result, win);
+          saveWebGLVar(result, win, prototype);
           if (!isBlocked((this.canvas as unknown) as INode, blockClass)) {
             const id = mirror.getId((this.canvas as unknown) as INode);
 
-            const recordArgs = serializeArgs([...args], win);
+            const recordArgs = serializeArgs([...args], win, prototype);
             const mutation: canvasMutationParam = {
               id,
               type,

@@ -464,4 +464,9 @@ export const polyfillWebGLGlobals = () => {
   }
 
   global.ImageData = ImageData as any;
+
+  class WebGL2RenderingContext {
+    constructor() {}
+  }
+  global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };

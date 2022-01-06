@@ -6,14 +6,23 @@ polyfillWebGLGlobals();
 
 import { serializeArg } from '../../src/record/observers/canvas/serialize-args';
 
+const createContext = () => {
+  const ctx = new WebGL2RenderingContext();
+  return ctx;
+};
+
+let context: WebGL2RenderingContext;
 describe('serializeArg', () => {
+  beforeEach(() => {
+    context = createContext();
+  });
   it('should serialize Float32Array values', async () => {
     const float32Array = new Float32Array([-1, -1, 3, -1, -1, 3]);
     const expected = {
       rr_type: 'Float32Array',
       args: [[-1, -1, 3, -1, -1, 3]],
     };
-    expect(serializeArg(float32Array, window)).toStrictEqual(expected);
+    expect(serializeArg(float32Array, window, context)).toStrictEqual(expected);
   });
 
   it('should serialize Float64Array values', async () => {
@@ -23,7 +32,7 @@ describe('serializeArg', () => {
       args: [[-1, -1, 3, -1, -1, 3]],
     };
 
-    expect(serializeArg(float64Array, window)).toStrictEqual(expected);
+    expect(serializeArg(float64Array, window, context)).toStrictEqual(expected);
   });
 
   it('should serialize ArrayBuffer values', async () => {
@@ -33,7 +42,7 @@ describe('serializeArg', () => {
       base64: 'AQIABA==',
     };
 
-    expect(serializeArg(arrayBuffer, window)).toStrictEqual(expected);
+    expect(serializeArg(arrayBuffer, window, context)).toStrictEqual(expected);
   });
 
   it('should serialize Uint8Array values', async () => {
@@ -43,7 +52,7 @@ describe('serializeArg', () => {
       args: [[1, 2, 0, 4]],
     };
 
-    expect(serializeArg(object, window)).toStrictEqual(expected);
+    expect(serializeArg(object, window, context)).toStrictEqual(expected);
   });
 
   it('should serialize DataView values', async () => {
@@ -60,12 +69,12 @@ describe('serializeArg', () => {
       ],
     };
 
-    expect(serializeArg(dataView, window)).toStrictEqual(expected);
+    expect(serializeArg(dataView, window, context)).toStrictEqual(expected);
   });
 
   it('should leave arrays intact', async () => {
     const array = [1, 2, 3, 4];
-    expect(serializeArg(array, window)).toStrictEqual(array);
+    expect(serializeArg(array, window, context)).toStrictEqual(array);
   });
 
   it('should serialize complex objects', async () => {
@@ -86,7 +95,7 @@ describe('serializeArg', () => {
       6,
     ];
 
-    expect(serializeArg(dataView, window)).toStrictEqual(expected);
+    expect(serializeArg(dataView, window, context)).toStrictEqual(expected);
   });
 
   it('should serialize arraybuffer contents', async () => {
@@ -96,16 +105,36 @@ describe('serializeArg', () => {
       base64: 'AACAPwAAAEAAAEBAAACAQA==',
     };
 
-    expect(serializeArg(buffer, window)).toStrictEqual(expected);
+    expect(serializeArg(buffer, window, context)).toStrictEqual(expected);
   });
 
   it('should leave null as-is', async () => {
-    expect(serializeArg(null, window)).toStrictEqual(null);
+    expect(serializeArg(null, window, context)).toStrictEqual(null);
   });
 
   it('should support indexed variables', async () => {
     const webGLProgram = new WebGLProgram();
-    expect(serializeArg(webGLProgram, window)).toStrictEqual({
+    expect(serializeArg(webGLProgram, window, context)).toStrictEqual({
+      rr_type: 'WebGLProgram',
+      index: 0,
+    });
+    const webGLProgram2 = new WebGLProgram();
+    expect(serializeArg(webGLProgram2, window, context)).toStrictEqual({
+      rr_type: 'WebGLProgram',
+      index: 1,
+    });
+  });
+
+  it('should support indexed variables grouped by context', async () => {
+    const context1 = createContext();
+    const webGLProgram1 = new WebGLProgram();
+    expect(serializeArg(webGLProgram1, window, context1)).toStrictEqual({
+      rr_type: 'WebGLProgram',
+      index: 0,
+    });
+    const context2 = createContext();
+    const webGLProgram2 = new WebGLProgram();
+    expect(serializeArg(webGLProgram2, window, context2)).toStrictEqual({
       rr_type: 'WebGLProgram',
       index: 0,
     });
@@ -114,7 +143,7 @@ describe('serializeArg', () => {
   it('should support HTMLImageElements', async () => {
     const image = new Image();
     image.src = 'http://example.com/image.png';
-    expect(serializeArg(image, window)).toStrictEqual({
+    expect(serializeArg(image, window, context)).toStrictEqual({
       rr_type: 'HTMLImageElement',
       src: 'http://example.com/image.png',
     });
@@ -135,7 +164,7 @@ describe('serializeArg', () => {
     let imageData = new ImageData(arr, 200, 50);
 
     const contents = Array.from(arr);
-    expect(serializeArg(imageData, window)).toStrictEqual({
+    expect(serializeArg(imageData, window, context)).toStrictEqual({
       rr_type: 'ImageData',
       args: [
         {

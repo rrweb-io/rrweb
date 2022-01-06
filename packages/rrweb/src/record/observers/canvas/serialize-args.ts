@@ -1,11 +1,57 @@
 import { encode } from 'base64-arraybuffer';
 import { IWindow, SerializedWebGlArg } from '../../../types';
 
+// TODO: unify with `replay/webgl.ts`
+type GLVarMap = Map<string, any[]>;
+const webGLVarMap: Map<
+  WebGLRenderingContext | WebGL2RenderingContext,
+  GLVarMap
+> = new Map();
+export function variableListFor(
+  ctx: WebGLRenderingContext | WebGL2RenderingContext,
+  ctor: string,
+) {
+  let contextMap = webGLVarMap.get(ctx);
+  if (!contextMap) {
+    contextMap = new Map();
+    webGLVarMap.set(ctx, contextMap);
+  }
+  if (!contextMap.has(ctor)) {
+    contextMap.set(ctor, []);
+  }
+  return contextMap.get(ctor) as any[];
+}
+
+export const saveWebGLVar = (
+  value: any,
+  win: IWindow,
+  ctx: WebGL2RenderingContext | WebGLRenderingContext,
+): number | void => {
+  if (
+    !value ||
+    !(isInstanceOfWebGLObject(value, win) || typeof value === 'object')
+  )
+    return;
+
+  const name = value.constructor.name;
+  const list = variableListFor(ctx, name);
+  let index = list.indexOf(value);
+
+  if (index === -1) {
+    index = list.length;
+    list.push(value);
+  }
+  return index;
+};
+
 // from webgl-recorder: https://github.com/evanw/webgl-recorder/blob/bef0e65596e981ee382126587e2dcbe0fc7748e2/webgl-recorder.js#L50-L77
-const webGLVars: Record<string, Array<any>> = {};
-export function serializeArg(value: any, win: IWindow): SerializedWebGlArg {
+export function serializeArg(
+  value: any,
+  win: IWindow,
+  ctx: WebGL2RenderingContext | WebGLRenderingContext,
+): SerializedWebGlArg {
   if (value instanceof Array) {
-    return value.map((arg) => serializeArg(arg, win));
+    return value.map((arg) => serializeArg(arg, win, ctx));
   } else if (value === null) {
     return value;
   } else if (
@@ -42,7 +88,7 @@ export function serializeArg(value: any, win: IWindow): SerializedWebGlArg {
     return {
       rr_type: name,
       args: [
-        serializeArg(value.buffer, win),
+        serializeArg(value.buffer, win, ctx),
         value.byteOffset,
         value.byteLength,
       ],
@@ -58,29 +104,27 @@ export function serializeArg(value: any, win: IWindow): SerializedWebGlArg {
     const name = value.constructor.name;
     return {
       rr_type: name,
-      args: [serializeArg(value.data, win), value.width, value.height],
+      args: [serializeArg(value.data, win, ctx), value.width, value.height],
     };
   } else if (isInstanceOfWebGLObject(value, win) || typeof value === 'object') {
     const name = value.constructor.name;
-    const list = webGLVars[name] || (webGLVars[name] = []);
-    let index = list.indexOf(value);
-
-    if (index === -1) {
-      index = list.length;
-      list.push(value);
-    }
+    const index = saveWebGLVar(value, win, ctx) as number;
 
     return {
       rr_type: name,
-      index,
+      index: index,
     };
   }
 
   return value;
 }
 
-export const serializeArgs = (args: Array<any>, win: IWindow) => {
-  return [...args].map((arg) => serializeArg(arg, win));
+export const serializeArgs = (
+  args: Array<any>,
+  win: IWindow,
+  ctx: WebGLRenderingContext | WebGL2RenderingContext,
+) => {
+  return [...args].map((arg) => serializeArg(arg, win, ctx));
 };
 
 export const isInstanceOfWebGLObject = (
@@ -119,22 +163,4 @@ export const isInstanceOfWebGLObject = (
       (name: string) => value instanceof win[name as keyof Window],
     ),
   );
-};
-
-export const saveWebGLVar = (value: any, win: IWindow): number | void => {
-  if (
-    !value ||
-    !(isInstanceOfWebGLObject(value, win) || typeof value === 'object')
-  )
-    return;
-
-  const name = value.constructor.name;
-  const list = webGLVars[name] || (webGLVars[name] = []);
-  let index = list.indexOf(value);
-
-  if (index === -1) {
-    index = list.length;
-    list.push(value);
-  }
-  return index;
 };
