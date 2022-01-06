@@ -122,7 +122,10 @@ export const isInstanceOfWebGLObject = (
 };
 
 export const saveWebGLVar = (value: any, win: IWindow): number | void => {
-  if (!(isInstanceOfWebGLObject(value, win) || typeof value === 'object'))
+  if (
+    !value ||
+    !(isInstanceOfWebGLObject(value, win) || typeof value === 'object')
+  )
     return;
 
   const name = value.constructor.name;
