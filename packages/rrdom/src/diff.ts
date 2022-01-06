@@ -11,15 +11,12 @@ export function diff(oldTree: INode, newTree: RRNode) {
       }
       const oldChildren = oldTree.childNodes;
       const newChildren = newTree.childNodes;
-      if (oldChildren.length > 0 && newChildren.length > 0) {
+      if (oldChildren.length > 0 || newChildren.length > 0) {
         diffChildren(
           (Array.from(oldChildren) as unknown) as INode[],
           newChildren,
+          oldTree,
         );
-      } else if (oldChildren.length > 0) {
-        // TODO Remove all children.
-      } else if (newChildren.length > 0) {
-        // TODO Add all new children.
       }
     } else if (oldTree.__sn?.id !== newTree.__sn?.id) {
       // Replace the old node with the new node
@@ -53,6 +50,68 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
   }
 }
 
-function diffChildren(oldChildren: INode[], newChildren: RRNode[]) {
-  // TODO
+function diffChildren(
+  oldChildren: (INode | undefined)[],
+  newChildren: RRNode[],
+  parentNode: INode,
+) {
+  let oldStartIndex = 0,
+    oldEndIndex = oldChildren.length - 1,
+    newStartIndex = 0,
+    newEndIndex = newChildren.length - 1;
+  let oldStartNode = oldChildren[oldStartIndex],
+    oldEndNode = oldChildren[oldEndIndex],
+    newStartNode = newChildren[newStartIndex],
+    newEndNode = newChildren[newEndIndex];
+  let oldIdToIndex: Record<number, number> | undefined = undefined,
+    indexInOld;
+  while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    if (oldStartNode === undefined) {
+      oldStartNode = oldChildren[++oldStartIndex];
+    } else if (oldEndNode === undefined) {
+      oldEndNode = oldChildren[--oldEndIndex];
+    } else if (oldStartNode.__sn.id === newStartNode.__sn.id) {
+      diff(oldStartNode, newStartNode);
+      oldStartNode = oldChildren[++oldStartIndex];
+      newStartNode = newChildren[++newStartIndex];
+    } else if (oldEndNode.__sn.id === newEndNode.__sn.id) {
+      diff(oldEndNode, newEndNode);
+      oldEndNode = oldChildren[--oldEndIndex];
+      newEndNode = newChildren[--newEndIndex];
+    } else if (oldStartNode.__sn.id === newEndNode.__sn.id) {
+      parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
+      diff(oldStartNode, newEndNode);
+      oldStartNode = oldChildren[++oldStartIndex];
+      newEndNode = newChildren[--newEndIndex];
+    } else if (oldEndNode.__sn.id === newStartNode.__sn.id) {
+      parentNode.insertBefore(oldEndNode, oldStartNode);
+      diff(oldEndNode, newStartNode);
+      oldEndNode = oldChildren[--oldEndIndex];
+      newStartNode = newChildren[++newStartIndex];
+    } else {
+      if (!oldIdToIndex) {
+        oldIdToIndex = {};
+        for (let i = oldStartIndex; i <= oldEndIndex; i++)
+          oldIdToIndex[oldChildren[i]!.__sn.id] = i;
+      }
+      indexInOld = oldIdToIndex[newStartNode.__sn.id];
+      if (indexInOld) {
+        const nodeToMove = oldChildren[indexInOld]!;
+        parentNode.insertBefore(nodeToMove, oldStartNode);
+        diff(nodeToMove, newStartNode);
+        oldChildren[indexInOld] = undefined;
+      } else {
+        // TODO Create a new node.
+      }
+      newStartNode = newChildren[++newStartIndex];
+    }
+  }
+  if (oldStartIndex > oldEndIndex) {
+    // TODO Create several new nodes.
+  } else if (newStartIndex > newEndIndex) {
+    for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
+      const node = oldChildren[oldStartIndex];
+      node && parentNode.removeChild(node);
+    }
+  }
 }
