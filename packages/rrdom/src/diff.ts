@@ -1,32 +1,32 @@
 import { INode, NodeType } from 'rrweb-snapshot';
-import { RRElement, RRNode } from './document-browser';
+import type { Mirror } from 'rrweb/typings/types';
+import {
+  RRCDATASection,
+  RRComment,
+  RRElement,
+  RRNode,
+  RRText,
+} from './document-browser';
 
-export function diff(oldTree: INode, newTree: RRNode) {
-  if (oldTree && newTree) {
-    if (oldTree.__sn?.id === newTree.__sn?.id) {
-      switch (newTree.nodeType) {
-        case NodeType.Element:
-          diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
-          break;
-      }
-      const oldChildren = oldTree.childNodes;
-      const newChildren = newTree.childNodes;
-      if (oldChildren.length > 0 || newChildren.length > 0) {
-        diffChildren(
-          (Array.from(oldChildren) as unknown) as INode[],
-          newChildren,
-          oldTree,
-        );
-      }
-    } else if (oldTree.__sn?.id !== newTree.__sn?.id) {
-      // Replace the old node with the new node
-    } else if (oldTree.__sn?.id) {
-    } else if (newTree.__sn?.id) {
+export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
+  if (oldTree.__sn?.id === newTree.__sn?.id) {
+    switch (newTree.nodeType) {
+      case NodeType.Element:
+        diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
+        break;
+      // TODO: Diff other kinds of nodes.
+      default:
     }
-  } else if (oldTree) {
-    if (oldTree.parentNode) oldTree.parentNode.removeChild(oldTree);
-  } else if (newTree) {
-    // TODO Create a new node.
+    const oldChildren = oldTree.childNodes;
+    const newChildren = newTree.childNodes;
+    if (oldChildren.length > 0 || newChildren.length > 0) {
+      diffChildren(
+        (Array.from(oldChildren) as unknown) as INode[],
+        newChildren,
+        oldTree,
+        mirror,
+      );
+    }
   }
 }
 
@@ -54,6 +54,7 @@ function diffChildren(
   oldChildren: (INode | undefined)[],
   newChildren: RRNode[],
   parentNode: INode,
+  mirror: Mirror,
 ) {
   let oldStartIndex = 0,
     oldEndIndex = oldChildren.length - 1,
@@ -71,21 +72,21 @@ function diffChildren(
     } else if (oldEndNode === undefined) {
       oldEndNode = oldChildren[--oldEndIndex];
     } else if (oldStartNode.__sn.id === newStartNode.__sn.id) {
-      diff(oldStartNode, newStartNode);
+      diff(oldStartNode, newStartNode, mirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (oldEndNode.__sn.id === newEndNode.__sn.id) {
-      diff(oldEndNode, newEndNode);
+      diff(oldEndNode, newEndNode, mirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (oldStartNode.__sn.id === newEndNode.__sn.id) {
       parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
-      diff(oldStartNode, newEndNode);
+      diff(oldStartNode, newEndNode, mirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (oldEndNode.__sn.id === newStartNode.__sn.id) {
       parentNode.insertBefore(oldEndNode, oldStartNode);
-      diff(oldEndNode, newStartNode);
+      diff(oldEndNode, newStartNode, mirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
     } else {
@@ -98,20 +99,48 @@ function diffChildren(
       if (indexInOld) {
         const nodeToMove = oldChildren[indexInOld]!;
         parentNode.insertBefore(nodeToMove, oldStartNode);
-        diff(nodeToMove, newStartNode);
+        diff(nodeToMove, newStartNode, mirror);
         oldChildren[indexInOld] = undefined;
       } else {
-        // TODO Create a new node.
+        const newNode = createOrGetNode(newStartNode, mirror);
+        parentNode.insertBefore(newNode, oldStartNode);
       }
       newStartNode = newChildren[++newStartIndex];
     }
   }
   if (oldStartIndex > oldEndIndex) {
-    // TODO Create several new nodes.
+    const referenceRRNode = newChildren[newEndIndex + 1];
+    let referenceNode = null;
+    if (referenceRRNode)
+      parentNode.childNodes.forEach((child) => {
+        if (((child as unknown) as INode).__sn.id === referenceRRNode.__sn.id)
+          referenceNode = child;
+      });
+    for (; newStartIndex <= newEndIndex; ++newStartIndex)
+      parentNode.insertBefore(
+        createOrGetNode(newChildren[newStartIndex], mirror),
+        referenceNode,
+      );
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
       node && parentNode.removeChild(node);
     }
   }
+}
+
+export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
+  let node = mirror.getNode(rrNode.__sn.id);
+  if (node !== null) return node;
+  if (rrNode instanceof RRElement) {
+    node = (document.createElement(rrNode.tagName) as unknown) as INode;
+  } else if (rrNode instanceof RRText) {
+    node = (document.createTextNode(rrNode.textContent) as unknown) as INode;
+  } else if (rrNode instanceof RRComment) {
+    node = (document.createComment(rrNode.data) as unknown) as INode;
+  } else if (rrNode instanceof RRCDATASection) {
+    node = (document.createCDATASection(rrNode.data) as unknown) as INode;
+  } else throw new Error('Unknown rrNode type ' + rrNode.toString());
+  node.__sn = { ...rrNode.__sn };
+  return node;
 }
