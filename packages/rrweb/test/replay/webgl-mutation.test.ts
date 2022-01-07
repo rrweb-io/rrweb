@@ -6,7 +6,7 @@ import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
 import webglMutation, { variableListFor } from '../../src/replay/canvas/webgl';
-import { CanvasContext, IncrementalSource } from '../../src/types';
+import { CanvasContext } from '../../src/types';
 
 let canvas: HTMLCanvasElement;
 describe('webglMutation', () => {
@@ -21,28 +21,27 @@ describe('webglMutation', () => {
     const createShaderMock = jest.fn().mockImplementation(() => {
       return new WebGLShader();
     });
+    const context = ({
+      createShader: createShaderMock,
+    } as unknown) as WebGLRenderingContext;
     jest.spyOn(canvas, 'getContext').mockImplementation(() => {
-      return ({
-        createShader: createShaderMock,
-      } as unknown) as WebGLRenderingContext;
+      return context;
     });
 
-    expect(variableListFor('WebGLShader')).toHaveLength(0);
+    expect(variableListFor(context, 'WebGLShader')).toHaveLength(0);
 
     webglMutation({
       mutation: {
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext.WebGL,
-        id: 1,
         property: 'createShader',
         args: [35633],
       },
+      type: CanvasContext.WebGL,
       target: canvas,
       imageMap: new Map(),
       errorHandler: () => {},
     });
 
     expect(createShaderMock).toHaveBeenCalledWith(35633);
-    expect(variableListFor('WebGLShader')).toHaveLength(1);
+    expect(variableListFor(context, 'WebGLShader')).toHaveLength(1);
   });
 });
