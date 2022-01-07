@@ -7,10 +7,17 @@ polyfillWebGLGlobals();
 
 import { deserializeArg } from '../../src/replay/canvas/webgl';
 
+let context: WebGLRenderingContext | WebGL2RenderingContext;
 describe('deserializeArg', () => {
+  beforeEach(() => {
+    context = new WebGL2RenderingContext();
+  });
   it('should deserialize Float32Array values', async () => {
     expect(
-      deserializeArg(new Map())({
+      deserializeArg(
+        new Map(),
+        context,
+      )({
         rr_type: 'Float32Array',
         args: [[-1, -1, 3, -1, -1, 3]],
       }),
@@ -19,7 +26,10 @@ describe('deserializeArg', () => {
 
   it('should deserialize Float64Array values', async () => {
     expect(
-      deserializeArg(new Map())({
+      deserializeArg(
+        new Map(),
+        context,
+      )({
         rr_type: 'Float64Array',
         args: [[-1, -1, 3, -1, -1, 3]],
       }),
@@ -29,7 +39,10 @@ describe('deserializeArg', () => {
   it('should deserialize ArrayBuffer values', async () => {
     const contents = [1, 2, 0, 4];
     expect(
-      deserializeArg(new Map())({
+      deserializeArg(
+        new Map(),
+        context,
+      )({
         rr_type: 'ArrayBuffer',
         base64: 'AQIABA==',
       }),
@@ -38,7 +51,10 @@ describe('deserializeArg', () => {
 
   it('should deserialize DataView values', async () => {
     expect(
-      deserializeArg(new Map())({
+      deserializeArg(
+        new Map(),
+        context,
+      )({
         rr_type: 'DataView',
         args: [
           {
@@ -54,7 +70,7 @@ describe('deserializeArg', () => {
 
   it('should leave arrays intact', async () => {
     const array = [1, 2, 3, 4];
-    expect(deserializeArg(new Map())(array)).toEqual(array);
+    expect(deserializeArg(new Map(), context)(array)).toEqual(array);
   });
 
   it('should deserialize complex objects', async () => {
@@ -73,7 +89,7 @@ describe('deserializeArg', () => {
       5,
       6,
     ];
-    expect(deserializeArg(new Map())(serializedArg)).toStrictEqual([
+    expect(deserializeArg(new Map(), context)(serializedArg)).toStrictEqual([
       new DataView(new ArrayBuffer(16), 0, 16),
       5,
       6,
@@ -81,14 +97,17 @@ describe('deserializeArg', () => {
   });
 
   it('should leave null as-is', async () => {
-    expect(deserializeArg(new Map())(null)).toStrictEqual(null);
+    expect(deserializeArg(new Map(), context)(null)).toStrictEqual(null);
   });
 
   it('should support HTMLImageElements', async () => {
     const image = new Image();
     image.src = 'http://example.com/image.png';
     expect(
-      deserializeArg(new Map())({
+      deserializeArg(
+        new Map(),
+        context,
+      )({
         rr_type: 'HTMLImageElement',
         src: 'http://example.com/image.png',
       }),
@@ -102,7 +121,10 @@ describe('deserializeArg', () => {
     imageMap.set(image.src, image);
 
     expect(
-      deserializeArg(imageMap)({
+      deserializeArg(
+        imageMap,
+        context,
+      )({
         rr_type: 'HTMLImageElement',
         src: 'http://example.com/image.png',
       }),
