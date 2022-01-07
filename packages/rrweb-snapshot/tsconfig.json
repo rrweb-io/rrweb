@@ -8,8 +8,7 @@
     "preserveConstEnums": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": ["es6", "dom"],
-    "skipLibCheck": true
+    "lib": ["es6", "dom"]
   },
   "exclude": ["test"],
   "include": ["src"]

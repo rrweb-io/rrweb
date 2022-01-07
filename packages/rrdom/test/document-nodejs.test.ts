@@ -3,10 +3,10 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { RRDocument, RRElement, RRNode } from '../src/document';
+import { RRDocument, RRElement, RRStyleElement } from '../src/document-nodejs';
 import { printRRDom } from './util';
 
-describe('RRDocument', () => {
+describe('RRDocument for nodejs environment', () => {
   describe('buildFromDom', () => {
     it('should create an RRDocument from a html document', () => {
       // setup document
@@ -219,6 +219,36 @@ describe('RRDocument', () => {
 
       expect(rrdom.querySelectorAll('.blocks#block1').length).toEqual(1);
       expect(rrdom.querySelectorAll('.blocks#block3').length).toEqual(0);
+    });
+
+    it('style element', () => {
+      expect(rrdom.getElementsByTagName('style').length).not.toEqual(0);
+      expect(rrdom.getElementsByTagName('style')[0].tagName).toEqual('STYLE');
+      const styleElement = rrdom.getElementsByTagName(
+        'style',
+      )[0] as RRStyleElement;
+      expect(styleElement.sheet).toBeDefined();
+      expect(styleElement.sheet!.cssRules).toBeDefined();
+      expect(styleElement.sheet!.cssRules.length).toEqual(5);
+      const rules = styleElement.sheet!.cssRules;
+      expect(rules[0].cssText).toEqual(`h1 {color: 'black';}`);
+      expect(rules[1].cssText).toEqual(`.blocks {padding: 0;}`);
+      expect(rules[2].cssText).toEqual(`.blocks1 {margin: 0;}`);
+      expect(rules[3].cssText).toEqual(
+        `#block1 {width: 100px; height: 200px;}`,
+      );
+      expect(rules[4].cssText).toEqual(`@import url(main.css);`);
+      expect((rules[4] as CSSImportRule).href).toEqual('main.css');
+
+      expect(styleElement.sheet!.insertRule).toBeDefined();
+      const newRule = "p {color: 'black';}";
+      styleElement.sheet!.insertRule(newRule, 5);
+      expect(rules[5].cssText).toEqual(newRule);
+
+      expect(styleElement.sheet!.deleteRule).toBeDefined();
+      styleElement.sheet!.deleteRule(5);
+      expect(rules[5]).toBeUndefined();
+      expect(rules[4].cssText).toEqual(`@import url(main.css);`);
     });
   });
 });

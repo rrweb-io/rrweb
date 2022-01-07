@@ -10,8 +10,7 @@
     "rootDir": "src",
     "outDir": "build",
     "lib": ["es6", "dom"],
-    "downlevelIteration": true,
-    "skipLibCheck": true
+    "downlevelIteration": true
   },
   "exclude": ["test"],
   "include": ["src", "node_modules/@types/css-font-loading-module/index.d.ts"]

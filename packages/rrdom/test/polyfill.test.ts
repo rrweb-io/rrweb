@@ -1,4 +1,4 @@
-import { RRDocument, RRNode } from '../src/document';
+import { RRDocument, RRNode } from '../src/document-nodejs';
 import {
   polyfillPerformance,
   polyfillRAF,

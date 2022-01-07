@@ -10,4 +10,4 @@ polyfillRAF();
 polyfillEvent();
 polyfillNode();
 polyfillDocument();
-export * from './document';
+export * from './document-nodejs';

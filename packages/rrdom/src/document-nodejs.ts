@@ -1,8 +1,7 @@
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
-// @ts-ignore
-import nwsapi, { NWSAPI } from 'nwsapi';
-import * as nwsapiFactory from 'nwsapi';
+import { NWSAPI } from 'nwsapi';
 import { parseCSSText, camelize, toCSSText } from './style';
+const nwsapi = require('nwsapi');
 const cssom = require('cssom');
 
 export abstract class RRNode {
@@ -80,7 +79,7 @@ export class RRDocument extends RRNode {
   private _nwsapi: NWSAPI;
   get nwsapi() {
     if (!this._nwsapi) {
-      this._nwsapi = (nwsapi || nwsapiFactory)({
+      this._nwsapi = nwsapi({
         document: (this as unknown) as Document,
         DOMException: (null as unknown) as new (
           message?: string,
@@ -97,24 +96,24 @@ export class RRDocument extends RRNode {
   }
 
   get documentElement(): RRElement {
-    return this.children.filter(
+    return this.children.find(
       (node) => node instanceof RRElement && node.tagName === 'HTML',
-    )[0] as RRElement;
+    ) as RRElement;
   }
 
   get body() {
     return (
-      this.documentElement?.children.filter(
+      this.documentElement?.children.find(
         (node) => node instanceof RRElement && node.tagName === 'BODY',
-      )[0] || null
+      ) || null
     );
   }
 
   get head() {
     return (
-      this.documentElement?.children.filter(
+      this.documentElement?.children.find(
         (node) => node instanceof RRElement && node.tagName === 'HEAD',
-      )[0] || null
+      ) || null
     );
   }
 

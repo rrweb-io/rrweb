@@ -1,4 +1,4 @@
-import { RRIframeElement, RRNode } from '../src/document';
+import { RRIframeElement, RRNode } from '../src/document-nodejs';
 
 /**
  * Print the RRDom as a string.

@@ -1,4 +1,4 @@
-import { RRDocument, RRNode } from './document';
+import { RRDocument, RRNode } from './document-nodejs';
 
 /**
  * Polyfill the performance for nodejs.
