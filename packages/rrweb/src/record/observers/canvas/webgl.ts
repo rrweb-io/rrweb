@@ -3,7 +3,7 @@ import {
   blockClass,
   CanvasContext,
   canvasMutationCallback,
-  canvasMutationParam,
+  canvasMutationCommand,
   IWindow,
   listenerHandler,
   Mirror,
@@ -11,17 +11,20 @@ import {
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
-type pendingCanvasMutationsMap = Map<HTMLCanvasElement, canvasMutationParam[]>;
+type canvasMutationWithType = { type: CanvasContext } & canvasMutationCommand;
+type pendingCanvasMutationsMap = Map<
+  HTMLCanvasElement,
+  canvasMutationWithType[]
+>;
 type RafStamps = { latestId: number; invokeId: number | null };
 
-// FIXME: total hack here, we need to find a better way to do this
 function flushPendingCanvasMutations(
   pendingCanvasMutations: pendingCanvasMutationsMap,
   cb: canvasMutationCallback,
   mirror: Mirror,
 ) {
   pendingCanvasMutations.forEach(
-    (values: canvasMutationParam[], canvas: HTMLCanvasElement) => {
+    (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
       const id = mirror.getId((canvas as unknown) as INode);
       flushPendingCanvasMutationFor(canvas, pendingCanvasMutations, id, cb);
     },
@@ -37,10 +40,17 @@ function flushPendingCanvasMutationFor(
   id: number,
   cb: canvasMutationCallback,
 ) {
-  const values = pendingCanvasMutations.get(canvas);
-  if (!values || id === -1) return;
+  const valuesWithType = pendingCanvasMutations.get(canvas);
+  if (!valuesWithType || id === -1) return;
 
-  values.forEach((p) => cb({ ...p, id }));
+  const values = valuesWithType.map((value) => {
+    const { type, ...rest } = value;
+    return rest;
+  });
+  const { type } = valuesWithType[0];
+
+  cb({ id, type, commands: values });
+
   pendingCanvasMutations.delete(canvas);
 }
 
@@ -76,38 +86,20 @@ function patchGLPrototype(
             const id = mirror.getId((this.canvas as unknown) as INode);
 
             const recordArgs = serializeArgs([...args], win, prototype);
-            const mutation: canvasMutationParam = {
-              id,
+            const mutation: canvasMutationWithType = {
               type,
               property: prop,
               args: recordArgs,
             };
-            if (newFrame) mutation.newFrame = true;
 
-            if (id === -1) {
-              // FIXME! THIS COULD MAYBE BE AN OFFSCREEN CANVAS
-              if (
-                !pendingCanvasMutations.has(this.canvas as HTMLCanvasElement)
-              ) {
-                pendingCanvasMutations.set(
-                  this.canvas as HTMLCanvasElement,
-                  [],
-                );
-              }
-
-              pendingCanvasMutations
-                .get(this.canvas as HTMLCanvasElement)!
-                .push(mutation);
-            } else {
-              // flush all pending mutations
-              flushPendingCanvasMutationFor(
-                this.canvas as HTMLCanvasElement,
-                pendingCanvasMutations,
-                id,
-                cb,
-              );
-              cb(mutation);
+            if (!pendingCanvasMutations.has(this.canvas as HTMLCanvasElement)) {
+              pendingCanvasMutations.set(this.canvas as HTMLCanvasElement, []);
             }
+
+            pendingCanvasMutations
+              // FIXME! THIS COULD MAYBE BE AN OFFSCREEN CANVAS
+              .get(this.canvas as HTMLCanvasElement)!
+              .push(mutation);
           }
 
           return result;

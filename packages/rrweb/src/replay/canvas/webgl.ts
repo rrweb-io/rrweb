@@ -2,7 +2,7 @@ import { decode } from 'base64-arraybuffer';
 import { Replayer } from '../';
 import {
   CanvasContext,
-  canvasMutationData,
+  canvasMutationCommand,
   SerializedWebGlArg,
 } from '../../types';
 
@@ -33,7 +33,7 @@ function getContext(
 ): WebGLRenderingContext | WebGL2RenderingContext | null {
   // Note to whomever is going to implement support for `contextAttributes`:
   // if `preserveDrawingBuffer` is set to true,
-  // you have to do `ctx.flush()` before every `newFrame: true`
+  // you might have to do `ctx.flush()` before every webgl canvas event
   try {
     if (type === CanvasContext.WebGL) {
       return (
@@ -109,20 +109,22 @@ export function deserializeArg(
 export default function webglMutation({
   mutation,
   target,
+  type,
   imageMap,
   errorHandler,
 }: {
-  mutation: canvasMutationData;
+  mutation: canvasMutationCommand;
   target: HTMLCanvasElement;
+  type: CanvasContext;
   imageMap: Replayer['imageMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
 }): void {
   try {
-    const ctx = getContext(target, mutation.type);
+    const ctx = getContext(target, type);
     if (!ctx) return;
 
     // NOTE: if `preserveDrawingBuffer` is set to true,
-    // we must flush the buffers on every newFrame: true
+    // we must flush the buffers on every new canvas event
     // if (mutation.newFrame) ctx.flush();
 
     if (mutation.setter) {

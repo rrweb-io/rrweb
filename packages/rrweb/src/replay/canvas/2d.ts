@@ -1,5 +1,5 @@
 import { Replayer } from '../';
-import { canvasMutationData } from '../../types';
+import { canvasMutationCommand } from '../../types';
 
 export default function canvasMutation({
   event,
@@ -9,7 +9,7 @@ export default function canvasMutation({
   errorHandler,
 }: {
   event: Parameters<Replayer['applyIncremental']>[0];
-  mutation: canvasMutationData;
+  mutation: canvasMutationCommand;
   target: HTMLCanvasElement;
   imageMap: Replayer['imageMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`record webgl should mark every RAF as \`newFrame: true\` 1`] = `
+exports[`record webgl should batch events by RAF 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -80,21 +80,19 @@ exports[`record webgl should mark every RAF as \`newFrame: true\` 1`] = `
       \\"source\\": 9,
       \\"id\\": 7,
       \\"type\\": 1,
-      \\"property\\": \\"createProgram\\",
-      \\"args\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 7,
-      \\"type\\": 1,
-      \\"property\\": \\"linkProgram\\",
-      \\"args\\": [
+      \\"commands\\": [
         {
-          \\"rr_type\\": \\"WebGLProgram\\",
-          \\"index\\": 0
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
         }
       ]
     }
@@ -105,22 +103,25 @@ exports[`record webgl should mark every RAF as \`newFrame: true\` 1`] = `
       \\"source\\": 9,
       \\"id\\": 7,
       \\"type\\": 1,
-      \\"property\\": \\"createProgram\\",
-      \\"args\\": [],
-      \\"newFrame\\": true
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 7,
-      \\"type\\": 1,
-      \\"property\\": \\"linkProgram\\",
-      \\"args\\": [
+      \\"commands\\": [
         {
-          \\"rr_type\\": \\"WebGLProgram\\",
-          \\"index\\": 1
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 1
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
         }
       ]
     }
@@ -131,23 +132,14 @@ exports[`record webgl should mark every RAF as \`newFrame: true\` 1`] = `
       \\"source\\": 9,
       \\"id\\": 7,
       \\"type\\": 1,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        }
       ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 7,
-      \\"type\\": 1,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
-      ],
-      \\"newFrame\\": true
     }
   }
 ]"
@@ -233,9 +225,13 @@ exports[`record webgl will record changes to a canvas element 1`] = `
       \\"source\\": 9,
       \\"id\\": 7,
       \\"type\\": 1,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        }
       ]
     }
   }
@@ -344,34 +340,26 @@ exports[`record webgl will record changes to a canvas element before the canvas 
       \\"source\\": 9,
       \\"id\\": 9,
       \\"type\\": 2,
-      \\"property\\": \\"createProgram\\",
-      \\"args\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 9,
-      \\"type\\": 2,
-      \\"property\\": \\"linkProgram\\",
-      \\"args\\": [
+      \\"commands\\": [
         {
-          \\"rr_type\\": \\"WebGLProgram\\",
-          \\"index\\": 0
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
         }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 9,
-      \\"type\\": 2,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
       ]
     }
   }
@@ -480,34 +468,26 @@ exports[`record webgl will record changes to a canvas element before the canvas 
       \\"source\\": 9,
       \\"id\\": 9,
       \\"type\\": 1,
-      \\"property\\": \\"createProgram\\",
-      \\"args\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 9,
-      \\"type\\": 1,
-      \\"property\\": \\"linkProgram\\",
-      \\"args\\": [
+      \\"commands\\": [
         {
-          \\"rr_type\\": \\"WebGLProgram\\",
-          \\"index\\": 0
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
         }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 9,
-      \\"type\\": 1,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
       ]
     }
   }
@@ -594,9 +574,239 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
       \\"source\\": 9,
       \\"id\\": 7,
       \\"type\\": 2,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record webgl will record webgl variables 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"canvas\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 7,
+      \\"type\\": 1,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record webgl will record webgl variables in reverse order 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"canvas\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 7,
+      \\"type\\": 1,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 1
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        }
       ]
     }
   }

@@ -44,10 +44,6 @@ export class Timer {
       lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
-        if (action.newFrame) {
-          action.newFrame = false;
-          break;
-        }
 
         if (self.timeOffset >= action.delay) {
           actions.shift();
@@ -102,14 +98,8 @@ export class Timer {
   }
 }
 
-export type LastDelay = { at: number | null };
-
 // TODO: add speed to mouse move timestamp calculation
-export function addDelay(
-  event: eventWithTime,
-  baselineTime: number,
-  lastDelay?: LastDelay,
-): number {
+export function addDelay(event: eventWithTime, baselineTime: number): number {
   // Mouse move events was recorded in a throttle function,
   // so we need to find the real timestamp by traverse the time offsets.
   if (
@@ -124,24 +114,5 @@ export function addDelay(
   }
 
   event.delay = event.timestamp - baselineTime;
-
-  if (lastDelay) {
-    // WebGL events need to be bundled together as much as possible so they don't
-    // accidentally get split over multiple animation frames.
-    if (
-      event.type === EventType.IncrementalSnapshot &&
-      event.data.source === IncrementalSource.CanvasMutation &&
-      // `newFrame: true` is used to indicate the start of an new animation frame in the recording,
-      // and that the event shouldn't be bundled with the previous events.
-      !event.data.newFrame &&
-      lastDelay.at
-    ) {
-      // Override the current delay with the last delay
-      event.delay = lastDelay.at;
-    } else {
-      lastDelay.at = event.delay!;
-    }
-  }
-
   return event.delay;
 }

@@ -9719,24 +9719,22 @@ exports[`record integration tests should record webgl canvas mutations 1`] = `
       \\"source\\": 9,
       \\"id\\": 16,
       \\"type\\": 1,
-      \\"property\\": \\"clearColor\\",
-      \\"args\\": [
-        1,
-        0,
-        0,
-        1
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 16,
-      \\"type\\": 1,
-      \\"property\\": \\"clear\\",
-      \\"args\\": [
-        16384
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearColor\\",
+          \\"args\\": [
+            1,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        }
       ]
     }
   }

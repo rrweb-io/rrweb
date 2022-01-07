@@ -9,7 +9,6 @@ import {
   eventWithTime,
   EventType,
   IncrementalSource,
-  styleSheetRuleData,
   CanvasContext,
 } from '../../src/types';
 import { assertSnapshot, launchPuppeteer } from '../utils';
@@ -116,9 +115,13 @@ describe('record webgl', function (this: ISuite) {
     expect(lastEvent).toMatchObject({
       data: {
         source: IncrementalSource.CanvasMutation,
-        args: [16384],
         type: CanvasContext.WebGL,
-        property: 'clear',
+        commands: [
+          {
+            args: [16384],
+            property: 'clear',
+          },
+        ],
       },
     });
     assertSnapshot(ctx.events);
@@ -138,9 +141,13 @@ describe('record webgl', function (this: ISuite) {
     expect(lastEvent).toMatchObject({
       data: {
         source: IncrementalSource.CanvasMutation,
-        args: [16384],
         type: CanvasContext.WebGL2,
-        property: 'clear',
+        commands: [
+          {
+            args: [16384],
+            property: 'clear',
+          },
+        ],
       },
     });
     assertSnapshot(ctx.events);
@@ -196,20 +203,7 @@ describe('record webgl', function (this: ISuite) {
 
     await ctx.page.waitForTimeout(50);
 
-    const lastEvent = ctx.events[ctx.events.length - 1];
-    expect(lastEvent).toMatchObject({
-      data: {
-        source: IncrementalSource.CanvasMutation,
-        property: 'linkProgram',
-        type: CanvasContext.WebGL,
-        args: [
-          {
-            index: 1,
-            rr_type: 'WebGLProgram',
-          },
-        ], // `program1` is WebGLProgram, this is the second WebGLProgram variable (index #1)
-      },
-    });
+    assertSnapshot(ctx.events);
   });
 
   it('will record webgl variables in reverse order', async () => {
@@ -218,26 +212,14 @@ describe('record webgl', function (this: ISuite) {
       var gl = canvas.getContext('webgl')!;
       var program0 = gl.createProgram()!;
       var program1 = gl.createProgram()!;
+      // attach them in reverse order
       gl.linkProgram(program1);
       gl.linkProgram(program0);
     });
 
     await ctx.page.waitForTimeout(50);
 
-    const lastEvent = ctx.events[ctx.events.length - 1];
-    expect(lastEvent).toMatchObject({
-      data: {
-        source: IncrementalSource.CanvasMutation,
-        property: 'linkProgram',
-        type: CanvasContext.WebGL,
-        args: [
-          {
-            index: 0,
-            rr_type: 'WebGLProgram',
-          },
-        ], // `program0` is WebGLProgram, this is the first WebGLProgram variable (index #0)
-      },
-    });
+    assertSnapshot(ctx.events);
   });
 
   it('sets _context on canvas.getContext()', async () => {
@@ -261,7 +243,7 @@ describe('record webgl', function (this: ISuite) {
     expect(context).toBe('webgl');
   });
 
-  it('should mark every RAF as `newFrame: true`', async () => {
+  it('should batch events by RAF', async () => {
     await ctx.page.evaluate(() => {
       return new Promise<void>((resolve) => {
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -283,5 +265,6 @@ describe('record webgl', function (this: ISuite) {
     await ctx.page.waitForTimeout(50);
 
     assertSnapshot(ctx.events);
+    expect(ctx.events.length).toEqual(5);
   });
 });
