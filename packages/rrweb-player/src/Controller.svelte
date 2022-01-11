@@ -185,6 +185,12 @@
     skipInactive = !skipInactive;
   };
 
+  export const triggerUpdateMeta = () => {
+    Promise.resolve().then(() => {
+      meta = replayer.getMetaData();
+    })
+  }
+
   onMount(() => {
     playerState = replayer.service.state.value as typeof playerState;
     speedState = replayer.speedService.state.value as typeof speedState;

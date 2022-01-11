@@ -90,6 +90,7 @@
 
   export const addEvent = (event: eventWithTime) => {
     replayer.addEvent(event);
+    controller.triggerUpdateMeta();
   };
   export const getMetaData = () => replayer.getMetaData();
   export const getReplayer = () => replayer;

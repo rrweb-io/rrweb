@@ -10,10 +10,8 @@ import {
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
-  documentNode,
 } from './types';
 import { isElement, isShadowRoot, maskInputValue } from './utils';
-import { values } from 'puppeteer/DeviceDescriptors';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -55,7 +53,9 @@ function getCssRuleString(rule: CSSRule): string {
   if (isCSSImportRule(rule)) {
     try {
       cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
   return cssStringified;
 }
@@ -150,8 +150,8 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   let pos = 0;
 
   function collectCharacters(regEx: RegExp) {
-    var chars,
-      match = regEx.exec(attributeValue.substring(pos));
+    let chars: string;
+    let match = regEx.exec(attributeValue.substring(pos));
     if (match) {
       chars = match[0];
       pos += chars.length;
@@ -248,6 +248,8 @@ export function transformAttribute(
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style' && value) {
     return absoluteToStylesheet(value, getHref());
+  } else if (tagName === 'object' && name === 'data' && value) {
+    return absoluteToDoc(doc, value);
   } else {
     return value;
   }
