@@ -40,8 +40,8 @@ function getValidTagName(element: HTMLElement): string {
 }
 
 function getCssRulesString(s: CSSStyleSheet): string | null {
+  const rules = s.cssRules;
   try {
-    const rules = s.rules || s.cssRules;
     return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
   } catch (error) {
     return null;
@@ -64,8 +64,16 @@ function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
 }
 
+function stringifyStyleSheet(sheet: CSSStyleSheet): string {
+  return sheet.cssRules
+    ? Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText || '')
+        .join('')
+    : '';
+}
+
 function extractOrigin(url: string): string {
-  let origin;
+  let origin = '';
   if (url.indexOf('//') > -1) {
     origin = url.split('/').slice(0, 3).join('/');
   } else {
@@ -363,14 +371,6 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
-        .join('')
-    : '';
-}
-
 function serializeNode(
   n: Node,
   options: {
@@ -448,7 +448,10 @@ function serializeNode(
         const stylesheet = Array.from(doc.styleSheets).find((s) => {
           return s.href === (n as HTMLLinkElement).href;
         });
-        const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        let cssText: string | null = null;
+        if (stylesheet) {
+          cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        }
         if (cssText) {
           delete attributes.rel;
           delete attributes.href;
@@ -523,8 +526,8 @@ function serializeNode(
           canvasService.height = image.naturalHeight;
           canvasCtx.drawImage(image, 0, 0);
           attributes.rr_dataURL = canvasService.toDataURL();
-        } catch {
-          // ignore error
+        } catch (err) {
+          console.warn(`Cannot inline image: ${image}! Error: ${err}`);
         }
       }
       // media elements
@@ -584,8 +587,8 @@ function serializeNode(
               (n.parentNode as HTMLStyleElement).sheet!,
             );
           }
-        } catch {
-          // ignore error
+        } catch (err) {
+          console.warn(`Cannot get CSS styles for: ${n}! Error: ${err}`);
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
