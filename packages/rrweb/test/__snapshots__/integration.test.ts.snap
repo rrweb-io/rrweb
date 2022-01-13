@@ -7123,6 +7123,292 @@ exports[`record integration tests should record DOM node movement 2 1`] = `
 ]"
 `;
 
+exports[`record integration tests should record absolute image url 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"ie=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"absolute image url\\",
+                        \\"id\\": 13
+                      }
+                    ],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"src\\": \\"http://localhost:3030/rrweb-snapshot/dist/rrweb-snapshot.js\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\",
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 18
+                      }
+                    ],
+                    \\"id\\": 17
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n\\",
+                \\"id\\": 19
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\",
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"div1\\",
+                      \\"style\\": \\"height: 200px; background-image: url(\\\\\\"http://localhost:3030/html/static.png\\\\\\")\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\",
+                    \\"id\\": 23
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"div2\\",
+                      \\"style\\": \\"height: 200px;\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 24
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\",
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"button\\",
+                    \\"attributes\\": {
+                      \\"onclick\\": \\"addDynamicBackgroundImage()\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"add dynamic background image\\",
+                        \\"id\\": 27
+                      }
+                    ],
+                    \\"id\\": 26
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\",
+                    \\"id\\": 28
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 30
+                      }
+                    ],
+                    \\"id\\": 29
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n\\\\n\\",
+                    \\"id\\": 31
+                  }
+                ],
+                \\"id\\": 20
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 26
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 26
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 26
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 26
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 24,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"background-image\\": \\"url(\\\\\\"http://localhost:3030/html/dynamic.png\\\\\\")\\"
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  }
+]"
+`;
+
 exports[`record integration tests should record canvas mutations 1`] = `
 "[
   {

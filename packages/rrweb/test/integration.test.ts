@@ -383,6 +383,25 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should record absolute image url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`http://localhost:3030/html/absolute-image-url.html`);
+    await page.addScriptTag({
+      content: `
+        ${code}
+        window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();
+        window.snapshots = [];
+        rrweb.record({
+          emit: event => {          
+            window.snapshots.push(event);
+          },
+        });`
+    })
+    await page.click('button');
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('should record canvas mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
