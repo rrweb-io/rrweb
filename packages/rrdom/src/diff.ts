@@ -1,4 +1,4 @@
-import { INode, NodeType } from 'rrweb-snapshot';
+import { elementNode, INode, NodeType } from 'rrweb-snapshot';
 import type { Mirror } from 'rrweb/typings/types';
 import {
   RRCDATASection,
@@ -9,24 +9,22 @@ import {
 } from './document-browser';
 
 export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
-  if (oldTree.__sn?.id === newTree.__sn?.id) {
-    switch (newTree.nodeType) {
-      case NodeType.Element:
-        diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
-        break;
-      // TODO: Diff other kinds of nodes.
-      default:
-    }
-    const oldChildren = oldTree.childNodes;
-    const newChildren = newTree.childNodes;
-    if (oldChildren.length > 0 || newChildren.length > 0) {
-      diffChildren(
-        (Array.from(oldChildren) as unknown) as INode[],
-        newChildren,
-        oldTree,
-        mirror,
-      );
-    }
+  switch (newTree.nodeType) {
+    case NodeType.Element:
+      diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
+      break;
+    // TODO: Diff other kinds of nodes.
+    default:
+  }
+  const oldChildren = oldTree.childNodes;
+  const newChildren = newTree.childNodes;
+  if (oldChildren.length > 0 || newChildren.length > 0) {
+    diffChildren(
+      (Array.from(oldChildren) as unknown) as INode[],
+      newChildren,
+      oldTree,
+      mirror,
+    );
   }
 }
 
@@ -46,7 +44,15 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
     if (oldAttributes.hasOwnProperty(attribute)) continue;
     if (typeof newValue === 'boolean' || typeof newValue === 'number') {
       // TODO Some special cases for some kinds of elements. e.g. checked, rr_scrollLeft
-    } else oldTree.setAttribute(attribute, newValue);
+    } else {
+      if ((newTree.__sn as elementNode).isSVG && attribute === 'xlink:href')
+        oldTree.setAttributeNS(
+          'http://www.w3.org/1999/xlink',
+          attribute,
+          newValue,
+        );
+      else oldTree.setAttribute(attribute, newValue);
+    }
   }
 }
 
@@ -71,20 +77,20 @@ function diffChildren(
       oldStartNode = oldChildren[++oldStartIndex];
     } else if (oldEndNode === undefined) {
       oldEndNode = oldChildren[--oldEndIndex];
-    } else if (oldStartNode.__sn.id === newStartNode.__sn.id) {
+    } else if (oldStartNode.__sn?.id === newStartNode.__sn.id) {
       diff(oldStartNode, newStartNode, mirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
-    } else if (oldEndNode.__sn.id === newEndNode.__sn.id) {
+    } else if (oldEndNode.__sn?.id === newEndNode.__sn.id) {
       diff(oldEndNode, newEndNode, mirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
-    } else if (oldStartNode.__sn.id === newEndNode.__sn.id) {
+    } else if (oldStartNode.__sn?.id === newEndNode.__sn.id) {
       parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
       diff(oldStartNode, newEndNode, mirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
-    } else if (oldEndNode.__sn.id === newStartNode.__sn.id) {
+    } else if (oldEndNode.__sn?.id === newStartNode.__sn.id) {
       parentNode.insertBefore(oldEndNode, oldStartNode);
       diff(oldEndNode, newStartNode, mirror);
       oldEndNode = oldChildren[--oldEndIndex];
@@ -92,8 +98,10 @@ function diffChildren(
     } else {
       if (!oldIdToIndex) {
         oldIdToIndex = {};
-        for (let i = oldStartIndex; i <= oldEndIndex; i++)
-          oldIdToIndex[oldChildren[i]!.__sn.id] = i;
+        for (let i = oldStartIndex; i <= oldEndIndex; i++) {
+          const oldChild = oldChildren[i];
+          if (oldChild?.__sn) oldIdToIndex[oldChild.__sn.id] = i;
+        }
       }
       indexInOld = oldIdToIndex[newStartNode.__sn.id];
       if (indexInOld) {
@@ -133,7 +141,12 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
   let node = mirror.getNode(rrNode.__sn.id);
   if (node !== null) return node;
   if (rrNode instanceof RRElement) {
-    node = (document.createElement(rrNode.tagName) as unknown) as INode;
+    if ((rrNode.__sn as elementNode).isSVG)
+      node = (document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        rrNode.tagName.toLowerCase(),
+      ) as unknown) as INode;
+    else node = (document.createElement(rrNode.tagName) as unknown) as INode;
   } else if (rrNode instanceof RRText) {
     node = (document.createTextNode(rrNode.textContent) as unknown) as INode;
   } else if (rrNode instanceof RRComment) {
@@ -142,5 +155,6 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
     node = (document.createCDATASection(rrNode.data) as unknown) as INode;
   } else throw new Error('Unknown rrNode type ' + rrNode.toString());
   node.__sn = { ...rrNode.__sn };
+  diff(node, rrNode, mirror);
   return node;
 }
