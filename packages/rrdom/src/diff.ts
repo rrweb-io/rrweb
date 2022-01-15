@@ -132,7 +132,10 @@ function diffChildren(
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
-      node && parentNode.removeChild(node);
+      if (node) {
+        parentNode.removeChild(node);
+        mirror.removeNodeFromMap(node);
+      }
     }
   }
 }
@@ -155,6 +158,7 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
     node = (document.createCDATASection(rrNode.data) as unknown) as INode;
   } else throw new Error('Unknown rrNode type ' + rrNode.toString());
   node.__sn = { ...rrNode.__sn };
+  mirror.map[rrNode.__sn.id] = node;
   diff(node, rrNode, mirror);
   return node;
 }

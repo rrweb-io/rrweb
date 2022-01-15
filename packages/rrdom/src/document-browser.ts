@@ -23,12 +23,44 @@ export abstract class RRNode {
     return this.children;
   }
 
+  get firstChild(): RRNode | null {
+    return this.childNodes[0] ?? null;
+  }
+
+  get nextSibling(): RRNode | null {
+    let parentNode = this.parentNode;
+    if (!parentNode) return null;
+    const siblings = parentNode.children;
+    let index = siblings.indexOf(this);
+    return siblings[index + 1];
+  }
+
+  set textContent(textContent: string) {
+    if (this instanceof RRText) this.textContent = textContent;
+    else if (this instanceof RRElement) {
+      if (this.childNodes[0] instanceof RRText)
+        this.childNodes[0].textContent = textContent;
+    }
+  }
+
   contains(node: RRNode) {
     if (node === this) return true;
     for (const child of this.children) {
       if (child.contains(node)) return true;
     }
     return false;
+  }
+
+  appendChild(newChild: RRNode): RRNode {
+    throw new Error(
+      `RRDomException: Failed to execute 'appendChild' on 'RRNode': This RRNode type does not support this method.`,
+    );
+  }
+
+  insertBefore(newChild: RRNode, refChild: RRNode | null): RRNode {
+    throw new Error(
+      `RRDomException: Failed to execute 'insertBefore' on 'RRNode': This RRNode type does not support this method.`,
+    );
   }
 
   removeChild(node: RRNode) {
@@ -56,7 +88,30 @@ export class RRWindow {
 }
 
 export class RRDocument extends RRNode {
-  private mirror: Map<number, RRNode> = new Map();
+  public mirror = {
+    map: {},
+    getId(n: RRNode) {
+      return n.__sn.id >= 0 ? n.__sn.id : -1;
+    },
+    getNode(id: number): RRNode | null {
+      return this.map[id] || null;
+    },
+    removeNodeFromMap(n: RRNode) {
+      const id = n.__sn.id;
+      delete this.map[id];
+      if (n.childNodes) {
+        n.childNodes.forEach((child) =>
+          this.removeNodeFromMap(child as RRNode),
+        );
+      }
+    },
+    has(id: number) {
+      return this.map.hasOwnProperty(id);
+    },
+    reset() {
+      this.map = {};
+    },
+  };
 
   get documentElement(): RRElement {
     return this.children.find(
@@ -330,9 +385,9 @@ export class RRDocument extends RRNode {
             return;
         }
         rrNode.__sn = serializedNodeWithId;
-        this.mirror.set(serializedNodeWithId.id, rrNode);
+        this.mirror.map[serializedNodeWithId.id] = rrNode;
       } else {
-        rrNode = this.mirror.get(serializedNodeWithId.id);
+        rrNode = this.mirror.getNode(serializedNodeWithId.id);
         rrNode.parentElement = null;
         rrNode.parentNode = null;
         rrNode.children = [];
@@ -340,7 +395,7 @@ export class RRDocument extends RRNode {
       const parentNode = node.parentElement || node.parentNode;
       if (parentNode) {
         const parentSN = ((parentNode as unknown) as INode).__sn;
-        const parentRRNode = this.mirror.get(parentSN.id);
+        const parentRRNode = this.mirror.getNode(parentSN.id);
         parentRRNode.appendChild(rrNode);
         rrNode.parentNode = parentRRNode;
         rrNode.parentElement =
@@ -363,7 +418,7 @@ export class RRDocument extends RRNode {
 
   destroyTree() {
     this.children = [];
-    this.mirror.clear();
+    this.mirror.reset();
   }
 
   toString() {
@@ -417,12 +472,6 @@ export class RRElement extends RRNode {
     return this.attributes.class || '';
   }
 
-  get textContent() {
-    return '';
-  }
-
-  set textContent(newText: string) {}
-
   get style() {
     const style = (this.attributes.style
       ? parseCSSText(this.attributes.style as string)
@@ -432,6 +481,7 @@ export class RRElement extends RRNode {
         value: string | null,
         priority?: string | null,
       ) => void;
+      removeProperty: (name: string) => string;
     };
     style.setProperty = (name: string, value: string | null) => {
       const normalizedName = camelize(name);
@@ -439,8 +489,12 @@ export class RRElement extends RRNode {
       else style[normalizedName] = value;
       this.attributes.style = toCSSText(style);
     };
-    // This is used to bypass the smoothscroll polyfill in rrweb player.
-    style.scrollBehavior = '';
+    style.removeProperty = (name: string) => {
+      const normalizedName = camelize(name);
+      const value = style[normalizedName] ?? '';
+      delete style[normalizedName];
+      return value;
+    };
     return style;
   }
 
@@ -561,11 +615,17 @@ export class RRIframeElement extends RRElement {
 }
 
 export class RRText extends RRNode {
-  textContent: string;
+  private _textContent: string;
+  public get textContent(): string {
+    return this._textContent;
+  }
+  public set textContent(value: string) {
+    this._textContent = value;
+  }
 
   constructor(data: string) {
     super();
-    this.textContent = data;
+    this._textContent = data;
   }
 
   toString() {
@@ -646,3 +706,4 @@ class ClassList extends Array {
     this.onChange && this.onChange(super.join(' '));
   };
 }
+export { diff } from './diff';

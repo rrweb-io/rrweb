@@ -6,6 +6,7 @@ import {
   BuildCache,
   createCache,
 } from 'rrweb-snapshot';
+import { RRDocument, RRNode, RRElement, diff } from 'rrdom/es/document-browser';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -130,6 +131,8 @@ export class Replayer {
 
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
+  private usingRRDom = false;
+  private rrdom: RRDocument = new RRDocument();
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -169,24 +172,33 @@ export class Replayer {
     this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
-      const { scrollMap, inputMap } = this.treeIndex.flush();
+      // const { scrollMap, inputMap } = this.treeIndex.flush();
 
-      this.fragmentParentMap.forEach((parent, frag) =>
-        this.restoreRealParent(frag, parent),
-      );
-      for (const node of this.virtualStyleRulesMap.keys()) {
-        // restore css rules of style elements after they are mounted
-        this.restoreNodeSheet(node);
-      }
-      this.fragmentParentMap.clear();
-      this.elementStateMap.clear();
-      this.virtualStyleRulesMap.clear();
+      // this.fragmentParentMap.forEach((parent, frag) =>
+      //   this.restoreRealParent(frag, parent),
+      // );
+      // for (const node of this.virtualStyleRulesMap.keys()) {
+      //   // restore css rules of style elements after they are mounted
+      //   this.restoreNodeSheet(node);
+      // }
+      // this.fragmentParentMap.clear();
+      // this.elementStateMap.clear();
+      // this.virtualStyleRulesMap.clear();
 
-      for (const d of scrollMap.values()) {
-        this.applyScroll(d);
-      }
-      for (const d of inputMap.values()) {
-        this.applyInput(d);
+      // for (const d of scrollMap.values()) {
+      //   this.applyScroll(d);
+      // }
+      // for (const d of inputMap.values()) {
+      //   this.applyInput(d);
+      // }
+      if (this.usingRRDom) {
+        diff(
+          (this.iframe.contentDocument! as unknown) as INode,
+          this.rrdom,
+          this.mirror,
+        );
+        this.rrdom.destroyTree();
+        this.usingRRDom = false;
       }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
@@ -1261,8 +1273,13 @@ export class Replayer {
   }
 
   private applyMutation(d: mutationData, useVirtualParent: boolean) {
+    if (!this.usingRRDom && useVirtualParent) {
+      this.usingRRDom = true;
+      this.rrdom.buildFromDom(this.iframe.contentDocument!);
+    }
+    const mirror = useVirtualParent ? this.rrdom.mirror : this.mirror;
     d.removes.forEach((mutation) => {
-      let target = this.mirror.getNode(mutation.id);
+      let target = mirror.getNode(mutation.id);
       if (!target) {
         if (d.removes.find((r) => r.id === mutation.parentId)) {
           // no need to warn, parent was already removed
@@ -1270,52 +1287,36 @@ export class Replayer {
         }
         return this.warnNodeNotFound(d, mutation.id);
       }
-      if (this.virtualStyleRulesMap.has(target)) {
-        this.virtualStyleRulesMap.delete(target);
-      }
-      let parent: INode | null | ShadowRoot = this.mirror.getNode(
+      // TODO modify virtual style rules
+      // if (this.virtualStyleRulesMap.has(target)) {
+      //   this.virtualStyleRulesMap.delete(target);
+      // }
+      let parent: INode | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,
       );
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
       }
-      if (mutation.isShadow && hasShadowRoot(parent)) {
-        parent = parent.shadowRoot;
+      if (mutation.isShadow && hasShadowRoot(parent as Node)) {
+        parent = (parent as Element | RRElement).shadowRoot;
       }
       // target may be removed with its parents before
-      this.mirror.removeNodeFromMap(target);
-      if (parent) {
-        let realTarget = null;
-        const realParent =
-          '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
-        if (realParent && realParent.contains(target)) {
-          parent = realParent;
-        } else if (this.fragmentParentMap.has(target)) {
-          /**
-           * the target itself is a fragment document and it's not in the dom
-           * so we should remove the real target from its parent
-           */
-          realTarget = this.fragmentParentMap.get(target)!;
-          this.fragmentParentMap.delete(target);
-          target = realTarget;
-        }
+      mirror.removeNodeFromMap(target as INode & RRNode);
+      if (parent)
         try {
-          parent.removeChild(target);
+          parent.removeChild(target as INode & RRNode);
         } catch (error) {
           if (error instanceof DOMException) {
             this.warn(
               'parent could not remove child in mutation',
               parent,
-              realParent,
               target,
-              realTarget,
               d,
             );
           } else {
             throw error;
           }
         }
-      }
     });
 
     // tslint:disable-next-line: variable-name
@@ -1328,7 +1329,7 @@ export class Replayer {
     const nextNotInDOM = (mutation: addedNodeMutation) => {
       let next: Node | null = null;
       if (mutation.nextId) {
-        next = this.mirror.getNode(mutation.nextId) as Node;
+        next = mirror.getNode(mutation.nextId) as Node;
       }
       // next not present at this moment
       if (
@@ -1346,7 +1347,7 @@ export class Replayer {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent: INode | null | ShadowRoot = this.mirror.getNode(
+      let parent: INode | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,
       );
       if (!parent) {
@@ -1357,63 +1358,30 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      let parentInDocument = null;
-      if (this.iframe.contentDocument.contains) {
-        parentInDocument = this.iframe.contentDocument.contains(parent);
-      } else if (this.iframe.contentDocument.body.contains) {
-        // fix for IE
-        // refer 'Internet Explorer notes' at https://developer.mozilla.org/zh-CN/docs/Web/API/Document
-        parentInDocument = this.iframe.contentDocument.body.contains(parent);
+      if (mutation.node.isShadow && hasShadowRoot(parent as Node)) {
+        parent = (parent as Element | RRElement).shadowRoot as ShadowRoot;
       }
 
-      const hasIframeChild =
-        ((parent as unknown) as HTMLElement).getElementsByTagName?.('iframe')
-          .length > 0;
-      /**
-       * Why !isIframeINode(parent)? If parent element is an iframe, iframe document can't be appended to virtual parent.
-       * Why !hasIframeChild? If we move iframe elements from dom to fragment document, we will lose the contentDocument of iframe. So we need to disable the virtual dom optimization if a parent node contains iframe elements.
-       */
-      if (
-        useVirtualParent &&
-        parentInDocument &&
-        !isIframeINode(parent) &&
-        !hasIframeChild
-      ) {
-        const virtualParent = (document.createDocumentFragment() as unknown) as INode;
-        this.mirror.map[mutation.parentId] = virtualParent;
-        this.fragmentParentMap.set(virtualParent, parent);
-
-        // store the state, like scroll position, of child nodes before they are unmounted from dom
-        this.storeState(parent);
-
-        while (parent.firstChild) {
-          virtualParent.appendChild(parent.firstChild);
-        }
-        parent = virtualParent;
-      }
-
-      if (mutation.node.isShadow && hasShadowRoot(parent)) {
-        parent = parent.shadowRoot;
-      }
-
-      let previous: Node | null = null;
-      let next: Node | null = null;
+      let previous: Node | RRNode | null = null;
+      let next: Node | RRNode | null = null;
       if (mutation.previousId) {
-        previous = this.mirror.getNode(mutation.previousId) as Node;
+        previous = mirror.getNode(mutation.previousId) as Node | RRNode;
       }
       if (mutation.nextId) {
-        next = this.mirror.getNode(mutation.nextId) as Node;
+        next = mirror.getNode(mutation.nextId) as Node | RRNode;
       }
       if (nextNotInDOM(mutation)) {
         return queue.push(mutation);
       }
 
-      if (mutation.node.rootId && !this.mirror.getNode(mutation.node.rootId)) {
+      if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
         return;
       }
 
       const targetDoc = mutation.node.rootId
-        ? this.mirror.getNode(mutation.node.rootId)
+        ? mirror.getNode(mutation.node.rootId)
+        : useVirtualParent
+        ? this.rrdom
         : this.iframe.contentDocument;
       if (isIframeINode(parent)) {
         this.attachDocumentToIframe(mutation, parent);
@@ -1421,7 +1389,7 @@ export class Replayer {
       }
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document,
-        map: this.mirror.map,
+        map: mirror.map,
         skipChild: true,
         hackCss: true,
         cache: this.cache,
@@ -1444,32 +1412,38 @@ export class Replayer {
       ) {
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
-        for (const c of Array.from(parent.childNodes)) {
+        for (const c of Array.from(parent.childNodes as Iterable<RRNode>)) {
           if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c);
+            parent.removeChild(c as Node & RRNode);
           }
         }
       }
 
       if (previous && previous.nextSibling && previous.nextSibling.parentNode) {
-        parent.insertBefore(target, previous.nextSibling);
+        parent.insertBefore(
+          target as INode & RRNode,
+          previous.nextSibling as INode & RRNode,
+        );
       } else if (next && next.parentNode) {
         // making sure the parent contains the reference nodes
         // before we insert target before next.
-        parent.contains(next)
-          ? parent.insertBefore(target, next)
-          : parent.insertBefore(target, null);
+        parent.contains(next as Node & RRNode)
+          ? parent.insertBefore(
+              target as INode & RRNode,
+              next as INode & RRNode,
+            )
+          : parent.insertBefore(target as INode & RRNode, null);
       } else {
         /**
          * Sometimes the document changes and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded. After the change of document, we may get another mutation which adds a new html element, while the old html element still exists in the dom, and we need to remove the old html element first to avoid collision.
          */
         if (parent === targetDoc) {
           while (targetDoc.firstChild) {
-            targetDoc.removeChild(targetDoc.firstChild);
+            targetDoc.removeChild(targetDoc.firstChild as Node & RRNode);
           }
         }
 
-        parent.appendChild(target);
+        parent.appendChild(target as Node & RRNode);
       }
 
       if (isIframeINode(target)) {
@@ -1515,7 +1489,7 @@ export class Replayer {
         break;
       }
       for (const tree of resolveTrees) {
-        let parent = this.mirror.getNode(tree.value.parentId);
+        let parent = mirror.getNode(tree.value.parentId);
         if (!parent) {
           this.debug(
             'Drop resolve tree since there is no parent for the root node.',
@@ -1534,42 +1508,36 @@ export class Replayer {
     }
 
     d.texts.forEach((mutation) => {
-      let target = this.mirror.getNode(mutation.id);
+      let target = mirror.getNode(mutation.id);
       if (!target) {
         if (d.removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
         }
         return this.warnNodeNotFound(d, mutation.id);
-      }
-      /**
-       * apply text content to real parent directly
-       */
-      if (this.fragmentParentMap.has(target)) {
-        target = this.fragmentParentMap.get(target)!;
       }
       target.textContent = mutation.value;
     });
     d.attributes.forEach((mutation) => {
-      let target = this.mirror.getNode(mutation.id);
+      let target = mirror.getNode(mutation.id);
       if (!target) {
         if (d.removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
         }
         return this.warnNodeNotFound(d, mutation.id);
-      }
-      if (this.fragmentParentMap.has(target)) {
-        target = this.fragmentParentMap.get(target)!;
       }
       for (const attributeName in mutation.attributes) {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
           if (value === null) {
-            ((target as Node) as Element).removeAttribute(attributeName);
+            (target as Element | RRElement).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
             try {
-              ((target as Node) as Element).setAttribute(attributeName, value);
+              (target as Element | RRElement).setAttribute(
+                attributeName,
+                value,
+              );
             } catch (error) {
               if (this.config.showWarning) {
                 console.warn(
@@ -1580,7 +1548,7 @@ export class Replayer {
             }
           } else if (attributeName === 'style') {
             let styleValues = value as styleAttributeValue;
-            const targetEl = (target as Node) as HTMLElement;
+            const targetEl = target as HTMLElement | RRElement;
             for (var s in styleValues) {
               if (styleValues[s] === false) {
                 targetEl.style.removeProperty(s);
@@ -1644,8 +1612,8 @@ export class Replayer {
 
   private legacy_resolveMissingNode(
     map: missingNodeMap,
-    parent: Node,
-    target: Node,
+    parent: Node | RRNode,
+    target: Node | RRNode,
     targetMutation: addedNodeMutation,
   ) {
     const { previousId, nextId } = targetMutation;
@@ -1653,7 +1621,7 @@ export class Replayer {
     const nextInMap = nextId && map[nextId];
     if (previousInMap) {
       const { node, mutation } = previousInMap as missingNode;
-      parent.insertBefore(node, target);
+      parent.insertBefore(node as Node & RRNode, target as Node & RRNode);
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
@@ -1662,7 +1630,10 @@ export class Replayer {
     }
     if (nextInMap) {
       const { node, mutation } = nextInMap as missingNode;
-      parent.insertBefore(node, target.nextSibling);
+      parent.insertBefore(
+        node as Node & RRNode,
+        target.nextSibling as Node & RRNode,
+      );
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {

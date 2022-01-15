@@ -22,6 +22,7 @@ import {
   NodeType,
   isShadowRoot,
 } from 'rrweb-snapshot';
+import { RRNode } from 'rrdom/es/document-browser';
 
 export function on(
   type: string,
@@ -581,7 +582,7 @@ export type AppendedIframe = {
 };
 
 export function isIframeINode(
-  node: INode | ShadowRoot,
+  node: INode | ShadowRoot | RRNode,
 ): node is HTMLIFrameINode {
   if ('__sn' in node) {
     return (
