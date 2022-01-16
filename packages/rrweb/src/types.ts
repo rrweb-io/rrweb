@@ -193,6 +193,10 @@ export type SamplingStrategy = Partial<{
    */
   scroll: number;
   /**
+   * number is the throttle threshold of recording media interactions
+   */
+  media: number;
+  /**
    * 'all' will record all the input events
    * 'last' will only record the last input value while input a sequence of chars
    */
@@ -472,12 +476,15 @@ export const enum MediaInteractions {
   Play,
   Pause,
   Seeked,
+  VolumeChange,
 }
 
 export type mediaInteractionParam = {
   type: MediaInteractions;
   id: number;
   currentTime?: number;
+  volume?: number;
+  muted?: boolean;
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;

@@ -34,6 +34,8 @@ rrweb.record({
     mouseInteraction: false,
     // 设置滚动事件的触发频率
     scroll: 150 // 每 150ms 最多触发一次
+    // set the interval of media interaction event
+    media: 800
     // 设置输入事件的录制时机
     input: 'last' // 连续输入时，只录制最终值
   }
