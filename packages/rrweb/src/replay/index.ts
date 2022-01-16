@@ -1019,6 +1019,12 @@ export class Replayer {
           if (d.currentTime) {
             mediaEl.currentTime = d.currentTime;
           }
+          if (d.volume) {
+            mediaEl.volume = d.volume;
+          }
+          if (d.muted) {
+            mediaEl.muted = d.muted;
+          }
           if (d.type === MediaInteractions.Pause) {
             mediaEl.pause();
           }
