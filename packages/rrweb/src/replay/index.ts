@@ -172,7 +172,28 @@ export class Replayer {
     this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
-      // const { scrollMap, inputMap } = this.treeIndex.flush();
+      if (this.usingRRDom) {
+        diff(
+          (this.iframe.contentDocument! as unknown) as INode,
+          this.rrdom,
+          this.mirror,
+        );
+        this.rrdom.destroyTree();
+        this.usingRRDom = false;
+      }
+
+      if (this.mousePos) {
+        this.moveAndHover(
+          this.mousePos.x,
+          this.mousePos.y,
+          this.mousePos.id,
+          true,
+          this.mousePos.debugData,
+        );
+      }
+      this.mousePos = null;
+
+      const { scrollMap, inputMap } = this.treeIndex.flush();
 
       // this.fragmentParentMap.forEach((parent, frag) =>
       //   this.restoreRealParent(frag, parent),
@@ -185,20 +206,11 @@ export class Replayer {
       // this.elementStateMap.clear();
       // this.virtualStyleRulesMap.clear();
 
-      // for (const d of scrollMap.values()) {
-      //   this.applyScroll(d);
-      // }
-      // for (const d of inputMap.values()) {
-      //   this.applyInput(d);
-      // }
-      if (this.usingRRDom) {
-        diff(
-          (this.iframe.contentDocument! as unknown) as INode,
-          this.rrdom,
-          this.mirror,
-        );
-        this.rrdom.destroyTree();
-        this.usingRRDom = false;
+      for (const d of scrollMap.values()) {
+        this.applyScroll(d);
+      }
+      for (const d of inputMap.values()) {
+        this.applyInput(d);
       }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
@@ -502,16 +514,6 @@ export class Replayer {
       const castFn = this.getCastFn(event, true);
       castFn();
     }
-    if (this.mousePos) {
-      this.moveAndHover(
-        this.mousePos.x,
-        this.mousePos.y,
-        this.mousePos.id,
-        true,
-        this.mousePos.debugData,
-      );
-    }
-    this.mousePos = null;
     if (this.touchActive === true) {
       this.mouse.classList.add('touch-active');
     } else if (this.touchActive === false) {
@@ -906,7 +908,7 @@ export class Replayer {
         /**
          * Same as the situation of missing input target.
          */
-        if (d.id === -1) {
+        if (d.id === -1 || isSync) {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
@@ -1024,6 +1026,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MediaInteraction: {
+        // TODO what if the media element doesn't exist
         const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
@@ -1059,6 +1062,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.StyleSheetRule: {
+        // TODO adopt rrdom here
         const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
@@ -1160,6 +1164,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.StyleDeclaration: {
+        // TODO adopt rrdom here
         // same with StyleSheetRule
         const target = this.mirror.getNode(d.id);
         if (!target) {
@@ -1216,6 +1221,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.CanvasMutation: {
+        // TODO adopt rrdom here
         if (!this.config.UNSAFE_replayCanvas) {
           return;
         }

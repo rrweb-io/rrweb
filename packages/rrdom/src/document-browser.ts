@@ -32,7 +32,7 @@ export abstract class RRNode {
     if (!parentNode) return null;
     const siblings = parentNode.children;
     let index = siblings.indexOf(this);
-    return siblings[index + 1];
+    return siblings[index + 1] ?? null;
   }
 
   set textContent(textContent: string) {
@@ -540,7 +540,7 @@ export class RRElement extends RRNode {
         "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
       );
     this.children.splice(childIndex, 0, newChild);
-    newChild.parentElement = null;
+    newChild.parentElement = this;
     newChild.parentNode = this;
     newChild.ownerDocument = this.ownerDocument;
     return newChild;
@@ -706,4 +706,22 @@ class ClassList extends Array {
     this.onChange && this.onChange(super.join(' '));
   };
 }
+
 export { diff } from './diff';
+/**
+ * Print the RRDom as a string.
+ * @param rootNode the root node of the RRDom tree
+ * @returns printed string
+ */
+export function printRRDom(rootNode: RRNode) {
+  return walk(rootNode, '');
+}
+
+function walk(node: RRNode, blankSpace: string) {
+  let printText = `${blankSpace}${node.toString()}\n`;
+  for (const child of node.childNodes)
+    printText += walk(child, blankSpace + '  ');
+  if (node instanceof RRIframeElement)
+    printText += walk(node.contentDocument, blankSpace + '  ');
+  return printText;
+}

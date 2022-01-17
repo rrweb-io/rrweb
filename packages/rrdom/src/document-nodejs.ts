@@ -563,7 +563,7 @@ export class RRElement extends RRNode {
         "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
       );
     this.children.splice(childIndex, 0, newChild);
-    newChild.parentElement = null;
+    newChild.parentElement = this;
     newChild.parentNode = this;
     newChild.ownerDocument = this.ownerDocument;
     return newChild;

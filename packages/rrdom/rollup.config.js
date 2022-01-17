@@ -27,6 +27,11 @@ const baseConfigs = [
     name: 'RRDocument',
     path: 'document-nodejs',
   },
+  {
+    input: './src/document-browser.ts',
+    name: 'RRDocument',
+    path: 'document-browser',
+  },
 ];
 
 let configs = [];
