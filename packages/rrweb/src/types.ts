@@ -599,12 +599,6 @@ export enum ReplayerEvents {
   PlayBack = 'play-back',
 }
 
-// store the state that would be changed during the process(unmount from dom and mount again)
-export type ElementState = {
-  // [scrollLeft,scrollTop]
-  scroll?: [number, number];
-};
-
 export type KeepIframeSrcFn = (src: string) => boolean;
 
 declare global {

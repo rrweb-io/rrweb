@@ -17,8 +17,6 @@ export declare class Replayer {
     private legacy_missingNodeRetryMap;
     private treeIndex;
     private fragmentParentMap;
-    private elementStateMap;
-    private virtualStyleRulesMap;
     private cache;
     private imageMap;
     private mirror;
@@ -26,6 +24,8 @@ export declare class Replayer {
     private newDocumentQueue;
     private mousePos;
     private touchActive;
+    private usingRRDom;
+    private rrdom;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
     off(event: string, handler: Handler): this;
@@ -63,9 +63,6 @@ export declare class Replayer {
     private isUserInteraction;
     private backToNormal;
     private restoreRealParent;
-    private storeState;
-    private restoreState;
-    private restoreNodeSheet;
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;

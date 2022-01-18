@@ -1,17 +1,25 @@
 import { elementNode, INode, NodeType } from 'rrweb-snapshot';
-import type { Mirror } from 'rrweb/typings/types';
+import type { Mirror } from 'rrweb/src/types';
 import {
   RRCDATASection,
   RRComment,
   RRElement,
+  RRStyleElement,
   RRNode,
   RRText,
+  VirtualStyleRules,
+  StyleRuleType,
 } from './document-browser';
 
 export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
   switch (newTree.nodeType) {
     case NodeType.Element:
       diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
+      if (
+        oldTree instanceof HTMLStyleElement &&
+        newTree instanceof RRStyleElement
+      )
+        applyVirtualStyleRulesToNode(oldTree, newTree.rules);
       break;
     // TODO: Diff other kinds of nodes.
     default:
@@ -112,6 +120,7 @@ function diffChildren(
       } else {
         const newNode = createOrGetNode(newStartNode, mirror);
         parentNode.insertBefore(newNode, oldStartNode);
+        diff(newNode, newStartNode, mirror);
       }
       newStartNode = newChildren[++newStartIndex];
     }
@@ -124,11 +133,11 @@ function diffChildren(
         if (((child as unknown) as INode).__sn.id === referenceRRNode.__sn.id)
           referenceNode = child;
       });
-    for (; newStartIndex <= newEndIndex; ++newStartIndex)
-      parentNode.insertBefore(
-        createOrGetNode(newChildren[newStartIndex], mirror),
-        referenceNode,
-      );
+    for (; newStartIndex <= newEndIndex; ++newStartIndex) {
+      const newNode = createOrGetNode(newChildren[newStartIndex], mirror);
+      parentNode.insertBefore(newNode, referenceNode);
+      diff(newNode, newChildren[newStartIndex], mirror);
+    }
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
@@ -159,6 +168,80 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
   } else throw new Error('Unknown rrNode type ' + rrNode.toString());
   node.__sn = { ...rrNode.__sn };
   mirror.map[rrNode.__sn.id] = node;
-  diff(node, rrNode, mirror);
   return node;
+}
+
+export function getNestedRule(
+  rules: CSSRuleList,
+  position: number[],
+): CSSGroupingRule {
+  const rule = rules[position[0]] as CSSGroupingRule;
+  if (position.length === 1) {
+    return rule;
+  } else {
+    return getNestedRule(
+      ((rule as CSSGroupingRule).cssRules[position[1]] as CSSGroupingRule)
+        .cssRules,
+      position.slice(2),
+    );
+  }
+}
+
+export function getPositionsAndIndex(nestedIndex: number[]) {
+  const positions = [...nestedIndex];
+  const index = positions.pop();
+  return { positions, index };
+}
+
+export function applyVirtualStyleRulesToNode(
+  styleNode: HTMLStyleElement,
+  virtualStyleRules: VirtualStyleRules,
+) {
+  const sheet = styleNode.sheet!;
+
+  virtualStyleRules.forEach((rule) => {
+    if (rule.type === StyleRuleType.Insert) {
+      try {
+        if (Array.isArray(rule.index)) {
+          const { positions, index } = getPositionsAndIndex(rule.index);
+          const nestedRule = getNestedRule(sheet.cssRules, positions);
+          nestedRule.insertRule(rule.cssText, index);
+        } else {
+          sheet.insertRule(rule.cssText, rule.index);
+        }
+      } catch (e) {
+        /**
+         * sometimes we may capture rules with browser prefix
+         * insert rule with prefixs in other browsers may cause Error
+         */
+      }
+    } else if (rule.type === StyleRuleType.Remove) {
+      try {
+        if (Array.isArray(rule.index)) {
+          const { positions, index } = getPositionsAndIndex(rule.index);
+          const nestedRule = getNestedRule(sheet.cssRules, positions);
+          nestedRule.deleteRule(index || 0);
+        } else {
+          sheet.deleteRule(rule.index);
+        }
+      } catch (e) {
+        /**
+         * accessing styleSheet rules may cause SecurityError
+         * for specific access control settings
+         */
+      }
+    } else if (rule.type === StyleRuleType.SetProperty) {
+      const nativeRule = (getNestedRule(
+        sheet.cssRules,
+        rule.index,
+      ) as unknown) as CSSStyleRule;
+      nativeRule.style.setProperty(rule.property, rule.value, rule.priority);
+    } else if (rule.type === StyleRuleType.RemoveProperty) {
+      const nativeRule = (getNestedRule(
+        sheet.cssRules,
+        rule.index,
+      ) as unknown) as CSSStyleRule;
+      nativeRule.style.removeProperty(rule.property);
+    }
+  });
 }

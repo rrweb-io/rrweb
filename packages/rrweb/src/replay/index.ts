@@ -6,7 +6,15 @@ import {
   BuildCache,
   createCache,
 } from 'rrweb-snapshot';
-import { RRDocument, RRNode, RRElement, diff } from 'rrdom/es/document-browser';
+import {
+  RRNode,
+  RRDocument,
+  RRElement,
+  RRStyleElement,
+  StyleRuleType,
+  VirtualStyleRules,
+  diff,
+} from 'rrdom/es/document-browser';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -35,7 +43,6 @@ import {
   inputData,
   canvasMutationData,
   Mirror,
-  ElementState,
   styleAttributeValue,
   styleValueWithPriority,
   mouseMovePos,
@@ -51,18 +58,11 @@ import {
   isIframeINode,
   getBaseDimension,
   hasShadowRoot,
+  getNestedRule,
+  getPositionsAndIndex,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
-import {
-  applyVirtualStyleRulesToNode,
-  storeCSSRules,
-  StyleRuleType,
-  VirtualStyleRules,
-  VirtualStyleRulesMap,
-  getNestedRule,
-  getPositionsAndIndex,
-} from './virtual-styles';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -114,9 +114,6 @@ export class Replayer {
 
   private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
-  private elementStateMap!: Map<INode, ElementState>;
-  // Hold the list of CSSRules for in-memory state restoration
-  private virtualStyleRulesMap!: VirtualStyleRulesMap;
 
   // The replayer uses the cache to speed up replay and scrubbing.
   private cache: BuildCache = createCache();
@@ -168,8 +165,6 @@ export class Replayer {
 
     this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
-    this.elementStateMap = new Map<INode, ElementState>();
-    this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingRRDom) {
@@ -194,17 +189,6 @@ export class Replayer {
       this.mousePos = null;
 
       const { scrollMap, inputMap } = this.treeIndex.flush();
-
-      // this.fragmentParentMap.forEach((parent, frag) =>
-      //   this.restoreRealParent(frag, parent),
-      // );
-      // for (const node of this.virtualStyleRulesMap.keys()) {
-      //   // restore css rules of style elements after they are mounted
-      //   this.restoreNodeSheet(node);
-      // }
-      // this.fragmentParentMap.clear();
-      // this.elementStateMap.clear();
-      // this.virtualStyleRulesMap.clear();
 
       for (const d of scrollMap.values()) {
         this.applyScroll(d);
@@ -718,6 +702,7 @@ export class Replayer {
     mutation: addedNodeMutation,
     iframeEl: HTMLIFrameElement,
   ) {
+    // TODO adopt rrdom here
     const collected: AppendedIframe[] = [];
     // If iframeEl is detached from dom, iframeEl.contentDocument is null.
     if (!iframeEl.contentDocument) {
@@ -1062,160 +1047,118 @@ export class Replayer {
         break;
       }
       case IncrementalSource.StyleSheetRule: {
-        // TODO adopt rrdom here
-        const target = this.mirror.getNode(d.id);
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
-        }
-
-        const styleEl = (target as Node) as HTMLStyleElement;
-        const parent = (target.parentNode as unknown) as INode;
-        const usingVirtualParent = this.fragmentParentMap.has(parent);
-
-        /**
-         * Always use existing DOM node, when it's there.
-         * In in-memory replay, there is virtual node, but it's `sheet` is inaccessible.
-         * Hence, we buffer all style changes in virtualStyleRulesMap.
-         */
-        const styleSheet = usingVirtualParent ? null : styleEl.sheet;
-        let rules: VirtualStyleRules;
-
-        if (!styleSheet) {
-          /**
-           * styleEl.sheet is only accessible if the styleEl is part of the
-           * dom. This doesn't work on DocumentFragments so we have to add the
-           * style mutations to the virtualStyleRulesMap.
-           */
-
-          if (this.virtualStyleRulesMap.has(target)) {
-            rules = this.virtualStyleRulesMap.get(target) as VirtualStyleRules;
-          } else {
-            rules = [];
-            this.virtualStyleRulesMap.set(target, rules);
+        if (this.usingRRDom) {
+          const target = this.rrdom.mirror.getNode(d.id) as RRStyleElement;
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
           }
-        }
-
-        if (d.adds) {
-          d.adds.forEach(({ rule, index: nestedIndex }) => {
-            if (styleSheet) {
-              try {
-                if (Array.isArray(nestedIndex)) {
-                  const { positions, index } = getPositionsAndIndex(
-                    nestedIndex,
-                  );
-                  const nestedRule = getNestedRule(
-                    styleSheet.cssRules,
-                    positions,
-                  );
-                  nestedRule.insertRule(rule, index);
-                } else {
-                  const index =
-                    nestedIndex === undefined
-                      ? undefined
-                      : Math.min(nestedIndex, styleSheet.cssRules.length);
-                  styleSheet.insertRule(rule, index);
-                }
-              } catch (e) {
-                /**
-                 * sometimes we may capture rules with browser prefix
-                 * insert rule with prefixs in other browsers may cause Error
-                 */
-                /**
-                 * accessing styleSheet rules may cause SecurityError
-                 * for specific access control settings
-                 */
+          const rules: VirtualStyleRules = target.rules;
+          d.adds?.forEach(({ rule, index: nestedIndex }) =>
+            rules?.push({
+              cssText: rule,
+              index: nestedIndex,
+              type: StyleRuleType.Insert,
+            }),
+          );
+          d.removes?.forEach(({ index: nestedIndex }) =>
+            rules?.push({ index: nestedIndex, type: StyleRuleType.Remove }),
+          );
+        } else {
+          const target = this.mirror.getNode(d.id);
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
+          }
+          const styleSheet = ((target as Node) as HTMLStyleElement).sheet!;
+          d.adds?.forEach(({ rule, index: nestedIndex }) => {
+            try {
+              if (Array.isArray(nestedIndex)) {
+                const { positions, index } = getPositionsAndIndex(nestedIndex);
+                const nestedRule = getNestedRule(
+                  styleSheet.cssRules,
+                  positions,
+                );
+                nestedRule.insertRule(rule, index);
+              } else {
+                const index =
+                  nestedIndex === undefined
+                    ? undefined
+                    : Math.min(nestedIndex, styleSheet.cssRules.length);
+                styleSheet.insertRule(rule, index);
               }
-            } else {
-              rules?.push({
-                cssText: rule,
-                index: nestedIndex,
-                type: StyleRuleType.Insert,
-              });
+            } catch (e) {
+              /**
+               * sometimes we may capture rules with browser prefix
+               * insert rule with prefixs in other browsers may cause Error
+               */
+              /**
+               * accessing styleSheet rules may cause SecurityError
+               * for specific access control settings
+               */
             }
           });
-        }
 
-        if (d.removes) {
-          d.removes.forEach(({ index: nestedIndex }) => {
-            if (usingVirtualParent) {
-              rules?.push({ index: nestedIndex, type: StyleRuleType.Remove });
-            } else {
-              try {
-                if (Array.isArray(nestedIndex)) {
-                  const { positions, index } = getPositionsAndIndex(
-                    nestedIndex,
-                  );
-                  const nestedRule = getNestedRule(
-                    styleSheet!.cssRules,
-                    positions,
-                  );
-                  nestedRule.deleteRule(index || 0);
-                } else {
-                  styleSheet?.deleteRule(nestedIndex);
-                }
-              } catch (e) {
-                /**
-                 * same as insertRule
-                 */
+          d.removes?.forEach(({ index: nestedIndex }) => {
+            try {
+              if (Array.isArray(nestedIndex)) {
+                const { positions, index } = getPositionsAndIndex(nestedIndex);
+                const nestedRule = getNestedRule(
+                  styleSheet.cssRules,
+                  positions,
+                );
+                nestedRule.deleteRule(index || 0);
+              } else {
+                styleSheet?.deleteRule(nestedIndex);
               }
+            } catch (e) {
+              /**
+               * same as insertRule
+               */
             }
           });
         }
         break;
       }
       case IncrementalSource.StyleDeclaration: {
-        // TODO adopt rrdom here
-        // same with StyleSheetRule
-        const target = this.mirror.getNode(d.id);
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
-        }
-
-        const styleEl = (target as Node) as HTMLStyleElement;
-        const parent = (target.parentNode as unknown) as INode;
-        const usingVirtualParent = this.fragmentParentMap.has(parent);
-
-        const styleSheet = usingVirtualParent ? null : styleEl.sheet;
-        let rules: VirtualStyleRules = [];
-
-        if (!styleSheet) {
-          if (this.virtualStyleRulesMap.has(target)) {
-            rules = this.virtualStyleRulesMap.get(target) as VirtualStyleRules;
-          } else {
-            rules = [];
-            this.virtualStyleRulesMap.set(target, rules);
+        if (this.usingRRDom) {
+          const target = this.rrdom.mirror.getNode(d.id) as RRStyleElement;
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
           }
-        }
-
-        if (d.set) {
-          if (styleSheet) {
-            const rule = (getNestedRule(
-              styleSheet.rules,
-              d.index,
-            ) as unknown) as CSSStyleRule;
-            rule.style.setProperty(d.set.property, d.set.value, d.set.priority);
-          } else {
+          const rules: VirtualStyleRules = target.rules;
+          d.set &&
             rules.push({
               type: StyleRuleType.SetProperty,
               index: d.index,
               ...d.set,
             });
-          }
-        }
-
-        if (d.remove) {
-          if (styleSheet) {
-            const rule = (getNestedRule(
-              styleSheet.rules,
-              d.index,
-            ) as unknown) as CSSStyleRule;
-            rule.style.removeProperty(d.remove.property);
-          } else {
+          d.remove &&
             rules.push({
               type: StyleRuleType.RemoveProperty,
               index: d.index,
               ...d.remove,
             });
+        } else {
+          const target = (this.mirror.getNode(
+            d.id,
+          ) as Node) as HTMLStyleElement;
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
+          }
+          const styleSheet = target.sheet!;
+          if (d.set) {
+            const rule = (getNestedRule(
+              styleSheet.rules,
+              d.index,
+            ) as unknown) as CSSStyleRule;
+            rule.style.setProperty(d.set.property, d.set.value, d.set.priority);
+          }
+
+          if (d.remove) {
+            const rule = (getNestedRule(
+              styleSheet.rules,
+              d.index,
+            ) as unknown) as CSSStyleRule;
+            rule.style.removeProperty(d.remove.property);
           }
         }
         break;
@@ -1293,10 +1236,6 @@ export class Replayer {
         }
         return this.warnNodeNotFound(d, mutation.id);
       }
-      // TODO modify virtual style rules
-      // if (this.virtualStyleRulesMap.has(target)) {
-      //   this.virtualStyleRulesMap.delete(target);
-      // }
       let parent: INode | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,
       );
@@ -1764,73 +1703,6 @@ export class Replayer {
     }
     parent.appendChild(frag);
     // restore state of elements after they are mounted
-    this.restoreState(parent);
-  }
-
-  /**
-   * store state of elements before unmounted from dom recursively
-   * the state should be restored in the handler of event ReplayerEvents.Flush
-   * e.g. browser would lose scroll position after the process that we add children of parent node to Fragment Document as virtual dom
-   */
-  private storeState(parent: INode) {
-    if (parent) {
-      if (parent.nodeType === parent.ELEMENT_NODE) {
-        const parentElement = (parent as unknown) as HTMLElement;
-        if (parentElement.scrollLeft || parentElement.scrollTop) {
-          // store scroll position state
-          this.elementStateMap.set(parent, {
-            scroll: [parentElement.scrollLeft, parentElement.scrollTop],
-          });
-        }
-        if (parentElement.tagName === 'STYLE')
-          storeCSSRules(
-            parentElement as HTMLStyleElement,
-            this.virtualStyleRulesMap,
-          );
-        const children = parentElement.children;
-        for (const child of Array.from(children)) {
-          this.storeState((child as unknown) as INode);
-        }
-      }
-    }
-  }
-
-  /**
-   * restore the state of elements recursively, which was stored before elements were unmounted from dom in virtual parent mode
-   * this function corresponds to function storeState
-   */
-  private restoreState(parent: INode) {
-    if (parent.nodeType === parent.ELEMENT_NODE) {
-      const parentElement = (parent as unknown) as HTMLElement;
-      if (this.elementStateMap.has(parent)) {
-        const storedState = this.elementStateMap.get(parent)!;
-        // restore scroll position
-        if (storedState.scroll) {
-          parentElement.scrollLeft = storedState.scroll[0];
-          parentElement.scrollTop = storedState.scroll[1];
-        }
-        this.elementStateMap.delete(parent);
-      }
-      const children = parentElement.children;
-      for (const child of Array.from(children)) {
-        this.restoreState((child as unknown) as INode);
-      }
-    }
-  }
-
-  private restoreNodeSheet(node: INode) {
-    const storedRules = this.virtualStyleRulesMap.get(node);
-    if (node.nodeName !== 'STYLE') {
-      return;
-    }
-
-    if (!storedRules) {
-      return;
-    }
-
-    const styleNode = (node as unknown) as HTMLStyleElement;
-
-    applyVirtualStyleRulesToNode(storedRules, styleNode);
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

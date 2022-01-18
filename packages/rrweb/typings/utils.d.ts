@@ -1,5 +1,6 @@
 import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow } from './types';
 import { INode, serializedNodeWithId } from 'rrweb-snapshot';
+import { RRNode } from 'rrdom/es/document-browser';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
 export declare function createMirror(): Mirror;
 export declare let _mirror: Mirror;
@@ -61,9 +62,14 @@ export declare type AppendedIframe = {
     mutationInQueue: addedNodeMutation;
     builtNode: HTMLIFrameINode;
 };
-export declare function isIframeINode(node: INode | ShadowRoot): node is HTMLIFrameINode;
+export declare function isIframeINode(node: INode | ShadowRoot | RRNode): node is HTMLIFrameINode;
 export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
 export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
     shadowRoot: ShadowRoot;
+};
+export declare function getNestedRule(rules: CSSRuleList, position: number[]): CSSGroupingRule;
+export declare function getPositionsAndIndex(nestedIndex: number[]): {
+    positions: number[];
+    index: number | undefined;
 };
 export {};

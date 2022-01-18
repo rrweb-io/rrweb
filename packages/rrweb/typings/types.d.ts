@@ -451,9 +451,6 @@ export declare enum ReplayerEvents {
     StateChange = "state-change",
     PlayBack = "play-back"
 }
-export declare type ElementState = {
-    scroll?: [number, number];
-};
 export declare type KeepIframeSrcFn = (src: string) => boolean;
 declare global {
     interface Window {
