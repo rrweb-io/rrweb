@@ -204,7 +204,6 @@ export function createPlayerService(
               actions.push({
                 doAction: () => {
                   castFn();
-                  emitter.emit(ReplayerEvents.EventCast, event);
                 },
                 delay: event.delay!,
               });
@@ -269,7 +268,6 @@ export function createPlayerService(
               timer.addAction({
                 doAction: () => {
                   castFn();
-                  emitter.emit(ReplayerEvents.EventCast, event);
                 },
                 delay: event.delay!,
               });

@@ -627,6 +627,8 @@ export class Replayer {
           finish();
         }
       }
+
+      this.emitter.emit(ReplayerEvents.EventCast, event);
     };
     return wrappedCastFn;
   }
