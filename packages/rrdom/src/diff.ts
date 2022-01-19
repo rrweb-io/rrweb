@@ -15,11 +15,11 @@ export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
   switch (newTree.nodeType) {
     case NodeType.Element:
       diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
-      if (
-        oldTree instanceof HTMLStyleElement &&
-        newTree instanceof RRStyleElement
-      )
-        applyVirtualStyleRulesToNode(oldTree, newTree.rules);
+      if (newTree instanceof RRStyleElement && newTree.rules.length > 0)
+        applyVirtualStyleRulesToNode(
+          (oldTree as Node) as HTMLStyleElement,
+          newTree.rules,
+        );
       break;
     // TODO: Diff other kinds of nodes.
     default:

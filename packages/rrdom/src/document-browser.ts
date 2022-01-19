@@ -276,6 +276,7 @@ export class RRDocument extends RRNode {
     NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
 
     function getValidTagName(element: HTMLElement): string {
+      // https://github.com/rrweb-io/rrweb-snapshot/issues/56
       if (element instanceof HTMLFormElement) {
         return 'FORM';
       }
