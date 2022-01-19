@@ -5,6 +5,7 @@ import {
   NodeType,
   BuildCache,
   createCache,
+  idNodeMap,
 } from 'rrweb-snapshot';
 import {
   RRNode,
@@ -13,6 +14,7 @@ import {
   RRStyleElement,
   StyleRuleType,
   VirtualStyleRules,
+  buildFromDom,
   diff,
 } from 'rrdom/es/document-browser';
 import * as mittProxy from 'mitt';
@@ -1224,7 +1226,7 @@ export class Replayer {
   private applyMutation(d: mutationData, useVirtualParent: boolean) {
     if (!this.usingRRDom && useVirtualParent) {
       this.usingRRDom = true;
-      this.rrdom.buildFromDom(this.iframe.contentDocument!);
+      buildFromDom(this.iframe.contentDocument!, this.rrdom, this.rrdom.mirror);
     }
     const mirror = useVirtualParent ? this.rrdom.mirror : this.mirror;
     d.removes.forEach((mutation) => {
@@ -1334,7 +1336,7 @@ export class Replayer {
       }
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document,
-        map: mirror.map,
+        map: mirror.map as idNodeMap,
         skipChild: true,
         hackCss: true,
         cache: this.cache,

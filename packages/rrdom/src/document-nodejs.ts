@@ -75,7 +75,6 @@ export class RRWindow {
 }
 
 export class RRDocument extends RRNode {
-  private mirror: Map<number, RRNode> = new Map();
   private _nwsapi: NWSAPI;
   get nwsapi() {
     if (!this._nwsapi) {
@@ -271,162 +270,6 @@ export class RRDocument extends RRNode {
 
   close() {}
 
-  buildFromDom(dom: Document) {
-    let notSerializedId = -1;
-    const NodeTypeMap: Record<number, number> = {};
-    NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
-    NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
-    NodeTypeMap[document.ELEMENT_NODE] = NodeType.Element;
-    NodeTypeMap[document.TEXT_NODE] = NodeType.Text;
-    NodeTypeMap[document.CDATA_SECTION_NODE] = NodeType.CDATA;
-    NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
-
-    function getValidTagName(element: HTMLElement): string {
-      if (element instanceof HTMLFormElement) {
-        return 'FORM';
-      }
-      return element.tagName.toUpperCase().trim();
-    }
-
-    const walk = function (node: INode) {
-      let serializedNodeWithId = node.__sn;
-      let rrNode: RRNode;
-      if (!serializedNodeWithId) {
-        serializedNodeWithId = {
-          type: NodeTypeMap[node.nodeType],
-          textContent: '',
-          id: notSerializedId,
-        };
-        notSerializedId -= 1;
-        node.__sn = serializedNodeWithId;
-      }
-      if (!this.mirror.has(serializedNodeWithId.id)) {
-        switch (node.nodeType) {
-          case node.DOCUMENT_NODE:
-            if (
-              serializedNodeWithId.rootId &&
-              serializedNodeWithId.rootId !== serializedNodeWithId.id
-            )
-              rrNode = this.createDocument();
-            else rrNode = this;
-            break;
-          case node.DOCUMENT_TYPE_NODE:
-            const documentType = (node as unknown) as DocumentType;
-            rrNode = this.createDocumentType(
-              documentType.name,
-              documentType.publicId,
-              documentType.systemId,
-            );
-            break;
-          case node.ELEMENT_NODE:
-            const elementNode = (node as unknown) as HTMLElement;
-            const tagName = getValidTagName(elementNode);
-            rrNode = this.createElement(tagName);
-            const rrElement = rrNode as RRElement;
-            for (const { name, value } of Array.from(elementNode.attributes)) {
-              rrElement.attributes[name] = value;
-            }
-            // form fields
-            if (
-              tagName === 'INPUT' ||
-              tagName === 'TEXTAREA' ||
-              tagName === 'SELECT'
-            ) {
-              const value = (elementNode as
-                | HTMLInputElement
-                | HTMLTextAreaElement).value;
-              if (
-                ['RADIO', 'CHECKBOX', 'SUBMIT', 'BUTTON'].includes(
-                  rrElement.attributes.type as string,
-                ) &&
-                value
-              ) {
-                rrElement.attributes.value = value;
-              } else if ((elementNode as HTMLInputElement).checked) {
-                rrElement.attributes.checked = (elementNode as HTMLInputElement).checked;
-              }
-            }
-            if (tagName === 'OPTION') {
-              const selectValue = (elementNode as HTMLOptionElement)
-                .parentElement;
-              if (
-                rrElement.attributes.value ===
-                (selectValue as HTMLSelectElement).value
-              ) {
-                rrElement.attributes.selected = (elementNode as HTMLOptionElement).selected;
-              }
-            }
-            // canvas image data
-            if (tagName === 'CANVAS') {
-              rrElement.attributes.rr_dataURL = (elementNode as HTMLCanvasElement).toDataURL();
-            }
-            // media elements
-            if (tagName === 'AUDIO' || tagName === 'VIDEO') {
-              const rrMediaElement = rrElement as RRMediaElement;
-              rrMediaElement.paused = (elementNode as HTMLMediaElement).paused;
-              rrMediaElement.currentTime = (elementNode as HTMLMediaElement).currentTime;
-            }
-            // scroll
-            if (elementNode.scrollLeft) {
-              rrElement.scrollLeft = elementNode.scrollLeft;
-            }
-            if (elementNode.scrollTop) {
-              rrElement.scrollTop = elementNode.scrollTop;
-            }
-            break;
-          case node.TEXT_NODE:
-            rrNode = this.createTextNode(
-              ((node as unknown) as Text).textContent,
-            );
-            break;
-          case node.CDATA_SECTION_NODE:
-            rrNode = this.createCDATASection();
-            break;
-          case node.COMMENT_NODE:
-            rrNode = this.createComment(
-              ((node as unknown) as Comment).textContent || '',
-            );
-            break;
-          default:
-            return;
-        }
-        rrNode.__sn = serializedNodeWithId;
-        this.mirror.set(serializedNodeWithId.id, rrNode);
-      } else {
-        rrNode = this.mirror.get(serializedNodeWithId.id);
-        rrNode.parentElement = null;
-        rrNode.parentNode = null;
-        rrNode.children = [];
-      }
-      const parentNode = node.parentElement || node.parentNode;
-      if (parentNode) {
-        const parentSN = ((parentNode as unknown) as INode).__sn;
-        const parentRRNode = this.mirror.get(parentSN.id);
-        parentRRNode.appendChild(rrNode);
-        rrNode.parentNode = parentRRNode;
-        rrNode.parentElement =
-          parentRRNode instanceof RRElement ? parentRRNode : null;
-      }
-
-      if (
-        serializedNodeWithId.type === NodeType.Document ||
-        serializedNodeWithId.type === NodeType.Element
-      ) {
-        node.childNodes.forEach((node) => walk((node as unknown) as INode));
-      }
-    }.bind(this);
-
-    if (dom) {
-      this.destroyTree();
-      walk((dom as unknown) as INode);
-    }
-  }
-
-  destroyTree() {
-    this.children = [];
-    this.mirror.clear();
-  }
-
   toString() {
     return super.toString('RRDocument');
   }
@@ -580,7 +423,7 @@ export class RRElement extends RRNode {
   }
 
   getElementById(elementId: string): RRElement | null {
-    if (this instanceof RRElement && this.id === elementId) return this;
+    if (this.id === elementId) return this;
     for (const child of this.children) {
       if (child instanceof RRElement) {
         const result = child.getElementById(elementId);

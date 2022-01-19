@@ -11,6 +11,52 @@ import {
   StyleRuleType,
 } from './document-browser';
 
+const NAMESPACES: Record<string, string> = {
+  svg: 'http://www.w3.org/2000/svg',
+  'xlink:href': 'http://www.w3.org/1999/xlink',
+  xmlns: 'http://www.w3.org/2000/xmlns/',
+};
+
+// camel case svg element tag names
+const SVGTagMap: Record<string, string> = {
+  altglyph: 'altGlyph',
+  altglyphdef: 'altGlyphDef',
+  altglyphitem: 'altGlyphItem',
+  animatecolor: 'animateColor',
+  animatemotion: 'animateMotion',
+  animatetransform: 'animateTransform',
+  clippath: 'clipPath',
+  feblend: 'feBlend',
+  fecolormatrix: 'feColorMatrix',
+  fecomponenttransfer: 'feComponentTransfer',
+  fecomposite: 'feComposite',
+  feconvolvematrix: 'feConvolveMatrix',
+  fediffuselighting: 'feDiffuseLighting',
+  fedisplacementmap: 'feDisplacementMap',
+  fedistantlight: 'feDistantLight',
+  fedropshadow: 'feDropShadow',
+  feflood: 'feFlood',
+  fefunca: 'feFuncA',
+  fefuncb: 'feFuncB',
+  fefuncg: 'feFuncG',
+  fefuncr: 'feFuncR',
+  fegaussianblur: 'feGaussianBlur',
+  feimage: 'feImage',
+  femerge: 'feMerge',
+  femergenode: 'feMergeNode',
+  femorphology: 'feMorphology',
+  feoffset: 'feOffset',
+  fepointlight: 'fePointLight',
+  fespecularlighting: 'feSpecularLighting',
+  fespotlight: 'feSpotLight',
+  fetile: 'feTile',
+  feturbulence: 'feTurbulence',
+  foreignobject: 'foreignObject',
+  glyphref: 'glyphRef',
+  lineargradient: 'linearGradient',
+  radialgradient: 'radialGradient',
+};
+
 export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
   switch (newTree.nodeType) {
     case NodeType.Element:
@@ -53,12 +99,8 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
     if (typeof newValue === 'boolean' || typeof newValue === 'number') {
       // TODO Some special cases for some kinds of elements. e.g. checked, rr_scrollLeft
     } else {
-      if ((newTree.__sn as elementNode).isSVG && attribute === 'xlink:href')
-        oldTree.setAttributeNS(
-          'http://www.w3.org/1999/xlink',
-          attribute,
-          newValue,
-        );
+      if ((newTree.__sn as elementNode).isSVG && NAMESPACES[attribute])
+        oldTree.setAttributeNS(NAMESPACES[attribute], attribute, newValue);
       else oldTree.setAttribute(attribute, newValue);
     }
   }
@@ -153,12 +195,14 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
   let node = mirror.getNode(rrNode.__sn.id);
   if (node !== null) return node;
   if (rrNode instanceof RRElement) {
-    if ((rrNode.__sn as elementNode).isSVG)
+    let tagName = rrNode.tagName.toLowerCase();
+    tagName = SVGTagMap[tagName] || tagName;
+    if ((rrNode.__sn as elementNode).isSVG) {
       node = (document.createElementNS(
-        'http://www.w3.org/2000/svg',
+        NAMESPACES['svg'],
         rrNode.tagName.toLowerCase(),
       ) as unknown) as INode;
-    else node = (document.createElement(rrNode.tagName) as unknown) as INode;
+    } else node = (document.createElement(rrNode.tagName) as unknown) as INode;
   } else if (rrNode instanceof RRText) {
     node = (document.createTextNode(rrNode.textContent) as unknown) as INode;
   } else if (rrNode instanceof RRComment) {

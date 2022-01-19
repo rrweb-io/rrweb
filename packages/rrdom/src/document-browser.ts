@@ -88,15 +88,15 @@ export class RRWindow {
 }
 
 export class RRDocument extends RRNode {
-  public mirror = {
+  public mirror: Mirror = {
     map: {},
-    getId(n: RRNode) {
+    getId(n) {
       return n.__sn.id >= 0 ? n.__sn.id : -1;
     },
-    getNode(id: number): RRNode | null {
+    getNode(id) {
       return this.map[id] || null;
     },
-    removeNodeFromMap(n: RRNode) {
+    removeNodeFromMap(n) {
       const id = n.__sn.id;
       delete this.map[id];
       if (n.childNodes) {
@@ -105,7 +105,7 @@ export class RRDocument extends RRNode {
         );
       }
     },
-    has(id: number) {
+    has(id) {
       return this.map.hasOwnProperty(id);
     },
     reset() {
@@ -213,13 +213,13 @@ export class RRDocument extends RRNode {
         element = new RRIframeElement(upperTagName);
         break;
       case 'IMG':
-        element = new RRImageElement('IMG');
+        element = new RRImageElement(upperTagName);
         break;
       case 'CANVAS':
-        element = new RRCanvasElement('CANVAS');
+        element = new RRCanvasElement(upperTagName);
         break;
       case 'STYLE':
-        element = new RRStyleElement('STYLE');
+        element = new RRStyleElement(upperTagName);
         break;
       default:
         element = new RRElement(upperTagName);
@@ -265,158 +265,6 @@ export class RRDocument extends RRNode {
 
   close() {}
 
-  buildFromDom(dom: Document) {
-    let notSerializedId = -1;
-    const NodeTypeMap: Record<number, number> = {};
-    NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
-    NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
-    NodeTypeMap[document.ELEMENT_NODE] = NodeType.Element;
-    NodeTypeMap[document.TEXT_NODE] = NodeType.Text;
-    NodeTypeMap[document.CDATA_SECTION_NODE] = NodeType.CDATA;
-    NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
-
-    function getValidTagName(element: HTMLElement): string {
-      // https://github.com/rrweb-io/rrweb-snapshot/issues/56
-      if (element instanceof HTMLFormElement) {
-        return 'FORM';
-      }
-      return element.tagName.toUpperCase().trim();
-    }
-
-    const walk = function (node: INode) {
-      let serializedNodeWithId = node.__sn;
-      let rrNode: RRNode;
-      if (!serializedNodeWithId) {
-        serializedNodeWithId = {
-          type: NodeTypeMap[node.nodeType],
-          textContent: '',
-          id: notSerializedId,
-        };
-        notSerializedId -= 1;
-        node.__sn = serializedNodeWithId;
-      }
-      if (!this.mirror.has(serializedNodeWithId.id)) {
-        switch (node.nodeType) {
-          case node.DOCUMENT_NODE:
-            if (
-              serializedNodeWithId.rootId &&
-              serializedNodeWithId.rootId !== serializedNodeWithId.id
-            )
-              rrNode = this.createDocument();
-            else rrNode = this;
-            break;
-          case node.DOCUMENT_TYPE_NODE:
-            const documentType = (node as unknown) as DocumentType;
-            rrNode = this.createDocumentType(
-              documentType.name,
-              documentType.publicId,
-              documentType.systemId,
-            );
-            break;
-          case node.ELEMENT_NODE:
-            const elementNode = (node as unknown) as HTMLElement;
-            const tagName = getValidTagName(elementNode);
-            rrNode = this.createElement(tagName);
-            const rrElement = rrNode as RRElement;
-            for (const { name, value } of Array.from(elementNode.attributes)) {
-              rrElement.attributes[name] = value;
-            }
-            // form fields
-            if (
-              tagName === 'INPUT' ||
-              tagName === 'TEXTAREA' ||
-              tagName === 'SELECT'
-            ) {
-              const value = (elementNode as
-                | HTMLInputElement
-                | HTMLTextAreaElement).value;
-              if (
-                ['RADIO', 'CHECKBOX', 'SUBMIT', 'BUTTON'].includes(
-                  rrElement.attributes.type as string,
-                ) &&
-                value
-              ) {
-                rrElement.attributes.value = value;
-              } else if ((elementNode as HTMLInputElement).checked) {
-                rrElement.attributes.checked = (elementNode as HTMLInputElement).checked;
-              }
-            }
-            if (tagName === 'OPTION') {
-              const selectValue = (elementNode as HTMLOptionElement)
-                .parentElement;
-              if (
-                rrElement.attributes.value ===
-                (selectValue as HTMLSelectElement).value
-              ) {
-                rrElement.attributes.selected = (elementNode as HTMLOptionElement).selected;
-              }
-            }
-            // canvas image data
-            if (tagName === 'CANVAS') {
-              rrElement.attributes.rr_dataURL = (elementNode as HTMLCanvasElement).toDataURL();
-            }
-            // media elements
-            if (tagName === 'AUDIO' || tagName === 'VIDEO') {
-              const rrMediaElement = rrElement as RRMediaElement;
-              rrMediaElement.paused = (elementNode as HTMLMediaElement).paused;
-              rrMediaElement.currentTime = (elementNode as HTMLMediaElement).currentTime;
-            }
-            // scroll
-            if (elementNode.scrollLeft) {
-              rrElement.scrollLeft = elementNode.scrollLeft;
-            }
-            if (elementNode.scrollTop) {
-              rrElement.scrollTop = elementNode.scrollTop;
-            }
-            break;
-          case node.TEXT_NODE:
-            rrNode = this.createTextNode(
-              ((node as unknown) as Text).textContent,
-            );
-            break;
-          case node.CDATA_SECTION_NODE:
-            rrNode = this.createCDATASection();
-            break;
-          case node.COMMENT_NODE:
-            rrNode = this.createComment(
-              ((node as unknown) as Comment).textContent || '',
-            );
-            break;
-          default:
-            return;
-        }
-        rrNode.__sn = serializedNodeWithId;
-        this.mirror.map[serializedNodeWithId.id] = rrNode;
-      } else {
-        rrNode = this.mirror.getNode(serializedNodeWithId.id);
-        rrNode.parentElement = null;
-        rrNode.parentNode = null;
-        rrNode.children = [];
-      }
-      const parentNode = node.parentElement || node.parentNode;
-      if (parentNode) {
-        const parentSN = ((parentNode as unknown) as INode).__sn;
-        const parentRRNode = this.mirror.getNode(parentSN.id);
-        parentRRNode.appendChild(rrNode);
-        rrNode.parentNode = parentRRNode;
-        rrNode.parentElement =
-          parentRRNode instanceof RRElement ? parentRRNode : null;
-      }
-
-      if (
-        serializedNodeWithId.type === NodeType.Document ||
-        serializedNodeWithId.type === NodeType.Element
-      ) {
-        node.childNodes.forEach((node) => walk((node as unknown) as INode));
-      }
-    }.bind(this);
-
-    if (dom) {
-      this.destroyTree();
-      walk((dom as unknown) as INode);
-    }
-  }
-
   destroyTree() {
     this.children = [];
     this.mirror.reset();
@@ -425,6 +273,156 @@ export class RRDocument extends RRNode {
   toString() {
     return super.toString('RRDocument');
   }
+}
+
+/**
+ * Build a rrdom from a real document tree.
+ * @param dom the real document tree
+ * @param rrdomToBuild the rrdom object to be constructed
+ * @returns the build rrdom
+ */
+export function buildFromDom(
+  dom: Document,
+  rrdomToBuild?: RRDocument,
+  mirror?: Mirror,
+) {
+  let rrdom = rrdomToBuild ?? new RRDocument();
+
+  let notSerializedId = -1;
+  const NodeTypeMap: Record<number, number> = {};
+  NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
+  NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
+  NodeTypeMap[document.ELEMENT_NODE] = NodeType.Element;
+  NodeTypeMap[document.TEXT_NODE] = NodeType.Text;
+  NodeTypeMap[document.CDATA_SECTION_NODE] = NodeType.CDATA;
+  NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
+
+  function getValidTagName(element: HTMLElement): string {
+    // https://github.com/rrweb-io/rrweb-snapshot/issues/56
+    if (element instanceof HTMLFormElement) {
+      return 'FORM';
+    }
+    return element.tagName.toUpperCase();
+  }
+
+  const walk = function (node: INode, parentRRNode: RRNode | null) {
+    let serializedNodeWithId = node.__sn;
+    let rrNode: RRNode;
+    if (!serializedNodeWithId) {
+      serializedNodeWithId = {
+        type: NodeTypeMap[node.nodeType],
+        textContent: '',
+        id: notSerializedId,
+      };
+      notSerializedId -= 1;
+      node.__sn = serializedNodeWithId;
+    }
+
+    switch (node.nodeType) {
+      case node.DOCUMENT_NODE:
+        if (
+          serializedNodeWithId.rootId &&
+          serializedNodeWithId.rootId !== serializedNodeWithId.id
+        )
+          rrNode = rrdom.createDocument(null, '', null);
+        else rrNode = rrdom;
+        break;
+      case node.DOCUMENT_TYPE_NODE:
+        const documentType = (node as unknown) as DocumentType;
+        rrNode = rrdom.createDocumentType(
+          documentType.name,
+          documentType.publicId,
+          documentType.systemId,
+        );
+        break;
+      case node.ELEMENT_NODE:
+        const elementNode = (node as unknown) as HTMLElement;
+        const tagName = getValidTagName(elementNode);
+        rrNode = rrdom.createElement(tagName);
+        const rrElement = rrNode as RRElement;
+        for (const { name, value } of Array.from(elementNode.attributes)) {
+          rrElement.attributes[name] = value;
+        }
+        // form fields
+        if (
+          tagName === 'INPUT' ||
+          tagName === 'TEXTAREA' ||
+          tagName === 'SELECT'
+        ) {
+          const value = (elementNode as HTMLInputElement | HTMLTextAreaElement)
+            .value;
+          if (
+            ['RADIO', 'CHECKBOX', 'SUBMIT', 'BUTTON'].includes(
+              rrElement.attributes.type as string,
+            ) &&
+            value
+          ) {
+            rrElement.attributes.value = value;
+          } else if ((elementNode as HTMLInputElement).checked) {
+            rrElement.attributes.checked = (elementNode as HTMLInputElement).checked;
+          }
+        }
+        if (tagName === 'OPTION') {
+          const selectValue = (elementNode as HTMLOptionElement).parentElement;
+          if (
+            rrElement.attributes.value ===
+            (selectValue as HTMLSelectElement).value
+          ) {
+            rrElement.attributes.selected = (elementNode as HTMLOptionElement).selected;
+          }
+        }
+        // canvas image data
+        if (tagName === 'CANVAS') {
+          rrElement.attributes.rr_dataURL = (elementNode as HTMLCanvasElement).toDataURL();
+        }
+        // media elements
+        if (tagName === 'AUDIO' || tagName === 'VIDEO') {
+          const rrMediaElement = rrElement as RRMediaElement;
+          rrMediaElement.paused = (elementNode as HTMLMediaElement).paused;
+          rrMediaElement.currentTime = (elementNode as HTMLMediaElement).currentTime;
+        }
+        // scroll
+        if (elementNode.scrollLeft) {
+          rrElement.scrollLeft = elementNode.scrollLeft;
+        }
+        if (elementNode.scrollTop) {
+          rrElement.scrollTop = elementNode.scrollTop;
+        }
+        break;
+      case node.TEXT_NODE:
+        rrNode = rrdom.createTextNode(
+          ((node as unknown) as Text).textContent || '',
+        );
+        break;
+      case node.CDATA_SECTION_NODE:
+        rrNode = rrdom.createCDATASection('');
+        break;
+      case node.COMMENT_NODE:
+        rrNode = rrdom.createComment(
+          ((node as unknown) as Comment).textContent || '',
+        );
+        break;
+      default:
+        return;
+    }
+    rrNode.__sn = serializedNodeWithId;
+    mirror && (mirror.map[serializedNodeWithId.id] = rrNode);
+
+    parentRRNode?.appendChild(rrNode);
+    rrNode.parentNode = parentRRNode;
+    rrNode.parentElement = parentRRNode as RRElement;
+
+    if (
+      serializedNodeWithId.type === NodeType.Document ||
+      serializedNodeWithId.type === NodeType.Element
+    ) {
+      node.childNodes.forEach((node) =>
+        walk((node as unknown) as INode, rrNode),
+      );
+    }
+  };
+  walk((dom as unknown) as INode, null);
+  return rrdom;
 }
 
 export class RRDocumentType extends RRNode {
@@ -500,17 +498,11 @@ export class RRElement extends RRNode {
   }
 
   getAttribute(name: string) {
-    let upperName = name && name.toLowerCase();
-    if (upperName in this.attributes) return this.attributes[upperName];
-    return null;
+    return this.attributes[name] ?? null;
   }
 
   setAttribute(name: string, attribute: string) {
-    this.attributes[name.toLowerCase()] = attribute;
-  }
-
-  hasAttribute(name: string) {
-    return (name && name.toLowerCase()) in this.attributes;
+    this.attributes[name] = attribute;
   }
 
   setAttributeNS(
@@ -662,6 +654,17 @@ export class RRCDATASection extends RRNode {
     )}`;
   }
 }
+
+type Mirror = {
+  map: {
+    [key: number]: RRNode;
+  };
+  getId(n: RRNode): number;
+  getNode(id: number): RRNode | null;
+  removeNodeFromMap(n: RRNode): void;
+  has(id: number): boolean;
+  reset(): void;
+};
 
 interface RRElementTagNameMap {
   img: RRImageElement;

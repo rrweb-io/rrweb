@@ -4,6 +4,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { RRDocument, RRElement, RRStyleElement } from '../src/document-nodejs';
+import {
+  RRDocument as RRBrowserDocument,
+  buildFromDom,
+} from '../src/document-browser';
 import { printRRDom } from './util';
 
 describe('RRDocument for nodejs environment', () => {
@@ -14,7 +18,7 @@ describe('RRDocument for nodejs environment', () => {
 
       // create RRDocument from document
       const rrdoc = new RRDocument();
-      rrdoc.buildFromDom(document);
+      buildFromDom(document, (rrdoc as unknown) as RRBrowserDocument);
       expect(printRRDom(rrdoc)).toMatchSnapshot();
     });
   });
@@ -25,7 +29,7 @@ describe('RRDocument for nodejs environment', () => {
       // initialize rrdom
       document.write(getHtml('main.html'));
       rrdom = new RRDocument();
-      rrdom.buildFromDom(document);
+      buildFromDom(document, (rrdom as unknown) as RRBrowserDocument);
     });
 
     it('get className', () => {
@@ -199,6 +203,7 @@ describe('RRDocument for nodejs environment', () => {
 
     it('querySelectorAll querying id', () => {
       for (let query of ['#block1', '#block2', '#block3']) {
+        console.log(rrdom.children[1]);
         expect(rrdom.querySelectorAll(query).length).toEqual(1);
         const targetElement = rrdom.querySelectorAll(query)[0] as RRElement;
         expect(targetElement.id).toEqual(query.substring(1, query.length));
