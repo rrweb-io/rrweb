@@ -1,5 +1,5 @@
 import { elementNode, INode, NodeType } from 'rrweb-snapshot';
-import type { Mirror } from 'rrweb/src/types';
+import type { inputData, Mirror, scrollData } from 'rrweb/src/types';
 import {
   RRCDATASection,
   RRComment,
@@ -57,15 +57,29 @@ const SVGTagMap: Record<string, string> = {
   radialgradient: 'radialGradient',
 };
 
-export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
+type ReplayerHandler = {
+  mirror: Mirror;
+  applyInput: (data: inputData) => void;
+  applyScroll: (data: scrollData) => void;
+};
+
+export function diff(
+  oldTree: INode,
+  newTree: RRNode,
+  replayer: ReplayerHandler,
+) {
   switch (newTree.nodeType) {
     case NodeType.Element:
-      diffProps((oldTree as unknown) as HTMLElement, newTree as RRElement);
-      if (newTree instanceof RRStyleElement && newTree.rules.length > 0)
+      const newElement = newTree as RRElement;
+      diffProps((oldTree as unknown) as HTMLElement, newElement);
+      newElement.inputData && replayer.applyInput(newElement.inputData);
+      newElement.scrollData && replayer.applyScroll(newElement.scrollData);
+      if (newTree instanceof RRStyleElement && newTree.rules.length > 0) {
         applyVirtualStyleRulesToNode(
           (oldTree as Node) as HTMLStyleElement,
           newTree.rules,
         );
+      }
       break;
     // TODO: Diff other kinds of nodes.
     default:
@@ -77,7 +91,7 @@ export function diff(oldTree: INode, newTree: RRNode, mirror: Mirror) {
       (Array.from(oldChildren) as unknown) as INode[],
       newChildren,
       oldTree,
-      mirror,
+      replayer,
     );
   }
 }
@@ -110,7 +124,7 @@ function diffChildren(
   oldChildren: (INode | undefined)[],
   newChildren: RRNode[],
   parentNode: INode,
-  mirror: Mirror,
+  replayer: ReplayerHandler,
 ) {
   let oldStartIndex = 0,
     oldEndIndex = oldChildren.length - 1,
@@ -128,21 +142,21 @@ function diffChildren(
     } else if (oldEndNode === undefined) {
       oldEndNode = oldChildren[--oldEndIndex];
     } else if (oldStartNode.__sn?.id === newStartNode.__sn.id) {
-      diff(oldStartNode, newStartNode, mirror);
+      diff(oldStartNode, newStartNode, replayer);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (oldEndNode.__sn?.id === newEndNode.__sn.id) {
-      diff(oldEndNode, newEndNode, mirror);
+      diff(oldEndNode, newEndNode, replayer);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (oldStartNode.__sn?.id === newEndNode.__sn.id) {
       parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
-      diff(oldStartNode, newEndNode, mirror);
+      diff(oldStartNode, newEndNode, replayer);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (oldEndNode.__sn?.id === newStartNode.__sn.id) {
       parentNode.insertBefore(oldEndNode, oldStartNode);
-      diff(oldEndNode, newStartNode, mirror);
+      diff(oldEndNode, newStartNode, replayer);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
     } else {
@@ -157,12 +171,12 @@ function diffChildren(
       if (indexInOld) {
         const nodeToMove = oldChildren[indexInOld]!;
         parentNode.insertBefore(nodeToMove, oldStartNode);
-        diff(nodeToMove, newStartNode, mirror);
+        diff(nodeToMove, newStartNode, replayer);
         oldChildren[indexInOld] = undefined;
       } else {
-        const newNode = createOrGetNode(newStartNode, mirror);
+        const newNode = createOrGetNode(newStartNode, replayer.mirror);
         parentNode.insertBefore(newNode, oldStartNode);
-        diff(newNode, newStartNode, mirror);
+        diff(newNode, newStartNode, replayer);
       }
       newStartNode = newChildren[++newStartIndex];
     }
@@ -176,16 +190,19 @@ function diffChildren(
           referenceNode = child;
       });
     for (; newStartIndex <= newEndIndex; ++newStartIndex) {
-      const newNode = createOrGetNode(newChildren[newStartIndex], mirror);
+      const newNode = createOrGetNode(
+        newChildren[newStartIndex],
+        replayer.mirror,
+      );
       parentNode.insertBefore(newNode, referenceNode);
-      diff(newNode, newChildren[newStartIndex], mirror);
+      diff(newNode, newChildren[newStartIndex], replayer);
     }
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
       if (node) {
         parentNode.removeChild(node);
-        mirror.removeNodeFromMap(node);
+        replayer.mirror.removeNodeFromMap(node);
       }
     }
   }

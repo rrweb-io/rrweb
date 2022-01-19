@@ -53,7 +53,6 @@ import {
 import {
   createMirror,
   polyfill,
-  TreeIndex,
   queueToResolveTrees,
   iterateResolveTree,
   AppendedIframe,
@@ -114,7 +113,6 @@ export class Replayer {
   // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
-  private treeIndex!: TreeIndex;
   private fragmentParentMap!: Map<INode, INode>;
 
   // The replayer uses the cache to speed up replay and scrubbing.
@@ -165,16 +163,15 @@ export class Replayer {
 
     this.setupDom();
 
-    this.treeIndex = new TreeIndex();
     this.fragmentParentMap = new Map<INode, INode>();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingRRDom) {
-        diff(
-          (this.iframe.contentDocument! as unknown) as INode,
-          this.rrdom,
-          this.mirror,
-        );
+        diff((this.iframe.contentDocument! as unknown) as INode, this.rrdom, {
+          mirror: this.mirror,
+          applyInput: this.applyInput.bind(this),
+          applyScroll: this.applyScroll.bind(this),
+        });
         this.rrdom.destroyTree();
         this.usingRRDom = false;
       }
@@ -189,15 +186,6 @@ export class Replayer {
         );
       }
       this.mousePos = null;
-
-      const { scrollMap, inputMap } = this.treeIndex.flush();
-
-      for (const d of scrollMap.values()) {
-        this.applyScroll(d);
-      }
-      for (const d of inputMap.values()) {
-        this.applyInput(d);
-      }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
@@ -847,12 +835,6 @@ export class Replayer {
     const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
-        if (isSync) {
-          d.adds.forEach((m) => this.treeIndex.add(m));
-          d.texts.forEach((m) => this.treeIndex.text(m));
-          d.attributes.forEach((m) => this.treeIndex.attribute(m));
-          d.removes.forEach((m) => this.treeIndex.remove(m, this.mirror));
-        }
         try {
           this.applyMutation(d, isSync);
         } catch (error) {
@@ -982,8 +964,12 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        if (isSync) {
-          this.treeIndex.scroll(d);
+        if (this.usingRRDom) {
+          const target = this.rrdom.mirror.getNode(d.id) as RRElement;
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
+          }
+          target.scrollData = d;
           break;
         }
         this.applyScroll(d);
@@ -1005,8 +991,12 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        if (isSync) {
-          this.treeIndex.input(d);
+        if (this.usingRRDom) {
+          const target = this.rrdom.mirror.getNode(d.id) as RRElement;
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
+          }
+          target.inputData = d;
           break;
         }
         this.applyInput(d);
@@ -1708,11 +1698,7 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
-    if (this.treeIndex.idRemoved(id)) {
-      this.warn(`Node with id '${id}' was previously removed. `, d);
-    } else {
-      this.warn(`Node with id '${id}' not found. `, d);
-    }
+    this.warn(`Node with id '${id}' not found. `, d);
   }
 
   private warnCanvasMutationFailed(
@@ -1730,15 +1716,7 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    if (this.treeIndex.idRemoved(id)) {
-      this.debug(
-        REPLAY_CONSOLE_PREFIX,
-        `Node with id '${id}' was previously removed. `,
-        d,
-      );
-    } else {
-      this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
-    }
+    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
   }
 
   private warn(...args: Parameters<typeof console.warn>) {

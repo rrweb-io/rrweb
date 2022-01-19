@@ -1,4 +1,5 @@
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
+import { inputData, scrollData } from 'rrweb/src/types';
 import { parseCSSText, camelize, toCSSText } from './style';
 
 export abstract class RRNode {
@@ -448,6 +449,8 @@ export class RRElement extends RRNode {
   scrollLeft: number = 0;
   scrollTop: number = 0;
   shadowRoot: RRElement | null = null;
+  inputData: inputData | null = null;
+  scrollData: scrollData | null = null;
 
   constructor(tagName: string) {
     super();
