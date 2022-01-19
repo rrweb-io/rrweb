@@ -1,3 +1,4 @@
+import { compare } from 'compare-versions';
 import { RRDocument, RRNode } from '../src/document-nodejs';
 import {
   polyfillPerformance,
@@ -9,7 +10,8 @@ import {
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {
-    expect(global.performance).toBeUndefined();
+    if (compare(process.version, 'v16.0.0', '<'))
+      expect(global.performance).toBeUndefined();
     polyfillPerformance();
     expect(global.performance).toBeDefined();
     expect(performance).toBeDefined();
@@ -60,6 +62,9 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should polyfill Event type', () => {
+    // if the second version is greater
+    if (compare(process.version, 'v15.0.0', '<'))
+      expect(global.Event).toBeUndefined();
     polyfillEvent();
     expect(global.Event).toBeDefined();
     expect(Event).toBeDefined();

@@ -2,6 +2,8 @@ import { RRDocument, RRNode } from './document-nodejs';
 
 /**
  * Polyfill the performance for nodejs.
+ * Note: The performance api is available through the global object from nodejs v16.0.0.
+ * https://github.com/nodejs/node/pull/37970
  */
 export function polyfillPerformance() {
   if (typeof window !== 'undefined' || 'performance' in global) return;
