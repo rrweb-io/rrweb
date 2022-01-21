@@ -12,6 +12,7 @@ import {
   applyVirtualStyleRulesToNode,
   createOrGetNode,
   diff,
+  ReplayerHandler,
 } from '../src/diff';
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot/';
 
@@ -86,6 +87,11 @@ describe('diff algorithm for rrdom', () => {
       this.map = {};
     },
   };
+  const replayer: ReplayerHandler = {
+    mirror,
+    applyInput: () => {},
+    applyScroll: () => {},
+  };
 
   describe('diff properties', () => {
     it('add new properties', () => {
@@ -96,61 +102,77 @@ describe('diff algorithm for rrdom', () => {
       const rrNode = rrDocument.createElement(tagName);
       rrNode.__sn = Object.assign({}, elementSn, { tagName });
       rrNode.attributes = { id: 'node1', class: 'node' };
-      diff(node, rrNode, mirror);
-      expect(((node as unknown) as HTMLElement).id).toBe('node1');
-      expect(((node as unknown) as HTMLElement).className).toBe('node');
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).id).toBe('node1');
+      expect(((node as Node) as HTMLElement).className).toBe('node');
     });
 
     it('update exist properties', () => {
       const tagName = 'DIV';
       const node = (document.createElement(tagName) as unknown) as INode;
       node.__sn = Object.assign({}, elementSn, { tagName });
-      ((node as unknown) as HTMLElement).id = 'element1';
-      ((node as unknown) as HTMLElement).className = 'element';
-      ((node as unknown) as HTMLElement).setAttribute('style', 'color: black');
+      ((node as Node) as HTMLElement).id = 'element1';
+      ((node as Node) as HTMLElement).className = 'element';
+      ((node as Node) as HTMLElement).setAttribute('style', 'color: black');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
       rrNode.__sn = Object.assign({}, elementSn, { tagName });
       rrNode.attributes = { id: 'node1', class: 'node', style: 'color: white' };
-      diff(node, rrNode, mirror);
-      expect(((node as unknown) as HTMLElement).id).toBe('node1');
-      expect(((node as unknown) as HTMLElement).className).toBe('node');
-      expect(((node as unknown) as HTMLElement).getAttribute('style')).toBe(
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).id).toBe('node1');
+      expect(((node as Node) as HTMLElement).className).toBe('node');
+      expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(
         'color: white',
       );
 
       rrNode.attributes = { id: 'node2' };
-      diff(node, rrNode, mirror);
-      expect(((node as unknown) as HTMLElement).id).toBe('node2');
-      expect(((node as unknown) as HTMLElement).className).toBe('undefined');
-      expect(((node as unknown) as HTMLElement).getAttribute('style')).toBe(
-        'undefined',
-      );
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).id).toBe('node2');
+      expect(((node as Node) as HTMLElement).className).toBe('');
+      expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(null);
     });
 
     it('delete old properties', () => {
       const tagName = 'DIV';
       const node = (document.createElement(tagName) as unknown) as INode;
       node.__sn = Object.assign({}, elementSn, { tagName });
-      ((node as unknown) as HTMLElement).id = 'element1';
-      ((node as unknown) as HTMLElement).className = 'element';
-      ((node as unknown) as HTMLElement).setAttribute('style', 'color: black');
+      ((node as Node) as HTMLElement).id = 'element1';
+      ((node as Node) as HTMLElement).className = 'element';
+      ((node as Node) as HTMLElement).setAttribute('style', 'color: black');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
       rrNode.__sn = Object.assign({}, elementSn, { tagName });
       rrNode.attributes = { id: 'node1' };
-      diff(node, rrNode, mirror);
-      expect(((node as unknown) as HTMLElement).id).toBe('node1');
-      expect(((node as unknown) as HTMLElement).className).toBe('undefined');
-      expect(((node as unknown) as HTMLElement).getAttribute('style')).toBe(
-        'undefined',
-      );
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).id).toBe('node1');
+      expect(((node as Node) as HTMLElement).className).toBe('');
+      expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(null);
 
       rrNode.attributes = { src: 'link' };
-      diff(node, rrNode, mirror);
-      expect(((node as unknown) as HTMLElement).id).toBe('undefined');
-      expect(((node as unknown) as HTMLElement).getAttribute('src')).toBe(
-        'link',
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).id).toBe('');
+      expect(((node as Node) as HTMLElement).className).toBe('');
+      expect(((node as Node) as HTMLElement).getAttribute('src')).toBe('link');
+    });
+
+    it('omit "checked" property for input elements', () => {
+      const tagName = 'INPUT';
+      const node = (document.createElement(tagName) as unknown) as INode;
+      node.__sn = Object.assign({}, elementSn, { tagName });
+      ((node as Node) as HTMLElement).setAttribute('type', 'checkbox');
+      ((node as Node) as HTMLElement).setAttribute('checked', ''); // default checked
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement(tagName);
+      rrNode.attributes = {
+        checked: true,
+      };
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).getAttribute('checked')).toBe('');
+
+      ((node as Node) as HTMLElement).removeAttribute('checked'); // default unchecked
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).getAttribute('checked')).toBe(
+        null,
       );
     });
   });
@@ -172,7 +194,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(3);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(
@@ -198,7 +220,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(5);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(
@@ -224,7 +246,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(5);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(
@@ -250,7 +272,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(5);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(
@@ -275,7 +297,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(3);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(
@@ -300,7 +322,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(0);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(0);
       expect(rrNode.childNodes.length).toEqual(0);
     });
@@ -326,7 +348,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(3);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(
@@ -357,7 +379,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(3);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(
@@ -388,7 +410,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(4);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
       expect(
@@ -419,7 +441,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(5);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(
@@ -450,7 +472,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(3);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(
@@ -476,7 +498,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(4);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
       expect(
@@ -502,7 +524,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(4);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
       expect(
@@ -528,7 +550,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(5);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(
@@ -554,7 +576,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(2);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(2);
       expect(rrNode.childNodes.length).toEqual(2);
       expect(
@@ -586,7 +608,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(8);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(8);
       expect(rrNode.childNodes.length).toEqual(8);
       expect(
@@ -629,7 +651,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(newElementsNum);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(newElementsNum);
       expect(rrNode.childNodes.length).toEqual(newElementsNum);
       expect(
@@ -672,7 +694,7 @@ describe('diff algorithm for rrdom', () => {
         new RRDocument(),
       ) as RRNode;
       expect(rrNode.childNodes.length).toEqual(newElementsNum);
-      diff(node, rrNode, mirror);
+      diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(newElementsNum);
       expect(rrNode.childNodes.length).toEqual(newElementsNum);
       expect(

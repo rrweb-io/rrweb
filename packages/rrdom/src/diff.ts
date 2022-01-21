@@ -9,6 +9,7 @@ import {
   RRText,
   VirtualStyleRules,
   StyleRuleType,
+  RRDocument,
 } from './document-browser';
 
 const NAMESPACES: Record<string, string> = {
@@ -57,10 +58,10 @@ const SVGTagMap: Record<string, string> = {
   radialgradient: 'radialGradient',
 };
 
-type ReplayerHandler = {
+export type ReplayerHandler = {
   mirror: Mirror;
   applyInput: (data: inputData) => void;
-  applyScroll: (data: scrollData) => void;
+  applyScroll: (data: scrollData, isSync: boolean) => void;
 };
 
 export function diff(
@@ -69,11 +70,17 @@ export function diff(
   replayer: ReplayerHandler,
 ) {
   switch (newTree.nodeType) {
+    case NodeType.Document:
+      const newRRDocument = newTree as RRDocument;
+      newRRDocument.scrollData &&
+        replayer.applyScroll(newRRDocument.scrollData, true);
+      break;
     case NodeType.Element:
-      const newElement = newTree as RRElement;
-      diffProps((oldTree as unknown) as HTMLElement, newElement);
-      newElement.inputData && replayer.applyInput(newElement.inputData);
-      newElement.scrollData && replayer.applyScroll(newElement.scrollData);
+      const newRRElement = newTree as RRElement;
+      diffProps((oldTree as unknown) as HTMLElement, newRRElement);
+      newRRElement.inputData && replayer.applyInput(newRRElement.inputData);
+      newRRElement.scrollData &&
+        replayer.applyScroll(newRRElement.scrollData, true);
       if (newTree instanceof RRStyleElement && newTree.rules.length > 0) {
         applyVirtualStyleRulesToNode(
           (oldTree as Node) as HTMLStyleElement,
@@ -100,24 +107,20 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
   const oldAttributes = oldTree.attributes;
   const newAttributes = newTree.attributes;
 
-  for (const { name, value } of Array.from(oldAttributes)) {
-    if (!(name in newAttributes)) oldTree.removeAttribute(name);
+  for (const name in newAttributes) {
     const newValue = newAttributes[name];
-    if (value === newValue) continue;
-    else oldTree.setAttribute(name, newValue as string);
-  }
-
-  for (let attribute in newAttributes) {
-    const newValue = newAttributes[attribute];
-    if (oldAttributes.hasOwnProperty(attribute)) continue;
-    if (typeof newValue === 'boolean' || typeof newValue === 'number') {
-      // TODO Some special cases for some kinds of elements. e.g. checked, rr_scrollLeft
+    if (typeof newValue === 'boolean') {
+      // TODO Some special cases for some kinds of elements. e.g. selected, rr_scrollLeft
+    } else if (typeof newValue === 'number') {
     } else {
-      if ((newTree.__sn as elementNode).isSVG && NAMESPACES[attribute])
-        oldTree.setAttributeNS(NAMESPACES[attribute], attribute, newValue);
-      else oldTree.setAttribute(attribute, newValue);
+      if ((newTree.__sn as elementNode).isSVG && NAMESPACES[name])
+        oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
+      else oldTree.setAttribute(name, newValue);
     }
   }
+
+  for (const { name } of Array.from(oldAttributes))
+    if (!(name in newAttributes)) oldTree.removeAttribute(name);
 }
 
 function diffChildren(

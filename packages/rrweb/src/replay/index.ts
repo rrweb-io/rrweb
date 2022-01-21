@@ -972,7 +972,8 @@ export class Replayer {
           target.scrollData = d;
           break;
         }
-        this.applyScroll(d);
+        // Use isSync rather than this.usingRRDom because not every fast-forward process uses virtual dom optimization.
+        this.applyScroll(d, isSync);
         break;
       }
       case IncrementalSource.ViewportResize:
@@ -1214,6 +1215,7 @@ export class Replayer {
   }
 
   private applyMutation(d: mutationData, useVirtualParent: boolean) {
+    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a rrdom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
     if (!this.usingRRDom && useVirtualParent) {
       this.usingRRDom = true;
       buildFromDom(this.iframe.contentDocument!, this.rrdom, this.rrdom.mirror);
@@ -1503,7 +1505,13 @@ export class Replayer {
     });
   }
 
-  private applyScroll(d: scrollData) {
+  /**
+   * Apply the scroll data on real elements.
+   * If the replayer is in sync mode, smooth scroll behavior should be disabled.
+   * @param d the scroll data
+   * @param isSync whether the replayer is in sync mode(fast-forward)
+   */
+  private applyScroll(d: scrollData, isSync: boolean) {
     const target = this.mirror.getNode(d.id);
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
@@ -1512,14 +1520,14 @@ export class Replayer {
       this.iframe.contentWindow!.scrollTo({
         top: d.y,
         left: d.x,
-        behavior: 'smooth',
+        behavior: isSync ? 'auto' : 'smooth',
       });
     } else if (target.__sn.type === NodeType.Document) {
       // nest iframe content document
       ((target as unknown) as Document).defaultView!.scrollTo({
         top: d.y,
         left: d.x,
-        behavior: 'smooth',
+        behavior: isSync ? 'auto' : 'smooth',
       });
     } else {
       try {

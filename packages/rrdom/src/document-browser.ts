@@ -113,6 +113,7 @@ export class RRDocument extends RRNode {
       this.map = {};
     },
   };
+  scrollData: scrollData | null = null;
 
   get documentElement(): RRElement {
     return this.children.find(
@@ -359,9 +360,11 @@ export function buildFromDom(
             value
           ) {
             rrElement.attributes.value = value;
-          } else if ((elementNode as HTMLInputElement).checked) {
-            rrElement.attributes.checked = (elementNode as HTMLInputElement).checked;
           }
+          /**
+           * We don't have to record the 'checked' value of input element at the beginning.
+           * Because if the 'checked' value is changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm executed.
+           */
         }
         if (tagName === 'OPTION') {
           const selectValue = (elementNode as HTMLOptionElement).parentElement;
@@ -381,13 +384,6 @@ export function buildFromDom(
           const rrMediaElement = rrElement as RRMediaElement;
           rrMediaElement.paused = (elementNode as HTMLMediaElement).paused;
           rrMediaElement.currentTime = (elementNode as HTMLMediaElement).currentTime;
-        }
-        // scroll
-        if (elementNode.scrollLeft) {
-          rrElement.scrollLeft = elementNode.scrollLeft;
-        }
-        if (elementNode.scrollTop) {
-          rrElement.scrollTop = elementNode.scrollTop;
         }
         break;
       case node.TEXT_NODE:
@@ -446,8 +442,6 @@ export class RRDocumentType extends RRNode {
 export class RRElement extends RRNode {
   tagName: string;
   attributes: Record<string, string | number | boolean> = {};
-  scrollLeft: number = 0;
-  scrollTop: number = 0;
   shadowRoot: RRElement | null = null;
   inputData: inputData | null = null;
   scrollData: scrollData | null = null;
