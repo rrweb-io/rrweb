@@ -687,22 +687,28 @@ function initMediaInteractionObserver(
   mediaInteractionCb: mediaInteractionCallback,
   blockClass: blockClass,
   mirror: Mirror,
+  sampling: SamplingStrategy,
 ): listenerHandler {
-  const handler = (type: MediaInteractions) => (event: Event) => {
-    const target = getEventTarget(event);
-    if (!target || isBlocked(target as Node, blockClass)) {
-      return;
-    }
-    mediaInteractionCb({
-      type,
-      id: mirror.getId(target as INode),
-      currentTime: (target as HTMLMediaElement).currentTime,
-    });
-  };
+  const handler = (type: MediaInteractions) =>
+    throttle((event: Event) => {
+      const target = getEventTarget(event);
+      if (!target || isBlocked(target as Node, blockClass)) {
+        return;
+      }
+      const { currentTime, volume, muted } = target as HTMLMediaElement;
+      mediaInteractionCb({
+        type,
+        id: mirror.getId(target as INode),
+        currentTime,
+        volume,
+        muted,
+      });
+    }, sampling.media || 500);
   const handlers = [
     on('play', handler(MediaInteractions.Play)),
     on('pause', handler(MediaInteractions.Pause)),
     on('seeked', handler(MediaInteractions.Seeked)),
+    on('volumechange', handler(MediaInteractions.VolumeChange)),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -936,6 +942,7 @@ export function initObservers(
     o.mediaInteractionCb,
     o.blockClass,
     o.mirror,
+    o.sampling,
   );
 
   const styleSheetObserver = initStyleSheetObserver(

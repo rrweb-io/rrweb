@@ -2,6 +2,10 @@
 
 The plugin API is designed to extend the function of rrweb without bump the size and complexity of rrweb's core part.
 
+# Available plugins
+
+- [console](./console.md)
+
 ## Interface
 
 Same to with other functionality in rrweb, a plugin can implement record or replay or both features.

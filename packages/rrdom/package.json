@@ -1,0 +1,44 @@
+{
+  "name": "rrdom",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "bundle": "rollup --config",
+    "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
+    "test": "jest",
+    "prepublish": "npm run bundle"
+  },
+  "keywords": [
+    "rrweb",
+    "rrdom"
+  ],
+  "license": "MIT",
+  "main": "lib/rrdom.js",
+  "module": "es/rrdom.js",
+  "typings": "es",
+  "unpkg": "dist/rrdom.js",
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "typings"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@types/cssom": "^0.4.1",
+    "@types/jest": "^27.0.1",
+    "@types/nwsapi": "^2.2.2",
+    "jest": "^27.1.1",
+    "rollup": "^2.56.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "rrweb-snapshot": "^1.1.12",
+    "ts-jest": "^27.0.5",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "cssom": "^0.5.0",
+    "nwsapi": "^2.2.0"
+  }
+}

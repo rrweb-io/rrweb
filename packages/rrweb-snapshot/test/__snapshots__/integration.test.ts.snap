@@ -326,6 +326,7 @@ exports[`integration tests [html file]: picture.html 1`] = `
       <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
     </picture>
+    <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" />
   </body></html>"
 `;
 

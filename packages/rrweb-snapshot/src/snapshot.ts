@@ -76,6 +76,20 @@ function extractOrigin(url: string): string {
   return origin;
 }
 
+let canvasService: HTMLCanvasElement | null;
+let canvasCtx: CanvasRenderingContext2D | null;
+
+function initCanvasService(doc: Document) {
+  if (!canvasService) {
+      canvasService = doc.createElement('canvas');
+  }
+  if (!canvasCtx) {
+      canvasCtx = canvasService.getContext('2d');
+  }
+  canvasService.width = 0;
+  canvasService.height = 0;
+}
+
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
 const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/|#).*/;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
@@ -370,6 +384,7 @@ function serializeNode(
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
+    inlineImages: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
   },
@@ -384,6 +399,7 @@ function serializeNode(
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
+    inlineImages,
     recordCanvas,
     keepIframeSrcFn,
   } = options;
@@ -512,6 +528,19 @@ function serializeNode(
         // no need to save dataURL if it's the same as blank canvas
         if (canvasDataURL !== blankCanvasDataURL) {
           attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
+        }
+      }
+      // save image offline
+      if (tagName === 'img' && inlineImages && canvasService && canvasCtx) {
+        const image = (n as HTMLImageElement);
+        image.crossOrigin = 'anonymous';
+        try {
+          canvasService.width = image.naturalWidth;
+          canvasService.height = image.naturalHeight;
+          canvasCtx.drawImage(image, 0, 0);
+          attributes.rr_dataURL = canvasService.toDataURL();
+        } catch {
+          // ignore error
         }
       }
       // media elements
@@ -727,6 +756,7 @@ export function serializeNodeWithId(
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
@@ -747,6 +777,7 @@ export function serializeNodeWithId(
     maskTextFn,
     maskInputFn,
     slimDOMOptions,
+    inlineImages = false,
     recordCanvas = false,
     onSerialize,
     onIframeLoad,
@@ -764,6 +795,7 @@ export function serializeNodeWithId(
     maskInputOptions,
     maskTextFn,
     maskInputFn,
+    inlineImages,
     recordCanvas,
     keepIframeSrcFn,
   });
@@ -816,6 +848,9 @@ export function serializeNodeWithId(
     ) {
       preserveWhiteSpace = false;
     }
+    if (inlineImages) {
+      initCanvasService(doc);
+    }
     const bypassOptions = {
       doc,
       map,
@@ -829,6 +864,7 @@ export function serializeNodeWithId(
       maskTextFn,
       maskInputFn,
       slimDOMOptions,
+      inlineImages,
       recordCanvas,
       preserveWhiteSpace,
       onSerialize,
@@ -881,6 +917,7 @@ export function serializeNodeWithId(
             maskTextFn,
             maskInputFn,
             slimDOMOptions,
+            inlineImages,
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -913,6 +950,7 @@ function snapshot(
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
     slimDOM?: boolean | SlimDOMOptions;
+    inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
@@ -927,6 +965,7 @@ function snapshot(
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
+    inlineImages = false,
     recordCanvas = false,
     maskAllInputs = false,
     maskTextFn,
@@ -996,6 +1035,7 @@ function snapshot(
       maskTextFn,
       maskInputFn,
       slimDOMOptions,
+      inlineImages,
       recordCanvas,
       preserveWhiteSpace,
       onSerialize,
