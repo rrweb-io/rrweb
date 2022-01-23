@@ -6066,8 +6066,7 @@ exports[`record integration tests should not record input values if maskAllInput
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"option\\",
                                 \\"attributes\\": {
-                                  \\"value\\": \\"1\\",
-                                  \\"selected\\": true
+                                  \\"value\\": \\"1\\"
                                 },
                                 \\"childNodes\\": [
                                   {

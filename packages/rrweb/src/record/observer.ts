@@ -371,8 +371,10 @@ function initInputObserver(
   userTriggeredOnInput: boolean,
 ): listenerHandler {
   function eventHandler(event: Event) {
-    const target = getEventTarget(event);
+    let target = getEventTarget(event);
     const userTriggered = event.isTrusted;
+    if (target && (target as Element).tagName === 'OPTION')
+      target = (target as Element).parentElement;
     if (
       !target ||
       !(target as Element).tagName ||
@@ -463,6 +465,7 @@ function initInputObserver(
     [HTMLTextAreaElement.prototype, 'value'],
     // Some UI library use selectedIndex to set select value
     [HTMLSelectElement.prototype, 'selectedIndex'],
+    [HTMLOptionElement.prototype, 'selected'],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
