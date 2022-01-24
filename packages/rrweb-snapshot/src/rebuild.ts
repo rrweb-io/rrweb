@@ -227,10 +227,13 @@ function buildNode(
               }
             };
           } else if (tagName === 'img' && name === 'rr_dataURL') {
-            const image = (node as HTMLImageElement);
+            const image = node as HTMLImageElement;
             if (!image.currentSrc.startsWith('data:')) {
-              // backup original img src
-              image.setAttribute('data-rrweb-src', image.currentSrc);
+              // Backup original img src. It may not have been set yet.
+              image.setAttribute(
+                'rrweb-original-src',
+                n.attributes['src'] as string,
+              );
               image.src = value;
             }
             image.removeAttribute(name);
