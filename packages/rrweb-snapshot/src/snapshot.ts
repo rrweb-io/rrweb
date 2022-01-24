@@ -513,8 +513,7 @@ function serializeNode(
         const oldValue = image.crossOrigin;
         image.crossOrigin = 'anonymous';
         try {
-          // The image content may not have finished loading yet.
-          image.onload = () => {
+          const recordInlineImage = () => {
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
@@ -523,6 +522,9 @@ function serializeNode(
               ? (attributes.crossOrigin = oldValue)
               : delete attributes.crossOrigin;
           };
+          // The image content may not have finished loading yet.
+          if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+          else image.onload = recordInlineImage;
         } catch {
           // ignore error
         }
