@@ -514,24 +514,24 @@ function serializeNode(
           canvasCtx = canvasService.getContext('2d');
         }
         const image = n as HTMLImageElement;
-        const oldValue = image.crossOrigin;
-        image.crossOrigin = 'anonymous';
-        try {
-          const recordInlineImage = () => {
+        const recordInlineImage = () => {
+          const oldValue = image.crossOrigin;
+          image.crossOrigin = 'anonymous';
+          try {
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
             attributes.rr_dataURL = canvasService!.toDataURL();
-            oldValue
-              ? (attributes.crossOrigin = oldValue)
-              : delete attributes.crossOrigin;
+          } catch (err) {
+            console.warn(`Cannot inline image: ${image}! Error: ${err}`);
+          }
+          oldValue
+            ? (attributes.crossOrigin = oldValue)
+            : delete attributes.crossOrigin;
           };
           // The image content may not have finished loading yet.
           if (image.complete && image.naturalWidth !== 0) recordInlineImage();
           else image.onload = recordInlineImage;
-        } catch (err) {
-          console.warn(`Cannot inline image: ${image}! Error: ${err}`);
-        }
       }
       // media elements
       if (tagName === 'audio' || tagName === 'video') {
