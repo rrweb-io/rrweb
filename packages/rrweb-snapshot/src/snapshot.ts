@@ -529,7 +529,7 @@ function serializeNode(
           // The image content may not have finished loading yet.
           if (image.complete && image.naturalWidth !== 0) recordInlineImage();
           else image.onload = recordInlineImage;
-        } catch {
+        } catch (err) {
           console.warn(`Cannot inline image: ${image}! Error: ${err}`);
         }
       }
