@@ -193,6 +193,10 @@ export type SamplingStrategy = Partial<{
    */
   scroll: number;
   /**
+   * number is the throttle threshold of recording media interactions
+   */
+  media: number;
+  /**
    * 'all' will record all the input events
    * 'last' will only record the last input value while input a sequence of chars
    */
@@ -226,6 +230,7 @@ export type recordOptions<T> = {
   recordCanvas?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
+  inlineImages?: boolean;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -255,6 +260,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
+  inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
@@ -472,12 +478,15 @@ export const enum MediaInteractions {
   Play,
   Pause,
   Seeked,
+  VolumeChange,
 }
 
 export type mediaInteractionParam = {
   type: MediaInteractions;
   id: number;
   currentTime?: number;
+  volume?: number;
+  muted?: boolean;
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;

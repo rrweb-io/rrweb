@@ -45,13 +45,13 @@ rrweb.record({
 });
 ```
 
-All recordLog options are described below:
-| key              | default                                                               | description                                                                                                                                                                                                                                                                                                                                                                        |
+All options are described below:
+| key | default | description |
 | ---------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| level            | ['log','warn','error',...]                                            | Default value contains names of all console functions. You can override it by setting console levels you need.                                                                                                                                                                                                                                                                     |
-| lengthThreshold  | 1000                                                                  | Maximum number of records of console output.                                                                                                                                                                                                                                                                                                                                       |
+| level | ['log','warn','error',...] | Default value contains names of all console functions. You can override it by setting console levels you need. |
+| lengthThreshold | 1000 | Maximum number of records of console output. |
 | stringifyOptions | { stringLengthLimit: undefined, numOfKeysLimit: 50, depthOfLimit: 4 } | If console output includes js objects, we need to stringify them. `stringLengthLimit` limits the string length of single value. `numOfKeysLimit` limits the number of keys in an object. `depthOfLimit` limits the depth of object. If an object contains more keys than this limit, we would only save object's name. You can reduce the size of events by setting these options. |
-| logger           | window.console                                                        | the console object we would record.You can set a console object from another execution environment where you would like to record.                                                                                                                                                                                                                                                 |
+| logger | window.console | the console object we would record.You can set a console object from another execution environment where you would like to record. |
 
 ## replay console
 
@@ -70,7 +70,7 @@ replayer.play();
 
 Description of replay option is as follows:
 
-| key          | default                                                                                      | description                                                                                                                             |
-| ------------ | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| level        | ['log','warn','error',...]                                                                   | Same meaning as that option in recordLog. You can set this option to play levels of log you need.                                       |
+| key          | default                                                                                                                           | description                                                                                                                             |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| level        | ['log','warn','error',...]                                                                                                        | You can set this option to play levels of log you need.                                                                                 |
 | replayLogger | a console based object that implements the interface [ReplayLogger](../../packages/rrweb/src/plugins/console/replay/index.ts#L13) | You can also set a replay logger to replay the log messages in a simulated browser console by implementing the interface `ReplayLogger` |

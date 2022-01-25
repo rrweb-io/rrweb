@@ -122,6 +122,7 @@ export declare type SamplingStrategy = Partial<{
     mousemoveCallback: number;
     mouseInteraction: boolean | Record<string, boolean | undefined>;
     scroll: number;
+    media: number;
     input: 'all' | 'last';
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
@@ -150,6 +151,7 @@ export declare type recordOptions<T> = {
     recordCanvas?: boolean;
     userTriggeredOnInput?: boolean;
     collectFonts?: boolean;
+    inlineImages?: boolean;
     plugins?: RecordPlugin[];
     mousemoveWait?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
@@ -177,6 +179,7 @@ export declare type observerParam = {
     fontCb: fontCallback;
     sampling: SamplingStrategy;
     recordCanvas: boolean;
+    inlineImages: boolean;
     userTriggeredOnInput: boolean;
     collectFonts: boolean;
     slimDOMOptions: SlimDOMOptions;
@@ -349,12 +352,15 @@ export declare type inputCallback = (v: inputValue & {
 export declare const enum MediaInteractions {
     Play = 0,
     Pause = 1,
-    Seeked = 2
+    Seeked = 2,
+    VolumeChange = 3
 }
 export declare type mediaInteractionParam = {
     type: MediaInteractions;
     id: number;
     currentTime?: number;
+    volume?: number;
+    muted?: boolean;
 };
 export declare type mediaInteractionCallback = (p: mediaInteractionParam) => void;
 export declare type DocumentDimension = {

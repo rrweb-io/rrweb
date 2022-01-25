@@ -25,6 +25,7 @@ type BypassOptions = {
   maskTextFn: MaskTextFn | undefined;
   maskInputFn: MaskInputFn | undefined;
   recordCanvas: boolean;
+  inlineImages: boolean;
   sampling: SamplingStrategy;
   slimDOMOptions: SlimDOMOptions;
   iframeManager: IframeManager;
@@ -61,6 +62,7 @@ export class ShadowDomManager {
       this.bypassOptions.maskTextFn,
       this.bypassOptions.maskInputFn,
       this.bypassOptions.recordCanvas,
+      this.bypassOptions.inlineImages,
       this.bypassOptions.slimDOMOptions,
       this.mirror,
       this.bypassOptions.iframeManager,
