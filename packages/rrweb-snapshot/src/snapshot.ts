@@ -41,8 +41,7 @@ function getValidTagName(element: HTMLElement): string {
 
 function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
-    // handle reading remote CSS rules
-    const rules = s.cssRules || s.rules;
+    const rules = s.rules || s.cssRules;
     return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
   } catch (error) {
     return null;
@@ -514,16 +513,17 @@ function serializeNode(
           canvasCtx = canvasService.getContext('2d');
         }
         const image = n as HTMLImageElement;
+        const oldValue = image.crossOrigin;
+        image.crossOrigin = 'anonymous';
         const recordInlineImage = () => {
-          const oldValue = image.crossOrigin;
-          image.crossOrigin = 'anonymous';
           try {
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
             attributes.rr_dataURL = canvasService!.toDataURL();
           } catch (err) {
-            console.warn(`Cannot inline image: ${image}! Error: ${err}`);
+            const src = image.attributes['src'] as string;
+            console.warn(`Cannot inline img src=${src}! Error: ${err}`);
           }
           oldValue
             ? (attributes.crossOrigin = oldValue)
