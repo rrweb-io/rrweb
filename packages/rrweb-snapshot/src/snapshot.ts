@@ -87,17 +87,6 @@ function extractOrigin(url: string): string {
 let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
-function initCanvasService(doc: Document) {
-  if (!canvasService) {
-      canvasService = doc.createElement('canvas');
-  }
-  if (!canvasCtx) {
-      canvasCtx = canvasService.getContext('2d');
-  }
-  canvasService.width = 0;
-  canvasService.height = 0;
-}
-
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
 const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/|#).*/;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
@@ -519,15 +508,28 @@ function serializeNode(
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
       }
       // save image offline
-      if (tagName === 'img' && inlineImages && canvasService && canvasCtx) {
-        const image = (n as HTMLImageElement);
+      if (tagName === 'img' && inlineImages) {
+        if (!canvasService) {
+          canvasService = doc.createElement('canvas');
+          canvasCtx = canvasService.getContext('2d');
+        }
+        const image = n as HTMLImageElement;
+        const oldValue = image.crossOrigin;
         image.crossOrigin = 'anonymous';
         try {
-          canvasService.width = image.naturalWidth;
-          canvasService.height = image.naturalHeight;
-          canvasCtx.drawImage(image, 0, 0);
-          attributes.rr_dataURL = canvasService.toDataURL();
-        } catch (err) {
+          const recordInlineImage = () => {
+            canvasService!.width = image.naturalWidth;
+            canvasService!.height = image.naturalHeight;
+            canvasCtx!.drawImage(image, 0, 0);
+            attributes.rr_dataURL = canvasService!.toDataURL();
+            oldValue
+              ? (attributes.crossOrigin = oldValue)
+              : delete attributes.crossOrigin;
+          };
+          // The image content may not have finished loading yet.
+          if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+          else image.onload = recordInlineImage;
+        } catch {
           console.warn(`Cannot inline image: ${image}! Error: ${err}`);
         }
       }
@@ -835,9 +837,6 @@ export function serializeNodeWithId(
       // would impede performance: || getComputedStyle(n)['white-space'] === 'normal'
     ) {
       preserveWhiteSpace = false;
-    }
-    if (inlineImages) {
-      initCanvasService(doc);
     }
     const bypassOptions = {
       doc,

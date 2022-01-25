@@ -172,6 +172,7 @@ export default class MutationBuffer {
   private maskTextFn: MaskTextFn | undefined;
   private maskInputFn: MaskInputFn | undefined;
   private recordCanvas: boolean;
+  private inlineImages: boolean;
   private slimDOMOptions: SlimDOMOptions;
   private doc: Document;
 
@@ -190,6 +191,7 @@ export default class MutationBuffer {
     maskTextFn: MaskTextFn | undefined,
     maskInputFn: MaskInputFn | undefined,
     recordCanvas: boolean,
+    inlineImages: boolean,
     slimDOMOptions: SlimDOMOptions,
     doc: Document,
     mirror: Mirror,
@@ -205,6 +207,7 @@ export default class MutationBuffer {
     this.maskTextFn = maskTextFn;
     this.maskInputFn = maskInputFn;
     this.recordCanvas = recordCanvas;
+    this.inlineImages = inlineImages;
     this.slimDOMOptions = slimDOMOptions;
     this.emissionCallback = cb;
     this.doc = doc;
@@ -296,6 +299,7 @@ export default class MutationBuffer {
         maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
         recordCanvas: this.recordCanvas,
+        inlineImages: this.inlineImages,
         onSerialize: (currentN) => {
           if (isIframeINode(currentN)) {
             this.iframeManager.addIframe(currentN);
@@ -504,7 +508,8 @@ export default class MutationBuffer {
             }
           }
           for (const pname of Array.from(old.style)) {
-            if (target.style.getPropertyValue(pname) === '') {  // "if not set, returns the empty string"
+            if (target.style.getPropertyValue(pname) === '') {
+              // "if not set, returns the empty string"
               styleObj[pname] = false; // delete
             }
           }
