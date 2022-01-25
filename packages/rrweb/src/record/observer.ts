@@ -373,6 +373,10 @@ function initInputObserver(
   function eventHandler(event: Event) {
     let target = getEventTarget(event);
     const userTriggered = event.isTrusted;
+    /**
+     * If a site changes the value 'selected' of an option element, the value of its parent element, usually a select element, will be changed as well.
+     * We can treat this change as a value change of the select element the current target belongs to.
+     */
     if (target && (target as Element).tagName === 'OPTION')
       target = (target as Element).parentElement;
     if (
