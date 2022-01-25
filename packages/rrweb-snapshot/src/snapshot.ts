@@ -522,8 +522,7 @@ function serializeNode(
             canvasCtx!.drawImage(image, 0, 0);
             attributes.rr_dataURL = canvasService!.toDataURL();
           } catch (err) {
-            const src = image.attributes['src'] as string;
-            console.warn(`Cannot inline img src=${src}! Error: ${err}`);
+            console.warn(`Cannot inline img src=${image.currentSrc}! Error: ${err}`);
           }
           oldValue
             ? (attributes.crossOrigin = oldValue)
