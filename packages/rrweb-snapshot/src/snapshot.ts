@@ -40,8 +40,9 @@ function getValidTagName(element: HTMLElement): string {
 }
 
 function getCssRulesString(s: CSSStyleSheet): string | null {
-  const rules = s.cssRules;
   try {
+    // handle reading remote CSS rules
+    const rules = s.cssRules || s.rules;
     return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
   } catch (error) {
     return null;
