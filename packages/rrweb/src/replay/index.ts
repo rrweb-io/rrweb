@@ -289,6 +289,38 @@ export class Replayer {
     if (!this.config.skipInactive) {
       this.backToNormal();
     }
+
+    const currentDelay = this.speedService.state.context.timer.timeOffset;
+    if (this.config.skipInactive && !this.nextUserInteractionEvent) {
+      for (const _event of this.service.state.context.events) {
+        if (_event.delay! <= currentDelay) {
+          continue;
+        }
+        if (this.isUserInteraction(_event)) {
+          if (
+            _event.delay! - currentDelay >
+            SKIP_TIME_THRESHOLD *
+              this.speedService.state.context.timer.speed
+          ) {
+            this.nextUserInteractionEvent = _event;
+          }
+          break;
+        }
+        }
+      if (this.nextUserInteractionEvent) {
+        const skipTime =
+          this.nextUserInteractionEvent.delay! - currentDelay;
+        const payload = {
+          speed: Math.min(
+            Math.round(skipTime / SKIP_TIME_INTERVAL),
+            this.config.maxSpeed,
+          ),
+        };
+        this.speedService.send({ type: 'FAST_FORWARD', payload });
+        this.emitter.emit(ReplayerEvents.SkipStart, payload);
+      }
+    }
+
     if (typeof config.speed !== 'undefined') {
       this.speedService.send({
         type: 'SET_SPEED',
