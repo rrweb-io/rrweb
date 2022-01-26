@@ -522,15 +522,17 @@ function serializeNode(
             canvasCtx!.drawImage(image, 0, 0);
             attributes.rr_dataURL = canvasService!.toDataURL();
           } catch (err) {
-            console.warn(`Cannot inline img src=${image.currentSrc}! Error: ${err}`);
+            console.warn(
+              `Cannot inline img src=${image.currentSrc}! Error: ${err}`,
+            );
           }
           oldValue
             ? (attributes.crossOrigin = oldValue)
             : delete attributes.crossOrigin;
-          };
-          // The image content may not have finished loading yet.
-          if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-          else image.onload = recordInlineImage;
+        };
+        // The image content may not have finished loading yet.
+        if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+        else image.onload = recordInlineImage;
       }
       // media elements
       if (tagName === 'audio' || tagName === 'video') {
@@ -590,7 +592,8 @@ function serializeNode(
             );
           }
         } catch (err) {
-          console.warn(`Cannot get CSS styles for: ${n}! Error: ${err}`);
+          const css = (n.parentNode as HTMLStyleElement).innerText.substring(0, 100);
+          console.warn(`Cannot get CSS styles "${css}..."! Error: ${err}`);
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
