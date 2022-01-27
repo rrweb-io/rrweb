@@ -592,8 +592,7 @@ function serializeNode(
             );
           }
         } catch (err) {
-          const css = (n.parentNode as HTMLStyleElement).innerText.substring(0, 100);
-          console.warn(`Cannot get CSS styles "${css}..."! Error: ${err}`);
+          console.warn(`Cannot get CSS styles from text's parentNode. Error: ${err}`, n);
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
