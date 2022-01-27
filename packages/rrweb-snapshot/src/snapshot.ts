@@ -494,7 +494,7 @@ function serializeNode(
         }
       }
       if (tagName === 'option') {
-        if ((n as HTMLOptionElement).selected) {
+        if ((n as HTMLOptionElement).selected && !maskInputOptions['select']) {
           attributes.selected = true;
         } else {
           // ignore the html attribute (which corresponds to DOM (n as HTMLOptionElement).defaultSelected)
