@@ -71,18 +71,18 @@ export function diff(
   newTree: RRNode,
   replayer: ReplayerHandler,
 ) {
+  let inputDataToApply = null,
+    scrollDataToApply = null;
   switch (newTree.nodeType) {
     case NodeType.Document:
       const newRRDocument = newTree as RRDocument;
-      newRRDocument.scrollData &&
-        replayer.applyScroll(newRRDocument.scrollData, true);
+      scrollDataToApply = newRRDocument.scrollData;
       break;
     case NodeType.Element:
       const newRRElement = newTree as RRElement;
       diffProps((oldTree as unknown) as HTMLElement, newRRElement);
-      newRRElement.inputData && replayer.applyInput(newRRElement.inputData);
-      newRRElement.scrollData &&
-        replayer.applyScroll(newRRElement.scrollData, true);
+      scrollDataToApply = newRRElement.scrollData;
+      inputDataToApply = newRRElement.inputData;
       if (newTree instanceof RRStyleElement && newTree.rules.length > 0) {
         applyVirtualStyleRulesToNode(
           (oldTree as Node) as HTMLStyleElement,
@@ -111,6 +111,13 @@ export function diff(
       newTree.contentDocument,
       replayer,
     );
+
+  scrollDataToApply && replayer.applyScroll(scrollDataToApply, true);
+  /**
+   * Input data need to get applied after all children of this node are updated.
+   * Otherwise when we set a value for a select element whose options are empty, the value won't actually update.
+   */
+  inputDataToApply && replayer.applyInput(inputDataToApply);
 }
 
 function diffProps(oldTree: HTMLElement, newTree: RRElement) {

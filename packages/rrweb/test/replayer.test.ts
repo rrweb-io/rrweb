@@ -11,6 +11,7 @@ import {
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
+import inputEvents from './events/input';
 
 interface ISuite {
   code: string;
@@ -220,6 +221,83 @@ describe('replayer', function () {
     `);
 
     expect(result).toEqual(false);
+  });
+
+  it('can fast forward input events', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(inputEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events);
+      replayer.pause(1050);
+    `);
+    let iframe = await page.$('iframe');
+    let contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('select')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        'select',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('valueB'); // the default value
+
+    const delay = 50;
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+
+    await page.evaluate('replayer.pause(1550);');
+    // the value get changed to 'valueA' at 1500
+    expect(
+      await contentDocument!.$eval(
+        'select',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('valueA');
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(2050);');
+    // the value get changed to 'valueC' at 2000
+    expect(
+      await contentDocument!.$eval(
+        'select',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('valueC');
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(2550);');
+    // add a new input element at 2500
+    expect(
+      await contentDocument!.$eval(
+        'input',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('');
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(3050);');
+    // set the value 'test input' for the input element at 3000
+    expect(
+      await contentDocument!.$eval(
+        'input',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('test input');
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(3550);');
+    // remove the select element at 3500
+    expect(await contentDocument!.$('select')).toBeNull();
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(4050);');
+    // remove the input element at 4000
+    expect(await contentDocument!.$('input')).toBeNull();
   });
 
   it('can stream events in live mode', async () => {
