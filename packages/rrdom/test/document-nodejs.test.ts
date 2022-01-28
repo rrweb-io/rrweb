@@ -5,31 +5,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { RRDocument, RRElement, RRStyleElement } from '../src/document-nodejs';
 import {
-  RRDocument as RRBrowserDocument,
+  RRDocument as RRDocumentBrowser,
   buildFromDom,
 } from '../src/document-browser';
-import { printRRDom } from './util';
 
 describe('RRDocument for nodejs environment', () => {
-  describe('buildFromDom', () => {
-    it('should create an RRDocument from a html document', () => {
-      // setup document
-      document.write(getHtml('main.html'));
-
-      // create RRDocument from document
-      const rrdoc = new RRDocument();
-      buildFromDom(document, (rrdoc as unknown) as RRBrowserDocument);
-      expect(printRRDom(rrdoc)).toMatchSnapshot();
-    });
-  });
-
   describe('RRDocument API', () => {
     let rrdom: RRDocument;
     beforeAll(() => {
       // initialize rrdom
       document.write(getHtml('main.html'));
       rrdom = new RRDocument();
-      buildFromDom(document, (rrdom as unknown) as RRBrowserDocument);
+      buildFromDom(document, (rrdom as unknown) as RRDocumentBrowser);
     });
 
     it('get className', () => {
@@ -203,7 +190,6 @@ describe('RRDocument for nodejs environment', () => {
 
     it('querySelectorAll querying id', () => {
       for (let query of ['#block1', '#block2', '#block3']) {
-        console.log(rrdom.children[1]);
         expect(rrdom.querySelectorAll(query).length).toEqual(1);
         const targetElement = rrdom.querySelectorAll(query)[0] as RRElement;
         expect(targetElement.id).toEqual(query.substring(1, query.length));

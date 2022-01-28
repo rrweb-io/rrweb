@@ -72,7 +72,7 @@
     "@xstate/fsm": "^1.4.0",
     "fflate": "^0.4.4",
     "mitt": "^1.1.3",
-    "rrdom": "^0.0.0",
+    "rrdom": "^0.1.0",
     "rrweb-snapshot": "^1.1.12"
   }
 }

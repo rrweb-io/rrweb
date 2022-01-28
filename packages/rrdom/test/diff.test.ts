@@ -93,6 +93,27 @@ describe('diff algorithm for rrdom', () => {
     applyScroll: () => {},
   };
 
+  describe('diff single node', () => {
+    it('should a diff document node', () => {
+      document.close();
+      document.open();
+      expect(document.childNodes.length).toEqual(0);
+      const rrNode = new RRDocument();
+      rrNode;
+      const htmlContent =
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">';
+      rrNode.write(htmlContent);
+      diff((document as unknown) as INode, rrNode, replayer);
+      expect(document.childNodes.length).toEqual(1);
+      expect(document.childNodes[0]).toBeInstanceOf(DocumentType);
+      expect(document.doctype?.name).toEqual('html');
+      expect(document.doctype?.publicId).toEqual(
+        '-//W3C//DTD XHTML 1.0 Transitional//EN',
+      );
+      expect(document.doctype?.systemId).toEqual('');
+    });
+  });
+
   describe('diff properties', () => {
     it('add new properties', () => {
       const tagName = 'DIV';
@@ -713,7 +734,7 @@ describe('diff algorithm for rrdom', () => {
       let result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(HTMLElement);
       expect(result.__sn.id).toBe(0);
-      expect(((result as unknown) as HTMLElement).tagName).toBe('DIV');
+      expect(((result as Node) as HTMLElement).tagName).toBe('DIV');
     });
 
     it('create a node from RRNode', () => {
@@ -724,14 +745,33 @@ describe('diff algorithm for rrdom', () => {
       let result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(Text);
       expect(result.__sn.id).toBe(0);
-      expect(((result as unknown) as Text).textContent).toBe(textContent);
+      expect(((result as Node) as Text).textContent).toBe(textContent);
 
       rrNode = rrDocument.createComment(textContent);
       rrNode.__sn = { id: 0, type: NodeType.Comment, textContent };
       result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(Comment);
       expect(result.__sn.id).toBe(0);
-      expect(((result as unknown) as Comment).textContent).toBe(textContent);
+      expect(((result as Node) as Comment).textContent).toBe(textContent);
+    });
+
+    it('create a DocumentType from RRDocumentType', () => {
+      const rrDocument = new RRDocument();
+      const publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
+      let rrNode: RRNode = rrDocument.createDocumentType('html', publicId, '');
+      rrNode.__sn = {
+        id: 0,
+        type: NodeType.DocumentType,
+        name: 'html',
+        publicId,
+        systemId: '',
+      };
+      let result = createOrGetNode(rrNode, mirror);
+      expect(result).toBeInstanceOf(DocumentType);
+      expect(result.__sn.id).toBe(0);
+      expect(((result as Node) as DocumentType).name).toEqual('html');
+      expect(((result as Node) as DocumentType).publicId).toEqual(publicId);
+      expect(((result as Node) as DocumentType).systemId).toEqual('');
     });
   });
 

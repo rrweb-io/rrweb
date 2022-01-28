@@ -15,7 +15,7 @@ import {
   NodeType,
   isShadowRoot,
 } from 'rrweb-snapshot';
-import { RRNode } from 'rrdom/es/document-browser';
+import { RRNode, RRIFrameElement } from 'rrdom/es/document-browser';
 
 export function on(
   type: string,
@@ -377,7 +377,7 @@ type HTMLIFrameINode = HTMLIFrameElement & {
 };
 export type AppendedIframe = {
   mutationInQueue: addedNodeMutation;
-  builtNode: HTMLIFrameINode;
+  builtNode: HTMLIFrameINode | RRIFrameElement;
 };
 
 export function isIframeINode(
@@ -388,7 +388,22 @@ export function isIframeINode(
       node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe'
     );
   }
-  // node can be document fragment when using the virtual parent feature
+  return false;
+}
+
+/**
+ * This function is quite similar to isIframeINode. It is used to make the type inference of node accurate but won't affect isIframeINode's original functionality.
+ */
+export function isRRIFrameElement(
+  node: INode | ShadowRoot | RRNode,
+): node is RRIFrameElement {
+  if ('__sn' in node) {
+    return (
+      node.__sn.type === NodeType.Element &&
+      node.__sn.tagName === 'iframe' &&
+      node instanceof RRIFrameElement
+    );
+  }
   return false;
 }
 

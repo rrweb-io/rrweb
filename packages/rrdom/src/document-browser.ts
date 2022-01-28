@@ -7,7 +7,6 @@ export abstract class RRNode {
   children: Array<RRNode> = [];
   parentElement: RRElement | null = null;
   parentNode: RRNode | null = null;
-  ownerDocument: RRDocument | null = null;
   ELEMENT_NODE = 1;
   TEXT_NODE = 3;
 
@@ -78,17 +77,14 @@ export abstract class RRNode {
   }
 }
 
-export class RRWindow {
-  scrollLeft = 0;
-  scrollTop = 0;
-  scrollTo(options?: ScrollToOptions) {
-    if (!options) return;
-    if (typeof options.left === 'number') this.scrollLeft = options.left;
-    if (typeof options.top === 'number') this.scrollTop = options.top;
-  }
-}
-
 export class RRDocument extends RRNode {
+  _notSerializedId = -1; // used as an id to identify not serialized node
+  /**
+   * Every time the id is used, it will minus 1 automatically to avoid collisions.
+   */
+  get notSerializedId(): number {
+    return this._notSerializedId--;
+  }
   public mirror: Mirror = {
     map: {},
     getId(n) {
@@ -113,6 +109,7 @@ export class RRDocument extends RRNode {
       this.map = {};
     },
   };
+
   scrollData: scrollData | null = null;
 
   get documentElement(): RRElement {
@@ -158,7 +155,6 @@ export class RRDocument extends RRNode {
     }
     childNode.parentElement = null;
     childNode.parentNode = this;
-    childNode.ownerDocument = this;
     this.children.push(childNode);
     return childNode;
   }
@@ -173,7 +169,6 @@ export class RRDocument extends RRNode {
     this.children.splice(childIndex, 0, newChild);
     newChild.parentElement = null;
     newChild.parentNode = this;
-    newChild.ownerDocument = this;
     return newChild;
   }
 
@@ -195,7 +190,6 @@ export class RRDocument extends RRNode {
       publicId,
       systemId,
     );
-    documentTypeNode.ownerDocument = this;
     return documentTypeNode;
   }
 
@@ -212,7 +206,7 @@ export class RRDocument extends RRNode {
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
-        element = new RRIframeElement(upperTagName);
+        element = new RRIFrameElement(upperTagName);
         break;
       case 'IMG':
         element = new RRImageElement(upperTagName);
@@ -227,7 +221,6 @@ export class RRDocument extends RRNode {
         element = new RRElement(upperTagName);
         break;
     }
-    element.ownerDocument = this;
     return element;
   }
 
@@ -240,19 +233,16 @@ export class RRDocument extends RRNode {
 
   createComment(data: string) {
     const commentNode = new RRComment(data);
-    commentNode.ownerDocument = this;
     return commentNode;
   }
 
   createCDATASection(data: string) {
     const sectionNode = new RRCDATASection(data);
-    sectionNode.ownerDocument = this;
     return sectionNode;
   }
 
   createTextNode(data: string) {
     const textNode = new RRText(data);
-    textNode.ownerDocument = this;
     return textNode;
   }
 
@@ -266,6 +256,38 @@ export class RRDocument extends RRNode {
   }
 
   close() {}
+
+  /**
+   * Adhoc implementation for setting xhtml namespace in rebuilt.ts (rrweb-snapshot).
+   * There are two lines used this function:
+   * 1. doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">')
+   * 2. doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">')
+   */
+  write(content: string) {
+    let publicId;
+    if (
+      content ===
+      '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">'
+    )
+      publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
+    else if (
+      content ===
+      '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">'
+    )
+      publicId = '-//W3C//DTD HTML 4.0 Transitional//EN';
+    if (publicId) {
+      const doctype = new RRDocumentType('html', publicId, '');
+      doctype.__sn = {
+        type: NodeType.DocumentType,
+        name: 'html',
+        publicId: publicId,
+        systemId: '',
+        id: this.notSerializedId,
+      };
+      this.open();
+      this.appendChild(doctype);
+    }
+  }
 
   destroyTree() {
     this.children = [];
@@ -290,7 +312,6 @@ export function buildFromDom(
 ) {
   let rrdom = rrdomToBuild ?? new RRDocument();
 
-  let notSerializedId = -1;
   const NodeTypeMap: Record<number, number> = {};
   NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
   NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
@@ -310,23 +331,19 @@ export function buildFromDom(
   const walk = function (node: INode, parentRRNode: RRNode | null) {
     let serializedNodeWithId = node.__sn;
     let rrNode: RRNode;
-    if (!serializedNodeWithId) {
+    if (!serializedNodeWithId || serializedNodeWithId.id < 0) {
       serializedNodeWithId = {
         type: NodeTypeMap[node.nodeType],
         textContent: '',
-        id: notSerializedId,
+        id: rrdom.notSerializedId,
       };
-      notSerializedId -= 1;
       node.__sn = serializedNodeWithId;
     }
 
     switch (node.nodeType) {
       case node.DOCUMENT_NODE:
-        if (
-          serializedNodeWithId.rootId &&
-          serializedNodeWithId.rootId !== serializedNodeWithId.id
-        )
-          rrNode = rrdom.createDocument(null, '', null);
+        if (parentRRNode && parentRRNode instanceof RRIFrameElement)
+          rrNode = parentRRNode.contentDocument;
         else rrNode = rrdom;
         break;
       case node.DOCUMENT_TYPE_NODE:
@@ -345,36 +362,10 @@ export function buildFromDom(
         for (const { name, value } of Array.from(elementNode.attributes)) {
           rrElement.attributes[name] = value;
         }
-        // form fields
-        if (
-          tagName === 'INPUT' ||
-          tagName === 'TEXTAREA' ||
-          tagName === 'SELECT'
-        ) {
-          const value = (elementNode as HTMLInputElement | HTMLTextAreaElement)
-            .value;
-          if (
-            ['RADIO', 'CHECKBOX', 'SUBMIT', 'BUTTON'].includes(
-              rrElement.attributes.type as string,
-            ) &&
-            value
-          ) {
-            rrElement.attributes.value = value;
-          }
-          /**
-           * We don't have to record the 'checked' value of input element at the beginning.
-           * Because if the 'checked' value is changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm executed.
-           */
-        }
-        if (tagName === 'OPTION') {
-          const selectValue = (elementNode as HTMLOptionElement).parentElement;
-          if (
-            rrElement.attributes.value ===
-            (selectValue as HTMLSelectElement).value
-          ) {
-            rrElement.attributes.selected = (elementNode as HTMLOptionElement).selected;
-          }
-        }
+        /**
+         * We don't have to record special values of input elements at the beginning.
+         * Because if these values are changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm is executed.
+         */
         // canvas image data
         if (tagName === 'CANVAS') {
           rrElement.attributes.rr_dataURL = (elementNode as HTMLCanvasElement).toDataURL();
@@ -405,18 +396,29 @@ export function buildFromDom(
     rrNode.__sn = serializedNodeWithId;
     mirror && (mirror.map[serializedNodeWithId.id] = rrNode);
 
-    parentRRNode?.appendChild(rrNode);
-    rrNode.parentNode = parentRRNode;
-    rrNode.parentElement = parentRRNode as RRElement;
-
+    if (parentRRNode instanceof RRIFrameElement) {
+      parentRRNode.contentDocument = rrNode as RRDocument;
+    } else {
+      parentRRNode?.appendChild(rrNode);
+      rrNode.parentNode = parentRRNode;
+      rrNode.parentElement = parentRRNode as RRElement;
+    }
     if (
-      serializedNodeWithId.type === NodeType.Document ||
-      serializedNodeWithId.type === NodeType.Element
-    ) {
+      node.nodeType === node.ELEMENT_NODE &&
+      ((node as Node) as HTMLElement).tagName === 'IFRAME'
+    )
+      walk(
+        (((node as Node) as HTMLIFrameElement)
+          .contentDocument as unknown) as INode,
+        rrNode,
+      );
+    else if (
+      node.nodeType === node.DOCUMENT_NODE ||
+      node.nodeType === node.ELEMENT_NODE
+    )
       node.childNodes.forEach((node) =>
         walk((node as unknown) as INode, rrNode),
       );
-    }
   };
   walk((dom as unknown) as INode, null);
   return rrdom;
@@ -518,7 +520,6 @@ export class RRElement extends RRNode {
     this.children.push(newChild);
     newChild.parentNode = this;
     newChild.parentElement = this;
-    newChild.ownerDocument = this.ownerDocument;
     return newChild;
   }
 
@@ -532,7 +533,6 @@ export class RRElement extends RRNode {
     this.children.splice(childIndex, 0, newChild);
     newChild.parentElement = this;
     newChild.parentNode = this;
-    newChild.ownerDocument = this.ownerDocument;
     return newChild;
   }
 
@@ -588,20 +588,11 @@ export class RRStyleElement extends RRElement {
   public rules: VirtualStyleRules = [];
 }
 
-export class RRIframeElement extends RRElement {
+export class RRIFrameElement extends RRElement {
   width: string = '';
   height: string = '';
   src: string = '';
   contentDocument: RRDocument = new RRDocument();
-  contentWindow: RRWindow = new RRWindow();
-
-  constructor(tagName: string) {
-    super(tagName);
-    const htmlElement = this.contentDocument.createElement('HTML');
-    this.contentDocument.appendChild(htmlElement);
-    htmlElement.appendChild(this.contentDocument.createElement('HEAD'));
-    htmlElement.appendChild(this.contentDocument.createElement('BODY'));
-  }
 }
 
 export class RRText extends RRNode {
@@ -755,7 +746,7 @@ function walk(node: RRNode, blankSpace: string) {
   let printText = `${blankSpace}${node.toString()}\n`;
   for (const child of node.childNodes)
     printText += walk(child, blankSpace + '  ');
-  if (node instanceof RRIframeElement)
+  if (node instanceof RRIFrameElement)
     printText += walk(node.contentDocument, blankSpace + '  ');
   return printText;
 }

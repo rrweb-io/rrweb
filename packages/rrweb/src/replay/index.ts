@@ -12,6 +12,7 @@ import {
   RRDocument,
   RRElement,
   RRStyleElement,
+  RRIFrameElement,
   StyleRuleType,
   VirtualStyleRules,
   buildFromDom,
@@ -57,6 +58,7 @@ import {
   iterateResolveTree,
   AppendedIframe,
   isIframeINode,
+  isRRIFrameElement,
   getBaseDimension,
   hasShadowRoot,
   getNestedRule,
@@ -113,8 +115,6 @@ export class Replayer {
   // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
-  private fragmentParentMap!: Map<INode, INode>;
-
   // The replayer uses the cache to speed up replay and scrubbing.
   private cache: BuildCache = createCache();
 
@@ -162,8 +162,6 @@ export class Replayer {
     this.emitter.on(ReplayerEvents.Resize, this.handleResize as Handler);
 
     this.setupDom();
-
-    this.fragmentParentMap = new Map<INode, INode>();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingRRDom) {
@@ -650,7 +648,10 @@ export class Replayer {
       );
       if (builtNode.contentDocument) {
         const { documentElement, head } = builtNode.contentDocument;
-        this.insertStyleRules(documentElement, head);
+        this.insertStyleRules(
+          documentElement,
+          head! as HTMLHeadElement | RRElement,
+        );
       }
     }
     const { documentElement, head } = this.iframe.contentDocument;
@@ -670,11 +671,10 @@ export class Replayer {
   }
 
   private insertStyleRules(
-    documentElement: HTMLElement,
-    head: HTMLHeadElement,
+    documentElement: HTMLElement | RRElement,
+    head: HTMLHeadElement | RRElement,
   ) {
-    const styleEl = document.createElement('style');
-    documentElement!.insertBefore(styleEl, head);
+    // TODO add unit tests
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
     ).concat(this.config.insertStyleRules);
@@ -683,34 +683,42 @@ export class Replayer {
         'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',
       );
     }
-    for (let idx = 0; idx < injectStylesRules.length; idx++) {
-      (styleEl.sheet! as CSSStyleSheet).insertRule(injectStylesRules[idx], idx);
+    if (this.usingRRDom) {
+      const styleEl = this.rrdom.createElement('style') as RRStyleElement;
+      (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
+      for (let idx = 0; idx < injectStylesRules.length; idx++) {
+        // push virtual styles
+        styleEl.rules.push({
+          cssText: injectStylesRules[idx],
+          type: StyleRuleType.Insert,
+          index: idx,
+        });
+      }
+    } else {
+      const styleEl = document.createElement('style');
+      (documentElement as HTMLElement)!.insertBefore(
+        styleEl,
+        head as HTMLHeadElement,
+      );
+      for (let idx = 0; idx < injectStylesRules.length; idx++) {
+        (styleEl.sheet! as CSSStyleSheet).insertRule(
+          injectStylesRules[idx],
+          idx,
+        );
+      }
     }
   }
 
   private attachDocumentToIframe(
     mutation: addedNodeMutation,
-    iframeEl: HTMLIFrameElement,
+    iframeEl: HTMLIFrameElement | RRIFrameElement,
   ) {
-    // TODO adopt rrdom here
     const collected: AppendedIframe[] = [];
-    // If iframeEl is detached from dom, iframeEl.contentDocument is null.
-    if (!iframeEl.contentDocument) {
-      let parent = iframeEl.parentNode;
-      while (parent) {
-        // The parent of iframeEl is virtual parent and we need to mount it on the dom.
-        if (this.fragmentParentMap.has((parent as unknown) as INode)) {
-          const frag = (parent as unknown) as INode;
-          const realParent = this.fragmentParentMap.get(frag)!;
-          this.restoreRealParent(frag, realParent);
-          break;
-        }
-        parent = parent.parentNode;
-      }
-    }
     buildNodeWithSN(mutation.node, {
-      doc: iframeEl.contentDocument!,
-      map: this.mirror.map,
+      doc: (iframeEl.contentDocument! as unknown) as Document,
+      map: this.usingRRDom
+        ? ((this.rrdom.mirror.map as unknown) as idNodeMap)
+        : this.mirror.map,
       hackCss: true,
       skipChild: false,
       afterAppend: (builtNode) => {
@@ -725,7 +733,10 @@ export class Replayer {
       );
       if (builtNode.contentDocument) {
         const { documentElement, head } = builtNode.contentDocument;
-        this.insertStyleRules(documentElement, head);
+        this.insertStyleRules(
+          documentElement,
+          head! as HTMLHeadElement | RRElement,
+        );
       }
     }
   }
@@ -734,7 +745,7 @@ export class Replayer {
     collected: AppendedIframe[],
     builtNode: INode,
   ) {
-    if (isIframeINode(builtNode)) {
+    if (isIframeINode(builtNode) || isRRIFrameElement(builtNode)) {
       const mutationInQueue = this.newDocumentQueue.find(
         (m) => m.parentId === builtNode.__sn.id,
       );
@@ -804,6 +815,7 @@ export class Replayer {
    * pause when there are some canvas drawImage args need to be loaded
    */
   private preloadAllImages() {
+    // TODO check useful status
     let beforeLoadState = this.service.state;
     const stateHandler = () => {
       beforeLoadState = this.service.state;
@@ -1322,7 +1334,7 @@ export class Replayer {
         : useVirtualParent
         ? this.rrdom
         : this.iframe.contentDocument;
-      if (isIframeINode(parent)) {
+      if (isIframeINode(parent) || isRRIFrameElement(parent)) {
         this.attachDocumentToIframe(mutation, parent);
         return;
       }
@@ -1332,7 +1344,7 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
         cache: this.cache,
-      }) as INode;
+      }) as INode | RRNode;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1385,7 +1397,10 @@ export class Replayer {
         parent.appendChild(target as Node & RRNode);
       }
 
-      if (isIframeINode(target)) {
+      /**
+       * isRRIFrameElement won't actually be executed but it's used to make type inference of variable 'target' right.
+       */
+      if (isIframeINode(target) || isRRIFrameElement(target)) {
         const mutationInQueue = this.newDocumentQueue.find(
           (m) => m.parentId === target.__sn.id,
         );
@@ -1397,7 +1412,10 @@ export class Replayer {
         }
         if (target.contentDocument) {
           const { documentElement, head } = target.contentDocument;
-          this.insertStyleRules(documentElement, head);
+          this.insertStyleRules(
+            documentElement,
+            head! as HTMLHeadElement | RRElement,
+          );
         }
       }
 
@@ -1681,28 +1699,6 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.SkipEnd, {
       speed: this.speedService.state.context.normalSpeed,
     });
-  }
-
-  /**
-   * Replace the virtual parent with the real parent.
-   * @param frag fragment document, the virtual parent
-   * @param parent real parent element
-   */
-  private restoreRealParent(frag: INode, parent: INode) {
-    this.mirror.map[parent.__sn.id] = parent;
-    /**
-     * If we have already set value attribute on textarea,
-     * then we could not apply text content as default value any more.
-     */
-    if (
-      parent.__sn.type === NodeType.Element &&
-      parent.__sn.tagName === 'textarea' &&
-      frag.textContent
-    ) {
-      ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
-    }
-    parent.appendChild(frag);
-    // restore state of elements after they are mounted
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {

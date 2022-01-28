@@ -10,6 +10,8 @@ import {
   VirtualStyleRules,
   StyleRuleType,
   RRDocument,
+  RRIFrameElement,
+  RRDocumentType,
 } from './document-browser';
 
 const NAMESPACES: Record<string, string> = {
@@ -101,6 +103,14 @@ export function diff(
       replayer,
     );
   }
+  // IFrame element doesn't have child nodes.
+  if (newTree instanceof RRIFrameElement)
+    diff(
+      (((oldTree as Node) as HTMLIFrameElement)
+        .contentDocument! as unknown) as INode,
+      newTree.contentDocument,
+      replayer,
+    );
 }
 
 function diffProps(oldTree: HTMLElement, newTree: RRElement) {
@@ -223,6 +233,12 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
         rrNode.tagName.toLowerCase(),
       ) as unknown) as INode;
     } else node = (document.createElement(rrNode.tagName) as unknown) as INode;
+  } else if (rrNode instanceof RRDocumentType) {
+    node = (document.implementation.createDocumentType(
+      rrNode.name,
+      rrNode.publicId,
+      rrNode.systemId,
+    ) as unknown) as INode;
   } else if (rrNode instanceof RRText) {
     node = (document.createTextNode(rrNode.textContent) as unknown) as INode;
   } else if (rrNode instanceof RRComment) {

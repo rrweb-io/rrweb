@@ -215,7 +215,7 @@ export class RRDocument extends RRNode {
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
-        element = new RRIframeElement(upperTagName);
+        element = new RRIFrameElement(upperTagName);
         break;
       case 'IMG':
         element = new RRImageElement('IMG');
@@ -526,7 +526,7 @@ export class RRStyleElement extends RRElement {
   }
 }
 
-export class RRIframeElement extends RRElement {
+export class RRIFrameElement extends RRElement {
   width: string = '';
   height: string = '';
   src: string = '';

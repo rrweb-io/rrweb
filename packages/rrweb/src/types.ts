@@ -11,6 +11,7 @@ import { PackFn, UnpackFn } from './packer/base';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
+import { RRNode } from 'rrdom/es/document-browser';
 
 export enum EventType {
   DomContentLoaded,
@@ -556,7 +557,7 @@ export type playerMetaData = {
 };
 
 export type missingNode = {
-  node: Node;
+  node: Node | RRNode;
   mutation: addedNodeMutation;
 };
 export type missingNodeMap = {
