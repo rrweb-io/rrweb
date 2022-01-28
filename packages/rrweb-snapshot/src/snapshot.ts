@@ -64,8 +64,16 @@ function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
 }
 
+function stringifyStyleSheet(sheet: CSSStyleSheet): string {
+  return sheet.cssRules
+    ? Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText || '')
+        .join('')
+    : '';
+}
+
 function extractOrigin(url: string): string {
-  let origin;
+  let origin = '';
   if (url.indexOf('//') > -1) {
     origin = url.split('/').slice(0, 3).join('/');
   } else {
@@ -352,14 +360,6 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
-        .join('')
-    : '';
-}
-
 function serializeNode(
   n: Node,
   options: {
@@ -437,7 +437,10 @@ function serializeNode(
         const stylesheet = Array.from(doc.styleSheets).find((s) => {
           return s.href === (n as HTMLLinkElement).href;
         });
-        const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        let cssText: string | null = null;
+        if (stylesheet) {
+          cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        }
         if (cssText) {
           delete attributes.rel;
           delete attributes.href;
@@ -512,22 +515,24 @@ function serializeNode(
         const image = n as HTMLImageElement;
         const oldValue = image.crossOrigin;
         image.crossOrigin = 'anonymous';
-        try {
-          const recordInlineImage = () => {
+        const recordInlineImage = () => {
+          try {
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
             attributes.rr_dataURL = canvasService!.toDataURL();
-            oldValue
-              ? (attributes.crossOrigin = oldValue)
-              : delete attributes.crossOrigin;
-          };
-          // The image content may not have finished loading yet.
-          if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-          else image.onload = recordInlineImage;
-        } catch {
-          // ignore error
-        }
+          } catch (err) {
+            console.warn(
+              `Cannot inline img src=${image.currentSrc}! Error: ${err}`,
+            );
+          }
+          oldValue
+            ? (attributes.crossOrigin = oldValue)
+            : delete attributes.crossOrigin;
+        };
+        // The image content may not have finished loading yet.
+        if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+        else image.onload = recordInlineImage;
       }
       // media elements
       if (tagName === 'audio' || tagName === 'video') {
@@ -586,8 +591,8 @@ function serializeNode(
               (n.parentNode as HTMLStyleElement).sheet!,
             );
           }
-        } catch {
-          // ignore error
+        } catch (err) {
+          console.warn(`Cannot get CSS styles from text's parentNode. Error: ${err}`, n);
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
