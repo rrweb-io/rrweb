@@ -26,6 +26,7 @@ export async function launchPuppeteer() {
  * @param snapshots incrementalSnapshotEvent[]
  */
 function stringifySnapshots(snapshots: eventWithTime[]): string {
+  let asc_time = 0;
   return JSON.stringify(
     snapshots
       .filter((s) => {
@@ -89,6 +90,21 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
             }
             coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
           });
+        }
+        if (
+          s.type === EventType.IncrementalSnapshot &&
+            (s.data.source === IncrementalSource.MouseMove
+             || s.data.source === IncrementalSource.TouchMove
+             || s.data.source === IncrementalSource.Drag)
+        ) {
+          s.data.positions.forEach((p) => {
+            let t = s.timestamp + p.timeOffset;
+            assert(asc_time <= t);
+            asc_time = t;
+          });
+        } else {
+          assert(asc_time <= s.timestamp);
+          asc_time = s.timestamp;
         }
         delete s.timestamp;
         return s;

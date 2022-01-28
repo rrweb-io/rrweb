@@ -1,5 +1,5 @@
 import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import { initObservers, mutationBuffers, ongoingMove } from './observer';
 import {
   on,
   getWindowWidth,
@@ -22,7 +22,10 @@ import {
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 
-function wrapEvent(e: event): eventWithTime {
+function wrapEvent(e: event | eventWithTime): eventWithTime {
+  if ('timestamp' in e) {
+    return e as eventWithTime;
+  }
   return {
     ...e,
     timestamp: Date.now(),
@@ -121,6 +124,14 @@ function record<T = eventWithTime>(
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
+
+    if (ongoingMove) {
+      // emit any ongoing (but throttled) mouse or touch move;
+      // emitting now creates more events, but ensures events are emitted in
+      // sequence without any overlap from the negative Move timeOffset
+      ongoingMove(e.timestamp);
+    }
+
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -129,9 +140,15 @@ function record<T = eventWithTime>(
         e.data.source === IncrementalSource.Mutation
       )
     ) {
+      let mtimestamp = e.timestamp;
+      if ('positions' in e.data && e.data.positions[0].timeOffset) {
+        // assign the mutation timestamp to the beginning
+        // of mouse/touch movement
+        mtimestamp += e.data.positions[0].timeOffset;
+      }
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      mutationBuffers.forEach((buf) => buf.unfreeze(mtimestamp));
     }
 
     emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
@@ -159,17 +176,24 @@ function record<T = eventWithTime>(
     }
   };
 
-  const wrappedMutationEmit = (m: mutationCallbackParam) => {
-    wrappedEmit(
-      wrapEvent({
-        type: EventType.IncrementalSnapshot,
-        data: {
-          source: IncrementalSource.Mutation,
-          ...m,
-        },
-      }),
-    );
+  const wrappedMutationEmit = (m: mutationCallbackParam, timestamp?: number) => {
+    const e: event = {
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: IncrementalSource.Mutation,
+        ...m,
+      },
+    };
+    if (typeof timestamp !== 'undefined') {
+      wrappedEmit(wrapEvent({
+        timestamp: timestamp,
+        ...e,
+      }));
+    } else {
+      wrappedEmit(wrapEvent(e));
+    }
   };
+
   const wrappedScrollEmit: scrollCallback = (p) =>
     wrappedEmit(
       wrapEvent({
@@ -294,7 +318,7 @@ function record<T = eventWithTime>(
       return initObservers(
         {
           mutationCb: wrappedMutationEmit,
-          mousemoveCb: (positions, source) =>
+          mousemoveCb: (positions, source, timestamp) =>
             wrappedEmit(
               wrapEvent({
                 type: EventType.IncrementalSnapshot,
@@ -302,6 +326,7 @@ function record<T = eventWithTime>(
                   source,
                   positions,
                 },
+                timestamp: timestamp,
               }),
             ),
           mouseInteractionCb: (d) =>

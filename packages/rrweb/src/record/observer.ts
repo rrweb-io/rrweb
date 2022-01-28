@@ -60,6 +60,7 @@ type WindowWithAngularZone = IWindow & {
 };
 
 export const mutationBuffers: MutationBuffer[] = [];
+export let ongoingMove: ((now?: number) => void) | null = null;
 
 const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== 'undefined';
 const isCSSMediaRuleSupported = typeof CSSMediaRule !== 'undefined';
@@ -183,26 +184,31 @@ function initMoveObserver(
 
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
-  const wrappedCb = throttle(
-    (
-      source:
-        | IncrementalSource.MouseMove
-        | IncrementalSource.TouchMove
-        | IncrementalSource.Drag,
-    ) => {
-      const totalOffset = Date.now() - timeBaseline!;
-      cb(
-        positions.map((p) => {
-          p.timeOffset -= totalOffset;
-          return p;
-        }),
-        source,
-      );
-      positions = [];
-      timeBaseline = null;
-    },
-    callbackThreshold,
-  );
+  let source:
+    | IncrementalSource.MouseMove
+    | IncrementalSource.TouchMove
+    | IncrementalSource.Drag;
+
+  function moveEmission(now: number) {
+    if (!positions.length) {
+      // already emitted
+      return;
+    }
+    ongoingMove = null;
+    const totalOffset = now - timeBaseline!;
+    cb(
+      positions.map((p) => {
+        p.timeOffset -= totalOffset;
+        return p;
+      }),
+      source,
+      now,
+    );
+    positions = [];
+    timeBaseline = null;
+  }
+
+  const throttledMoveEmission = throttle(moveEmission, callbackThreshold);
   const updatePosition = throttle<MouseEvent | TouchEvent | DragEvent>(
     (evt) => {
       const target = getEventTarget(evt);
@@ -220,13 +226,14 @@ function initMoveObserver(
       });
       // it is possible DragEvent is undefined even on devices
       // that support event 'drag'
-      wrappedCb(
+      source =
         typeof DragEvent !== 'undefined' && evt instanceof DragEvent
-          ? IncrementalSource.Drag
-          : evt instanceof MouseEvent
-          ? IncrementalSource.MouseMove
-          : IncrementalSource.TouchMove,
-      );
+        ? IncrementalSource.Drag
+        : evt instanceof MouseEvent
+        ? IncrementalSource.MouseMove
+        : IncrementalSource.TouchMove;
+      ongoingMove = moveEmission;
+      throttledMoveEmission(Date.now());
     },
     threshold,
     {
