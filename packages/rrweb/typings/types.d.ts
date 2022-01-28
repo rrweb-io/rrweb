@@ -1,8 +1,10 @@
-import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
-import { PackFn, UnpackFn } from './packer/base';
-import { IframeManager } from './record/iframe-manager';
-import { ShadowDomManager } from './record/shadow-dom-manager';
+/// <reference types="css-font-loading-module" />
+import type { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
+import type { PackFn, UnpackFn } from './packer/base';
+import type { IframeManager } from './record/iframe-manager';
+import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
+import type { RRNode } from 'rrdom/es/document-browser';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -416,7 +418,7 @@ export declare type playerMetaData = {
     totalTime: number;
 };
 export declare type missingNode = {
-    node: Node;
+    node: Node | RRNode;
     mutation: addedNodeMutation;
 };
 export declare type missingNodeMap = {

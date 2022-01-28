@@ -15,8 +15,6 @@ export declare class Replayer {
     private emitter;
     private nextUserInteractionEvent;
     private legacy_missingNodeRetryMap;
-    private treeIndex;
-    private fragmentParentMap;
     private cache;
     private imageMap;
     private mirror;
@@ -62,7 +60,6 @@ export declare class Replayer {
     private hoverElements;
     private isUserInteraction;
     private backToNormal;
-    private restoreRealParent;
     private warnNodeNotFound;
     private warnCanvasMutationFailed;
     private debugNodeNotFound;

@@ -6,7 +6,7 @@ import {
   MaskInputFn,
   MaskTextFn,
 } from 'rrweb-snapshot';
-import { FontFaceSet } from 'css-font-loading-module';
+import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
   on,
@@ -47,8 +47,8 @@ import {
   IWindow,
 } from '../types';
 import MutationBuffer from './mutation';
-import { IframeManager } from './iframe-manager';
-import { ShadowDomManager } from './shadow-dom-manager';
+import type { IframeManager } from './iframe-manager';
+import type { ShadowDomManager } from './shadow-dom-manager';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -150,9 +150,9 @@ export function initMutationObserver(
       typeof MutationObserver
     >)[angularZoneSymbol];
   }
-  const observer = new mutationObserverCtor(
-    mutationBuffer.processMutations.bind(mutationBuffer),
-  );
+  const observer = new (mutationObserverCtor as new (
+    callback: MutationCallback,
+  ) => MutationObserver)(mutationBuffer.processMutations.bind(mutationBuffer));
   observer.observe(rootEl, {
     attributes: true,
     attributeOldValue: true,

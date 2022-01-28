@@ -1,4 +1,4 @@
-import {
+import type {
   serializedNodeWithId,
   idNodeMap,
   INode,
@@ -7,11 +7,11 @@ import {
   MaskInputFn,
   MaskTextFn,
 } from 'rrweb-snapshot';
-import { PackFn, UnpackFn } from './packer/base';
-import { IframeManager } from './record/iframe-manager';
-import { ShadowDomManager } from './record/shadow-dom-manager';
+import type { PackFn, UnpackFn } from './packer/base';
+import type { IframeManager } from './record/iframe-manager';
+import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import { RRNode } from 'rrdom/es/document-browser';
+import type { RRNode } from 'rrdom/es/document-browser';
 
 export enum EventType {
   DomContentLoaded,

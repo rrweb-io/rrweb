@@ -11,7 +11,7 @@ import {
   MaskTextFn,
   MaskInputFn,
 } from 'rrweb-snapshot';
-import {
+import type {
   mutationRecord,
   blockClass,
   maskTextClass,
@@ -30,8 +30,8 @@ import {
   isIframeINode,
   hasShadowRoot,
 } from '../utils';
-import { IframeManager } from './iframe-manager';
-import { ShadowDomManager } from './shadow-dom-manager';
+import type { IframeManager } from './iframe-manager';
+import type { ShadowDomManager } from './shadow-dom-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;

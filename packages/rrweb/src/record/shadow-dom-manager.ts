@@ -1,4 +1,4 @@
-import {
+import type {
   mutationCallBack,
   blockClass,
   maskTextClass,
@@ -6,13 +6,13 @@ import {
   scrollCallback,
   SamplingStrategy,
 } from '../types';
-import {
+import type {
   MaskInputOptions,
   SlimDOMOptions,
   MaskTextFn,
   MaskInputFn,
 } from 'rrweb-snapshot';
-import { IframeManager } from './iframe-manager';
+import type { IframeManager } from './iframe-manager';
 import { initMutationObserver, initScrollObserver } from './observer';
 
 type BypassOptions = {
