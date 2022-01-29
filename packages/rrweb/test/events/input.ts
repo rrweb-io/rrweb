@@ -60,7 +60,7 @@ const events: eventWithTime[] = [
   },
   // mutation that adds select elements
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Mutation,
       texts: [],
@@ -132,7 +132,7 @@ const events: eventWithTime[] = [
   },
   // input event
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Input,
       text: 'valueA',
@@ -143,7 +143,7 @@ const events: eventWithTime[] = [
   },
   // input event
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Input,
       text: 'valueC',
@@ -154,7 +154,7 @@ const events: eventWithTime[] = [
   },
   // mutation that adds an input element
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Mutation,
       texts: [],
@@ -178,7 +178,7 @@ const events: eventWithTime[] = [
   },
   // an input event
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Input,
       text: 'test input',
@@ -189,7 +189,7 @@ const events: eventWithTime[] = [
   },
   // remove the select element
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Mutation,
       texts: [],
@@ -201,7 +201,7 @@ const events: eventWithTime[] = [
   },
   // remove the input element
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Mutation,
       texts: [],

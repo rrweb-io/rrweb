@@ -11,6 +11,7 @@ import {
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
+import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 
 interface ISuite {
@@ -223,15 +224,75 @@ describe('replayer', function () {
     expect(result).toEqual(false);
   });
 
+  it('can fast forward scroll events', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(scrollEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add the "#container" element at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('#container')).not.toBeNull();
+    expect(await contentDocument!.$('#block')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        '#container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(0);
+
+    const delay = 50;
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+
+    await page.evaluate('replayer.pause(1050);');
+    // scroll the "#container" div' at 1000
+    expect(
+      await contentDocument!.$eval(
+        '#container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(2500);
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(1550);');
+    // scroll the document at 1500
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(250);
+
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(2050);');
+    // remove the "#container" element at 2000
+    expect(await contentDocument!.$('#container')).toBeNull();
+    expect(await contentDocument!.$('#block')).toBeNull();
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(0);
+  });
+
   it('can fast forward input events', async () => {
     await page.evaluate(`
       events = ${JSON.stringify(inputEvents)};
       const { Replayer } = rrweb;
-      var replayer = new Replayer(events);
+      var replayer = new Replayer(events,{showDebug:true});
       replayer.pause(1050);
     `);
-    let iframe = await page.$('iframe');
-    let contentDocument = await iframe!.contentFrame()!;
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
     expect(await contentDocument!.$('select')).not.toBeNull();
     expect(
       await contentDocument!.$eval(
