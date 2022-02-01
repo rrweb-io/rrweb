@@ -49,9 +49,7 @@ import {
 import MutationBuffer from './mutation';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
-import initCanvasContextObserver from './observers/canvas/canvas';
-import initCanvas2DMutationObserver from './observers/canvas/2d';
-import initCanvasWebGLMutationObserver from './observers/canvas/webgl';
+import { CanvasManager } from './observers/canvas/canvas-manager';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -104,6 +102,8 @@ export function initMutationObserver(
   mirror: Mirror,
   iframeManager: IframeManager,
   shadowDomManager: ShadowDomManager,
+  canvasManager: CanvasManager,
+  // canvasCb: canvasMutationCallback,
   rootEl: Node,
 ): MutationObserver {
   const mutationBuffer = new MutationBuffer();
@@ -125,6 +125,7 @@ export function initMutationObserver(
     mirror,
     iframeManager,
     shadowDomManager,
+    canvasManager,
   );
   let mutationObserverCtor =
     window.MutationObserver ||
@@ -715,34 +716,6 @@ function initMediaInteractionObserver(
   };
 }
 
-function initCanvasMutationObserver(
-  cb: canvasMutationCallback,
-  win: IWindow,
-  blockClass: blockClass,
-  mirror: Mirror,
-): listenerHandler {
-  const canvasContextReset = initCanvasContextObserver(win, blockClass);
-  const canvas2DReset = initCanvas2DMutationObserver(
-    cb,
-    win,
-    blockClass,
-    mirror,
-  );
-
-  const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
-    cb,
-    win,
-    blockClass,
-    mirror,
-  );
-
-  return () => {
-    canvasContextReset();
-    canvas2DReset();
-    canvasWebGL1and2Reset();
-  };
-}
-
 function initFontObserver(cb: fontCallback, doc: Document): listenerHandler {
   const win = doc.defaultView as IWindow;
   if (!win) {
@@ -904,6 +877,7 @@ export function initObservers(
     o.mirror,
     o.iframeManager,
     o.shadowDomManager,
+    o.canvasManager,
     o.doc,
   );
   const mousemoveHandler = initMoveObserver(
@@ -955,14 +929,6 @@ export function initObservers(
     currentWindow,
     o.mirror,
   );
-  const canvasMutationObserver = o.recordCanvas
-    ? initCanvasMutationObserver(
-        o.canvasMutationCb,
-        currentWindow,
-        o.blockClass,
-        o.mirror,
-      )
-    : () => {};
   const fontObserver = o.collectFonts
     ? initFontObserver(o.fontCb, o.doc)
     : () => {};
@@ -975,6 +941,7 @@ export function initObservers(
   }
 
   return () => {
+    mutationBuffers.forEach((b) => b.reset());
     mutationObserver.disconnect();
     mousemoveHandler();
     mouseInteractionHandler();
@@ -984,7 +951,6 @@ export function initObservers(
     mediaInteractionHandler();
     styleSheetObserver();
     styleDeclarationObserver();
-    canvasMutationObserver();
     fontObserver();
     pluginHandlers.forEach((h) => h());
   };

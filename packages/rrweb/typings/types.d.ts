@@ -4,6 +4,7 @@ import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
+import { CanvasManager } from './record/observers/canvas/canvas-manager';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -122,6 +123,7 @@ export declare type SamplingStrategy = Partial<{
     mousemoveCallback: number;
     mouseInteraction: boolean | Record<string, boolean | undefined>;
     scroll: number;
+    media: number;
     input: 'all' | 'last';
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
@@ -184,6 +186,7 @@ export declare type observerParam = {
     mirror: Mirror;
     iframeManager: IframeManager;
     shadowDomManager: ShadowDomManager;
+    canvasManager: CanvasManager;
     plugins: Array<{
         observer: Function;
         callback: Function;
@@ -337,15 +340,24 @@ export declare type styleDeclarationParam = {
     };
 };
 export declare type styleDeclarationCallback = (s: styleDeclarationParam) => void;
-export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
-export declare type canvasMutationParam = {
-    id: number;
-    type: CanvasContext;
+export declare type canvasMutationCommand = {
     property: string;
     args: Array<unknown>;
     setter?: true;
-    newFrame?: true;
 };
+export declare type canvasMutationParam = {
+    id: number;
+    type: CanvasContext;
+    commands: canvasMutationCommand[];
+} | ({
+    id: number;
+    type: CanvasContext;
+} & canvasMutationCommand);
+export declare type canvasMutationWithType = {
+    type: CanvasContext;
+} & canvasMutationCommand;
+export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
+export declare type canvasManagerMutationCallback = (target: HTMLCanvasElement, p: canvasMutationWithType) => void;
 export declare type fontParam = {
     family: string;
     fontSource: string;
@@ -369,12 +381,15 @@ export declare type inputCallback = (v: inputValue & {
 export declare const enum MediaInteractions {
     Play = 0,
     Pause = 1,
-    Seeked = 2
+    Seeked = 2,
+    VolumeChange = 3
 }
 export declare type mediaInteractionParam = {
     type: MediaInteractions;
     id: number;
     currentTime?: number;
+    volume?: number;
+    muted?: boolean;
 };
 export declare type mediaInteractionCallback = (p: mediaInteractionParam) => void;
 export declare type DocumentDimension = {
@@ -440,7 +455,6 @@ export declare type missingNodeMap = {
 export declare type actionWithDelay = {
     doAction: () => void;
     delay: number;
-    newFrame: boolean;
 };
 export declare type Handler = (event?: unknown) => void;
 export declare type Emitter = {

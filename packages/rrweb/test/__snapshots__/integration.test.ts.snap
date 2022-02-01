@@ -7377,34 +7377,26 @@ exports[`record integration tests should record canvas mutations 1`] = `
       \\"source\\": 9,
       \\"id\\": 16,
       \\"type\\": 0,
-      \\"property\\": \\"moveTo\\",
-      \\"args\\": [
-        0,
-        0
+      \\"commands\\": [
+        {
+          \\"property\\": \\"moveTo\\",
+          \\"args\\": [
+            0,
+            0
+          ]
+        },
+        {
+          \\"property\\": \\"lineTo\\",
+          \\"args\\": [
+            200,
+            100
+          ]
+        },
+        {
+          \\"property\\": \\"stroke\\",
+          \\"args\\": []
+        }
       ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 16,
-      \\"type\\": 0,
-      \\"property\\": \\"lineTo\\",
-      \\"args\\": [
-        200,
-        100
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 16,
-      \\"type\\": 0,
-      \\"property\\": \\"stroke\\",
-      \\"args\\": []
     }
   }
 ]"

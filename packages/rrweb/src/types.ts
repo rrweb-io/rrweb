@@ -12,6 +12,7 @@ import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
+import { CanvasManager } from './record/observers/canvas/canvas-manager';
 
 export enum EventType {
   DomContentLoaded,
@@ -266,6 +267,7 @@ export type observerParam = {
   mirror: Mirror;
   iframeManager: IframeManager;
   shadowDomManager: ShadowDomManager;
+  canvasManager: CanvasManager;
   plugins: Array<{
     observer: Function;
     callback: Function;
@@ -463,8 +465,6 @@ export type styleDeclarationParam = {
 
 export type styleDeclarationCallback = (s: styleDeclarationParam) => void;
 
-export type canvasMutationCallback = (p: canvasMutationParam) => void;
-
 export type canvasMutationCommand = {
   property: string;
   args: Array<unknown>;
@@ -481,6 +481,17 @@ export type canvasMutationParam =
       id: number;
       type: CanvasContext;
     } & canvasMutationCommand);
+
+export type canvasMutationWithType = {
+  type: CanvasContext;
+} & canvasMutationCommand;
+
+export type canvasMutationCallback = (p: canvasMutationParam) => void;
+
+export type canvasManagerMutationCallback = (
+  target: HTMLCanvasElement,
+  p: canvasMutationWithType,
+) => void;
 
 export type fontParam = {
   family: string;

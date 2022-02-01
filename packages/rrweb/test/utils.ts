@@ -470,3 +470,13 @@ export const polyfillWebGLGlobals = () => {
   }
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
+
+export async function waitForRAF(page: puppeteer.Page) {
+  return await page.evaluate(() => {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
+    });
+  });
+}

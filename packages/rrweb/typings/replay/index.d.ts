@@ -54,6 +54,7 @@ export declare class Replayer {
     private hasImageArg;
     private getImageArgs;
     private preloadAllImages;
+    private preloadImages;
     private applyIncremental;
     private applyMutation;
     private applyScroll;

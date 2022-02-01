@@ -7,6 +7,7 @@ import {
   startServer,
   getServerURL,
   launchPuppeteer,
+  waitForRAF,
 } from './utils';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
@@ -171,7 +172,9 @@ describe('record integration tests', function (this: ISuite) {
   it('can freeze mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
+    await page.setContent(
+      getHtml.call(this, 'mutation-observer.html', { recordCanvas: true }),
+    );
 
     await page.evaluate(() => {
       const li = document.createElement('li');
@@ -183,6 +186,9 @@ describe('record integration tests', function (this: ISuite) {
     await page.evaluate('rrweb.freezePage()');
     await page.evaluate(() => {
       document.body.setAttribute('test', 'bad');
+      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+      const gl = canvas.getContext('webgl') as WebGLRenderingContext;
+      gl.getExtension('bad');
       const ul = document.querySelector('ul') as HTMLUListElement;
       const li = document.createElement('li');
       li.setAttribute('bad-attr', 'bad');
@@ -190,6 +196,9 @@ describe('record integration tests', function (this: ISuite) {
       ul.appendChild(li);
       document.body.removeChild(ul);
     });
+
+    await waitForRAF(page);
+
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });
@@ -365,7 +374,7 @@ describe('record integration tests', function (this: ISuite) {
         recordCanvas: true,
       }),
     );
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
     const snapshots = await page.evaluate('window.snapshots');
     for (const event of snapshots) {
       if (event.type === EventType.FullSnapshot) {

@@ -11,7 +11,7 @@ import {
   IncrementalSource,
   CanvasContext,
 } from '../../src/types';
-import { assertSnapshot, launchPuppeteer } from '../utils';
+import { assertSnapshot, launchPuppeteer, waitForRAF } from '../utils';
 import { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
@@ -75,16 +75,6 @@ const setup = function (this: ISuite, content: string): ISuite {
 
   return ctx;
 };
-
-async function waitForRAF(page: puppeteer.Page) {
-  return await page.evaluate(() => {
-    return new Promise((resolve) => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve);
-      });
-    });
-  });
-}
 
 describe('record webgl', function (this: ISuite) {
   jest.setTimeout(100_000);

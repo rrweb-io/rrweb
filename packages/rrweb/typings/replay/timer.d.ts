@@ -15,7 +15,4 @@ export declare class Timer {
     isActive(): boolean;
     private findActionIndex;
 }
-export declare type LastDelay = {
-    at: number | null;
-};
-export declare function addDelay(event: eventWithTime, baselineTime: number, lastDelay?: LastDelay): number;
+export declare function addDelay(event: eventWithTime, baselineTime: number): number;
