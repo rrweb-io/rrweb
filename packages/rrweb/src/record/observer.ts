@@ -104,7 +104,6 @@ export function initMutationObserver(
   iframeManager: IframeManager,
   shadowDomManager: ShadowDomManager,
   canvasManager: CanvasManager,
-  // canvasCb: canvasMutationCallback,
   rootEl: Node,
 ): MutationObserver {
   const mutationBuffer = new MutationBuffer();
