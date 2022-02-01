@@ -120,6 +120,17 @@ function record<T = eventWithTime>(
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
+  const eventProcessor = (e: eventWithTime): T => {
+    for (const plugin of plugins || []) {
+      if (plugin.eventProcessor) {
+        e = plugin.eventProcessor(e);
+      }
+    }
+    if (packFn) {
+      e = (packFn(e) as unknown) as eventWithTime;
+    }
+    return (e as unknown) as T;
+  };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
       mutationBuffers[0]?.isFrozen() &&
@@ -134,7 +145,7 @@ function record<T = eventWithTime>(
       mutationBuffers.forEach((buf) => buf.unfreeze());
     }
 
-    emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
+    emit(eventProcessor(e), isCheckout);
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
@@ -405,20 +416,22 @@ function record<T = eventWithTime>(
           iframeManager,
           shadowDomManager,
           plugins:
-            plugins?.map((p) => ({
-              observer: p.observer,
-              options: p.options,
-              callback: (payload: object) =>
-                wrappedEmit(
-                  wrapEvent({
-                    type: EventType.Plugin,
-                    data: {
-                      plugin: p.name,
-                      payload,
-                    },
-                  }),
-                ),
-            })) || [],
+            plugins
+              ?.filter((p) => p.observer)
+              ?.map((p) => ({
+                observer: p.observer!,
+                options: p.options,
+                callback: (payload: object) =>
+                  wrappedEmit(
+                    wrapEvent({
+                      type: EventType.Plugin,
+                      data: {
+                        plugin: p.name,
+                        payload,
+                      },
+                    }),
+                  ),
+              })) || [],
         },
         hooks,
       );
