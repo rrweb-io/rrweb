@@ -39,6 +39,16 @@ function getValidTagName(element: HTMLElement): string {
   return processedTagName;
 }
 
+// return the orignal tag name which was not used earlier. change by Mz
+function getOriginalTagName(element: HTMLElement): string {
+  if (element instanceof HTMLFormElement) {
+    return 'form';
+  }
+
+  const processedTagName = element.tagName.toLowerCase().trim();
+  return processedTagName;
+}
+
 function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
@@ -428,6 +438,7 @@ function serializeNode(
         blockSelector,
       );
       const tagName = getValidTagName(n as HTMLElement);
+      const originalTagName = getOriginalTagName(n as HTMLElement);
       let attributes: attributes = {};
       for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
         attributes[name] = transformAttribute(doc, tagName, name, value);
@@ -568,7 +579,8 @@ function serializeNode(
         childNodes: [],
         isSVG: isSVGElement(n as Element) || undefined,
         needBlock,
-        rootId,
+        rootId, 
+        originalTagName
       };
     case n.TEXT_NODE:
       // The parent node may not be a html element which has a tagName attribute.

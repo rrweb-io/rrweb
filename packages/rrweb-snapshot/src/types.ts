@@ -59,6 +59,7 @@ export type serializedNode = (
   rootId?: number;
   isShadowHost?: boolean;
   isShadow?: boolean;
+  originalTagName?:string;
 };
 
 export type serializedNodeWithId = serializedNode & { id: number };

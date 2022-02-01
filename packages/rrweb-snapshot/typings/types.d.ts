@@ -45,6 +45,7 @@ export declare type serializedNode = (documentNode | documentTypeNode | elementN
     rootId?: number;
     isShadowHost?: boolean;
     isShadow?: boolean;
+    originalTagName?: string;
 };
 export declare type serializedNodeWithId = serializedNode & {
     id: number;

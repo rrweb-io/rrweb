@@ -144,7 +144,8 @@ function buildNode(
       } else {
         node = doc.createElement(tagName);
       }
-      node.setAttribute('data-Id', n.id.toString());
+      node.setAttribute('data-OpusId', n.id.toString());
+      node.setAttribute('data-OpusOrigTagName', n.tagName.toString());
       for (const name in n.attributes) {
         if (!n.attributes.hasOwnProperty(name)) {
           continue;
