@@ -1,6 +1,5 @@
 import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
-import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
@@ -152,6 +151,7 @@ export declare type recordOptions<T> = {
     recordCanvas?: boolean;
     userTriggeredOnInput?: boolean;
     collectFonts?: boolean;
+    inlineImages?: boolean;
     plugins?: RecordPlugin[];
     mousemoveWait?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
@@ -179,6 +179,7 @@ export declare type observerParam = {
     fontCb: fontCallback;
     sampling: SamplingStrategy;
     recordCanvas: boolean;
+    inlineImages: boolean;
     userTriggeredOnInput: boolean;
     collectFonts: boolean;
     slimDOMOptions: SlimDOMOptions;

@@ -8,7 +8,6 @@ import {
   MaskTextFn,
 } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
-import { FontFaceDescriptors } from 'css-font-loading-module';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
@@ -231,6 +230,7 @@ export type recordOptions<T> = {
   recordCanvas?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
+  inlineImages?: boolean;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -260,6 +260,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
+  inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;

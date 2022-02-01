@@ -65,8 +65,16 @@ function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
 }
 
+function stringifyStyleSheet(sheet: CSSStyleSheet): string {
+  return sheet.cssRules
+    ? Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText || '')
+        .join('')
+    : '';
+}
+
 function extractOrigin(url: string): string {
-  let origin;
+  let origin = '';
   if (url.indexOf('//') > -1) {
     origin = url.split('/').slice(0, 3).join('/');
   } else {
@@ -78,17 +86,6 @@ function extractOrigin(url: string): string {
 
 let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
-
-function initCanvasService(doc: Document) {
-  if (!canvasService) {
-      canvasService = doc.createElement('canvas');
-  }
-  if (!canvasCtx) {
-      canvasCtx = canvasService.getContext('2d');
-  }
-  canvasService.width = 0;
-  canvasService.height = 0;
-}
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
 const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/|#).*/;
@@ -364,14 +361,6 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
-        .join('')
-    : '';
-}
-
 function serializeNode(
   n: Node,
   options: {
@@ -449,7 +438,10 @@ function serializeNode(
         const stylesheet = Array.from(doc.styleSheets).find((s) => {
           return s.href === (n as HTMLLinkElement).href;
         });
-        const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        let cssText: string | null = null;
+        if (stylesheet) {
+          cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        }
         if (cssText) {
           delete attributes.rel;
           delete attributes.href;
@@ -503,7 +495,7 @@ function serializeNode(
         }
       }
       if (tagName === 'option') {
-        if ((n as HTMLOptionElement).selected) {
+        if ((n as HTMLOptionElement).selected && !maskInputOptions['select']) {
           attributes.selected = true;
         } else {
           // ignore the html attribute (which corresponds to DOM (n as HTMLOptionElement).defaultSelected)
@@ -531,17 +523,32 @@ function serializeNode(
         }
       }
       // save image offline
-      if (tagName === 'img' && inlineImages && canvasService && canvasCtx) {
-        const image = (n as HTMLImageElement);
-        image.crossOrigin = 'anonymous';
-        try {
-          canvasService.width = image.naturalWidth;
-          canvasService.height = image.naturalHeight;
-          canvasCtx.drawImage(image, 0, 0);
-          attributes.rr_dataURL = canvasService.toDataURL();
-        } catch {
-          // ignore error
+      if (tagName === 'img' && inlineImages) {
+        if (!canvasService) {
+          canvasService = doc.createElement('canvas');
+          canvasCtx = canvasService.getContext('2d');
         }
+        const image = n as HTMLImageElement;
+        const oldValue = image.crossOrigin;
+        image.crossOrigin = 'anonymous';
+        const recordInlineImage = () => {
+          try {
+            canvasService!.width = image.naturalWidth;
+            canvasService!.height = image.naturalHeight;
+            canvasCtx!.drawImage(image, 0, 0);
+            attributes.rr_dataURL = canvasService!.toDataURL();
+          } catch (err) {
+            console.warn(
+              `Cannot inline img src=${image.currentSrc}! Error: ${err}`,
+            );
+          }
+          oldValue
+            ? (attributes.crossOrigin = oldValue)
+            : delete attributes.crossOrigin;
+        };
+        // The image content may not have finished loading yet.
+        if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+        else image.onload = recordInlineImage;
       }
       // media elements
       if (tagName === 'audio' || tagName === 'video') {
@@ -600,8 +607,8 @@ function serializeNode(
               (n.parentNode as HTMLStyleElement).sheet!,
             );
           }
-        } catch {
-          // ignore error
+        } catch (err) {
+          console.warn(`Cannot get CSS styles from text's parentNode. Error: ${err}`, n);
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
@@ -847,9 +854,6 @@ export function serializeNodeWithId(
       // would impede performance: || getComputedStyle(n)['white-space'] === 'normal'
     ) {
       preserveWhiteSpace = false;
-    }
-    if (inlineImages) {
-      initCanvasService(doc);
     }
     const bypassOptions = {
       doc,

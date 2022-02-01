@@ -61,6 +61,7 @@ function record<T = eventWithTime>(
     recordCanvas = false,
     userTriggeredOnInput = false,
     collectFonts = false,
+    inlineImages = false,
     plugins,
     keepIframeSrcFn = () => false,
   } = options;
@@ -216,6 +217,7 @@ function record<T = eventWithTime>(
       maskTextFn,
       maskInputFn,
       recordCanvas,
+      inlineImages,
       sampling,
       slimDOMOptions,
       iframeManager,
@@ -248,6 +250,7 @@ function record<T = eventWithTime>(
       maskTextFn,
       slimDOM: slimDOMOptions,
       recordCanvas,
+      inlineImages,
       onSerialize: (n) => {
         if (isIframeINode(n)) {
           iframeManager.addIframe(n);
@@ -401,6 +404,7 @@ function record<T = eventWithTime>(
           inlineStylesheet,
           sampling,
           recordCanvas,
+          inlineImages,
           userTriggeredOnInput,
           collectFonts,
           doc,

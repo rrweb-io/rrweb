@@ -5,7 +5,7 @@ import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
 export declare const mutationBuffers: MutationBuffer[];
-export declare function initMutationObserver(cb: mutationCallBack, doc: Document, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean, slimDOMOptions: SlimDOMOptions, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, canvasManager: CanvasManager, rootEl: Node): MutationObserver;
+export declare function initMutationObserver(cb: mutationCallBack, doc: Document, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean, inlineImages: boolean, slimDOMOptions: SlimDOMOptions, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, canvasManager: CanvasManager, rootEl: Node): MutationObserver;
 export declare function initScrollObserver(cb: scrollCallback, doc: Document, mirror: Mirror, blockClass: blockClass, sampling: SamplingStrategy): listenerHandler;
 export declare const INPUT_TAGS: string[];
 export declare function initObservers(o: observerParam, hooks?: hooksParam): listenerHandler;

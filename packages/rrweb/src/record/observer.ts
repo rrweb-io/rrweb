@@ -6,7 +6,7 @@ import {
   MaskInputFn,
   MaskTextFn,
 } from 'rrweb-snapshot';
-import { FontFaceDescriptors, FontFaceSet } from 'css-font-loading-module';
+import { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
   on,
@@ -98,6 +98,7 @@ export function initMutationObserver(
   maskTextFn: MaskTextFn | undefined,
   maskInputFn: MaskInputFn | undefined,
   recordCanvas: boolean,
+  inlineImages: boolean,
   slimDOMOptions: SlimDOMOptions,
   mirror: Mirror,
   iframeManager: IframeManager,
@@ -120,6 +121,7 @@ export function initMutationObserver(
     maskTextFn,
     maskInputFn,
     recordCanvas,
+    inlineImages,
     slimDOMOptions,
     doc,
     mirror,
@@ -373,8 +375,14 @@ function initInputObserver(
   userTriggeredOnInput: boolean,
 ): listenerHandler {
   function eventHandler(event: Event) {
-    const target = getEventTarget(event);
+    let target = getEventTarget(event);
     const userTriggered = event.isTrusted;
+    /**
+     * If a site changes the value 'selected' of an option element, the value of its parent element, usually a select element, will be changed as well.
+     * We can treat this change as a value change of the select element the current target belongs to.
+     */
+    if (target && (target as Element).tagName === 'OPTION')
+      target = (target as Element).parentElement;
     if (
       !target ||
       !(target as Element).tagName ||
@@ -465,6 +473,7 @@ function initInputObserver(
     [HTMLTextAreaElement.prototype, 'value'],
     // Some UI library use selectedIndex to set select value
     [HTMLSelectElement.prototype, 'selectedIndex'],
+    [HTMLOptionElement.prototype, 'selected'],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
@@ -873,6 +882,7 @@ export function initObservers(
     o.maskTextFn,
     o.maskInputFn,
     o.recordCanvas,
+    o.inlineImages,
     o.slimDOMOptions,
     o.mirror,
     o.iframeManager,

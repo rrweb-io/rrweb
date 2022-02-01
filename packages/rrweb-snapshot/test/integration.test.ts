@@ -194,22 +194,20 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('correctly saves images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    // console for debug
-    // tslint:disable-next-line: no-console
-    page.on('console', (msg) => console.log(msg.text()));
 
-    await page.goto('http://localhost:3030/html/picture.html', { waitUntil: 'load' });
+    await page.goto('http://localhost:3030/html/picture.html', {
+      waitUntil: 'load',
+    });
     await page.waitForSelector('img', { timeout: 1000 });
-
-    const snapshot = await page.evaluate(`${code}
-    const [snap] = rrweb.snapshot(document, {inlineImages: true, inlineStylesheet: false});
-    JSON.stringify(snap, null, 2);
+    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {inlineImages: true, inlineStylesheet: false});
     `);
-
+    await page.waitFor(100);
+    const snapshot = await page.evaluate(
+      'JSON.stringify(snapshot[0], null, 2);',
+    );
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/png;base64,'));
   });
-
 });
 
 describe('iframe integration tests', function (this: ISuite) {
