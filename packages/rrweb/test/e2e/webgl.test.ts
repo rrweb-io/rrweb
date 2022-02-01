@@ -2,7 +2,12 @@ import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { startServer, launchPuppeteer, getServerURL } from '../utils';
+import {
+  startServer,
+  launchPuppeteer,
+  getServerURL,
+  replaceLast,
+} from '../utils';
 import {
   recordOptions,
   eventWithTime,
@@ -54,7 +59,8 @@ describe('e2e webgl', () => {
   ): string => {
     const filePath = path.resolve(__dirname, `../html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
-    return html.replace(
+    return replaceLast(
+      html,
       '</body>',
       `
     <script>

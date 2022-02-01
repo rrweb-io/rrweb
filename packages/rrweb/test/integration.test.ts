@@ -8,6 +8,7 @@ import {
   getServerURL,
   launchPuppeteer,
   waitForRAF,
+  replaceLast,
 } from './utils';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
@@ -32,7 +33,8 @@ describe('record integration tests', function (this: ISuite) {
   ): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
-    return html.replace(
+    return replaceLast(
+      html,
       '</body>',
       `
     <script>
