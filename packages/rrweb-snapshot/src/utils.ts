@@ -36,6 +36,11 @@ export function maskInputValue({
   return text;
 }
 
+const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
+type PatchedGetImageData = {
+  [ORIGINAL_ATTRIBUTE_NAME]: CanvasImageData['getImageData'];
+} & CanvasImageData['getImageData'];
+
 export function isCanvasBlank(canvas: HTMLCanvasElement): boolean {
   const ctx = canvas.getContext('2d');
   if (!ctx) return true;
@@ -45,12 +50,17 @@ export function isCanvasBlank(canvas: HTMLCanvasElement): boolean {
   // get chunks of the canvas and check if it is blank
   for (let x = 0; x < canvas.width; x += chunkSize) {
     for (let y = 0; y < canvas.height; y += chunkSize) {
+      const getImageData = ctx.getImageData as PatchedGetImageData;
+      const originalGetImageData =
+        ORIGINAL_ATTRIBUTE_NAME in getImageData
+          ? getImageData[ORIGINAL_ATTRIBUTE_NAME]
+          : getImageData;
       // by getting the canvas in chunks we avoid an expensive
       // `getImageData` call that retrieves everything
       // even if we can already tell from the first chunk(s) that
       // the canvas isn't blank
       const pixelBuffer = new Uint32Array(
-        ctx.getImageData(
+        originalGetImageData(
           x,
           y,
           Math.min(chunkSize, canvas.width - x),
