@@ -228,15 +228,23 @@ function buildNode(
             };
           } else if (tagName === 'img' && name === 'rr_dataURL') {
             const image = node as HTMLImageElement;
+            image.removeAttribute(name);
             if (!image.currentSrc.startsWith('data:')) {
               // Backup original img src. It may not have been set yet.
               image.setAttribute(
                 'rrweb-original-src',
-                n.attributes['src'] as string,
+                n.attributes.src as string,
               );
               image.src = value;
             }
-            image.removeAttribute(name);
+            if (n.attributes.srcset) {
+              // Backup original img srcset
+              image.setAttribute(
+                'rrweb-original-srcset',
+                n.attributes.srcset as string,
+              );
+              image.removeAttribute('srcset');
+            }
           }
 
           if (name === 'rr_width') {

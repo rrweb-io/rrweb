@@ -513,13 +513,15 @@ function serializeNode(
           canvasCtx = canvasService.getContext('2d');
         }
         const image = n as HTMLImageElement;
-        const oldValue = image.crossOrigin;
-        image.crossOrigin = 'anonymous';
         const recordInlineImage = () => {
+          const oldValue = image.crossOrigin;
           try {
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
+            // see this article about crossorigin = "anonymous"
+            // https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+            image.crossOrigin = 'anonymous';
             attributes.rr_dataURL = canvasService!.toDataURL();
           } catch (err) {
             console.warn(
