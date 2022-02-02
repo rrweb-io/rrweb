@@ -12,7 +12,12 @@ import {
   KeepIframeSrcFn,
   ICanvas,
 } from './types';
-import { isElement, isShadowRoot, maskInputValue } from './utils';
+import {
+  isCanvasBlank,
+  isElement,
+  isShadowRoot,
+  maskInputValue,
+} from './utils';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -509,16 +514,7 @@ function serializeNode(
         recordCanvas &&
         (!('__context' in n) || (n as ICanvas).__context === '2d') // only record this on 2d canvas
       ) {
-        const canvasDataURL = (n as HTMLCanvasElement).toDataURL();
-
-        // create blank canvas of same dimensions
-        const blankCanvas = document.createElement('canvas');
-        blankCanvas.width = (n as HTMLCanvasElement).width;
-        blankCanvas.height = (n as HTMLCanvasElement).height;
-        const blankCanvasDataURL = blankCanvas.toDataURL();
-
-        // no need to save dataURL if it's the same as blank canvas
-        if (canvasDataURL !== blankCanvasDataURL) {
+        if (!isCanvasBlank(n as HTMLCanvasElement)) {
           attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
         }
       }
@@ -608,7 +604,10 @@ function serializeNode(
             );
           }
         } catch (err) {
-          console.warn(`Cannot get CSS styles from text's parentNode. Error: ${err}`, n);
+          console.warn(
+            `Cannot get CSS styles from text's parentNode. Error: ${err}`,
+            n,
+          );
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }
