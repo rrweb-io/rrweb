@@ -7,6 +7,7 @@ import {
   launchPuppeteer,
   getServerURL,
   replaceLast,
+  waitForRAF,
 } from '../utils';
 import {
   recordOptions,
@@ -26,7 +27,6 @@ interface ISuite {
   serverURL: string;
 }
 
-
 describe('e2e webgl', () => {
   let code: ISuite['code'];
   let page: ISuite['page'];
@@ -41,7 +41,6 @@ describe('e2e webgl', () => {
 
     const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
     code = fs.readFileSync(bundlePath, 'utf8');
-
   });
 
   afterEach(async () => {
@@ -113,7 +112,8 @@ describe('e2e webgl', () => {
       getHtml.call(this, 'canvas-webgl-square.html', { recordCanvas: true }),
     );
 
-    await page.waitForTimeout(100);
+    await waitForRAF(page);
+
     const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
 
     page = await browser.newPage();

@@ -41,7 +41,7 @@ type PatchedGetImageData = {
   [ORIGINAL_ATTRIBUTE_NAME]: CanvasImageData['getImageData'];
 } & CanvasImageData['getImageData'];
 
-export function isCanvasBlank(canvas: HTMLCanvasElement): boolean {
+export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
   const ctx = canvas.getContext('2d');
   if (!ctx) return true;
 
