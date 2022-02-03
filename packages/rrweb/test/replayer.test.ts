@@ -13,6 +13,7 @@ import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
+import iframeEvents from './events/iframe';
 
 interface ISuite {
   code: string;
@@ -359,6 +360,115 @@ describe('replayer', function () {
     await page.evaluate('replayer.pause(4050);');
     // remove the input element at 4000
     expect(await contentDocument!.$('input')).toBeNull();
+  });
+
+  it('can fast-forward mutation events containing nested iframe elements', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(iframeEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(250);
+    `);
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('iframe')).toBeNull();
+
+    const delay = 50;
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(550);'); // add 'iframe one' at 500
+    expect(await contentDocument!.$('iframe')).not.toBeNull();
+    const iframeOneDocument = await (await contentDocument!.$(
+      'iframe',
+    ))!.contentFrame();
+    expect(iframeOneDocument).not.toBeNull();
+    expect(await iframeOneDocument!.$('noscript')).not.toBeNull();
+    // make sure custom style rules are inserted rules
+    expect((await iframeOneDocument!.$$('style')).length).toBe(1);
+    expect(
+      await iframeOneDocument!.$eval(
+        'noscript',
+        (element) => window.getComputedStyle(element).display,
+      ),
+    ).toEqual('none');
+
+    // add 'iframe two' and 'iframe three' at 1000
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(1050);');
+    expect((await contentDocument!.$$('iframe')).length).toEqual(2);
+    let iframeTwoDocument = await (
+      await contentDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    expect(iframeTwoDocument).not.toBeNull();
+    expect((await iframeTwoDocument!.$$('iframe')).length).toEqual(2);
+    let iframeThreeDocument = await (
+      await iframeTwoDocument!.$$('iframe')
+    )[0]!.contentFrame();
+    let iframeFourDocument = await (
+      await iframeTwoDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    expect(iframeThreeDocument).not.toBeNull();
+    expect(iframeFourDocument).not.toBeNull();
+
+    // add 'iframe four' at 1500
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(1550);');
+    iframeTwoDocument = await (
+      await contentDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    iframeFourDocument = await (
+      await iframeTwoDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    expect(await iframeFourDocument!.$('iframe')).toBeNull();
+    expect(await iframeFourDocument!.$('style')).not.toBeNull();
+    expect(await iframeFourDocument!.title()).toEqual('iframe 4');
+
+    // add 'iframe five' at 2000
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(2050);');
+    iframeTwoDocument = await (
+      await contentDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    iframeFourDocument = await (
+      await iframeTwoDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    expect(await iframeFourDocument!.$('iframe')).not.toBeNull();
+    const iframeFiveDocument = await (await iframeFourDocument!.$(
+      'iframe',
+    ))!.contentFrame();
+    expect(iframeFiveDocument).not.toBeNull();
+    expect((await iframeFiveDocument!.$$('style')).length).toBe(1);
+    expect(await iframeFiveDocument!.$('noscript')).not.toBeNull();
+    expect(
+      await iframeFiveDocument!.$eval(
+        'noscript',
+        (element) => window.getComputedStyle(element).display,
+      ),
+    ).toEqual('none');
+
+    // remove the html element of 'iframe four' at 2500
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(delay);
+    await page.evaluate('replayer.pause(2550);');
+    iframeTwoDocument = await (
+      await contentDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    iframeFourDocument = await (
+      await iframeTwoDocument!.$$('iframe')
+    )[1]!.contentFrame();
+    // the html element should be removed
+    expect(await iframeFourDocument!.$('html')).toBeNull();
+    // the doctype should still exist
+    expect(
+      await iframeTwoDocument!.evaluate(
+        (iframe) => (iframe as HTMLIFrameElement)!.contentDocument!.doctype,
+        (await iframeTwoDocument!.$$('iframe'))[1],
+      ),
+    ).not.toBeNull();
   });
 
   it('can stream events in live mode', async () => {

@@ -120,17 +120,17 @@ export class RRDocument extends RRNode {
 
   get body() {
     return (
-      this.documentElement?.children.find(
+      (this.documentElement?.children.find(
         (node) => node instanceof RRElement && node.tagName === 'BODY',
-      ) || null
+      ) as RRElement) || null
     );
   }
 
   get head() {
     return (
-      this.documentElement?.children.find(
+      (this.documentElement?.children.find(
         (node) => node instanceof RRElement && node.tagName === 'HEAD',
-      ) || null
+      ) as RRElement) || null
     );
   }
 

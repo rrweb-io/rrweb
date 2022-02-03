@@ -646,13 +646,6 @@ export class Replayer {
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
-      if (builtNode.contentDocument) {
-        const { documentElement, head } = builtNode.contentDocument;
-        this.insertStyleRules(
-          documentElement,
-          head! as HTMLHeadElement | RRElement,
-        );
-      }
     }
     const { documentElement, head } = this.iframe.contentDocument;
     this.insertStyleRules(documentElement, head);
@@ -674,7 +667,6 @@ export class Replayer {
     documentElement: HTMLElement | RRElement,
     head: HTMLHeadElement | RRElement,
   ) {
-    // TODO add unit tests
     const injectStylesRules = getInjectStyleRules(
       this.config.blockClass,
     ).concat(this.config.insertStyleRules);
@@ -723,6 +715,13 @@ export class Replayer {
       skipChild: false,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
+        if (
+          builtNode.nodeType === builtNode.ELEMENT_NODE &&
+          ((builtNode as Node) as HTMLElement).tagName.toUpperCase() === 'HTML'
+        ) {
+          const { documentElement, head } = iframeEl.contentDocument!;
+          this.insertStyleRules(documentElement, head);
+        }
       },
       cache: this.cache,
     });
@@ -731,13 +730,6 @@ export class Replayer {
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
-      if (builtNode.contentDocument) {
-        const { documentElement, head } = builtNode.contentDocument;
-        this.insertStyleRules(
-          documentElement,
-          head! as HTMLHeadElement | RRElement,
-        );
-      }
     }
   }
 
@@ -1408,13 +1400,6 @@ export class Replayer {
           this.attachDocumentToIframe(mutationInQueue, target);
           this.newDocumentQueue = this.newDocumentQueue.filter(
             (m) => m !== mutationInQueue,
-          );
-        }
-        if (target.contentDocument) {
-          const { documentElement, head } = target.contentDocument;
-          this.insertStyleRules(
-            documentElement,
-            head! as HTMLHeadElement | RRElement,
           );
         }
       }
