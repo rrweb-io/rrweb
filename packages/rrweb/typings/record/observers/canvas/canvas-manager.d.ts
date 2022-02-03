@@ -17,6 +17,7 @@ export declare class CanvasManager {
     lock(): void;
     unlock(): void;
     constructor(options: {
+        recordCanvas: boolean | number;
         mutationCb: canvasMutationCallback;
         win: IWindow;
         blockClass: blockClass;
