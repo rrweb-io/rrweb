@@ -214,7 +214,8 @@ function buildNode(
               n.attributes.srcset &&
               n.attributes.rr_dataURL
             ) {
-              // ignore img srcset here, it will be used below
+              // backup original img srcset
+              node.setAttribute('rrweb-original-srcset', n.attributes.srcset as string);
             } else {
               node.setAttribute(name, value);
             }
@@ -241,13 +242,6 @@ function buildNode(
                 n.attributes.src as string,
               );
               image.src = value;
-            }
-            if (n.attributes.srcset) {
-              // Backup original img srcset
-              image.setAttribute(
-                'rrweb-original-srcset',
-                n.attributes.srcset as string,
-              );
             }
           }
 
