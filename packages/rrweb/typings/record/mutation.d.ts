@@ -1,6 +1,7 @@
 import { MaskInputOptions, SlimDOMOptions, MaskTextFn, MaskInputFn } from 'rrweb-snapshot';
 import { mutationRecord, blockClass, maskTextClass, mutationCallBack, Mirror } from '../types';
 import { IframeManager } from './iframe-manager';
+import { CanvasManager } from './observers/canvas/canvas-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 export default class MutationBuffer {
     private frozen;
@@ -29,12 +30,14 @@ export default class MutationBuffer {
     private mirror;
     private iframeManager;
     private shadowDomManager;
-    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean, inlineImages: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager): void;
+    private canvasManager;
+    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean, inlineImages: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, canvasManager: CanvasManager): void;
     freeze(): void;
     unfreeze(): void;
     isFrozen(): boolean;
     lock(): void;
     unlock(): void;
+    reset(): void;
     processMutations: (mutations: mutationRecord[]) => void;
     emit: () => void;
     private processMutation;

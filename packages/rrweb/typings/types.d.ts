@@ -4,6 +4,7 @@ import { PackFn, UnpackFn } from './packer/base';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
+import { CanvasManager } from './record/observers/canvas/canvas-manager';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -187,6 +188,7 @@ export declare type observerParam = {
     mirror: Mirror;
     iframeManager: IframeManager;
     shadowDomManager: ShadowDomManager;
+    canvasManager: CanvasManager;
     plugins: Array<{
         observer: Function;
         callback: Function;
@@ -283,6 +285,24 @@ export declare enum MouseInteractions {
     TouchEnd = 9,
     TouchCancel = 10
 }
+export declare enum CanvasContext {
+    '2D' = 0,
+    WebGL = 1,
+    WebGL2 = 2
+}
+export declare type SerializedWebGlArg = {
+    rr_type: 'ArrayBuffer';
+    base64: string;
+} | {
+    rr_type: string;
+    src: string;
+} | {
+    rr_type: string;
+    args: Array<SerializedWebGlArg>;
+} | {
+    rr_type: string;
+    index: number;
+} | string | number | boolean | null | SerializedWebGlArg[];
 declare type mouseInteractionParam = {
     type: MouseInteractions;
     id: number;
@@ -322,13 +342,24 @@ export declare type styleDeclarationParam = {
     };
 };
 export declare type styleDeclarationCallback = (s: styleDeclarationParam) => void;
-export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
-export declare type canvasMutationParam = {
-    id: number;
+export declare type canvasMutationCommand = {
     property: string;
     args: Array<unknown>;
     setter?: true;
 };
+export declare type canvasMutationParam = {
+    id: number;
+    type: CanvasContext;
+    commands: canvasMutationCommand[];
+} | ({
+    id: number;
+    type: CanvasContext;
+} & canvasMutationCommand);
+export declare type canvasMutationWithType = {
+    type: CanvasContext;
+} & canvasMutationCommand;
+export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
+export declare type canvasManagerMutationCallback = (target: HTMLCanvasElement, p: canvasMutationWithType) => void;
 export declare type fontParam = {
     family: string;
     fontSource: string;

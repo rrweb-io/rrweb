@@ -8,3 +8,4 @@ export declare function maskInputValue({ maskInputOptions, tagName, type, value,
     value: string | null;
     maskInputFn?: MaskInputFn;
 }): string;
+export declare function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean;

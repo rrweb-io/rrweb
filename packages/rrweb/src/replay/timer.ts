@@ -44,6 +44,7 @@ export class Timer {
       lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
+
         if (self.timeOffset >= action.delay) {
           actions.shift();
           action.doAction();
@@ -111,6 +112,7 @@ export function addDelay(event: eventWithTime, baselineTime: number): number {
     event.delay = firstTimestamp - baselineTime;
     return firstTimestamp - baselineTime;
   }
+
   event.delay = event.timestamp - baselineTime;
   return event.delay;
 }

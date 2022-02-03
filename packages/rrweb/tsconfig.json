@@ -13,5 +13,9 @@
     "downlevelIteration": true
   },
   "exclude": ["test"],
-  "include": ["src", "node_modules/@types/css-font-loading-module/index.d.ts"]
+  "include": [
+    "src",
+    "node_modules/@types/css-font-loading-module/index.d.ts",
+    "node_modules/@types/jest-image-snapshot/index.d.ts"
+  ]
 }

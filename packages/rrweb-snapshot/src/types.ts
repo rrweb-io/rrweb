@@ -71,6 +71,10 @@ export interface INode extends Node {
   __sn: serializedNodeWithId;
 }
 
+export interface ICanvas extends HTMLCanvasElement {
+  __context: string;
+}
+
 export type idNodeMap = {
   [key: number]: INode;
 };

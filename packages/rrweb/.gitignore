@@ -13,3 +13,4 @@ temp
 *.log
 
 .env
+__diff_output__
