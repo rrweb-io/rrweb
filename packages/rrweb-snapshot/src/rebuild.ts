@@ -209,6 +209,12 @@ function buildNode(
               n.attributes.href.endsWith('.js')
             ) {
               // ignore
+            } else if (
+              tagName === 'img' &&
+              n.attributes.srcset &&
+              n.attributes.rr_dataURL
+            ) {
+              // ignore img srcset here, it will be used below
             } else {
               node.setAttribute(name, value);
             }
@@ -228,7 +234,6 @@ function buildNode(
             };
           } else if (tagName === 'img' && name === 'rr_dataURL') {
             const image = node as HTMLImageElement;
-            image.removeAttribute(name);
             if (!image.currentSrc.startsWith('data:')) {
               // Backup original img src. It may not have been set yet.
               image.setAttribute(
@@ -243,7 +248,6 @@ function buildNode(
                 'rrweb-original-srcset',
                 n.attributes.srcset as string,
               );
-              image.removeAttribute('srcset');
             }
           }
 
@@ -269,6 +273,7 @@ function buildNode(
           }
         }
       }
+
       if (n.isShadowHost) {
         /**
          * Since node is newly rebuilt, it should be a normal element
