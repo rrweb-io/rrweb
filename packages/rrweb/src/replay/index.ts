@@ -723,8 +723,8 @@ export class Replayer {
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
         if (
-          builtNode.nodeType === builtNode.ELEMENT_NODE &&
-          ((builtNode as Node) as HTMLElement).tagName.toUpperCase() === 'HTML'
+          builtNode.__sn.type === NodeType.Element &&
+          builtNode.__sn.tagName.toUpperCase() === 'HTML'
         ) {
           const { documentElement, head } = iframeEl.contentDocument!;
           this.insertStyleRules(documentElement, head);
