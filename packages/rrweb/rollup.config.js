@@ -93,6 +93,16 @@ const baseConfigs = [
     name: 'rrwebConsoleReplay',
     pathFn: toPluginPath('console', 'replay'),
   },
+  {
+    input: './src/plugins/sequential-id/record/index.ts',
+    name: 'rrwebSequentialIdRecord',
+    pathFn: toPluginPath('sequential-id', 'record'),
+  },
+  {
+    input: './src/plugins/sequential-id/replay/index.ts',
+    name: 'rrwebSequentialIdReplay',
+    pathFn: toPluginPath('sequential-id', 'replay'),
+  },
 ];
 
 let configs = [];
