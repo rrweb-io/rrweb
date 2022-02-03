@@ -128,7 +128,8 @@ export declare type SamplingStrategy = Partial<{
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
-    observer: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
+    observer?: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
+    eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
     options: TOptions;
 };
 export declare type recordOptions<T> = {
