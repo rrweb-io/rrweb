@@ -183,7 +183,7 @@ export class Replayer {
       this.virtualStyleRulesMap.clear();
 
       for (const d of scrollMap.values()) {
-        this.applyScroll(d);
+        this.applyScroll(d, true);
       }
       for (const d of inputMap.values()) {
         this.applyInput(d);
@@ -985,7 +985,7 @@ export class Replayer {
           this.treeIndex.scroll(d);
           break;
         }
-        this.applyScroll(d);
+        this.applyScroll(d, false);
         break;
       }
       case IncrementalSource.ViewportResize:
@@ -1598,7 +1598,13 @@ export class Replayer {
     });
   }
 
-  private applyScroll(d: scrollData) {
+  /**
+   * Apply the scroll data on real elements.
+   * If the replayer is in sync mode, smooth scroll behavior should be disabled.
+   * @param d the scroll data
+   * @param isSync whether the replayer is in sync mode(fast-forward)
+   */
+  private applyScroll(d: scrollData, isSync: boolean) {
     const target = this.mirror.getNode(d.id);
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
@@ -1607,14 +1613,14 @@ export class Replayer {
       this.iframe.contentWindow!.scrollTo({
         top: d.y,
         left: d.x,
-        behavior: 'smooth',
+        behavior: isSync ? 'auto' : 'smooth',
       });
     } else if (target.__sn.type === NodeType.Document) {
       // nest iframe content document
       ((target as unknown) as Document).defaultView!.scrollTo({
         top: d.y,
         left: d.x,
-        behavior: 'smooth',
+        behavior: isSync ? 'auto' : 'smooth',
       });
     } else {
       try {
