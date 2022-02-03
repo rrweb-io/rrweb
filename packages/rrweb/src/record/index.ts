@@ -209,6 +209,7 @@ function record<T = eventWithTime>(
   });
 
   const canvasManager = new CanvasManager({
+    recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
     blockClass,

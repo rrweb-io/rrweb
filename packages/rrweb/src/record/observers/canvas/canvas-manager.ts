@@ -52,6 +52,7 @@ export class CanvasManager {
   }
 
   constructor(options: {
+    recordCanvas: boolean | number;
     mutationCb: canvasMutationCallback;
     win: IWindow;
     blockClass: blockClass;
@@ -60,7 +61,8 @@ export class CanvasManager {
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
-    this.initCanvasMutationObserver(options.win, options.blockClass);
+    if (options.recordCanvas === true)
+      this.initCanvasMutationObserver(options.win, options.blockClass);
   }
 
   private processMutation: canvasManagerMutationCallback = function (
