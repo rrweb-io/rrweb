@@ -197,6 +197,11 @@ function diffChildren(
         oldChildren[indexInOld] = undefined;
       } else {
         const newNode = createOrGetNode(newStartNode, replayer.mirror);
+
+        /**
+         * A mounted iframe element has an automatically created HTML element.
+         * We should delete it before insert a serialized one. Otherwise, an error 'Only one element on document allowed' will be thrown.
+         */
         if (
           parentNode.__sn.type === NodeType.Document &&
           newNode.__sn.type === NodeType.Element &&

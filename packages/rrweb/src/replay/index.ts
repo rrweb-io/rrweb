@@ -684,7 +684,7 @@ export class Replayer {
         tagName: 'style',
         childNodes: [],
         attributes: {},
-        id: this.rrdom._notSerializedId,
+        id: this.rrdom.notSerializedId,
       };
       (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
       for (let idx = 0; idx < injectStylesRules.length; idx++) {

@@ -379,7 +379,7 @@ describe('replayer', function () {
     await page.waitForTimeout(delay);
     await page.evaluate('replayer.pause(550);'); // add 'iframe one' at 500
     expect(await contentDocument!.$('iframe')).not.toBeNull();
-    const iframeOneDocument = await (await contentDocument!.$(
+    let iframeOneDocument = await (await contentDocument!.$(
       'iframe',
     ))!.contentFrame();
     expect(iframeOneDocument).not.toBeNull();
@@ -397,12 +397,19 @@ describe('replayer', function () {
     await page.evaluate('replayer.play(0);');
     await page.waitForTimeout(delay);
     await page.evaluate('replayer.pause(1050);');
+    // check the inserted style of iframe 'one' again
+    iframeOneDocument = await (await contentDocument!.$(
+      'iframe',
+    ))!.contentFrame();
+    expect((await iframeOneDocument!.$$('style')).length).toBe(1);
+
     expect((await contentDocument!.$$('iframe')).length).toEqual(2);
     let iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
     )[1]!.contentFrame();
     expect(iframeTwoDocument).not.toBeNull();
     expect((await iframeTwoDocument!.$$('iframe')).length).toEqual(2);
+    expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
     let iframeThreeDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[0]!.contentFrame();
@@ -410,6 +417,7 @@ describe('replayer', function () {
       await iframeTwoDocument!.$$('iframe')
     )[1]!.contentFrame();
     expect(iframeThreeDocument).not.toBeNull();
+    expect((await iframeThreeDocument!.$$('style')).length).toBe(1);
     expect(iframeFourDocument).not.toBeNull();
 
     // add 'iframe four' at 1500
@@ -419,11 +427,12 @@ describe('replayer', function () {
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
     )[1]!.contentFrame();
+    expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
     iframeFourDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[1]!.contentFrame();
     expect(await iframeFourDocument!.$('iframe')).toBeNull();
-    expect(await iframeFourDocument!.$('style')).not.toBeNull();
+    expect((await iframeFourDocument!.$$('style')).length).toBe(1);
     expect(await iframeFourDocument!.title()).toEqual('iframe 4');
 
     // add 'iframe five' at 2000
@@ -436,6 +445,7 @@ describe('replayer', function () {
     iframeFourDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[1]!.contentFrame();
+    expect((await iframeFourDocument!.$$('style')).length).toBe(1);
     expect(await iframeFourDocument!.$('iframe')).not.toBeNull();
     const iframeFiveDocument = await (await iframeFourDocument!.$(
       'iframe',
