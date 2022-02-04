@@ -78,7 +78,7 @@ export abstract class RRNode {
 }
 
 export class RRDocument extends RRNode {
-  _notSerializedId = -1; // used as an id to identify not serialized node
+  private _notSerializedId = -1; // used as an id to identify not serialized node
   /**
    * Every time the id is used, it will minus 1 automatically to avoid collisions.
    */
@@ -443,7 +443,7 @@ export class RRDocumentType extends RRNode {
 
 export class RRElement extends RRNode {
   tagName: string;
-  attributes: Record<string, string | number | boolean> = {};
+  attributes: Record<string, string> = {};
   shadowRoot: RRElement | null = null;
   inputData: inputData | null = null;
   scrollData: scrollData | null = null;

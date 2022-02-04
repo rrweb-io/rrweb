@@ -294,7 +294,7 @@ export class RRDocumentType extends RRNode {
 
 export class RRElement extends RRNode {
   tagName: string;
-  attributes: Record<string, string | number | boolean> = {};
+  attributes: Record<string, string> = {};
   scrollLeft: number = 0;
   scrollTop: number = 0;
   shadowRoot: RRElement | null = null;

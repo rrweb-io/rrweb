@@ -175,27 +175,6 @@ describe('diff algorithm for rrdom', () => {
       expect(((node as Node) as HTMLElement).className).toBe('');
       expect(((node as Node) as HTMLElement).getAttribute('src')).toBe('link');
     });
-
-    it('omit "checked" property for input elements', () => {
-      const tagName = 'INPUT';
-      const node = (document.createElement(tagName) as unknown) as INode;
-      node.__sn = Object.assign({}, elementSn, { tagName });
-      ((node as Node) as HTMLElement).setAttribute('type', 'checkbox');
-      ((node as Node) as HTMLElement).setAttribute('checked', ''); // default checked
-      const rrDocument = new RRDocument();
-      const rrNode = rrDocument.createElement(tagName);
-      rrNode.attributes = {
-        checked: true,
-      };
-      diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).getAttribute('checked')).toBe('');
-
-      ((node as Node) as HTMLElement).removeAttribute('checked'); // default unchecked
-      diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).getAttribute('checked')).toBe(
-        null,
-      );
-    });
   });
 
   describe('diff children', () => {

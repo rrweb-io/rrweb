@@ -133,14 +133,9 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
 
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
-    if (typeof newValue === 'boolean') {
-      // TODO Some special cases for some kinds of elements. e.g. selected, rr_scrollLeft
-    } else if (typeof newValue === 'number') {
-    } else {
-      if ((newTree.__sn as elementNode).isSVG && NAMESPACES[name])
-        oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
-      else oldTree.setAttribute(name, newValue);
-    }
+    if ((newTree.__sn as elementNode).isSVG && NAMESPACES[name])
+      oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
+    else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes))
