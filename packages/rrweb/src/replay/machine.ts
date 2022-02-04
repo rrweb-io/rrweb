@@ -167,6 +167,7 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
+
           for (const event of events) {
             // TODO: improve this API
             addDelay(event, baselineTime);

@@ -12,6 +12,7 @@ import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
 import type { RRNode } from 'rrdom/es/document-browser';
+import { CanvasManager } from './record/observers/canvas/canvas-manager';
 
 export enum EventType {
   DomContentLoaded,
@@ -205,7 +206,8 @@ export type SamplingStrategy = Partial<{
 
 export type RecordPlugin<TOptions = unknown> = {
   name: string;
-  observer: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
+  observer?: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
+  eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
   options: TOptions;
 };
 
@@ -268,6 +270,7 @@ export type observerParam = {
   mirror: Mirror;
   iframeManager: IframeManager;
   shadowDomManager: ShadowDomManager;
+  canvasManager: CanvasManager;
   plugins: Array<{
     observer: Function;
     callback: Function;
@@ -387,6 +390,35 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum CanvasContext {
+  '2D',
+  WebGL,
+  WebGL2,
+}
+
+export type SerializedWebGlArg =
+  | {
+      rr_type: 'ArrayBuffer';
+      base64: string; // base64
+    }
+  | {
+      rr_type: string;
+      src: string; // url of image
+    }
+  | {
+      rr_type: string;
+      args: Array<SerializedWebGlArg>;
+    }
+  | {
+      rr_type: string;
+      index: number;
+    }
+  | string
+  | number
+  | boolean
+  | null
+  | SerializedWebGlArg[];
+
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
@@ -436,14 +468,33 @@ export type styleDeclarationParam = {
 
 export type styleDeclarationCallback = (s: styleDeclarationParam) => void;
 
-export type canvasMutationCallback = (p: canvasMutationParam) => void;
-
-export type canvasMutationParam = {
-  id: number;
+export type canvasMutationCommand = {
   property: string;
   args: Array<unknown>;
   setter?: true;
 };
+
+export type canvasMutationParam =
+  | {
+      id: number;
+      type: CanvasContext;
+      commands: canvasMutationCommand[];
+    }
+  | ({
+      id: number;
+      type: CanvasContext;
+    } & canvasMutationCommand);
+
+export type canvasMutationWithType = {
+  type: CanvasContext;
+} & canvasMutationCommand;
+
+export type canvasMutationCallback = (p: canvasMutationParam) => void;
+
+export type canvasManagerMutationCallback = (
+  target: HTMLCanvasElement,
+  p: canvasMutationWithType,
+) => void;
 
 export type fontParam = {
   family: string;

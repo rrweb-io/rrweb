@@ -10,8 +10,14 @@ import {
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
+  ICanvas,
 } from './types';
-import { isElement, isShadowRoot, maskInputValue } from './utils';
+import {
+  is2DCanvasBlank,
+  isElement,
+  isShadowRoot,
+  maskInputValue,
+} from './utils';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -64,8 +70,16 @@ function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
 }
 
+function stringifyStyleSheet(sheet: CSSStyleSheet): string {
+  return sheet.cssRules
+    ? Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText || '')
+        .join('')
+    : '';
+}
+
 function extractOrigin(url: string): string {
-  let origin;
+  let origin = '';
   if (url.indexOf('//') > -1) {
     origin = url.split('/').slice(0, 3).join('/');
   } else {
@@ -352,14 +366,6 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
-        .join('')
-    : '';
-}
-
 function serializeNode(
   n: Node,
   options: {
@@ -437,7 +443,10 @@ function serializeNode(
         const stylesheet = Array.from(doc.styleSheets).find((s) => {
           return s.href === (n as HTMLLinkElement).href;
         });
-        const cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        let cssText: string | null = null;
+        if (stylesheet) {
+          cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+        }
         if (cssText) {
           delete attributes.rel;
           delete attributes.href;
@@ -501,7 +510,26 @@ function serializeNode(
       }
       // canvas image data
       if (tagName === 'canvas' && recordCanvas) {
-        attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
+        if ((n as ICanvas).__context === '2d') {
+          // only record this on 2d canvas
+          if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
+            attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL();
+          }
+        } else if (!('__context' in n)) {
+          // context is unknown, better not call getContext to trigger it
+          const canvasDataURL = (n as HTMLCanvasElement).toDataURL();
+
+          // create blank canvas of same dimensions
+          const blankCanvas = document.createElement('canvas');
+          blankCanvas.width = (n as HTMLCanvasElement).width;
+          blankCanvas.height = (n as HTMLCanvasElement).height;
+          const blankCanvasDataURL = blankCanvas.toDataURL();
+
+          // no need to save dataURL if it's the same as blank canvas
+          if (canvasDataURL !== blankCanvasDataURL) {
+            attributes.rr_dataURL = canvasDataURL;
+          }
+        }
       }
       // save image offline
       if (tagName === 'img' && inlineImages) {
@@ -512,22 +540,24 @@ function serializeNode(
         const image = n as HTMLImageElement;
         const oldValue = image.crossOrigin;
         image.crossOrigin = 'anonymous';
-        try {
-          const recordInlineImage = () => {
+        const recordInlineImage = () => {
+          try {
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
             attributes.rr_dataURL = canvasService!.toDataURL();
-            oldValue
-              ? (attributes.crossOrigin = oldValue)
-              : delete attributes.crossOrigin;
-          };
-          // The image content may not have finished loading yet.
-          if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-          else image.onload = recordInlineImage;
-        } catch {
-          // ignore error
-        }
+          } catch (err) {
+            console.warn(
+              `Cannot inline img src=${image.currentSrc}! Error: ${err}`,
+            );
+          }
+          oldValue
+            ? (attributes.crossOrigin = oldValue)
+            : delete attributes.crossOrigin;
+        };
+        // The image content may not have finished loading yet.
+        if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+        else image.onload = recordInlineImage;
       }
       // media elements
       if (tagName === 'audio' || tagName === 'video') {
@@ -586,8 +616,11 @@ function serializeNode(
               (n.parentNode as HTMLStyleElement).sheet!,
             );
           }
-        } catch {
-          // ignore error
+        } catch (err) {
+          console.warn(
+            `Cannot get CSS styles from text's parentNode. Error: ${err}`,
+            n,
+          );
         }
         textContent = absoluteToStylesheet(textContent, getHref());
       }

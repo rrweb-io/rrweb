@@ -18,9 +18,11 @@ import {
   listenerHandler,
   mutationCallbackParam,
   scrollCallback,
+  canvasMutationParam,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
+import { CanvasManager } from './observers/canvas/canvas-manager';
 
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -120,6 +122,17 @@ function record<T = eventWithTime>(
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
+  const eventProcessor = (e: eventWithTime): T => {
+    for (const plugin of plugins || []) {
+      if (plugin.eventProcessor) {
+        e = plugin.eventProcessor(e);
+      }
+    }
+    if (packFn) {
+      e = (packFn(e) as unknown) as eventWithTime;
+    }
+    return (e as unknown) as T;
+  };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
       mutationBuffers[0]?.isFrozen() &&
@@ -134,7 +147,7 @@ function record<T = eventWithTime>(
       mutationBuffers.forEach((buf) => buf.unfreeze());
     }
 
-    emit(((packFn ? packFn(e) : e) as unknown) as T, isCheckout);
+    emit(eventProcessor(e), isCheckout);
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
@@ -180,9 +193,27 @@ function record<T = eventWithTime>(
         },
       }),
     );
+  const wrappedCanvasMutationEmit = (p: canvasMutationParam) =>
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.CanvasMutation,
+          ...p,
+        },
+      }),
+    );
 
   const iframeManager = new IframeManager({
     mutationCb: wrappedMutationEmit,
+  });
+
+  const canvasManager = new CanvasManager({
+    recordCanvas,
+    mutationCb: wrappedCanvasMutationEmit,
+    win: window,
+    blockClass,
+    mirror,
   });
 
   const shadowDomManager = new ShadowDomManager({
@@ -202,6 +233,7 @@ function record<T = eventWithTime>(
       sampling,
       slimDOMOptions,
       iframeManager,
+      canvasManager,
     },
     mirror,
   });
@@ -365,16 +397,7 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
-          canvasMutationCb: (p) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.CanvasMutation,
-                  ...p,
-                },
-              }),
-            ),
+          canvasMutationCb: wrappedCanvasMutationEmit,
           fontCb: (p) =>
             wrappedEmit(
               wrapEvent({
@@ -404,21 +427,24 @@ function record<T = eventWithTime>(
           mirror,
           iframeManager,
           shadowDomManager,
+          canvasManager,
           plugins:
-            plugins?.map((p) => ({
-              observer: p.observer,
-              options: p.options,
-              callback: (payload: object) =>
-                wrappedEmit(
-                  wrapEvent({
-                    type: EventType.Plugin,
-                    data: {
-                      plugin: p.name,
-                      payload,
-                    },
-                  }),
-                ),
-            })) || [],
+            plugins
+              ?.filter((p) => p.observer)
+              ?.map((p) => ({
+                observer: p.observer!,
+                options: p.options,
+                callback: (payload: object) =>
+                  wrappedEmit(
+                    wrapEvent({
+                      type: EventType.Plugin,
+                      data: {
+                        plugin: p.name,
+                        payload,
+                      },
+                    }),
+                  ),
+              })) || [],
         },
         hooks,
       );

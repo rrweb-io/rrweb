@@ -49,7 +49,10 @@ export declare class Replayer {
     private attachDocumentToIframe;
     private collectIframeAndAttachDocument;
     private waitForStylesheetLoad;
+    private hasImageArg;
+    private getImageArgs;
     private preloadAllImages;
+    private preloadImages;
     private applyIncremental;
     private applyMutation;
     private applyScroll;

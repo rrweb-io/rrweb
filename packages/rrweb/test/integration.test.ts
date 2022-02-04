@@ -1,14 +1,21 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
-import * as url from 'url';
 import * as puppeteer from 'puppeteer';
-import { assertSnapshot, launchPuppeteer } from './utils';
+import {
+  assertSnapshot,
+  startServer,
+  getServerURL,
+  launchPuppeteer,
+  waitForRAF,
+  replaceLast,
+} from './utils';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 interface ISuite {
   server: http.Server;
+  serverURL: string;
   code: string;
   browser: puppeteer.Browser;
 }
@@ -16,39 +23,6 @@ interface ISuite {
 interface IMimeType {
   [key: string]: string;
 }
-
-const startServer = () =>
-  new Promise<http.Server>((resolve) => {
-    const mimeType: IMimeType = {
-      '.html': 'text/html',
-      '.js': 'text/javascript',
-      '.css': 'text/css',
-    };
-    const s = http.createServer((req, res) => {
-      const parsedUrl = url.parse(req.url!);
-      const sanitizePath = path
-        .normalize(parsedUrl.pathname!)
-        .replace(/^(\.\.[\/\\])+/, '');
-      let pathname = path.join(__dirname, sanitizePath);
-      try {
-        const data = fs.readFileSync(pathname);
-        const ext = path.parse(pathname).ext;
-        res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-type');
-        setTimeout(() => {
-          res.end(data);
-          // mock delay
-        }, 100);
-      } catch (error) {
-        res.end();
-      }
-    });
-    s.listen(3030).on('listening', () => {
-      resolve(s);
-    });
-  });
 
 describe('record integration tests', function (this: ISuite) {
   jest.setTimeout(10_000);
@@ -59,7 +33,8 @@ describe('record integration tests', function (this: ISuite) {
   ): string => {
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
-    return html.replace(
+    return replaceLast(
+      html,
       '</body>',
       `
     <script>
@@ -85,11 +60,13 @@ describe('record integration tests', function (this: ISuite) {
   };
 
   let server: ISuite['server'];
+  let serverURL: string;
   let code: ISuite['code'];
   let browser: ISuite['browser'];
 
   beforeAll(async () => {
     server = await startServer();
+    serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
@@ -197,7 +174,9 @@ describe('record integration tests', function (this: ISuite) {
   it('can freeze mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'mutation-observer.html'));
+    await page.setContent(
+      getHtml.call(this, 'mutation-observer.html', { recordCanvas: true }),
+    );
 
     await page.evaluate(() => {
       const li = document.createElement('li');
@@ -209,6 +188,9 @@ describe('record integration tests', function (this: ISuite) {
     await page.evaluate('rrweb.freezePage()');
     await page.evaluate(() => {
       document.body.setAttribute('test', 'bad');
+      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+      const gl = canvas.getContext('webgl') as WebGLRenderingContext;
+      gl.getExtension('bad');
       const ul = document.querySelector('ul') as HTMLUListElement;
       const li = document.createElement('li');
       li.setAttribute('bad-attr', 'bad');
@@ -216,6 +198,9 @@ describe('record integration tests', function (this: ISuite) {
       ul.appendChild(li);
       document.body.removeChild(ul);
     });
+
+    await waitForRAF(page);
+
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });
@@ -391,7 +376,7 @@ describe('record integration tests', function (this: ISuite) {
         recordCanvas: true,
       }),
     );
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
     const snapshots = await page.evaluate('window.snapshots');
     for (const event of snapshots) {
       if (event.type === EventType.FullSnapshot) {
@@ -402,6 +387,19 @@ describe('record integration tests', function (this: ISuite) {
         });
       }
     }
+    assertSnapshot(snapshots);
+  });
+
+  it('should record webgl canvas mutations', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'canvas-webgl.html', {
+        recordCanvas: true,
+      }),
+    );
+    await page.waitForTimeout(50);
+    const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });
 
@@ -487,10 +485,17 @@ describe('record integration tests', function (this: ISuite) {
 
   it('should nest record iframe', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    await page.goto(`http://localhost:3030/html`);
+    await page.goto(`${serverURL}/html`);
     await page.setContent(getHtml.call(this, 'main.html'));
 
-    await page.waitForTimeout(500);
+    await page.waitForSelector('#two');
+    const frameIdTwo = await page.frames()[2];
+    await frameIdTwo.waitForSelector('#four');
+    const frameIdFour = frameIdTwo.childFrames()[1];
+    await frameIdFour.waitForSelector('#five');
+
+    await page.waitForTimeout(50);
+
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });

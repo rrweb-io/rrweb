@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>canvas</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      width="200"
+      height="100"
+      style="border: 1px solid #000000"
+    >
+    </canvas>
+    <script>
+      setTimeout(() => {
+        const c = document.getElementById('myCanvas');
+        const ctx = c.getContext('webgl');
+        // Set clear color to red, fully opaque
+        ctx.clearColor(1.0, 0.0, 0.0, 1.0);
+        // Clear the color buffer with specified clear color
+        ctx.clear(ctx.COLOR_BUFFER_BIT);
+      }, 10);
+    </script>
+  </body>
+</html>

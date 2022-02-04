@@ -27,7 +27,14 @@ describe('unpack', () => {
   });
 
   it('stop on unknown data format', () => {
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
     expect(() => unpack('[""]')).toThrow('');
+
+    expect(consoleSpy).toHaveBeenCalled();
+    jest.resetAllMocks();
   });
 
   it('can unpack packed data', () => {

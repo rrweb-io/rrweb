@@ -98,8 +98,20 @@ exports[`record integration tests can freeze mutations 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -109,15 +121,15 @@ exports[`record integration tests can freeze mutations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 16
+                        \\"id\\": 18
                       }
                     ],
-                    \\"id\\": 15
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 17
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
+                    \\"id\\": 19
                   }
                 ],
                 \\"id\\": 5
@@ -141,7 +153,7 @@ exports[`record integration tests can freeze mutations 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 18,
+          \\"id\\": 20,
           \\"attributes\\": {
             \\"foo\\": \\"bar\\"
           }
@@ -165,7 +177,7 @@ exports[`record integration tests can freeze mutations 1`] = `
               \\"foo\\": \\"bar\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 18
+            \\"id\\": 20
           }
         }
       ]
@@ -272,8 +284,20 @@ exports[`record integration tests can mask character data mutations 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -283,15 +307,15 @@ exports[`record integration tests can mask character data mutations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 16
+                        \\"id\\": 18
                       }
                     ],
-                    \\"id\\": 15
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 17
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
+                    \\"id\\": 19
                   }
                 ],
                 \\"id\\": 5
@@ -338,16 +362,16 @@ exports[`record integration tests can mask character data mutations 1`] = `
               \\"class\\": \\"rr-mask\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 18
+            \\"id\\": 20
           }
         },
         {
-          \\"parentId\\": 18,
+          \\"parentId\\": 20,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"*** **** ****\\",
-            \\"id\\": 19
+            \\"id\\": 21
           }
         },
         {
@@ -356,7 +380,7 @@ exports[`record integration tests can mask character data mutations 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"*******\\",
-            \\"id\\": 20
+            \\"id\\": 22
           }
         }
       ]
@@ -463,8 +487,20 @@ exports[`record integration tests can record attribute mutation 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -474,15 +510,15 @@ exports[`record integration tests can record attribute mutation 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 16
+                        \\"id\\": 18
                       }
                     ],
-                    \\"id\\": 15
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 17
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
+                    \\"id\\": 19
                   }
                 ],
                 \\"id\\": 5
@@ -622,8 +658,20 @@ exports[`record integration tests can record character data muatations 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -633,15 +681,15 @@ exports[`record integration tests can record character data muatations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 16
+                        \\"id\\": 18
                       }
                     ],
-                    \\"id\\": 15
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 17
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
+                    \\"id\\": 19
                   }
                 ],
                 \\"id\\": 5
@@ -681,7 +729,7 @@ exports[`record integration tests can record character data muatations 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"mutated\\",
-            \\"id\\": 18
+            \\"id\\": 20
           }
         }
       ]
@@ -788,8 +836,20 @@ exports[`record integration tests can record childList mutations 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -799,15 +859,15 @@ exports[`record integration tests can record childList mutations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 16
+                        \\"id\\": 18
                       }
                     ],
-                    \\"id\\": 15
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 17
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
+                    \\"id\\": 19
                   }
                 ],
                 \\"id\\": 5
@@ -845,7 +905,7 @@ exports[`record integration tests can record childList mutations 1`] = `
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 18
+            \\"id\\": 20
           }
         }
       ]
@@ -7315,32 +7375,27 @@ exports[`record integration tests should record canvas mutations 1`] = `
     \\"data\\": {
       \\"source\\": 9,
       \\"id\\": 16,
-      \\"property\\": \\"moveTo\\",
-      \\"args\\": [
-        0,
-        0
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"moveTo\\",
+          \\"args\\": [
+            0,
+            0
+          ]
+        },
+        {
+          \\"property\\": \\"lineTo\\",
+          \\"args\\": [
+            200,
+            100
+          ]
+        },
+        {
+          \\"property\\": \\"stroke\\",
+          \\"args\\": []
+        }
       ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 16,
-      \\"property\\": \\"lineTo\\",
-      \\"args\\": [
-        200,
-        100
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 16,
-      \\"property\\": \\"stroke\\",
-      \\"args\\": []
     }
   }
 ]"
@@ -9522,6 +9577,221 @@ exports[`record integration tests should record shadow DOM 1`] = `
 ]"
 `;
 
+exports[`record integration tests should record webgl canvas mutations 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"canvas\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 12
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 13
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"myCanvas\\",
+                      \\"width\\": \\"200\\",
+                      \\"height\\": \\"100\\",
+                      \\"style\\": \\"border: 1px solid #000000\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 17
+                      }
+                    ],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 20
+                      }
+                    ],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 23
+                      }
+                    ],
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 24
+                  }
+                ],
+                \\"id\\": 14
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 16,
+      \\"type\\": 1,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearColor\\",
+          \\"args\\": [
+            1,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record integration tests will serialize node before record 1`] = `
 "[
   {
@@ -9620,8 +9890,20 @@ exports[`record integration tests will serialize node before record 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -9631,15 +9913,15 @@ exports[`record integration tests will serialize node before record 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 16
+                        \\"id\\": 18
                       }
                     ],
-                    \\"id\\": 15
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
-                    \\"id\\": 17
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
+                    \\"id\\": 19
                   }
                 ],
                 \\"id\\": 5
@@ -9672,29 +9954,29 @@ exports[`record integration tests will serialize node before record 1`] = `
             \\"tagName\\": \\"li\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 18
-          }
-        },
-        {
-          \\"parentId\\": 10,
-          \\"nextId\\": 18,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"li\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 19
-          }
-        },
-        {
-          \\"parentId\\": 10,
-          \\"nextId\\": 19,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"li\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
             \\"id\\": 20
+          }
+        },
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": 20,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 21
+          }
+        },
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": 21,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 22
           }
         }
       ]

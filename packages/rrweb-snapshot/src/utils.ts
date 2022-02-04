@@ -35,3 +35,40 @@ export function maskInputValue({
   }
   return text;
 }
+
+const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
+type PatchedGetImageData = {
+  [ORIGINAL_ATTRIBUTE_NAME]: CanvasImageData['getImageData'];
+} & CanvasImageData['getImageData'];
+
+export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return true;
+
+  const chunkSize = 50;
+
+  // get chunks of the canvas and check if it is blank
+  for (let x = 0; x < canvas.width; x += chunkSize) {
+    for (let y = 0; y < canvas.height; y += chunkSize) {
+      const getImageData = ctx.getImageData as PatchedGetImageData;
+      const originalGetImageData =
+        ORIGINAL_ATTRIBUTE_NAME in getImageData
+          ? getImageData[ORIGINAL_ATTRIBUTE_NAME]
+          : getImageData;
+      // by getting the canvas in chunks we avoid an expensive
+      // `getImageData` call that retrieves everything
+      // even if we can already tell from the first chunk(s) that
+      // the canvas isn't blank
+      const pixelBuffer = new Uint32Array(
+        originalGetImageData(
+          x,
+          y,
+          Math.min(chunkSize, canvas.width - x),
+          Math.min(chunkSize, canvas.height - y),
+        ).data.buffer,
+      );
+      if (pixelBuffer.some((pixel) => pixel !== 0)) return false;
+    }
+  }
+  return true;
+}
