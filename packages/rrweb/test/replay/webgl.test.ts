@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { assertDomSnapshot, launchPuppeteer } from '../utils';
+import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import * as puppeteer from 'puppeteer';
 import events from '../events/webgl';

@@ -5,7 +5,6 @@ import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
 import { Replayer } from '../../src/replay';
-import {} from '../../src/types';
 import {
   CanvasContext,
   SerializedWebGlArg,

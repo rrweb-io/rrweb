@@ -6,4 +6,14 @@ module.exports = {
   moduleNameMapper: {
     '\\.css$': 'identity-obj-proxy',
   },
+  transform: {
+    '^.+\\.[tj]s$': 'ts-jest',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        allowJs: true,
+      },
+    },
+  },
 };
