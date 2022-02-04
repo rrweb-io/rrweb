@@ -104,13 +104,20 @@ export function diff(
     );
   }
   // IFrame element doesn't have child nodes.
-  if (newTree instanceof RRIFrameElement)
-    diff(
-      (((oldTree as Node) as HTMLIFrameElement)
-        .contentDocument! as unknown) as INode,
-      newTree.contentDocument,
-      replayer,
-    );
+  if (newTree instanceof RRIFrameElement) {
+    const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
+      .contentDocument as unknown) as INode;
+    // If the iframe is cross-origin, the contentDocument will be null.
+    if (oldContentDocument) {
+      if (newTree.contentDocument.__sn) {
+        oldContentDocument.__sn = newTree.contentDocument.__sn;
+        replayer.mirror.map[
+          newTree.contentDocument.__sn.id
+        ] = oldContentDocument;
+      }
+      diff(oldContentDocument, newTree.contentDocument, replayer);
+    }
+  }
 
   scrollDataToApply && replayer.applyScroll(scrollDataToApply, true);
   /**
@@ -195,7 +202,18 @@ function diffChildren(
         oldChildren[indexInOld] = undefined;
       } else {
         const newNode = createOrGetNode(newStartNode, replayer.mirror);
-        parentNode.insertBefore(newNode, oldStartNode);
+        if (
+          parentNode.__sn.type === NodeType.Document &&
+          newNode.__sn.type === NodeType.Element &&
+          newNode.__sn.tagName.toUpperCase() === 'HTML'
+        ) {
+          parentNode.removeChild(
+            ((parentNode as Node) as Document).documentElement,
+          );
+          oldChildren[oldStartIndex] = undefined;
+          oldStartNode = undefined;
+        }
+        parentNode.insertBefore(newNode, oldStartNode || null);
         diff(newNode, newStartNode, replayer);
       }
       newStartNode = newChildren[++newStartIndex];
