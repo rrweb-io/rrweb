@@ -277,6 +277,27 @@ export type observerParam = {
   }>;
 };
 
+export type MutationBufferParam = Pick<
+  observerParam,
+  | 'mutationCb'
+  | 'blockClass'
+  | 'blockSelector'
+  | 'maskTextClass'
+  | 'maskTextSelector'
+  | 'inlineStylesheet'
+  | 'maskInputOptions'
+  | 'maskTextFn'
+  | 'maskInputFn'
+  | 'recordCanvas'
+  | 'inlineImages'
+  | 'slimDOMOptions'
+  | 'doc'
+  | 'mirror'
+  | 'iframeManager'
+  | 'shadowDomManager'
+  | 'canvasManager'
+>;
+
 export type hooksParam = {
   mutation?: mutationCallBack;
   mousemove?: mousemoveCallBack;
@@ -406,7 +427,7 @@ export type SerializedWebGlArg =
     }
   | {
       rr_type: string;
-      args: Array<SerializedWebGlArg>;
+      args: SerializedWebGlArg[];
     }
   | {
       rr_type: string;
