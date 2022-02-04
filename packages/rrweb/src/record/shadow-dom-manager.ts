@@ -14,7 +14,7 @@ import type {
 } from 'rrweb-snapshot';
 import type { IframeManager } from './iframe-manager';
 import { initMutationObserver, initScrollObserver } from './observer';
-import { CanvasManager } from './observers/canvas/canvas-manager';
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 
 type BypassOptions = {
   blockClass: blockClass;

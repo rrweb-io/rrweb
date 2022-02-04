@@ -1,4 +1,4 @@
-import { Replayer } from '../';
+import type { Replayer } from '../';
 import { CanvasContext, canvasMutationCommand, SerializedWebGlArg } from '../../types';
 export declare function variableListFor(ctx: WebGLRenderingContext | WebGL2RenderingContext, ctor: string): any[];
 export declare function deserializeArg(imageMap: Replayer['imageMap'], ctx: WebGLRenderingContext | WebGL2RenderingContext): (arg: SerializedWebGlArg) => any;

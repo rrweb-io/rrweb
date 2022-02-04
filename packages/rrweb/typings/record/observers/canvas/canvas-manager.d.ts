@@ -1,4 +1,4 @@
-import { blockClass, canvasMutationCallback, IWindow, Mirror } from '../../../types';
+import type { blockClass, canvasMutationCallback, IWindow, Mirror } from '../../../types';
 export declare type RafStamps = {
     latestId: number;
     invokeId: number | null;

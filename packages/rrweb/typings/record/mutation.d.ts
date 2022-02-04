@@ -2,7 +2,7 @@ import { MaskInputOptions, SlimDOMOptions, MaskTextFn, MaskInputFn } from 'rrweb
 import type { mutationRecord, blockClass, maskTextClass, mutationCallBack, Mirror } from '../types';
 import type { IframeManager } from './iframe-manager';
 import type { ShadowDomManager } from './shadow-dom-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 export default class MutationBuffer {
     private frozen;
     private locked;

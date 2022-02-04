@@ -49,7 +49,7 @@ import {
 import MutationBuffer from './mutation';
 import type { IframeManager } from './iframe-manager';
 import type { ShadowDomManager } from './shadow-dom-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;

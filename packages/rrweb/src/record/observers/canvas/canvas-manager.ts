@@ -1,5 +1,5 @@
-import { INode } from 'rrweb-snapshot';
-import {
+import type { INode } from 'rrweb-snapshot';
+import type {
   blockClass,
   canvasManagerMutationCallback,
   canvasMutationCallback,

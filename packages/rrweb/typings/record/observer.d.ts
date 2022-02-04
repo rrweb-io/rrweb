@@ -3,7 +3,7 @@ import { mutationCallBack, observerParam, listenerHandler, scrollCallback, block
 import MutationBuffer from './mutation';
 import type { IframeManager } from './iframe-manager';
 import type { ShadowDomManager } from './shadow-dom-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 export declare const mutationBuffers: MutationBuffer[];
 export declare function initMutationObserver(cb: mutationCallBack, doc: Document, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean, inlineImages: boolean, slimDOMOptions: SlimDOMOptions, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, canvasManager: CanvasManager, rootEl: Node): MutationObserver;
 export declare function initScrollObserver(cb: scrollCallback, doc: Document, mirror: Mirror, blockClass: blockClass, sampling: SamplingStrategy): listenerHandler;

@@ -1,5 +1,5 @@
-import { INode, ICanvas } from 'rrweb-snapshot';
-import { blockClass, IWindow, listenerHandler } from '../../../types';
+import type { INode, ICanvas } from 'rrweb-snapshot';
+import type { blockClass, IWindow, listenerHandler } from '../../../types';
 import { isBlocked, patch } from '../../../utils';
 
 export default function initCanvasContextObserver(

@@ -1,5 +1,5 @@
-import { Replayer } from '../';
-import { canvasMutationCommand } from '../../types';
+import type { Replayer } from '../';
+import type { canvasMutationCommand } from '../../types';
 
 export default function canvasMutation({
   event,

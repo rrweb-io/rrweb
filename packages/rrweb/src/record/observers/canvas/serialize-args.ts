@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import { IWindow, SerializedWebGlArg } from '../../../types';
+import type { IWindow, SerializedWebGlArg } from '../../../types';
 
 // TODO: unify with `replay/webgl.ts`
 type GLVarMap = Map<string, any[]>;

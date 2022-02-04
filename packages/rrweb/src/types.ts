@@ -12,7 +12,7 @@ import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
 import type { RRNode } from 'rrdom/es/document-browser';
-import { CanvasManager } from './record/observers/canvas/canvas-manager';
+import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 
 export enum EventType {
   DomContentLoaded,

@@ -1,4 +1,4 @@
-import { INode } from 'rrweb-snapshot';
+import type { INode } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,

@@ -1,4 +1,4 @@
-import { IWindow, SerializedWebGlArg } from '../../../types';
+import type { IWindow, SerializedWebGlArg } from '../../../types';
 export declare function variableListFor(ctx: WebGLRenderingContext | WebGL2RenderingContext, ctor: string): any[];
 export declare const saveWebGLVar: (value: any, win: IWindow, ctx: WebGL2RenderingContext | WebGLRenderingContext) => number | void;
 export declare function serializeArg(value: any, win: IWindow, ctx: WebGL2RenderingContext | WebGLRenderingContext): SerializedWebGlArg;

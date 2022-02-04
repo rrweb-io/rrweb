@@ -1,7 +1,7 @@
 import type { mutationCallBack, blockClass, maskTextClass, Mirror, scrollCallback, SamplingStrategy } from '../types';
 import type { MaskInputOptions, SlimDOMOptions, MaskTextFn, MaskInputFn } from 'rrweb-snapshot';
 import type { IframeManager } from './iframe-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 declare type BypassOptions = {
     blockClass: blockClass;
     blockSelector: string | null;
