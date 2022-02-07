@@ -1,36 +1,17 @@
 import type {
   mutationCallBack,
-  blockClass,
-  maskTextClass,
   Mirror,
   scrollCallback,
+  MutationBufferParam,
   SamplingStrategy,
 } from '../types';
-import type {
-  MaskInputOptions,
-  SlimDOMOptions,
-  MaskTextFn,
-  MaskInputFn,
-} from 'rrweb-snapshot';
-import type { IframeManager } from './iframe-manager';
 import { initMutationObserver, initScrollObserver } from './observer';
-import type { CanvasManager } from './observers/canvas/canvas-manager';
 
-type BypassOptions = {
-  blockClass: blockClass;
-  blockSelector: string | null;
-  maskTextClass: maskTextClass;
-  maskTextSelector: string | null;
-  inlineStylesheet: boolean;
-  maskInputOptions: MaskInputOptions;
-  maskTextFn: MaskTextFn | undefined;
-  maskInputFn: MaskInputFn | undefined;
-  recordCanvas: boolean;
-  inlineImages: boolean;
+type BypassOptions = Omit<
+  MutationBufferParam,
+  'doc' | 'mutationCb' | 'mirror' | 'shadowDomManager'
+> & {
   sampling: SamplingStrategy;
-  slimDOMOptions: SlimDOMOptions;
-  iframeManager: IframeManager;
-  canvasManager: CanvasManager;
 };
 
 export class ShadowDomManager {
@@ -53,33 +34,22 @@ export class ShadowDomManager {
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
     initMutationObserver(
-      this.mutationCb,
-      doc,
-      this.bypassOptions.blockClass,
-      this.bypassOptions.blockSelector,
-      this.bypassOptions.maskTextClass,
-      this.bypassOptions.maskTextSelector,
-      this.bypassOptions.inlineStylesheet,
-      this.bypassOptions.maskInputOptions,
-      this.bypassOptions.maskTextFn,
-      this.bypassOptions.maskInputFn,
-      this.bypassOptions.recordCanvas,
-      this.bypassOptions.inlineImages,
-      this.bypassOptions.slimDOMOptions,
-      this.mirror,
-      this.bypassOptions.iframeManager,
-      this,
-      this.bypassOptions.canvasManager,
+      {
+        ...this.bypassOptions,
+        doc,
+        mutationCb: this.mutationCb,
+        mirror: this.mirror,
+        shadowDomManager: this,
+      },
       shadowRoot,
     );
-    initScrollObserver(
-      this.scrollCb,
+    initScrollObserver({
+      ...this.bypassOptions,
+      scrollCb: this.scrollCb,
       // https://gist.github.com/praveenpuglia/0832da687ed5a5d7a0907046c9ef1813
       // scroll is not allowed to pass the boundary, so we need to listen the shadow document
-      (shadowRoot as unknown) as Document,
-      this.mirror,
-      this.bypassOptions.blockClass,
-      this.bypassOptions.sampling,
-    );
+      doc: (shadowRoot as unknown) as Document,
+      mirror: this.mirror,
+    });
   }
 }

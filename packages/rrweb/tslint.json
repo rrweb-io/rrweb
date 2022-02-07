@@ -21,7 +21,10 @@
     "no-empty": false,
     "max-classes-per-file": false,
     "semicolon": false,
-    "trailing-comma": false
+    "trailing-comma": false,
+    "curly": false,
+    "no-namespace": false,
+    "interface-name": false
   },
   "rulesDirectory": []
 }

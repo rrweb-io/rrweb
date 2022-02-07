@@ -1,12 +1,5 @@
-import {
-  INode,
-  MaskInputOptions,
-  SlimDOMOptions,
-  maskInputValue,
-  MaskInputFn,
-  MaskTextFn,
-} from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
+import { INode, MaskInputOptions, maskInputValue } from 'rrweb-snapshot';
 import {
   throttle,
   on,
@@ -31,25 +24,19 @@ import {
   inputValue,
   inputCallback,
   hookResetter,
-  blockClass,
-  maskTextClass,
   IncrementalSource,
   hooksParam,
   Arguments,
   mediaInteractionCallback,
   MediaInteractions,
-  SamplingStrategy,
   canvasMutationCallback,
   fontCallback,
   fontParam,
-  Mirror,
   styleDeclarationCallback,
   IWindow,
+  MutationBufferParam,
 } from '../types';
 import MutationBuffer from './mutation';
-import type { IframeManager } from './iframe-manager';
-import type { ShadowDomManager } from './shadow-dom-manager';
-import type { CanvasManager } from './observers/canvas/canvas-manager';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -87,47 +74,13 @@ function getEventTarget(event: Event): EventTarget | null {
 }
 
 export function initMutationObserver(
-  cb: mutationCallBack,
-  doc: Document,
-  blockClass: blockClass,
-  blockSelector: string | null,
-  maskTextClass: maskTextClass,
-  maskTextSelector: string | null,
-  inlineStylesheet: boolean,
-  maskInputOptions: MaskInputOptions,
-  maskTextFn: MaskTextFn | undefined,
-  maskInputFn: MaskInputFn | undefined,
-  recordCanvas: boolean,
-  inlineImages: boolean,
-  slimDOMOptions: SlimDOMOptions,
-  mirror: Mirror,
-  iframeManager: IframeManager,
-  shadowDomManager: ShadowDomManager,
-  canvasManager: CanvasManager,
+  options: MutationBufferParam,
   rootEl: Node,
 ): MutationObserver {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
-  mutationBuffer.init(
-    cb,
-    blockClass,
-    blockSelector,
-    maskTextClass,
-    maskTextSelector,
-    inlineStylesheet,
-    maskInputOptions,
-    maskTextFn,
-    maskInputFn,
-    recordCanvas,
-    inlineImages,
-    slimDOMOptions,
-    doc,
-    mirror,
-    iframeManager,
-    shadowDomManager,
-    canvasManager,
-  );
+  mutationBuffer.init(options);
   let mutationObserverCtor =
     window.MutationObserver ||
     /**
@@ -167,12 +120,12 @@ export function initMutationObserver(
   return observer;
 }
 
-function initMoveObserver(
-  cb: mousemoveCallBack,
-  sampling: SamplingStrategy,
-  doc: Document,
-  mirror: Mirror,
-): listenerHandler {
+function initMoveObserver({
+  mousemoveCb,
+  sampling,
+  doc,
+  mirror,
+}: observerParam): listenerHandler {
   if (sampling.mousemove === false) {
     return () => {};
   }
@@ -194,7 +147,7 @@ function initMoveObserver(
         | IncrementalSource.Drag,
     ) => {
       const totalOffset = Date.now() - timeBaseline!;
-      cb(
+      mousemoveCb(
         positions.map((p) => {
           p.timeOffset -= totalOffset;
           return p;
@@ -246,13 +199,13 @@ function initMoveObserver(
   };
 }
 
-function initMouseInteractionObserver(
-  cb: mouseInteractionCallBack,
-  doc: Document,
-  mirror: Mirror,
-  blockClass: blockClass,
-  sampling: SamplingStrategy,
-): listenerHandler {
+function initMouseInteractionObserver({
+  mouseInteractionCb,
+  doc,
+  mirror,
+  blockClass,
+  sampling,
+}: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
     return () => {};
   }
@@ -275,7 +228,7 @@ function initMouseInteractionObserver(
       }
       const id = mirror.getId(target as INode);
       const { clientX, clientY } = e;
-      cb({
+      mouseInteractionCb({
         type: MouseInteractions[eventKey],
         id,
         x: clientX,
@@ -300,13 +253,16 @@ function initMouseInteractionObserver(
   };
 }
 
-export function initScrollObserver(
-  cb: scrollCallback,
-  doc: Document,
-  mirror: Mirror,
-  blockClass: blockClass,
-  sampling: SamplingStrategy,
-): listenerHandler {
+export function initScrollObserver({
+  scrollCb,
+  doc,
+  mirror,
+  blockClass,
+  sampling,
+}: Pick<
+  observerParam,
+  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'sampling'
+>): listenerHandler {
   const updatePosition = throttle<UIEvent>((evt) => {
     const target = getEventTarget(evt);
     if (!target || isBlocked(target as Node, blockClass)) {
@@ -315,13 +271,13 @@ export function initScrollObserver(
     const id = mirror.getId(target as INode);
     if (target === doc) {
       const scrollEl = (doc.scrollingElement || doc.documentElement)!;
-      cb({
+      scrollCb({
         id,
         x: scrollEl.scrollLeft,
         y: scrollEl.scrollTop,
       });
     } else {
-      cb({
+      scrollCb({
         id,
         x: (target as HTMLElement).scrollLeft,
         y: (target as HTMLElement).scrollTop,
@@ -331,16 +287,16 @@ export function initScrollObserver(
   return on('scroll', updatePosition, doc);
 }
 
-function initViewportResizeObserver(
-  cb: viewportResizeCallback,
-): listenerHandler {
+function initViewportResizeObserver({
+  viewportResizeCb,
+}: observerParam): listenerHandler {
   let lastH = -1;
   let lastW = -1;
   const updateDimension = throttle(() => {
     const height = getWindowHeight();
     const width = getWindowWidth();
     if (lastH !== height || lastW !== width) {
-      cb({
+      viewportResizeCb({
         width: Number(width),
         height: Number(height),
       });
@@ -362,17 +318,17 @@ function wrapEventWithUserTriggeredFlag(
 
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
-function initInputObserver(
-  cb: inputCallback,
-  doc: Document,
-  mirror: Mirror,
-  blockClass: blockClass,
-  ignoreClass: string,
-  maskInputOptions: MaskInputOptions,
-  maskInputFn: MaskInputFn | undefined,
-  sampling: SamplingStrategy,
-  userTriggeredOnInput: boolean,
-): listenerHandler {
+function initInputObserver({
+  inputCb,
+  doc,
+  mirror,
+  blockClass,
+  ignoreClass,
+  maskInputOptions,
+  maskInputFn,
+  sampling,
+  userTriggeredOnInput,
+}: observerParam): listenerHandler {
   function eventHandler(event: Event) {
     let target = getEventTarget(event);
     const userTriggered = event.isTrusted;
@@ -451,7 +407,7 @@ function initInputObserver(
     ) {
       lastInputValueMap.set(target, v);
       const id = mirror.getId(target as INode);
-      cb({
+      inputCb({
         ...v,
         id,
       });
@@ -531,9 +487,8 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
 }
 
 function initStyleSheetObserver(
-  cb: styleSheetRuleCallback,
-  win: IWindow,
-  mirror: Mirror,
+  { styleSheetRuleCb, mirror }: observerParam,
+  { win }: { win: IWindow },
 ): listenerHandler {
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = function (
@@ -542,7 +497,7 @@ function initStyleSheetObserver(
   ) {
     const id = mirror.getId(this.ownerNode as INode);
     if (id !== -1) {
-      cb({
+      styleSheetRuleCb({
         id,
         adds: [{ rule, index }],
       });
@@ -554,7 +509,7 @@ function initStyleSheetObserver(
   win.CSSStyleSheet.prototype.deleteRule = function (index: number) {
     const id = mirror.getId(this.ownerNode as INode);
     if (id !== -1) {
-      cb({
+      styleSheetRuleCb({
         id,
         removes: [{ index }],
       });
@@ -599,7 +554,7 @@ function initStyleSheetObserver(
     type.prototype.insertRule = function (rule: string, index?: number) {
       const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
       if (id !== -1) {
-        cb({
+        styleSheetRuleCb({
           id,
           adds: [
             {
@@ -618,7 +573,7 @@ function initStyleSheetObserver(
     type.prototype.deleteRule = function (index: number) {
       const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
       if (id !== -1) {
-        cb({
+        styleSheetRuleCb({
           id,
           removes: [{ index: [...getNestedCSSRulePositions(this), index] }],
         });
@@ -638,9 +593,8 @@ function initStyleSheetObserver(
 }
 
 function initStyleDeclarationObserver(
-  cb: styleDeclarationCallback,
-  win: IWindow,
-  mirror: Mirror,
+  { styleDeclarationCb, mirror }: observerParam,
+  { win }: { win: IWindow },
 ): listenerHandler {
   const setProperty = win.CSSStyleDeclaration.prototype.setProperty;
   win.CSSStyleDeclaration.prototype.setProperty = function (
@@ -653,7 +607,7 @@ function initStyleDeclarationObserver(
       (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
     );
     if (id !== -1) {
-      cb({
+      styleDeclarationCb({
         id,
         set: {
           property,
@@ -675,7 +629,7 @@ function initStyleDeclarationObserver(
       (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
     );
     if (id !== -1) {
-      cb({
+      styleDeclarationCb({
         id,
         remove: {
           property,
@@ -692,12 +646,12 @@ function initStyleDeclarationObserver(
   };
 }
 
-function initMediaInteractionObserver(
-  mediaInteractionCb: mediaInteractionCallback,
-  blockClass: blockClass,
-  mirror: Mirror,
-  sampling: SamplingStrategy,
-): listenerHandler {
+function initMediaInteractionObserver({
+  mediaInteractionCb,
+  blockClass,
+  mirror,
+  sampling,
+}: observerParam): listenerHandler {
   const handler = (type: MediaInteractions) =>
     throttle((event: Event) => {
       const target = getEventTarget(event);
@@ -724,7 +678,7 @@ function initMediaInteractionObserver(
   };
 }
 
-function initFontObserver(cb: fontCallback, doc: Document): listenerHandler {
+function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   const win = doc.defaultView as IWindow;
   if (!win) {
     return () => {};
@@ -759,7 +713,7 @@ function initFontObserver(cb: fontCallback, doc: Document): listenerHandler {
       setTimeout(() => {
         const p = fontMap.get(fontFace);
         if (p) {
-          cb(p);
+          fontCb(p);
           fontMap.delete(fontFace);
         }
       }, 0);
@@ -869,78 +823,19 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  const mutationObserver = initMutationObserver(
-    o.mutationCb,
-    o.doc,
-    o.blockClass,
-    o.blockSelector,
-    o.maskTextClass,
-    o.maskTextSelector,
-    o.inlineStylesheet,
-    o.maskInputOptions,
-    o.maskTextFn,
-    o.maskInputFn,
-    o.recordCanvas,
-    o.inlineImages,
-    o.slimDOMOptions,
-    o.mirror,
-    o.iframeManager,
-    o.shadowDomManager,
-    o.canvasManager,
-    o.doc,
-  );
-  const mousemoveHandler = initMoveObserver(
-    o.mousemoveCb,
-    o.sampling,
-    o.doc,
-    o.mirror,
-  );
-  const mouseInteractionHandler = initMouseInteractionObserver(
-    o.mouseInteractionCb,
-    o.doc,
-    o.mirror,
-    o.blockClass,
-    o.sampling,
-  );
-  const scrollHandler = initScrollObserver(
-    o.scrollCb,
-    o.doc,
-    o.mirror,
-    o.blockClass,
-    o.sampling,
-  );
-  const viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);
-  const inputHandler = initInputObserver(
-    o.inputCb,
-    o.doc,
-    o.mirror,
-    o.blockClass,
-    o.ignoreClass,
-    o.maskInputOptions,
-    o.maskInputFn,
-    o.sampling,
-    o.userTriggeredOnInput,
-  );
-  const mediaInteractionHandler = initMediaInteractionObserver(
-    o.mediaInteractionCb,
-    o.blockClass,
-    o.mirror,
-    o.sampling,
-  );
+  const mutationObserver = initMutationObserver(o, o.doc);
+  const mousemoveHandler = initMoveObserver(o);
+  const mouseInteractionHandler = initMouseInteractionObserver(o);
+  const scrollHandler = initScrollObserver(o);
+  const viewportResizeHandler = initViewportResizeObserver(o);
+  const inputHandler = initInputObserver(o);
+  const mediaInteractionHandler = initMediaInteractionObserver(o);
 
-  const styleSheetObserver = initStyleSheetObserver(
-    o.styleSheetRuleCb,
-    currentWindow,
-    o.mirror,
-  );
-  const styleDeclarationObserver = initStyleDeclarationObserver(
-    o.styleDeclarationCb,
-    currentWindow,
-    o.mirror,
-  );
-  const fontObserver = o.collectFonts
-    ? initFontObserver(o.fontCb, o.doc)
-    : () => {};
+  const styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
+  const styleDeclarationObserver = initStyleDeclarationObserver(o, {
+    win: currentWindow,
+  });
+  const fontObserver = o.collectFonts ? initFontObserver(o) : () => {};
   // plugins
   const pluginHandlers: listenerHandler[] = [];
   for (const plugin of o.plugins) {
