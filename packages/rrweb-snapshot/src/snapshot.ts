@@ -902,7 +902,12 @@ export function serializeNodeWithId(
   ) {
     serializedNode.isShadowHost = true;
     for (const childN of Array.from(n.shadowRoot.childNodes)) {
-      const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+      const serializedChildNode = serializeNodeWithId(
+        childN,
+        Object.assign(bypassOptions, {
+          skipChild: false,
+        }),
+      );
       if (serializedChildNode) {
         serializedChildNode.isShadow = true;
         serializedNode.childNodes.push(serializedChildNode);
