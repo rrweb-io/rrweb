@@ -854,6 +854,27 @@ export function serializeNodeWithId(
     // this property was not needed in replay side
     delete serializedNode.needBlock;
   }
+  const bypassOptions = {
+    doc,
+    map,
+    blockClass,
+    blockSelector,
+    maskTextClass,
+    maskTextSelector,
+    skipChild,
+    inlineStylesheet,
+    maskInputOptions,
+    maskTextFn,
+    maskInputFn,
+    slimDOMOptions,
+    inlineImages,
+    recordCanvas,
+    preserveWhiteSpace,
+    onSerialize,
+    onIframeLoad,
+    iframeLoadTimeout,
+    keepIframeSrcFn,
+  };
   if (
     (serializedNode.type === NodeType.Document ||
       serializedNode.type === NodeType.Element) &&
@@ -867,42 +888,24 @@ export function serializeNodeWithId(
     ) {
       preserveWhiteSpace = false;
     }
-    const bypassOptions = {
-      doc,
-      map,
-      blockClass,
-      blockSelector,
-      maskTextClass,
-      maskTextSelector,
-      skipChild,
-      inlineStylesheet,
-      maskInputOptions,
-      maskTextFn,
-      maskInputFn,
-      slimDOMOptions,
-      inlineImages,
-      recordCanvas,
-      preserveWhiteSpace,
-      onSerialize,
-      onIframeLoad,
-      iframeLoadTimeout,
-      keepIframeSrcFn,
-    };
     for (const childN of Array.from(n.childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
     }
-
-    if (isElement(n) && n.shadowRoot) {
-      serializedNode.isShadowHost = true;
-      for (const childN of Array.from(n.shadowRoot.childNodes)) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
-        if (serializedChildNode) {
-          serializedChildNode.isShadow = true;
-          serializedNode.childNodes.push(serializedChildNode);
-        }
+  }
+  if (
+    serializedNode.type === NodeType.Element &&
+    isElement(n) &&
+    n.shadowRoot
+  ) {
+    serializedNode.isShadowHost = true;
+    for (const childN of Array.from(n.shadowRoot.childNodes)) {
+      const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+      if (serializedChildNode) {
+        serializedChildNode.isShadow = true;
+        serializedNode.childNodes.push(serializedChildNode);
       }
     }
   }
