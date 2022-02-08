@@ -15,7 +15,6 @@
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
 [![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
-
 [中文文档](./README.zh_CN.md)
 
 > I have joined Github Sponsors and highly appreciate your sponsorship.
