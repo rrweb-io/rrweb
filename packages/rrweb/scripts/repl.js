@@ -139,6 +139,8 @@ function getCode() {
     });
 
     emitter.once('done', async (shouldReplay) => {
+      const pages = await browser.pages();
+      await Promise.all(pages.map((page) => page.close()));
       await browser.close();
       if (shouldReplay) {
         await replay(url, shouldReplay === 'replayWithFakeURL');
