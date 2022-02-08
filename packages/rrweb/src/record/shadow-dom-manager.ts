@@ -19,6 +19,7 @@ export class ShadowDomManager {
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
+  private originalAttachShadow: (init: ShadowRootInit) => ShadowRoot;
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -30,6 +31,16 @@ export class ShadowDomManager {
     this.scrollCb = options.scrollCb;
     this.bypassOptions = options.bypassOptions;
     this.mirror = options.mirror;
+
+    // Monkey patch 'attachShadow' to observe newly added shadow doms.
+    this.originalAttachShadow = HTMLElement.prototype.attachShadow;
+    const attachShadow = this.originalAttachShadow;
+    const manager = this;
+    HTMLElement.prototype.attachShadow = function () {
+      const shadowRoot = attachShadow.apply(this, arguments);
+      manager.addShadowRoot(this.shadowRoot, document);
+      return shadowRoot;
+    };
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
@@ -51,5 +62,9 @@ export class ShadowDomManager {
       doc: (shadowRoot as unknown) as Document,
       mirror: this.mirror,
     });
+  }
+
+  public reset() {
+    HTMLElement.prototype.attachShadow = this.originalAttachShadow;
   }
 }

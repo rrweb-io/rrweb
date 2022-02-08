@@ -225,6 +225,7 @@ export default class MutationBuffer {
   }
 
   public reset() {
+    this.shadowDomManager.reset();
     this.canvasManager.reset();
   }
 
