@@ -26,13 +26,13 @@ export class CanvasManager {
   private mirror: Mirror;
 
   private mutationCb: canvasMutationCallback;
-  private resetObservers: listenerHandler;
+  private resetObservers?: listenerHandler;
   private frozen: boolean = false;
   private locked: boolean = false;
 
   public reset() {
     this.pendingCanvasMutations.clear();
-    this.resetObservers();
+    this.resetObservers && this.resetObservers();
   }
 
   public freeze() {
