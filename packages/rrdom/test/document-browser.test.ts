@@ -17,6 +17,8 @@ function printRRDom(rootNode) {
 }
 function walk(node, blankSpace) {
   let printText = \`\${blankSpace}\${node.toString()}\n\`;
+  if(node instanceof rrdom.RRElement && node.shadowRoot)
+    printText += walk(node.shadowRoot, blankSpace + '  ');
   for (const child of node.childNodes)
     printText += walk(child, blankSpace + '  ');
   if (node instanceof rrdom.RRIFrameElement)
@@ -77,7 +79,16 @@ describe('RRDocument for browser environment', () => {
       const result = await page.evaluate(`
         const doc = new rrdom.RRDocument();
         rrdom.buildFromDom(document,doc);
-        console.log(doc);
+        printRRDom(doc);
+      `);
+      expect(result).toMatchSnapshot();
+    });
+
+    it('can build from a html containing nested shadow doms', async () => {
+      await page.setContent(getHtml('shadow-dom.html'));
+      const result = await page.evaluate(`
+        const doc = new rrdom.RRDocument();
+        rrdom.buildFromDom(document,doc);
         printRRDom(doc);
       `);
       expect(result).toMatchSnapshot();

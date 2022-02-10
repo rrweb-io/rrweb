@@ -47,6 +47,41 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
 "
 `;
 
+exports[`RRDocument for browser environment create a RRDocument from a html document can build from a html containing nested shadow doms 1`] = `
+"-1 RRDocument
+  -2 RRDocumentType
+  -3 HTML lang=\\"en\\" 
+    -4 HEAD 
+      -5 RRText text=\\"\\\\n    \\"
+      -6 META charset=\\"UTF-8\\" 
+      -7 RRText text=\\"\\\\n    \\"
+      -8 META name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" 
+      -9 RRText text=\\"\\\\n    \\"
+      -10 TITLE 
+        -11 RRText text=\\"shadow dom\\"
+      -12 RRText text=\\"\\\\n  \\"
+    -13 RRText text=\\"\\\\n  \\"
+    -14 BODY 
+      -15 RRText text=\\"\\\\n    \\"
+      -16 DIV 
+        -17 SHADOWROOT 
+          -18 RRText text=\\"\\\\n        \\"
+          -19 SPAN 
+            -20 RRText text=\\" shadow dom one \\"
+          -21 RRText text=\\"\\\\n        \\"
+          -22 DIV 
+            -23 SHADOWROOT 
+              -24 RRText text=\\"\\\\n            \\"
+              -25 SPAN 
+                -26 RRText text=\\" shadow dom two \\"
+              -27 RRText text=\\"\\\\n          \\"
+            -28 RRText text=\\"\\\\n          \\\\n        \\"
+          -29 RRText text=\\"\\\\n      \\"
+        -30 RRText text=\\"\\\\n      \\\\n    \\"
+      -31 RRText text=\\"\\\\n  \\\\n\\\\n\\"
+"
+`;
+
 exports[`RRDocument for browser environment create a RRDocument from a html document can build from an iframe html  1`] = `
 "-1 RRDocument
   -2 RRDocumentType
@@ -74,6 +109,7 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
         </head>
         <body>
           <div>This is a block inside the iframe1.</div>
+          <iframe id='iframe3' srcdoc='<div>This is a block inside the iframe3.</div>'>
         </body>
       </html>\\" 
         -17 RRDocument
@@ -89,15 +125,22 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
               -27 RRText text=\\"\\\\n          \\"
               -28 DIV 
                 -29 RRText text=\\"This is a block inside the iframe1.\\"
-              -30 RRText text=\\"\\\\n        \\\\n      \\"
-      -31 RRText text=\\"\\\\n    \\"
-      -32 IFRAME id=\\"iframe2\\" srcdoc=\\"<div>This is a block inside the iframe2.</div>\\" 
-        -33 RRDocument
-          -34 HTML 
-            -35 HEAD 
-            -36 BODY 
-              -37 DIV 
-                -38 RRText text=\\"This is a block inside the iframe2.\\"
-      -39 RRText text=\\"\\\\n  \\\\n\\\\n\\"
+              -30 RRText text=\\"\\\\n          \\"
+              -31 IFRAME id=\\"iframe3\\" srcdoc=\\"<div>This is a block inside the iframe3.</div>\\" 
+                -32 RRDocument
+                  -33 HTML 
+                    -34 HEAD 
+                    -35 BODY 
+                      -36 DIV 
+                        -37 RRText text=\\"This is a block inside the iframe3.\\"
+      -38 RRText text=\\"\\\\n    \\"
+      -39 IFRAME id=\\"iframe2\\" srcdoc=\\"<div>This is a block inside the iframe2.</div>\\" 
+        -40 RRDocument
+          -41 HTML 
+            -42 HEAD 
+            -43 BODY 
+              -44 DIV 
+                -45 RRText text=\\"This is a block inside the iframe2.\\"
+      -46 RRText text=\\"\\\\n  \\\\n\\\\n\\"
 "
 `;

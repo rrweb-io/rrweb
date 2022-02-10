@@ -14,6 +14,7 @@ import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
+import shadowDomEvents from './events/shadow-dom';
 
 interface ISuite {
   code: string;
@@ -479,6 +480,51 @@ describe('replayer', function () {
         (await iframeTwoDocument!.$$('iframe'))[1],
       ),
     ).not.toBeNull();
+  });
+
+  it('can fast-forward mutation events containing nested shadow doms', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(shadowDomEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add shadow dom 'one' at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(
+      await contentDocument!.$eval('div', (element) => element.shadowRoot),
+    ).not.toBeNull();
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('body > div')!
+            .shadowRoot!.querySelector('span')!.textContent,
+      ),
+    ).toEqual('shadow dom one');
+
+    // add shadow dom 'two' at 1000
+    await page.evaluate('replayer.play(0);');
+    await page.waitForTimeout(50);
+    await page.evaluate('replayer.pause(1050);');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('body > div')!
+            .shadowRoot!.querySelector('div')!.shadowRoot,
+      ),
+    ).not.toBeNull();
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('body > div')!
+            .shadowRoot!.querySelector('div')!
+            .shadowRoot!.querySelector('span')!.textContent,
+      ),
+    ).toEqual('shadow dom two');
   });
 
   it('can stream events in live mode', async () => {

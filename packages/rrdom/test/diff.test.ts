@@ -705,6 +705,23 @@ describe('diff algorithm for rrdom', () => {
     });
   });
 
+  describe('diff shadow dom', () => {
+    it('should add a shadow dom', () => {
+      const tagName = 'DIV';
+      const node = (document.createElement(tagName) as unknown) as INode;
+      node.__sn = Object.assign({}, elementSn, { tagName });
+      expect(((node as Node) as HTMLElement).shadowRoot).toBeNull();
+
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement(tagName);
+      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      rrNode.attachShadow({ mode: 'open' });
+
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).shadowRoot).not.toBeNull();
+    });
+  });
+
   describe('create or get a Node', () => {
     it('create a real HTML element from RRElement', () => {
       const rrDocument = new RRDocument();

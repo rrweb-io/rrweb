@@ -79,15 +79,28 @@ export function diff(
       scrollDataToApply = newRRDocument.scrollData;
       break;
     case NodeType.Element:
+      const oldElement = (oldTree as Node) as HTMLElement;
       const newRRElement = newTree as RRElement;
-      diffProps((oldTree as unknown) as HTMLElement, newRRElement);
+      diffProps(oldElement, newRRElement);
       scrollDataToApply = newRRElement.scrollData;
       inputDataToApply = newRRElement.inputData;
       if (newTree instanceof RRStyleElement && newTree.rules.length > 0) {
         applyVirtualStyleRulesToNode(
-          (oldTree as Node) as HTMLStyleElement,
+          oldElement as HTMLStyleElement,
           newTree.rules,
         );
+      }
+      if (newRRElement.shadowRoot) {
+        if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
+        const oldChildren = oldElement.shadowRoot!.childNodes;
+        const newChildren = newRRElement.shadowRoot.childNodes;
+        if (oldChildren.length > 0 || newChildren.length > 0)
+          diffChildren(
+            (Array.from(oldChildren) as unknown) as INode[],
+            newChildren,
+            (oldElement.shadowRoot! as unknown) as INode,
+            replayer,
+          );
       }
       break;
     // TODO: Diff other kinds of nodes.

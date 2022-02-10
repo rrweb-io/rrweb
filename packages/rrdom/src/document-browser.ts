@@ -390,6 +390,10 @@ export function buildFromDom(
           ((node as unknown) as Comment).textContent || '',
         );
         break;
+      // if node is a shadow root
+      case node.DOCUMENT_FRAGMENT_NODE:
+        rrNode = (parentRRNode as RRElement).attachShadow({ mode: 'open' });
+        break;
       default:
         return;
     }
@@ -398,11 +402,14 @@ export function buildFromDom(
 
     if (parentRRNode instanceof RRIFrameElement) {
       parentRRNode.contentDocument = rrNode as RRDocument;
-    } else {
+    }
+    // if node isn't a shadow root
+    else if (node.nodeType !== node.DOCUMENT_FRAGMENT_NODE) {
       parentRRNode?.appendChild(rrNode);
       rrNode.parentNode = parentRRNode;
       rrNode.parentElement = parentRRNode as RRElement;
     }
+
     if (
       node.nodeType === node.ELEMENT_NODE &&
       ((node as Node) as HTMLElement).tagName === 'IFRAME'
@@ -414,11 +421,21 @@ export function buildFromDom(
       );
     else if (
       node.nodeType === node.DOCUMENT_NODE ||
-      node.nodeType === node.ELEMENT_NODE
-    )
+      node.nodeType === node.ELEMENT_NODE ||
+      node.nodeType === node.DOCUMENT_FRAGMENT_NODE
+    ) {
+      if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        ((node as Node) as HTMLElement).shadowRoot
+      )
+        walk(
+          (((node as Node) as HTMLElement).shadowRoot! as unknown) as INode,
+          rrNode,
+        );
       node.childNodes.forEach((node) =>
         walk((node as unknown) as INode, rrNode),
       );
+    }
   };
   walk((dom as unknown) as INode, null);
   return rrdom;
@@ -543,9 +560,9 @@ export class RRElement extends RRNode {
   /**
    * Creates a shadow root for element and returns it.
    */
-  attachShadow(init: ShadowRootInit): RRElement {
-    this.shadowRoot = init.mode === 'open' ? this : null;
-    return this;
+  attachShadow(_init: ShadowRootInit): RRElement {
+    this.shadowRoot = new RRElement('SHADOWROOT');
+    return this.shadowRoot;
   }
 
   toString() {
