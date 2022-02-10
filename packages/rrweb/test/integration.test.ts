@@ -471,6 +471,7 @@ describe('record integration tests', function (this: ISuite) {
       console.trace('trace');
       console.warn('warn');
       console.clear();
+      console.log(new TypeError('a message'));
       const iframe = document.createElement('iframe');
       document.body.appendChild(iframe);
     });
