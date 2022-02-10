@@ -7807,6 +7807,21 @@ exports[`record integration tests should record console messages 1`] = `
     }
   },
   {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:19:37\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"TypeError: a message\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
