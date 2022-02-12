@@ -13,6 +13,7 @@ import {
   RRElement,
   RRStyleElement,
   RRIFrameElement,
+  RRMediaElement,
   StyleRuleType,
   VirtualStyleRules,
   buildFromDom,
@@ -473,14 +474,7 @@ export class Replayer {
         case EventType.FullSnapshot:
         case EventType.Meta:
         case EventType.Plugin:
-          break;
         case EventType.IncrementalSnapshot:
-          switch (event.data.source) {
-            case IncrementalSource.MediaInteraction:
-              continue;
-            default:
-              break;
-          }
           break;
         default:
           break;
@@ -847,7 +841,6 @@ export class Replayer {
    * pause when there are some canvas drawImage args need to be loaded
    */
   private preloadAllImages() {
-    // TODO check useful status
     let beforeLoadState = this.service.state;
     const stateHandler = () => {
       beforeLoadState = this.service.state;
@@ -1064,12 +1057,13 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MediaInteraction: {
-        // TODO what if the media element doesn't exist
-        const target = this.mirror.getNode(d.id);
+        const target = this.usingRRDom
+          ? this.rrdom.mirror.getNode(d.id)
+          : this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
-        const mediaEl = (target as Node) as HTMLMediaElement;
+        const mediaEl = target as HTMLMediaElement | RRMediaElement;
         try {
           if (d.currentTime) {
             mediaEl.currentTime = d.currentTime;

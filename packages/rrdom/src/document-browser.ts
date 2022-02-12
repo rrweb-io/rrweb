@@ -1,5 +1,5 @@
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
-import { inputData, scrollData } from 'rrweb/src/types';
+import type { inputData, scrollData } from 'rrweb/src/types';
 import { parseCSSText, camelize, toCSSText } from './style';
 
 export abstract class RRNode {
@@ -208,9 +208,6 @@ export class RRDocument extends RRNode {
       case 'IFRAME':
         element = new RRIFrameElement(upperTagName);
         break;
-      case 'IMG':
-        element = new RRImageElement(upperTagName);
-        break;
       case 'CANVAS':
         element = new RRCanvasElement(upperTagName);
         break;
@@ -369,12 +366,6 @@ export function buildFromDom(
         // canvas image data
         if (tagName === 'CANVAS') {
           rrElement.attributes.rr_dataURL = (elementNode as HTMLCanvasElement).toDataURL();
-        }
-        // media elements
-        if (tagName === 'AUDIO' || tagName === 'VIDEO') {
-          const rrMediaElement = rrElement as RRMediaElement;
-          rrMediaElement.paused = (elementNode as HTMLMediaElement).paused;
-          rrMediaElement.currentTime = (elementNode as HTMLMediaElement).currentTime;
         }
         break;
       case node.TEXT_NODE:
@@ -574,20 +565,15 @@ export class RRElement extends RRNode {
   }
 }
 
-export class RRImageElement extends RRElement {
-  src: string;
-  width: number;
-  height: number;
-  onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
-}
-
 export class RRMediaElement extends RRElement {
-  currentTime: number = 0;
-  paused: boolean = true;
-  async play() {
+  currentTime?: number;
+  volume?: number;
+  paused?: boolean;
+  muted?: boolean;
+  play() {
     this.paused = false;
   }
-  async pause() {
+  pause() {
     this.paused = true;
   }
 }
@@ -672,8 +658,10 @@ type Mirror = {
 };
 
 interface RRElementTagNameMap {
-  img: RRImageElement;
   audio: RRMediaElement;
+  canvas: RRCanvasElement;
+  iframe: RRIFrameElement;
+  style: RRStyleElement;
   video: RRMediaElement;
 }
 

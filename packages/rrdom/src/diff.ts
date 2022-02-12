@@ -1,5 +1,5 @@
 import { elementNode, INode, NodeType } from 'rrweb-snapshot';
-import type { inputData, Mirror, scrollData } from 'rrweb/src/types';
+import { inputData, Mirror, scrollData } from 'rrweb/src/types';
 import {
   RRCDATASection,
   RRComment,
@@ -12,6 +12,7 @@ import {
   RRDocument,
   RRIFrameElement,
   RRDocumentType,
+  RRMediaElement,
 } from './document-browser';
 
 const NAMESPACES: Record<string, string> = {
@@ -89,6 +90,16 @@ export function diff(
           oldElement as HTMLStyleElement,
           newTree.rules,
         );
+      } else if (newTree instanceof RRMediaElement) {
+        const oldMediaElement = (oldTree as Node) as HTMLMediaElement;
+        if (newTree.paused !== undefined)
+          newTree.paused ? oldMediaElement.pause() : oldMediaElement.play();
+        if (newTree.muted !== undefined) oldMediaElement.muted = newTree.muted;
+        if (newTree.volume !== undefined)
+          oldMediaElement.volume = newTree.volume;
+        // MediaInteraction events have been applied.
+        if (newTree.currentTime !== undefined)
+          oldMediaElement.currentTime = newTree.currentTime;
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
