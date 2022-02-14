@@ -1403,11 +1403,13 @@ export class Replayer {
        * Why !hasIframeChild? If we move iframe elements from dom to fragment document, we will lose the contentDocument of iframe. So we need to disable the virtual dom optimization if a parent node contains iframe elements.
        * Why parent.tagName !== 'HEAD'? moving stylesheets out of the <head> element removes the styles from the document (and they don't get replaced at `parent = virtualParent`
        */
+      if (((parent as unknown) as HTMLElement).tagName === 'HEAD') {
+        useVirtualParent = false;  // cancel for this and any other additions in same mutation
+      }
       if (
         useVirtualParent &&
         parentInDocument &&
         !isIframeINode(parent) &&
-        ((parent as unknown) as HTMLElement).tagName !== 'HEAD' &&
         !hasIframeChild
       ) {
         const virtualParent = (document.createDocumentFragment() as unknown) as INode;
