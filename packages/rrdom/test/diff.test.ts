@@ -89,6 +89,7 @@ describe('diff algorithm for rrdom', () => {
   };
   const replayer: ReplayerHandler = {
     mirror,
+    applyCanvas: () => {},
     applyInput: () => {},
     applyScroll: () => {},
   };
