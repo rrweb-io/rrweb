@@ -18,6 +18,7 @@ import {
   VirtualStyleRules,
   buildFromDom,
   diff,
+  RRCanvasElement,
 } from 'rrdom/es/document-browser';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
@@ -170,6 +171,22 @@ export class Replayer {
       if (this.usingRRDom) {
         diff((this.iframe.contentDocument! as unknown) as INode, this.rrdom, {
           mirror: this.mirror,
+          applyCanvas: (
+            canvasEvent: incrementalSnapshotEvent & {
+              timestamp: number;
+              delay?: number | undefined;
+            },
+            canvasMutationData: canvasMutationData,
+            target: HTMLCanvasElement,
+          ) => {
+            canvasMutation({
+              event: canvasEvent,
+              mutation: canvasMutationData,
+              target,
+              imageMap: this.imageMap,
+              errorHandler: this.warnCanvasMutationFailed.bind(this),
+            });
+          },
           applyInput: this.applyInput.bind(this),
           applyScroll: this.applyScroll.bind(this),
         });
@@ -1211,23 +1228,28 @@ export class Replayer {
         break;
       }
       case IncrementalSource.CanvasMutation: {
-        // TODO adopt rrdom here
         if (!this.config.UNSAFE_replayCanvas) {
           return;
         }
-        const target = this.mirror.getNode(d.id);
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
+        if (this.usingRRDom) {
+          const target = this.rrdom.mirror.getNode(d.id) as RRCanvasElement;
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
+          }
+          target.canvasMutation.push({ event: e, mutation: d });
+        } else {
+          const target = this.mirror.getNode(d.id);
+          if (!target) {
+            return this.debugNodeNotFound(d, d.id);
+          }
+          canvasMutation({
+            event: e,
+            mutation: d,
+            target: (target as unknown) as HTMLCanvasElement,
+            imageMap: this.imageMap,
+            errorHandler: this.warnCanvasMutationFailed.bind(this),
+          });
         }
-
-        canvasMutation({
-          event: e,
-          mutation: d,
-          target: (target as unknown) as HTMLCanvasElement,
-          imageMap: this.imageMap,
-          errorHandler: this.warnCanvasMutationFailed.bind(this),
-        });
-
         break;
       }
       case IncrementalSource.Font: {

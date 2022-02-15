@@ -1,5 +1,10 @@
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
-import type { inputData, scrollData } from 'rrweb/src/types';
+import type {
+  canvasMutationData,
+  incrementalSnapshotEvent,
+  inputData,
+  scrollData,
+} from 'rrweb/src/types';
 import { parseCSSText, camelize, toCSSText } from './style';
 
 export abstract class RRNode {
@@ -579,8 +584,15 @@ export class RRMediaElement extends RRElement {
 }
 
 export class RRCanvasElement extends RRElement {
+  public canvasMutation: {
+    event: incrementalSnapshotEvent & {
+      timestamp: number;
+      delay?: number | undefined;
+    };
+    mutation: canvasMutationData;
+  }[] = [];
   /**
-   * This is just a dummy implementation to prevent rrweb replayer from drawing mouse tail. If further analysis of canvas is needed, we may implement it with node-canvas.
+   * This is a dummy implementation to distinguish RRCanvasElement from real HTMLCanvasElement.
    */
   getContext(): CanvasRenderingContext2D | null {
     return null;

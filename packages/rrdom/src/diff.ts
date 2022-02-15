@@ -1,5 +1,11 @@
 import { elementNode, INode, NodeType } from 'rrweb-snapshot';
-import { inputData, Mirror, scrollData } from 'rrweb/src/types';
+import {
+  canvasMutationData,
+  incrementalSnapshotEvent,
+  inputData,
+  Mirror,
+  scrollData,
+} from 'rrweb/src/types';
 import {
   RRCDATASection,
   RRComment,
@@ -13,6 +19,7 @@ import {
   RRIFrameElement,
   RRDocumentType,
   RRMediaElement,
+  RRCanvasElement,
 } from './document-browser';
 
 const NAMESPACES: Record<string, string> = {
@@ -63,6 +70,14 @@ const SVGTagMap: Record<string, string> = {
 
 export type ReplayerHandler = {
   mirror: Mirror;
+  applyCanvas: (
+    canvasEvent: incrementalSnapshotEvent & {
+      timestamp: number;
+      delay?: number | undefined;
+    },
+    canvasMutationData: canvasMutationData,
+    target: HTMLCanvasElement,
+  ) => void;
   applyInput: (data: inputData) => void;
   applyScroll: (data: scrollData, isSync: boolean) => void;
 };
@@ -100,6 +115,14 @@ export function diff(
         // MediaInteraction events have been applied.
         if (newTree.currentTime !== undefined)
           oldMediaElement.currentTime = newTree.currentTime;
+      } else if (newTree instanceof RRCanvasElement) {
+        newTree.canvasMutation.forEach((canvasMutation) =>
+          replayer.applyCanvas(
+            canvasMutation.event,
+            canvasMutation.mutation,
+            (oldTree as Node) as HTMLCanvasElement,
+          ),
+        );
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
@@ -159,7 +182,16 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
     const newValue = newAttributes[name];
     if ((newTree.__sn as elementNode).isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
-    else oldTree.setAttribute(name, newValue);
+    else if (newTree instanceof RRCanvasElement && name === 'rr_dataURL') {
+      const image = document.createElement('img');
+      image.src = newValue;
+      image.onload = () => {
+        const ctx = (oldTree as HTMLCanvasElement).getContext('2d');
+        if (ctx) {
+          ctx.drawImage(image, 0, 0, image.width, image.height);
+        }
+      };
+    } else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes))
