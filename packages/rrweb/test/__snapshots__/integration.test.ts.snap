@@ -7816,7 +7816,7 @@ exports[`record integration tests should record console messages 1`] = `
           \\"__puppeteer_evaluation_script__:19:37\\"
         ],
         \\"payload\\": [
-          \\"\\\\\\"TypeError: a message\\\\\\"\\"
+          \\"\\\\\\"TypeError: a message\\\\\\\\n    at __puppeteer_evaluation_script__:19:41\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
         ]
       }
     }

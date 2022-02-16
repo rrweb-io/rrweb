@@ -137,7 +137,9 @@ export function stringify(
       }
       return value.nodeName;
     } else if (value instanceof Error) {
-      return value.name + ': ' + value.message;
+      return value.stack
+        ? value.stack + '\nEnd of stack for Error object'
+        : value.name + ': ' + value.message;
     }
     return value;
   });
