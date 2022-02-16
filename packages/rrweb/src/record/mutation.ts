@@ -264,8 +264,10 @@ export default class MutationBuffer {
         : null;
       // If n is in a nested shadow dom.
       let rootShadowHost = shadowHost;
-      while ((rootShadowHost?.getRootNode?.() as ShadowRoot).host)
-        rootShadowHost = (rootShadowHost?.getRootNode() as ShadowRoot).host;
+      while ((rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host)
+        rootShadowHost =
+          (rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host ||
+          null;
       // ensure shadowHost is a Node, or doc.contains will throw an error
       const notInDoc =
         !this.doc.contains(n) &&
