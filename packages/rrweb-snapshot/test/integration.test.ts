@@ -206,7 +206,7 @@ iframe.contentDocument.querySelector('center').clientHeight
       'JSON.stringify(snapshot[0], null, 2);',
     );
     assert(snapshot.includes('"rr_dataURL"'));
-    assert(snapshot.includes('data:image/jpeg;base64,'));
+    assert(snapshot.includes('data:image/webp;base64,'));
   });
 });
 

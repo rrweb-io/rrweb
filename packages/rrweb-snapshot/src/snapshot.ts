@@ -545,7 +545,7 @@ function serializeNode(
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
-            attributes.rr_dataURL = canvasService!.toDataURL('image/jpeg', 0.7);
+            attributes.rr_dataURL = canvasService!.toDataURL('image/webp', 0.7);
           } catch (err) {
             console.warn(
               `Cannot inline img src=${image.currentSrc}! Error: ${err}`,
