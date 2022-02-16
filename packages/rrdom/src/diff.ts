@@ -137,7 +137,18 @@ export function diff(
           );
       }
       break;
-    // TODO: Diff other kinds of nodes.
+    case NodeType.Text:
+    case NodeType.Comment:
+    case NodeType.CDATA:
+      if (
+        oldTree.textContent !==
+        (newTree as RRText | RRComment | RRCDATASection).data
+      )
+        oldTree.textContent = (newTree as
+          | RRText
+          | RRComment
+          | RRCDATASection).data;
+      break;
     default:
   }
   const oldChildren = oldTree.childNodes;
@@ -321,7 +332,7 @@ export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
       rrNode.systemId,
     ) as unknown) as INode;
   } else if (rrNode instanceof RRText) {
-    node = (document.createTextNode(rrNode.textContent) as unknown) as INode;
+    node = (document.createTextNode(rrNode.data) as unknown) as INode;
   } else if (rrNode instanceof RRComment) {
     node = (document.createComment(rrNode.data) as unknown) as INode;
   } else if (rrNode instanceof RRCDATASection) {

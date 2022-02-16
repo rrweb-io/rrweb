@@ -40,8 +40,28 @@ export abstract class RRNode {
     return siblings[index + 1] ?? null;
   }
 
-  set textContent(textContent: string) {
-    if (this instanceof RRText) this.textContent = textContent;
+  get textContent(): string | null {
+    if (
+      this instanceof RRText ||
+      this instanceof RRComment ||
+      this instanceof RRCDATASection
+    )
+      return this.data;
+    else if (this instanceof RRElement) {
+      let result = '';
+      this.childNodes.forEach((node) => result + node.textContent);
+      return result;
+    } else return null;
+  }
+
+  set textContent(textContent: string | null) {
+    textContent = textContent || '';
+    if (
+      this instanceof RRText ||
+      this instanceof RRComment ||
+      this instanceof RRCDATASection
+    )
+      this.data = textContent;
     else if (this instanceof RRElement) {
       if (this.childNodes[0] instanceof RRText)
         this.childNodes[0].textContent = textContent;
@@ -611,23 +631,15 @@ export class RRIFrameElement extends RRElement {
 }
 
 export class RRText extends RRNode {
-  private _textContent: string;
-  public get textContent(): string {
-    return this._textContent;
-  }
-  public set textContent(value: string) {
-    this._textContent = value;
-  }
+  data: string;
 
   constructor(data: string) {
     super();
-    this._textContent = data;
+    this.data = data;
   }
 
   toString() {
-    return `${super.toString('RRText')} text=${JSON.stringify(
-      this.textContent,
-    )}`;
+    return `${super.toString('RRText')} text=${JSON.stringify(this.data)}`;
   }
 }
 

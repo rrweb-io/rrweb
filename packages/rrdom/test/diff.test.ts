@@ -95,7 +95,7 @@ describe('diff algorithm for rrdom', () => {
   };
 
   describe('diff single node', () => {
-    it('should a diff document node', () => {
+    it('should diff a document node', () => {
       document.close();
       document.open();
       expect(document.childNodes.length).toEqual(0);
@@ -112,6 +112,17 @@ describe('diff algorithm for rrdom', () => {
         '-//W3C//DTD XHTML 1.0 Transitional//EN',
       );
       expect(document.doctype?.systemId).toEqual('');
+    });
+
+    it('should diff a Text node', () => {
+      const node = (document.createTextNode('old text') as unknown) as INode;
+      expect(node.textContent).toEqual('old text');
+      node.__sn = Object.assign({}, elementSn);
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createTextNode('new text');
+      rrNode.__sn = Object.assign({}, elementSn);
+      diff(node, rrNode, replayer);
+      expect(node.textContent).toEqual('new text');
     });
   });
 
