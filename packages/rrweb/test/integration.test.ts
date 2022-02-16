@@ -530,6 +530,16 @@ describe('record integration tests', function (this: ISuite) {
         .then(() => {
           (shadowRoot.lastChild!.childNodes[0] as HTMLElement).innerText =
             '123';
+          const nestedShadowElement = shadowRoot.lastChild!
+            .childNodes[0] as HTMLElement;
+          nestedShadowElement.attachShadow({
+            mode: 'open',
+          });
+          nestedShadowElement.shadowRoot!.appendChild(
+            document.createElement('span'),
+          );
+          (nestedShadowElement.shadowRoot!.lastChild as HTMLElement).innerText =
+            'nested shadow dom';
         });
     });
     await page.waitForTimeout(50);

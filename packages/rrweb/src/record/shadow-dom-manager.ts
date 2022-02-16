@@ -38,7 +38,7 @@ export class ShadowDomManager {
     const manager = this;
     HTMLElement.prototype.attachShadow = function () {
       const shadowRoot = attachShadow.apply(this, arguments);
-      manager.addShadowRoot(this.shadowRoot, document);
+      if (this.shadowRoot) manager.addShadowRoot(this.shadowRoot, document);
       return shadowRoot;
     };
   }
