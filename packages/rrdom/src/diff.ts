@@ -7,19 +7,21 @@ import {
   scrollData,
 } from 'rrweb/src/types';
 import {
-  RRCDATASection,
-  RRComment,
-  RRElement,
-  RRStyleElement,
-  RRNode,
-  RRText,
-  VirtualStyleRules,
-  StyleRuleType,
-  RRDocument,
-  RRIFrameElement,
-  RRDocumentType,
-  RRMediaElement,
+  IRRCDATASection,
+  IRRComment,
+  IRRDocument,
+  IRRDocumentType,
+  IRRElement,
+  IRRNode,
+  IRRText,
+} from './document';
+import type {
   RRCanvasElement,
+  RRDocument,
+  RRElement,
+  RRIFrameElement,
+  RRMediaElement,
+  RRStyleElement,
 } from './document-browser';
 
 const NAMESPACES: Record<string, string> = {
@@ -84,45 +86,54 @@ export type ReplayerHandler = {
 
 export function diff(
   oldTree: INode,
-  newTree: RRNode,
+  newTree: IRRNode,
   replayer: ReplayerHandler,
 ) {
   let inputDataToApply = null,
     scrollDataToApply = null;
-  switch (newTree.nodeType) {
+  switch (newTree.RRNodeType) {
     case NodeType.Document:
-      const newRRDocument = newTree as RRDocument;
-      scrollDataToApply = newRRDocument.scrollData;
+      const newRRDocument = newTree as IRRDocument;
+      scrollDataToApply = (newRRDocument as RRDocument).scrollData;
       break;
     case NodeType.Element:
       const oldElement = (oldTree as Node) as HTMLElement;
-      const newRRElement = newTree as RRElement;
+      const newRRElement = newTree as IRRElement;
       diffProps(oldElement, newRRElement);
-      scrollDataToApply = newRRElement.scrollData;
-      inputDataToApply = newRRElement.inputData;
-      if (newTree instanceof RRStyleElement && newTree.rules.length > 0) {
-        applyVirtualStyleRulesToNode(
-          oldElement as HTMLStyleElement,
-          newTree.rules,
-        );
-      } else if (newTree instanceof RRMediaElement) {
-        const oldMediaElement = (oldTree as Node) as HTMLMediaElement;
-        if (newTree.paused !== undefined)
-          newTree.paused ? oldMediaElement.pause() : oldMediaElement.play();
-        if (newTree.muted !== undefined) oldMediaElement.muted = newTree.muted;
-        if (newTree.volume !== undefined)
-          oldMediaElement.volume = newTree.volume;
-        // MediaInteraction events have been applied.
-        if (newTree.currentTime !== undefined)
-          oldMediaElement.currentTime = newTree.currentTime;
-      } else if (newTree instanceof RRCanvasElement) {
-        newTree.canvasMutation.forEach((canvasMutation) =>
-          replayer.applyCanvas(
-            canvasMutation.event,
-            canvasMutation.mutation,
-            (oldTree as Node) as HTMLCanvasElement,
-          ),
-        );
+      scrollDataToApply = (newRRElement as RRElement).scrollData;
+      inputDataToApply = (newRRElement as RRElement).inputData;
+      switch (newRRElement.tagName) {
+        case 'AUDIO':
+        case 'VIDEO':
+          const oldMediaElement = (oldTree as Node) as HTMLMediaElement;
+          const newMediaRRElement = (newRRElement as unknown) as RRMediaElement;
+          if (newMediaRRElement.paused !== undefined)
+            newMediaRRElement.paused
+              ? oldMediaElement.pause()
+              : oldMediaElement.play();
+          if (newMediaRRElement.muted !== undefined)
+            oldMediaElement.muted = newMediaRRElement.muted;
+          if (newMediaRRElement.volume !== undefined)
+            oldMediaElement.volume = newMediaRRElement.volume;
+          if (newMediaRRElement.currentTime !== undefined)
+            oldMediaElement.currentTime = newMediaRRElement.currentTime;
+          break;
+        case 'CANVAS':
+          (newTree as RRCanvasElement).canvasMutation.forEach(
+            (canvasMutation) =>
+              replayer.applyCanvas(
+                canvasMutation.event,
+                canvasMutation.mutation,
+                (oldTree as Node) as HTMLCanvasElement,
+              ),
+          );
+          break;
+        case 'STYLE':
+          applyVirtualStyleRulesToNode(
+            oldElement as HTMLStyleElement,
+            (newTree as RRStyleElement).rules,
+          );
+          break;
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
@@ -142,12 +153,12 @@ export function diff(
     case NodeType.CDATA:
       if (
         oldTree.textContent !==
-        (newTree as RRText | RRComment | RRCDATASection).data
+        (newTree as IRRText | IRRComment | IRRCDATASection).data
       )
         oldTree.textContent = (newTree as
-          | RRText
-          | RRComment
-          | RRCDATASection).data;
+          | IRRText
+          | IRRComment
+          | IRRCDATASection).data;
       break;
     default:
   }
@@ -162,18 +173,22 @@ export function diff(
     );
   }
   // IFrame element doesn't have child nodes.
-  if (newTree instanceof RRIFrameElement) {
+  if (
+    newTree.RRNodeType === NodeType.Element &&
+    (newTree as IRRElement).tagName === 'IFRAME'
+  ) {
     const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
       .contentDocument as unknown) as INode;
+    const newIFrameElement = newTree as RRIFrameElement;
     // If the iframe is cross-origin, the contentDocument will be null.
     if (oldContentDocument) {
-      if (newTree.contentDocument.__sn) {
-        oldContentDocument.__sn = newTree.contentDocument.__sn;
+      if (newIFrameElement.contentDocument.__sn) {
+        oldContentDocument.__sn = newIFrameElement.contentDocument.__sn;
         replayer.mirror.map[
-          newTree.contentDocument.__sn.id
+          newIFrameElement.contentDocument.__sn.id
         ] = oldContentDocument;
       }
-      diff(oldContentDocument, newTree.contentDocument, replayer);
+      diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
     }
   }
 
@@ -185,7 +200,7 @@ export function diff(
   inputDataToApply && replayer.applyInput(inputDataToApply);
 }
 
-function diffProps(oldTree: HTMLElement, newTree: RRElement) {
+function diffProps(oldTree: HTMLElement, newTree: IRRElement) {
   const oldAttributes = oldTree.attributes;
   const newAttributes = newTree.attributes;
 
@@ -193,7 +208,7 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
     const newValue = newAttributes[name];
     if ((newTree.__sn as elementNode).isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
-    else if (newTree instanceof RRCanvasElement && name === 'rr_dataURL') {
+    else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
       const image = document.createElement('img');
       image.src = newValue;
       image.onload = () => {
@@ -211,7 +226,7 @@ function diffProps(oldTree: HTMLElement, newTree: RRElement) {
 
 function diffChildren(
   oldChildren: (INode | undefined)[],
-  newChildren: RRNode[],
+  newChildren: IRRNode[],
   parentNode: INode,
   replayer: ReplayerHandler,
 ) {
@@ -313,31 +328,49 @@ function diffChildren(
   }
 }
 
-export function createOrGetNode(rrNode: RRNode, mirror: Mirror): INode {
+export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
   let node = mirror.getNode(rrNode.__sn.id);
   if (node !== null) return node;
-  if (rrNode instanceof RRElement) {
-    let tagName = rrNode.tagName.toLowerCase();
-    tagName = SVGTagMap[tagName] || tagName;
-    if ((rrNode.__sn as elementNode).isSVG) {
-      node = (document.createElementNS(
-        NAMESPACES['svg'],
-        rrNode.tagName.toLowerCase(),
+  switch (rrNode.RRNodeType) {
+    case NodeType.DocumentType:
+      node = (document.implementation.createDocumentType(
+        (rrNode as IRRDocumentType).name,
+        (rrNode as IRRDocumentType).publicId,
+        (rrNode as IRRDocumentType).systemId,
       ) as unknown) as INode;
-    } else node = (document.createElement(rrNode.tagName) as unknown) as INode;
-  } else if (rrNode instanceof RRDocumentType) {
-    node = (document.implementation.createDocumentType(
-      rrNode.name,
-      rrNode.publicId,
-      rrNode.systemId,
-    ) as unknown) as INode;
-  } else if (rrNode instanceof RRText) {
-    node = (document.createTextNode(rrNode.data) as unknown) as INode;
-  } else if (rrNode instanceof RRComment) {
-    node = (document.createComment(rrNode.data) as unknown) as INode;
-  } else if (rrNode instanceof RRCDATASection) {
-    node = (document.createCDATASection(rrNode.data) as unknown) as INode;
-  } else throw new Error('Unknown rrNode type ' + rrNode.toString());
+      break;
+    case NodeType.Element:
+      let tagName = (rrNode as IRRElement).tagName.toLowerCase();
+      tagName = SVGTagMap[tagName] || tagName;
+      if ((rrNode.__sn as elementNode).isSVG) {
+        node = (document.createElementNS(
+          NAMESPACES['svg'],
+          (rrNode as IRRElement).tagName.toLowerCase(),
+        ) as unknown) as INode;
+      } else
+        node = (document.createElement(
+          (rrNode as IRRElement).tagName,
+        ) as unknown) as INode;
+      break;
+    case NodeType.Text:
+      node = (document.createTextNode(
+        (rrNode as IRRText).data,
+      ) as unknown) as INode;
+      break;
+    case NodeType.Comment:
+      node = (document.createComment(
+        (rrNode as IRRComment).data,
+      ) as unknown) as INode;
+      break;
+    case NodeType.CDATA:
+      node = (document.createCDATASection(
+        (rrNode as IRRCDATASection).data,
+      ) as unknown) as INode;
+      break;
+    default:
+      // RRDocument of RRIFrameElement won't be created here because it's automatically generated when RRIFrameElement is created.
+      throw new Error('Unknown rrNode type ' + rrNode.toString());
+  }
   node.__sn = { ...rrNode.__sn };
   mirror.map[rrNode.__sn.id] = node;
   return node;
@@ -358,6 +391,39 @@ export function getNestedRule(
     );
   }
 }
+
+export enum StyleRuleType {
+  Insert,
+  Remove,
+  Snapshot,
+  SetProperty,
+  RemoveProperty,
+}
+type InsertRule = {
+  cssText: string;
+  type: StyleRuleType.Insert;
+  index?: number | number[];
+};
+type RemoveRule = {
+  type: StyleRuleType.Remove;
+  index: number | number[];
+};
+type SetPropertyRule = {
+  type: StyleRuleType.SetProperty;
+  index: number[];
+  property: string;
+  value: string | null;
+  priority: string | undefined;
+};
+type RemovePropertyRule = {
+  type: StyleRuleType.RemoveProperty;
+  index: number[];
+  property: string;
+};
+
+export type VirtualStyleRules = Array<
+  InsertRule | RemoveRule | SetPropertyRule | RemovePropertyRule
+>;
 
 export function getPositionsAndIndex(nestedIndex: number[]) {
   const positions = [...nestedIndex];

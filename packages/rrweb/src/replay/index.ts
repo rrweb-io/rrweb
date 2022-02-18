@@ -740,7 +740,10 @@ export class Replayer {
           builtNode.__sn.tagName.toUpperCase() === 'HTML'
         ) {
           const { documentElement, head } = iframeEl.contentDocument!;
-          this.insertStyleRules(documentElement, head);
+          this.insertStyleRules(
+            documentElement as HTMLElement | RRElement,
+            head as HTMLElement | RRElement,
+          );
         }
       },
       cache: this.cache,
@@ -1408,9 +1411,11 @@ export class Replayer {
       ) {
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
-        for (const c of Array.from(parent.childNodes as Iterable<RRNode>)) {
+        for (const c of Array.from(
+          parent.childNodes as Iterable<INode | RRNode>,
+        )) {
           if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c as Node & RRNode);
+            parent.removeChild(c as INode & RRNode);
           }
         }
       }
