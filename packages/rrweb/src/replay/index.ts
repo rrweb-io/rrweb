@@ -14,12 +14,12 @@ import {
   RRStyleElement,
   RRIFrameElement,
   RRMediaElement,
+  RRCanvasElement,
   StyleRuleType,
   VirtualStyleRules,
   buildFromDom,
   diff,
-  RRCanvasElement,
-} from 'rrdom/es/document-browser';
+} from 'rrdom/es/virtual-dom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';

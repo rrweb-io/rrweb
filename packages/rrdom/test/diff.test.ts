@@ -6,7 +6,7 @@ import {
   RRElement,
   StyleRuleType,
   VirtualStyleRules,
-} from '../src/document-browser';
+} from '../src/virtual-dom';
 import {
   applyVirtualStyleRulesToNode,
   createOrGetNode,

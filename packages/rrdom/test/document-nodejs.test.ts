@@ -4,10 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { RRDocument, RRElement, RRStyleElement } from '../src/document-nodejs';
-import {
-  RRDocument as RRDocumentBrowser,
-  buildFromDom,
-} from '../src/document-browser';
+import { buildFromDom } from '../src/virtual-dom';
 
 describe('RRDocument for nodejs environment', () => {
   describe('RRDocument API', () => {
@@ -16,7 +13,7 @@ describe('RRDocument for nodejs environment', () => {
       // initialize rrdom
       document.write(getHtml('main.html'));
       rrdom = new RRDocument();
-      buildFromDom(document, (rrdom as unknown) as RRDocumentBrowser);
+      buildFromDom(document, rrdom);
     });
 
     it('get className', () => {

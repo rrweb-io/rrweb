@@ -22,7 +22,7 @@ import type {
   RRIFrameElement,
   RRMediaElement,
   RRStyleElement,
-} from './document-browser';
+} from './virtual-dom';
 
 const NAMESPACES: Record<string, string> = {
   svg: 'http://www.w3.org/2000/svg',

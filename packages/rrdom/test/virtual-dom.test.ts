@@ -33,7 +33,7 @@ describe('RRDocument for browser environment', () => {
   beforeAll(async () => {
     browser = await puppeteer.launch();
     const bundle = await rollup.rollup({
-      input: path.resolve(__dirname, '../src/document-browser.ts'),
+      input: path.resolve(__dirname, '../src/virtual-dom.ts'),
       plugins: [
         resolve(),
         _typescript({

@@ -20,7 +20,7 @@ import {
 } from './document';
 import { VirtualStyleRules } from './diff';
 
-export const RRNode = BaseRRNode;
+export class RRNode extends BaseRRNode {}
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   public mirror: Mirror = {

@@ -15,7 +15,7 @@ import {
   NodeType,
   isShadowRoot,
 } from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement } from 'rrdom/es/document-browser';
+import { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
 
 export function on(
   type: string,

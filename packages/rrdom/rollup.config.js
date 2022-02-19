@@ -28,9 +28,9 @@ const baseConfigs = [
     path: 'document-nodejs',
   },
   {
-    input: './src/document-browser.ts',
+    input: './src/virtual-dom.ts',
     name: 'RRDocument',
-    path: 'document-browser',
+    path: 'virtual-dom',
   },
 ];
 
