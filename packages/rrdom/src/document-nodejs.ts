@@ -1,67 +1,22 @@
-import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
+import { NodeType } from 'rrweb-snapshot';
 import { NWSAPI } from 'nwsapi';
-import { parseCSSText, camelize, toCSSText } from './style';
+import {
+  BaseRRCDATASectionImpl,
+  BaseRRCommentImpl,
+  BaseRRDocumentImpl,
+  BaseRRDocumentTypeImpl,
+  BaseRRElementImpl,
+  BaseRRMediaElementImpl,
+  BaseRRNode,
+  BaseRRTextImpl,
+  ClassList,
+  IRRDocument,
+} from './document';
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
 
-export abstract class RRNode {
-  __sn: serializedNodeWithId | undefined;
-  children: Array<RRNode> = [];
-  parentElement: RRElement | null = null;
-  parentNode: RRNode | null = null;
+export class RRNode extends BaseRRNode {
   ownerDocument: RRDocument | null = null;
-  ELEMENT_NODE = 1;
-  TEXT_NODE = 3;
-
-  get firstChild() {
-    return this.children[0];
-  }
-
-  get nodeType() {
-    if (this instanceof RRDocument) return NodeType.Document;
-    if (this instanceof RRDocumentType) return NodeType.DocumentType;
-    if (this instanceof RRElement) return NodeType.Element;
-    if (this instanceof RRText) return NodeType.Text;
-    if (this instanceof RRCDATASection) return NodeType.CDATA;
-    if (this instanceof RRComment) return NodeType.Comment;
-  }
-
-  get childNodes() {
-    return this.children;
-  }
-
-  appendChild(newChild: RRNode): RRNode {
-    throw new Error(
-      `RRDomException: Failed to execute 'appendChild' on 'RRNode': This RRNode type does not support this method.`,
-    );
-  }
-
-  insertBefore(newChild: RRNode, refChild: RRNode | null): RRNode {
-    throw new Error(
-      `RRDomException: Failed to execute 'insertBefore' on 'RRNode': This RRNode type does not support this method.`,
-    );
-  }
-
-  contains(node: RRNode) {
-    if (node === this) return true;
-    for (const child of this.children) {
-      if (child.contains(node)) return true;
-    }
-    return false;
-  }
-
-  removeChild(node: RRNode) {
-    const indexOfChild = this.children.indexOf(node);
-    if (indexOfChild !== -1) {
-      this.children.splice(indexOfChild, 1);
-      node.parentElement = null;
-      node.parentNode = null;
-    }
-  }
-
-  toString(nodeName?: string) {
-    return `${JSON.stringify(this.__sn?.id) || ''} ${nodeName}`;
-  }
 }
 
 export class RRWindow {
@@ -74,7 +29,9 @@ export class RRWindow {
   }
 }
 
-export class RRDocument extends RRNode {
+export class RRDocument
+  extends BaseRRDocumentImpl(RRNode)
+  implements IRRDocument {
   private _nwsapi: NWSAPI;
   get nwsapi() {
     if (!this._nwsapi) {
@@ -94,66 +51,32 @@ export class RRDocument extends RRNode {
     return this._nwsapi;
   }
 
-  get documentElement(): RRElement {
-    return this.children.find(
-      (node) => node instanceof RRElement && node.tagName === 'HTML',
-    ) as RRElement;
+  get documentElement(): RRElement | null {
+    return super.documentElement as RRElement | null;
   }
 
-  get body() {
-    return (
-      this.documentElement?.children.find(
-        (node) => node instanceof RRElement && node.tagName === 'BODY',
-      ) || null
-    );
+  get body(): RRElement | null {
+    return super.body as RRElement | null;
   }
 
   get head() {
-    return (
-      this.documentElement?.children.find(
-        (node) => node instanceof RRElement && node.tagName === 'HEAD',
-      ) || null
-    );
+    return super.head as RRElement | null;
   }
 
-  get implementation() {
+  get implementation(): RRDocument {
     return this;
   }
 
-  get firstElementChild() {
-    return this.documentElement;
+  get firstElementChild(): RRElement | null {
+    return this.documentElement as RRElement | null;
   }
 
   appendChild(childNode: RRNode) {
-    const nodeType = childNode.nodeType;
-    if (nodeType === NodeType.Element || nodeType === NodeType.DocumentType) {
-      if (this.children.some((s) => s.nodeType === nodeType)) {
-        throw new Error(
-          `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one ${
-            nodeType === NodeType.Element ? 'RRElement' : 'RRDoctype'
-          } on RRDocument allowed.`,
-        );
-      }
-    }
-    childNode.parentElement = null;
-    childNode.parentNode = this;
-    childNode.ownerDocument = this;
-    this.children.push(childNode);
-    return childNode;
+    return super.appendChild(childNode);
   }
 
   insertBefore(newChild: RRNode, refChild: RRNode | null) {
-    if (refChild === null) return this.appendChild(newChild);
-    const childIndex = this.children.indexOf(refChild);
-    if (childIndex == -1)
-      throw new Error(
-        "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
-      );
-    this.children.splice(childIndex, 0, newChild);
-    newChild.parentElement = null;
-    newChild.parentNode = this;
-    newChild.ownerDocument = this;
-    return newChild;
+    return super.insertBefore(newChild, refChild);
   }
 
   querySelectorAll(selectors: string): RRNode[] {
@@ -258,110 +181,23 @@ export class RRDocument extends RRNode {
     textNode.ownerDocument = this;
     return textNode;
   }
-
-  /**
-   * This does come with some side effects. For example:
-   * 1. All event listeners currently registered on the document, nodes inside the document, or the document's window are removed.
-   * 2. All existing nodes are removed from the document.
-   */
-  open() {
-    this.children = [];
-  }
-
-  close() {}
-
-  toString() {
-    return super.toString('RRDocument');
-  }
 }
 
-export class RRDocumentType extends RRNode {
-  readonly name: string;
-  readonly publicId: string;
-  readonly systemId: string;
+export class RRDocumentType extends BaseRRDocumentTypeImpl(RRNode) {}
 
-  constructor(qualifiedName: string, publicId: string, systemId: string) {
-    super();
-    this.name = qualifiedName;
-    this.publicId = publicId;
-    this.systemId = systemId;
+export class RRElement extends BaseRRElementImpl(RRNode) {
+  attachShadow(_init: ShadowRootInit): RRElement {
+    const shadowRoot = new RRElement('SHADOWROOT');
+    this.shadowRoot = shadowRoot;
+    return shadowRoot;
   }
 
-  toString() {
-    return super.toString('RRDocumentType');
-  }
-}
-
-export class RRElement extends RRNode {
-  tagName: string;
-  attributes: Record<string, string> = {};
-  scrollLeft: number = 0;
-  scrollTop: number = 0;
-  shadowRoot: RRElement | null = null;
-
-  constructor(tagName: string) {
-    super();
-    this.tagName = tagName;
+  appendChild(newChild: RRNode): RRNode {
+    return super.appendChild(newChild) as RRNode;
   }
 
-  get classList() {
-    return new ClassList(
-      this.attributes.class as string | undefined,
-      (newClassName) => {
-        this.attributes.class = newClassName;
-      },
-    );
-  }
-
-  get id() {
-    return this.attributes.id;
-  }
-
-  get className() {
-    return this.attributes.class || '';
-  }
-
-  get textContent() {
-    return '';
-  }
-
-  set textContent(newText: string) {}
-
-  get style() {
-    const style = (this.attributes.style
-      ? parseCSSText(this.attributes.style as string)
-      : {}) as Record<string, string> & {
-      setProperty: (
-        name: string,
-        value: string | null,
-        priority?: string | null,
-      ) => void;
-    };
-    style.setProperty = (name: string, value: string | null) => {
-      const normalizedName = camelize(name);
-      if (!value) delete style[normalizedName];
-      else style[normalizedName] = value;
-      this.attributes.style = toCSSText(style);
-    };
-    // This is used to bypass the smoothscroll polyfill in rrweb player.
-    style.scrollBehavior = '';
-    return style;
-  }
-
-  get firstElementChild(): RRElement | null {
-    for (let child of this.children)
-      if (child instanceof RRElement) return child;
-    return null;
-  }
-
-  get nextElementSibling(): RRElement | null {
-    let parentNode = this.parentNode;
-    if (!parentNode) return null;
-    const siblings = parentNode.children;
-    let index = siblings.indexOf(this);
-    for (let i = index + 1; i < siblings.length; i++)
-      if (siblings[i] instanceof RRElement) return siblings[i] as RRElement;
-    return null;
+  insertBefore(newChild: RRNode, refChild: RRNode | null): RRNode {
+    return super.insertBefore(newChild, refChild) as RRNode;
   }
 
   getAttribute(name: string) {
@@ -375,41 +211,27 @@ export class RRElement extends RRNode {
   }
 
   hasAttribute(name: string) {
-    return (name && name.toLowerCase()) in this.attributes;
-  }
-
-  setAttributeNS(
-    _namespace: string | null,
-    qualifiedName: string,
-    value: string,
-  ): void {
-    this.setAttribute(qualifiedName, value);
+    return name.toLowerCase() in this.attributes;
   }
 
   removeAttribute(name: string) {
-    delete this.attributes[name];
+    delete this.attributes[name.toLowerCase()];
   }
 
-  appendChild(newChild: RRNode): RRNode {
-    this.children.push(newChild);
-    newChild.parentNode = this;
-    newChild.parentElement = this;
-    newChild.ownerDocument = this.ownerDocument;
-    return newChild;
+  get firstElementChild(): RRElement | null {
+    for (let child of this.childNodes)
+      if (child.RRNodeType === NodeType.Element) return child as RRElement;
+    return null;
   }
 
-  insertBefore(newChild: RRNode, refChild: RRNode | null): RRNode {
-    if (refChild === null) return this.appendChild(newChild);
-    const childIndex = this.children.indexOf(refChild);
-    if (childIndex == -1)
-      throw new Error(
-        "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
-      );
-    this.children.splice(childIndex, 0, newChild);
-    newChild.parentElement = this;
-    newChild.parentNode = this;
-    newChild.ownerDocument = this.ownerDocument;
-    return newChild;
+  get nextElementSibling(): RRElement | null {
+    let parentNode = this.parentNode;
+    if (!parentNode) return null;
+    const siblings = parentNode.childNodes;
+    let index = siblings.indexOf(this);
+    for (let i = index + 1; i < siblings.length; i++)
+      if (siblings[i] instanceof RRElement) return siblings[i] as RRElement;
+    return null;
   }
 
   querySelectorAll(selectors: string): RRNode[] {
@@ -424,7 +246,7 @@ export class RRElement extends RRNode {
 
   getElementById(elementId: string): RRElement | null {
     if (this.id === elementId) return this;
-    for (const child of this.children) {
+    for (const child of this.childNodes) {
       if (child instanceof RRElement) {
         const result = child.getElementById(elementId);
         if (result !== null) return result;
@@ -444,7 +266,7 @@ export class RRElement extends RRNode {
       ).length == queryClassList.length
     )
       elements.push(this);
-    for (const child of this.children) {
+    for (const child of this.childNodes) {
       if (child instanceof RRElement)
         elements = elements.concat(child.getElementsByClassName(className));
     }
@@ -456,31 +278,11 @@ export class RRElement extends RRNode {
     const normalizedTagName = tagName.toUpperCase();
     if (this instanceof RRElement && this.tagName === normalizedTagName)
       elements.push(this);
-    for (const child of this.children) {
+    for (const child of this.childNodes) {
       if (child instanceof RRElement)
         elements = elements.concat(child.getElementsByTagName(tagName));
     }
     return elements;
-  }
-
-  dispatchEvent(_event: Event) {
-    return true;
-  }
-
-  /**
-   * Creates a shadow root for element and returns it.
-   */
-  attachShadow(init: ShadowRootInit): RRElement {
-    this.shadowRoot = init.mode === 'open' ? this : null;
-    return this;
-  }
-
-  toString() {
-    let attributeString = '';
-    for (let attribute in this.attributes) {
-      attributeString += `${attribute}="${this.attributes[attribute]}" `;
-    }
-    return `${super.toString(this.tagName)} ${attributeString}`;
   }
 }
 
@@ -491,16 +293,7 @@ export class RRImageElement extends RRElement {
   onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
 }
 
-export class RRMediaElement extends RRElement {
-  currentTime: number = 0;
-  paused: boolean = true;
-  async play() {
-    this.paused = false;
-  }
-  async pause() {
-    this.paused = true;
-  }
-}
+export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
 
 export class RRCanvasElement extends RRElement {
   /**
@@ -542,89 +335,21 @@ export class RRIFrameElement extends RRElement {
   }
 }
 
-export class RRText extends RRNode {
-  textContent: string;
+export class RRText extends BaseRRTextImpl(RRNode) {}
 
-  constructor(data: string) {
-    super();
-    this.textContent = data;
-  }
+export class RRComment extends BaseRRCommentImpl(RRNode) {}
 
-  toString() {
-    return `${super.toString('RRText')} text=${JSON.stringify(
-      this.textContent,
-    )}`;
-  }
-}
-
-export class RRComment extends RRNode {
-  data: string;
-
-  constructor(data: string) {
-    super();
-    this.data = data;
-  }
-
-  toString() {
-    return `${super.toString('RRComment')} data=${JSON.stringify(this.data)}`;
-  }
-}
-export class RRCDATASection extends RRNode {
-  data: string;
-
-  constructor(data: string) {
-    super();
-    this.data = data;
-  }
-
-  toString() {
-    return `${super.toString('RRCDATASection')} data=${JSON.stringify(
-      this.data,
-    )}`;
-  }
-}
+export class RRCDATASection extends BaseRRCDATASectionImpl(RRNode) {}
 
 interface RRElementTagNameMap {
-  img: RRImageElement;
   audio: RRMediaElement;
+  canvas: RRCanvasElement;
+  iframe: RRIFrameElement;
+  img: RRImageElement;
+  style: RRStyleElement;
   video: RRMediaElement;
 }
 
 type RRElementType<
   K extends keyof HTMLElementTagNameMap
 > = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
-
-class ClassList extends Array {
-  private onChange: ((newClassText: string) => void) | undefined;
-
-  constructor(
-    classText?: string,
-    onChange?: ((newClassText: string) => void) | undefined,
-  ) {
-    super();
-    if (classText) {
-      const classes = classText.trim().split(/\s+/);
-      super.push(...classes);
-    }
-    this.onChange = onChange;
-  }
-
-  add = (...classNames: string[]) => {
-    for (const item of classNames) {
-      const className = String(item);
-      if (super.indexOf(className) >= 0) continue;
-      super.push(className);
-    }
-    this.onChange && this.onChange(super.join(' '));
-  };
-
-  remove = (...classNames: string[]) => {
-    for (const item of classNames) {
-      const className = String(item);
-      const index = super.indexOf(className);
-      if (index < 0) continue;
-      super.splice(index, 1);
-    }
-    this.onChange && this.onChange(super.join(' '));
-  };
-}

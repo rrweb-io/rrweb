@@ -6,6 +6,7 @@ import type {
   scrollData,
 } from 'rrweb/src/types';
 import {
+  BaseRRNode,
   BaseRRCDATASectionImpl,
   BaseRRCommentImpl,
   BaseRRDocumentImpl,
@@ -19,9 +20,9 @@ import {
 } from './document';
 import { VirtualStyleRules } from './diff';
 
-export class RRDocument
-  extends BaseRRDocumentImpl(IRRNode)
-  implements IRRDocument {
+export const RRNode = BaseRRNode;
+
+export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   public mirror: Mirror = {
     map: {},
     getId(n) {
@@ -34,9 +35,7 @@ export class RRDocument
       const id = n.__sn.id;
       delete this.map[id];
       if (n.childNodes) {
-        n.childNodes.forEach((child) =>
-          this.removeNodeFromMap(child as IRRNode),
-        );
+        n.childNodes.forEach((child) => this.removeNodeFromMap(child));
       }
     },
     has(id) {
@@ -54,7 +53,7 @@ export class RRDocument
     _qualifiedName: string | null,
     _doctype?: DocumentType | null,
   ) {
-    return (new RRDocument() as unknown) as IRRDocument;
+    return new RRDocument();
   }
 
   createDocumentType(
@@ -113,20 +112,17 @@ export class RRDocument
   }
 
   destroyTree() {
-    this.children = [];
+    this.childNodes = [];
     this.mirror.reset();
   }
 }
 
-export const RRDocumentType = BaseRRDocumentTypeImpl(IRRNode);
+export const RRDocumentType = BaseRRDocumentTypeImpl(RRNode);
 
-export class RRElement extends BaseRRElementImpl(IRRNode) {
+export class RRElement extends BaseRRElementImpl(RRNode) {
   inputData: inputData | null = null;
   scrollData: scrollData | null = null;
 
-  /**
-   * Creates a shadow root for element and returns it.
-   */
   attachShadow(_init: ShadowRootInit): RRElement {
     const shadowRoot = new RRElement('SHADOWROOT');
     this.shadowRoot = shadowRoot;
@@ -160,13 +156,13 @@ export class RRIFrameElement extends RRElement {
   contentDocument: RRDocument = new RRDocument();
 }
 
-export const RRText = BaseRRTextImpl(IRRNode);
+export const RRText = BaseRRTextImpl(RRNode);
 export type RRText = typeof RRText;
 
-export const RRComment = BaseRRCommentImpl(IRRNode);
+export const RRComment = BaseRRCommentImpl(RRNode);
 export type RRComment = typeof RRComment;
 
-export const RRCDATASection = BaseRRCDATASectionImpl(IRRNode);
+export const RRCDATASection = BaseRRCDATASectionImpl(RRNode);
 export type RRCDATASection = typeof RRCDATASection;
 
 type Mirror = {
@@ -203,7 +199,7 @@ export function buildFromDom(
   rrdomToBuild?: IRRDocument,
   mirror?: Mirror,
 ) {
-  let rrdom = rrdomToBuild ?? new RRDocument();
+  let rrdom = rrdomToBuild || new RRDocument();
 
   const NodeTypeMap: Record<number, number> = {};
   NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
@@ -244,7 +240,7 @@ export function buildFromDom(
         else rrNode = rrdom;
         break;
       case node.DOCUMENT_TYPE_NODE:
-        const documentType = (node as unknown) as DocumentType;
+        const documentType = (node as Node) as DocumentType;
         rrNode = rrdom.createDocumentType(
           documentType.name,
           documentType.publicId,
@@ -252,7 +248,7 @@ export function buildFromDom(
         );
         break;
       case node.ELEMENT_NODE:
-        const elementNode = (node as unknown) as HTMLElement;
+        const elementNode = (node as Node) as HTMLElement;
         const tagName = getValidTagName(elementNode);
         rrNode = rrdom.createElement(tagName);
         const rrElement = rrNode as RRElement;
@@ -266,7 +262,7 @@ export function buildFromDom(
         break;
       case node.TEXT_NODE:
         rrNode = rrdom.createTextNode(
-          ((node as unknown) as Text).textContent || '',
+          ((node as Node) as Text).textContent || '',
         );
         break;
       case node.CDATA_SECTION_NODE:
@@ -274,7 +270,7 @@ export function buildFromDom(
         break;
       case node.COMMENT_NODE:
         rrNode = rrdom.createComment(
-          ((node as unknown) as Comment).textContent || '',
+          ((node as Node) as Comment).textContent || '',
         );
         break;
       // if node is a shadow root
@@ -287,8 +283,11 @@ export function buildFromDom(
     rrNode.__sn = serializedNodeWithId;
     mirror && (mirror.map[serializedNodeWithId.id] = rrNode);
 
-    if (parentRRNode instanceof RRIFrameElement) {
-      parentRRNode.contentDocument = rrNode as RRDocument;
+    if (
+      parentRRNode?.RRNodeType === NodeType.Element &&
+      (parentRRNode as IRRElement).tagName === 'IFRAME'
+    ) {
+      (parentRRNode as RRIFrameElement).contentDocument = rrNode as RRDocument;
     }
     // if node isn't a shadow root
     else if (node.nodeType !== node.DOCUMENT_FRAGMENT_NODE) {
@@ -327,5 +326,4 @@ export function buildFromDom(
   walk((dom as unknown) as INode, null);
   return rrdom;
 }
-export { IRRNode as RRNode } from './document';
 export { diff, StyleRuleType, VirtualStyleRules } from './diff';

@@ -106,7 +106,7 @@ export function diff(
         case 'AUDIO':
         case 'VIDEO':
           const oldMediaElement = (oldTree as Node) as HTMLMediaElement;
-          const newMediaRRElement = (newRRElement as unknown) as RRMediaElement;
+          const newMediaRRElement = newRRElement as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
               ? oldMediaElement.pause()

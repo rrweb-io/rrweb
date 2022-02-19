@@ -4,7 +4,6 @@
 import {
   RRDocument,
   RRElement,
-  RRNode,
   StyleRuleType,
   VirtualStyleRules,
 } from '../src/document-browser';
@@ -15,6 +14,7 @@ import {
   ReplayerHandler,
 } from '../src/diff';
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot/';
+import { IRRNode } from '../src/document';
 
 const elementSn = {
   type: NodeType.Element,
@@ -29,6 +29,8 @@ type ElementType = {
   id: number;
   children?: ElementType[];
 };
+
+type RRNode = IRRNode;
 
 /**
  * Create a document tree or a RRDom tree according to the given ElementType data.

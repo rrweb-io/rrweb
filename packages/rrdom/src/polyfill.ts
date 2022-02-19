@@ -82,8 +82,8 @@ export function polyfillDocument() {
   const rrdom = new RRDocument();
   (() => {
     rrdom.appendChild(rrdom.createElement('html'));
-    rrdom.documentElement.appendChild(rrdom.createElement('head'));
-    rrdom.documentElement.appendChild(rrdom.createElement('body'));
+    rrdom.documentElement!.appendChild(rrdom.createElement('head'));
+    rrdom.documentElement!.appendChild(rrdom.createElement('body'));
   })();
   global.document = (rrdom as unknown) as Document;
 }

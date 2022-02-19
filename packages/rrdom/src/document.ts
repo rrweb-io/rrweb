@@ -1,8 +1,45 @@
 import { NodeType, serializedNodeWithId } from 'rrweb-snapshot';
 import { parseCSSText, camelize, toCSSText } from './style';
 
-export type IRRDocument = IRRNode & {
+export interface IRRNode {
+  __sn: serializedNodeWithId;
+  parentElement: IRRNode | null;
+  parentNode: IRRNode | null;
+  childNodes: IRRNode[];
+  ELEMENT_NODE: 1;
+  TEXT_NODE: 3;
+  // corresponding nodeType value of standard HTML Node
+  readonly nodeType: number;
+  readonly RRNodeType: NodeType;
+
+  firstChild: IRRNode | null;
+
+  nextSibling: IRRNode | null;
+
+  textContent: string | null;
+
+  contains(node: IRRNode): boolean;
+
+  appendChild(newChild: IRRNode): IRRNode;
+
+  insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode;
+
+  removeChild(node: IRRNode): void;
+
+  toString(nodeName?: string): string;
+}
+export interface IRRDocument extends IRRNode {
   notSerializedId: number;
+
+  documentElement: IRRElement | null;
+
+  body: IRRElement | null;
+
+  head: IRRElement | null;
+
+  implementation: IRRDocument;
+
+  firstElementChild: IRRElement | null;
 
   createDocument(
     _namespace: string | null,
@@ -18,146 +55,117 @@ export type IRRDocument = IRRNode & {
 
   createElement(tagName: string): IRRElement;
 
-  createElementNS(
-    _namespaceURI: 'http://www.w3.org/2000/svg',
-    qualifiedName: string,
-  ): IRRElement;
+  createElementNS(_namespaceURI: string, qualifiedName: string): IRRElement;
 
   createTextNode(data: string): IRRText;
 
   createComment(data: string): IRRComment;
 
   createCDATASection(data: string): IRRCDATASection;
-};
-export type IRRElement = IRRNode & {
+}
+export interface IRRElement extends IRRNode {
   tagName: string;
   attributes: Record<string, string>;
   shadowRoot: IRRElement | null;
-};
-export type IRRDocumentType = IRRNode & {
+  scrollLeft?: number;
+  scrollTop?: number;
+}
+export interface IRRDocumentType extends IRRNode {
   readonly name: string;
   readonly publicId: string;
   readonly systemId: string;
-};
-export type IRRText = IRRNode & {
+}
+export interface IRRText extends IRRNode {
   data: string;
-};
-export type IRRComment = IRRNode & {
+}
+export interface IRRComment extends IRRNode {
   data: string;
-};
-export type IRRCDATASection = IRRNode & {
+}
+export interface IRRCDATASection extends IRRNode {
   data: string;
-};
+}
 
-export abstract class IRRNode {
-  __sn: serializedNodeWithId;
-  children: IRRNode[] = [];
-  parentElement: IRRNode | null = null;
-  parentNode: IRRNode | null = null;
-  ELEMENT_NODE = 1;
-  TEXT_NODE = 3;
+type ConstrainedConstructor<T = {}> = new (...args: any[]) => T;
+
+export class BaseRRNode implements IRRNode {
+  public __sn: serializedNodeWithId;
+  public childNodes: IRRNode[] = [];
+  public parentElement: IRRNode | null = null;
+  public parentNode: IRRNode | null = null;
+  public textContent: string | null;
+  public ELEMENT_NODE: 1 = 1;
+  public TEXT_NODE: 3 = 3;
   // corresponding nodeType value of standard HTML Node
-  readonly nodeType: number;
-  readonly RRNodeType: NodeType;
+  public readonly nodeType: number;
+  public readonly RRNodeType: NodeType;
 
-  get childNodes(): IRRNode[] {
-    return this.children;
+  constructor(...args: any[]) {}
+
+  public get firstChild(): IRRNode | null {
+    return this.childNodes[0] || null;
   }
 
-  get firstChild(): IRRNode | null {
-    return this.childNodes[0] ?? null;
-  }
-
-  get nextSibling(): IRRNode | null {
+  public get nextSibling(): IRRNode | null {
     let parentNode = this.parentNode;
     if (!parentNode) return null;
-    const siblings = parentNode.children;
+    const siblings = parentNode.childNodes;
     let index = siblings.indexOf(this);
-    return siblings[index + 1] ?? null;
+    return siblings[index + 1] || null;
   }
 
-  get textContent(): string | null {
-    if (
-      this.RRNodeType === NodeType.Text ||
-      this.RRNodeType === NodeType.Comment ||
-      this.RRNodeType === NodeType.CDATA
-    )
-      return ((this as unknown) as IRRText | IRRComment | IRRCDATASection).data;
-    else if (this.RRNodeType === NodeType.Element) {
-      let result = '';
-      this.childNodes.forEach((node) => result + node.textContent);
-      return result;
-    } else return null;
-  }
-
-  set textContent(textContent: string | null) {
-    textContent = textContent || '';
-
-    if (
-      this.RRNodeType === NodeType.Text ||
-      this.RRNodeType === NodeType.Comment ||
-      this.RRNodeType === NodeType.CDATA
-    )
-      ((this as unknown) as
-        | IRRText
-        | IRRComment
-        | IRRCDATASection).data = textContent;
-    else if (this.RRNodeType === NodeType.Element) {
-      if (this.childNodes[0].RRNodeType === NodeType.Text)
-        this.childNodes[0].textContent = textContent;
-    }
-  }
-
-  contains(node: IRRNode) {
+  public contains(node: IRRNode) {
     if (node === this) return true;
-    for (const child of this.children) {
+    for (const child of this.childNodes) {
       if (child.contains(node)) return true;
     }
     return false;
   }
 
-  appendChild(_newChild: IRRNode): IRRNode {
+  public appendChild(_newChild: IRRNode): IRRNode {
     throw new Error(
       `RRDomException: Failed to execute 'appendChild' on 'RRNode': This RRNode type does not support this method.`,
     );
   }
 
-  insertBefore(_newChild: IRRNode, _refChild: IRRNode | null): IRRNode {
+  public insertBefore(_newChild: IRRNode, _refChild: IRRNode | null): IRRNode {
     throw new Error(
       `RRDomException: Failed to execute 'insertBefore' on 'RRNode': This RRNode type does not support this method.`,
     );
   }
 
-  removeChild(node: IRRNode) {
-    const indexOfChild = this.children.indexOf(node);
+  public removeChild(node: IRRNode) {
+    const indexOfChild = this.childNodes.indexOf(node);
     if (indexOfChild !== -1) {
-      this.children.splice(indexOfChild, 1);
+      this.childNodes.splice(indexOfChild, 1);
       node.parentElement = null;
       node.parentNode = null;
     }
   }
 
-  toString(nodeName?: string) {
+  public toString(nodeName?: string) {
     return `${this.__sn?.id || ''} ${nodeName}`;
   }
 }
 
-export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
-  return class extends RRNodeClass implements IRRDocument {
-    readonly nodeType = 9;
-    readonly RRNodeType = NodeType.Document;
+export function BaseRRDocumentImpl<
+  RRNode extends ConstrainedConstructor<IRRNode>
+>(RRNodeClass: RRNode) {
+  return class BaseRRDocument extends RRNodeClass implements IRRDocument {
+    public readonly nodeType = 9;
+    public readonly RRNodeType = NodeType.Document;
+    public textContent: string | null = null;
     _notSerializedId = -1; // used as an id to identify not serialized node
 
     /**
      * Every time the id is used, it will minus 1 automatically to avoid collisions.
      */
-    get notSerializedId(): number {
+    public get notSerializedId(): number {
       return this._notSerializedId--;
     }
 
-    get documentElement(): IRRElement | null {
+    public get documentElement(): IRRElement | null {
       return (
-        (this.children.find(
+        (this.childNodes.find(
           (node) =>
             node.RRNodeType === NodeType.Element &&
             (node as IRRElement).tagName === 'HTML',
@@ -165,9 +173,9 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
       );
     }
 
-    get body(): IRRElement | null {
+    public get body(): IRRElement | null {
       return (
-        (this.documentElement?.children.find(
+        (this.documentElement?.childNodes.find(
           (node) =>
             node.RRNodeType === NodeType.Element &&
             (node as IRRElement).tagName === 'BODY',
@@ -175,9 +183,9 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
       );
     }
 
-    get head(): IRRElement | null {
+    public get head(): IRRElement | null {
       return (
-        (this.documentElement?.children.find(
+        (this.documentElement?.childNodes.find(
           (node) =>
             node.RRNodeType === NodeType.Element &&
             (node as IRRElement).tagName === 'HEAD',
@@ -185,18 +193,18 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
       );
     }
 
-    get implementation(): IRRDocument {
-      return (this as unknown) as IRRDocument;
+    public get implementation(): IRRDocument {
+      return this;
     }
 
-    get firstElementChild(): IRRElement | null {
+    public get firstElementChild(): IRRElement | null {
       return this.documentElement;
     }
 
-    appendChild(childNode: IRRNode): IRRNode {
+    public appendChild(childNode: IRRNode): IRRNode {
       const nodeType = childNode.RRNodeType;
       if (nodeType === NodeType.Element || nodeType === NodeType.DocumentType) {
-        if (this.children.some((s) => s.RRNodeType === nodeType)) {
+        if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
           throw new Error(
             `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one ${
               nodeType === NodeType.Element ? 'RRElement' : 'RRDoctype'
@@ -206,28 +214,28 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
       }
       childNode.parentElement = null;
       childNode.parentNode = this;
-      this.children.push(childNode);
+      this.childNodes.push(childNode);
       return childNode;
     }
 
-    insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
+    public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
       if (refChild === null) return this.appendChild(newChild);
-      const childIndex = this.children.indexOf(refChild);
+      const childIndex = this.childNodes.indexOf(refChild);
       if (childIndex == -1)
         throw new Error(
           "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
         );
-      this.children.splice(childIndex, 0, newChild);
+      this.childNodes.splice(childIndex, 0, newChild);
       newChild.parentElement = null;
       newChild.parentNode = this;
       return newChild;
     }
 
-    open() {
-      this.children = [];
+    public open() {
+      this.childNodes = [];
     }
 
-    close() {}
+    public close() {}
 
     /**
      * Adhoc implementation for setting xhtml namespace in rebuilt.ts (rrweb-snapshot).
@@ -235,7 +243,7 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
      * 1. doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">')
      * 2. doc.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">')
      */
-    write(content: string) {
+    public write(content: string) {
       let publicId;
       if (
         content ===
@@ -281,10 +289,7 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
       throw new Error('Method not implemented.');
     }
 
-    createElementNS(
-      _namespaceURI: 'http://www.w3.org/2000/svg',
-      _qualifiedName: string,
-    ): IRRElement {
+    createElementNS(_namespaceURI: string, _qualifiedName: string): IRRElement {
       throw new Error('Method not implemented.');
     }
 
@@ -306,13 +311,19 @@ export function BaseRRDocumentImpl(RRNodeClass: typeof IRRNode) {
   };
 }
 
-export function BaseRRDocumentTypeImpl(RRNodeClass: typeof IRRNode) {
-  return class extends RRNodeClass {
-    readonly nodeType = 10;
-    readonly RRNodeType = NodeType.DocumentType;
-    readonly name: string;
-    readonly publicId: string;
-    readonly systemId: string;
+export function BaseRRDocumentTypeImpl<
+  RRNode extends ConstrainedConstructor<IRRNode>
+>(RRNodeClass: RRNode) {
+  // @ts-ignore
+  return class BaseRRDocumentType
+    extends RRNodeClass
+    implements IRRDocumentType {
+    public readonly nodeType = 10;
+    public readonly RRNodeType = NodeType.DocumentType;
+    public readonly name: string;
+    public readonly publicId: string;
+    public readonly systemId: string;
+    public textContent: string | null = null;
 
     constructor(qualifiedName: string, publicId: string, systemId: string) {
       super();
@@ -327,20 +338,36 @@ export function BaseRRDocumentTypeImpl(RRNodeClass: typeof IRRNode) {
   };
 }
 
-export function BaseRRElementImpl(RRNodeClass: typeof IRRNode) {
-  return class BaseRRElementImpl extends RRNodeClass implements IRRElement {
-    readonly nodeType = 1;
-    readonly RRNodeType = NodeType.Element;
-    tagName: string;
-    attributes: Record<string, string> = {};
-    shadowRoot: IRRElement | null = null;
+export function BaseRRElementImpl<
+  RRNode extends ConstrainedConstructor<IRRNode>
+>(RRNodeClass: RRNode) {
+  // @ts-ignore
+  return class BaseRRElement extends RRNodeClass implements IRRElement {
+    public readonly nodeType = 1;
+    public readonly RRNodeType = NodeType.Element;
+    public tagName: string;
+    public attributes: Record<string, string> = {};
+    public shadowRoot: IRRElement | null = null;
+    public scrollLeft?: number;
+    public scrollTop?: number;
 
     constructor(tagName: string) {
       super();
       this.tagName = tagName;
     }
 
-    get classList() {
+    public get textContent(): string {
+      let result = '';
+      this.childNodes.forEach((node) => result + node.textContent);
+      return result;
+    }
+
+    public set textContent(textContent: string) {
+      if (this.childNodes[0].RRNodeType === NodeType.Text)
+        this.childNodes[0].textContent = textContent;
+    }
+
+    public get classList() {
       return new ClassList(
         this.attributes.class as string | undefined,
         (newClassName) => {
@@ -349,15 +376,15 @@ export function BaseRRElementImpl(RRNodeClass: typeof IRRNode) {
       );
     }
 
-    get id() {
+    public get id() {
       return this.attributes.id;
     }
 
-    get className() {
+    public get className() {
       return this.attributes.class || '';
     }
 
-    get style() {
+    public get style() {
       const style = (this.attributes.style
         ? parseCSSText(this.attributes.style as string)
         : {}) as Record<string, string> & {
@@ -376,22 +403,22 @@ export function BaseRRElementImpl(RRNodeClass: typeof IRRNode) {
       };
       style.removeProperty = (name: string) => {
         const normalizedName = camelize(name);
-        const value = style[normalizedName] ?? '';
+        const value = style[normalizedName] || '';
         delete style[normalizedName];
         return value;
       };
       return style;
     }
 
-    getAttribute(name: string) {
-      return this.attributes[name] ?? null;
+    public getAttribute(name: string) {
+      return this.attributes[name] || null;
     }
 
-    setAttribute(name: string, attribute: string) {
+    public setAttribute(name: string, attribute: string) {
       this.attributes[name] = attribute;
     }
 
-    setAttributeNS(
+    public setAttributeNS(
       _namespace: string | null,
       qualifiedName: string,
       value: string,
@@ -399,31 +426,31 @@ export function BaseRRElementImpl(RRNodeClass: typeof IRRNode) {
       this.setAttribute(qualifiedName, value);
     }
 
-    removeAttribute(name: string) {
+    public removeAttribute(name: string) {
       delete this.attributes[name];
     }
 
-    appendChild(newChild: IRRNode): IRRNode {
-      this.children.push(newChild);
+    public appendChild(newChild: IRRNode): IRRNode {
+      this.childNodes.push(newChild);
       newChild.parentNode = this;
       newChild.parentElement = this;
       return newChild;
     }
 
-    insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
+    public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
       if (refChild === null) return this.appendChild(newChild);
-      const childIndex = this.children.indexOf(refChild);
+      const childIndex = this.childNodes.indexOf(refChild);
       if (childIndex == -1)
         throw new Error(
           "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
         );
-      this.children.splice(childIndex, 0, newChild);
+      this.childNodes.splice(childIndex, 0, newChild);
       newChild.parentElement = this;
       newChild.parentNode = this;
       return newChild;
     }
 
-    dispatchEvent(_event: Event) {
+    public dispatchEvent(_event: Event) {
       return true;
     }
 
@@ -437,10 +464,10 @@ export function BaseRRElementImpl(RRNodeClass: typeof IRRNode) {
   };
 }
 
-export function BaseRRMediaElementImpl(
-  RRElementClass: ReturnType<typeof BaseRRElementImpl>,
-) {
-  return class extends RRElementClass {
+export function BaseRRMediaElementImpl<
+  RRElement extends ConstrainedConstructor<IRRElement>
+>(RRElementClass: RRElement) {
+  return class BaseRRMediaElement extends RRElementClass {
     public currentTime?: number;
     public volume?: number;
     public paused?: boolean;
@@ -459,15 +486,26 @@ export function BaseRRMediaElementImpl(
   };
 }
 
-export function BaseRRTextImpl(RRNodeClass: typeof IRRNode) {
-  return class extends RRNodeClass implements IRRText {
-    readonly nodeType = 3;
-    readonly RRNodeType = NodeType.Text;
-    data: string;
+export function BaseRRTextImpl<RRNode extends ConstrainedConstructor<IRRNode>>(
+  RRNodeClass: RRNode,
+) {
+  // @ts-ignore
+  return class BaseRRText extends RRNodeClass implements IRRText {
+    public readonly nodeType = 3;
+    public readonly RRNodeType = NodeType.Text;
+    public data: string;
 
     constructor(data: string) {
       super();
       this.data = data;
+    }
+
+    public get textContent(): string {
+      return this.data;
+    }
+
+    public set textContent(textContent: string) {
+      this.data = textContent;
     }
 
     toString() {
@@ -476,15 +514,26 @@ export function BaseRRTextImpl(RRNodeClass: typeof IRRNode) {
   };
 }
 
-export function BaseRRCommentImpl(RRNodeClass: typeof IRRNode) {
-  return class extends RRNodeClass implements IRRComment {
-    readonly nodeType = 8;
-    readonly RRNodeType = NodeType.Comment;
-    data: string;
+export function BaseRRCommentImpl<
+  RRNode extends ConstrainedConstructor<IRRNode>
+>(RRNodeClass: RRNode) {
+  // @ts-ignore
+  return class BaseRRComment extends RRNodeClass implements IRRComment {
+    public readonly nodeType = 8;
+    public readonly RRNodeType = NodeType.Comment;
+    public data: string;
 
     constructor(data: string) {
       super();
       this.data = data;
+    }
+
+    public get textContent(): string {
+      return this.data;
+    }
+
+    public set textContent(textContent: string) {
+      this.data = textContent;
     }
 
     toString() {
@@ -493,16 +542,28 @@ export function BaseRRCommentImpl(RRNodeClass: typeof IRRNode) {
   };
 }
 
-export function BaseRRCDATASectionImpl(RRNodeClass: typeof IRRNode) {
+export function BaseRRCDATASectionImpl<
+  RRNode extends ConstrainedConstructor<IRRNode>
+>(RRNodeClass: RRNode) {
   // @ts-ignore
-  return class extends RRNodeClass implements IRRCDATASection {
-    readonly nodeType = 4;
-    readonly RRNodeType = NodeType.CDATA;
-    data: string;
+  return class BaseRRCDATASection
+    extends RRNodeClass
+    implements IRRCDATASection {
+    public readonly nodeType = 4;
+    public readonly RRNodeType = NodeType.CDATA;
+    public data: string;
 
     constructor(data: string) {
       super();
       this.data = data;
+    }
+
+    public get textContent(): string {
+      return this.data;
+    }
+
+    public set textContent(textContent: string) {
+      this.data = textContent;
     }
 
     toString() {

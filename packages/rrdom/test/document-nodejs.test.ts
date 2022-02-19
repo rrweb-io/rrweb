@@ -54,7 +54,7 @@ describe('RRDocument for nodejs environment', () => {
 
     it('get firstElementChild', () => {
       expect(rrdom.firstElementChild).toBeDefined();
-      expect(rrdom.firstElementChild.tagName).toEqual('HTML');
+      expect(rrdom.firstElementChild!.tagName).toEqual('HTML');
 
       const div1 = rrdom.getElementById('block1');
       expect(div1).toBeDefined();
@@ -65,16 +65,16 @@ describe('RRDocument for nodejs environment', () => {
     });
 
     it('get nextElementSibling', () => {
-      expect(rrdom.documentElement.firstElementChild).not.toBeNull();
-      expect(rrdom.documentElement.firstElementChild!.tagName).toEqual('HEAD');
+      expect(rrdom.documentElement!.firstElementChild).not.toBeNull();
+      expect(rrdom.documentElement!.firstElementChild!.tagName).toEqual('HEAD');
       expect(
-        rrdom.documentElement.firstElementChild!.nextElementSibling,
+        rrdom.documentElement!.firstElementChild!.nextElementSibling,
       ).not.toBeNull();
       expect(
-        rrdom.documentElement.firstElementChild!.nextElementSibling!.tagName,
+        rrdom.documentElement!.firstElementChild!.nextElementSibling!.tagName,
       ).toEqual('BODY');
       expect(
-        rrdom.documentElement.firstElementChild!.nextElementSibling!
+        rrdom.documentElement!.firstElementChild!.nextElementSibling!
           .nextElementSibling,
       ).toBeNull();
 
