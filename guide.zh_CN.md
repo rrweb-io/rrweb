@@ -396,7 +396,7 @@ replayer.on(EVENT_NAME, (payload) => {
 
 在不安装 rrweb 的情况下，也可以通过使用 REPL 工具试用 rrweb 录制 web 应用。
 
-运行 `npm run repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
+运行 `yarn repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io:
