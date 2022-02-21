@@ -230,7 +230,11 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   if (node.nodeType === node.ELEMENT_NODE) {
     let needBlock = false;
     if (typeof blockClass === 'string') {
-      needBlock = (node as HTMLElement).classList.contains(blockClass);
+      if ((node as HTMLElement).closest !== undefined) {
+        return (node as HTMLElement).closest('.' + blockClass) !== null;
+      } else {
+        needBlock = (node as HTMLElement).classList.contains(blockClass);
+      }
     } else {
       (node as HTMLElement).classList.forEach((className) => {
         if (blockClass.test(className)) {
