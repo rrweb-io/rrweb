@@ -91,6 +91,10 @@ export declare type SlimDOMOptions = Partial<{
     headMetaAuthorship: boolean;
     headMetaVerification: boolean;
 }>;
+export declare type DataURLOptions = Partial<{
+    type: string;
+    quality: number;
+}>;
 export declare type MaskTextFn = (text: string) => string;
 export declare type MaskInputFn = (text: string) => string;
 export declare type KeepIframeSrcFn = (src: string) => boolean;
