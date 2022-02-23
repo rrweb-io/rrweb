@@ -219,7 +219,7 @@ export function absoluteToDoc(doc: Document, attributeValue: string): string {
 }
 
 function isSVGElement(el: Element): boolean {
-  return el.tagName === 'svg' || el instanceof SVGElement;
+  return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
 function getHref() {
