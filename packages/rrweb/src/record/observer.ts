@@ -76,9 +76,9 @@ function getEventTarget(event: Event): EventTarget | null {
       }
     } else if (
       'path' in event &&
-      (event as { path: EventTarget[] }).path.length
+      ((event as unknown) as { path: EventTarget[] }).path.length
     ) {
-      return (event as { path: EventTarget[] }).path[0];
+      return ((event as unknown) as { path: EventTarget[] }).path[0];
     }
     return event.target;
   } catch {
@@ -97,7 +97,7 @@ export function initMutationObserver(
   maskInputOptions: MaskInputOptions,
   maskTextFn: MaskTextFn | undefined,
   maskInputFn: MaskInputFn | undefined,
-  recordCanvas: boolean,
+  recordCanvas: boolean | number,
   inlineImages: boolean,
   slimDOMOptions: SlimDOMOptions,
   mirror: Mirror,

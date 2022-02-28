@@ -42,6 +42,9 @@ type DoubleLinkedListNode = {
 type NodeInLinkedList = Node & {
   __ln: DoubleLinkedListNode;
 };
+type NodeBeingRemovedFromLinkedList = Node & {
+  __ln?: DoubleLinkedListNode;
+};
 
 function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
   return '__ln' in n;
@@ -117,7 +120,7 @@ class DoubleLinkedList {
       }
     }
     if (n.__ln) {
-      delete n.__ln;
+      delete (n as NodeBeingRemovedFromLinkedList).__ln;
     }
     this.length--;
   }
