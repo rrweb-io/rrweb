@@ -45,6 +45,13 @@ function toMinPath(path) {
 }
 
 const baseConfigs = [
+  // all in one
+  {
+    input: './src/entries/all.ts',
+    name: 'rrweb',
+    pathFn: toAllPath,
+    esm: true,
+  },
   // record only
   {
     input: './src/record/index.ts',
@@ -74,13 +81,6 @@ const baseConfigs = [
     input: './src/index.ts',
     name: 'rrweb',
     pathFn: (p) => p,
-  },
-  // all in one
-  {
-    input: './src/entries/all.ts',
-    name: 'rrweb',
-    pathFn: toAllPath,
-    esm: true,
   },
   // plugins
   {
