@@ -1,5 +1,21 @@
 import { Replayer } from '../';
-import { canvasMutationCommand } from '../../types';
+import { canvasMutationCommand, SerializedCanvasArg } from '../../types';
+import { deserializeArg, isSerializedArg } from './deserialize-args';
+
+const isDrawImageMutationWithImageBitmapArg = (
+  mutation: canvasMutationCommand,
+): mutation is canvasMutationCommand & {
+  args: [SerializedCanvasArg];
+} => {
+  if (mutation.args.length !== 1) return false;
+  const arg = mutation.args[0];
+  return (
+    mutation.property === 'drawImage' &&
+    isSerializedArg(arg) &&
+    arg.rr_type === 'ImageBitmap' &&
+    'args' in arg
+  );
+};
 
 export default function canvasMutation({
   event,
@@ -39,6 +55,13 @@ export default function canvasMutation({
       const image = imageMap.get(event);
       mutation.args[0] = image;
       original.apply(ctx, mutation.args);
+    } else if (isDrawImageMutationWithImageBitmapArg(mutation)) {
+      const imageBitmapArg = mutation.args.map(deserializeArg(imageMap, ctx));
+      createImageBitmap
+        .apply(window, imageBitmapArg)
+        .then((imageBitmap: ImageBitmap) => {
+          original.apply(ctx, [imageBitmap, 0, 0]);
+        });
     } else {
       original.apply(ctx, mutation.args);
     }
