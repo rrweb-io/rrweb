@@ -15,9 +15,7 @@ import {
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
 
-export class RRNode extends BaseRRNode {
-  ownerDocument: RRDocument | null = null;
-}
+export class RRNode extends BaseRRNode {}
 
 export class RRWindow {
   scrollLeft = 0;
@@ -187,9 +185,7 @@ export class RRDocumentType extends BaseRRDocumentTypeImpl(RRNode) {}
 
 export class RRElement extends BaseRRElementImpl(RRNode) {
   attachShadow(_init: ShadowRootInit): RRElement {
-    const shadowRoot = new RRElement('SHADOWROOT');
-    this.shadowRoot = shadowRoot;
-    return shadowRoot;
+    return super.attachShadow(_init) as RRElement;
   }
 
   appendChild(newChild: RRNode): RRNode {
@@ -236,7 +232,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
 
   querySelectorAll(selectors: string): RRNode[] {
     if (this.ownerDocument !== null) {
-      return (this.ownerDocument.nwsapi.select(
+      return ((this.ownerDocument as RRDocument).nwsapi.select(
         selectors,
         (this as unknown) as Element,
       ) as unknown) as RRNode[];
@@ -261,9 +257,9 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
     // Make sure this element has all queried class names.
     if (
       this instanceof RRElement &&
-      queryClassList.filter((queriedClassName) =>
-        this.classList.some((name) => name === queriedClassName),
-      ).length == queryClassList.length
+      queryClassList.classes.filter((queriedClassName) =>
+        this.classList.classes.some((name) => name === queriedClassName),
+      ).length == queryClassList.classes.length
     )
       elements.push(this);
     for (const child of this.childNodes) {

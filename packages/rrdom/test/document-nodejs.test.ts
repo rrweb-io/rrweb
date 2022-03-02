@@ -181,7 +181,7 @@ describe('RRDocument for nodejs environment', () => {
       }
       for (let element of rrdom.querySelectorAll('.\\:hover')) {
         expect(element).toBeInstanceOf(RRElement);
-        expect((element as RRElement).classList).toContain(':hover');
+        expect((element as RRElement).classList.classes).toContain(':hover');
       }
     });
 

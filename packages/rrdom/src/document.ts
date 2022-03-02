@@ -6,6 +6,7 @@ export interface IRRNode {
   parentElement: IRRNode | null;
   parentNode: IRRNode | null;
   childNodes: IRRNode[];
+  ownerDocument: IRRDocument;
   ELEMENT_NODE: 1;
   TEXT_NODE: 3;
   // corresponding nodeType value of standard HTML Node
@@ -24,7 +25,7 @@ export interface IRRNode {
 
   insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode;
 
-  removeChild(node: IRRNode): void;
+  removeChild(node: IRRNode): IRRNode;
 
   toString(nodeName?: string): string;
 }
@@ -62,6 +63,12 @@ export interface IRRDocument extends IRRNode {
   createComment(data: string): IRRComment;
 
   createCDATASection(data: string): IRRCDATASection;
+
+  open(): void;
+
+  close(): void;
+
+  write(content: string): void;
 }
 export interface IRRElement extends IRRNode {
   tagName: string;
@@ -69,6 +76,26 @@ export interface IRRElement extends IRRNode {
   shadowRoot: IRRElement | null;
   scrollLeft?: number;
   scrollTop?: number;
+  id: string;
+  className: string;
+  classList: ClassList;
+  style: CSSStyleDeclaration;
+
+  attachShadow(init: ShadowRootInit): IRRElement;
+
+  getAttribute(name: string): string | null;
+
+  setAttribute(name: string, attribute: string): void;
+
+  setAttributeNS(
+    namespace: string | null,
+    qualifiedName: string,
+    value: string,
+  ): void;
+
+  removeAttribute(name: string): void;
+
+  dispatchEvent(event: Event): boolean;
 }
 export interface IRRDocumentType extends IRRNode {
   readonly name: string;
@@ -93,6 +120,7 @@ export class BaseRRNode implements IRRNode {
   public parentElement: IRRNode | null = null;
   public parentNode: IRRNode | null = null;
   public textContent: string | null;
+  public ownerDocument: IRRDocument;
   public ELEMENT_NODE: 1 = 1;
   public TEXT_NODE: 3 = 3;
   // corresponding nodeType value of standard HTML Node
@@ -133,13 +161,10 @@ export class BaseRRNode implements IRRNode {
     );
   }
 
-  public removeChild(node: IRRNode) {
-    const indexOfChild = this.childNodes.indexOf(node);
-    if (indexOfChild !== -1) {
-      this.childNodes.splice(indexOfChild, 1);
-      node.parentElement = null;
-      node.parentNode = null;
-    }
+  public removeChild(node: IRRNode): IRRNode {
+    throw new Error(
+      `RRDomException: Failed to execute 'removeChild' on 'RRNode': This RRNode type does not support this method.`,
+    );
   }
 
   public toString(nodeName?: string) {
@@ -219,6 +244,16 @@ export function BaseRRDocumentImpl<
     }
 
     public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
+      const nodeType = newChild.RRNodeType;
+      if (nodeType === NodeType.Element || nodeType === NodeType.DocumentType) {
+        if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
+          throw new Error(
+            `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one ${
+              nodeType === NodeType.Element ? 'RRElement' : 'RRDoctype'
+            } on RRDocument allowed.`,
+          );
+        }
+      }
       if (refChild === null) return this.appendChild(newChild);
       const childIndex = this.childNodes.indexOf(refChild);
       if (childIndex == -1)
@@ -231,8 +266,21 @@ export function BaseRRDocumentImpl<
       return newChild;
     }
 
+    public removeChild(node: IRRNode) {
+      const indexOfChild = this.childNodes.indexOf(node);
+      if (indexOfChild === -1)
+        throw new Error(
+          "Failed to execute 'removeChild' on 'RRDocument': The RRNode to be removed is not a child of this RRNode.",
+        );
+      this.childNodes.splice(indexOfChild, 1);
+      node.parentElement = null;
+      node.parentNode = null;
+      return node;
+    }
+
     public open() {
       this.childNodes = [];
+      this._notSerializedId = -1;
     }
 
     public close() {}
@@ -274,35 +322,49 @@ export function BaseRRDocumentImpl<
       _qualifiedName: string | null,
       _doctype?: DocumentType | null,
     ): IRRDocument {
-      throw new Error('Method not implemented.');
+      return new BaseRRDocument();
     }
 
     createDocumentType(
-      _qualifiedName: string,
-      _publicId: string,
-      _systemId: string,
+      qualifiedName: string,
+      publicId: string,
+      systemId: string,
     ): IRRDocumentType {
-      throw new Error('Method not implemented.');
+      const doctype = new (BaseRRDocumentTypeImpl(BaseRRNode))(
+        qualifiedName,
+        publicId,
+        systemId,
+      );
+      doctype.ownerDocument = this;
+      return doctype;
     }
 
-    createElement(_tagName: string): IRRElement {
-      throw new Error('Method not implemented.');
+    createElement(tagName: string): IRRElement {
+      const element = new (BaseRRElementImpl(BaseRRNode))(tagName);
+      element.ownerDocument = this;
+      return element;
     }
 
-    createElementNS(_namespaceURI: string, _qualifiedName: string): IRRElement {
-      throw new Error('Method not implemented.');
+    createElementNS(_namespaceURI: string, qualifiedName: string): IRRElement {
+      return this.createElement(qualifiedName);
     }
 
-    createTextNode(_data: string): IRRText {
-      throw new Error('Method not implemented.');
+    createTextNode(data: string): IRRText {
+      const text = new (BaseRRTextImpl(BaseRRNode))(data);
+      text.ownerDocument = this;
+      return text;
     }
 
-    createComment(_data: string): IRRComment {
-      throw new Error('Method not implemented.');
+    createComment(data: string): IRRComment {
+      const comment = new (BaseRRCommentImpl(BaseRRNode))(data);
+      comment.ownerDocument = this;
+      return comment;
     }
 
-    createCDATASection(_data: string): IRRCDATASection {
-      throw new Error('Method not implemented.');
+    createCDATASection(data: string): IRRCDATASection {
+      const CDATASection = new (BaseRRCDATASectionImpl(BaseRRNode))(data);
+      CDATASection.ownerDocument = this;
+      return CDATASection;
     }
 
     toString() {
@@ -353,21 +415,20 @@ export function BaseRRElementImpl<
 
     constructor(tagName: string) {
       super();
-      this.tagName = tagName;
+      this.tagName = tagName.toUpperCase();
     }
 
     public get textContent(): string {
       let result = '';
-      this.childNodes.forEach((node) => result + node.textContent);
+      this.childNodes.forEach((node) => (result += node.textContent));
       return result;
     }
 
     public set textContent(textContent: string) {
-      if (this.childNodes[0].RRNodeType === NodeType.Text)
-        this.childNodes[0].textContent = textContent;
+      this.childNodes = [this.ownerDocument.createTextNode(textContent)];
     }
 
-    public get classList() {
+    public get classList(): ClassList {
       return new ClassList(
         this.attributes.class as string | undefined,
         (newClassName) => {
@@ -377,7 +438,7 @@ export function BaseRRElementImpl<
     }
 
     public get id() {
-      return this.attributes.id;
+      return this.attributes.id || '';
     }
 
     public get className() {
@@ -387,24 +448,23 @@ export function BaseRRElementImpl<
     public get style() {
       const style = (this.attributes.style
         ? parseCSSText(this.attributes.style as string)
-        : {}) as Record<string, string> & {
-        setProperty: (
-          name: string,
-          value: string | null,
-          priority?: string | null,
-        ) => void;
-        removeProperty: (name: string) => string;
-      };
-      style.setProperty = (name: string, value: string | null) => {
+        : {}) as CSSStyleDeclaration;
+      style.setProperty = (
+        name: string,
+        value: string | null,
+        priority?: string,
+      ) => {
         const normalizedName = camelize(name);
         if (!value) delete style[normalizedName];
         else style[normalizedName] = value;
+        if (priority === 'important') style[normalizedName] += ' !important';
         this.attributes.style = toCSSText(style);
       };
       style.removeProperty = (name: string) => {
         const normalizedName = camelize(name);
         const value = style[normalizedName] || '';
         delete style[normalizedName];
+        this.attributes.style = toCSSText(style);
         return value;
       };
       return style;
@@ -450,6 +510,24 @@ export function BaseRRElementImpl<
       return newChild;
     }
 
+    public removeChild(node: IRRNode): IRRNode {
+      const indexOfChild = this.childNodes.indexOf(node);
+      if (indexOfChild === -1)
+        throw new Error(
+          "Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode.",
+        );
+      this.childNodes.splice(indexOfChild, 1);
+      node.parentElement = null;
+      node.parentNode = null;
+      return node;
+    }
+
+    public attachShadow(_init: ShadowRootInit): IRRElement {
+      const shadowRoot = this.ownerDocument.createElement('SHADOWROOT');
+      this.shadowRoot = shadowRoot;
+      return shadowRoot;
+    }
+
     public dispatchEvent(_event: Event) {
       return true;
     }
@@ -474,7 +552,7 @@ export function BaseRRMediaElementImpl<
     public muted?: boolean;
     attachShadow(_init: ShadowRootInit): IRRElement {
       throw new Error(
-        `Uncaught DOMException: Failed to execute 'attachShadow' on 'RRElement': This RRElement does not support attachShadow`,
+        `RRDomException: Failed to execute 'attachShadow' on 'RRElement': This RRElement does not support attachShadow`,
       );
     }
     public play() {
@@ -574,17 +652,17 @@ export function BaseRRCDATASectionImpl<
   };
 }
 
-export class ClassList extends Array {
+export class ClassList {
   private onChange: ((newClassText: string) => void) | undefined;
+  classes: string[] = [];
 
   constructor(
     classText?: string,
     onChange?: ((newClassText: string) => void) | undefined,
   ) {
-    super();
     if (classText) {
       const classes = classText.trim().split(/\s+/);
-      super.push(...classes);
+      this.classes.push(...classes);
     }
     this.onChange = onChange;
   }
@@ -592,19 +670,25 @@ export class ClassList extends Array {
   add = (...classNames: string[]) => {
     for (const item of classNames) {
       const className = String(item);
-      if (super.indexOf(className) >= 0) continue;
-      super.push(className);
+      if (this.classes.indexOf(className) >= 0) continue;
+      this.classes.push(className);
     }
-    this.onChange && this.onChange(super.join(' '));
+    this.onChange && this.onChange(this.classes.join(' '));
   };
 
   remove = (...classNames: string[]) => {
-    for (const item of classNames) {
-      const className = String(item);
-      const index = super.indexOf(className);
-      if (index < 0) continue;
-      super.splice(index, 1);
-    }
-    this.onChange && this.onChange(super.join(' '));
+    this.classes = this.classes.filter(
+      (item) => classNames.indexOf(item) === -1,
+    );
+    this.onChange && this.onChange(this.classes.join(' '));
   };
 }
+
+export type CSSStyleDeclaration = Record<string, string> & {
+  setProperty: (
+    name: string,
+    value: string | null,
+    priority?: string | null,
+  ) => void;
+  removeProperty: (name: string) => string;
+};

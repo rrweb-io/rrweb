@@ -6,7 +6,7 @@ import type {
   scrollData,
 } from 'rrweb/src/types';
 import {
-  BaseRRNode,
+  BaseRRNode as RRNode,
   BaseRRCDATASectionImpl,
   BaseRRCommentImpl,
   BaseRRDocumentImpl,
@@ -19,8 +19,6 @@ import {
   IRRNode,
 } from './document';
 import { VirtualStyleRules } from './diff';
-
-export class RRNode extends BaseRRNode {}
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   public mirror: Mirror = {
@@ -61,7 +59,13 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
     publicId: string,
     systemId: string,
   ) {
-    return new RRDocumentType(qualifiedName, publicId, systemId);
+    const documentTypeNode = new RRDocumentType(
+      qualifiedName,
+      publicId,
+      systemId,
+    );
+    documentTypeNode.ownerDocument = this;
+    return documentTypeNode;
   }
 
   createElement<K extends keyof HTMLElementTagNameMap>(
@@ -89,26 +93,26 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
         element = new RRElement(upperTagName);
         break;
     }
+    element.ownerDocument = this;
     return element;
   }
 
-  createElementNS(
-    _namespaceURI: 'http://www.w3.org/2000/svg',
-    qualifiedName: string,
-  ) {
-    return this.createElement(qualifiedName);
-  }
-
   createComment(data: string) {
-    return new RRComment(data);
+    const commentNode = new RRComment(data);
+    commentNode.ownerDocument = this;
+    return commentNode;
   }
 
   createCDATASection(data: string) {
-    return new RRCDATASection(data);
+    const sectionNode = new RRCDATASection(data);
+    sectionNode.ownerDocument = this;
+    return sectionNode;
   }
 
   createTextNode(data: string) {
-    return new RRText(data);
+    const textNode = new RRText(data);
+    textNode.ownerDocument = this;
+    return textNode;
   }
 
   destroyTree() {
@@ -122,12 +126,6 @@ export const RRDocumentType = BaseRRDocumentTypeImpl(RRNode);
 export class RRElement extends BaseRRElementImpl(RRNode) {
   inputData: inputData | null = null;
   scrollData: scrollData | null = null;
-
-  attachShadow(_init: ShadowRootInit): RRElement {
-    const shadowRoot = new RRElement('SHADOWROOT');
-    this.shadowRoot = shadowRoot;
-    return shadowRoot;
-  }
 }
 
 export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
@@ -326,4 +324,5 @@ export function buildFromDom(
   walk((dom as unknown) as INode, null);
   return rrdom;
 }
+export { RRNode };
 export { diff, StyleRuleType, VirtualStyleRules } from './diff';
