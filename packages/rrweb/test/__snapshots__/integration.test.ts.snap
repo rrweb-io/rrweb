@@ -4874,9 +4874,58 @@ exports[`record integration tests should nest record iframe 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"textContent\\": \\"\\\\n    \\",
                         \\"rootId\\": 32,
                         \\"id\\": 50
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"svg\\",
+                        \\"attributes\\": {
+                          \\"xmlns\\": \\"http://www.w3.org/2000/svg\\",
+                          \\"xmlns:xlink\\": \\"http://www.w3.org/1999/xlink\\",
+                          \\"width\\": \\"300\\",
+                          \\"height\\": \\"300\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 32,
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"rect\\",
+                            \\"attributes\\": {
+                              \\"id\\": \\"el\\",
+                              \\"width\\": \\"100\\",
+                              \\"height\\": \\"50\\",
+                              \\"x\\": \\"40\\",
+                              \\"y\\": \\"20\\",
+                              \\"fill\\": \\"red\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"isSVG\\": true,
+                            \\"rootId\\": 32,
+                            \\"id\\": 53
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 32,
+                            \\"id\\": 54
+                          }
+                        ],
+                        \\"isSVG\\": true,
+                        \\"rootId\\": 32,
+                        \\"id\\": 51
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 32,
+                        \\"id\\": 55
                       }
                     ],
                     \\"rootId\\": 32,
@@ -4918,24 +4967,24 @@ exports[`record integration tests should nest record iframe 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 51,
-                    \\"id\\": 53
+                    \\"rootId\\": 56,
+                    \\"id\\": 58
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"body\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 51,
-                    \\"id\\": 54
+                    \\"rootId\\": 56,
+                    \\"id\\": 59
                   }
                 ],
-                \\"rootId\\": 51,
-                \\"id\\": 52
+                \\"rootId\\": 56,
+                \\"id\\": 57
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 51
+            \\"id\\": 56
           }
         }
       ],
@@ -4961,8 +5010,8 @@ exports[`record integration tests should nest record iframe 1`] = `
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
-                \\"rootId\\": 55,
-                \\"id\\": 56
+                \\"rootId\\": 60,
+                \\"id\\": 61
               },
               {
                 \\"type\\": 2,
@@ -4979,8 +5028,8 @@ exports[`record integration tests should nest record iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 55,
-                        \\"id\\": 59
+                        \\"rootId\\": 60,
+                        \\"id\\": 64
                       },
                       {
                         \\"type\\": 2,
@@ -4989,14 +5038,14 @@ exports[`record integration tests should nest record iframe 1`] = `
                           \\"charset\\": \\"UTF-8\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 55,
-                        \\"id\\": 60
+                        \\"rootId\\": 60,
+                        \\"id\\": 65
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 55,
-                        \\"id\\": 61
+                        \\"rootId\\": 60,
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 2,
@@ -5006,14 +5055,14 @@ exports[`record integration tests should nest record iframe 1`] = `
                           \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 55,
-                        \\"id\\": 62
+                        \\"rootId\\": 60,
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 55,
-                        \\"id\\": 63
+                        \\"rootId\\": 60,
+                        \\"id\\": 68
                       },
                       {
                         \\"type\\": 2,
@@ -5023,28 +5072,28 @@ exports[`record integration tests should nest record iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Frame 2\\",
-                            \\"rootId\\": 55,
-                            \\"id\\": 65
+                            \\"rootId\\": 60,
+                            \\"id\\": 70
                           }
                         ],
-                        \\"rootId\\": 55,
-                        \\"id\\": 64
+                        \\"rootId\\": 60,
+                        \\"id\\": 69
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"rootId\\": 55,
-                        \\"id\\": 66
+                        \\"rootId\\": 60,
+                        \\"id\\": 71
                       }
                     ],
-                    \\"rootId\\": 55,
-                    \\"id\\": 58
+                    \\"rootId\\": 60,
+                    \\"id\\": 63
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"rootId\\": 55,
-                    \\"id\\": 67
+                    \\"rootId\\": 60,
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 2,
@@ -5054,8 +5103,8 @@ exports[`record integration tests should nest record iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    frame 2\\\\n  \\\\n  \\",
-                        \\"rootId\\": 55,
-                        \\"id\\": 69
+                        \\"rootId\\": 60,
+                        \\"id\\": 74
                       },
                       {
                         \\"type\\": 2,
@@ -5065,29 +5114,29 @@ exports[`record integration tests should nest record iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                            \\"rootId\\": 55,
-                            \\"id\\": 71
+                            \\"rootId\\": 60,
+                            \\"id\\": 76
                           }
                         ],
-                        \\"rootId\\": 55,
-                        \\"id\\": 70
+                        \\"rootId\\": 60,
+                        \\"id\\": 75
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n\\\\n\\",
-                        \\"rootId\\": 55,
-                        \\"id\\": 72
+                        \\"rootId\\": 60,
+                        \\"id\\": 77
                       }
                     ],
-                    \\"rootId\\": 55,
-                    \\"id\\": 68
+                    \\"rootId\\": 60,
+                    \\"id\\": 73
                   }
                 ],
-                \\"rootId\\": 55,
-                \\"id\\": 57
+                \\"rootId\\": 60,
+                \\"id\\": 62
               }
             ],
-            \\"id\\": 55
+            \\"id\\": 60
           }
         }
       ],
@@ -5106,7 +5155,7 @@ exports[`record integration tests should nest record iframe 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 68,
+          \\"parentId\\": 73,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -5115,8 +5164,8 @@ exports[`record integration tests should nest record iframe 1`] = `
               \\"id\\": \\"five\\"
             },
             \\"childNodes\\": [],
-            \\"rootId\\": 55,
-            \\"id\\": 73
+            \\"rootId\\": 60,
+            \\"id\\": 78
           }
         }
       ]
@@ -5128,7 +5177,7 @@ exports[`record integration tests should nest record iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 73,
+          \\"parentId\\": 78,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -5143,24 +5192,24 @@ exports[`record integration tests should nest record iframe 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 74,
-                    \\"id\\": 76
+                    \\"rootId\\": 79,
+                    \\"id\\": 81
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"body\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 74,
-                    \\"id\\": 77
+                    \\"rootId\\": 79,
+                    \\"id\\": 82
                   }
                 ],
-                \\"rootId\\": 74,
-                \\"id\\": 75
+                \\"rootId\\": 79,
+                \\"id\\": 80
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 74
+            \\"id\\": 79
           }
         }
       ],
@@ -7816,7 +7865,7 @@ exports[`record integration tests should record console messages 1`] = `
           \\"__puppeteer_evaluation_script__:19:37\\"
         ],
         \\"payload\\": [
-          \\"\\\\\\"TypeError: a message\\\\\\"\\"
+          \\"\\\\\\"TypeError: a message\\\\\\\\n    at __puppeteer_evaluation_script__:19:41\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
         ]
       }
     }

@@ -8,7 +8,7 @@ export declare class CanvasManager {
     private rafStamps;
     private mirror;
     private mutationCb;
-    private resetObservers;
+    private resetObservers?;
     private frozen;
     private locked;
     reset(): void;
