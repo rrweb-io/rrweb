@@ -1,6 +1,6 @@
 import { NodeType } from 'rrweb-snapshot';
-import { CSSStyleDeclaration as cssstyle } from 'cssstyle';
 import { NWSAPI } from 'nwsapi';
+import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
 import {
   BaseRRCDATASectionImpl,
   BaseRRCommentImpl,
@@ -16,6 +16,7 @@ import {
 } from './document';
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
+const cssstyle = require('cssstyle');
 
 export class RRNode extends BaseRRNode {}
 
@@ -186,10 +187,10 @@ export class RRDocument
 export class RRDocumentType extends BaseRRDocumentTypeImpl(RRNode) {}
 
 export class RRElement extends BaseRRElementImpl(RRNode) {
-  private _style: cssstyle;
+  private _style: CSSStyleDeclarationType;
   constructor(tagName: string) {
     super(tagName);
-    this._style = new cssstyle();
+    this._style = new cssstyle.CSSStyleDeclaration();
     const style = this._style;
     Object.defineProperty(this.attributes, 'style', {
       get() {
