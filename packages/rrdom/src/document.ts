@@ -449,11 +449,13 @@ export function BaseRRElementImpl<
       const style = (this.attributes.style
         ? parseCSSText(this.attributes.style as string)
         : {}) as CSSStyleDeclaration;
+      const hyphenateRE = /\B([A-Z])/g;
       style.setProperty = (
         name: string,
         value: string | null,
         priority?: string,
       ) => {
+        if (hyphenateRE.test(name)) return;
         const normalizedName = camelize(name);
         if (!value) delete style[normalizedName];
         else style[normalizedName] = value;
@@ -461,6 +463,7 @@ export function BaseRRElementImpl<
         this.attributes.style = toCSSText(style);
       };
       style.removeProperty = (name: string) => {
+        if (hyphenateRE.test(name)) return '';
         const normalizedName = camelize(name);
         const value = style[normalizedName] || '';
         delete style[normalizedName];

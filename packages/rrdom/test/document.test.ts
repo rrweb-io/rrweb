@@ -121,7 +121,7 @@ describe('Basic RRDocument implementation', () => {
     it('should have basic properties', () => {
       const node = new RRDocument();
       expect(node.toString()).toEqual(' RRDocument');
-      
+
       node.__sn = {
         type: NodeType.Document,
         id: 1,
@@ -534,48 +534,52 @@ describe('Basic RRDocument implementation', () => {
       const node = document.createElement('div');
       const style = node.style;
       style.setProperty('color', 'red');
-      expect(node.attributes.style).toEqual('color:red;');
-      // camelCase style
+      expect(node.attributes.style).toEqual('color: red;');
+      // camelCase style is unacceptable
       style.setProperty('backgroundColor', 'blue');
-      expect(node.attributes.style).toEqual(
-        'color:red; background-color:blue;',
-      );
+      expect(node.attributes.style).toEqual('color: red;');
       style.setProperty('height', '50vh', 'important');
       expect(node.attributes.style).toEqual(
-        'color:red; background-color:blue; height:50vh !important;',
+        'color: red; height: 50vh !important;',
       );
 
       // kebab-case
       style.setProperty('background-color', 'red');
       expect(node.attributes.style).toEqual(
-        'color:red; background-color:red; height:50vh !important;',
+        'color: red; height: 50vh !important; background-color: red;',
       );
 
       // remove the property
       style.setProperty('background-color', null);
       expect(node.attributes.style).toEqual(
-        'color:red; height:50vh !important;',
+        'color: red; height: 50vh !important;',
       );
     });
 
     it('can remove CSS property', () => {
       const node = document.createElement('div');
       node.attributes.style =
-        'color:blue; background-color:red; width:78%; height:50vh !important;';
+        'color: blue; background-color: red; width: 78%; height: 50vh !important;';
       const style = node.style;
       expect(style.removeProperty('color')).toEqual('blue');
       expect(node.attributes.style).toEqual(
-        'background-color:red; width:78%; height:50vh !important;',
+        'background-color: red; width: 78%; height: 50vh !important;',
       );
       expect(style.removeProperty('height')).toEqual('50vh !important');
-      expect(node.attributes.style).toEqual('background-color:red; width:78%;');
+      expect(node.attributes.style).toEqual(
+        'background-color: red; width: 78%;',
+      );
       // kebab-case
       expect(style.removeProperty('background-color')).toEqual('red');
-      expect(node.attributes.style).toEqual('width:78%;');
+      expect(node.attributes.style).toEqual('width: 78%;');
       style.setProperty('background-color', 'red');
-      expect(node.attributes.style).toEqual('width:78%; background-color:red;');
-      expect(style.removeProperty('backgroundColor')).toEqual('red');
-      expect(node.attributes.style).toEqual('width:78%;');
+      expect(node.attributes.style).toEqual(
+        'width: 78%; background-color: red;',
+      );
+      expect(style.removeProperty('backgroundColor')).toEqual('');
+      expect(node.attributes.style).toEqual(
+        'width: 78%; background-color: red;',
+      );
       // remove a non-exist property
       expect(style.removeProperty('margin')).toEqual('');
     });
@@ -599,7 +603,7 @@ describe('Basic RRDocument implementation', () => {
       );
 
       // multiple of same property
-      node.attributes.style = 'color:rgba(0,0,0,1);color:white';
+      node.attributes.style = 'color: rgba(0,0,0,1);color:white';
       style = node.style;
       expect(style.color).toEqual('white');
 

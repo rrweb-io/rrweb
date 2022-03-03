@@ -21,7 +21,7 @@ export function toCSSText(style: Record<string, string>): string {
     const value = style[name];
     if (typeof value !== 'string') continue;
     const normalizedName = hyphenate(name);
-    properties.push(`${normalizedName}:${value};`);
+    properties.push(`${normalizedName}: ${value};`);
   }
   return properties.join(' ');
 }

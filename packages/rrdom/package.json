@@ -27,6 +27,7 @@
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@types/cssom": "^0.4.1",
+    "@types/cssstyle": "^2.2.1",
     "@types/jest": "^27.0.1",
     "@types/nwsapi": "^2.2.2",
     "@types/puppeteer": "^5.4.4",
@@ -42,6 +43,7 @@
   },
   "dependencies": {
     "cssom": "^0.5.0",
+    "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0"
   }
 }

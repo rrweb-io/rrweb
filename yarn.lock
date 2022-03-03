@@ -1899,6 +1899,11 @@
   resolved "https://registry.yarnpkg.com/@types/cssom/-/cssom-0.4.1.tgz#fb64e145b425bd6c1b0ed78ebd66ba43b6e088ab"
   integrity sha512-hHGVfUuGZe5FpgCxpTJccH0gD1bui5gWceW0We0TyAzUr6wBaqDnSLG9Yr3xqS4AkGhnclNOwRSXH/LIfki3fQ==
 
+"@types/cssstyle@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@types/cssstyle/-/cssstyle-2.2.1.tgz#fa010824006ff47af94a6b9baf9759e031815347"
+  integrity sha512-CSQFKdZc3dmWoZXLAM0pPL6XiYLG8hMGzImM2MwQ9kavB5LnbeMGan94CCj4oxY65xMl5mRMwrFUfKPOWO4WpQ==
+
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#1ee30d79544ca84d68d4b3cdb0af4f205663dd2d"

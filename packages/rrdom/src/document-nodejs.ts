@@ -1,4 +1,5 @@
 import { NodeType } from 'rrweb-snapshot';
+import { CSSStyleDeclaration as cssstyle } from 'cssstyle';
 import { NWSAPI } from 'nwsapi';
 import {
   BaseRRCDATASectionImpl,
@@ -11,6 +12,7 @@ import {
   BaseRRTextImpl,
   ClassList,
   IRRDocument,
+  CSSStyleDeclaration,
 } from './document';
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
@@ -184,6 +186,25 @@ export class RRDocument
 export class RRDocumentType extends BaseRRDocumentTypeImpl(RRNode) {}
 
 export class RRElement extends BaseRRElementImpl(RRNode) {
+  private _style: cssstyle;
+  constructor(tagName: string) {
+    super(tagName);
+    this._style = new cssstyle();
+    const style = this._style;
+    Object.defineProperty(this.attributes, 'style', {
+      get() {
+        return style.cssText;
+      },
+      set(cssText: string) {
+        style.cssText = cssText;
+      },
+    });
+  }
+
+  get style() {
+    return (this._style as unknown) as CSSStyleDeclaration;
+  }
+
   attachShadow(_init: ShadowRootInit): RRElement {
     return super.attachShadow(_init) as RRElement;
   }

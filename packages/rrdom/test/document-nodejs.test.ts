@@ -209,6 +209,114 @@ describe('RRDocument for nodejs environment', () => {
       expect(rrdom.querySelectorAll('.blocks#block3').length).toEqual(0);
     });
 
+    it('can get CSS style declaration', () => {
+      const node = rrdom.createElement('div');
+      const style = node.style;
+      expect(style).toBeDefined();
+      expect(style.setProperty).toBeDefined();
+      expect(style.removeProperty).toBeDefined();
+
+      node.attributes.style =
+        'color: blue; background-color: red; width: 78%; height: 50vh !important;';
+      expect(node.style.color).toBe('blue');
+      expect(node.style.backgroundColor).toBe('red');
+      expect(node.style.width).toBe('78%');
+      expect(node.style.height).toBe('50vh');
+    });
+
+    it('can set CSS property', () => {
+      const node = rrdom.createElement('div');
+      const style = node.style;
+      style.setProperty('color', 'red');
+      expect(node.attributes.style).toEqual('color: red;');
+      // camelCase style is unacceptable
+      style.setProperty('backgroundColor', 'blue');
+      expect(node.attributes.style).toEqual('color: red;');
+      style.setProperty('height', '50vh', 'important');
+      expect(node.attributes.style).toEqual(
+        'color: red; height: 50vh !important;',
+      );
+
+      // kebab-case
+      style.setProperty('background-color', 'red');
+      expect(node.attributes.style).toEqual(
+        'color: red; height: 50vh !important; background-color: red;',
+      );
+
+      // remove the property
+      style.setProperty('background-color', null);
+      expect(node.attributes.style).toEqual(
+        'color: red; height: 50vh !important;',
+      );
+    });
+
+    it('can remove CSS property', () => {
+      const node = rrdom.createElement('div');
+      node.attributes.style =
+        'color: blue; background-color: red; width: 78%; height: 50vh;';
+      const style = node.style;
+      expect(style.removeProperty('color')).toEqual('blue');
+      expect(node.attributes.style).toEqual(
+        'background-color: red; width: 78%; height: 50vh;',
+      );
+      expect(style.removeProperty('height')).toEqual('50vh');
+      expect(node.attributes.style).toEqual(
+        'background-color: red; width: 78%;',
+      );
+      // kebab-case
+      expect(style.removeProperty('background-color')).toEqual('red');
+      expect(node.attributes.style).toEqual('width: 78%;');
+      style.setProperty('background-color', 'red');
+      expect(node.attributes.style).toEqual(
+        'width: 78%; background-color: red;',
+      );
+      expect(style.removeProperty('backgroundColor')).toEqual('');
+      expect(node.attributes.style).toEqual(
+        'width: 78%; background-color: red;',
+      );
+      // remove a non-exist property
+      expect(style.removeProperty('margin')).toEqual('');
+    });
+
+    it('can parse more inline styles correctly', () => {
+      const node = rrdom.createElement('div');
+      // general
+      node.attributes.style =
+        'display: inline-block;   margin:    0 auto; border: 5px solid #BADA55; font-size: .75em; position:absolute;width: 33.3%; z-index:1337; font-family: "Goudy Bookletter 1911", Gill Sans Extrabold, sans-serif;';
+
+      const style = node.style;
+      expect(style.display).toEqual('inline-block');
+      expect(style.margin).toEqual('0px auto');
+      expect(style.border).toEqual('5px solid #bada55');
+      expect(style.fontSize).toEqual('.75em');
+      expect(style.position).toEqual('absolute');
+      expect(style.width).toEqual('33.3%');
+      expect(style.zIndex).toEqual('1337');
+      expect(style.fontFamily).toEqual(
+        '"Goudy Bookletter 1911", Gill Sans Extrabold, sans-serif',
+      );
+
+      // multiple of same property
+      node.attributes.style = 'color:rgba(0,0,0,1);color:white';
+      expect(style.color).toEqual('white');
+
+      // url
+      node.attributes.style =
+        'background-image: url("http://example.com/img.png")';
+      expect(node.style.backgroundImage).toEqual(
+        'url(http://example.com/img.png)',
+      );
+
+      // comment
+      node.attributes.style = 'top: 0; /* comment */ bottom: 42rem;';
+      expect(node.style.top).toEqual('0px');
+      expect(node.style.bottom).toEqual('42rem');
+
+      // incomplete
+      node.attributes.style = 'overflow:';
+      expect(node.style.overflow).toEqual('');
+    });
+
     it('style element', () => {
       expect(rrdom.getElementsByTagName('style').length).not.toEqual(0);
       expect(rrdom.getElementsByTagName('style')[0].tagName).toEqual('STYLE');
