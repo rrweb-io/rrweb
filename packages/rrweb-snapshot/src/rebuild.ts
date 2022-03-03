@@ -228,25 +228,23 @@ function buildNode(
         } else {
           // handle internal attributes
           if (tagName === 'canvas' && name === 'rr_dataURL') {
-            const ctx = (node as HTMLCanvasElement).getContext('2d');
-            // If node is a RRCanvasElement, keep 'rr_dataURL' until the diff stage.
-            if (!ctx) {
-              node.setAttribute(name, value);
-            } else {
-              const image = document.createElement('img');
-              image.src = value;
-              image.onload = () =>
+            const image = document.createElement('img');
+            image.src = value;
+            image.onload = () => {
+              const ctx = (node as HTMLCanvasElement).getContext('2d');
+              if (ctx) {
                 ctx.drawImage(image, 0, 0, image.width, image.height);
-            }
+              }
+            };
           } else if (tagName === 'img' && name === 'rr_dataURL') {
             const image = node as HTMLImageElement;
-            if (!image.getAttribute('src')?.startsWith('data:')) {
+            if (!image.currentSrc.startsWith('data:')) {
               // Backup original img src. It may not have been set yet.
               image.setAttribute(
                 'rrweb-original-src',
                 n.attributes.src as string,
               );
-              image.setAttribute('src', value);
+              image.src = value;
             }
           }
 
