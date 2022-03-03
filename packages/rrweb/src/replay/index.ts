@@ -108,6 +108,9 @@ export class Replayer {
 
   public config: playerConfig;
 
+  public usingVirtualDom = false;
+  public virtualDom: RRDocument = new RRDocument();
+
   private mouse: HTMLDivElement;
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
@@ -132,8 +135,6 @@ export class Replayer {
 
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
-  private usingRRDom = false;
-  private rrdom: RRDocument = new RRDocument();
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -168,30 +169,34 @@ export class Replayer {
     this.setupDom();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
-      if (this.usingRRDom) {
-        diff((this.iframe.contentDocument! as unknown) as INode, this.rrdom, {
-          mirror: this.mirror,
-          applyCanvas: (
-            canvasEvent: incrementalSnapshotEvent & {
-              timestamp: number;
-              delay?: number | undefined;
+      if (this.usingVirtualDom) {
+        diff(
+          (this.iframe.contentDocument! as unknown) as INode,
+          this.virtualDom,
+          {
+            mirror: this.mirror,
+            applyCanvas: (
+              canvasEvent: incrementalSnapshotEvent & {
+                timestamp: number;
+                delay?: number | undefined;
+              },
+              canvasMutationData: canvasMutationData,
+              target: HTMLCanvasElement,
+            ) => {
+              canvasMutation({
+                event: canvasEvent,
+                mutation: canvasMutationData,
+                target,
+                imageMap: this.imageMap,
+                errorHandler: this.warnCanvasMutationFailed.bind(this),
+              });
             },
-            canvasMutationData: canvasMutationData,
-            target: HTMLCanvasElement,
-          ) => {
-            canvasMutation({
-              event: canvasEvent,
-              mutation: canvasMutationData,
-              target,
-              imageMap: this.imageMap,
-              errorHandler: this.warnCanvasMutationFailed.bind(this),
-            });
+            applyInput: this.applyInput.bind(this),
+            applyScroll: this.applyScroll.bind(this),
           },
-          applyInput: this.applyInput.bind(this),
-          applyScroll: this.applyScroll.bind(this),
-        });
-        this.rrdom.destroyTree();
-        this.usingRRDom = false;
+        );
+        this.virtualDom.destroyTree();
+        this.usingVirtualDom = false;
       }
 
       if (this.mousePos) {
@@ -688,14 +693,14 @@ export class Replayer {
         'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',
       );
     }
-    if (this.usingRRDom) {
-      const styleEl = this.rrdom.createElement('style') as RRStyleElement;
+    if (this.usingVirtualDom) {
+      const styleEl = this.virtualDom.createElement('style') as RRStyleElement;
       styleEl.__sn = {
         type: NodeType.Element,
         tagName: 'style',
         childNodes: [],
         attributes: {},
-        id: this.rrdom.notSerializedId,
+        id: this.virtualDom.notSerializedId,
       };
       (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
@@ -728,8 +733,8 @@ export class Replayer {
     const collected: AppendedIframe[] = [];
     buildNodeWithSN(mutation.node, {
       doc: (iframeEl.contentDocument! as unknown) as Document,
-      map: this.usingRRDom
-        ? ((this.rrdom.mirror.map as unknown) as idNodeMap)
+      map: this.usingVirtualDom
+        ? ((this.virtualDom.mirror.map as unknown) as idNodeMap)
         : this.mirror.map,
       hackCss: true,
       skipChild: false,
@@ -1037,15 +1042,15 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        if (this.usingRRDom) {
-          const target = this.rrdom.mirror.getNode(d.id) as RRElement;
+        if (this.usingVirtualDom) {
+          const target = this.virtualDom.mirror.getNode(d.id) as RRElement;
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
           target.scrollData = d;
           break;
         }
-        // Use isSync rather than this.usingRRDom because not every fast-forward process uses virtual dom optimization.
+        // Use isSync rather than this.usingVirtualDom because not every fast-forward process uses virtual dom optimization.
         this.applyScroll(d, isSync);
         break;
       }
@@ -1065,8 +1070,8 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        if (this.usingRRDom) {
-          const target = this.rrdom.mirror.getNode(d.id) as RRElement;
+        if (this.usingVirtualDom) {
+          const target = this.virtualDom.mirror.getNode(d.id) as RRElement;
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
@@ -1077,8 +1082,8 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MediaInteraction: {
-        const target = this.usingRRDom
-          ? this.rrdom.mirror.getNode(d.id)
+        const target = this.usingVirtualDom
+          ? this.virtualDom.mirror.getNode(d.id)
           : this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
@@ -1114,8 +1119,8 @@ export class Replayer {
         break;
       }
       case IncrementalSource.StyleSheetRule: {
-        if (this.usingRRDom) {
-          const target = this.rrdom.mirror.getNode(d.id) as RRStyleElement;
+        if (this.usingVirtualDom) {
+          const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
@@ -1186,8 +1191,8 @@ export class Replayer {
         break;
       }
       case IncrementalSource.StyleDeclaration: {
-        if (this.usingRRDom) {
-          const target = this.rrdom.mirror.getNode(d.id) as RRStyleElement;
+        if (this.usingVirtualDom) {
+          const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
@@ -1234,8 +1239,10 @@ export class Replayer {
         if (!this.config.UNSAFE_replayCanvas) {
           return;
         }
-        if (this.usingRRDom) {
-          const target = this.rrdom.mirror.getNode(d.id) as RRCanvasElement;
+        if (this.usingVirtualDom) {
+          const target = this.virtualDom.mirror.getNode(
+            d.id,
+          ) as RRCanvasElement;
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
@@ -1275,12 +1282,16 @@ export class Replayer {
   }
 
   private applyMutation(d: mutationData, useVirtualParent: boolean) {
-    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a rrdom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
-    if (!this.usingRRDom && useVirtualParent) {
-      this.usingRRDom = true;
-      buildFromDom(this.iframe.contentDocument!, this.rrdom, this.rrdom.mirror);
+    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
+    if (!this.usingVirtualDom && useVirtualParent) {
+      this.usingVirtualDom = true;
+      buildFromDom(
+        this.iframe.contentDocument!,
+        this.virtualDom,
+        this.virtualDom.mirror,
+      );
     }
-    const mirror = useVirtualParent ? this.rrdom.mirror : this.mirror;
+    const mirror = useVirtualParent ? this.virtualDom.mirror : this.mirror;
     d.removes.forEach((mutation) => {
       let target = mirror.getNode(mutation.id);
       if (!target) {
@@ -1380,7 +1391,7 @@ export class Replayer {
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
         : useVirtualParent
-        ? this.rrdom
+        ? this.virtualDom
         : this.iframe.contentDocument;
       if (isIframeINode(parent) || isRRIFrameElement(parent)) {
         this.attachDocumentToIframe(mutation, parent);
