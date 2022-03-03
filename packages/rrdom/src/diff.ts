@@ -222,6 +222,9 @@ function diffProps(oldTree: HTMLElement, newTree: IRRElement) {
 
   for (const { name } of Array.from(oldAttributes))
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
+
+  newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
+  newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }
 
 function diffChildren(

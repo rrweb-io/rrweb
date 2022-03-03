@@ -238,7 +238,7 @@ describe('diff algorithm for rrdom', () => {
   });
 
   describe('diff properties', () => {
-    it('add new properties', () => {
+    it('can add new properties', () => {
       const tagName = 'DIV';
       const node = (document.createElement(tagName) as unknown) as INode;
       node.__sn = Object.assign({}, elementSn, { tagName });
@@ -251,7 +251,7 @@ describe('diff algorithm for rrdom', () => {
       expect(((node as Node) as HTMLElement).className).toBe('node');
     });
 
-    it('update exist properties', () => {
+    it('can update exist properties', () => {
       const tagName = 'DIV';
       const node = (document.createElement(tagName) as unknown) as INode;
       node.__sn = Object.assign({}, elementSn, { tagName });
@@ -276,7 +276,7 @@ describe('diff algorithm for rrdom', () => {
       expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(null);
     });
 
-    it('delete old properties', () => {
+    it('can delete old properties', () => {
       const tagName = 'DIV';
       const node = (document.createElement(tagName) as unknown) as INode;
       node.__sn = Object.assign({}, elementSn, { tagName });
@@ -297,6 +297,22 @@ describe('diff algorithm for rrdom', () => {
       expect(((node as Node) as HTMLElement).id).toBe('');
       expect(((node as Node) as HTMLElement).className).toBe('');
       expect(((node as Node) as HTMLElement).getAttribute('src')).toBe('link');
+    });
+
+    it('can diff scroll positions', () => {
+      const tagName = 'DIV';
+      const node = (document.createElement(tagName) as unknown) as INode;
+      node.__sn = Object.assign({}, elementSn, { tagName });
+      expect(((node as Node) as HTMLElement).scrollLeft).toEqual(0);
+      expect(((node as Node) as HTMLElement).scrollTop).toEqual(0);
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement(tagName);
+      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      rrNode.scrollLeft = 100;
+      rrNode.scrollTop = 200;
+      diff(node, rrNode, replayer);
+      expect(((node as Node) as HTMLElement).scrollLeft).toEqual(100);
+      expect(((node as Node) as HTMLElement).scrollTop).toEqual(200);
     });
 
     it('can diff properties for SVG elements', () => {
