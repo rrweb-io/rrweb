@@ -142,13 +142,13 @@ export class RRDocument
         element = new RRIFrameElement(upperTagName);
         break;
       case 'IMG':
-        element = new RRImageElement('IMG');
+        element = new RRImageElement(upperTagName);
         break;
       case 'CANVAS':
-        element = new RRCanvasElement('CANVAS');
+        element = new RRCanvasElement(upperTagName);
         break;
       case 'STYLE':
-        element = new RRStyleElement('STYLE');
+        element = new RRStyleElement(upperTagName);
         break;
       default:
         element = new RRElement(upperTagName);
@@ -158,10 +158,7 @@ export class RRDocument
     return element;
   }
 
-  createElementNS(
-    _namespaceURI: 'http://www.w3.org/2000/svg',
-    qualifiedName: string,
-  ) {
+  createElementNS(_namespaceURI: string, qualifiedName: string) {
     return this.createElement(qualifiedName as keyof HTMLElementTagNameMap);
   }
 
@@ -228,10 +225,6 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
     this.attributes[name.toLowerCase()] = attribute;
   }
 
-  hasAttribute(name: string) {
-    return name.toLowerCase() in this.attributes;
-  }
-
   removeAttribute(name: string) {
     delete this.attributes[name.toLowerCase()];
   }
@@ -253,13 +246,18 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
   }
 
   querySelectorAll(selectors: string): RRNode[] {
+    const result: RRElement[] = [];
     if (this.ownerDocument !== null) {
-      return ((this.ownerDocument as RRDocument).nwsapi.select(
+      ((this.ownerDocument as RRDocument).nwsapi.select(
         selectors,
         (this as unknown) as Element,
+        (element) => {
+          if (((element as unknown) as RRElement) !== this)
+            result.push((element as unknown) as RRElement);
+        },
       ) as unknown) as RRNode[];
     }
-    return [];
+    return result;
   }
 
   getElementById(elementId: string): RRElement | null {

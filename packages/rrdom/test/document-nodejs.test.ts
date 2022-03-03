@@ -3,7 +3,19 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { RRDocument, RRElement, RRStyleElement } from '../src/document-nodejs';
+import { NodeType } from 'rrweb-snapshot';
+import {
+  RRCanvasElement,
+  RRCDATASection,
+  RRComment,
+  RRDocument,
+  RRElement,
+  RRIFrameElement,
+  RRImageElement,
+  RRMediaElement,
+  RRStyleElement,
+  RRText,
+} from '../src/document-nodejs';
 import { buildFromDom } from '../src/virtual-dom';
 
 describe('RRDocument for nodejs environment', () => {
@@ -16,37 +28,75 @@ describe('RRDocument for nodejs environment', () => {
       buildFromDom(document, rrdom);
     });
 
-    it('get className', () => {
-      expect(rrdom.getElementsByTagName('DIV')[0].className).toEqual(
-        'blocks blocks1',
+    it('can create different type of RRNodes', () => {
+      const document = rrdom.createDocument('', '');
+      expect(document).toBeInstanceOf(RRDocument);
+      const audio = rrdom.createElement('audio');
+      expect(audio).toBeInstanceOf(RRMediaElement);
+      const video = rrdom.createElement('video');
+      expect(video).toBeInstanceOf(RRMediaElement);
+      const iframe = rrdom.createElement('iframe');
+      expect(iframe).toBeInstanceOf(RRIFrameElement);
+      const image = rrdom.createElement('img');
+      expect(image).toBeInstanceOf(RRImageElement);
+      const canvas = rrdom.createElement('canvas');
+      expect(canvas).toBeInstanceOf(RRCanvasElement);
+      const style = rrdom.createElement('style');
+      expect(style).toBeInstanceOf(RRStyleElement);
+      const elementNS = rrdom.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'div',
       );
-      expect(rrdom.getElementsByTagName('DIV')[1].className).toEqual(
-        'blocks blocks1 :hover',
-      );
+      expect(elementNS).toBeInstanceOf(RRElement);
+      expect(elementNS.tagName).toEqual('DIV');
+      const text = rrdom.createTextNode('text');
+      expect(text).toBeInstanceOf(RRText);
+      expect(text.textContent).toEqual('text');
+      const comment = rrdom.createComment('comment');
+      expect(comment).toBeInstanceOf(RRComment);
+      expect(comment.textContent).toEqual('comment');
+      const CDATA = rrdom.createCDATASection('data');
+      expect(CDATA).toBeInstanceOf(RRCDATASection);
+      expect(CDATA.data).toEqual('data');
     });
 
-    it('get id', () => {
-      expect(rrdom.getElementsByTagName('DIV')[0].id).toEqual('block1');
-      expect(rrdom.getElementsByTagName('DIV')[1].id).toEqual('block2');
-      expect(rrdom.getElementsByTagName('DIV')[2].id).toEqual('block3');
+    it('can get head element', () => {
+      expect(rrdom.head).toBeDefined();
+      expect(rrdom.head!.tagName).toBe('HEAD');
+      expect(rrdom.head!.parentElement).toBe(rrdom.documentElement);
     });
 
-    it('get attribute name', () => {
-      expect(
-        rrdom.getElementsByTagName('DIV')[0].getAttribute('class'),
-      ).toEqual('blocks blocks1');
-      expect(
-        rrdom.getElementsByTagName('dIv')[0].getAttribute('cLaSs'),
-      ).toEqual('blocks blocks1');
-      expect(rrdom.getElementsByTagName('DIV')[0].getAttribute('id')).toEqual(
-        'block1',
+    it('can get body element', () => {
+      expect(rrdom.body).toBeDefined();
+      expect(rrdom.body!.tagName).toBe('BODY');
+      expect(rrdom.body!.parentElement).toBe(rrdom.documentElement);
+    });
+
+    it('can get implementation', () => {
+      expect(rrdom.implementation).toBeDefined();
+      expect(rrdom.implementation).toBe(rrdom);
+    });
+
+    it('can insert elements', () => {
+      expect(() =>
+        rrdom.insertBefore(rrdom.createDocumentType('', '', ''), null),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRDoctype on RRDocument allowed."`,
       );
-      expect(rrdom.getElementsByTagName('div')[0].getAttribute('iD')).toEqual(
-        'block1',
+      expect(() =>
+        rrdom.insertBefore(rrdom.createElement('div'), null),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRElement on RRDocument allowed."`,
       );
-      expect(
-        rrdom.getElementsByTagName('p')[0].getAttribute('class'),
-      ).toBeNull();
+      const node = new RRDocument();
+      const doctype = rrdom.createDocumentType('', '', '');
+      const documentElement = node.createElement('html');
+      node.insertBefore(documentElement, null);
+      node.insertBefore(doctype, documentElement);
+      expect(node.childNodes.length).toEqual(2);
+      expect(node.childNodes[0]).toBe(doctype);
+      expect(node.childNodes[1]).toBe(documentElement);
+      expect(node.documentElement).toBe(documentElement);
     });
 
     it('get firstElementChild', () => {
@@ -59,31 +109,6 @@ describe('RRDocument for nodejs environment', () => {
       expect(div1!.firstElementChild!.id).toEqual('block2');
       const div2 = div1!.firstElementChild;
       expect(div2!.firstElementChild!.id).toEqual('block3');
-    });
-
-    it('get nextElementSibling', () => {
-      expect(rrdom.documentElement!.firstElementChild).not.toBeNull();
-      expect(rrdom.documentElement!.firstElementChild!.tagName).toEqual('HEAD');
-      expect(
-        rrdom.documentElement!.firstElementChild!.nextElementSibling,
-      ).not.toBeNull();
-      expect(
-        rrdom.documentElement!.firstElementChild!.nextElementSibling!.tagName,
-      ).toEqual('BODY');
-      expect(
-        rrdom.documentElement!.firstElementChild!.nextElementSibling!
-          .nextElementSibling,
-      ).toBeNull();
-
-      expect(rrdom.getElementsByTagName('h1').length).toEqual(2);
-      const element1 = rrdom.getElementsByTagName('h1')[0];
-      const element2 = rrdom.getElementsByTagName('h1')[1];
-      expect(element1.tagName).toEqual('H1');
-      expect(element2.tagName).toEqual('H1');
-      expect(element1.nextElementSibling).toEqual(element2);
-      expect(element2.nextElementSibling).not.toBeNull();
-      expect(element2.nextElementSibling!.id).toEqual('block1');
-      expect(element2.nextElementSibling!.nextElementSibling).toBeNull();
     });
 
     it('getElementsByTagName', () => {
@@ -102,6 +127,8 @@ describe('RRDocument for nodejs environment', () => {
         'BUTTON',
         'IMG',
         'CANVAS',
+        'FORM',
+        'INPUT',
       ]) {
         const expectedResult = document.getElementsByTagName(tagname).length;
         expect(rrdom.getElementsByTagName(tagname).length).toEqual(
@@ -114,6 +141,8 @@ describe('RRDocument for nodejs environment', () => {
           expect(node.tagName).toEqual(tagname);
         }
       }
+      const node = new RRDocument();
+      expect(node.getElementsByTagName('h2').length).toEqual(0);
     });
 
     it('getElementsByClassName', () => {
@@ -136,6 +165,8 @@ describe('RRDocument for nodejs environment', () => {
           result: document.getElementsByClassName(className).length,
         });
       }
+      const node = new RRDocument();
+      expect(node.getElementsByClassName('block').length).toEqual(0);
     });
 
     it('getElementById', () => {
@@ -145,6 +176,8 @@ describe('RRDocument for nodejs environment', () => {
       }
       for (let elementId of ['block', 'blocks', 'blocks1'])
         expect(rrdom.getElementById(elementId)).toBeNull();
+      const node = new RRDocument();
+      expect(node.getElementById('id')).toBeNull();
     });
 
     it('querySelectorAll querying tag name', () => {
@@ -207,6 +240,82 @@ describe('RRDocument for nodejs environment', () => {
 
       expect(rrdom.querySelectorAll('.blocks#block1').length).toEqual(1);
       expect(rrdom.querySelectorAll('.blocks#block3').length).toEqual(0);
+    });
+  });
+
+  describe('RRElement API', () => {
+    let rrdom: RRDocument;
+    beforeAll(() => {
+      // initialize rrdom
+      document.write(getHtml('main.html'));
+      rrdom = new RRDocument();
+      buildFromDom(document, rrdom);
+    });
+
+    it('get attribute name', () => {
+      expect(
+        rrdom.getElementsByTagName('DIV')[0].getAttribute('class'),
+      ).toEqual('blocks blocks1');
+      expect(
+        rrdom.getElementsByTagName('dIv')[0].getAttribute('cLaSs'),
+      ).toEqual('blocks blocks1');
+      expect(rrdom.getElementsByTagName('DIV')[0].getAttribute('id')).toEqual(
+        'block1',
+      );
+      expect(rrdom.getElementsByTagName('div')[0].getAttribute('iD')).toEqual(
+        'block1',
+      );
+      expect(
+        rrdom.getElementsByTagName('p')[0].getAttribute('class'),
+      ).toBeNull();
+    });
+
+    it('can set attribute', () => {
+      const node = rrdom.createElement('div');
+      expect(node.getAttribute('class')).toEqual(null);
+      node.setAttribute('class', 'className');
+      expect(node.getAttribute('cLass')).toEqual('className');
+      expect(node.getAttribute('iD')).toEqual(null);
+      node.setAttribute('iD', 'id');
+      expect(node.getAttribute('id')).toEqual('id');
+    });
+
+    it('can remove attribute', () => {
+      const node = rrdom.createElement('div');
+      node.setAttribute('Class', 'className');
+      expect(node.getAttribute('class')).toEqual('className');
+      node.removeAttribute('clAss');
+      expect(node.getAttribute('class')).toEqual(null);
+      node.removeAttribute('Id');
+      expect(node.getAttribute('id')).toEqual(null);
+    });
+
+    it('get nextElementSibling', () => {
+      expect(rrdom.documentElement!.firstElementChild).not.toBeNull();
+      expect(rrdom.documentElement!.firstElementChild!.tagName).toEqual('HEAD');
+      expect(
+        rrdom.documentElement!.firstElementChild!.nextElementSibling,
+      ).not.toBeNull();
+      expect(
+        rrdom.documentElement!.firstElementChild!.nextElementSibling!.tagName,
+      ).toEqual('BODY');
+      expect(
+        rrdom.documentElement!.firstElementChild!.nextElementSibling!
+          .nextElementSibling,
+      ).toBeNull();
+
+      expect(rrdom.getElementsByTagName('h1').length).toEqual(2);
+      const element1 = rrdom.getElementsByTagName('h1')[0];
+      const element2 = rrdom.getElementsByTagName('h1')[1];
+      expect(element1.tagName).toEqual('H1');
+      expect(element2.tagName).toEqual('H1');
+      expect(element1.nextElementSibling).toEqual(element2);
+      expect(element2.nextElementSibling).not.toBeNull();
+      expect(element2.nextElementSibling!.id).toEqual('block1');
+      expect(element2.nextElementSibling!.nextElementSibling).toBeNull();
+
+      const node = rrdom.createElement('div');
+      expect(node.nextElementSibling).toBeNull();
     });
 
     it('can get CSS style declaration', () => {
@@ -317,6 +426,55 @@ describe('RRDocument for nodejs environment', () => {
       expect(node.style.overflow).toEqual('');
     });
 
+    it('querySelectorAll', () => {
+      const element = rrdom.getElementById('block2')!;
+      expect(element).toBeDefined();
+      expect(element.id).toEqual('block2');
+
+      const result = element.querySelectorAll('div');
+      expect(result.length).toBe(1);
+      expect((result[0]! as RRElement).tagName).toEqual('DIV');
+      expect(element.querySelectorAll('.blocks').length).toEqual(0);
+
+      const element2 = rrdom.getElementById('block1')!;
+      expect(element2).toBeDefined();
+      expect(element2.id).toEqual('block1');
+      expect(element2.querySelectorAll('div').length).toEqual(2);
+      expect(element2.querySelectorAll('.blocks').length).toEqual(1);
+    });
+
+    it('can attach shadow dom', () => {
+      const node = rrdom.createElement('div');
+      expect(node.shadowRoot).toBeNull();
+      node.attachShadow({ mode: 'open' });
+      expect(node.shadowRoot).not.toBeNull();
+      expect(node.shadowRoot!.RRNodeType).toBe(NodeType.Element);
+      expect(node.shadowRoot!.tagName).toBe('SHADOWROOT');
+      expect(node.parentNode).toBeNull();
+    });
+
+    it('can insert new child before an existing child', () => {
+      const node = rrdom.createElement('div');
+      const child1 = rrdom.createElement('h1');
+      const child2 = rrdom.createElement('h2');
+      expect(() =>
+        node.insertBefore(node, child1),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
+      );
+      expect(node.insertBefore(child1, null)).toBe(child1);
+      expect(node.childNodes[0]).toBe(child1);
+      expect(child1.parentNode).toBe(node);
+      expect(child1.parentElement).toBe(node);
+
+      expect(node.insertBefore(child2, child1)).toBe(child2);
+      expect(node.childNodes.length).toBe(2);
+      expect(node.childNodes[0]).toBe(child2);
+      expect(node.childNodes[1]).toBe(child1);
+      expect(child2.parentNode).toBe(node);
+      expect(child2.parentElement).toBe(node);
+    });
+
     it('style element', () => {
       expect(rrdom.getElementsByTagName('style').length).not.toEqual(0);
       expect(rrdom.getElementsByTagName('style')[0].tagName).toEqual('STYLE');
@@ -345,6 +503,36 @@ describe('RRDocument for nodejs environment', () => {
       styleElement.sheet!.deleteRule(5);
       expect(rules[5]).toBeUndefined();
       expect(rules[4].cssText).toEqual(`@import url(main.css);`);
+    });
+
+    it('can create an RRIframeElement', () => {
+      const iframe = rrdom.createElement('iframe');
+      expect(iframe.tagName).toEqual('IFRAME');
+      expect(iframe.width).toEqual('');
+      expect(iframe.height).toEqual('');
+      expect(iframe.contentDocument).toBeDefined();
+      expect(iframe.contentDocument!.childNodes.length).toBe(1);
+      expect(iframe.contentDocument!.documentElement).toBeDefined();
+      expect(iframe.contentDocument!.head).toBeDefined();
+      expect(iframe.contentDocument!.body).toBeDefined();
+      expect(iframe.contentWindow).toBeDefined();
+      expect(iframe.contentWindow!.scrollTop).toEqual(0);
+      expect(iframe.contentWindow!.scrollLeft).toEqual(0);
+      expect(iframe.contentWindow!.scrollTo).toBeDefined();
+
+      // empty parameter and did nothing
+      iframe.contentWindow!.scrollTo();
+      expect(iframe.contentWindow!.scrollTop).toEqual(0);
+      expect(iframe.contentWindow!.scrollLeft).toEqual(0);
+
+      iframe.contentWindow!.scrollTo({ top: 10, left: 20 });
+      expect(iframe.contentWindow!.scrollTop).toEqual(10);
+      expect(iframe.contentWindow!.scrollLeft).toEqual(20);
+    });
+
+    it('should have a RRCanvasElement', () => {
+      const canvas = rrdom.createElement('canvas');
+      expect(canvas.getContext()).toBeNull();
     });
   });
 });
