@@ -3,14 +3,11 @@
  */
 import { NodeType } from 'rrweb-snapshot';
 import {
-  BaseRRCDATASectionImpl,
-  BaseRRCommentImpl,
   BaseRRDocumentImpl,
   BaseRRDocumentTypeImpl,
   BaseRRElementImpl,
   BaseRRMediaElementImpl,
   BaseRRNode,
-  BaseRRTextImpl,
   IRRDocumentType,
 } from '../src/document';
 
@@ -123,6 +120,8 @@ describe('Basic RRDocument implementation', () => {
   describe('Basic RRDocument implementation', () => {
     it('should have basic properties', () => {
       const node = new RRDocument();
+      expect(node.toString()).toEqual(' RRDocument');
+      
       node.__sn = {
         type: NodeType.Document,
         id: 1,
@@ -486,6 +485,8 @@ describe('Basic RRDocument implementation', () => {
       expect(node.className).toEqual('c1');
       classList.add('c2');
       expect(node.className).toEqual('c1 c2');
+      classList.add('c2');
+      expect(node.className).toEqual('c1 c2');
     });
 
     it('classList can remove class name', () => {
@@ -575,6 +576,8 @@ describe('Basic RRDocument implementation', () => {
       expect(node.attributes.style).toEqual('width:78%; background-color:red;');
       expect(style.removeProperty('backgroundColor')).toEqual('red');
       expect(node.attributes.style).toEqual('width:78%;');
+      // remove a non-exist property
+      expect(style.removeProperty('margin')).toEqual('');
     });
 
     it('can parse more inline styles correctly', () => {

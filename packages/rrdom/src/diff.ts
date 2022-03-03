@@ -287,7 +287,7 @@ function diffChildren(
         if (
           parentNode.__sn.type === NodeType.Document &&
           newNode.__sn.type === NodeType.Element &&
-          newNode.__sn.tagName.toUpperCase() === 'HTML'
+          ((parentNode as Node) as Document).documentElement
         ) {
           parentNode.removeChild(
             ((parentNode as Node) as Document).documentElement,

@@ -16,7 +16,7 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
       -13 LINK rel=\\"stylesheet\\" href=\\"somelink\\" 
       -14 RRText text=\\"\\\\n    \\"
       -15 STYLE 
-        -16 RRText text=\\"\\\\n      h1 {\\\\n        color: 'black';\\\\n      }\\\\n      .blocks {\\\\n        padding: 0;\\\\n      }\\\\n      .blocks1 {\\\\n        margin: 0;\\\\n      }\\\\n      #block1 {\\\\n        width: 100px;\\\\n        height: 200px;\\\\n      }\\\\n      @import url(\\\\\\"main.css\\\\\\");\\\\n    \\"
+        -16 RRText text=\\"\\\\n      h1 {\\\\n        color: 'black';\\\\n      }\\\\n      .blocks {\\\\n        padding: 0;\\\\n      }\\\\n      .blocks1 {\\\\n        margin: 0;\\\\n      }\\\\n      #block1 {\\\\n        width: 100px;\\\\n        height: 200px;\\\\n      }\\\\n      @import url('main.css');\\\\n    \\"
       -17 RRText text=\\"\\\\n  \\"
     -18 RRText text=\\"\\\\n  \\"
     -19 BODY 
@@ -42,8 +42,15 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
           -39 RRText text=\\"\\\\n        Text 2\\\\n      \\"
         -40 RRText text=\\"\\\\n      \\"
         -41 IMG src=\\"somelink\\" alt=\\"This is an image\\" 
-        -42 RRText text=\\"\\\\n    \\"
-      -43 RRText text=\\"\\\\n  \\\\n\\\\n\\"
+        -42 RRText text=\\"\\\\n      \\"
+        -43 RRComment text=\\" This is a line of comment \\"
+        -44 RRText text=\\"\\\\n      \\"
+        -45 FORM 
+          -46 RRText text=\\"\\\\n        \\"
+          -47 INPUT type=\\"text\\" id=\\"input1\\" 
+          -48 RRText text=\\"\\\\n      \\"
+        -49 RRText text=\\"\\\\n    \\"
+      -50 RRText text=\\"\\\\n  \\\\n\\\\n\\"
 "
 `;
 

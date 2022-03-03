@@ -4,6 +4,7 @@
 import {
   RRDocument,
   RRElement,
+  RRMediaElement,
   StyleRuleType,
   VirtualStyleRules,
 } from '../src/virtual-dom';
@@ -15,6 +16,12 @@ import {
 } from '../src/diff';
 import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot/';
 import { IRRNode } from '../src/document';
+import {
+  canvasMutationData,
+  EventType,
+  IncrementalSource,
+  Mirror,
+} from 'rrweb/src/types';
 
 const elementSn = {
   type: NodeType.Element,
@@ -73,7 +80,7 @@ function shuffle(list: number[]) {
 
 describe('diff algorithm for rrdom', () => {
   // An adhoc mirror just for unit tests.
-  const mirror = {
+  const mirror: Mirror = {
     map: {},
     getId() {
       return 0;
@@ -102,10 +109,17 @@ describe('diff algorithm for rrdom', () => {
       document.open();
       expect(document.childNodes.length).toEqual(0);
       const rrNode = new RRDocument();
-      rrNode;
       const htmlContent =
         '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">';
       rrNode.write(htmlContent);
+      // add scroll data for the document
+      rrNode.scrollData = {
+        source: IncrementalSource.Scroll,
+        id: 0,
+        x: 0,
+        y: 0,
+      };
+      replayer.applyScroll = jest.fn();
       diff((document as unknown) as INode, rrNode, replayer);
       expect(document.childNodes.length).toEqual(1);
       expect(document.childNodes[0]).toBeInstanceOf(DocumentType);
@@ -114,17 +128,112 @@ describe('diff algorithm for rrdom', () => {
         '-//W3C//DTD XHTML 1.0 Transitional//EN',
       );
       expect(document.doctype?.systemId).toEqual('');
+      expect(replayer.applyScroll).toBeCalledTimes(1);
+    });
+
+    it('should apply input data on an input element', () => {
+      const element = (document.createElement('input') as unknown) as INode;
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement('input');
+      rrNode.inputData = {
+        source: IncrementalSource.Input,
+        text: '',
+        id: 0,
+        isChecked: false,
+      };
+      replayer.applyInput = jest.fn();
+      diff(element, rrNode, replayer);
+      expect(replayer.applyInput).toHaveBeenCalledTimes(1);
     });
 
     it('should diff a Text node', () => {
       const node = (document.createTextNode('old text') as unknown) as INode;
       expect(node.textContent).toEqual('old text');
-      node.__sn = Object.assign({}, elementSn);
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createTextNode('new text');
-      rrNode.__sn = Object.assign({}, elementSn);
       diff(node, rrNode, replayer);
       expect(node.textContent).toEqual('new text');
+    });
+
+    it('should diff a style element', () => {
+      document.write('<html></html>');
+      const element = document.createElement('style');
+      document.documentElement.appendChild(element);
+      const rrDocument = new RRDocument();
+      const rrStyle = rrDocument.createElement('style');
+      rrStyle.rules = [
+        { cssText: 'div{color: black;}', type: StyleRuleType.Insert, index: 0 },
+      ];
+      diff((element as unknown) as INode, rrStyle, replayer);
+      expect(element.sheet!.cssRules.length).toEqual(1);
+      expect(element.sheet!.cssRules[0].cssText).toEqual('div {color: black;}');
+    });
+
+    it('should diff a canvas element', () => {
+      const element = document.createElement('canvas');
+      const rrDocument = new RRDocument();
+      const rrCanvas = rrDocument.createElement('canvas');
+      const canvasMutation = {
+        source: IncrementalSource.CanvasMutation,
+        id: 0,
+        type: 0,
+        commands: [{ property: 'fillStyle', args: [{}], setter: true }],
+      } as canvasMutationData;
+      const MutationNumber = 100;
+      Array.from(Array(MutationNumber)).forEach(() =>
+        rrCanvas.canvasMutation.push({
+          event: {
+            timestamp: Date.now(),
+            type: EventType.IncrementalSnapshot,
+            data: canvasMutation,
+          },
+          mutation: canvasMutation,
+        }),
+      );
+      replayer.applyCanvas = jest.fn();
+      diff((element as unknown) as INode, rrCanvas, replayer);
+      expect(replayer.applyCanvas).toHaveBeenCalledTimes(MutationNumber);
+    });
+
+    it('should diff a media element', async () => {
+      // mock the HTMLMediaElement of jsdom
+      let paused = true;
+      window.HTMLMediaElement.prototype.play = async () => {
+        paused = false;
+      };
+      window.HTMLMediaElement.prototype.pause = async () => {
+        paused = true;
+      };
+      Object.defineProperty(HTMLMediaElement.prototype, 'paused', {
+        get() {
+          return paused;
+        },
+      });
+
+      for (const tagName of ['AUDIO', 'VIDEO']) {
+        const element = document.createElement(tagName) as HTMLMediaElement;
+        expect(element.volume).toEqual(1);
+        expect(element.currentTime).toEqual(0);
+        expect(element.muted).toEqual(false);
+        expect(element.paused).toEqual(true);
+
+        const rrDocument = new RRDocument();
+        const rrMedia = rrDocument.createElement(tagName) as RRMediaElement;
+        rrMedia.volume = 0.5;
+        rrMedia.currentTime = 100;
+        rrMedia.muted = true;
+        rrMedia.paused = false;
+
+        diff((element as unknown) as INode, rrMedia, replayer);
+        expect(element.volume).toEqual(0.5);
+        expect(element.currentTime).toEqual(100);
+        expect(element.muted).toEqual(true);
+        expect(element.paused).toEqual(false);
+
+        rrMedia.paused = true;
+        diff((element as unknown) as INode, rrMedia, replayer);
+        expect(element.paused).toEqual(true);
+      }
     });
   });
 
@@ -188,6 +297,51 @@ describe('diff algorithm for rrdom', () => {
       expect(((node as Node) as HTMLElement).id).toBe('');
       expect(((node as Node) as HTMLElement).className).toBe('');
       expect(((node as Node) as HTMLElement).getAttribute('src')).toBe('link');
+    });
+
+    it('can diff properties for SVG elements', () => {
+      const element = (document.createElement('svg') as unknown) as INode;
+      const rrDocument = new RRDocument();
+      const node = rrDocument.createElement('svg');
+      node.__sn = Object.assign({}, elementSn, { tagName: 'svg', isSVG: true });
+      const value = 'http://www.w3.org/2000/svg';
+      node.attributes.xmlns = value;
+
+      const setAttributeNS = jest.fn();
+      const originalFun = SVGElement.prototype.setAttributeNS;
+      HTMLElement.prototype.setAttributeNS = function () {
+        setAttributeNS(...arguments);
+        return originalFun.apply(this, arguments);
+      };
+
+      diff(element, node, replayer);
+      expect(((element as Node) as SVGElement).getAttribute('xmlns')).toBe(
+        value,
+      );
+      expect(setAttributeNS).toHaveBeenCalledWith(
+        'http://www.w3.org/2000/xmlns/',
+        'xmlns',
+        value,
+      );
+    });
+
+    it('can diff properties for canvas', async () => {
+      const element = (document.createElement('canvas') as unknown) as INode;
+      const rrDocument = new RRDocument();
+      const rrCanvas = rrDocument.createElement('canvas');
+      rrCanvas.__sn = Object.assign({}, elementSn, { tagName: 'canvas' });
+      rrCanvas.attributes['rr_dataURL'] = 'data:image/png;base64,';
+
+      // Patch the function to detect whether an img element is created.
+      const originalFn = document.createElement;
+      const createImageElement = jest.fn();
+      document.createElement = function () {
+        createImageElement(...arguments);
+        return originalFn.apply(this, arguments);
+      };
+
+      diff(element, rrCanvas, replayer);
+      expect(createImageElement).toHaveBeenCalledWith('img');
     });
   });
 
@@ -730,9 +884,48 @@ describe('diff algorithm for rrdom', () => {
       const rrNode = rrDocument.createElement(tagName);
       rrNode.__sn = Object.assign({}, elementSn, { tagName });
       rrNode.attachShadow({ mode: 'open' });
+      const child = rrDocument.createElement('div');
+      child.__sn = Object.assign({}, elementSn, { tagName, id: 1 });
+      rrNode.shadowRoot!.appendChild(child);
+      expect(rrNode.shadowRoot!.childNodes.length).toBe(1);
 
       diff(node, rrNode, replayer);
       expect(((node as Node) as HTMLElement).shadowRoot).not.toBeNull();
+      expect(
+        ((node as Node) as HTMLElement).shadowRoot!.childNodes.length,
+      ).toBe(1);
+      const childElement = ((node as Node) as HTMLElement).shadowRoot!
+        .childNodes[0] as HTMLElement;
+      expect(childElement.tagName).toEqual('DIV');
+    });
+  });
+
+  describe('diff iframe elements', () => {
+    it('should add an element to the contentDocument of an iframe element', () => {
+      document.write('<html></html>');
+      const node = document.createElement('iframe');
+      document.documentElement.appendChild(node);
+      expect(node.contentDocument).toBeDefined();
+
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement('iframe');
+      rrNode.contentDocument.__sn = {
+        type: NodeType.Document,
+        childNodes: [],
+        id: 1,
+      };
+      const childElement = rrNode.contentDocument.createElement('div');
+      childElement.__sn = Object.assign({}, elementSn, {
+        tagName: 'div',
+        id: 2,
+      });
+      rrNode.contentDocument.appendChild(childElement);
+
+      diff((node as unknown) as INode, rrNode, replayer);
+      expect(node.contentDocument!.childNodes.length).toBe(1);
+      const element = node.contentDocument!.childNodes[0] as HTMLElement;
+      expect(element.tagName).toBe('DIV');
+      expect(((element as unknown) as INode).__sn.id).toEqual(2);
     });
   });
 
@@ -763,6 +956,14 @@ describe('diff algorithm for rrdom', () => {
       expect(result).toBeInstanceOf(Comment);
       expect(result.__sn.id).toBe(0);
       expect(((result as Node) as Comment).textContent).toBe(textContent);
+
+      rrNode = rrDocument.createCDATASection('');
+      rrNode.__sn = { id: 0, type: NodeType.CDATA, textContent: '' };
+      expect(() =>
+        createOrGetNode(rrNode, mirror),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Cannot create CDATA sections in HTML documents"`,
+      );
     });
 
     it('create a DocumentType from RRDocumentType', () => {
@@ -782,6 +983,32 @@ describe('diff algorithm for rrdom', () => {
       expect(((result as Node) as DocumentType).name).toEqual('html');
       expect(((result as Node) as DocumentType).publicId).toEqual(publicId);
       expect(((result as Node) as DocumentType).systemId).toEqual('');
+    });
+
+    it('can get a node if it already exists', () => {
+      mirror.getNode = function (id) {
+        return this.map[id] || null;
+      };
+      const rrDocument = new RRDocument();
+      const textContent = 'Text Content';
+      const text = document.createTextNode(textContent);
+      ((text as unknown) as INode).__sn = {
+        id: 0,
+        type: NodeType.Text,
+        textContent: 'text of the existed node',
+      };
+      // Add the text node to the mirror to make it look like already existing.
+      mirror.map[0] = (text as unknown) as INode;
+      const rrNode: RRNode = rrDocument.createTextNode(textContent);
+      rrNode.__sn = { id: 0, type: NodeType.Text, textContent };
+      let result = createOrGetNode(rrNode, mirror);
+
+      expect(result).toBeInstanceOf(Text);
+      expect(result.__sn.id).toBe(0);
+      expect(((result as Node) as Text).textContent).toBe(textContent);
+      expect(result).toEqual(text);
+      // To make sure the existed text node is used.
+      expect(result.__sn).toEqual(((text as unknown) as INode).__sn);
     });
   });
 

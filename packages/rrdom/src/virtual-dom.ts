@@ -24,7 +24,7 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   public mirror: Mirror = {
     map: {},
     getId(n) {
-      return n.__sn.id >= 0 ? n.__sn.id : -1;
+      return n?.__sn?.id >= 0 ? n.__sn.id : -1;
     },
     getNode(id) {
       return this.map[id] || null;
