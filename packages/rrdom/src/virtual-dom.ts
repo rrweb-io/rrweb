@@ -163,13 +163,13 @@ export type RRComment = typeof RRComment;
 export const RRCDATASection = BaseRRCDATASectionImpl(RRNode);
 export type RRCDATASection = typeof RRCDATASection;
 
-type Mirror = {
+export type Mirror = {
   map: {
-    [key: number]: IRRNode;
+    [key: number]: RRNode;
   };
-  getId(n: IRRNode): number;
-  getNode(id: number): IRRNode | null;
-  removeNodeFromMap(n: IRRNode): void;
+  getId(n: RRNode): number;
+  getNode(id: number): RRNode | null;
+  removeNodeFromMap(n: RRNode): void;
   has(id: number): boolean;
   reset(): void;
 };
