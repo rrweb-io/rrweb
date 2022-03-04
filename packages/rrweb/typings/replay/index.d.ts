@@ -1,3 +1,4 @@
+import { RRDocument } from 'rrdom/es/virtual-dom';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import { eventWithTime, playerConfig, playerMetaData, Handler, Mirror } from '../types';
@@ -9,6 +10,8 @@ export declare class Replayer {
     speedService: ReturnType<typeof createSpeedService>;
     get timer(): Timer;
     config: playerConfig;
+    usingVirtualDom: boolean;
+    virtualDom: RRDocument;
     private mouse;
     private mouseTail;
     private tailPositions;
@@ -22,8 +25,6 @@ export declare class Replayer {
     private newDocumentQueue;
     private mousePos;
     private touchActive;
-    private usingRRDom;
-    private rrdom;
     constructor(events: Array<eventWithTime | string>, config?: Partial<playerConfig>);
     on(event: string, handler: Handler): this;
     off(event: string, handler: Handler): this;

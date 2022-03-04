@@ -1,6 +1,6 @@
 import type { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, DocumentDimension, IWindow } from './types';
 import { INode, serializedNodeWithId } from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement } from 'rrdom/es/document-browser';
+import { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
 export declare function createMirror(): Mirror;
 export declare let _mirror: Mirror;
