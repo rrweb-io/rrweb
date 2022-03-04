@@ -2,7 +2,7 @@ export function parseCSSText(cssText: string): Record<string, string> {
   const res: Record<string, string> = {};
   const listDelimiter = /;(?![^(]*\))/g;
   const propertyDelimiter = /:(.+)/;
-  const comment = /\/\*.*\*\//;
+  const comment = /\/\*.*?\*\//g;
   cssText
     .replace(comment, '')
     .split(listDelimiter)

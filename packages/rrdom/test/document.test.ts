@@ -628,9 +628,13 @@ describe('Basic RRDocument implementation', () => {
       expect(style.borderRadius).toEqual('10px 5px');
 
       // comment
-      node.attributes.style = 'top: 0; /* comment */ bottom: 42rem;';
+      node.attributes.style =
+        'top: 0; /* comment1 */ bottom: /* comment2 */42rem;';
       expect(node.style.top).toEqual('0');
       expect(node.style.bottom).toEqual('42rem');
+      // empty comment
+      node.attributes.style = 'top: /**/0;';
+      expect(node.style.top).toEqual('0');
 
       // incomplete
       node.attributes.style = 'overflow:';
