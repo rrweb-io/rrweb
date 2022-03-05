@@ -7,11 +7,13 @@ import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import * as typescript from 'rollup-plugin-typescript2';
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType, INode } from 'rrweb-snapshot';
 import {
   buildFromDom,
+  buildFromNode,
   RRCanvasElement,
   RRDocument,
+  RRElement,
   RRNode,
 } from '../src/virtual-dom';
 
@@ -38,6 +40,148 @@ function walk(node, blankSpace) {
 `;
 
 describe('RRDocument for browser environment', () => {
+  describe('create a RRNode from a real Node', () => {
+    it('can patch serialized ID for an unserialized node', () => {
+      // build from document
+      expect(((document as unknown) as INode).__sn).toBeUndefined();
+      const rrdom = new RRDocument();
+      let rrNode = buildFromNode((document as unknown) as INode, rrdom)!;
+      expect(((document as unknown) as INode).__sn).toBeDefined();
+      expect(((document as unknown) as INode).__sn.id).toEqual(-1);
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.Document);
+      expect(rrNode.__sn.id).toEqual(-1);
+      expect(rrNode).toBe(rrdom);
+
+      // build from document type
+      expect(((document.doctype as unknown) as INode).__sn).toBeUndefined();
+      rrNode = buildFromNode((document.doctype as unknown) as INode, rrdom)!;
+      expect(((document.doctype as unknown) as INode).__sn).toBeDefined();
+      expect(((document.doctype as unknown) as INode).__sn.id).toEqual(-2);
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.DocumentType);
+      expect(rrNode.__sn.id).toEqual(-2);
+
+      // build from element
+      expect(
+        ((document.documentElement as unknown) as INode).__sn,
+      ).toBeUndefined();
+      rrNode = buildFromNode(
+        (document.documentElement as unknown) as INode,
+        rrdom,
+      )!;
+      expect(
+        ((document.documentElement as unknown) as INode).__sn,
+      ).toBeDefined();
+      expect(((document.documentElement as unknown) as INode).__sn.id).toEqual(
+        -3,
+      );
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.Element);
+      expect(rrNode.__sn.id).toEqual(-3);
+
+      // build from text
+      const text = document.createTextNode('text');
+      expect(((text as unknown) as INode).__sn).toBeUndefined();
+      rrNode = buildFromNode((text as unknown) as INode, rrdom)!;
+      expect(((text as unknown) as INode).__sn).toBeDefined();
+      expect(((text as unknown) as INode).__sn.id).toEqual(-4);
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.Text);
+      expect(rrNode.__sn.id).toEqual(-4);
+
+      // build from comment
+      const comment = document.createComment('comment');
+      expect(((comment as unknown) as INode).__sn).toBeUndefined();
+      rrNode = buildFromNode((comment as unknown) as INode, rrdom)!;
+      expect(((comment as unknown) as INode).__sn).toBeDefined();
+      expect(((comment as unknown) as INode).__sn.id).toEqual(-5);
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.Comment);
+      expect(rrNode.__sn.id).toEqual(-5);
+
+      // build from CDATASection
+      const xmlDoc = new DOMParser().parseFromString(
+        '<xml></xml>',
+        'application/xml',
+      );
+      const cdata = 'Some <CDATA> data & then some';
+      var cdataSection = xmlDoc.createCDATASection(cdata);
+      expect(((cdataSection as unknown) as INode).__sn).toBeUndefined();
+      rrNode = buildFromNode((cdataSection as unknown) as INode, rrdom)!;
+      expect(((cdataSection as unknown) as INode).__sn).toBeDefined();
+      expect(((cdataSection as unknown) as INode).__sn.id).toEqual(-6);
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.CDATA);
+      expect(rrNode.textContent).toEqual(cdata);
+      expect(rrNode.__sn.id).toEqual(-6);
+    });
+
+    it('can record scroll position from HTMLElements', () => {
+      expect(document.body.scrollLeft).toEqual(0);
+      expect(document.body.scrollTop).toEqual(0);
+      const rrdom = new RRDocument();
+      let rrNode = buildFromNode((document.body as unknown) as INode, rrdom)!;
+      expect((rrNode as RRElement).scrollLeft).toBeUndefined();
+      expect((rrNode as RRElement).scrollTop).toBeUndefined();
+
+      document.body.scrollLeft = 100;
+      document.body.scrollTop = 200;
+      expect(document.body.scrollLeft).toEqual(100);
+      expect(document.body.scrollTop).toEqual(200);
+      rrNode = buildFromNode((document.body as unknown) as INode, rrdom)!;
+      expect((rrNode as RRElement).scrollLeft).toEqual(100);
+      expect((rrNode as RRElement).scrollTop).toEqual(200);
+    });
+
+    it('can build contentDocument from an iframe element', () => {
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      expect(iframe.contentDocument).not.toBeNull();
+      const rrdom = new RRDocument();
+      const RRIFrame = rrdom.createElement('iframe');
+      const rrNode = buildFromNode(
+        (iframe.contentDocument as unknown) as INode,
+        rrdom,
+        RRIFrame,
+      )!;
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.type).toEqual(NodeType.Document);
+      expect(rrNode.__sn.id).toEqual(-1);
+      expect(((iframe.contentDocument as unknown) as INode).__sn.id).toEqual(
+        -1,
+      );
+      expect(rrNode).toBe(RRIFrame.contentDocument);
+    });
+
+    it('can build from a shadow dom', () => {
+      const div = document.createElement('div');
+      div.attachShadow({ mode: 'open' });
+      expect(div.shadowRoot).toBeDefined();
+      const rrdom = new RRDocument();
+      const parentRRNode = rrdom.createElement('div');
+      const rrNode = buildFromNode(
+        (div.shadowRoot as unknown) as INode,
+        rrdom,
+        parentRRNode,
+      )!;
+      expect(rrNode).not.toBeNull();
+      expect(rrNode.__sn).toBeDefined();
+      expect(rrNode.__sn.id).toEqual(-1);
+      expect(((div.shadowRoot as unknown) as INode).__sn.id).toEqual(-1);
+      expect(rrNode.RRNodeType).toEqual(NodeType.Element);
+      expect((rrNode as RRElement).tagName).toEqual('SHADOWROOT');
+      expect(rrNode).toBe(parentRRNode.shadowRoot);
+    });
+  });
+
   describe('create a RRDocument from a html document', () => {
     let browser: puppeteer.Browser;
     let code: string;
@@ -101,6 +245,20 @@ describe('RRDocument for browser environment', () => {
         const doc = new rrdom.RRDocument();
         rrdom.buildFromDom(document, doc, doc.mirror);
         printRRDom(doc);
+      `);
+      expect(result).toMatchSnapshot();
+    });
+
+    it('can build from a xml page', async () => {
+      const result = await page.evaluate(`
+      var docu = new DOMParser().parseFromString('<xml></xml>', 'application/xml');
+      var cdata = docu.createCDATASection('Some <CDATA> data & then some');
+      docu.getElementsByTagName('xml')[0].appendChild(cdata);
+      // Displays: <xml><![CDATA[Some <CDATA> data & then some]]></xml>
+
+      const doc = new rrdom.RRDocument();
+      rrdom.buildFromDom(docu, doc, doc.mirror);
+      printRRDom(doc);
       `);
       expect(result).toMatchSnapshot();
     });

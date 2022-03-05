@@ -958,10 +958,19 @@ describe('diff algorithm for rrdom', () => {
 
     it('create a node from RRNode', () => {
       const rrDocument = new RRDocument();
+      rrDocument.__sn = {
+        type: NodeType.Document,
+        childNodes: [],
+        id: 0,
+      };
+      let result = createOrGetNode(rrDocument, mirror);
+      expect(result).toBeInstanceOf(Document);
+      expect(result.__sn.id).toBe(0);
+
       const textContent = 'Text Content';
       let rrNode: RRNode = rrDocument.createTextNode(textContent);
       rrNode.__sn = { id: 0, type: NodeType.Text, textContent };
-      let result = createOrGetNode(rrNode, mirror);
+      result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(Text);
       expect(result.__sn.id).toBe(0);
       expect(((result as Node) as Text).textContent).toBe(textContent);

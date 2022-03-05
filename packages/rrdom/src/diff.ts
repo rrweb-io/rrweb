@@ -335,6 +335,9 @@ export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
   let node = mirror.getNode(rrNode.__sn.id);
   if (node !== null) return node;
   switch (rrNode.RRNodeType) {
+    case NodeType.Document:
+      node = (new Document() as unknown) as INode;
+      break;
     case NodeType.DocumentType:
       node = (document.implementation.createDocumentType(
         (rrNode as IRRDocumentType).name,
@@ -371,8 +374,7 @@ export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
       ) as unknown) as INode;
       break;
     default:
-      // RRDocument of RRIFrameElement won't be created here because it's automatically generated when RRIFrameElement is created.
-      throw new Error('Unknown rrNode type ' + rrNode.toString());
+      throw new Error('Unknown RRNode type ' + rrNode.toString());
   }
   node.__sn = { ...rrNode.__sn };
   mirror.map[rrNode.__sn.id] = node;

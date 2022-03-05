@@ -89,6 +89,13 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
 "
 `;
 
+exports[`RRDocument for browser environment create a RRDocument from a html document can build from a xml page 1`] = `
+"-1 RRDocument
+  -2 XML 
+    -3 RRCDATASection data=\\"Some <CDATA> data & then some\\"
+"
+`;
+
 exports[`RRDocument for browser environment create a RRDocument from a html document can build from an iframe html  1`] = `
 "-1 RRDocument
   -2 RRDocumentType

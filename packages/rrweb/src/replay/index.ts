@@ -17,6 +17,8 @@ import {
   RRCanvasElement,
   StyleRuleType,
   VirtualStyleRules,
+  createOrGetNode,
+  buildFromNode,
   buildFromDom,
   diff,
 } from 'rrdom/es/virtual-dom';
@@ -170,33 +172,53 @@ export class Replayer {
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingVirtualDom) {
+        const replayerHandler = {
+          mirror: this.mirror,
+          applyCanvas: (
+            canvasEvent: incrementalSnapshotEvent & {
+              timestamp: number;
+              delay?: number | undefined;
+            },
+            canvasMutationData: canvasMutationData,
+            target: HTMLCanvasElement,
+          ) => {
+            canvasMutation({
+              event: canvasEvent,
+              mutation: canvasMutationData,
+              target,
+              imageMap: this.imageMap,
+              errorHandler: this.warnCanvasMutationFailed.bind(this),
+            });
+          },
+          applyInput: this.applyInput.bind(this),
+          applyScroll: this.applyScroll.bind(this),
+        };
         diff(
           (this.iframe.contentDocument! as unknown) as INode,
           this.virtualDom,
-          {
-            mirror: this.mirror,
-            applyCanvas: (
-              canvasEvent: incrementalSnapshotEvent & {
-                timestamp: number;
-                delay?: number | undefined;
-              },
-              canvasMutationData: canvasMutationData,
-              target: HTMLCanvasElement,
-            ) => {
-              canvasMutation({
-                event: canvasEvent,
-                mutation: canvasMutationData,
-                target,
-                imageMap: this.imageMap,
-                errorHandler: this.warnCanvasMutationFailed.bind(this),
-              });
-            },
-            applyInput: this.applyInput.bind(this),
-            applyScroll: this.applyScroll.bind(this),
-          },
+          replayerHandler,
         );
         this.virtualDom.destroyTree();
         this.usingVirtualDom = false;
+
+        // If these legacy missing nodes haven't been resolved, they should be converted to real Nodes.
+        if (Object.keys(this.legacy_missingNodeRetryMap).length) {
+          for (const key in this.legacy_missingNodeRetryMap) {
+            try {
+              const value = this.legacy_missingNodeRetryMap[key];
+              const realNode = createOrGetNode(
+                value.node as RRNode,
+                this.mirror,
+              );
+              diff(realNode, value.node as RRNode, replayerHandler);
+              value.node = realNode;
+            } catch (error) {
+              if (this.config.showWarning) {
+                console.warn(error);
+              }
+            }
+          }
+        }
       }
 
       if (this.mousePos) {
@@ -1290,6 +1312,23 @@ export class Replayer {
         this.virtualDom,
         this.virtualDom.mirror,
       );
+      // If these legacy missing nodes haven't been resolved, they should be converted to virtual nodes.
+      if (Object.keys(this.legacy_missingNodeRetryMap).length) {
+        for (const key in this.legacy_missingNodeRetryMap) {
+          try {
+            const value = this.legacy_missingNodeRetryMap[key];
+            const virtualNode = buildFromNode(
+              value.node as INode,
+              this.virtualDom,
+            );
+            if (virtualNode) value.node = virtualNode;
+          } catch (error) {
+            if (this.config.showWarning) {
+              console.warn(error);
+            }
+          }
+        }
+      }
     }
     const mirror = useVirtualParent ? this.virtualDom.mirror : this.mirror;
     d.removes.forEach((mutation) => {
@@ -1642,7 +1681,7 @@ export class Replayer {
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node, mutation);
       }
     }
     if (nextInMap) {
@@ -1654,7 +1693,7 @@ export class Replayer {
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node, mutation);
       }
     }
   }

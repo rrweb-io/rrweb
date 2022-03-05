@@ -186,8 +186,101 @@ type RRElementType<
   K extends keyof HTMLElementTagNameMap
 > = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
 
+const NodeTypeMap: Record<number, number> = {};
+NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
+NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
+NodeTypeMap[document.ELEMENT_NODE] = NodeType.Element;
+NodeTypeMap[document.TEXT_NODE] = NodeType.Text;
+NodeTypeMap[document.CDATA_SECTION_NODE] = NodeType.CDATA;
+NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
+
+function getValidTagName(element: HTMLElement): string {
+  // https://github.com/rrweb-io/rrweb-snapshot/issues/56
+  if (element instanceof HTMLFormElement) {
+    return 'FORM';
+  }
+  return element.tagName.toUpperCase();
+}
+
 /**
- * Build a rrdom from a real document tree.
+ * Build a RRNode from a real Node.
+ * @param node the real Node
+ * @param rrdom the RRDocument
+ * @returns the built RRNode
+ */
+export function buildFromNode(
+  node: INode,
+  rrdom: IRRDocument,
+  parentRRNode?: IRRNode | null,
+): IRRNode | null {
+  let serializedNodeWithId = node.__sn;
+  let rrNode: IRRNode;
+  if (!serializedNodeWithId || serializedNodeWithId.id < 0) {
+    serializedNodeWithId = {
+      type: NodeTypeMap[node.nodeType],
+      textContent: '',
+      id: rrdom.notSerializedId,
+    };
+    node.__sn = serializedNodeWithId;
+  }
+
+  switch (node.nodeType) {
+    case node.DOCUMENT_NODE:
+      if (
+        parentRRNode &&
+        parentRRNode.RRNodeType === NodeType.Element &&
+        (parentRRNode as IRRElement).tagName === 'IFRAME'
+      )
+        rrNode = (parentRRNode as RRIFrameElement).contentDocument;
+      else rrNode = rrdom;
+      break;
+    case node.DOCUMENT_TYPE_NODE:
+      const documentType = (node as Node) as DocumentType;
+      rrNode = rrdom.createDocumentType(
+        documentType.name,
+        documentType.publicId,
+        documentType.systemId,
+      );
+      break;
+    case node.ELEMENT_NODE:
+      const elementNode = (node as Node) as HTMLElement;
+      const tagName = getValidTagName(elementNode);
+      rrNode = rrdom.createElement(tagName);
+      const rrElement = rrNode as IRRElement;
+      for (const { name, value } of Array.from(elementNode.attributes)) {
+        rrElement.attributes[name] = value;
+      }
+      elementNode.scrollLeft && (rrElement.scrollLeft = elementNode.scrollLeft);
+      elementNode.scrollTop && (rrElement.scrollTop = elementNode.scrollTop);
+      /**
+       * We don't have to record special values of input elements at the beginning.
+       * Because if these values are changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm is executed.
+       */
+      break;
+    case node.TEXT_NODE:
+      rrNode = rrdom.createTextNode(((node as Node) as Text).textContent || '');
+      break;
+    case node.CDATA_SECTION_NODE:
+      rrNode = rrdom.createCDATASection(((node as Node) as CDATASection).data);
+      break;
+    case node.COMMENT_NODE:
+      rrNode = rrdom.createComment(
+        ((node as Node) as Comment).textContent || '',
+      );
+      break;
+    // if node is a shadow root
+    case node.DOCUMENT_FRAGMENT_NODE:
+      rrNode = (parentRRNode as IRRElement).attachShadow({ mode: 'open' });
+      break;
+    default:
+      return null;
+  }
+  rrNode.__sn = serializedNodeWithId;
+  return rrNode;
+}
+
+/**
+ * Build a RRDocument from a real document tree.
  * @param dom the real document tree
  * @param rrdomToBuild the rrdom object to be constructed
  * @returns the build rrdom
@@ -199,96 +292,20 @@ export function buildFromDom(
 ) {
   let rrdom = rrdomToBuild || new RRDocument();
 
-  const NodeTypeMap: Record<number, number> = {};
-  NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
-  NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
-  NodeTypeMap[document.ELEMENT_NODE] = NodeType.Element;
-  NodeTypeMap[document.TEXT_NODE] = NodeType.Text;
-  NodeTypeMap[document.CDATA_SECTION_NODE] = NodeType.CDATA;
-  NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
-
-  function getValidTagName(element: HTMLElement): string {
-    // https://github.com/rrweb-io/rrweb-snapshot/issues/56
-    if (element instanceof HTMLFormElement) {
-      return 'FORM';
-    }
-    return element.tagName.toUpperCase();
-  }
-
-  const walk = function (node: INode, parentRRNode: IRRNode | null) {
-    let serializedNodeWithId = node.__sn;
-    let rrNode: IRRNode;
-    if (!serializedNodeWithId || serializedNodeWithId.id < 0) {
-      serializedNodeWithId = {
-        type: NodeTypeMap[node.nodeType],
-        textContent: '',
-        id: rrdom.notSerializedId,
-      };
-      node.__sn = serializedNodeWithId;
-    }
-
-    switch (node.nodeType) {
-      case node.DOCUMENT_NODE:
-        if (
-          parentRRNode &&
-          parentRRNode.RRNodeType === NodeType.Element &&
-          (parentRRNode as IRRElement).tagName === 'IFRAME'
-        )
-          rrNode = (parentRRNode as RRIFrameElement).contentDocument;
-        else rrNode = rrdom;
-        break;
-      case node.DOCUMENT_TYPE_NODE:
-        const documentType = (node as Node) as DocumentType;
-        rrNode = rrdom.createDocumentType(
-          documentType.name,
-          documentType.publicId,
-          documentType.systemId,
-        );
-        break;
-      case node.ELEMENT_NODE:
-        const elementNode = (node as Node) as HTMLElement;
-        const tagName = getValidTagName(elementNode);
-        rrNode = rrdom.createElement(tagName);
-        const rrElement = rrNode as RRElement;
-        for (const { name, value } of Array.from(elementNode.attributes)) {
-          rrElement.attributes[name] = value;
-        }
-        /**
-         * We don't have to record special values of input elements at the beginning.
-         * Because if these values are changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm is executed.
-         */
-        break;
-      case node.TEXT_NODE:
-        rrNode = rrdom.createTextNode(
-          ((node as Node) as Text).textContent || '',
-        );
-        break;
-      case node.CDATA_SECTION_NODE:
-        rrNode = rrdom.createCDATASection('');
-        break;
-      case node.COMMENT_NODE:
-        rrNode = rrdom.createComment(
-          ((node as Node) as Comment).textContent || '',
-        );
-        break;
-      // if node is a shadow root
-      case node.DOCUMENT_FRAGMENT_NODE:
-        rrNode = (parentRRNode as RRElement).attachShadow({ mode: 'open' });
-        break;
-      default:
-        return;
-    }
-    rrNode.__sn = serializedNodeWithId;
-    mirror && (mirror.map[serializedNodeWithId.id] = rrNode);
+  function walk(node: INode, parentRRNode: IRRNode | null) {
+    const rrNode = buildFromNode(node, rrdom, parentRRNode);
+    if (rrNode === null) return;
+    mirror && (mirror.map[rrNode.__sn.id] = rrNode);
 
     if (
-      parentRRNode?.RRNodeType === NodeType.Element &&
-      (parentRRNode as IRRElement).tagName === 'IFRAME'
+      // if the parentRRNode isn't a RRIFrameElement
+      !(
+        parentRRNode?.RRNodeType === NodeType.Element &&
+        (parentRRNode as IRRElement).tagName === 'IFRAME'
+      ) &&
+      // if node isn't a shadow root
+      node.nodeType !== node.DOCUMENT_FRAGMENT_NODE
     ) {
-      (parentRRNode as RRIFrameElement).contentDocument = rrNode as RRDocument;
-    }
-    // if node isn't a shadow root
-    else if (node.nodeType !== node.DOCUMENT_FRAGMENT_NODE) {
       parentRRNode?.appendChild(rrNode);
       rrNode.parentNode = parentRRNode;
       rrNode.parentElement = parentRRNode as RRElement;
@@ -308,6 +325,7 @@ export function buildFromDom(
       node.nodeType === node.ELEMENT_NODE ||
       node.nodeType === node.DOCUMENT_FRAGMENT_NODE
     ) {
+      // if the node is a shadow dom
       if (
         node.nodeType === Node.ELEMENT_NODE &&
         ((node as Node) as HTMLElement).shadowRoot
@@ -320,9 +338,15 @@ export function buildFromDom(
         walk((node as unknown) as INode, rrNode),
       );
     }
-  };
+  }
   walk((dom as unknown) as INode, null);
   return rrdom;
 }
+
 export { RRNode };
-export { diff, StyleRuleType, VirtualStyleRules } from './diff';
+export {
+  diff,
+  createOrGetNode,
+  StyleRuleType,
+  VirtualStyleRules,
+} from './diff';
