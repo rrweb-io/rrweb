@@ -1,5 +1,5 @@
 import { elementNode, INode, NodeType } from 'rrweb-snapshot';
-import {
+import type {
   canvasMutationData,
   incrementalSnapshotEvent,
   inputData,
