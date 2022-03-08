@@ -27,6 +27,12 @@ export interface IRRNode {
 
   removeChild(node: IRRNode): IRRNode;
 
+  /**
+   * Set a default value for RRNode's __sn property.
+   * @param id the serialized id to assign
+   */
+  setDefaultSN(id: number): void;
+
   toString(nodeName?: string): string;
 }
 export interface IRRDocument extends IRRNode {
@@ -165,6 +171,58 @@ export class BaseRRNode implements IRRNode {
     throw new Error(
       `RRDomException: Failed to execute 'removeChild' on 'RRNode': This RRNode type does not support this method.`,
     );
+  }
+
+  public setDefaultSN(id: number) {
+    switch (this.RRNodeType) {
+      case NodeType.Document:
+        this.__sn = {
+          id,
+          type: this.RRNodeType,
+          childNodes: [],
+        };
+        break;
+      case NodeType.DocumentType:
+        const doctype = (this as unknown) as IRRDocumentType;
+        this.__sn = {
+          id,
+          type: this.RRNodeType,
+          name: doctype.name,
+          publicId: doctype.publicId,
+          systemId: doctype.systemId,
+        };
+        break;
+      case NodeType.Element:
+        this.__sn = {
+          id,
+          type: this.RRNodeType,
+          tagName: ((this as unknown) as IRRElement).tagName.toLowerCase(), // In rrweb data, all tagNames are lowercase.
+          attributes: {},
+          childNodes: [],
+        };
+        break;
+      case NodeType.Text:
+        this.__sn = {
+          id,
+          type: this.RRNodeType,
+          textContent: ((this as unknown) as IRRText).textContent || '',
+        };
+        break;
+      case NodeType.Comment:
+        this.__sn = {
+          id,
+          type: this.RRNodeType,
+          textContent: ((this as unknown) as IRRComment).textContent || '',
+        };
+        break;
+      case NodeType.CDATA:
+        this.__sn = {
+          id,
+          type: this.RRNodeType,
+          textContent: '',
+        };
+        break;
+    }
   }
 
   public toString(nodeName?: string) {

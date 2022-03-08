@@ -373,8 +373,6 @@ export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
         (rrNode as IRRCDATASection).data,
       ) as unknown) as INode;
       break;
-    default:
-      throw new Error('Unknown RRNode type ' + rrNode.toString());
   }
   node.__sn = { ...rrNode.__sn };
   mirror.map[rrNode.__sn.id] = node;

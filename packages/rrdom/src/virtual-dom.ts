@@ -186,14 +186,6 @@ type RRElementType<
   K extends keyof HTMLElementTagNameMap
 > = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
 
-const NodeTypeMap: Record<number, number> = {};
-NodeTypeMap[document.DOCUMENT_NODE] = NodeType.Document;
-NodeTypeMap[document.DOCUMENT_TYPE_NODE] = NodeType.DocumentType;
-NodeTypeMap[document.ELEMENT_NODE] = NodeType.Element;
-NodeTypeMap[document.TEXT_NODE] = NodeType.Text;
-NodeTypeMap[document.CDATA_SECTION_NODE] = NodeType.CDATA;
-NodeTypeMap[document.COMMENT_NODE] = NodeType.Comment;
-
 function getValidTagName(element: HTMLElement): string {
   // https://github.com/rrweb-io/rrweb-snapshot/issues/56
   if (element instanceof HTMLFormElement) {
@@ -213,16 +205,7 @@ export function buildFromNode(
   rrdom: IRRDocument,
   parentRRNode?: IRRNode | null,
 ): IRRNode | null {
-  let serializedNodeWithId = node.__sn;
   let rrNode: IRRNode;
-  if (!serializedNodeWithId || serializedNodeWithId.id < 0) {
-    serializedNodeWithId = {
-      type: NodeTypeMap[node.nodeType],
-      textContent: '',
-      id: rrdom.notSerializedId,
-    };
-    node.__sn = serializedNodeWithId;
-  }
 
   switch (node.nodeType) {
     case node.DOCUMENT_NODE:
@@ -275,7 +258,12 @@ export function buildFromNode(
     default:
       return null;
   }
-  rrNode.__sn = serializedNodeWithId;
+
+  if (!node.__sn || node.__sn.id < 0) {
+    rrNode.setDefaultSN(rrdom.notSerializedId);
+    node.__sn = rrNode.__sn;
+  } else rrNode.__sn = node.__sn;
+
   return rrNode;
 }
 

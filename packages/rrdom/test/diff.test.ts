@@ -915,11 +915,7 @@ describe('diff algorithm for rrdom', () => {
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement('iframe');
-      rrNode.contentDocument.__sn = {
-        type: NodeType.Document,
-        childNodes: [],
-        id: 1,
-      };
+      rrNode.contentDocument.setDefaultSN(1);
       const childElement = rrNode.contentDocument.createElement('div');
       childElement.__sn = Object.assign({}, elementSn, {
         tagName: 'div',
@@ -948,32 +944,28 @@ describe('diff algorithm for rrdom', () => {
 
     it('create a node from RRNode', () => {
       const rrDocument = new RRDocument();
-      rrDocument.__sn = {
-        type: NodeType.Document,
-        childNodes: [],
-        id: 0,
-      };
+      rrDocument.setDefaultSN(0);
       let result = createOrGetNode(rrDocument, mirror);
       expect(result).toBeInstanceOf(Document);
       expect(result.__sn.id).toBe(0);
 
       const textContent = 'Text Content';
       let rrNode: RRNode = rrDocument.createTextNode(textContent);
-      rrNode.__sn = { id: 0, type: NodeType.Text, textContent };
+      rrNode.setDefaultSN(0);
       result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(Text);
       expect(result.__sn.id).toBe(0);
       expect(((result as Node) as Text).textContent).toBe(textContent);
 
       rrNode = rrDocument.createComment(textContent);
-      rrNode.__sn = { id: 0, type: NodeType.Comment, textContent };
+      rrNode.setDefaultSN(0);
       result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(Comment);
       expect(result.__sn.id).toBe(0);
       expect(((result as Node) as Comment).textContent).toBe(textContent);
 
       rrNode = rrDocument.createCDATASection('');
-      rrNode.__sn = { id: 0, type: NodeType.CDATA, textContent: '' };
+      rrNode.setDefaultSN(0);
       expect(() =>
         createOrGetNode(rrNode, mirror),
       ).toThrowErrorMatchingInlineSnapshot(
@@ -985,13 +977,7 @@ describe('diff algorithm for rrdom', () => {
       const rrDocument = new RRDocument();
       const publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
       let rrNode: RRNode = rrDocument.createDocumentType('html', publicId, '');
-      rrNode.__sn = {
-        id: 0,
-        type: NodeType.DocumentType,
-        name: 'html',
-        publicId,
-        systemId: '',
-      };
+      rrNode.setDefaultSN(0);
       let result = createOrGetNode(rrNode, mirror);
       expect(result).toBeInstanceOf(DocumentType);
       expect(result.__sn.id).toBe(0);
@@ -1015,7 +1001,7 @@ describe('diff algorithm for rrdom', () => {
       // Add the text node to the mirror to make it look like already existing.
       mirror.map[0] = (text as unknown) as INode;
       const rrNode: RRNode = rrDocument.createTextNode(textContent);
-      rrNode.__sn = { id: 0, type: NodeType.Text, textContent };
+      rrNode.setDefaultSN(0);
       let result = createOrGetNode(rrNode, mirror);
 
       expect(result).toBeInstanceOf(Text);

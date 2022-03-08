@@ -324,13 +324,7 @@ describe('RRDocument for browser environment', () => {
       it('can get node id', () => {
         const dom = new RRDocument();
         const node1 = dom.createElement('div');
-        node1.__sn = {
-          type: NodeType.Element,
-          tagName: 'div',
-          childNodes: [],
-          attributes: {},
-          id: 0,
-        };
+        node1.setDefaultSN(0);
         dom.mirror.map[0] = node1;
         expect(dom.mirror.getId(node1)).toEqual(0);
         const node2 = dom.createTextNode('text');
@@ -354,19 +348,9 @@ describe('RRDocument for browser environment', () => {
         const dom = new RRDocument();
         const node1 = dom.createElement('div');
         dom.mirror.map[0] = node1;
-        node1.__sn = {
-          type: NodeType.Element,
-          tagName: 'div',
-          childNodes: [],
-          attributes: {},
-          id: 0,
-        };
+        node1.setDefaultSN(0);
         const node2 = dom.createTextNode('text');
-        node2.__sn = {
-          type: NodeType.Text,
-          textContent: 'text',
-          id: 1,
-        };
+        node2.setDefaultSN(1);
         node1.appendChild(node2);
         dom.mirror.map[1] = node2;
         expect(dom.mirror.has(0)).toBeTruthy();

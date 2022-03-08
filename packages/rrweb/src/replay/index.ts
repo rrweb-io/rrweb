@@ -717,13 +717,7 @@ export class Replayer {
     }
     if (this.usingVirtualDom) {
       const styleEl = this.virtualDom.createElement('style') as RRStyleElement;
-      styleEl.__sn = {
-        type: NodeType.Element,
-        tagName: 'style',
-        childNodes: [],
-        attributes: {},
-        id: this.virtualDom.notSerializedId,
-      };
+      styleEl.setDefaultSN(this.virtualDom.notSerializedId);
       (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
         // push virtual styles

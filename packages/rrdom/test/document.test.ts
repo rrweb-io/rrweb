@@ -1,7 +1,15 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType } from 'rrweb-snapshot';
+import {
+  cdataNode,
+  commentNode,
+  documentNode,
+  documentTypeNode,
+  elementNode,
+  NodeType,
+  textNode,
+} from 'rrweb-snapshot';
 import {
   BaseRRDocumentImpl,
   BaseRRDocumentTypeImpl,
@@ -23,7 +31,7 @@ describe('Basic RRDocument implementation', () => {
       const node = new RRNode();
       node.__sn = {
         type: NodeType.Element,
-        tagName: 'DIV',
+        tagName: 'div',
         attributes: {},
         childNodes: [],
         id: 1,
@@ -44,6 +52,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.toString('RRNode')).toEqual('1 RRNode');
     });
 
@@ -115,6 +124,13 @@ describe('Basic RRDocument implementation', () => {
         `"RRDomException: Failed to execute 'removeChild' on 'RRNode': This RRNode type does not support this method."`,
       );
     });
+
+    it("can set a default value for RRNode's __sn property", () => {
+      const node = new RRNode();
+      node.setDefaultSN(0);
+      // Because RRNode's type hasn't been specified.
+      expect(node.__sn).toBeUndefined();
+    });
   });
 
   describe('Basic RRDocument implementation', () => {
@@ -122,11 +138,10 @@ describe('Basic RRDocument implementation', () => {
       const node = new RRDocument();
       expect(node.toString()).toEqual(' RRDocument');
 
-      node.__sn = {
-        type: NodeType.Document,
-        id: 1,
-        childNodes: [],
-      };
+      node.setDefaultSN(1);
+      expect(node.__sn).toBeDefined();
+      expect(node.__sn.type).toEqual(NodeType.Document);
+      expect((node.__sn as documentNode).childNodes).toBeInstanceOf(Array);
 
       expect(node.parentNode).toEqual(null);
       expect(node.parentElement).toEqual(null);
@@ -144,6 +159,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.notSerializedId).toBe(-1);
       expect(node.documentElement).toBeNull();
       expect(node.body).toBeNull();
@@ -359,13 +375,13 @@ describe('Basic RRDocument implementation', () => {
         publicId = 'publicId',
         systemId = 'systemId';
       const node = new RRDocumentType(name, publicId, systemId);
-      node.__sn = {
-        type: NodeType.DocumentType,
-        name,
-        publicId,
-        systemId,
-        id: 1,
-      };
+      node.setDefaultSN(1);
+      expect(node.__sn).toBeDefined();
+      expect(node.__sn.type).toEqual(NodeType.DocumentType);
+      expect((node.__sn as documentTypeNode).name).toEqual(name);
+      expect((node.__sn as documentTypeNode).publicId).toEqual(publicId);
+      expect((node.__sn as documentTypeNode).systemId).toEqual(systemId);
+
       expect(node.parentNode).toEqual(null);
       expect(node.parentElement).toEqual(null);
       expect(node.childNodes).toBeInstanceOf(Array);
@@ -382,6 +398,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.name).toBe(name);
       expect(node.publicId).toBe(publicId);
       expect(node.systemId).toBe(systemId);
@@ -394,13 +411,13 @@ describe('Basic RRDocument implementation', () => {
 
     it('should have basic properties', () => {
       const node = document.createElement('div');
-      node.__sn = {
-        type: NodeType.Element,
-        tagName: 'div',
-        attributes: {},
-        childNodes: [],
-        id: 1,
-      };
+      node.setDefaultSN(1);
+      expect(node.__sn).toBeDefined();
+      expect(node.__sn.type).toEqual(NodeType.Element);
+      expect((node.__sn as elementNode).tagName).toEqual('div');
+      expect((node.__sn as elementNode).attributes).toBeDefined();
+      expect((node.__sn as elementNode).childNodes).toBeInstanceOf(Array);
+
       node.scrollLeft = 100;
       node.scrollTop = 200;
       node.attributes.id = 'id';
@@ -421,6 +438,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.tagName).toEqual('DIV');
       expect(node.attributes).toEqual({ id: 'id', class: 'className' });
       expect(node.shadowRoot).toBeNull();
@@ -762,11 +780,11 @@ describe('Basic RRDocument implementation', () => {
 
     it('should have basic properties', () => {
       const node = dom.createTextNode('text');
-      node.__sn = {
-        type: NodeType.Text,
-        textContent: 'text',
-        id: 1,
-      };
+      node.setDefaultSN(1);
+      expect(node.__sn).toBeDefined();
+      expect(node.__sn.type).toEqual(NodeType.Text);
+      expect((node.__sn as textNode).textContent).toEqual('text');
+
       expect(node.parentNode).toEqual(null);
       expect(node.parentElement).toEqual(null);
       expect(node.childNodes).toBeInstanceOf(Array);
@@ -783,6 +801,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.toString()).toEqual('1 RRText text="text"');
     });
 
@@ -799,11 +818,11 @@ describe('Basic RRDocument implementation', () => {
 
     it('should have basic properties', () => {
       const node = dom.createComment('comment');
-      node.__sn = {
-        type: NodeType.Comment,
-        textContent: 'comment',
-        id: 1,
-      };
+      node.setDefaultSN(1);
+      expect(node.__sn).toBeDefined();
+      expect(node.__sn.type).toEqual(NodeType.Comment);
+      expect((node.__sn as commentNode).textContent).toEqual('comment');
+
       expect(node.parentNode).toEqual(null);
       expect(node.parentElement).toEqual(null);
       expect(node.childNodes).toBeInstanceOf(Array);
@@ -820,6 +839,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.toString()).toEqual('1 RRComment text="comment"');
     });
 
@@ -836,11 +856,11 @@ describe('Basic RRDocument implementation', () => {
 
     it('should have basic properties', () => {
       const node = dom.createCDATASection('data');
-      node.__sn = {
-        type: NodeType.CDATA,
-        textContent: '',
-        id: 1,
-      };
+      node.setDefaultSN(1);
+      expect(node.__sn).toBeDefined();
+      expect(node.__sn.type).toEqual(NodeType.CDATA);
+      expect((node.__sn as cdataNode).textContent).toEqual('');
+
       expect(node.parentNode).toEqual(null);
       expect(node.parentElement).toEqual(null);
       expect(node.childNodes).toBeInstanceOf(Array);
@@ -857,6 +877,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.toString()).toEqual('1 RRCDATASection data="data"');
     });
 
@@ -871,13 +892,7 @@ describe('Basic RRDocument implementation', () => {
   describe('Basic RRMediaElement implementation', () => {
     it('should have basic properties', () => {
       const node = new RRMediaElement('video');
-      node.__sn = {
-        type: NodeType.Element,
-        tagName: 'video',
-        attributes: {},
-        childNodes: [],
-        id: 1,
-      };
+      node.setDefaultSN(1);
       node.scrollLeft = 100;
       node.scrollTop = 200;
       expect(node.parentNode).toEqual(null);
@@ -896,6 +911,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.appendChild).toBeDefined();
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
+      expect(node.setDefaultSN).toBeDefined();
       expect(node.tagName).toEqual('VIDEO');
       expect(node.attributes).toEqual({});
       expect(node.shadowRoot).toBeNull();
