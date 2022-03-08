@@ -163,7 +163,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.toString()).toEqual('1 RRDocument');
     });
 
-    it('can access the a unique notSerializedId every time', () => {
+    it('can access a unique, decremented notSerializedId every time', () => {
       const node = new RRDocument();
       for (let i = 1; i <= 100; i++) expect(node.notSerializedId).toBe(-i);
     });

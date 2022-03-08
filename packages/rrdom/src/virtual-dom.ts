@@ -141,7 +141,7 @@ export class RRCanvasElement extends RRElement implements IRRElement {
   /**
    * This is a dummy implementation to distinguish RRCanvasElement from real HTMLCanvasElement.
    */
-  getContext(): CanvasRenderingContext2D | null {
+  getContext(): RenderingContext | null {
     return null;
   }
 }
