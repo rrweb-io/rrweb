@@ -4,6 +4,9 @@ import {
   IncrementalSource,
   eventWithTime,
   MouseInteractions,
+  Optional,
+  mouseInteractionData,
+  event,
 } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
@@ -106,8 +109,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseInteraction
         ) {
-          delete s.data.x;
-          delete s.data.y;
+          delete (s.data as Optional<mouseInteractionData, 'x'>).x;
+          delete (s.data as Optional<mouseInteractionData, 'y'>).y;
         }
         if (
           s.type === EventType.IncrementalSnapshot &&
@@ -149,8 +152,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
             coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
           });
         }
-        delete s.timestamp;
-        return s;
+        delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
+        return s as event;
       }),
     null,
     2,

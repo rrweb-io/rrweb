@@ -17,6 +17,7 @@ import {
   styleAttributeValue,
   observerParam,
   MutationBufferParam,
+  Optional,
 } from '../types';
 import {
   isBlocked,
@@ -109,7 +110,7 @@ class DoubleLinkedList {
       }
     }
     if (n.__ln) {
-      delete n.__ln;
+      delete (n as Optional<NodeInLinkedList, '__ln'>).__ln;
     }
     this.length--;
   }
