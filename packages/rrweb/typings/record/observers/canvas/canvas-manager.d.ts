@@ -24,6 +24,7 @@ export declare class CanvasManager {
         mirror: Mirror;
     });
     private processMutation;
+    private initCanvasFPSObserver;
     private initCanvasMutationObserver;
     private startPendingCanvasMutationFlusher;
     private startRAFTimestamping;

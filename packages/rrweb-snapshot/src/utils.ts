@@ -60,7 +60,8 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
       // even if we can already tell from the first chunk(s) that
       // the canvas isn't blank
       const pixelBuffer = new Uint32Array(
-        originalGetImageData(
+        originalGetImageData.call(
+          ctx,
           x,
           y,
           Math.min(chunkSize, canvas.width - x),

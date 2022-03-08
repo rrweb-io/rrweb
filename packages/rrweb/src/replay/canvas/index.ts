@@ -7,7 +7,7 @@ import {
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
 
-export default function canvasMutation({
+export default async function canvasMutation({
   event,
   mutation,
   target,
@@ -19,32 +19,35 @@ export default function canvasMutation({
   target: HTMLCanvasElement;
   imageMap: Replayer['imageMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
-}): void {
+}): Promise<void> {
   try {
     const mutations: canvasMutationCommand[] =
       'commands' in mutation ? mutation.commands : [mutation];
 
     if ([CanvasContext.WebGL, CanvasContext.WebGL2].includes(mutation.type)) {
-      return mutations.forEach((command) => {
-        webglMutation({
+      for (let i = 0; i < mutations.length; i++) {
+        const command = mutations[i];
+        await webglMutation({
           mutation: command,
           type: mutation.type,
           target,
           imageMap,
           errorHandler,
         });
-      });
+      }
+      return;
     }
     // default is '2d' for backwards compatibility (rrweb below 1.1.x)
-    return mutations.forEach((command) => {
-      canvas2DMutation({
+    for (let i = 0; i < mutations.length; i++) {
+      const command = mutations[i];
+      await canvas2DMutation({
         event,
         mutation: command,
         target,
         imageMap,
         errorHandler,
       });
-    });
+    }
   } catch (error) {
     errorHandler(mutation, error);
   }

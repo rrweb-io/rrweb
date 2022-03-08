@@ -5,8 +5,9 @@
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
-import webglMutation, { variableListFor } from '../../src/replay/canvas/webgl';
+import webglMutation from '../../src/replay/canvas/webgl';
 import { CanvasContext } from '../../src/types';
+import { variableListFor } from '../../src/replay/canvas/deserialize-args';
 
 let canvas: HTMLCanvasElement;
 describe('webglMutation', () => {
@@ -30,7 +31,7 @@ describe('webglMutation', () => {
 
     expect(variableListFor(context, 'WebGLShader')).toHaveLength(0);
 
-    webglMutation({
+    await webglMutation({
       mutation: {
         property: 'createShader',
         args: [35633],

@@ -31,7 +31,7 @@ export default class MutationBuffer {
     private iframeManager;
     private shadowDomManager;
     private canvasManager;
-    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean, inlineImages: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, canvasManager: CanvasManager): void;
+    init(cb: mutationCallBack, blockClass: blockClass, blockSelector: string | null, maskTextClass: maskTextClass, maskTextSelector: string | null, inlineStylesheet: boolean, maskInputOptions: MaskInputOptions, maskTextFn: MaskTextFn | undefined, maskInputFn: MaskInputFn | undefined, recordCanvas: boolean | number, inlineImages: boolean, slimDOMOptions: SlimDOMOptions, doc: Document, mirror: Mirror, iframeManager: IframeManager, shadowDomManager: ShadowDomManager, canvasManager: CanvasManager): void;
     freeze(): void;
     unfreeze(): void;
     isFrozen(): boolean;

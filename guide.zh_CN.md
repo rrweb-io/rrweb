@@ -150,7 +150,7 @@ setInterval(save, 10 * 1000);
 | hooks                | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                 |
 | packFn               | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | sampling             | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
-| recordCanvas         | false              | 是否记录 canvas 内容                                                                                                                                                                  |
+| recordCanvas         | false              | 是否记录 canvas 内容, 可用选项：false（不记录），true（记录每个突变），介于 1 和 60 之间的数字（每秒记录多次图像快照）                                                                |
 | inlineImages         | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts         | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |

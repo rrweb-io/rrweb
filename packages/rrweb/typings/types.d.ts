@@ -1,4 +1,3 @@
-/// <reference types="css-font-loading-module" />
 import { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { IframeManager } from './record/iframe-manager';
@@ -150,7 +149,7 @@ export declare type recordOptions<T> = {
     hooks?: hooksParam;
     packFn?: PackFn;
     sampling?: SamplingStrategy;
-    recordCanvas?: boolean;
+    recordCanvas?: boolean | number;
     userTriggeredOnInput?: boolean;
     collectFonts?: boolean;
     inlineImages?: boolean;
@@ -180,7 +179,7 @@ export declare type observerParam = {
     canvasMutationCb: canvasMutationCallback;
     fontCb: fontCallback;
     sampling: SamplingStrategy;
-    recordCanvas: boolean;
+    recordCanvas: boolean | number;
     inlineImages: boolean;
     userTriggeredOnInput: boolean;
     collectFonts: boolean;
@@ -291,19 +290,24 @@ export declare enum CanvasContext {
     WebGL = 1,
     WebGL2 = 2
 }
-export declare type SerializedWebGlArg = {
+export declare type SerializedCanvasArg = {
     rr_type: 'ArrayBuffer';
     base64: string;
+} | {
+    rr_type: 'Blob';
+    data: Array<CanvasArg>;
+    type?: string;
 } | {
     rr_type: string;
     src: string;
 } | {
     rr_type: string;
-    args: Array<SerializedWebGlArg>;
+    args: Array<CanvasArg>;
 } | {
     rr_type: string;
     index: number;
-} | string | number | boolean | null | SerializedWebGlArg[];
+};
+export declare type CanvasArg = SerializedCanvasArg | string | number | boolean | null | CanvasArg[];
 declare type mouseInteractionParam = {
     type: MouseInteractions;
     id: number;
@@ -361,6 +365,21 @@ export declare type canvasMutationWithType = {
 } & canvasMutationCommand;
 export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
 export declare type canvasManagerMutationCallback = (target: HTMLCanvasElement, p: canvasMutationWithType) => void;
+export declare type ImageBitmapDataURLWorkerParams = {
+    id: number;
+    bitmap: ImageBitmap;
+    width: number;
+    height: number;
+};
+export declare type ImageBitmapDataURLWorkerResponse = {
+    id: number;
+} | {
+    id: number;
+    type: string;
+    base64: string;
+    width: number;
+    height: number;
+};
 export declare type fontParam = {
     family: string;
     fontSource: string;

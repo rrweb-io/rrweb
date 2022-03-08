@@ -6,4 +6,4 @@ export default function canvasMutation({ event, mutation, target, imageMap, erro
     target: HTMLCanvasElement;
     imageMap: Replayer['imageMap'];
     errorHandler: Replayer['warnCanvasMutationFailed'];
-}): void;
+}): Promise<void>;

@@ -1,5 +1,164 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"canvas\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 7,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            300,
+            150
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAEaElEQVR4Xu3UgQkAIAwDwXZzN1dwi4frBOFSsnPmjiNAgEBAYA1WoCURCRD4AgbLIxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIPFY94QGylpgTAAAAAElFTkSuQmCC\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 7,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            300,
+            150
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAEaElEQVR4Xu3UgQkAIAwDwXZzN1dwi4frBOFSsjPnjiNAgEBAYA1WoCURCRD4AgbLIxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIPAs94QFVvvQiAAAAAElFTkSuQmCC\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record webgl should batch events by RAF 1`] = `
 "[
   {

@@ -8,7 +8,7 @@ import { Replayer } from '../../src/replay';
 import {} from '../../src/types';
 import {
   CanvasContext,
-  SerializedWebGlArg,
+  CanvasArg,
   IncrementalSource,
   EventType,
   eventWithTime,
@@ -16,9 +16,7 @@ import {
 
 let replayer: Replayer;
 
-const canvasMutationEventWithArgs = (
-  args: SerializedWebGlArg[],
-): eventWithTime => {
+const canvasMutationEventWithArgs = (args: CanvasArg[]): eventWithTime => {
   return {
     timestamp: 100,
     type: EventType.IncrementalSnapshot,

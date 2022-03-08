@@ -228,7 +228,7 @@ export type recordOptions<T> = {
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
-  recordCanvas?: boolean;
+  recordCanvas?: boolean | number;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
@@ -260,7 +260,7 @@ export type observerParam = {
   canvasMutationCb: canvasMutationCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
-  recordCanvas: boolean;
+  recordCanvas: boolean | number;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
@@ -395,10 +395,15 @@ export enum CanvasContext {
   WebGL2,
 }
 
-export type SerializedWebGlArg =
+export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
+    }
+  | {
+      rr_type: 'Blob';
+      data: Array<CanvasArg>;
+      type?: string;
     }
   | {
       rr_type: string;
@@ -406,17 +411,20 @@ export type SerializedWebGlArg =
     }
   | {
       rr_type: string;
-      args: Array<SerializedWebGlArg>;
+      args: Array<CanvasArg>;
     }
   | {
       rr_type: string;
       index: number;
-    }
+    };
+
+export type CanvasArg =
+  | SerializedCanvasArg
   | string
   | number
   | boolean
   | null
-  | SerializedWebGlArg[];
+  | CanvasArg[];
 
 type mouseInteractionParam = {
   type: MouseInteractions;
@@ -494,6 +502,25 @@ export type canvasManagerMutationCallback = (
   target: HTMLCanvasElement,
   p: canvasMutationWithType,
 ) => void;
+
+export type ImageBitmapDataURLWorkerParams = {
+  id: number;
+  bitmap: ImageBitmap;
+  width: number;
+  height: number;
+};
+
+export type ImageBitmapDataURLWorkerResponse =
+  | {
+      id: number;
+    }
+  | {
+      id: number;
+      type: string;
+      base64: string;
+      width: number;
+      height: number;
+    };
 
 export type fontParam = {
   family: string;

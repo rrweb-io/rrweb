@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import { IWindow, SerializedWebGlArg } from '../../../types';
+import { IWindow, CanvasArg } from '../../../types';
 
 // TODO: unify with `replay/webgl.ts`
 type GLVarMap = Map<string, any[]>;
@@ -49,7 +49,7 @@ export function serializeArg(
   value: any,
   win: IWindow,
   ctx: WebGL2RenderingContext | WebGLRenderingContext,
-): SerializedWebGlArg {
+): CanvasArg {
   if (value instanceof Array) {
     return value.map((arg) => serializeArg(arg, win, ctx));
   } else if (value === null) {

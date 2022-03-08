@@ -11,6 +11,15 @@ rrweb.record({
 });
 ```
 
+Alternatively enable image snapshot recording of Canvas at a maximum of 15 frames per second：
+
+```js
+rrweb.record({
+  emit(event) {},
+  recordCanvas: 15,
+});
+```
+
 Enable replaying Canvas：
 
 ```js

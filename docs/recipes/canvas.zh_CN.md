@@ -12,6 +12,15 @@ rrweb.record({
 });
 ```
 
+或者启用每秒 15 帧的 Canvas 图像快照记录：
+
+```js
+rrweb.record({
+  emit(event) {},
+  recordCanvas: 15,
+});
+```
+
 回放时对 Canvas 进行回放：
 
 ```js

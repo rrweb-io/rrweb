@@ -106,8 +106,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseInteraction
         ) {
-          delete s.data.x;
-          delete s.data.y;
+          delete (s.data as any).x;
+          delete (s.data as any).y;
         }
         if (
           s.type === EventType.IncrementalSnapshot &&
@@ -149,7 +149,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
             coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
           });
         }
-        delete s.timestamp;
+        delete (s as any).timestamp;
         return s;
       }),
     null,

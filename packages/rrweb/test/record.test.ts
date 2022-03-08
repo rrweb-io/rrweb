@@ -11,7 +11,7 @@ import {
   IncrementalSource,
   styleSheetRuleData,
 } from '../src/types';
-import { assertSnapshot, launchPuppeteer } from './utils';
+import { assertSnapshot, launchPuppeteer, waitForRAF } from './utils';
 
 interface ISuite {
   code: string;
@@ -368,7 +368,7 @@ describe('record iframes', function (this: ISuite) {
         emit: ((window as unknown) as IWindow).emit,
       });
     });
-    await ctx.page.waitForTimeout(10);
+    await waitForRAF(ctx.page);
     // console.log(JSON.stringify(ctx.events));
 
     expect(ctx.events.length).toEqual(3);
