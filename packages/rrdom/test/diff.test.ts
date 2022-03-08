@@ -181,7 +181,7 @@ describe('diff algorithm for rrdom', () => {
       } as canvasMutationData;
       const MutationNumber = 100;
       Array.from(Array(MutationNumber)).forEach(() =>
-        rrCanvas.canvasMutation.push({
+        rrCanvas.canvasMutations.push({
           event: {
             timestamp: Date.now(),
             type: EventType.IncrementalSnapshot,
@@ -323,22 +323,17 @@ describe('diff algorithm for rrdom', () => {
       const value = 'http://www.w3.org/2000/svg';
       node.attributes.xmlns = value;
 
-      const setAttributeNS = jest.fn();
-      const originalFun = SVGElement.prototype.setAttributeNS;
-      HTMLElement.prototype.setAttributeNS = function () {
-        setAttributeNS(...arguments);
-        return originalFun.apply(this, arguments);
-      };
-
+      jest.spyOn(Element.prototype, 'setAttributeNS');
       diff(element, node, replayer);
       expect(((element as Node) as SVGElement).getAttribute('xmlns')).toBe(
         value,
       );
-      expect(setAttributeNS).toHaveBeenCalledWith(
+      expect(SVGElement.prototype.setAttributeNS).toHaveBeenCalledWith(
         'http://www.w3.org/2000/xmlns/',
         'xmlns',
         value,
       );
+      jest.restoreAllMocks();
     });
 
     it('can diff properties for canvas', async () => {
@@ -348,16 +343,11 @@ describe('diff algorithm for rrdom', () => {
       rrCanvas.__sn = Object.assign({}, elementSn, { tagName: 'canvas' });
       rrCanvas.attributes['rr_dataURL'] = 'data:image/png;base64,';
 
-      // Patch the function to detect whether an img element is created.
-      const originalFn = document.createElement;
-      const createImageElement = jest.fn();
-      document.createElement = function () {
-        createImageElement(...arguments);
-        return originalFn.apply(this, arguments);
-      };
+      jest.spyOn(document, 'createElement');
 
       diff(element, rrCanvas, replayer);
-      expect(createImageElement).toHaveBeenCalledWith('img');
+      expect(document.createElement).toHaveBeenCalledWith('img');
+      jest.restoreAllMocks();
     });
   });
 

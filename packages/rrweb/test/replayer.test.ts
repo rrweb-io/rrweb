@@ -8,6 +8,7 @@ import {
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
+  waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
@@ -248,7 +249,7 @@ describe('replayer', function () {
     const delay = 50;
     // restart the replayer
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
 
     await page.evaluate('replayer.pause(1050);');
     // scroll the "#container" div' at 1000
@@ -260,7 +261,7 @@ describe('replayer', function () {
     ).toEqual(2500);
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(1550);');
     // scroll the document at 1500
     expect(
@@ -272,7 +273,7 @@ describe('replayer', function () {
     ).toEqual(250);
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2050);');
     // remove the "#container" element at 2000
     expect(await contentDocument!.$('#container')).toBeNull();
@@ -303,10 +304,9 @@ describe('replayer', function () {
       ),
     ).toEqual('valueB'); // the default value
 
-    const delay = 50;
     // restart the replayer
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
 
     await page.evaluate('replayer.pause(1550);');
     // the value get changed to 'valueA' at 1500
@@ -318,7 +318,7 @@ describe('replayer', function () {
     ).toEqual('valueA');
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2050);');
     // the value get changed to 'valueC' at 2000
     expect(
@@ -329,7 +329,7 @@ describe('replayer', function () {
     ).toEqual('valueC');
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2550);');
     // add a new input element at 2500
     expect(
@@ -340,7 +340,7 @@ describe('replayer', function () {
     ).toEqual('');
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(3050);');
     // set the value 'test input' for the input element at 3000
     expect(
@@ -351,13 +351,13 @@ describe('replayer', function () {
     ).toEqual('test input');
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(3550);');
     // remove the select element at 3500
     expect(await contentDocument!.$('select')).toBeNull();
 
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(4050);');
     // remove the input element at 4000
     expect(await contentDocument!.$('input')).toBeNull();
@@ -374,10 +374,9 @@ describe('replayer', function () {
     const contentDocument = await iframe!.contentFrame()!;
     expect(await contentDocument!.$('iframe')).toBeNull();
 
-    const delay = 50;
     // restart the replayer
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(550);'); // add 'iframe one' at 500
     expect(await contentDocument!.$('iframe')).not.toBeNull();
     let iframeOneDocument = await (await contentDocument!.$(
@@ -396,7 +395,7 @@ describe('replayer', function () {
 
     // add 'iframe two' and 'iframe three' at 1000
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(1050);');
     // check the inserted style of iframe 'one' again
     iframeOneDocument = await (await contentDocument!.$(
@@ -423,7 +422,7 @@ describe('replayer', function () {
 
     // add 'iframe four' at 1500
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(1550);');
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
@@ -438,7 +437,7 @@ describe('replayer', function () {
 
     // add 'iframe five' at 2000
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2050);');
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
@@ -463,7 +462,7 @@ describe('replayer', function () {
 
     // remove the html element of 'iframe four' at 2500
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2550);');
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
@@ -506,7 +505,7 @@ describe('replayer', function () {
 
     // add shadow dom 'two' at 1000
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(1050);');
     expect(
       await contentDocument!.evaluate(

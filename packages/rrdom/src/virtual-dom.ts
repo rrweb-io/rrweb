@@ -131,7 +131,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
 export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
 
 export class RRCanvasElement extends RRElement implements IRRElement {
-  public canvasMutation: {
+  public canvasMutations: {
     event: incrementalSnapshotEvent & {
       timestamp: number;
       delay?: number | undefined;

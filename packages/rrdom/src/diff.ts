@@ -119,7 +119,7 @@ export function diff(
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
           break;
         case 'CANVAS':
-          (newTree as RRCanvasElement).canvasMutation.forEach(
+          (newTree as RRCanvasElement).canvasMutations.forEach(
             (canvasMutation) =>
               replayer.applyCanvas(
                 canvasMutation.event,
