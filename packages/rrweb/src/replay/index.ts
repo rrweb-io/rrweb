@@ -1268,7 +1268,7 @@ export class Replayer {
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
-          target.canvasMutation.push({ event: e, mutation: d });
+          target.canvasMutations.push({ event: e, mutation: d });
         } else {
           const target = this.mirror.getNode(d.id);
           if (!target) {
