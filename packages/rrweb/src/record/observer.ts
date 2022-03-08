@@ -54,18 +54,20 @@ const isCSSMediaRuleSupported = typeof CSSMediaRule !== 'undefined';
 const isCSSSupportsRuleSupported = typeof CSSSupportsRule !== 'undefined';
 const isCSSConditionRuleSupported = typeof CSSConditionRule !== 'undefined';
 
-function getEventTarget(event: Event): EventTarget | null {
+// Event.path is non-standard and used in some older browsers
+type NonStandardEvent = Omit<Event, 'composedPath'> & {
+  path: EventTarget[];
+};
+
+function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
   try {
     if ('composedPath' in event) {
       const path = event.composedPath();
       if (path.length) {
         return path[0];
       }
-    } else if (
-      'path' in event &&
-      (event as { path: EventTarget[] }).path.length
-    ) {
-      return (event as { path: EventTarget[] }).path[0];
+    } else if ('path' in event && event.path.length) {
+      return event.path[0];
     }
     return event.target;
   } catch {
