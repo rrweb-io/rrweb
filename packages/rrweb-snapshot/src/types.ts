@@ -112,6 +112,11 @@ export type SlimDOMOptions = Partial<{
   headMetaVerification: boolean;
 }>;
 
+export type DataURLOptions = Partial<{
+  type: string;
+  quality: number;
+}>;
+
 export type MaskTextFn = (text: string) => string;
 export type MaskInputFn = (text: string) => string;
 
