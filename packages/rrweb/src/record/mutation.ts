@@ -272,8 +272,7 @@ export default class MutationBuffer {
       // ensure shadowHost is a Node, or doc.contains will throw an error
       const notInDoc =
         !this.doc.contains(n) &&
-        (!(rootShadowHost instanceof Node) ||
-          !this.doc.contains(rootShadowHost));
+        (rootShadowHost === null || !this.doc.contains(rootShadowHost));
       if (!n.parentNode || notInDoc) {
         return;
       }
@@ -309,6 +308,9 @@ export default class MutationBuffer {
         },
         onIframeLoad: (iframe, childSn) => {
           this.iframeManager.attachIframe(iframe, childSn);
+          this.shadowDomManager.observeAttachShadow(
+            (iframe as Node) as HTMLIFrameElement,
+          );
         },
       });
       if (sn) {

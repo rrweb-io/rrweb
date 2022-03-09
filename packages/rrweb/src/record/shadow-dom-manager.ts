@@ -14,11 +14,19 @@ type BypassOptions = Omit<
   sampling: SamplingStrategy;
 };
 
+type WindowWithHTMLElement = Window & {
+  HTMLElement: { prototype: HTMLElement; new (): HTMLElement };
+};
+
 export class ShadowDomManager {
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
+  private observedIFrames: {
+    iframe: HTMLIFrameElement;
+    originalAttachShadow: (init: ShadowRootInit) => ShadowRoot;
+  }[] = [];
   private originalAttachShadow: (init: ShadowRootInit) => ShadowRoot;
 
   constructor(options: {
@@ -38,7 +46,8 @@ export class ShadowDomManager {
     const manager = this;
     HTMLElement.prototype.attachShadow = function () {
       const shadowRoot = attachShadow.apply(this, arguments);
-      if (this.shadowRoot) manager.addShadowRoot(this.shadowRoot, document);
+      if (this.shadowRoot)
+        manager.addShadowRoot(this.shadowRoot, this.ownerDocument);
       return shadowRoot;
     };
   }
@@ -64,7 +73,36 @@ export class ShadowDomManager {
     });
   }
 
+  /**
+   * Monkey patch 'attachShadow' of an IFrameElement to observe newly added shadow doms.
+   */
+  public observeAttachShadow(iframeElement: HTMLIFrameElement) {
+    if (iframeElement.contentWindow) {
+      const originalAttachShadow = (iframeElement.contentWindow as WindowWithHTMLElement)
+        .HTMLElement.prototype.attachShadow;
+      const manager = this;
+      (iframeElement.contentWindow as WindowWithHTMLElement).HTMLElement.prototype.attachShadow = function () {
+        const shadowRoot = originalAttachShadow.apply(this, arguments);
+        if (this.shadowRoot)
+          manager.addShadowRoot(
+            this.shadowRoot,
+            iframeElement.contentDocument as Document,
+          );
+        return shadowRoot;
+      };
+      this.observedIFrames.push({
+        iframe: iframeElement,
+        originalAttachShadow,
+      });
+    }
+  }
+
   public reset() {
     HTMLElement.prototype.attachShadow = this.originalAttachShadow;
+    this.observedIFrames.forEach(
+      ({ iframe, originalAttachShadow }) =>
+        iframe.contentWindow &&
+        ((iframe.contentWindow as WindowWithHTMLElement).HTMLElement.prototype.attachShadow = originalAttachShadow),
+    );
   }
 }
