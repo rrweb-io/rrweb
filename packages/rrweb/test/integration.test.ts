@@ -548,6 +548,46 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should record nested iframes and shadow doms', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'frame2.html'));
+
+    await page.evaluate(() => {
+      const sleep = (ms: number) =>
+        new Promise((resolve) => setTimeout(resolve, ms));
+      let iframe: HTMLIFrameElement;
+      sleep(10)
+        .then(() => {
+          // get contentDocument of iframe five
+          const contentDocument1 = document.querySelector('iframe')!
+            .contentDocument!;
+          // create shadow dom #1
+          contentDocument1.body.attachShadow({ mode: 'open' });
+          contentDocument1.body.shadowRoot!.appendChild(
+            document.createElement('div'),
+          );
+          const div = contentDocument1.body.shadowRoot!.childNodes[0];
+          iframe = contentDocument1.createElement('iframe');
+          // append an iframe to shadow dom #1
+          div.appendChild(iframe);
+          return sleep(10);
+        })
+        .then(() => {
+          const contentDocument2 = iframe.contentDocument!;
+          // create shadow dom #2 in the iframe
+          contentDocument2.body.attachShadow({ mode: 'open' });
+          contentDocument2.body.shadowRoot!.appendChild(
+            document.createElement('span'),
+          );
+        });
+    });
+    await page.waitForTimeout(50);
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('should mask texts', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
