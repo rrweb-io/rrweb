@@ -5,15 +5,6 @@ module.exports = {
   testMatch: ['**/**.test.ts'],
   moduleNameMapper: {
     '\\.css$': 'identity-obj-proxy',
-  },
-  transform: {
-    '^.+\\.[tj]s$': 'ts-jest',
-  },
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        allowJs: true,
-      },
-    },
+    'rrdom/es/(.*)': 'rrdom/lib/$1',
   },
 };
