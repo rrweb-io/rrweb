@@ -8,6 +8,7 @@ import {
   Mirror,
 } from '../../../types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
+import { serializeArgs } from './serialize-args';
 
 export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,
@@ -40,15 +41,7 @@ export default function initCanvas2DMutationObserver(
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
               setTimeout(() => {
-                const recordArgs = [...args];
-                if (
-                  prop === 'drawImage' &&
-                  recordArgs[0] &&
-                  recordArgs[0] instanceof HTMLCanvasElement
-                ) {
-                  // TODO: move `toDataURL` to web worker if possible
-                  recordArgs[0] = recordArgs[0].toDataURL();
-                }
+                const recordArgs = serializeArgs([...args], win, this);
                 cb(this.canvas, {
                   type: CanvasContext['2D'],
                   property: prop,
