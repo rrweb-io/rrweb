@@ -108,6 +108,13 @@ export function serializeArg(
       rr_type: name,
       args: [serializeArg(value.data, win, ctx), value.width, value.height],
     };
+    // } else if (value instanceof Blob) {
+    //   const name = value.constructor.name;
+    //   return {
+    //     rr_type: name,
+    //     data: [serializeArg(await value.arrayBuffer(), win, ctx)],
+    //     type: value.type,
+    //   };
   } else if (isInstanceOfWebGLObject(value, win) || typeof value === 'object') {
     const name = value.constructor.name;
     const index = saveWebGLVar(value, win, ctx) as number;
