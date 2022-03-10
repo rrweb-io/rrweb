@@ -41,11 +41,10 @@ async function getTransparentBlobFor(
 const worker: ImageBitmapDataURLResponseWorker = self;
 
 worker.onmessage = async function (e) {
-  if (!('OffscreenCanvas' in globalThis)) return;
+  if (!('OffscreenCanvas' in globalThis))
+    return worker.postMessage({ id: e.data.id });
 
   const { id, bitmap, width, height } = e.data;
-
-  if (!('OffscreenCanvas' in globalThis)) return worker.postMessage({ id });
 
   const transparentBase64 = getTransparentBlobFor(width, height);
 

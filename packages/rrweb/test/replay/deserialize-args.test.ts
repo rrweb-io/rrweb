@@ -155,4 +155,49 @@ describe('deserializeArg', () => {
     // thats why we test size of the blob as well
     expect(deserialized.size).toEqual(expected.size);
   });
+
+  describe('isUnchanged', () => {
+    it('should set isUnchanged:true when non of the args are changed', async () => {
+      const status = {
+        isUnchanged: true,
+      };
+
+      await deserializeArg(new Map(), context, status)(true);
+      expect(status.isUnchanged).toBeTruthy();
+    });
+
+    it('should set isUnchanged: false when args are deserialzed', async () => {
+      const status = {
+        isUnchanged: true,
+      };
+
+      await deserializeArg(
+        new Map(),
+        context,
+        status,
+      )({
+        rr_type: 'Float64Array',
+        args: [[-1, -1, 3, -1, -1, 3]],
+      });
+      expect(status.isUnchanged).toBeFalsy();
+    });
+
+    it('should set isUnchanged: false when nested args are deserialzed', async () => {
+      const status = {
+        isUnchanged: true,
+      };
+
+      await deserializeArg(
+        new Map(),
+        context,
+        status,
+      )([
+        {
+          rr_type: 'Float64Array',
+          args: [[-1, -1, 3, -1, -1, 3]],
+        },
+      ]);
+      expect(status.isUnchanged).toBeFalsy();
+    });
+  });
 });

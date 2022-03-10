@@ -176,4 +176,18 @@ describe('serializeArg', () => {
       ],
     });
   });
+
+  it('should serialize a blob', async () => {
+    const arrayBuffer = new Uint8Array([1, 2, 0, 4]).buffer;
+    const blob = new Blob([arrayBuffer], { type: 'image/png' });
+    const expected = {
+      rr_type: 'ArrayBuffer',
+      base64: 'AQIABA==',
+    };
+
+    expect(serializeArg(blob, window, context)).toStrictEqual({
+      rr_type: 'Blob',
+      args: [expected, { type: 'image/png' }],
+    });
+  });
 });

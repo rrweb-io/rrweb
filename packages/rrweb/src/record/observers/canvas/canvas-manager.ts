@@ -177,12 +177,15 @@ export class CanvasManager {
             }
           }
           const bitmap = await createImageBitmap(canvas);
-          worker.postMessage({
-            id,
-            bitmap,
-            width: canvas.width,
-            height: canvas.height,
-          });
+          worker.postMessage(
+            {
+              id,
+              bitmap,
+              width: canvas.width,
+              height: canvas.height,
+            },
+            [bitmap],
+          );
         });
       rafId = requestAnimationFrame(takeCanvasSnapshots);
     };

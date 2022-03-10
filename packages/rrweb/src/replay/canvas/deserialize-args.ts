@@ -35,14 +35,20 @@ export function deserializeArg(
   ctx:
     | CanvasRenderingContext2D
     | WebGLRenderingContext
-    | WebGL2RenderingContext,
+    | WebGL2RenderingContext
+    | null,
+  preload?: {
+    isUnchanged: boolean;
+  },
 ): (arg: CanvasArg) => Promise<any> {
   return async (arg: CanvasArg): Promise<any> => {
     if (arg && typeof arg === 'object' && 'rr_type' in arg) {
+      if (preload) preload.isUnchanged = false;
       if (arg.rr_type === 'ImageBitmap' && 'args' in arg) {
-        const args = await deserializeArg(imageMap, ctx)(arg.args);
+        const args = await deserializeArg(imageMap, ctx, preload)(arg.args);
         return await createImageBitmap.apply(null, args);
       } else if ('index' in arg) {
+        if (preload || ctx === null) return arg; // we are preloading, ctx is unknown
         const { rr_type: name, index } = arg;
         return variableListFor(ctx, name)[index];
       } else if ('args' in arg) {
@@ -50,7 +56,9 @@ export function deserializeArg(
         const ctor = window[name as keyof Window];
 
         return new ctor(
-          ...(await Promise.all(args.map(deserializeArg(imageMap, ctx)))),
+          ...(await Promise.all(
+            args.map(deserializeArg(imageMap, ctx, preload)),
+          )),
         );
       } else if ('base64' in arg) {
         return decode(arg.base64);
@@ -66,7 +74,7 @@ export function deserializeArg(
         }
       } else if ('data' in arg && arg.rr_type === 'Blob') {
         const blobContents = await Promise.all(
-          arg.data.map(deserializeArg(imageMap, ctx)),
+          arg.data.map(deserializeArg(imageMap, ctx, preload)),
         );
         const blob = new Blob(blobContents, {
           type: arg.type,
@@ -74,7 +82,9 @@ export function deserializeArg(
         return blob;
       }
     } else if (Array.isArray(arg)) {
-      const result = await Promise.all(arg.map(deserializeArg(imageMap, ctx)));
+      const result = await Promise.all(
+        arg.map(deserializeArg(imageMap, ctx, preload)),
+      );
       return result;
     }
     return arg;

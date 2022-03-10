@@ -40,6 +40,7 @@ import {
   mouseMovePos,
   IWindow,
   canvasMutationCommand,
+  canvasMutationParam,
 } from '../types';
 import {
   createMirror,
@@ -64,6 +65,7 @@ import {
   getPositionsAndIndex,
 } from './virtual-styles';
 import canvasMutation from './canvas';
+import { deserializeArg } from './canvas/deserialize-args';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -123,6 +125,7 @@ export class Replayer {
   private cache: BuildCache = createCache();
 
   private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
+  private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
   private mirror: Mirror = createMirror();
 
@@ -857,12 +860,14 @@ export class Replayer {
       if (
         event.type === EventType.IncrementalSnapshot &&
         event.data.source === IncrementalSource.CanvasMutation
-      )
-        if ('commands' in event.data) {
-          event.data.commands.forEach((c) => this.preloadImages(c, event));
-        } else {
-          this.preloadImages(event.data, event);
-        }
+      ) {
+        this.deserializeAndPreloadCanvasEvents(event.data, event);
+        const commands =
+          'commands' in event.data ? event.data.commands : [event.data];
+        commands.forEach((c) => {
+          this.preloadImages(c, event);
+        });
+      }
     }
   }
 
@@ -878,12 +883,34 @@ export class Replayer {
       let d = imgd?.data;
       d = JSON.parse(data.args[0]);
       ctx?.putImageData(imgd!, 0, 0);
-    } else if (this.hasImageArg(data.args)) {
-      this.getImageArgs(data.args).forEach((url) => {
-        const image = new Image();
-        image.src = url; // this preloads the image
-        this.imageMap.set(url, image);
-      });
+    }
+  }
+  private async deserializeAndPreloadCanvasEvents(
+    data: canvasMutationData,
+    event: eventWithTime,
+  ) {
+    if (!this.canvasEventMap.has(event)) {
+      const status = {
+        isUnchanged: true,
+      };
+      if ('commands' in data) {
+        const commands = await Promise.all(
+          data.commands.map(async (c) => {
+            const args = await Promise.all(
+              c.args.map(deserializeArg(this.imageMap, null, status)),
+            );
+            return { ...c, args };
+          }),
+        );
+        if (status.isUnchanged === false)
+          this.canvasEventMap.set(event, { ...data, commands });
+      } else {
+        const args = await Promise.all(
+          data.args.map(deserializeArg(this.imageMap, null, status)),
+        );
+        if (status.isUnchanged === false)
+          this.canvasEventMap.set(event, { ...data, args });
+      }
     }
   }
 
@@ -1265,6 +1292,7 @@ export class Replayer {
           mutation: d,
           target: (target as unknown) as HTMLCanvasElement,
           imageMap: this.imageMap,
+          canvasEventMap: this.canvasEventMap,
           errorHandler: this.warnCanvasMutationFailed.bind(this),
         });
 
