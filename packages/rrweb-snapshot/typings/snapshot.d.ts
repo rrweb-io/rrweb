@@ -24,7 +24,7 @@ export declare function serializeNodeWithId(n: Node | INode, options: {
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeINode: INode, iframeId: number, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
 }): serializedNodeWithId | null;
 declare function snapshot(n: Document, options?: {
@@ -42,7 +42,7 @@ declare function snapshot(n: Document, options?: {
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeINode: INode, iframeId: number, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
 }): [serializedNodeWithId | null, idNodeMap];

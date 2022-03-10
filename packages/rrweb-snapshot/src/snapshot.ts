@@ -783,7 +783,7 @@ export function serializeNodeWithId(
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeINode: INode, iframeId: number, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
   },
 ): serializedNodeWithId | null {
@@ -922,6 +922,7 @@ export function serializeNodeWithId(
     serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'iframe'
   ) {
+    const iframeId = serializedNode.id;
     onceIframeLoaded(
       n as HTMLIFrameElement,
       () => {
@@ -951,7 +952,8 @@ export function serializeNodeWithId(
           });
 
           if (serializedIframeNode) {
-            onIframeLoad(n as INode, serializedIframeNode);
+            // n may have lost it's __sn attribute by the time we get to this callback
+            onIframeLoad(n as INode, iframeId, serializedIframeNode);
           }
         }
       },
@@ -979,7 +981,7 @@ function snapshot(
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeINode: INode, iframeId: number, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
   },

@@ -9,5 +9,5 @@ export declare class IframeManager {
     });
     addIframe(iframeEl: HTMLIFrameElement): void;
     addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown): void;
-    attachIframe(iframeEl: INode, childSn: serializedNodeWithId): void;
+    attachIframe(iframeEl: INode, parentId: number, childSn: serializedNodeWithId): void;
 }

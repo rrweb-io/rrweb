@@ -18,11 +18,11 @@ export class IframeManager {
     this.loadListener = cb;
   }
 
-  public attachIframe(iframeEl: INode, childSn: serializedNodeWithId) {
+  public attachIframe(iframeEl: INode, parentId: number, childSn: serializedNodeWithId) {
     this.mutationCb({
       adds: [
         {
-          parentId: iframeEl.__sn.id,
+          parentId: parentId,
           nextId: null,
           node: childSn,
         },
