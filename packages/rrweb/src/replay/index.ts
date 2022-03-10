@@ -849,19 +849,22 @@ export class Replayer {
   /**
    * pause when there are some canvas drawImage args need to be loaded
    */
-  private preloadAllImages() {
+  private async preloadAllImages(): Promise<void[]> {
     let beforeLoadState = this.service.state;
     const stateHandler = () => {
       beforeLoadState = this.service.state;
     };
     this.emitter.on(ReplayerEvents.Start, stateHandler);
     this.emitter.on(ReplayerEvents.Pause, stateHandler);
+    const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (
         event.type === EventType.IncrementalSnapshot &&
         event.data.source === IncrementalSource.CanvasMutation
       ) {
-        this.deserializeAndPreloadCanvasEvents(event.data, event);
+        promises.push(
+          this.deserializeAndPreloadCanvasEvents(event.data, event),
+        );
         const commands =
           'commands' in event.data ? event.data.commands : [event.data];
         commands.forEach((c) => {
@@ -869,6 +872,7 @@ export class Replayer {
         });
       }
     }
+    return Promise.all(promises);
   }
 
   private preloadImages(data: canvasMutationCommand, event: eventWithTime) {

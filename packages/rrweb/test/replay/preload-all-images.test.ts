@@ -65,11 +65,11 @@ describe('preloadAllImages', () => {
     );
   });
 
-  it('should preload nested image', () => {
+  it('should preload nested image', async () => {
     replayer.service.state.context.events = [
       canvasMutationEventWithArgs([
         {
-          rr_type: 'something',
+          rr_type: 'Array',
           args: [
             {
               rr_type: 'HTMLImageElement',
@@ -80,7 +80,7 @@ describe('preloadAllImages', () => {
       ]),
     ];
 
-    (replayer as any).preloadAllImages();
+    await (replayer as any).preloadAllImages();
 
     const expectedImage = new Image();
     expectedImage.src = 'http://example.com';
