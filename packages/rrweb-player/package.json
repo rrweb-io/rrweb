@@ -2,7 +2,7 @@
   "name": "rrweb-player",
   "version": "0.7.13",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.0.0",
+    "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-typescript": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^3.7.0",

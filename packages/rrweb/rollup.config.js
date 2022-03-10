@@ -112,10 +112,7 @@ for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
     webWorkerLoader(),
-    typescript({
-      // a trick to avoid @rollup/plugin-typescript error
-      outDir: 'es/rrweb',
-    }),
+    typescript(),
   ];
   const plugins = basePlugins.concat(
     postcss({
