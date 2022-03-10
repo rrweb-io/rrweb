@@ -6,7 +6,6 @@ import {
   canvasMutationCallback,
   canvasMutationCommand,
   canvasMutationWithType,
-  ImageBitmapDataURLWorkerParams,
   IWindow,
   listenerHandler,
   Mirror,
