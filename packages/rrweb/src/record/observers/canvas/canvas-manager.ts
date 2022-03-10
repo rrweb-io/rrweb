@@ -1,4 +1,4 @@
-import { INode } from 'rrweb-snapshot';
+import { ICanvas, INode } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
@@ -31,13 +31,13 @@ export class CanvasManager {
   private mirror: Mirror;
 
   private mutationCb: canvasMutationCallback;
-  private resetObservers: listenerHandler;
+  private resetObservers?: listenerHandler;
   private frozen: boolean = false;
   private locked: boolean = false;
 
   public reset() {
     this.pendingCanvasMutations.clear();
-    this.resetObservers();
+    this.resetObservers && this.resetObservers();
   }
 
   public freeze() {

@@ -398,7 +398,7 @@ And there are three rrweb-replayer event will be emitted in the same way:
 
 You can also play with rrweb by using the REPL testing tool which does not need installation.
 
-Run `npm run repl` to launch a browser and ask for a URL you want to test on the CLI:
+Run `yarn repl` to launch a browser and ask for a URL you want to test on the CLI:
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io:

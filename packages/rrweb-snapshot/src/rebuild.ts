@@ -209,6 +209,13 @@ function buildNode(
               n.attributes.href.endsWith('.js')
             ) {
               // ignore
+            } else if (
+              tagName === 'img' &&
+              n.attributes.srcset &&
+              n.attributes.rr_dataURL
+            ) {
+              // backup original img srcset
+              node.setAttribute('rrweb-original-srcset', n.attributes.srcset as string);
             } else {
               node.setAttribute(name, value);
             }
@@ -232,11 +239,10 @@ function buildNode(
               // Backup original img src. It may not have been set yet.
               image.setAttribute(
                 'rrweb-original-src',
-                n.attributes['src'] as string,
+                n.attributes.src as string,
               );
               image.src = value;
             }
-            image.removeAttribute(name);
           }
 
           if (name === 'rr_width') {
@@ -261,6 +267,7 @@ function buildNode(
           }
         }
       }
+
       if (n.isShadowHost) {
         /**
          * Since node is newly rebuilt, it should be a normal element

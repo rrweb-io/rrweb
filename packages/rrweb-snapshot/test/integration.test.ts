@@ -199,14 +199,17 @@ iframe.contentDocument.querySelector('center').clientHeight
       waitUntil: 'load',
     });
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {inlineImages: true, inlineStylesheet: false});
-    `);
+    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false
+    })`);
     await page.waitFor(100);
     const snapshot = await page.evaluate(
       'JSON.stringify(snapshot[0], null, 2);',
     );
     assert(snapshot.includes('"rr_dataURL"'));
-    assert(snapshot.includes('data:image/png;base64,'));
+    assert(snapshot.includes('data:image/webp;base64,'));
   });
 });
 

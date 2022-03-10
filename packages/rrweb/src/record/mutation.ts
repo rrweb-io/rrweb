@@ -2,26 +2,22 @@ import {
   INode,
   serializeNodeWithId,
   transformAttribute,
-  MaskInputOptions,
-  SlimDOMOptions,
   IGNORED_NODE,
   isShadowRoot,
   needMaskingText,
   maskInputValue,
-  MaskTextFn,
-  MaskInputFn,
 } from 'rrweb-snapshot';
 import {
   mutationRecord,
-  blockClass,
-  maskTextClass,
-  mutationCallBack,
   textCursor,
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
   Mirror,
   styleAttributeValue,
+  observerParam,
+  MutationBufferParam,
+  Optional,
 } from '../types';
 import {
   isBlocked,
@@ -30,9 +26,6 @@ import {
   isIframeINode,
   hasShadowRoot,
 } from '../utils';
-import { IframeManager } from './iframe-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
-import { ShadowDomManager } from './shadow-dom-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -41,9 +34,6 @@ type DoubleLinkedListNode = {
 };
 type NodeInLinkedList = Node & {
   __ln: DoubleLinkedListNode;
-};
-type NodeBeingRemovedFromLinkedList = Node & {
-  __ln?: DoubleLinkedListNode;
 };
 
 function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
@@ -120,7 +110,7 @@ class DoubleLinkedList {
       }
     }
     if (n.__ln) {
-      delete (n as NodeBeingRemovedFromLinkedList).__ln;
+      delete (n as Optional<NodeInLinkedList, '__ln'>).__ln;
     }
     this.length--;
   }
@@ -166,61 +156,47 @@ export default class MutationBuffer {
   private movedSet = new Set<Node>();
   private droppedSet = new Set<Node>();
 
-  private emissionCallback: mutationCallBack;
-  private blockClass: blockClass;
-  private blockSelector: string | null;
-  private maskTextClass: maskTextClass;
-  private maskTextSelector: string | null;
-  private inlineStylesheet: boolean;
-  private maskInputOptions: MaskInputOptions;
-  private maskTextFn: MaskTextFn | undefined;
-  private maskInputFn: MaskInputFn | undefined;
-  private recordCanvas: boolean | number;
-  private inlineImages: boolean;
-  private slimDOMOptions: SlimDOMOptions;
-  private doc: Document;
+  private mutationCb: observerParam['mutationCb'];
+  private blockClass: observerParam['blockClass'];
+  private blockSelector: observerParam['blockSelector'];
+  private maskTextClass: observerParam['maskTextClass'];
+  private maskTextSelector: observerParam['maskTextSelector'];
+  private inlineStylesheet: observerParam['inlineStylesheet'];
+  private maskInputOptions: observerParam['maskInputOptions'];
+  private maskTextFn: observerParam['maskTextFn'];
+  private maskInputFn: observerParam['maskInputFn'];
+  private recordCanvas: observerParam['recordCanvas'];
+  private inlineImages: observerParam['inlineImages'];
+  private slimDOMOptions: observerParam['slimDOMOptions'];
+  private doc: observerParam['doc'];
+  private mirror: observerParam['mirror'];
+  private iframeManager: observerParam['iframeManager'];
+  private shadowDomManager: observerParam['shadowDomManager'];
+  private canvasManager: observerParam['canvasManager'];
 
-  private mirror: Mirror;
-  private iframeManager: IframeManager;
-  private shadowDomManager: ShadowDomManager;
-  private canvasManager: CanvasManager;
-
-  public init(
-    cb: mutationCallBack,
-    blockClass: blockClass,
-    blockSelector: string | null,
-    maskTextClass: maskTextClass,
-    maskTextSelector: string | null,
-    inlineStylesheet: boolean,
-    maskInputOptions: MaskInputOptions,
-    maskTextFn: MaskTextFn | undefined,
-    maskInputFn: MaskInputFn | undefined,
-    recordCanvas: boolean | number,
-    inlineImages: boolean,
-    slimDOMOptions: SlimDOMOptions,
-    doc: Document,
-    mirror: Mirror,
-    iframeManager: IframeManager,
-    shadowDomManager: ShadowDomManager,
-    canvasManager: CanvasManager,
-  ) {
-    this.blockClass = blockClass;
-    this.blockSelector = blockSelector;
-    this.maskTextClass = maskTextClass;
-    this.maskTextSelector = maskTextSelector;
-    this.inlineStylesheet = inlineStylesheet;
-    this.maskInputOptions = maskInputOptions;
-    this.maskTextFn = maskTextFn;
-    this.maskInputFn = maskInputFn;
-    this.recordCanvas = recordCanvas;
-    this.inlineImages = inlineImages;
-    this.slimDOMOptions = slimDOMOptions;
-    this.emissionCallback = cb;
-    this.doc = doc;
-    this.mirror = mirror;
-    this.iframeManager = iframeManager;
-    this.shadowDomManager = shadowDomManager;
-    this.canvasManager = canvasManager;
+  public init(options: MutationBufferParam) {
+    ([
+      'mutationCb',
+      'blockClass',
+      'blockSelector',
+      'maskTextClass',
+      'maskTextSelector',
+      'inlineStylesheet',
+      'maskInputOptions',
+      'maskTextFn',
+      'maskInputFn',
+      'recordCanvas',
+      'inlineImages',
+      'slimDOMOptions',
+      'doc',
+      'mirror',
+      'iframeManager',
+      'shadowDomManager',
+      'canvasManager',
+    ] as const).forEach((key) => {
+      // just a type trick, the runtime result is correct
+      this[key] = options[key] as never;
+    });
   }
 
   public freeze() {
@@ -444,7 +420,7 @@ export default class MutationBuffer {
     this.droppedSet = new Set<Node>();
     this.movedMap = {};
 
-    this.emissionCallback(payload);
+    this.mutationCb(payload);
   };
 
   private processMutation = (m: mutationRecord) => {

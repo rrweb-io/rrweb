@@ -136,6 +136,10 @@ export function stringify(
         return value ? value.outerHTML : '';
       }
       return value.nodeName;
+    } else if (value instanceof Error) {
+      return value.stack
+        ? value.stack + '\nEnd of stack for Error object'
+        : value.name + ': ' + value.message;
     }
     return value;
   });

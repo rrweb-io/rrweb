@@ -277,6 +277,27 @@ export type observerParam = {
   }>;
 };
 
+export type MutationBufferParam = Pick<
+  observerParam,
+  | 'mutationCb'
+  | 'blockClass'
+  | 'blockSelector'
+  | 'maskTextClass'
+  | 'maskTextSelector'
+  | 'inlineStylesheet'
+  | 'maskInputOptions'
+  | 'maskTextFn'
+  | 'maskInputFn'
+  | 'recordCanvas'
+  | 'inlineImages'
+  | 'slimDOMOptions'
+  | 'doc'
+  | 'mirror'
+  | 'iframeManager'
+  | 'shadowDomManager'
+  | 'canvasManager'
+>;
+
 export type hooksParam = {
   mutation?: mutationCallBack;
   mousemove?: mousemoveCallBack;
@@ -692,3 +713,5 @@ declare global {
 }
 
 export type IWindow = Window & typeof globalThis;
+
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
