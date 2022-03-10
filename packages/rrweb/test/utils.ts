@@ -217,6 +217,39 @@ export async function assertDomSnapshot(
   expect(stringifyDomSnapshot(data)).toMatchSnapshot();
 }
 
+export function stripBase64(events: eventWithTime[]) {
+  const base64Strings: string[] = [];
+  function walk<T>(obj: T): T {
+    if (!obj || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return (obj.map((e) => walk(e)) as unknown) as T;
+    const newObj: Partial<T> = {};
+    for (let prop in obj) {
+      const value = obj[prop];
+      if (prop === 'base64' && typeof value === 'string') {
+        let index = base64Strings.indexOf(value);
+        if (index === -1) {
+          index = base64Strings.push(value) - 1;
+        }
+        (newObj as any)[prop] = `base64-${index}`;
+      } else {
+        (newObj as any)[prop] = walk(value);
+      }
+    }
+    return newObj as T;
+  }
+
+  return events.map((event) => {
+    if (
+      event.type === EventType.IncrementalSnapshot &&
+      event.data.source === IncrementalSource.CanvasMutation
+    ) {
+      const newData = walk(event.data);
+      return { ...event, data: newData };
+    }
+    return event;
+  });
+}
+
 const now = Date.now();
 export const sampleEvents: eventWithTime[] = [
   {

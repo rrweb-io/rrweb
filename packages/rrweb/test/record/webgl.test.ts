@@ -11,7 +11,12 @@ import {
   IncrementalSource,
   CanvasContext,
 } from '../../src/types';
-import { assertSnapshot, launchPuppeteer, waitForRAF } from '../utils';
+import {
+  assertSnapshot,
+  launchPuppeteer,
+  stripBase64,
+  waitForRAF,
+} from '../utils';
 import { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
@@ -306,7 +311,7 @@ describe('record webgl', function (this: ISuite) {
       await waitForRAF(ctx.page);
 
       // should yield a frame for each change at a max of 60fps
-      assertSnapshot(ctx.events);
+      assertSnapshot(stripBase64(ctx.events));
     });
   });
 });
