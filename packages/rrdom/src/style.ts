@@ -29,8 +29,10 @@ export function toCSSText(style: Record<string, string>): string {
 /**
  * Camelize a hyphen-delimited string.
  */
-const camelizeRE = /-(\w)/g;
+const camelizeRE = /-([a-z])/g;
+const CUSTOM_PROPERTY_REGEX = /^--[a-zA-Z0-9-]+$/;
 export const camelize = (str: string): string => {
+  if (CUSTOM_PROPERTY_REGEX.test(str)) return str;
   return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''));
 };
 

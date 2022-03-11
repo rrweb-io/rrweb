@@ -654,6 +654,10 @@ describe('Basic RRDocument implementation', () => {
       node.attributes.style = 'top: /**/0;';
       expect(node.style.top).toEqual('0');
 
+      // custom property (variable)
+      node.attributes.style = '--custom-property: value';
+      expect(node.style['--custom-property']).toEqual('value');
+
       // incomplete
       node.attributes.style = 'overflow:';
       expect(node.style.overflow).toBeUndefined();
