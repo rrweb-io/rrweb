@@ -442,6 +442,7 @@ export declare type playerConfig = {
         strokeStyle?: string;
     };
     unpackFn?: UnpackFn;
+    useVirtualDom: boolean;
     plugins?: ReplayPlugin[];
 };
 export declare type playerMetaData = {

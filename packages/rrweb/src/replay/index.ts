@@ -160,6 +160,7 @@ export class Replayer {
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
+      useVirtualDom: true,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -1297,9 +1298,9 @@ export class Replayer {
     }
   }
 
-  private applyMutation(d: mutationData, useVirtualParent: boolean) {
+  private applyMutation(d: mutationData, isSync: boolean) {
     // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
-    if (!this.usingVirtualDom && useVirtualParent) {
+    if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
       this.usingVirtualDom = true;
       buildFromDom(
         this.iframe.contentDocument!,
@@ -1324,7 +1325,7 @@ export class Replayer {
         }
       }
     }
-    const mirror = useVirtualParent ? this.virtualDom.mirror : this.mirror;
+    const mirror = this.usingVirtualDom ? this.virtualDom.mirror : this.mirror;
     d.removes.forEach((mutation) => {
       let target = mirror.getNode(mutation.id);
       if (!target) {
@@ -1423,7 +1424,7 @@ export class Replayer {
 
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
-        : useVirtualParent
+        : this.usingVirtualDom
         ? this.virtualDom
         : this.iframe.contentDocument;
       if (isIframeINode(parent) || isRRIFrameElement(parent)) {

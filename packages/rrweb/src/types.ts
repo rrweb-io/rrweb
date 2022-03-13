@@ -619,6 +619,7 @@ export type playerConfig = {
         strokeStyle?: string;
       };
   unpackFn?: UnpackFn;
+  useVirtualDom: boolean;
   plugins?: ReplayPlugin[];
 };
 
