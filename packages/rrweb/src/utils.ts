@@ -441,7 +441,7 @@ export function getBaseDimension(
   };
 }
 
-export function hasShadowRoot<T extends Node>(
+export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
   return Boolean(((n as unknown) as Element)?.shadowRoot);

@@ -1402,8 +1402,12 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      if (mutation.node.isShadow && hasShadowRoot(parent as Node)) {
-        parent = (parent as Element | RRElement).shadowRoot as ShadowRoot;
+      if (mutation.node.isShadow) {
+        // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
+        if (!hasShadowRoot(parent)) {
+          (parent as Element | RRElement).attachShadow({ mode: 'open' });
+          parent = (parent as Element | RRElement).shadowRoot!;
+        } else parent = parent.shadowRoot;
       }
 
       let previous: Node | RRNode | null = null;

@@ -6,6 +6,7 @@ import type {
   SamplingStrategy,
 } from '../types';
 import { initMutationObserver, initScrollObserver } from './observer';
+import { patch } from '../utils';
 
 type BypassOptions = Omit<
   MutationBufferParam,
@@ -19,6 +20,7 @@ export class ShadowDomManager {
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
+  private restorePatches: (() => void)[] = [];
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -30,6 +32,19 @@ export class ShadowDomManager {
     this.scrollCb = options.scrollCb;
     this.bypassOptions = options.bypassOptions;
     this.mirror = options.mirror;
+
+    // Patch 'attachShadow' to observe newly added shadow doms.
+    const manager = this;
+    this.restorePatches.push(
+      patch(HTMLElement.prototype, 'attachShadow', function (original) {
+        return function () {
+          const shadowRoot = original.apply(this, arguments);
+          if (this.shadowRoot)
+            manager.addShadowRoot(this.shadowRoot, this.ownerDocument);
+          return shadowRoot;
+        };
+      }),
+    );
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
@@ -51,5 +66,37 @@ export class ShadowDomManager {
       doc: (shadowRoot as unknown) as Document,
       mirror: this.mirror,
     });
+  }
+
+  /**
+   * Monkey patch 'attachShadow' of an IFrameElement to observe newly added shadow doms.
+   */
+  public observeAttachShadow(iframeElement: HTMLIFrameElement) {
+    if (iframeElement.contentWindow) {
+      const manager = this;
+      this.restorePatches.push(
+        patch(
+          (iframeElement.contentWindow as Window & {
+            HTMLElement: { prototype: HTMLElement };
+          }).HTMLElement.prototype,
+          'attachShadow',
+          function (original) {
+            return function () {
+              const shadowRoot = original.apply(this, arguments);
+              if (this.shadowRoot)
+                manager.addShadowRoot(
+                  this.shadowRoot,
+                  iframeElement.contentDocument as Document,
+                );
+              return shadowRoot;
+            };
+          },
+        ),
+      );
+    }
+  }
+
+  public reset() {
+    this.restorePatches.forEach((restorePatch) => restorePatch());
   }
 }

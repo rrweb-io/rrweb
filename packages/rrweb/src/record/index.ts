@@ -273,6 +273,9 @@ function record<T = eventWithTime>(
       },
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
+        shadowDomManager.observeAttachShadow(
+          (iframe as Node) as HTMLIFrameElement,
+        );
       },
       keepIframeSrcFn,
     });
