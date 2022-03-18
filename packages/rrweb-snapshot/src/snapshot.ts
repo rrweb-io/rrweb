@@ -859,6 +859,7 @@ export function serializeNodeWithId(
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
+    if ((n as HTMLElement).shadowRoot) serializedNode.isShadowHost = true;
   }
   if (
     (serializedNode.type === NodeType.Document ||
@@ -903,7 +904,6 @@ export function serializeNodeWithId(
     }
 
     if (isElement(n) && n.shadowRoot) {
-      serializedNode.isShadowHost = true;
       for (const childN of Array.from(n.shadowRoot.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {

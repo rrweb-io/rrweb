@@ -1421,8 +1421,12 @@ export class Replayer {
         parent = virtualParent;
       }
 
-      if (mutation.node.isShadow && hasShadowRoot(parent)) {
-        parent = parent.shadowRoot;
+      if (mutation.node.isShadow) {
+        // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
+        if (!hasShadowRoot(parent)) {
+          ((parent as Node) as HTMLElement).attachShadow({ mode: 'open' });
+          parent = ((parent as Node) as HTMLElement).shadowRoot!;
+        } else parent = parent.shadowRoot;
       }
 
       let previous: Node | null = null;
