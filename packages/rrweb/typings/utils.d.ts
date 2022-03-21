@@ -33,7 +33,7 @@ export declare type AppendedIframe = {
 export declare function isIframeINode(node: INode | ShadowRoot | RRNode): node is HTMLIFrameINode;
 export declare function isRRIFrameElement(node: INode | ShadowRoot | RRNode): node is RRIFrameElement;
 export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
-export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
+export declare function hasShadowRoot<T extends Node | RRNode>(n: T): n is T & {
     shadowRoot: ShadowRoot;
 };
 export declare function getNestedRule(rules: CSSRuleList, position: number[]): CSSGroupingRule;

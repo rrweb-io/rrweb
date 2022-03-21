@@ -1,4 +1,4 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from 'rrweb-snapshot';
 import { NWSAPI } from 'nwsapi';
 import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
 import {
@@ -53,15 +53,13 @@ export class RRDocument
   }
 
   get documentElement(): RRElement | null {
-    return super.documentElement as RRElement | null;
-  }
-
-  get body(): RRElement | null {
-    return super.body as RRElement | null;
-  }
-
-  get head() {
-    return super.head as RRElement | null;
+    return (
+      (this.childNodes.find(
+        (node) =>
+          node.RRNodeType === RRNodeType.Element &&
+          (node as RRElement).tagName === 'HTML',
+      ) as RRElement) || null
+    );
   }
 
   get implementation(): RRDocument {
@@ -231,7 +229,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
 
   get firstElementChild(): RRElement | null {
     for (let child of this.childNodes)
-      if (child.RRNodeType === NodeType.Element) return child as RRElement;
+      if (child.RRNodeType === RRNodeType.Element) return child as RRElement;
     return null;
   }
 
@@ -327,7 +325,7 @@ export class RRStyleElement extends RRElement {
     if (!this._sheet) {
       let result = '';
       for (let child of this.childNodes)
-        if (child.nodeType === NodeType.Text)
+        if (child.RRNodeType === RRNodeType.Text)
           result += (child as RRText).textContent;
       this._sheet = cssom.parse(result);
     }

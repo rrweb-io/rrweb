@@ -7,7 +7,7 @@ import {
   documentNode,
   documentTypeNode,
   elementNode,
-  NodeType,
+  NodeType as RRNodeType,
   textNode,
 } from 'rrweb-snapshot';
 import {
@@ -30,7 +30,7 @@ describe('Basic RRDocument implementation', () => {
     it('should have basic properties', () => {
       const node = new RRNode();
       node.__sn = {
-        type: NodeType.Element,
+        type: RRNodeType.Element,
         tagName: 'div',
         attributes: {},
         childNodes: [],
@@ -140,7 +140,7 @@ describe('Basic RRDocument implementation', () => {
 
       node.setDefaultSN(1);
       expect(node.__sn).toBeDefined();
-      expect(node.__sn.type).toEqual(NodeType.Document);
+      expect(node.__sn.type).toEqual(RRNodeType.Document);
       expect((node.__sn as documentNode).childNodes).toBeInstanceOf(Array);
 
       expect(node.parentNode).toEqual(null);
@@ -149,7 +149,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBeUndefined();
       expect(node.textContent).toBeNull();
-      expect(node.RRNodeType).toBe(NodeType.Document);
+      expect(node.RRNodeType).toBe(RRNodeType.Document);
       expect(node.nodeType).toBe(document.nodeType);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
@@ -160,7 +160,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.insertBefore).toBeDefined();
       expect(node.removeChild).toBeDefined();
       expect(node.setDefaultSN).toBeDefined();
-      expect(node.notSerializedId).toBe(-1);
+      expect(node.unserializedId).toBe(-1);
       expect(node.documentElement).toBeNull();
       expect(node.body).toBeNull();
       expect(node.head).toBeNull();
@@ -179,9 +179,9 @@ describe('Basic RRDocument implementation', () => {
       expect(node.toString()).toEqual('1 RRDocument');
     });
 
-    it('can access a unique, decremented notSerializedId every time', () => {
+    it('can access a unique, decremented unserializedId every time', () => {
       const node = new RRDocument();
-      for (let i = 1; i <= 100; i++) expect(node.notSerializedId).toBe(-i);
+      for (let i = 1; i <= 100; i++) expect(node.unserializedId).toBe(-i);
     });
 
     it('can get documentElement', () => {
@@ -311,21 +311,21 @@ describe('Basic RRDocument implementation', () => {
     it('should implement create node functions', () => {
       const node = new RRDocument();
       expect(node.createDocument(null, '', null).RRNodeType).toEqual(
-        NodeType.Document,
+        RRNodeType.Document,
       );
       expect(node.createDocumentType('', '', '').RRNodeType).toEqual(
-        NodeType.DocumentType,
+        RRNodeType.DocumentType,
       );
-      expect(node.createElement('html').RRNodeType).toEqual(NodeType.Element);
+      expect(node.createElement('html').RRNodeType).toEqual(RRNodeType.Element);
       expect(node.createElementNS('', 'html').RRNodeType).toEqual(
-        NodeType.Element,
+        RRNodeType.Element,
       );
-      expect(node.createTextNode('text').RRNodeType).toEqual(NodeType.Text);
+      expect(node.createTextNode('text').RRNodeType).toEqual(RRNodeType.Text);
       expect(node.createComment('comment').RRNodeType).toEqual(
-        NodeType.Comment,
+        RRNodeType.Comment,
       );
       expect(node.createCDATASection('data').RRNodeType).toEqual(
-        NodeType.CDATA,
+        RRNodeType.CDATA,
       );
     });
 
@@ -334,11 +334,11 @@ describe('Basic RRDocument implementation', () => {
       const documentType = node.createDocumentType('html', '', '');
       node.appendChild(documentType);
       expect(node.childNodes[0]).toBe(documentType);
-      expect(node.notSerializedId).toBe(-1);
+      expect(node.unserializedId).toBe(-1);
       expect(node.close());
       expect(node.open());
       expect(node.childNodes.length).toEqual(0);
-      expect(node.notSerializedId).toBe(-1);
+      expect(node.unserializedId).toBe(-1);
     });
 
     it('can cover the usage of write() in rrweb-snapshot', () => {
@@ -348,7 +348,7 @@ describe('Basic RRDocument implementation', () => {
       );
       expect(node.childNodes.length).toBe(1);
       let doctype = node.childNodes[0] as IRRDocumentType;
-      expect(doctype.RRNodeType).toEqual(NodeType.DocumentType);
+      expect(doctype.RRNodeType).toEqual(RRNodeType.DocumentType);
       expect(doctype.parentNode).toEqual(node);
       expect(doctype.name).toEqual('html');
       expect(doctype.publicId).toEqual(
@@ -361,7 +361,7 @@ describe('Basic RRDocument implementation', () => {
       );
       expect(node.childNodes.length).toBe(1);
       doctype = node.childNodes[0] as IRRDocumentType;
-      expect(doctype.RRNodeType).toEqual(NodeType.DocumentType);
+      expect(doctype.RRNodeType).toEqual(RRNodeType.DocumentType);
       expect(doctype.parentNode).toEqual(node);
       expect(doctype.name).toEqual('html');
       expect(doctype.publicId).toEqual('-//W3C//DTD HTML 4.0 Transitional//EN');
@@ -377,7 +377,7 @@ describe('Basic RRDocument implementation', () => {
       const node = new RRDocumentType(name, publicId, systemId);
       node.setDefaultSN(1);
       expect(node.__sn).toBeDefined();
-      expect(node.__sn.type).toEqual(NodeType.DocumentType);
+      expect(node.__sn.type).toEqual(RRNodeType.DocumentType);
       expect((node.__sn as documentTypeNode).name).toEqual(name);
       expect((node.__sn as documentTypeNode).publicId).toEqual(publicId);
       expect((node.__sn as documentTypeNode).systemId).toEqual(systemId);
@@ -388,7 +388,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBeUndefined();
       expect(node.textContent).toBeNull();
-      expect(node.RRNodeType).toBe(NodeType.DocumentType);
+      expect(node.RRNodeType).toBe(RRNodeType.DocumentType);
       expect(node.nodeType).toBe(document.DOCUMENT_TYPE_NODE);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
@@ -413,7 +413,7 @@ describe('Basic RRDocument implementation', () => {
       const node = document.createElement('div');
       node.setDefaultSN(1);
       expect(node.__sn).toBeDefined();
-      expect(node.__sn.type).toEqual(NodeType.Element);
+      expect(node.__sn.type).toEqual(RRNodeType.Element);
       expect((node.__sn as elementNode).tagName).toEqual('div');
       expect((node.__sn as elementNode).attributes).toBeDefined();
       expect((node.__sn as elementNode).childNodes).toBeInstanceOf(Array);
@@ -428,7 +428,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBe(document);
       expect(node.textContent).toEqual('');
-      expect(node.RRNodeType).toBe(NodeType.Element);
+      expect(node.RRNodeType).toBe(RRNodeType.Element);
       expect(node.nodeType).toBe(document.ELEMENT_NODE);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
@@ -707,7 +707,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.shadowRoot).toBeNull();
       node.attachShadow({ mode: 'open' });
       expect(node.shadowRoot).not.toBeNull();
-      expect(node.shadowRoot!.RRNodeType).toBe(NodeType.Element);
+      expect(node.shadowRoot!.RRNodeType).toBe(RRNodeType.Element);
       expect(node.shadowRoot!.tagName).toBe('SHADOWROOT');
       expect(node.parentNode).toBeNull();
     });
@@ -786,7 +786,7 @@ describe('Basic RRDocument implementation', () => {
       const node = dom.createTextNode('text');
       node.setDefaultSN(1);
       expect(node.__sn).toBeDefined();
-      expect(node.__sn.type).toEqual(NodeType.Text);
+      expect(node.__sn.type).toEqual(RRNodeType.Text);
       expect((node.__sn as textNode).textContent).toEqual('text');
 
       expect(node.parentNode).toEqual(null);
@@ -795,7 +795,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBe(dom);
       expect(node.textContent).toEqual('text');
-      expect(node.RRNodeType).toBe(NodeType.Text);
+      expect(node.RRNodeType).toBe(RRNodeType.Text);
       expect(node.nodeType).toBe(document.TEXT_NODE);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
@@ -824,7 +824,7 @@ describe('Basic RRDocument implementation', () => {
       const node = dom.createComment('comment');
       node.setDefaultSN(1);
       expect(node.__sn).toBeDefined();
-      expect(node.__sn.type).toEqual(NodeType.Comment);
+      expect(node.__sn.type).toEqual(RRNodeType.Comment);
       expect((node.__sn as commentNode).textContent).toEqual('comment');
 
       expect(node.parentNode).toEqual(null);
@@ -833,7 +833,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBe(dom);
       expect(node.textContent).toEqual('comment');
-      expect(node.RRNodeType).toBe(NodeType.Comment);
+      expect(node.RRNodeType).toBe(RRNodeType.Comment);
       expect(node.nodeType).toBe(document.COMMENT_NODE);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
@@ -862,7 +862,7 @@ describe('Basic RRDocument implementation', () => {
       const node = dom.createCDATASection('data');
       node.setDefaultSN(1);
       expect(node.__sn).toBeDefined();
-      expect(node.__sn.type).toEqual(NodeType.CDATA);
+      expect(node.__sn.type).toEqual(RRNodeType.CDATA);
       expect((node.__sn as cdataNode).textContent).toEqual('');
 
       expect(node.parentNode).toEqual(null);
@@ -871,7 +871,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBe(dom);
       expect(node.textContent).toEqual('data');
-      expect(node.RRNodeType).toBe(NodeType.CDATA);
+      expect(node.RRNodeType).toBe(RRNodeType.CDATA);
       expect(node.nodeType).toBe(document.CDATA_SECTION_NODE);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
@@ -905,7 +905,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toBe(0);
       expect(node.ownerDocument).toBeUndefined();
       expect(node.textContent).toEqual('');
-      expect(node.RRNodeType).toBe(NodeType.Element);
+      expect(node.RRNodeType).toBe(RRNodeType.Element);
       expect(node.nodeType).toBe(document.ELEMENT_NODE);
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);

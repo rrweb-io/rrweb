@@ -1,4 +1,4 @@
-import { elementNode, INode, NodeType } from 'rrweb-snapshot';
+import { elementNode, INode, NodeType as RRNodeType } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
   incrementalSnapshotEvent,
@@ -92,11 +92,11 @@ export function diff(
   let inputDataToApply = null,
     scrollDataToApply = null;
   switch (newTree.RRNodeType) {
-    case NodeType.Document:
+    case RRNodeType.Document:
       const newRRDocument = newTree as IRRDocument;
       scrollDataToApply = (newRRDocument as RRDocument).scrollData;
       break;
-    case NodeType.Element:
+    case RRNodeType.Element:
       const oldElement = (oldTree as Node) as HTMLElement;
       const newRRElement = newTree as IRRElement;
       diffProps(oldElement, newRRElement);
@@ -148,9 +148,9 @@ export function diff(
           );
       }
       break;
-    case NodeType.Text:
-    case NodeType.Comment:
-    case NodeType.CDATA:
+    case RRNodeType.Text:
+    case RRNodeType.Comment:
+    case RRNodeType.CDATA:
       if (
         oldTree.textContent !==
         (newTree as IRRText | IRRComment | IRRCDATASection).data
@@ -174,7 +174,7 @@ export function diff(
   }
   // IFrame element doesn't have child nodes.
   if (
-    newTree.RRNodeType === NodeType.Element &&
+    newTree.RRNodeType === RRNodeType.Element &&
     (newTree as IRRElement).tagName === 'IFRAME'
   ) {
     const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
@@ -288,8 +288,8 @@ function diffChildren(
          * We should delete it before insert a serialized one. Otherwise, an error 'Only one element on document allowed' will be thrown.
          */
         if (
-          parentNode.__sn.type === NodeType.Document &&
-          newNode.__sn.type === NodeType.Element &&
+          parentNode.__sn.type === RRNodeType.Document &&
+          newNode.__sn.type === RRNodeType.Element &&
           ((parentNode as Node) as Document).documentElement
         ) {
           parentNode.removeChild(
@@ -335,17 +335,17 @@ export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
   let node = mirror.getNode(rrNode.__sn.id);
   if (node !== null) return node;
   switch (rrNode.RRNodeType) {
-    case NodeType.Document:
+    case RRNodeType.Document:
       node = (new Document() as unknown) as INode;
       break;
-    case NodeType.DocumentType:
+    case RRNodeType.DocumentType:
       node = (document.implementation.createDocumentType(
         (rrNode as IRRDocumentType).name,
         (rrNode as IRRDocumentType).publicId,
         (rrNode as IRRDocumentType).systemId,
       ) as unknown) as INode;
       break;
-    case NodeType.Element:
+    case RRNodeType.Element:
       let tagName = (rrNode as IRRElement).tagName.toLowerCase();
       tagName = SVGTagMap[tagName] || tagName;
       if ((rrNode.__sn as elementNode).isSVG) {
@@ -358,17 +358,17 @@ export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
           (rrNode as IRRElement).tagName,
         ) as unknown) as INode;
       break;
-    case NodeType.Text:
+    case RRNodeType.Text:
       node = (document.createTextNode(
         (rrNode as IRRText).data,
       ) as unknown) as INode;
       break;
-    case NodeType.Comment:
+    case RRNodeType.Comment:
       node = (document.createComment(
         (rrNode as IRRComment).data,
       ) as unknown) as INode;
       break;
-    case NodeType.CDATA:
+    case RRNodeType.CDATA:
       node = (document.createCDATASection(
         (rrNode as IRRCDATASection).data,
       ) as unknown) as INode;

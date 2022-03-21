@@ -14,7 +14,11 @@ import {
   diff,
   ReplayerHandler,
 } from '../src/diff';
-import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot/';
+import {
+  INode,
+  NodeType as RRNodeType,
+  serializedNodeWithId,
+} from 'rrweb-snapshot/';
 import { IRRNode } from '../src/document';
 import {
   canvasMutationData,
@@ -24,7 +28,7 @@ import {
 } from 'rrweb/src/types';
 
 const elementSn = {
-  type: NodeType.Element,
+  type: RRNodeType.Element,
   tagName: 'DIV',
   attributes: {},
   childNodes: [],
@@ -995,7 +999,7 @@ describe('diff algorithm for rrdom', () => {
       const text = document.createTextNode(textContent);
       ((text as unknown) as INode).__sn = {
         id: 0,
-        type: NodeType.Text,
+        type: RRNodeType.Text,
         textContent: 'text of the existed node',
       };
       // Add the text node to the mirror to make it look like already existing.

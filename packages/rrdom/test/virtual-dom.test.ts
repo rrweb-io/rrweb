@@ -7,7 +7,7 @@ import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import * as typescript from 'rollup-plugin-typescript2';
-import { NodeType, INode } from 'rrweb-snapshot';
+import { NodeType as RRNodeType, INode } from 'rrweb-snapshot';
 import {
   buildFromDom,
   buildFromNode,
@@ -50,7 +50,7 @@ describe('RRDocument for browser environment', () => {
       expect(((document as unknown) as INode).__sn.id).toEqual(-1);
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.Document);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.Document);
       expect(rrNode.__sn.id).toEqual(-1);
       expect(rrNode).toBe(rrdom);
 
@@ -61,7 +61,7 @@ describe('RRDocument for browser environment', () => {
       expect(((document.doctype as unknown) as INode).__sn.id).toEqual(-2);
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.DocumentType);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.DocumentType);
       expect(rrNode.__sn.id).toEqual(-2);
 
       // build from element
@@ -80,7 +80,7 @@ describe('RRDocument for browser environment', () => {
       );
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.Element);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.Element);
       expect(rrNode.__sn.id).toEqual(-3);
 
       // build from text
@@ -91,7 +91,7 @@ describe('RRDocument for browser environment', () => {
       expect(((text as unknown) as INode).__sn.id).toEqual(-4);
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.Text);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.Text);
       expect(rrNode.__sn.id).toEqual(-4);
 
       // build from comment
@@ -102,7 +102,7 @@ describe('RRDocument for browser environment', () => {
       expect(((comment as unknown) as INode).__sn.id).toEqual(-5);
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.Comment);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.Comment);
       expect(rrNode.__sn.id).toEqual(-5);
 
       // build from CDATASection
@@ -118,7 +118,7 @@ describe('RRDocument for browser environment', () => {
       expect(((cdataSection as unknown) as INode).__sn.id).toEqual(-6);
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.CDATA);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.CDATA);
       expect(rrNode.textContent).toEqual(cdata);
       expect(rrNode.__sn.id).toEqual(-6);
     });
@@ -153,7 +153,7 @@ describe('RRDocument for browser environment', () => {
       )!;
       expect(rrNode).not.toBeNull();
       expect(rrNode.__sn).toBeDefined();
-      expect(rrNode.__sn.type).toEqual(NodeType.Document);
+      expect(rrNode.__sn.type).toEqual(RRNodeType.Document);
       expect(rrNode.__sn.id).toEqual(-1);
       expect(((iframe.contentDocument as unknown) as INode).__sn.id).toEqual(
         -1,
@@ -176,7 +176,7 @@ describe('RRDocument for browser environment', () => {
       expect(rrNode.__sn).toBeDefined();
       expect(rrNode.__sn.id).toEqual(-1);
       expect(((div.shadowRoot as unknown) as INode).__sn.id).toEqual(-1);
-      expect(rrNode.RRNodeType).toEqual(NodeType.Element);
+      expect(rrNode.RRNodeType).toEqual(RRNodeType.Element);
       expect((rrNode as RRElement).tagName).toEqual('SHADOWROOT');
       expect(rrNode).toBe(parentRRNode.shadowRoot);
     });

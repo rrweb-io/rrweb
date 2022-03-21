@@ -1,4 +1,4 @@
-import { INode, NodeType } from 'rrweb-snapshot';
+import { INode, NodeType as RRNodeType } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
   incrementalSnapshotEvent,
@@ -17,6 +17,7 @@ import {
   IRRDocument,
   IRRElement,
   IRRNode,
+  NodeType,
 } from './document';
 import { VirtualStyleRules } from './diff';
 
@@ -208,16 +209,16 @@ export function buildFromNode(
   let rrNode: IRRNode;
 
   switch (node.nodeType) {
-    case node.DOCUMENT_NODE:
+    case NodeType.DOCUMENT_NODE:
       if (
         parentRRNode &&
-        parentRRNode.RRNodeType === NodeType.Element &&
+        parentRRNode.RRNodeType === RRNodeType.Element &&
         (parentRRNode as IRRElement).tagName === 'IFRAME'
       )
         rrNode = (parentRRNode as RRIFrameElement).contentDocument;
       else rrNode = rrdom;
       break;
-    case node.DOCUMENT_TYPE_NODE:
+    case NodeType.DOCUMENT_TYPE_NODE:
       const documentType = (node as Node) as DocumentType;
       rrNode = rrdom.createDocumentType(
         documentType.name,
@@ -225,7 +226,7 @@ export function buildFromNode(
         documentType.systemId,
       );
       break;
-    case node.ELEMENT_NODE:
+    case NodeType.ELEMENT_NODE:
       const elementNode = (node as Node) as HTMLElement;
       const tagName = getValidTagName(elementNode);
       rrNode = rrdom.createElement(tagName);
@@ -240,19 +241,19 @@ export function buildFromNode(
        * Because if these values are changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm is executed.
        */
       break;
-    case node.TEXT_NODE:
+    case NodeType.TEXT_NODE:
       rrNode = rrdom.createTextNode(((node as Node) as Text).textContent || '');
       break;
-    case node.CDATA_SECTION_NODE:
+    case NodeType.CDATA_SECTION_NODE:
       rrNode = rrdom.createCDATASection(((node as Node) as CDATASection).data);
       break;
-    case node.COMMENT_NODE:
+    case NodeType.COMMENT_NODE:
       rrNode = rrdom.createComment(
         ((node as Node) as Comment).textContent || '',
       );
       break;
     // if node is a shadow root
-    case node.DOCUMENT_FRAGMENT_NODE:
+    case NodeType.DOCUMENT_FRAGMENT_NODE:
       rrNode = (parentRRNode as IRRElement).attachShadow({ mode: 'open' });
       break;
     default:
@@ -260,7 +261,7 @@ export function buildFromNode(
   }
 
   if (!node.__sn || node.__sn.id < 0) {
-    rrNode.setDefaultSN(rrdom.notSerializedId);
+    rrNode.setDefaultSN(rrdom.unserializedId);
     node.__sn = rrNode.__sn;
   } else rrNode.__sn = node.__sn;
 
@@ -288,11 +289,11 @@ export function buildFromDom(
     if (
       // if the parentRRNode isn't a RRIFrameElement
       !(
-        parentRRNode?.RRNodeType === NodeType.Element &&
+        parentRRNode?.RRNodeType === RRNodeType.Element &&
         (parentRRNode as IRRElement).tagName === 'IFRAME'
       ) &&
       // if node isn't a shadow root
-      node.nodeType !== node.DOCUMENT_FRAGMENT_NODE
+      node.nodeType !== NodeType.DOCUMENT_FRAGMENT_NODE
     ) {
       parentRRNode?.appendChild(rrNode);
       rrNode.parentNode = parentRRNode;
@@ -300,7 +301,7 @@ export function buildFromDom(
     }
 
     if (
-      node.nodeType === node.ELEMENT_NODE &&
+      node.nodeType === NodeType.ELEMENT_NODE &&
       ((node as Node) as HTMLElement).tagName === 'IFRAME'
     )
       walk(
@@ -309,13 +310,13 @@ export function buildFromDom(
         rrNode,
       );
     else if (
-      node.nodeType === node.DOCUMENT_NODE ||
-      node.nodeType === node.ELEMENT_NODE ||
-      node.nodeType === node.DOCUMENT_FRAGMENT_NODE
+      node.nodeType === NodeType.DOCUMENT_NODE ||
+      node.nodeType === NodeType.ELEMENT_NODE ||
+      node.nodeType === NodeType.DOCUMENT_FRAGMENT_NODE
     ) {
       // if the node is a shadow dom
       if (
-        node.nodeType === Node.ELEMENT_NODE &&
+        node.nodeType === NodeType.ELEMENT_NODE &&
         ((node as Node) as HTMLElement).shadowRoot
       )
         walk(

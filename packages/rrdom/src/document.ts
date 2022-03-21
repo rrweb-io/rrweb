@@ -1,4 +1,4 @@
-import { NodeType, serializedNodeWithId } from 'rrweb-snapshot';
+import { NodeType as RRNodeType, serializedNodeWithId } from 'rrweb-snapshot';
 import { parseCSSText, camelize, toCSSText } from './style';
 
 export interface IRRNode {
@@ -7,11 +7,11 @@ export interface IRRNode {
   parentNode: IRRNode | null;
   childNodes: IRRNode[];
   ownerDocument: IRRDocument;
-  ELEMENT_NODE: 1;
-  TEXT_NODE: 3;
+  readonly ELEMENT_NODE: number;
+  readonly TEXT_NODE: number;
   // corresponding nodeType value of standard HTML Node
   readonly nodeType: number;
-  readonly RRNodeType: NodeType;
+  readonly RRNodeType: RRNodeType;
 
   firstChild: IRRNode | null;
 
@@ -36,7 +36,7 @@ export interface IRRNode {
   toString(nodeName?: string): string;
 }
 export interface IRRDocument extends IRRNode {
-  notSerializedId: number;
+  unserializedId: number;
 
   documentElement: IRRElement | null;
 
@@ -120,6 +120,9 @@ export interface IRRCDATASection extends IRRNode {
 
 type ConstrainedConstructor<T = {}> = new (...args: any[]) => T;
 
+/**
+ * This is designed as an abstract class so it should never be instantiated.
+ */
 export class BaseRRNode implements IRRNode {
   public __sn: serializedNodeWithId;
   public childNodes: IRRNode[] = [];
@@ -127,11 +130,11 @@ export class BaseRRNode implements IRRNode {
   public parentNode: IRRNode | null = null;
   public textContent: string | null;
   public ownerDocument: IRRDocument;
-  public ELEMENT_NODE: 1 = 1;
-  public TEXT_NODE: 3 = 3;
+  public readonly ELEMENT_NODE: number = NodeType.ELEMENT_NODE;
+  public readonly TEXT_NODE: number = NodeType.TEXT_NODE;
   // corresponding nodeType value of standard HTML Node
   public readonly nodeType: number;
-  public readonly RRNodeType: NodeType;
+  public readonly RRNodeType: RRNodeType;
 
   constructor(...args: any[]) {}
 
@@ -175,14 +178,14 @@ export class BaseRRNode implements IRRNode {
 
   public setDefaultSN(id: number) {
     switch (this.RRNodeType) {
-      case NodeType.Document:
+      case RRNodeType.Document:
         this.__sn = {
           id,
           type: this.RRNodeType,
           childNodes: [],
         };
         break;
-      case NodeType.DocumentType:
+      case RRNodeType.DocumentType:
         const doctype = (this as unknown) as IRRDocumentType;
         this.__sn = {
           id,
@@ -192,7 +195,7 @@ export class BaseRRNode implements IRRNode {
           systemId: doctype.systemId,
         };
         break;
-      case NodeType.Element:
+      case RRNodeType.Element:
         this.__sn = {
           id,
           type: this.RRNodeType,
@@ -201,21 +204,21 @@ export class BaseRRNode implements IRRNode {
           childNodes: [],
         };
         break;
-      case NodeType.Text:
+      case RRNodeType.Text:
         this.__sn = {
           id,
           type: this.RRNodeType,
           textContent: ((this as unknown) as IRRText).textContent || '',
         };
         break;
-      case NodeType.Comment:
+      case RRNodeType.Comment:
         this.__sn = {
           id,
           type: this.RRNodeType,
           textContent: ((this as unknown) as IRRComment).textContent || '',
         };
         break;
-      case NodeType.CDATA:
+      case RRNodeType.CDATA:
         this.__sn = {
           id,
           type: this.RRNodeType,
@@ -225,7 +228,7 @@ export class BaseRRNode implements IRRNode {
     }
   }
 
-  public toString(nodeName?: string) {
+  public toString(nodeName: string) {
     return `${this.__sn?.id || ''} ${nodeName}`;
   }
 }
@@ -234,23 +237,26 @@ export function BaseRRDocumentImpl<
   RRNode extends ConstrainedConstructor<IRRNode>
 >(RRNodeClass: RRNode) {
   return class BaseRRDocument extends RRNodeClass implements IRRDocument {
-    public readonly nodeType = 9;
-    public readonly RRNodeType = NodeType.Document;
+    public readonly nodeType: number = NodeType.DOCUMENT_NODE;
+    public readonly RRNodeType = RRNodeType.Document;
     public textContent: string | null = null;
-    _notSerializedId = -1; // used as an id to identify not serialized node
+    // In the rrweb replayer, there are some unserialized nodes like the element that stores the injected style rules.
+    // These unserialized nodes may interfere the execution of the diff algorithm.
+    // The id of serialized node is larger than 0. So this value ​​less than 0 is used as id for these unserialized nodes.
+    _unserializedId = -1;
 
     /**
      * Every time the id is used, it will minus 1 automatically to avoid collisions.
      */
-    public get notSerializedId(): number {
-      return this._notSerializedId--;
+    public get unserializedId(): number {
+      return this._unserializedId--;
     }
 
     public get documentElement(): IRRElement | null {
       return (
         (this.childNodes.find(
           (node) =>
-            node.RRNodeType === NodeType.Element &&
+            node.RRNodeType === RRNodeType.Element &&
             (node as IRRElement).tagName === 'HTML',
         ) as IRRElement) || null
       );
@@ -260,7 +266,7 @@ export function BaseRRDocumentImpl<
       return (
         (this.documentElement?.childNodes.find(
           (node) =>
-            node.RRNodeType === NodeType.Element &&
+            node.RRNodeType === RRNodeType.Element &&
             (node as IRRElement).tagName === 'BODY',
         ) as IRRElement) || null
       );
@@ -270,7 +276,7 @@ export function BaseRRDocumentImpl<
       return (
         (this.documentElement?.childNodes.find(
           (node) =>
-            node.RRNodeType === NodeType.Element &&
+            node.RRNodeType === RRNodeType.Element &&
             (node as IRRElement).tagName === 'HEAD',
         ) as IRRElement) || null
       );
@@ -286,11 +292,14 @@ export function BaseRRDocumentImpl<
 
     public appendChild(childNode: IRRNode): IRRNode {
       const nodeType = childNode.RRNodeType;
-      if (nodeType === NodeType.Element || nodeType === NodeType.DocumentType) {
+      if (
+        nodeType === RRNodeType.Element ||
+        nodeType === RRNodeType.DocumentType
+      ) {
         if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
           throw new Error(
             `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one ${
-              nodeType === NodeType.Element ? 'RRElement' : 'RRDoctype'
+              nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
             } on RRDocument allowed.`,
           );
         }
@@ -303,11 +312,14 @@ export function BaseRRDocumentImpl<
 
     public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
       const nodeType = newChild.RRNodeType;
-      if (nodeType === NodeType.Element || nodeType === NodeType.DocumentType) {
+      if (
+        nodeType === RRNodeType.Element ||
+        nodeType === RRNodeType.DocumentType
+      ) {
         if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
           throw new Error(
             `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one ${
-              nodeType === NodeType.Element ? 'RRElement' : 'RRDoctype'
+              nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
             } on RRDocument allowed.`,
           );
         }
@@ -338,7 +350,7 @@ export function BaseRRDocumentImpl<
 
     public open() {
       this.childNodes = [];
-      this._notSerializedId = -1;
+      this._unserializedId = -1;
     }
 
     public close() {}
@@ -363,13 +375,7 @@ export function BaseRRDocumentImpl<
         publicId = '-//W3C//DTD HTML 4.0 Transitional//EN';
       if (publicId) {
         const doctype = this.createDocumentType('html', publicId, '');
-        doctype.__sn = {
-          type: NodeType.DocumentType,
-          name: 'html',
-          publicId: publicId,
-          systemId: '',
-          id: this.notSerializedId,
-        };
+        doctype.setDefaultSN(this.unserializedId);
         this.open();
         this.appendChild(doctype);
       }
@@ -438,8 +444,8 @@ export function BaseRRDocumentTypeImpl<
   return class BaseRRDocumentType
     extends RRNodeClass
     implements IRRDocumentType {
-    public readonly nodeType = 10;
-    public readonly RRNodeType = NodeType.DocumentType;
+    public readonly nodeType: number = NodeType.DOCUMENT_TYPE_NODE;
+    public readonly RRNodeType = RRNodeType.DocumentType;
     public readonly name: string;
     public readonly publicId: string;
     public readonly systemId: string;
@@ -463,8 +469,8 @@ export function BaseRRElementImpl<
 >(RRNodeClass: RRNode) {
   // @ts-ignore
   return class BaseRRElement extends RRNodeClass implements IRRElement {
-    public readonly nodeType = 1;
-    public readonly RRNodeType = NodeType.Element;
+    public readonly nodeType: number = NodeType.ELEMENT_NODE;
+    public readonly RRNodeType = RRNodeType.Element;
     public tagName: string;
     public attributes: Record<string, string> = {};
     public shadowRoot: IRRElement | null = null;
@@ -630,8 +636,8 @@ export function BaseRRTextImpl<RRNode extends ConstrainedConstructor<IRRNode>>(
 ) {
   // @ts-ignore
   return class BaseRRText extends RRNodeClass implements IRRText {
-    public readonly nodeType = 3;
-    public readonly RRNodeType = NodeType.Text;
+    public readonly nodeType: number = NodeType.TEXT_NODE;
+    public readonly RRNodeType = RRNodeType.Text;
     public data: string;
 
     constructor(data: string) {
@@ -658,8 +664,8 @@ export function BaseRRCommentImpl<
 >(RRNodeClass: RRNode) {
   // @ts-ignore
   return class BaseRRComment extends RRNodeClass implements IRRComment {
-    public readonly nodeType = 8;
-    public readonly RRNodeType = NodeType.Comment;
+    public readonly nodeType: number = NodeType.COMMENT_NODE;
+    public readonly RRNodeType = RRNodeType.Comment;
     public data: string;
 
     constructor(data: string) {
@@ -688,8 +694,8 @@ export function BaseRRCDATASectionImpl<
   return class BaseRRCDATASection
     extends RRNodeClass
     implements IRRCDATASection {
-    public readonly nodeType = 4;
-    public readonly RRNodeType = NodeType.CDATA;
+    public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
+    public readonly RRNodeType = RRNodeType.CDATA;
     public data: string;
 
     constructor(data: string) {
@@ -753,3 +759,19 @@ export type CSSStyleDeclaration = Record<string, string> & {
   ) => void;
   removeProperty: (name: string) => string;
 };
+
+// Enumerate nodeType value of standard HTML Node.
+export enum NodeType {
+  PLACEHOLDER, // This isn't a node type. Enum type value starts from zero but NodeType value starts from 1.
+  ELEMENT_NODE,
+  ATTRIBUTE_NODE,
+  TEXT_NODE,
+  CDATA_SECTION_NODE,
+  ENTITY_REFERENCE_NODE,
+  ENTITY_NODE,
+  PROCESSING_INSTRUCTION_NODE,
+  COMMENT_NODE,
+  DOCUMENT_NODE,
+  DOCUMENT_TYPE_NODE,
+  DOCUMENT_FRAGMENT_NODE,
+}

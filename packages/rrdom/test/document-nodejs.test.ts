@@ -3,7 +3,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from 'rrweb-snapshot';
 import {
   RRCanvasElement,
   RRCDATASection,
@@ -452,7 +452,7 @@ describe('RRDocument for nodejs environment', () => {
       expect(node.shadowRoot).toBeNull();
       node.attachShadow({ mode: 'open' });
       expect(node.shadowRoot).not.toBeNull();
-      expect(node.shadowRoot!.RRNodeType).toBe(NodeType.Element);
+      expect(node.shadowRoot!.RRNodeType).toBe(RRNodeType.Element);
       expect(node.shadowRoot!.tagName).toBe('SHADOWROOT');
       expect(node.parentNode).toBeNull();
     });

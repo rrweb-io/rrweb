@@ -110,6 +110,7 @@ export class Replayer {
 
   public config: playerConfig;
 
+  // In the fast-forward process, if the virtual-dom optimization is used, this flag value is true.
   public usingVirtualDom = false;
   public virtualDom: RRDocument = new RRDocument();
 
@@ -160,7 +161,7 @@ export class Replayer {
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
-      useVirtualDom: true,
+      useVirtualDom: true, // Virtual-dom optimization is enabled by default.
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -718,7 +719,7 @@ export class Replayer {
     }
     if (this.usingVirtualDom) {
       const styleEl = this.virtualDom.createElement('style') as RRStyleElement;
-      styleEl.setDefaultSN(this.virtualDom.notSerializedId);
+      styleEl.setDefaultSN(this.virtualDom.unserializedId);
       (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
         // push virtual styles
