@@ -202,6 +202,20 @@ const events: eventWithTime[] = [
     type: EventType.IncrementalSnapshot,
     timestamp: now + 3000,
   },
+  {
+    data: {
+      id: 101,
+      adds: [
+        {
+          rule: '.css-added-at-3100{color:blue;}',
+          index: 1,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 3100,
+  },
 ];
 
 export default events;
