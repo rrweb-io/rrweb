@@ -40,6 +40,7 @@ import {
   mouseMovePos,
   IWindow,
   canvasMutationCommand,
+  textMutation,
 } from '../types';
 import {
   createMirror,
@@ -171,7 +172,7 @@ export class Replayer {
     this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
-      const { scrollMap, inputMap } = this.treeIndex.flush();
+      const { scrollMap, inputMap, mutationData } = this.treeIndex.flush();
 
       this.fragmentParentMap.forEach((parent, frag) =>
         this.restoreRealParent(frag, parent),
@@ -189,6 +190,9 @@ export class Replayer {
       }
       for (const d of inputMap.values()) {
         this.applyInput(d);
+      }
+      for (const d of mutationData.texts) {
+        this.applyText(d, mutationData);
       }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
@@ -1672,6 +1676,18 @@ export class Replayer {
     try {
       ((target as Node) as HTMLInputElement).checked = d.isChecked;
       ((target as Node) as HTMLInputElement).value = d.text;
+    } catch (error) {
+      // for safe
+    }
+  }
+
+  private applyText(d: textMutation, mutation: mutationData) {
+    const target = this.mirror.getNode(d.id);
+    if (!target) {
+      return this.debugNodeNotFound(mutation, d.id);
+    }
+    try {
+      ((target as Node) as HTMLElement).textContent = d.value;
     } catch (error) {
       // for safe
     }

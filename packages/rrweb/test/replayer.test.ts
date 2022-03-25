@@ -223,6 +223,21 @@ describe('replayer', function () {
     expect(result).toEqual(false);
   });
 
+  it("should overwrite all StyleSheetRules by replacing style element's textContent while fast-forwarding", async () => {
+    await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3500);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.added-at-200-overwritten-at-3000');
+    `);
+
+    expect(result).toEqual(false);
+  });
+
   it('can fast-forward mutation events containing nested iframe elements', async () => {
     await page.evaluate(`
       events = ${JSON.stringify(iframeEvents)};
