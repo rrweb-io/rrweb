@@ -232,7 +232,7 @@ describe('replayer', function () {
       const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
-      rules.some((x) => x.selectorText === '.added-at-200-overwritten-at-3000');
+      rules.some((x) => x.selectorText === '.css-added-at-200-overwritten-at-3000');
     `);
 
     expect(result).toEqual(false);
