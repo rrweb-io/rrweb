@@ -1567,6 +1567,15 @@ export class Replayer {
         return this.warnNodeNotFound(d, mutation.id);
       }
       target.textContent = mutation.value;
+
+      /**
+       * https://github.com/rrweb-io/rrweb/pull/865
+       * Remove any virtual style rules for stylesheets whose contents are replaced.
+       */
+      if (this.usingVirtualDom) {
+        const parent = target.parentNode as RRStyleElement;
+        if (parent?.rules?.length > 0) parent.rules = [];
+      }
     });
     d.attributes.forEach((mutation) => {
       let target = mirror.getNode(mutation.id);

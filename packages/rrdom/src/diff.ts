@@ -89,6 +89,36 @@ export function diff(
   newTree: IRRNode,
   replayer: ReplayerHandler,
 ) {
+  const oldChildren = oldTree.childNodes;
+  const newChildren = newTree.childNodes;
+  if (oldChildren.length > 0 || newChildren.length > 0) {
+    diffChildren(
+      (Array.from(oldChildren) as unknown) as INode[],
+      newChildren,
+      oldTree,
+      replayer,
+    );
+  }
+  // IFrame element doesn't have child nodes.
+  if (
+    newTree.RRNodeType === RRNodeType.Element &&
+    (newTree as IRRElement).tagName === 'IFRAME'
+  ) {
+    const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
+      .contentDocument as unknown) as INode;
+    const newIFrameElement = newTree as RRIFrameElement;
+    // If the iframe is cross-origin, the contentDocument will be null.
+    if (oldContentDocument) {
+      if (newIFrameElement.contentDocument.__sn) {
+        oldContentDocument.__sn = newIFrameElement.contentDocument.__sn;
+        replayer.mirror.map[
+          newIFrameElement.contentDocument.__sn.id
+        ] = oldContentDocument;
+      }
+      diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
+    }
+  }
+
   let inputDataToApply = null,
     scrollDataToApply = null;
   switch (newTree.RRNodeType) {
@@ -161,35 +191,6 @@ export function diff(
           | IRRCDATASection).data;
       break;
     default:
-  }
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
-  if (oldChildren.length > 0 || newChildren.length > 0) {
-    diffChildren(
-      (Array.from(oldChildren) as unknown) as INode[],
-      newChildren,
-      oldTree,
-      replayer,
-    );
-  }
-  // IFrame element doesn't have child nodes.
-  if (
-    newTree.RRNodeType === RRNodeType.Element &&
-    (newTree as IRRElement).tagName === 'IFRAME'
-  ) {
-    const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
-      .contentDocument as unknown) as INode;
-    const newIFrameElement = newTree as RRIFrameElement;
-    // If the iframe is cross-origin, the contentDocument will be null.
-    if (oldContentDocument) {
-      if (newIFrameElement.contentDocument.__sn) {
-        oldContentDocument.__sn = newIFrameElement.contentDocument.__sn;
-        replayer.mirror.map[
-          newIFrameElement.contentDocument.__sn.id
-        ] = oldContentDocument;
-      }
-      diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
-    }
   }
 
   scrollDataToApply && replayer.applyScroll(scrollDataToApply, true);

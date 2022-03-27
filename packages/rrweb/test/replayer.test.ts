@@ -251,7 +251,10 @@ describe('replayer', function () {
       const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
-      rules.some((x) => x.selectorText === '.css-added-at-3100');
+      rules.some((x) => x.selectorText === '.css-added-at-3100') &&
+        !rules.some(
+          (x) => x.selectorText === '.css-added-at-400-overwritten-at-3000',
+        );
     `);
 
     expect(result).toEqual(true);
