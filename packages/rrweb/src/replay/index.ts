@@ -40,6 +40,7 @@ import {
   mouseMovePos,
   IWindow,
   canvasMutationCommand,
+  textMutation,
 } from '../types';
 import {
   createMirror,
@@ -171,11 +172,17 @@ export class Replayer {
     this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
-      const { scrollMap, inputMap } = this.treeIndex.flush();
+      const { scrollMap, inputMap, mutationData } = this.treeIndex.flush();
 
       this.fragmentParentMap.forEach((parent, frag) =>
         this.restoreRealParent(frag, parent),
       );
+      // apply text needs to happen before virtual style rules gets applied
+      // as it can overwrite the contents of a stylesheet
+      for (const d of mutationData.texts) {
+        this.applyText(d, mutationData);
+      }
+
       for (const node of this.virtualStyleRulesMap.keys()) {
         // restore css rules of style elements after they are mounted
         this.restoreNodeSheet(node);
@@ -896,7 +903,16 @@ export class Replayer {
       case IncrementalSource.Mutation: {
         if (isSync) {
           d.adds.forEach((m) => this.treeIndex.add(m));
-          d.texts.forEach((m) => this.treeIndex.text(m));
+          d.texts.forEach((m) => {
+            const target = this.mirror.getNode(m.id);
+            const parent = (target?.parentNode as unknown) as INode | null;
+            // remove any style rules that pending
+            // for stylesheets where the contents get replaced
+            if (parent && this.virtualStyleRulesMap.has(parent))
+              this.virtualStyleRulesMap.delete(parent);
+
+            this.treeIndex.text(m);
+          });
           d.attributes.forEach((m) => this.treeIndex.attribute(m));
           d.removes.forEach((m) => this.treeIndex.remove(m, this.mirror));
         }
@@ -1672,6 +1688,18 @@ export class Replayer {
     try {
       ((target as Node) as HTMLInputElement).checked = d.isChecked;
       ((target as Node) as HTMLInputElement).value = d.text;
+    } catch (error) {
+      // for safe
+    }
+  }
+
+  private applyText(d: textMutation, mutation: mutationData) {
+    const target = this.mirror.getNode(d.id);
+    if (!target) {
+      return this.debugNodeNotFound(mutation, d.id);
+    }
+    try {
+      ((target as Node) as HTMLElement).textContent = d.value;
     } catch (error) {
       // for safe
     }

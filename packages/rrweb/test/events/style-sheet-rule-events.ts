@@ -54,7 +54,7 @@ const events: eventWithTime[] = [
                         type: 3,
                         isStyle: true,
                         textContent:
-                          '\n.c01x {\n  opacity: 1;\n  transform: translateX(0);\n}\n',
+                          '\n.css-added-at-200-overwritten-at-3000 {\n  opacity: 1;\n  transform: translateX(0);\n}\n',
                       },
                     ],
                   },
@@ -64,7 +64,7 @@ const events: eventWithTime[] = [
                     tagName: 'style',
                     attributes: {
                       _cssText:
-                        '.css-1uxxxx3 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }.css-1c9xxxx { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }.css-lsxxx { padding-left: 4rem; }',
+                        '.css-added-at-200 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }.css-added-at-200.alt { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }.css-added-at-200.alt2 { padding-left: 4rem; }',
                       'data-emotion': 'css',
                     },
                     childNodes: [
@@ -111,7 +111,8 @@ const events: eventWithTime[] = [
       id: 101,
       adds: [
         {
-          rule: '.css-added-at-400{border: 1px solid blue;}',
+          rule:
+            '.css-added-at-400-overwritten-at-3000 {border: 1px solid blue;}',
           index: 1,
         },
       ],
@@ -141,7 +142,7 @@ const events: eventWithTime[] = [
             type: 3,
             isStyle: true,
             textContent:
-              '\n.c011xx {\n  padding: 1.3125rem;\n  flex: none;\n  width: 100%;\n}\n',
+              '\n.css-added-at-500 {\n  padding: 1.3125rem;\n  flex: none;\n  width: 100%;\n}\n',
           },
           nextId: null,
           parentId: 255,
@@ -183,6 +184,37 @@ const events: eventWithTime[] = [
     },
     type: EventType.IncrementalSnapshot,
     timestamp: now + 2500,
+  },
+  // overwrite all contents of stylesheet
+  {
+    data: {
+      texts: [
+        {
+          id: 102,
+          value: '.all-css-overwritten-at-3000 { color: indigo; }',
+        },
+      ],
+      attributes: [],
+      removes: [],
+      adds: [],
+      source: IncrementalSource.Mutation,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 3000,
+  },
+  {
+    data: {
+      id: 101,
+      adds: [
+        {
+          rule: '.css-added-at-3100{color:blue;}',
+          index: 1,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
+    timestamp: now + 3100,
   },
 ];
 
