@@ -56,27 +56,27 @@ html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { ani
 file-cid-1
 @charset \\"utf-8\\";
 
-.c011xx { padding: 1.3125rem; flex: 0 0 auto; width: 100%; }
+.css-added-at-500 { padding: 1.3125rem; flex: 0 0 auto; width: 100%; }
 
 
 file-cid-2
 @charset \\"utf-8\\";
 
-.c01x { opacity: 1; transform: translateX(0px); }
+.css-added-at-200-overwritten-at-3000 { opacity: 1; transform: translateX(0px); }
 
-.css-added-at-400 { border: 1px solid blue; }
+.css-added-at-400-overwritten-at-3000 { border: 1px solid blue; }
 
 
 file-cid-3
 @charset \\"utf-8\\";
 
-.css-1uxxxx3 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }
+.css-added-at-200 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }
 
-.css-1c9xxxx { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }
+.css-added-at-200.alt { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }
 
 .css-added-at-1000-deleted-at-2500 { display: flex; flex-direction: column; min-width: 60rem; min-height: 100vh; color: blue; }
 
-.css-lsxxx { padding-left: 4rem; }
+.css-added-at-200.alt2 { padding-left: 4rem; }
 "
 `;
 

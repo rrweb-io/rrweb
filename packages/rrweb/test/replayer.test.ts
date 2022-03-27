@@ -227,6 +227,36 @@ describe('replayer', function () {
     expect(result).toEqual(false);
   });
 
+  it("should overwrite all StyleSheetRules by replacing style element's textContent while fast-forwarding", async () => {
+    await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3500);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-200-overwritten-at-3000');
+    `);
+
+    expect(result).toEqual(false);
+  });
+
+  it('should apply fast-forwarded StyleSheetRules that came after stylesheet textContent overwrite', async () => {
+    await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3500);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-3100');
+    `);
+
+    expect(result).toEqual(true);
+  });
+
   it('can fast forward scroll events', async () => {
     await page.evaluate(`
       events = ${JSON.stringify(scrollEvents)};
@@ -246,7 +276,6 @@ describe('replayer', function () {
       ),
     ).toEqual(0);
 
-    const delay = 50;
     // restart the replayer
     await page.evaluate('replayer.play(0);');
     await waitForRAF(page);
