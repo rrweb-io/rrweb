@@ -253,7 +253,7 @@ describe('replayer', function () {
       ).flat();
       rules.some((x) => x.selectorText === '.css-added-at-3100') &&
         !rules.some(
-          (x) => x.selectorText === '.css-added-at-400-overwritten-at-3000',
+          (x) => x.selectorText === '.css-added-at-500-overwritten-at-3000',
         );
     `);
 

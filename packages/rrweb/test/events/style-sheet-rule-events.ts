@@ -126,7 +126,7 @@ const events: eventWithTime[] = [
             type: 3,
             isStyle: true,
             textContent:
-              '\n.css-added-at-500 {\n  padding: 1.3125rem;\n  flex: none;\n  width: 100%;\n}\n',
+              '\n.css-added-at-400 {\n  padding: 1.3125rem;\n  flex: none;\n  width: 100%;\n}\n',
           },
           nextId: null,
           parentId: 255,
@@ -147,7 +147,7 @@ const events: eventWithTime[] = [
       adds: [
         {
           rule:
-            '.css-added-at-400-overwritten-at-3000 {border: 1px solid blue;}',
+            '.css-added-at-500-overwritten-at-3000 {border: 1px solid blue;}',
           index: 1,
         },
       ],
