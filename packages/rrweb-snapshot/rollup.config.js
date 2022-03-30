@@ -6,7 +6,8 @@ function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
 }
 
-let configs = [
+let configs = [];
+let es_configs = [
   // ES module - for building rrweb
   {
     input: './src/index.ts',
@@ -19,7 +20,7 @@ let configs = [
     ],
   },
 ];
-let extra_configs = [
+let browser_configs = [
   // browser
   {
     input: './src/index.ts',
@@ -32,6 +33,8 @@ let extra_configs = [
       },
     ],
   },
+];
+let extra_configs = [
   {
     input: './src/index.ts',
     plugins: [typescript(), terser()],
@@ -69,8 +72,12 @@ let extra_configs = [
   },
 ];
 
-if (!process.env.ES_ONLY) {
-  configs.push(...extra_configs);
+if (process.env.ES_ONLY) {
+  configs = es_configs;
+} else if (process.env.BROWSER_ONLY) {
+  configs = browser_configs;
+} else {
+  configs.push(...es_configs, ...browser_configs, ...extra_configs);
 }
 
 export default configs;
