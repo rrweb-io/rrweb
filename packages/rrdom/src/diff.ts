@@ -99,25 +99,6 @@ export function diff(
       replayer,
     );
   }
-  // IFrame element doesn't have child nodes.
-  if (
-    newTree.RRNodeType === RRNodeType.Element &&
-    (newTree as IRRElement).tagName === 'IFRAME'
-  ) {
-    const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
-      .contentDocument as unknown) as INode;
-    const newIFrameElement = newTree as RRIFrameElement;
-    // If the iframe is cross-origin, the contentDocument will be null.
-    if (oldContentDocument) {
-      if (newIFrameElement.contentDocument.__sn) {
-        oldContentDocument.__sn = newIFrameElement.contentDocument.__sn;
-        replayer.mirror.map[
-          newIFrameElement.contentDocument.__sn.id
-        ] = oldContentDocument;
-      }
-      diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
-    }
-  }
 
   let inputDataToApply = null,
     scrollDataToApply = null;
@@ -199,6 +180,26 @@ export function diff(
    * Otherwise when we set a value for a select element whose options are empty, the value won't actually update.
    */
   inputDataToApply && replayer.applyInput(inputDataToApply);
+
+  // IFrame element doesn't have child nodes.
+  if (
+    newTree.RRNodeType === RRNodeType.Element &&
+    (newTree as IRRElement).tagName === 'IFRAME'
+  ) {
+    const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
+      .contentDocument as unknown) as INode;
+    const newIFrameElement = newTree as RRIFrameElement;
+    // If the iframe is cross-origin, the contentDocument will be null.
+    if (oldContentDocument) {
+      if (newIFrameElement.contentDocument.__sn) {
+        oldContentDocument.__sn = newIFrameElement.contentDocument.__sn;
+        replayer.mirror.map[
+          newIFrameElement.contentDocument.__sn.id
+        ] = oldContentDocument;
+      }
+      diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
+    }
+  }
 }
 
 function diffProps(oldTree: HTMLElement, newTree: IRRElement) {
