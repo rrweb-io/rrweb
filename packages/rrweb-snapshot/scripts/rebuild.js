@@ -12,16 +12,34 @@ const rrWeb = './dist/rrweb-snapshot.js';
 const rrFile = process.argv[2];
 const waitSec = parseInt(process.argv[3] || 60);
 const PAGE_TIMEOUT = 5000;
+let HTML_FILE = 'temp.html';
 
 function delay(time) {
     return new Promise((resolve) => setTimeout(resolve, time))
 }
 
-const describe = (jsHandle) => {
+function sluggify(str) {
+    return str
+        .replace(/[^a-zA-Z0-9 -]/gi, '-')
+        .replace(/ /g, '-')
+        .replace(/-+/g, '-')
+        .replace(/-+$/, '')
+}
+
+function describe(jsHandle) {
     return jsHandle.executionContext().evaluate((obj) => {
         return typeof obj === 'string' ? obj : `${typeof obj}=${obj}`
     }, jsHandle)
 }
+
+process.on('exit', function() {
+    try {
+        fs.unlinkSync(HTML_FILE);
+        console.log(`Removed temp HTML file: ${HTML_FILE}`);
+    } catch (err) {
+        console.error(err);
+    }
+});
 
 (async function main() {
     const browser = await puppeteer.launch({
@@ -83,6 +101,14 @@ const describe = (jsHandle) => {
     })();`);
 
     await page.waitForSelector('*', { timeout: PAGE_TIMEOUT });
+
+    const htm = await page.content();
+    const title = (/<title>(.+)<\/title>/i).exec(htm)[1];
+    HTML_FILE = `${sluggify(title)}.html`;
+    await fs.promises.writeFile(HTML_FILE, htm.trim(), { encoding: 'utf8' });
+    console.log(`Written temp HTML file: ${HTML_FILE}`);
+
+    await page.goto(`file://${process.cwd()}/${HTML_FILE}`, { waitUntil: 'networkidle0', timeout: PAGE_TIMEOUT });
     await delay(waitSec * 1000);
 
     await browser.close();
