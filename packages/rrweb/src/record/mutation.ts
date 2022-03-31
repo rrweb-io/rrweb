@@ -23,6 +23,7 @@ import {
   isBlocked,
   isAncestorRemoved,
   isIgnored,
+  isSerialized,
   isIframeINode,
   hasShadowRoot,
 } from '../utils';
@@ -532,7 +533,7 @@ export default class MutationBuffer {
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId((m.target.host as unknown) as INode)
             : this.mirror.getId(m.target as INode);
-          if (isBlocked(m.target, this.blockClass) || isIgnored(n)) {
+          if (isBlocked(m.target, this.blockClass) || isIgnored(n) || !isSerialized(n)) {
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set
