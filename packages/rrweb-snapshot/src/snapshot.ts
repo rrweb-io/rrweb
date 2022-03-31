@@ -411,7 +411,7 @@ function serializeNode(
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  const docId = nodeIdMap.get(n);
+  const docId = nodeIdMap.get(doc);
   if (docId) {
     rootId = docId === 1 ? undefined : docId;
   }
