@@ -5,6 +5,7 @@ import {
   attributes,
   INode,
   idNodeMap,
+  nodeIdMap,
   MaskInputOptions,
   SlimDOMOptions,
   DataURLOptions,
@@ -377,6 +378,7 @@ function serializeNode(
   n: Node,
   options: {
     doc: Document;
+    nodeIdMap: nodeIdMap;
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
@@ -393,6 +395,7 @@ function serializeNode(
 ): serializedNode | false {
   const {
     doc,
+    nodeIdMap,
     blockClass,
     blockSelector,
     maskTextClass,
@@ -408,8 +411,8 @@ function serializeNode(
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  if (((doc as unknown) as INode).__sn) {
-    const docId = ((doc as unknown) as INode).__sn.id;
+  const docId = nodeIdMap.get(n);
+  if (docId) {
     rootId = docId === 1 ? undefined : docId;
   }
   switch (n.nodeType) {
@@ -784,7 +787,8 @@ export function serializeNodeWithId(
   n: Node | INode,
   options: {
     doc: Document;
-    map: idNodeMap;
+    map: idNodeMap; // DEPRECATED
+    nodeIdMap: nodeIdMap;
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
@@ -808,6 +812,7 @@ export function serializeNodeWithId(
   const {
     doc,
     map,
+    nodeIdMap,
     blockClass,
     blockSelector,
     maskTextClass,
@@ -829,6 +834,7 @@ export function serializeNodeWithId(
   let { preserveWhiteSpace = true } = options;
   const _serializedNode = serializeNode(n, {
     doc,
+    nodeIdMap,
     blockClass,
     blockSelector,
     maskTextClass,
@@ -848,10 +854,9 @@ export function serializeNodeWithId(
     return null;
   }
 
-  let id;
-  // Try to reuse the previous id
-  if ('__sn' in n) {
-    id = n.__sn.id;
+  let id: number | undefined = nodeIdMap.get(n);
+  if (id) {
+    // Reuse the previous id
   } else if (
     slimDOMExcluded(_serializedNode, slimDOMOptions) ||
     (!preserveWhiteSpace &&
@@ -868,7 +873,11 @@ export function serializeNodeWithId(
   if (id === IGNORED_NODE) {
     return null; // slimDOM
   }
+  nodeIdMap.set(n, id);
+
+  // TODO: map is deprecated, please clean me up
   map[id] = n as INode;
+
   if (onSerialize) {
     onSerialize(n as INode);
   }
@@ -895,6 +904,7 @@ export function serializeNodeWithId(
     const bypassOptions = {
       doc,
       map,
+      nodeIdMap,
       blockClass,
       blockSelector,
       maskTextClass,
@@ -948,6 +958,7 @@ export function serializeNodeWithId(
           const serializedIframeNode = serializeNodeWithId(iframeDoc, {
             doc: iframeDoc,
             map,
+            nodeIdMap,
             blockClass,
             blockSelector,
             maskTextClass,
@@ -1001,7 +1012,7 @@ function snapshot(
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
   },
-): [serializedNodeWithId | null, idNodeMap] {
+): [serializedNodeWithId | null, nodeIdMap] {
   const {
     blockClass = 'rr-block',
     blockSelector = null,
@@ -1022,6 +1033,7 @@ function snapshot(
     keepIframeSrcFn = () => false,
   } = options || {};
   const idNodeMap: idNodeMap = {};
+  const nodeIdMap: nodeIdMap = new WeakMap();
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
@@ -1068,7 +1080,8 @@ function snapshot(
   return [
     serializeNodeWithId(n, {
       doc: n,
-      map: idNodeMap,
+      map: idNodeMap, // DEPRECATED
+      nodeIdMap,
       blockClass,
       blockSelector,
       maskTextClass,
@@ -1088,7 +1101,7 @@ function snapshot(
       iframeLoadTimeout,
       keepIframeSrcFn,
     }),
-    idNodeMap,
+    nodeIdMap,
   ];
 }
 

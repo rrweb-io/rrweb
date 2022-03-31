@@ -53,7 +53,7 @@ export declare type tagMap = {
     [key: string]: string;
 };
 export interface INode extends Node {
-    __sn: serializedNodeWithId;
+    __sn: serializedNodeWithId | serializedNode;
 }
 export interface ICanvas extends HTMLCanvasElement {
     __context: string;
@@ -61,6 +61,7 @@ export interface ICanvas extends HTMLCanvasElement {
 export declare type idNodeMap = {
     [key: number]: INode;
 };
+export declare type nodeIdMap = WeakMap<Node, number>;
 export declare type MaskInputOptions = Partial<{
     color: boolean;
     date: boolean;

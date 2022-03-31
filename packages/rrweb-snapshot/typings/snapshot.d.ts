@@ -1,4 +1,4 @@
-import { serializedNodeWithId, INode, idNodeMap, MaskInputOptions, SlimDOMOptions, DataURLOptions, MaskTextFn, MaskInputFn, KeepIframeSrcFn } from './types';
+import { serializedNodeWithId, INode, idNodeMap, nodeIdMap, MaskInputOptions, SlimDOMOptions, DataURLOptions, MaskTextFn, MaskInputFn, KeepIframeSrcFn } from './types';
 export declare const IGNORED_NODE = -2;
 export declare function absoluteToStylesheet(cssText: string | null, href: string): string;
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
@@ -8,6 +8,7 @@ export declare function needMaskingText(node: Node | null, maskTextClass: string
 export declare function serializeNodeWithId(n: Node | INode, options: {
     doc: Document;
     map: idNodeMap;
+    nodeIdMap: nodeIdMap;
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
@@ -45,7 +46,7 @@ declare function snapshot(n: Document, options?: {
     onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
-}): [serializedNodeWithId | null, idNodeMap];
+}): [serializedNodeWithId | null, nodeIdMap];
 export declare function visitSnapshot(node: serializedNodeWithId, onVisit: (node: serializedNodeWithId) => unknown): void;
 export declare function cleanupSnapshot(): void;
 export default snapshot;
