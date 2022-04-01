@@ -298,11 +298,17 @@ export function needMaskingText(
         return true;
       }
     } else {
-      (node as HTMLElement).classList.forEach((className) => {
+      // tslint:disable-next-line: prefer-for-of
+      for (
+        let eIndex = 0;
+        eIndex < (node as HTMLElement).classList.length;
+        eIndex++
+      ) {
+        const className = (node as HTMLElement).classList[eIndex];
         if (maskTextClass.test(className)) {
           return true;
         }
-      });
+      }
     }
     if (maskTextSelector) {
       if ((node as HTMLElement).matches(maskTextSelector)) {
@@ -379,7 +385,7 @@ function serializeNode(
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
-    dataURLOptions?: DataURLOptions,
+    dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
     recordCanvas: boolean | number;
     keepIframeSrcFn: KeepIframeSrcFn;
@@ -516,17 +522,26 @@ function serializeNode(
         if ((n as ICanvas).__context === '2d') {
           // only record this on 2d canvas
           if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
-            attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(dataURLOptions.type, dataURLOptions.quality);
+            attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
+              dataURLOptions.type,
+              dataURLOptions.quality,
+            );
           }
         } else if (!('__context' in n)) {
           // context is unknown, better not call getContext to trigger it
-          const canvasDataURL = (n as HTMLCanvasElement).toDataURL(dataURLOptions.type, dataURLOptions.quality);
+          const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
+            dataURLOptions.type,
+            dataURLOptions.quality,
+          );
 
           // create blank canvas of same dimensions
           const blankCanvas = document.createElement('canvas');
           blankCanvas.width = (n as HTMLCanvasElement).width;
           blankCanvas.height = (n as HTMLCanvasElement).height;
-          const blankCanvasDataURL = blankCanvas.toDataURL(dataURLOptions.type, dataURLOptions.quality);
+          const blankCanvasDataURL = blankCanvas.toDataURL(
+            dataURLOptions.type,
+            dataURLOptions.quality,
+          );
 
           // no need to save dataURL if it's the same as blank canvas
           if (canvasDataURL !== blankCanvasDataURL) {
@@ -548,7 +563,10 @@ function serializeNode(
             canvasService!.width = image.naturalWidth;
             canvasService!.height = image.naturalHeight;
             canvasCtx!.drawImage(image, 0, 0);
-            attributes.rr_dataURL = canvasService!.toDataURL(dataURLOptions.type, dataURLOptions.quality);
+            attributes.rr_dataURL = canvasService!.toDataURL(
+              dataURLOptions.type,
+              dataURLOptions.quality,
+            );
           } catch (err) {
             console.warn(
               `Cannot inline img src=${image.currentSrc}! Error: ${err}`,
@@ -614,7 +632,12 @@ function serializeNode(
       if (isStyle && textContent) {
         try {
           // try to read style sheet
-          if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
+          if (n.nextSibling || n.previousSibling) {
+            // This is not the only child of the stylesheet.
+            // We can't read all of the sheet's .cssRules and expect them
+            // to _only_ include the current rule(s) added by the text node.
+            // So we'll be conservative and keep textContent as-is.
+          } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
             textContent = stringifyStyleSheet(
               (n.parentNode as HTMLStyleElement).sheet!,
             );
@@ -859,6 +882,7 @@ export function serializeNodeWithId(
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
+    if ((n as HTMLElement).shadowRoot) serializedNode.isShadowHost = true;
   }
   if (
     (serializedNode.type === NodeType.Document ||
@@ -903,7 +927,6 @@ export function serializeNodeWithId(
     }
 
     if (isElement(n) && n.shadowRoot) {
-      serializedNode.isShadowHost = true;
       for (const childN of Array.from(n.shadowRoot.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
@@ -974,7 +997,7 @@ function snapshot(
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
     slimDOM?: boolean | SlimDOMOptions;
-    dataURLOptions?: DataURLOptions,
+    dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
     recordCanvas?: boolean | number;
     preserveWhiteSpace?: boolean;
