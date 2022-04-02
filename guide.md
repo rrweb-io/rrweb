@@ -135,30 +135,30 @@ setInterval(save, 10 * 1000);
 
 The parameter of `rrweb.record` accepts the following options.
 
-| key                  | default            | description                                                  |
-| -------------------- | ------------------ | ------------------------------------------------------------ |
-| emit                 | required           | the callback function to get emitted events                  |
-| checkoutEveryNth     | -                  | take a full snapshot after every N events<br />refer to the [checkout](#checkout) chapter |
-| checkoutEveryNms     | -                  | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter |
-| blockClass           | 'rr-block'         | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter |
-| blockSelector        | null               | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter |
-| ignoreClass          | 'rr-ignore'        | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter |
-| maskTextClass        | 'rr-mask'          | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter |
-| maskTextSelector     | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter |
-| maskAllInputs        | false              | mask all input content as \*                                 |
-| maskInputOptions     | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L77-L95) |
-| maskInputFn          | -                  | customize mask input content recording logic                 |
-| maskTextFn           | -                  | customize mask text content recording logic                  |
-| slimDOMOptions       | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108) |
-| inlineStylesheet     | true               | whether to inline the stylesheet in the events               |
-| hooks                | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207) |
-| packFn               | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md) |
-| sampling             | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md) |
-| recordCanvas         | false              | whether to record the canvas element                         |
-| inlineImages         | false              | whether to record the image content                          |
-| collectFonts         | false              | whether to collect fonts in the website                      |
+| key                  | default            | description                                                                                                                                                                                   |
+| -------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| emit                 | required           | the callback function to get emitted events                                                                                                                                                   |
+| checkoutEveryNth     | -                  | take a full snapshot after every N events<br />refer to the [checkout](#checkout) chapter                                                                                                     |
+| checkoutEveryNms     | -                  | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter                                                                                                         |
+| blockClass           | 'rr-block'         | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                                                |
+| blockSelector        | null               | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
+| ignoreClass          | 'rr-ignore'        | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                                                |
+| maskTextClass        | 'rr-mask'          | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter                                                                                 |
+| maskTextSelector     | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter                                                                                           |
+| maskAllInputs        | false              | mask all input content as \*                                                                                                                                                                  |
+| maskInputOptions     | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L77-L95)            |
+| maskInputFn          | -                  | customize mask input content recording logic                                                                                                                                                  |
+| maskTextFn           | -                  | customize mask text content recording logic                                                                                                                                                   |
+| slimDOMOptions       | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)  |
+| inlineStylesheet     | true               | whether to inline the stylesheet in the events                                                                                                                                                |
+| hooks                | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                  |
+| packFn               | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
+| sampling             | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
+| recordCanvas         | false              | whether to record the canvas element                                                                                                                                                          |
+| inlineImages         | false              | whether to record the image content                                                                                                                                                           |
+| collectFonts         | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
-| plugins              | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md) |
+| plugins              | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
 
 #### Privacy
 
@@ -286,23 +286,24 @@ replayer.pause(5000);
 
 The replayer accepts options as its constructor's second parameter, and it has the following options:
 
-| key                 | default       | description                                                  |
-| ------------------- | ------------- | ------------------------------------------------------------ |
-| speed               | 1             | replay speed ratio                                           |
-| root                | document.body | the root element of replayer                                 |
-| loadTimeout         | 0             | timeout of loading remote style sheet                        |
-| skipInactive        | false         | whether to skip inactive time                                |
-| showWarning         | true          | whether to print warning messages during replay              |
-| showDebug           | false         | whether to print debug messages during replay                |
-| blockClass          | 'rr-block'    | element with the class name will display as a blocked area   |
-| liveMode            | false         | whether to enable live mode                                  |
-| insertStyleRules    | []            | accepts multiple CSS rule string, which will be injected into the replay iframe |
-| triggerFocus        | true          | whether to trigger focus during replay                       |
-| UNSAFE_replayCanvas | false         | whether to replay the canvas element. **Enable this will remove the sandbox, which is unsafe.** |
+| key                 | default       | description                                                                                                                                                                                                                    |
+| ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| speed               | 1             | replay speed ratio                                                                                                                                                                                                             |
+| root                | document.body | the root element of replayer                                                                                                                                                                                                   |
+| loadTimeout         | 0             | timeout of loading remote style sheet                                                                                                                                                                                          |
+| skipInactive        | false         | whether to skip inactive time                                                                                                                                                                                                  |
+| showWarning         | true          | whether to print warning messages during replay                                                                                                                                                                                |
+| showDebug           | false         | whether to print debug messages during replay                                                                                                                                                                                  |
+| blockClass          | 'rr-block'    | element with the class name will display as a blocked area                                                                                                                                                                     |
+| liveMode            | false         | whether to enable live mode                                                                                                                                                                                                    |
+| insertStyleRules    | []            | accepts multiple CSS rule string, which will be injected into the replay iframe                                                                                                                                                |
+| triggerFocus        | true          | whether to trigger focus during replay                                                                                                                                                                                         |
+| UNSAFE_replayCanvas | false         | whether to replay the canvas element. **Enable this will remove the sandbox, which is unsafe.**                                                                                                                                |
+| pauseAnimation      | true          | whether to pause CSS animation when the replayer is paused                                                                                                                                                                     |
 | mouseTail           | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
-| unpackFn            | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md) |
-| logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md) |
-| plugins             | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md) |
+| unpackFn            | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
+| plugins             | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
+| useVirtualDom       | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
 
 #### Use rrweb-player
 
