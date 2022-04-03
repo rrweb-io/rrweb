@@ -251,7 +251,13 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   return isBlocked(node.parentNode, blockClass);
 }
 
-export function isIgnored(n: Node | INode): boolean {
+export function isIgnored(n: Node | INode, slimDOMOptions: SlimDOMOptions): boolean {
+  if ((n as Node).tagName === 'TITLE' && slimDOMOptions.headTitleMutations) {
+    // we do this check here but not in rrweb-snapshot
+    // to block mutations/animations on the title.
+    // the headTitleMutations options isn't intended to block recording of the initial value
+    return true;
+  }
   if ('__sn' in n) {
     return (n as INode).__sn.id === IGNORED_NODE;
   }
