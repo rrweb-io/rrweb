@@ -1,4 +1,5 @@
-import { mutationCallBack, Mirror, scrollCallback, MutationBufferParam, SamplingStrategy } from '../types';
+import { mutationCallBack, scrollCallback, MutationBufferParam, SamplingStrategy } from '../types';
+import { Mirror } from 'rrweb-snapshot';
 declare type BypassOptions = Omit<MutationBufferParam, 'doc' | 'mutationCb' | 'mirror' | 'shadowDomManager'> & {
     sampling: SamplingStrategy;
 };
@@ -7,6 +8,7 @@ export declare class ShadowDomManager {
     private scrollCb;
     private bypassOptions;
     private mirror;
+    private restorePatches;
     constructor(options: {
         mutationCb: mutationCallBack;
         scrollCb: scrollCallback;
@@ -14,5 +16,7 @@ export declare class ShadowDomManager {
         mirror: Mirror;
     });
     addShadowRoot(shadowRoot: ShadowRoot, doc: Document): void;
+    observeAttachShadow(iframeElement: HTMLIFrameElement): void;
+    reset(): void;
 }
 export {};

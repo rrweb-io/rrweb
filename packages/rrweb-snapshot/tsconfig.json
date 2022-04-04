@@ -6,6 +6,7 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
+    "target": "es6",
     "rootDir": "src",
     "outDir": "build",
     "lib": ["es6", "dom"]

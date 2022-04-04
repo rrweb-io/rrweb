@@ -1,13 +1,17 @@
-import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  snapshot,
+  MaskInputOptions,
+  SlimDOMOptions,
+  Mirror,
+} from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,
   getWindowWidth,
   getWindowHeight,
   polyfill,
-  isIframeINode,
   hasShadowRoot,
-  createMirror,
+  isSerializedIframe,
 } from '../utils';
 import {
   EventType,
@@ -35,7 +39,7 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 
-const mirror = createMirror();
+const mirror = new Mirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -252,7 +256,8 @@ function record<T = eventWithTime>(
     );
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
-    const [node, idNodeMap] = snapshot(document, {
+    const node = snapshot(document, {
+      mirror,
       blockClass,
       blockSelector,
       maskTextClass,
@@ -264,15 +269,15 @@ function record<T = eventWithTime>(
       recordCanvas,
       inlineImages,
       onSerialize: (n) => {
-        if (isIframeINode(n)) {
-          iframeManager.addIframe(n);
+        if (isSerializedIframe(n, mirror)) {
+          iframeManager.addIframe(n as HTMLIFrameElement);
         }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn);
+        iframeManager.attachIframe(iframe, childSn, mirror);
         shadowDomManager.observeAttachShadow(
           (iframe as Node) as HTMLIFrameElement,
         );
@@ -284,7 +289,6 @@ function record<T = eventWithTime>(
       return console.warn('Failed to snapshot the document');
     }
 
-    mirror.map = idNodeMap;
     wrappedEmit(
       wrapEvent({
         type: EventType.FullSnapshot,

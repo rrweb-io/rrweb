@@ -1,14 +1,14 @@
-import { serializedNodeWithId, INode, idNodeMap, nodeIdMap, MaskInputOptions, SlimDOMOptions, DataURLOptions, MaskTextFn, MaskInputFn, KeepIframeSrcFn } from './types';
+import { serializedNodeWithId, MaskInputOptions, SlimDOMOptions, DataURLOptions, MaskTextFn, MaskInputFn, KeepIframeSrcFn } from './types';
+import { Mirror } from './utils';
 export declare const IGNORED_NODE = -2;
 export declare function absoluteToStylesheet(cssText: string | null, href: string): string;
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
 export declare function transformAttribute(doc: Document, tagName: string, name: string, value: string): string;
 export declare function _isBlockedElement(element: HTMLElement, blockClass: string | RegExp, blockSelector: string | null): boolean;
 export declare function needMaskingText(node: Node | null, maskTextClass: string | RegExp, maskTextSelector: string | null): boolean;
-export declare function serializeNodeWithId(n: Node | INode, options: {
+export declare function serializeNodeWithId(n: Node, options: {
     doc: Document;
-    map: idNodeMap;
-    nodeIdMap: nodeIdMap;
+    mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
@@ -24,11 +24,12 @@ export declare function serializeNodeWithId(n: Node | INode, options: {
     inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
-    onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onSerialize?: (n: Node) => unknown;
+    onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
 }): serializedNodeWithId | null;
 declare function snapshot(n: Document, options?: {
+    mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
@@ -42,11 +43,11 @@ declare function snapshot(n: Document, options?: {
     inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
-    onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onSerialize?: (n: Node) => unknown;
+    onIframeLoad?: (iframeNode: Node, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
-}): [serializedNodeWithId | null, nodeIdMap];
+}): serializedNodeWithId | null;
 export declare function visitSnapshot(node: serializedNodeWithId, onVisit: (node: serializedNodeWithId) => unknown): void;
 export declare function cleanupSnapshot(): void;
 export default snapshot;

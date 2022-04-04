@@ -1,8 +1,7 @@
-import { Mirror, throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow } from './types';
-import { INode, serializedNodeWithId } from 'rrweb-snapshot';
+import { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow, DeprecatedMirror } from './types';
+import { Mirror } from 'rrweb-snapshot';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
-export declare function createMirror(): Mirror;
-export declare let _mirror: Mirror;
+export declare let _mirror: DeprecatedMirror;
 export declare function throttle<T>(func: (arg: T) => void, wait: number, options?: throttleOptions): (arg: T) => void;
 export declare function hookSetter<T>(target: T, key: string | number | symbol, d: PropertyDescriptor, isRevoked?: boolean, win?: Window & typeof globalThis): hookResetter;
 export declare function patch(source: {
@@ -11,8 +10,8 @@ export declare function patch(source: {
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
 export declare function isBlocked(node: Node | null, blockClass: blockClass): boolean;
-export declare function isIgnored(n: Node | INode): boolean;
-export declare function isAncestorRemoved(target: INode, mirror: Mirror): boolean;
+export declare function isIgnored(n: Node, mirror: Mirror): boolean;
+export declare function isAncestorRemoved(target: Node, mirror: Mirror): boolean;
 export declare function isTouchEvent(event: MouseEvent | TouchEvent): event is TouchEvent;
 export declare function polyfill(win?: Window & typeof globalThis): void;
 export declare type TreeNode = {
@@ -54,14 +53,10 @@ declare type ResolveTree = {
 };
 export declare function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[];
 export declare function iterateResolveTree(tree: ResolveTree, cb: (mutation: addedNodeMutation) => unknown): void;
-declare type HTMLIFrameINode = HTMLIFrameElement & {
-    __sn: serializedNodeWithId;
-};
 export declare type AppendedIframe = {
     mutationInQueue: addedNodeMutation;
-    builtNode: HTMLIFrameINode;
+    builtNode: HTMLIFrameElement;
 };
-export declare function isIframeINode(node: INode | ShadowRoot): node is HTMLIFrameINode;
 export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
 export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
     shadowRoot: ShadowRoot;

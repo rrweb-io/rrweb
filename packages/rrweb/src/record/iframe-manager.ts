@@ -1,4 +1,4 @@
-import { serializedNodeWithId, INode } from 'rrweb-snapshot';
+import { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
 import { mutationCallBack } from '../types';
 
 export class IframeManager {
@@ -18,11 +18,15 @@ export class IframeManager {
     this.loadListener = cb;
   }
 
-  public attachIframe(iframeEl: INode, childSn: serializedNodeWithId) {
+  public attachIframe(
+    iframeEl: Node,
+    childSn: serializedNodeWithId,
+    mirror: Mirror,
+  ) {
     this.mutationCb({
       adds: [
         {
-          parentId: iframeEl.__sn.id,
+          parentId: mirror.getId(iframeEl),
           nextId: null,
           node: childSn,
         },

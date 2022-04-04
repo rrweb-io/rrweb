@@ -67,19 +67,20 @@ export type tagMap = {
   [key: string]: string;
 };
 
+// @deprecated
 export interface INode extends Node {
-  __sn: serializedNodeWithId | serializedNode;
+  __sn: serializedNodeWithId;
 }
 
 export interface ICanvas extends HTMLCanvasElement {
   __context: string;
 }
 
-export type idNodeMap = {
-  [key: number]: INode;
-};
+export type idNodeMap = Map<number, Node>;
 
 export type nodeIdMap = WeakMap<Node, number>;
+
+export type nodeMetaMap = WeakMap<Node, serializedNode>;
 
 export type MaskInputOptions = Partial<{
   color: boolean;

@@ -3,9 +3,6 @@ import {
   serializedNodeWithId,
   NodeType,
   attributes,
-  INode,
-  idNodeMap,
-  nodeIdMap,
   MaskInputOptions,
   SlimDOMOptions,
   DataURLOptions,
@@ -15,6 +12,7 @@ import {
   ICanvas,
 } from './types';
 import {
+  Mirror,
   is2DCanvasBlank,
   isElement,
   isShadowRoot,
@@ -378,7 +376,7 @@ function serializeNode(
   n: Node,
   options: {
     doc: Document;
-    nodeIdMap: nodeIdMap;
+    mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
@@ -395,7 +393,7 @@ function serializeNode(
 ): serializedNode | false {
   const {
     doc,
-    nodeIdMap,
+    mirror,
     blockClass,
     blockSelector,
     maskTextClass,
@@ -411,8 +409,8 @@ function serializeNode(
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
-  const docId = nodeIdMap.get(doc);
-  if (docId) {
+  if (mirror.getMeta(doc)) {
+    const docId = mirror.getId(doc);
     rootId = docId === 1 ? undefined : docId;
   }
   switch (n.nodeType) {
@@ -784,11 +782,10 @@ function slimDOMExcluded(
 }
 
 export function serializeNodeWithId(
-  n: Node | INode,
+  n: Node,
   options: {
     doc: Document;
-    map: idNodeMap; // DEPRECATED
-    nodeIdMap: nodeIdMap;
+    mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
@@ -804,15 +801,17 @@ export function serializeNodeWithId(
     inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
-    onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onSerialize?: (n: Node) => unknown;
+    onIframeLoad?: (
+      iframeNode: HTMLIFrameElement,
+      node: serializedNodeWithId,
+    ) => unknown;
     iframeLoadTimeout?: number;
   },
 ): serializedNodeWithId | null {
   const {
     doc,
-    map,
-    nodeIdMap,
+    mirror,
     blockClass,
     blockSelector,
     maskTextClass,
@@ -834,7 +833,7 @@ export function serializeNodeWithId(
   let { preserveWhiteSpace = true } = options;
   const _serializedNode = serializeNode(n, {
     doc,
-    nodeIdMap,
+    mirror,
     blockClass,
     blockSelector,
     maskTextClass,
@@ -854,9 +853,10 @@ export function serializeNodeWithId(
     return null;
   }
 
-  let id: number | undefined = nodeIdMap.get(n);
-  if (id) {
+  let id: number | undefined;
+  if (mirror.hasNode(n)) {
     // Reuse the previous id
+    id = mirror.getId(n);
   } else if (
     slimDOMExcluded(_serializedNode, slimDOMOptions) ||
     (!preserveWhiteSpace &&
@@ -868,18 +868,16 @@ export function serializeNodeWithId(
   } else {
     id = genId();
   }
-  const serializedNode = Object.assign(_serializedNode, { id });
-  (n as INode).__sn = serializedNode;
   if (id === IGNORED_NODE) {
     return null; // slimDOM
   }
-  nodeIdMap.set(n, id);
 
-  // TODO: map is deprecated, please clean me up
-  map[id] = n as INode;
+  mirror.add(n, id, _serializedNode);
+
+  const serializedNode = Object.assign(_serializedNode, { id });
 
   if (onSerialize) {
-    onSerialize(n as INode);
+    onSerialize(n);
   }
   let recordChild = !skipChild;
   if (serializedNode.type === NodeType.Element) {
@@ -895,16 +893,15 @@ export function serializeNodeWithId(
   ) {
     if (
       slimDOMOptions.headWhitespace &&
-      _serializedNode.type === NodeType.Element &&
-      _serializedNode.tagName === 'head'
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'head'
       // would impede performance: || getComputedStyle(n)['white-space'] === 'normal'
     ) {
       preserveWhiteSpace = false;
     }
     const bypassOptions = {
       doc,
-      map,
-      nodeIdMap,
+      mirror,
       blockClass,
       blockSelector,
       maskTextClass,
@@ -957,8 +954,7 @@ export function serializeNodeWithId(
         if (iframeDoc && onIframeLoad) {
           const serializedIframeNode = serializeNodeWithId(iframeDoc, {
             doc: iframeDoc,
-            map,
-            nodeIdMap,
+            mirror,
             blockClass,
             blockSelector,
             maskTextClass,
@@ -980,7 +976,7 @@ export function serializeNodeWithId(
           });
 
           if (serializedIframeNode) {
-            onIframeLoad(n as INode, serializedIframeNode);
+            onIframeLoad(n as HTMLIFrameElement, serializedIframeNode);
           }
         }
       },
@@ -994,6 +990,7 @@ export function serializeNodeWithId(
 function snapshot(
   n: Document,
   options?: {
+    mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
@@ -1007,13 +1004,14 @@ function snapshot(
     inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
-    onSerialize?: (n: INode) => unknown;
-    onIframeLoad?: (iframeINode: INode, node: serializedNodeWithId) => unknown;
+    onSerialize?: (n: Node) => unknown;
+    onIframeLoad?: (iframeNode: Node, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
   },
-): [serializedNodeWithId | null, nodeIdMap] {
+): serializedNodeWithId | null {
   const {
+    mirror = new Mirror(),
     blockClass = 'rr-block',
     blockSelector = null,
     maskTextClass = 'rr-mask',
@@ -1032,8 +1030,6 @@ function snapshot(
     iframeLoadTimeout,
     keepIframeSrcFn = () => false,
   } = options || {};
-  const idNodeMap: idNodeMap = {};
-  const nodeIdMap: nodeIdMap = new WeakMap();
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
@@ -1077,32 +1073,28 @@ function snapshot(
       : slimDOM === false
       ? {}
       : slimDOM;
-  return [
-    serializeNodeWithId(n, {
-      doc: n,
-      map: idNodeMap, // DEPRECATED
-      nodeIdMap,
-      blockClass,
-      blockSelector,
-      maskTextClass,
-      maskTextSelector,
-      skipChild: false,
-      inlineStylesheet,
-      maskInputOptions,
-      maskTextFn,
-      maskInputFn,
-      slimDOMOptions,
-      dataURLOptions,
-      inlineImages,
-      recordCanvas,
-      preserveWhiteSpace,
-      onSerialize,
-      onIframeLoad,
-      iframeLoadTimeout,
-      keepIframeSrcFn,
-    }),
-    nodeIdMap,
-  ];
+  return serializeNodeWithId(n, {
+    doc: n,
+    mirror,
+    blockClass,
+    blockSelector,
+    maskTextClass,
+    maskTextSelector,
+    skipChild: false,
+    inlineStylesheet,
+    maskInputOptions,
+    maskTextFn,
+    maskInputFn,
+    slimDOMOptions,
+    dataURLOptions,
+    inlineImages,
+    recordCanvas,
+    preserveWhiteSpace,
+    onSerialize,
+    onIframeLoad,
+    iframeLoadTimeout,
+    keepIframeSrcFn,
+  });
 }
 
 export function visitSnapshot(
