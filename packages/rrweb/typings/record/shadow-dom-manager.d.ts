@@ -7,6 +7,7 @@ export declare class ShadowDomManager {
     private scrollCb;
     private bypassOptions;
     private mirror;
+    private restorePatches;
     constructor(options: {
         mutationCb: mutationCallBack;
         scrollCb: scrollCallback;
@@ -14,5 +15,7 @@ export declare class ShadowDomManager {
         mirror: Mirror;
     });
     addShadowRoot(shadowRoot: ShadowRoot, doc: Document): void;
+    observeAttachShadow(iframeElement: HTMLIFrameElement): void;
+    reset(): void;
 }
 export {};

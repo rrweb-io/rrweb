@@ -494,4 +494,5 @@ declare global {
     }
 }
 export declare type IWindow = Window & typeof globalThis;
+export declare type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 export {};
