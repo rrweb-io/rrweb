@@ -2,7 +2,7 @@ import {
   snapshot,
   MaskInputOptions,
   SlimDOMOptions,
-  Mirror,
+  createMirror,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
@@ -39,7 +39,7 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 
-const mirror = new Mirror();
+const mirror = createMirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -77,6 +77,9 @@ function record<T = eventWithTime>(
   if (mousemoveWait !== undefined && sampling.mousemove === undefined) {
     sampling.mousemove = mousemoveWait;
   }
+
+  // reset mirror in case `record` this was called earlier
+  mirror.reset();
 
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
