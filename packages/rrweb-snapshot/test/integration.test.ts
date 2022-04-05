@@ -131,7 +131,7 @@ describe('integration tests', function (this: ISuite) {
       const rebuildHtml = (
         await page.evaluate(`${code}
         const x = new XMLSerializer();
-        const [snap] = rrweb.snapshot(document);
+        const snap = rrweb.snapshot(document);
         let out = x.serializeToString(rrweb.rebuild(snap, { doc: document })[0]);
         if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
           // this is just an artefact of serializeToString
@@ -168,7 +168,7 @@ describe('integration tests', function (this: ISuite) {
       `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`,
     );
     const rebuildRenderedHeight = await page.evaluate(`${code}
-const [snap] = rrweb.snapshot(document);
+const snap = rrweb.snapshot(document);
 const iframe = document.createElement('iframe');
 iframe.setAttribute('width', document.body.clientWidth)
 iframe.setAttribute('height', document.body.clientHeight)
@@ -205,9 +205,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false
     })`);
     await page.waitFor(100);
-    const snapshot = await page.evaluate(
-      'JSON.stringify(snapshot[0], null, 2);',
-    );
+    const snapshot = await page.evaluate('JSON.stringify(snapshot, null, 2);');
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
   });
@@ -253,7 +251,7 @@ describe('iframe integration tests', function (this: ISuite) {
     });
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrweb.snapshot(document)[0];
+      rrweb.snapshot(document);
     `),
       null,
       2,
@@ -302,7 +300,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     });
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrweb.snapshot(document)[0];
+      rrweb.snapshot(document);
     `),
       null,
       2,
