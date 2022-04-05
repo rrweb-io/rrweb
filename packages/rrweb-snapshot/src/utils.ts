@@ -34,8 +34,8 @@ export class Mirror {
     return this.idNodeMap.get(id) || null;
   }
 
-  getIds(): IterableIterator<number> {
-    return this.idNodeMap.keys();
+  getIds(): number[] {
+    return Array.from(this.idNodeMap.keys());
   }
 
   getMeta(n: Node): serializedNode | null {

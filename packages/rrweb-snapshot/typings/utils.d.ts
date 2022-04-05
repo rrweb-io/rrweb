@@ -7,7 +7,7 @@ export declare class Mirror {
     private nodeMetaMap;
     getId(n: Node | undefined | null): number;
     getNode(id: number): Node | null;
-    getIds(): IterableIterator<number>;
+    getIds(): number[];
     getMeta(n: Node): serializedNode | null;
     removeNodeFromMap(n: Node): void;
     has(id: number): boolean;
