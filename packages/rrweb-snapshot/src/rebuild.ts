@@ -394,7 +394,7 @@ export function buildNodeWithSN(
     }
   }
 
-  return node as Node;
+  return node;
 }
 
 function visit(mirror: Mirror, onVisit: (node: Node) => void) {
