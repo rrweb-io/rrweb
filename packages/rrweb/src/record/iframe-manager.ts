@@ -19,7 +19,7 @@ export class IframeManager {
   }
 
   public attachIframe(
-    iframeEl: Node,
+    iframeEl: HTMLIFrameElement,
     childSn: serializedNodeWithId,
     mirror: Mirror,
   ) {
@@ -36,6 +36,6 @@ export class IframeManager {
       attributes: [],
       isAttachIframe: true,
     });
-    this.loadListener?.((iframeEl as unknown) as HTMLIFrameElement);
+    this.loadListener?.(iframeEl);
   }
 }

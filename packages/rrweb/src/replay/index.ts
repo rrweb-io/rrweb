@@ -1280,7 +1280,7 @@ export class Replayer {
         canvasMutation({
           event: e,
           mutation: d,
-          target: (target as unknown) as HTMLCanvasElement,
+          target: target as HTMLCanvasElement,
           imageMap: this.imageMap,
           errorHandler: this.warnCanvasMutationFailed.bind(this),
         });
@@ -1414,8 +1414,7 @@ export class Replayer {
       }
 
       const hasIframeChild =
-        ((parent as unknown) as HTMLElement).getElementsByTagName?.('iframe')
-          .length > 0;
+        (parent as HTMLElement).getElementsByTagName?.('iframe').length > 0;
       /**
        * Why !isSerializedIframe(parent)? If parent element is an iframe, iframe document can't be appended to virtual parent.
        * Why !hasIframeChild? If we move iframe elements from dom to fragment document, we will lose the contentDocument of iframe. So we need to disable the virtual dom optimization if a parent node contains iframe elements.
@@ -1854,7 +1853,7 @@ export class Replayer {
       parentSn?.tagName === 'textarea' &&
       frag.textContent
     ) {
-      ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
+      (parent as HTMLTextAreaElement).value = frag.textContent;
     }
     parent.appendChild(frag);
     // restore state of elements after they are mounted
@@ -1869,7 +1868,7 @@ export class Replayer {
   private storeState(parent: Node) {
     if (parent) {
       if (parent.nodeType === parent.ELEMENT_NODE) {
-        const parentElement = (parent as unknown) as HTMLElement;
+        const parentElement = parent as HTMLElement;
         if (parentElement.scrollLeft || parentElement.scrollTop) {
           // store scroll position state
           this.elementStateMap.set(parent, {
@@ -1895,7 +1894,7 @@ export class Replayer {
    */
   private restoreState(parent: Node) {
     if (parent.nodeType === parent.ELEMENT_NODE) {
-      const parentElement = (parent as unknown) as HTMLElement;
+      const parentElement = parent as HTMLElement;
       if (this.elementStateMap.has(parent)) {
         const storedState = this.elementStateMap.get(parent)!;
         // restore scroll position
@@ -1922,7 +1921,7 @@ export class Replayer {
       return;
     }
 
-    const styleNode = (node as unknown) as HTMLStyleElement;
+    const styleNode = node as HTMLStyleElement;
 
     applyVirtualStyleRulesToNode(storedRules, styleNode);
   }
