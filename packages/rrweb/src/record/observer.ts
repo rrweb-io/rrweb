@@ -221,7 +221,7 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target as Node, blockClass)) {
+      if (isBlocked(target, blockClass)) {
         return;
       }
       const e = isTouchEvent(event) ? event.changedTouches[0] : event;

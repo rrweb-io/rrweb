@@ -44,7 +44,7 @@ declare function snapshot(n: Document, options?: {
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
-    onIframeLoad?: (iframeNode: Node, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
 }): serializedNodeWithId | null;

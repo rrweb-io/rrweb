@@ -906,7 +906,7 @@ export class Replayer {
           d.adds.forEach((m) => this.treeIndex.add(m));
           d.texts.forEach((m) => {
             const target = this.mirror.getNode(m.id);
-            const parent = (target?.parentNode as unknown) as Node | null;
+            const parent = target?.parentNode;
             // remove any style rules that pending
             // for stylesheets where the contents get replaced
             if (parent && this.virtualStyleRulesMap.has(parent))
@@ -974,13 +974,13 @@ export class Replayer {
         const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
-            if ('blur' in ((target as Node) as HTMLElement)) {
-              ((target as Node) as HTMLElement).blur();
+            if ('blur' in (target as HTMLElement)) {
+              (target as HTMLElement).blur();
             }
             break;
           case MouseInteractions.Focus:
-            if (triggerFocus && ((target as Node) as HTMLElement).focus) {
-              ((target as Node) as HTMLElement).focus({
+            if (triggerFocus && (target as HTMLElement).focus) {
+              (target as HTMLElement).focus({
                 preventScroll: true,
               });
             }
@@ -1081,7 +1081,7 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
-        const mediaEl = (target as Node) as HTMLMediaElement;
+        const mediaEl = target as HTMLMediaElement;
         try {
           if (d.currentTime) {
             mediaEl.currentTime = d.currentTime;
@@ -1117,7 +1117,7 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
 
-        const styleEl = (target as Node) as HTMLStyleElement;
+        const styleEl = target as HTMLStyleElement;
         const parent = target.parentNode!;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
 
@@ -1219,7 +1219,7 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
 
-        const styleEl = (target as Node) as HTMLStyleElement;
+        const styleEl = target as HTMLStyleElement;
         const parent = target.parentNode!;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
 
@@ -1375,7 +1375,7 @@ export class Replayer {
     const nextNotInDOM = (mutation: addedNodeMutation) => {
       let next: Node | null = null;
       if (mutation.nextId) {
-        next = this.mirror.getNode(mutation.nextId) as Node;
+        next = this.mirror.getNode(mutation.nextId);
       }
       // next not present at this moment
       if (
@@ -1442,18 +1442,18 @@ export class Replayer {
       if (mutation.node.isShadow) {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
         if (!hasShadowRoot(parent)) {
-          ((parent as Node) as HTMLElement).attachShadow({ mode: 'open' });
-          parent = ((parent as Node) as HTMLElement).shadowRoot!;
+          (parent as HTMLElement).attachShadow({ mode: 'open' });
+          parent = (parent as HTMLElement).shadowRoot!;
         } else parent = parent.shadowRoot;
       }
 
       let previous: Node | null = null;
       let next: Node | null = null;
       if (mutation.previousId) {
-        previous = this.mirror.getNode(mutation.previousId) as Node;
+        previous = this.mirror.getNode(mutation.previousId);
       }
       if (mutation.nextId) {
-        next = this.mirror.getNode(mutation.nextId) as Node;
+        next = this.mirror.getNode(mutation.nextId);
       }
       if (nextNotInDOM(mutation)) {
         return queue.push(mutation);
@@ -1476,7 +1476,7 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
         cache: this.cache,
-      }) as Node;
+      })!;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1615,10 +1615,10 @@ export class Replayer {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
           if (value === null) {
-            ((target as Node) as Element).removeAttribute(attributeName);
+            (target as Element).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
             try {
-              ((target as Node) as Element).setAttribute(attributeName, value);
+              (target as Element).setAttribute(attributeName, value);
             } catch (error) {
               if (this.config.showWarning) {
                 console.warn(
@@ -1629,7 +1629,7 @@ export class Replayer {
             }
           } else if (attributeName === 'style') {
             let styleValues = value as styleAttributeValue;
-            const targetEl = (target as Node) as HTMLElement;
+            const targetEl = target as HTMLElement;
             for (var s in styleValues) {
               if (styleValues[s] === false) {
                 targetEl.style.removeProperty(s);
@@ -1659,7 +1659,7 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     const sn = this.mirror.getMeta(target);
-    if ((target as Node) === this.iframe.contentDocument) {
+    if (target === this.iframe.contentDocument) {
       this.iframe.contentWindow!.scrollTo({
         top: d.y,
         left: d.x,
@@ -1674,8 +1674,8 @@ export class Replayer {
       });
     } else {
       try {
-        ((target as Node) as Element).scrollTop = d.y;
-        ((target as Node) as Element).scrollLeft = d.x;
+        (target as Element).scrollTop = d.y;
+        (target as Element).scrollLeft = d.x;
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before
@@ -1691,8 +1691,8 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     try {
-      ((target as Node) as HTMLInputElement).checked = d.isChecked;
-      ((target as Node) as HTMLInputElement).value = d.text;
+      (target as HTMLInputElement).checked = d.isChecked;
+      (target as HTMLInputElement).value = d.text;
     } catch (error) {
       // for safe
     }
@@ -1704,7 +1704,7 @@ export class Replayer {
       return this.debugNodeNotFound(mutation, d.id);
     }
     try {
-      ((target as Node) as HTMLElement).textContent = d.value;
+      (target as HTMLElement).textContent = d.value;
     } catch (error) {
       // for safe
     }
@@ -1725,7 +1725,7 @@ export class Replayer {
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node, mutation);
       }
     }
     if (nextInMap) {
@@ -1734,7 +1734,7 @@ export class Replayer {
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node, mutation);
       }
     }
   }
@@ -1760,7 +1760,7 @@ export class Replayer {
     if (!isSync) {
       this.drawMouseTail({ x: _x, y: _y });
     }
-    this.hoverElements((target as Node) as Element);
+    this.hoverElements(target as Element);
   }
 
   private drawMouseTail(position: { x: number; y: number }) {

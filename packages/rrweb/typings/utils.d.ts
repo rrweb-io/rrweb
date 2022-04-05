@@ -57,6 +57,7 @@ export declare type AppendedIframe = {
     mutationInQueue: addedNodeMutation;
     builtNode: HTMLIFrameElement;
 };
+export declare function isSerializedIframe(n: Node, mirror: Mirror): n is HTMLIFrameElement;
 export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
 export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
     shadowRoot: ShadowRoot;

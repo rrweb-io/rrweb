@@ -414,7 +414,7 @@ function handleScroll(node: Node, mirror: Mirror) {
   if (n?.type !== NodeType.Element) {
     return;
   }
-  const el = (node as Node) as HTMLElement;
+  const el = node as HTMLElement;
   for (const name in n.attributes) {
     if (!(n.attributes.hasOwnProperty(name) && name.startsWith('rr_'))) {
       continue;

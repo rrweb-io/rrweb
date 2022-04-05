@@ -278,9 +278,7 @@ function record<T = eventWithTime>(
       },
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn, mirror);
-        shadowDomManager.observeAttachShadow(
-          (iframe as Node) as HTMLIFrameElement,
-        );
+        shadowDomManager.observeAttachShadow(iframe);
       },
       keepIframeSrcFn,
     });
