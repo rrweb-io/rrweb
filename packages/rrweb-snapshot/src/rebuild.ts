@@ -329,7 +329,7 @@ export function buildNodeWithSN(
   }
   if (n.rootId) {
     console.assert(
-      ((mirror.getNode(n.rootId) as unknown) as Document) === doc,
+      (mirror.getNode(n.rootId) as Document) === doc,
       'Target document should has the same root id.',
     );
   }
