@@ -1,18 +1,18 @@
-import { MaskInputFn, MaskInputOptions, serializedNode } from './types';
+import { MaskInputFn, MaskInputOptions, serializedNodeWithId } from './types';
 export declare function isElement(n: Node): n is Element;
 export declare function isShadowRoot(n: Node): n is ShadowRoot;
 export declare class Mirror {
     private idNodeMap;
-    private nodeIdMap;
     private nodeMetaMap;
     getId(n: Node | undefined | null): number;
     getNode(id: number): Node | null;
     getIds(): number[];
-    getMeta(n: Node): serializedNode | null;
+    getMeta(n: Node): serializedNodeWithId | null;
     removeNodeFromMap(n: Node): void;
     has(id: number): boolean;
     hasNode(node: Node): boolean;
-    add(n: Node, id: number, meta?: serializedNode): void;
+    add(n: Node, meta: serializedNodeWithId): void;
+    replace(id: number, n: Node): void;
     reset(): void;
 }
 export declare function createMirror(): Mirror;

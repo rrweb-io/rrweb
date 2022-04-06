@@ -1426,7 +1426,7 @@ export class Replayer {
         !hasIframeChild
       ) {
         const virtualParent = document.createDocumentFragment();
-        this.mirror.add(virtualParent, mutation.parentId);
+        this.mirror.replace(mutation.parentId, virtualParent);
         this.fragmentParentMap.set(virtualParent, parent);
 
         // store the state, like scroll position, of child nodes before they are unmounted from dom
@@ -1842,7 +1842,7 @@ export class Replayer {
   private restoreRealParent(frag: Node, parent: Node) {
     const id = this.mirror.getId(frag);
     const parentSn = this.mirror.getMeta(parent);
-    this.mirror.add(parent, id);
+    this.mirror.replace(id, parent);
 
     /**
      * If we have already set value attribute on textarea,

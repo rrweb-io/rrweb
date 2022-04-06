@@ -363,7 +363,7 @@ export function buildNodeWithSN(
     node = doc;
   }
 
-  mirror.add(node, n.id, n);
+  mirror.add(node, n);
 
   if (
     (n.type === NodeType.Document || n.type === NodeType.Element) &&

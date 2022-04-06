@@ -78,9 +78,7 @@ export interface ICanvas extends HTMLCanvasElement {
 
 export type idNodeMap = Map<number, Node>;
 
-export type nodeIdMap = WeakMap<Node, number>;
-
-export type nodeMetaMap = WeakMap<Node, serializedNode>;
+export type nodeMetaMap = WeakMap<Node, serializedNodeWithId>;
 
 export type MaskInputOptions = Partial<{
   color: boolean;

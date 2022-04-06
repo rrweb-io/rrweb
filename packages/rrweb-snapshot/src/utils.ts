@@ -2,9 +2,8 @@ import {
   idNodeMap,
   MaskInputFn,
   MaskInputOptions,
-  nodeIdMap,
   nodeMetaMap,
-  serializedNode,
+  serializedNodeWithId,
 } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -18,13 +17,12 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
 
 export class Mirror {
   private idNodeMap: idNodeMap = new Map();
-  private nodeIdMap: nodeIdMap = new WeakMap();
   private nodeMetaMap: nodeMetaMap = new WeakMap();
 
   getId(n: Node | undefined | null): number {
     if (!n) return -1;
 
-    const id = this.nodeIdMap.get(n);
+    const id = this.getMeta(n)?.id;
 
     // if n is not a serialized Node, use -1 as its id.
     return id ?? -1;
@@ -38,7 +36,7 @@ export class Mirror {
     return Array.from(this.idNodeMap.keys());
   }
 
-  getMeta(n: Node): serializedNode | null {
+  getMeta(n: Node): serializedNodeWithId | null {
     return this.nodeMetaMap.get(n) || null;
   }
 
@@ -55,17 +53,23 @@ export class Mirror {
   has(id: number): boolean {
     return this.idNodeMap.has(id);
   }
+
   hasNode(node: Node): boolean {
-    return this.nodeIdMap.has(node);
+    return this.nodeMetaMap.has(node);
   }
-  add(n: Node, id: number, meta?: serializedNode) {
+
+  add(n: Node, meta: serializedNodeWithId) {
+    const id = meta.id;
     this.idNodeMap.set(id, n);
-    this.nodeIdMap.set(n, id);
-    if (meta) this.nodeMetaMap.set(n, meta);
+    this.nodeMetaMap.set(n, meta);
   }
+
+  replace(id: number, n: Node) {
+    this.idNodeMap.set(id, n);
+  }
+
   reset() {
     this.idNodeMap = new Map();
-    this.nodeIdMap = new WeakMap();
     this.nodeMetaMap = new WeakMap();
   }
 }
