@@ -224,9 +224,7 @@ export function getWindowWidth(): number {
 }
 
 export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
-  if (!node) {
-    return false;
-  }
+  if (!blockClass || !node) return false;
   if (node.nodeType === node.ELEMENT_NODE) {
     let needBlock = false;
     if (typeof blockClass === 'string') {

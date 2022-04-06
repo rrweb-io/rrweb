@@ -169,7 +169,7 @@ export type eventWithTime = event & {
   delay?: number;
 };
 
-export type blockClass = string | RegExp;
+export type blockClass = string | RegExp | null;
 
 export type maskTextClass = string | RegExp;
 

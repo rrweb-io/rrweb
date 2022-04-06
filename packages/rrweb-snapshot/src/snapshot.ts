@@ -261,14 +261,16 @@ export function transformAttribute(
 
 export function _isBlockedElement(
   element: HTMLElement,
-  blockClass: string | RegExp,
+  blockClass: string | RegExp | null,
   blockSelector: string | null,
 ): boolean {
+  if (!blockClass && !blockSelector) return false;
+
   if (typeof blockClass === 'string') {
     if (element.classList.contains(blockClass)) {
       return true;
     }
-  } else {
+  } else if (blockClass) {
     // tslint:disable-next-line: prefer-for-of
     for (let eIndex = 0; eIndex < element.classList.length; eIndex++) {
       const className = element.classList[eIndex];
@@ -377,7 +379,7 @@ function serializeNode(
   n: Node,
   options: {
     doc: Document;
-    blockClass: string | RegExp;
+    blockClass: string | RegExp | null;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
@@ -790,7 +792,7 @@ export function serializeNodeWithId(
   options: {
     doc: Document;
     map: idNodeMap;
-    blockClass: string | RegExp;
+    blockClass: string | RegExp | null;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
@@ -988,7 +990,7 @@ export function serializeNodeWithId(
 function snapshot(
   n: Document,
   options?: {
-    blockClass?: string | RegExp;
+    blockClass?: string | RegExp | null;
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
