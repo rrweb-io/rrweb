@@ -633,7 +633,12 @@ function serializeNode(
       if (isStyle && textContent) {
         try {
           // try to read style sheet
-          if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
+          if (n.nextSibling || n.previousSibling) {
+            // This is not the only child of the stylesheet.
+            // We can't read all of the sheet's .cssRules and expect them
+            // to _only_ include the current rule(s) added by the text node.
+            // So we'll be conservative and keep textContent as-is.
+          } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
             textContent = stringifyStyleSheet(
               (n.parentNode as HTMLStyleElement).sheet!,
             );
