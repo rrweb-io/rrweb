@@ -1666,7 +1666,7 @@ export class Replayer {
       });
     } else if (sn?.type === NodeType.Document) {
       // nest iframe content document
-      ((target as unknown) as Document).defaultView!.scrollTo({
+      (target as Document).defaultView!.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
