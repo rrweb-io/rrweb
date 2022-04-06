@@ -1,4 +1,5 @@
-import { mutationCallBack, Mirror, scrollCallback, MutationBufferParam, SamplingStrategy } from '../types';
+import { mutationCallBack, scrollCallback, MutationBufferParam, SamplingStrategy } from '../types';
+import { Mirror } from 'rrweb-snapshot';
 declare type BypassOptions = Omit<MutationBufferParam, 'doc' | 'mutationCb' | 'mirror' | 'shadowDomManager'> & {
     sampling: SamplingStrategy;
 };

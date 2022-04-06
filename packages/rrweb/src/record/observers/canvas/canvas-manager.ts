@@ -1,4 +1,4 @@
-import { INode } from 'rrweb-snapshot';
+import { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   canvasManagerMutationCallback,
@@ -7,7 +7,6 @@ import {
   canvasMutationWithType,
   IWindow,
   listenerHandler,
-  Mirror,
 } from '../../../types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
@@ -126,7 +125,7 @@ export class CanvasManager {
   flushPendingCanvasMutations() {
     this.pendingCanvasMutations.forEach(
       (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
-        const id = this.mirror.getId((canvas as unknown) as INode);
+        const id = this.mirror.getId(canvas);
         this.flushPendingCanvasMutationFor(canvas, id);
       },
     );
