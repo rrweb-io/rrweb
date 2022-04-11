@@ -17,7 +17,10 @@ rrweb.record({
 ```js
 rrweb.record({
   emit(event) {},
-  recordCanvas: 15,
+  recordCanvas: true,
+  sampling: {
+    canvas: 15,
+  },
 });
 ```
 

@@ -201,6 +201,12 @@ export type SamplingStrategy = Partial<{
    * 'last' will only record the last input value while input a sequence of chars
    */
   input: 'all' | 'last';
+  /**
+   * 'all' will record every single canvas call
+   * number between 1 and 60, will record an image snapshots in a web-worker a (maximum) number of times per second.
+   *                          Number only supported where [`OffscreenCanvas`](http://mdn.io/offscreencanvas) is supported.
+   */
+  canvas: 'all' | number;
 }>;
 
 export type RecordPlugin<TOptions = unknown> = {
@@ -228,7 +234,7 @@ export type recordOptions<T> = {
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
-  recordCanvas?: boolean | number;
+  recordCanvas?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
@@ -260,7 +266,7 @@ export type observerParam = {
   canvasMutationCb: canvasMutationCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
-  recordCanvas: boolean | number;
+  recordCanvas: boolean;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;

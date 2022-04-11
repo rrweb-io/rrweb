@@ -124,6 +124,7 @@ export declare type SamplingStrategy = Partial<{
     scroll: number;
     media: number;
     input: 'all' | 'last';
+    canvas: 'all' | number;
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
@@ -149,7 +150,7 @@ export declare type recordOptions<T> = {
     hooks?: hooksParam;
     packFn?: PackFn;
     sampling?: SamplingStrategy;
-    recordCanvas?: boolean | number;
+    recordCanvas?: boolean;
     userTriggeredOnInput?: boolean;
     collectFonts?: boolean;
     inlineImages?: boolean;
@@ -179,7 +180,7 @@ export declare type observerParam = {
     canvasMutationCb: canvasMutationCallback;
     fontCb: fontCallback;
     sampling: SamplingStrategy;
-    recordCanvas: boolean | number;
+    recordCanvas: boolean;
     inlineImages: boolean;
     userTriggeredOnInput: boolean;
     collectFonts: boolean;

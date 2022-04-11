@@ -39,7 +39,7 @@ interface IWindow extends Window {
 const setup = function (
   this: ISuite,
   content: string,
-  recordCanvas: boolean | number = true,
+  canvasSample: 'all' | number = 'all',
 ): ISuite {
   const ctx = {} as ISuite;
 
@@ -65,13 +65,16 @@ const setup = function (
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
-    await ctx.page.evaluate((recordCanvas) => {
+    await ctx.page.evaluate((canvasSample) => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
-        recordCanvas,
+        recordCanvas: true,
+        sampling: {
+          canvas: canvasSample,
+        },
         emit: ((window as unknown) as IWindow).emit,
       });
-    }, recordCanvas);
+    }, canvasSample);
   });
 
   afterEach(async () => {

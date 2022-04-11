@@ -22,7 +22,7 @@ export declare function serializeNodeWithId(n: Node, options: {
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
     inlineImages?: boolean;
-    recordCanvas?: boolean | number;
+    recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
@@ -41,7 +41,7 @@ declare function snapshot(n: Document, options?: {
     slimDOM?: boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
-    recordCanvas?: boolean | number;
+    recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;

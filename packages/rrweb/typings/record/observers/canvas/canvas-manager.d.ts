@@ -18,11 +18,12 @@ export declare class CanvasManager {
     lock(): void;
     unlock(): void;
     constructor(options: {
-        recordCanvas: boolean | number;
+        recordCanvas: boolean;
         mutationCb: canvasMutationCallback;
         win: IWindow;
         blockClass: blockClass;
         mirror: Mirror;
+        sampling?: 'all' | number;
     });
     private processMutation;
     private initCanvasFPSObserver;

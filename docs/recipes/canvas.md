@@ -16,7 +16,10 @@ Alternatively enable image snapshot recording of Canvas at a maximum of 15 frame
 ```js
 rrweb.record({
   emit(event) {},
-  recordCanvas: 15,
+  recordCanvas: true,
+  sampling: {
+    canvas: 15,
+  },
 });
 ```
 

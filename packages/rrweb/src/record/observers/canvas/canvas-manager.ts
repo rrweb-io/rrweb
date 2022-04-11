@@ -55,23 +55,21 @@ export class CanvasManager {
   }
 
   constructor(options: {
-    recordCanvas: boolean | number;
+    recordCanvas: boolean;
     mutationCb: canvasMutationCallback;
     win: IWindow;
     blockClass: blockClass;
     mirror: Mirror;
+    sampling?: 'all' | number;
   }) {
+    const { sampling = 'all', win, blockClass, recordCanvas } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
-    if (options.recordCanvas === true)
-      this.initCanvasMutationObserver(options.win, options.blockClass);
-    if (options.recordCanvas && typeof options.recordCanvas === 'number')
-      this.initCanvasFPSObserver(
-        options.recordCanvas,
-        options.win,
-        options.blockClass,
-      );
+    if (recordCanvas && sampling === 'all')
+      this.initCanvasMutationObserver(win, blockClass);
+    if (recordCanvas && typeof sampling === 'number')
+      this.initCanvasFPSObserver(sampling, win, blockClass);
   }
 
   private processMutation: canvasManagerMutationCallback = function (
@@ -152,7 +150,7 @@ export class CanvasManager {
       win.document
         .querySelectorAll(`canvas:not(.${blockClass} *)`)
         .forEach(async (canvas: HTMLCanvasElement) => {
-          const id = this.mirror.getId((canvas as unknown) as INode);
+          const id = this.mirror.getId(canvas);
           if (snapshotInProgressMap.get(id)) return;
           snapshotInProgressMap.set(id, true);
           if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
