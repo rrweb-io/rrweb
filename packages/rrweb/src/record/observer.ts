@@ -1,4 +1,4 @@
-import { INode, MaskInputOptions, maskInputValue } from 'rrweb-snapshot';
+import { MaskInputOptions, maskInputValue } from 'rrweb-snapshot';
 import { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -173,7 +173,7 @@ function initMoveObserver({
       positions.push({
         x: clientX,
         y: clientY,
-        id: mirror.getId(target as INode),
+        id: mirror.getId(target as Node),
         timeOffset: Date.now() - timeBaseline,
       });
       // it is possible DragEvent is undefined even on devices
@@ -221,14 +221,14 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target as Node, blockClass)) {
+      if (isBlocked(target, blockClass)) {
         return;
       }
       const e = isTouchEvent(event) ? event.changedTouches[0] : event;
       if (!e) {
         return;
       }
-      const id = mirror.getId(target as INode);
+      const id = mirror.getId(target);
       const { clientX, clientY } = e;
       mouseInteractionCb({
         type: MouseInteractions[eventKey],
@@ -270,7 +270,7 @@ export function initScrollObserver({
     if (!target || isBlocked(target as Node, blockClass)) {
       return;
     }
-    const id = mirror.getId(target as INode);
+    const id = mirror.getId(target as Node);
     if (target === doc) {
       const scrollEl = (doc.scrollingElement || doc.documentElement)!;
       scrollCb({
@@ -408,7 +408,7 @@ function initInputObserver({
       lastInputValue.isChecked !== v.isChecked
     ) {
       lastInputValueMap.set(target, v);
-      const id = mirror.getId(target as INode);
+      const id = mirror.getId(target as Node);
       inputCb({
         ...v,
         id,
@@ -497,7 +497,7 @@ function initStyleSheetObserver(
     rule: string,
     index?: number,
   ) {
-    const id = mirror.getId(this.ownerNode as INode);
+    const id = mirror.getId(this.ownerNode);
     if (id !== -1) {
       styleSheetRuleCb({
         id,
@@ -509,7 +509,7 @@ function initStyleSheetObserver(
 
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
   win.CSSStyleSheet.prototype.deleteRule = function (index: number) {
-    const id = mirror.getId(this.ownerNode as INode);
+    const id = mirror.getId(this.ownerNode);
     if (id !== -1) {
       styleSheetRuleCb({
         id,
@@ -554,7 +554,7 @@ function initStyleSheetObserver(
     };
 
     type.prototype.insertRule = function (rule: string, index?: number) {
-      const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
+      const id = mirror.getId(this.parentStyleSheet.ownerNode);
       if (id !== -1) {
         styleSheetRuleCb({
           id,
@@ -573,7 +573,7 @@ function initStyleSheetObserver(
     };
 
     type.prototype.deleteRule = function (index: number) {
-      const id = mirror.getId(this.parentStyleSheet.ownerNode as INode);
+      const id = mirror.getId(this.parentStyleSheet.ownerNode);
       if (id !== -1) {
         styleSheetRuleCb({
           id,
@@ -605,9 +605,7 @@ function initStyleDeclarationObserver(
     value: string,
     priority: string,
   ) {
-    const id = mirror.getId(
-      (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
-    );
+    const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
     if (id !== -1) {
       styleDeclarationCb({
         id,
@@ -627,9 +625,7 @@ function initStyleDeclarationObserver(
     this: CSSStyleDeclaration,
     property: string,
   ) {
-    const id = mirror.getId(
-      (this.parentRule?.parentStyleSheet?.ownerNode as unknown) as INode,
-    );
+    const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
     if (id !== -1) {
       styleDeclarationCb({
         id,
@@ -663,7 +659,7 @@ function initMediaInteractionObserver({
       const { currentTime, volume, muted } = target as HTMLMediaElement;
       mediaInteractionCb({
         type,
-        id: mirror.getId(target as INode),
+        id: mirror.getId(target as Node),
         currentTime,
         volume,
         muted,

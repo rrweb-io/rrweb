@@ -16,7 +16,7 @@ export default async function canvasMutation({
   errorHandler: Replayer['warnCanvasMutationFailed'];
 }): Promise<void> {
   try {
-    const ctx = ((target as unknown) as HTMLCanvasElement).getContext('2d')!;
+    const ctx = target.getContext('2d')!;
 
     if (mutation.setter) {
       // skip some read-only type checks

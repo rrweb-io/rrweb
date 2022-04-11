@@ -1,11 +1,10 @@
-import { INode } from 'rrweb-snapshot';
+import { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
   canvasManagerMutationCallback,
   IWindow,
   listenerHandler,
-  Mirror,
 } from '../../../types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { serializeArgs } from './serialize-args';
@@ -37,7 +36,7 @@ export default function initCanvas2DMutationObserver(
             this: CanvasRenderingContext2D,
             ...args: Array<unknown>
           ) {
-            if (!isBlocked((this.canvas as unknown) as INode, blockClass)) {
+            if (!isBlocked(this.canvas, blockClass)) {
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
               setTimeout(() => {

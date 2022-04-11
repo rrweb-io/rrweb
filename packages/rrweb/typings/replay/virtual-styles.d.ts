@@ -1,4 +1,3 @@
-import { INode } from 'rrweb-snapshot';
 export declare enum StyleRuleType {
     Insert = 0,
     Remove = 1,
@@ -32,7 +31,7 @@ declare type RemovePropertyRule = {
     property: string;
 };
 export declare type VirtualStyleRules = Array<InsertRule | RemoveRule | SnapshotRule | SetPropertyRule | RemovePropertyRule>;
-export declare type VirtualStyleRulesMap = Map<INode, VirtualStyleRules>;
+export declare type VirtualStyleRulesMap = Map<Node, VirtualStyleRules>;
 export declare function getNestedRule(rules: CSSRuleList, position: number[]): CSSGroupingRule;
 export declare function getPositionsAndIndex(nestedIndex: number[]): {
     positions: number[];

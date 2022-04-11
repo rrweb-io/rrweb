@@ -1,10 +1,11 @@
 import {
   rebuild,
   buildNodeWithSN,
-  INode,
   NodeType,
   BuildCache,
   createCache,
+  Mirror,
+  createMirror,
 } from 'rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
@@ -33,7 +34,6 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
-  Mirror,
   ElementState,
   styleAttributeValue,
   styleValueWithPriority,
@@ -44,15 +44,14 @@ import {
   textMutation,
 } from '../types';
 import {
-  createMirror,
   polyfill,
   TreeIndex,
   queueToResolveTrees,
   iterateResolveTree,
   AppendedIframe,
-  isIframeINode,
   getBaseDimension,
   hasShadowRoot,
+  isSerializedIframe,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -117,8 +116,8 @@ export class Replayer {
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
   private treeIndex!: TreeIndex;
-  private fragmentParentMap!: Map<INode, INode>;
-  private elementStateMap!: Map<INode, ElementState>;
+  private fragmentParentMap!: Map<Node, Node>;
+  private elementStateMap!: Map<Node, ElementState>;
   // Hold the list of CSSRules for in-memory state restoration
   private virtualStyleRulesMap!: VirtualStyleRulesMap;
 
@@ -170,8 +169,8 @@ export class Replayer {
     this.setupDom();
 
     this.treeIndex = new TreeIndex();
-    this.fragmentParentMap = new Map<INode, INode>();
-    this.elementStateMap = new Map<INode, ElementState>();
+    this.fragmentParentMap = new Map<Node, Node>();
+    this.elementStateMap = new Map<Node, ElementState>();
     this.virtualStyleRulesMap = new Map();
 
     this.emitter.on(ReplayerEvents.Flush, () => {
@@ -660,13 +659,14 @@ export class Replayer {
     }
     this.legacy_missingNodeRetryMap = {};
     const collected: AppendedIframe[] = [];
-    this.mirror.map = rebuild(event.data.node, {
+    rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
       },
       cache: this.cache,
-    })[1];
+      mirror: this.mirror,
+    });
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
@@ -718,8 +718,8 @@ export class Replayer {
       let parent = iframeEl.parentNode;
       while (parent) {
         // The parent of iframeEl is virtual parent and we need to mount it on the dom.
-        if (this.fragmentParentMap.has((parent as unknown) as INode)) {
-          const frag = (parent as unknown) as INode;
+        if (this.fragmentParentMap.has(parent)) {
+          const frag = parent;
           const realParent = this.fragmentParentMap.get(frag)!;
           this.restoreRealParent(frag, realParent);
           break;
@@ -729,14 +729,15 @@ export class Replayer {
     }
     buildNodeWithSN(mutation.node, {
       doc: iframeEl.contentDocument!,
-      map: this.mirror.map,
+      mirror: this.mirror,
       hackCss: true,
       skipChild: false,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
+        const sn = this.mirror.getMeta(builtNode);
         if (
-          builtNode.__sn.type === NodeType.Element &&
-          builtNode.__sn.tagName.toUpperCase() === 'HTML'
+          sn?.type === NodeType.Element &&
+          sn?.tagName.toUpperCase() === 'HTML'
         ) {
           const { documentElement, head } = iframeEl.contentDocument!;
           this.insertStyleRules(documentElement, head);
@@ -754,11 +755,11 @@ export class Replayer {
 
   private collectIframeAndAttachDocument(
     collected: AppendedIframe[],
-    builtNode: INode,
+    builtNode: Node,
   ) {
-    if (isIframeINode(builtNode)) {
+    if (isSerializedIframe(builtNode, this.mirror)) {
       const mutationInQueue = this.newDocumentQueue.find(
-        (m) => m.parentId === builtNode.__sn.id,
+        (m) => m.parentId === this.mirror.getId(builtNode),
       );
       if (mutationInQueue) {
         collected.push({ mutationInQueue, builtNode });
@@ -936,7 +937,7 @@ export class Replayer {
           d.adds.forEach((m) => this.treeIndex.add(m));
           d.texts.forEach((m) => {
             const target = this.mirror.getNode(m.id);
-            const parent = (target?.parentNode as unknown) as INode | null;
+            const parent = target?.parentNode;
             // remove any style rules that pending
             // for stylesheets where the contents get replaced
             if (parent && this.virtualStyleRulesMap.has(parent))
@@ -1004,13 +1005,13 @@ export class Replayer {
         const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
-            if ('blur' in ((target as Node) as HTMLElement)) {
-              ((target as Node) as HTMLElement).blur();
+            if ('blur' in (target as HTMLElement)) {
+              (target as HTMLElement).blur();
             }
             break;
           case MouseInteractions.Focus:
-            if (triggerFocus && ((target as Node) as HTMLElement).focus) {
-              ((target as Node) as HTMLElement).focus({
+            if (triggerFocus && (target as HTMLElement).focus) {
+              (target as HTMLElement).focus({
                 preventScroll: true,
               });
             }
@@ -1111,7 +1112,7 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
-        const mediaEl = (target as Node) as HTMLMediaElement;
+        const mediaEl = target as HTMLMediaElement;
         try {
           if (d.currentTime) {
             mediaEl.currentTime = d.currentTime;
@@ -1147,8 +1148,8 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
 
-        const styleEl = (target as Node) as HTMLStyleElement;
-        const parent = (target.parentNode as unknown) as INode;
+        const styleEl = target as HTMLStyleElement;
+        const parent = target.parentNode!;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
 
         /**
@@ -1249,8 +1250,8 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
 
-        const styleEl = (target as Node) as HTMLStyleElement;
-        const parent = (target.parentNode as unknown) as INode;
+        const styleEl = target as HTMLStyleElement;
+        const parent = target.parentNode!;
         const usingVirtualParent = this.fragmentParentMap.has(parent);
 
         const styleSheet = usingVirtualParent ? null : styleEl.sheet;
@@ -1310,7 +1311,7 @@ export class Replayer {
         canvasMutation({
           event: e,
           mutation: d,
-          target: (target as unknown) as HTMLCanvasElement,
+          target: target as HTMLCanvasElement,
           imageMap: this.imageMap,
           canvasEventMap: this.canvasEventMap,
           errorHandler: this.warnCanvasMutationFailed.bind(this),
@@ -1350,7 +1351,7 @@ export class Replayer {
       if (this.virtualStyleRulesMap.has(target)) {
         this.virtualStyleRulesMap.delete(target);
       }
-      let parent: INode | null | ShadowRoot = this.mirror.getNode(
+      let parent: Node | null | ShadowRoot = this.mirror.getNode(
         mutation.parentId,
       );
       if (!parent) {
@@ -1363,8 +1364,9 @@ export class Replayer {
       this.mirror.removeNodeFromMap(target);
       if (parent) {
         let realTarget = null;
-        const realParent =
-          '__sn' in parent ? this.fragmentParentMap.get(parent) : undefined;
+        const realParent = this.mirror.getMeta(parent)
+          ? this.fragmentParentMap.get(parent)
+          : undefined;
         if (realParent && realParent.contains(target)) {
           parent = realParent;
         } else if (this.fragmentParentMap.has(target)) {
@@ -1405,7 +1407,7 @@ export class Replayer {
     const nextNotInDOM = (mutation: addedNodeMutation) => {
       let next: Node | null = null;
       if (mutation.nextId) {
-        next = this.mirror.getNode(mutation.nextId) as Node;
+        next = this.mirror.getNode(mutation.nextId);
       }
       // next not present at this moment
       if (
@@ -1423,7 +1425,7 @@ export class Replayer {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent: INode | null | ShadowRoot = this.mirror.getNode(
+      let parent: Node | null | ShadowRoot = this.mirror.getNode(
         mutation.parentId,
       );
       if (!parent) {
@@ -1444,20 +1446,19 @@ export class Replayer {
       }
 
       const hasIframeChild =
-        ((parent as unknown) as HTMLElement).getElementsByTagName?.('iframe')
-          .length > 0;
+        (parent as HTMLElement).getElementsByTagName?.('iframe').length > 0;
       /**
-       * Why !isIframeINode(parent)? If parent element is an iframe, iframe document can't be appended to virtual parent.
+       * Why !isSerializedIframe(parent)? If parent element is an iframe, iframe document can't be appended to virtual parent.
        * Why !hasIframeChild? If we move iframe elements from dom to fragment document, we will lose the contentDocument of iframe. So we need to disable the virtual dom optimization if a parent node contains iframe elements.
        */
       if (
         useVirtualParent &&
         parentInDocument &&
-        !isIframeINode(parent) &&
+        !isSerializedIframe(parent, this.mirror) &&
         !hasIframeChild
       ) {
-        const virtualParent = (document.createDocumentFragment() as unknown) as INode;
-        this.mirror.map[mutation.parentId] = virtualParent;
+        const virtualParent = document.createDocumentFragment();
+        this.mirror.replace(mutation.parentId, virtualParent);
         this.fragmentParentMap.set(virtualParent, parent);
 
         // store the state, like scroll position, of child nodes before they are unmounted from dom
@@ -1472,18 +1473,18 @@ export class Replayer {
       if (mutation.node.isShadow) {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
         if (!hasShadowRoot(parent)) {
-          ((parent as Node) as HTMLElement).attachShadow({ mode: 'open' });
-          parent = ((parent as Node) as HTMLElement).shadowRoot!;
+          (parent as HTMLElement).attachShadow({ mode: 'open' });
+          parent = (parent as HTMLElement).shadowRoot!;
         } else parent = parent.shadowRoot;
       }
 
       let previous: Node | null = null;
       let next: Node | null = null;
       if (mutation.previousId) {
-        previous = this.mirror.getNode(mutation.previousId) as Node;
+        previous = this.mirror.getNode(mutation.previousId);
       }
       if (mutation.nextId) {
-        next = this.mirror.getNode(mutation.nextId) as Node;
+        next = this.mirror.getNode(mutation.nextId);
       }
       if (nextNotInDOM(mutation)) {
         return queue.push(mutation);
@@ -1496,17 +1497,17 @@ export class Replayer {
       const targetDoc = mutation.node.rootId
         ? this.mirror.getNode(mutation.node.rootId)
         : this.iframe.contentDocument;
-      if (isIframeINode(parent)) {
+      if (isSerializedIframe(parent, this.mirror)) {
         this.attachDocumentToIframe(mutation, parent);
         return;
       }
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document,
-        map: this.mirror.map,
+        mirror: this.mirror,
         skipChild: true,
         hackCss: true,
         cache: this.cache,
-      }) as INode;
+      })!;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1517,10 +1518,11 @@ export class Replayer {
         return;
       }
 
+      const parentSn = this.mirror.getMeta(parent);
       if (
-        '__sn' in parent &&
-        parent.__sn.type === NodeType.Element &&
-        parent.__sn.tagName === 'textarea' &&
+        parentSn &&
+        parentSn.type === NodeType.Element &&
+        parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
         // https://github.com/rrweb-io/rrweb/issues/745
@@ -1553,9 +1555,10 @@ export class Replayer {
         parent.appendChild(target);
       }
 
-      if (isIframeINode(target)) {
+      if (isSerializedIframe(target, this.mirror)) {
+        const targetId = this.mirror.getId(target);
         const mutationInQueue = this.newDocumentQueue.find(
-          (m) => m.parentId === target.__sn.id,
+          (m) => m.parentId === targetId,
         );
         if (mutationInQueue) {
           this.attachDocumentToIframe(mutationInQueue, target);
@@ -1643,10 +1646,10 @@ export class Replayer {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
           if (value === null) {
-            ((target as Node) as Element).removeAttribute(attributeName);
+            (target as Element).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
             try {
-              ((target as Node) as Element).setAttribute(attributeName, value);
+              (target as Element).setAttribute(attributeName, value);
             } catch (error) {
               if (this.config.showWarning) {
                 console.warn(
@@ -1657,7 +1660,7 @@ export class Replayer {
             }
           } else if (attributeName === 'style') {
             let styleValues = value as styleAttributeValue;
-            const targetEl = (target as Node) as HTMLElement;
+            const targetEl = target as HTMLElement;
             for (var s in styleValues) {
               if (styleValues[s] === false) {
                 targetEl.style.removeProperty(s);
@@ -1686,23 +1689,24 @@ export class Replayer {
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
     }
-    if ((target as Node) === this.iframe.contentDocument) {
+    const sn = this.mirror.getMeta(target);
+    if (target === this.iframe.contentDocument) {
       this.iframe.contentWindow!.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
       });
-    } else if (target.__sn.type === NodeType.Document) {
+    } else if (sn?.type === NodeType.Document) {
       // nest iframe content document
-      ((target as unknown) as Document).defaultView!.scrollTo({
+      (target as Document).defaultView!.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
       });
     } else {
       try {
-        ((target as Node) as Element).scrollTop = d.y;
-        ((target as Node) as Element).scrollLeft = d.x;
+        (target as Element).scrollTop = d.y;
+        (target as Element).scrollLeft = d.x;
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before
@@ -1718,8 +1722,8 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     try {
-      ((target as Node) as HTMLInputElement).checked = d.isChecked;
-      ((target as Node) as HTMLInputElement).value = d.text;
+      (target as HTMLInputElement).checked = d.isChecked;
+      (target as HTMLInputElement).value = d.text;
     } catch (error) {
       // for safe
     }
@@ -1731,7 +1735,7 @@ export class Replayer {
       return this.debugNodeNotFound(mutation, d.id);
     }
     try {
-      ((target as Node) as HTMLElement).textContent = d.value;
+      (target as HTMLElement).textContent = d.value;
     } catch (error) {
       // for safe
     }
@@ -1752,7 +1756,7 @@ export class Replayer {
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node, mutation);
       }
     }
     if (nextInMap) {
@@ -1761,7 +1765,7 @@ export class Replayer {
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
       if (mutation.previousId || mutation.nextId) {
-        this.legacy_resolveMissingNode(map, parent, node as Node, mutation);
+        this.legacy_resolveMissingNode(map, parent, node, mutation);
       }
     }
   }
@@ -1787,7 +1791,7 @@ export class Replayer {
     if (!isSync) {
       this.drawMouseTail({ x: _x, y: _y });
     }
-    this.hoverElements((target as Node) as Element);
+    this.hoverElements(target as Element);
   }
 
   private drawMouseTail(position: { x: number; y: number }) {
@@ -1867,18 +1871,21 @@ export class Replayer {
    * @param frag fragment document, the virtual parent
    * @param parent real parent element
    */
-  private restoreRealParent(frag: INode, parent: INode) {
-    this.mirror.map[parent.__sn.id] = parent;
+  private restoreRealParent(frag: Node, parent: Node) {
+    const id = this.mirror.getId(frag);
+    const parentSn = this.mirror.getMeta(parent);
+    this.mirror.replace(id, parent);
+
     /**
      * If we have already set value attribute on textarea,
      * then we could not apply text content as default value any more.
      */
     if (
-      parent.__sn.type === NodeType.Element &&
-      parent.__sn.tagName === 'textarea' &&
+      parentSn?.type === NodeType.Element &&
+      parentSn?.tagName === 'textarea' &&
       frag.textContent
     ) {
-      ((parent as unknown) as HTMLTextAreaElement).value = frag.textContent;
+      (parent as HTMLTextAreaElement).value = frag.textContent;
     }
     parent.appendChild(frag);
     // restore state of elements after they are mounted
@@ -1890,10 +1897,10 @@ export class Replayer {
    * the state should be restored in the handler of event ReplayerEvents.Flush
    * e.g. browser would lose scroll position after the process that we add children of parent node to Fragment Document as virtual dom
    */
-  private storeState(parent: INode) {
+  private storeState(parent: Node) {
     if (parent) {
       if (parent.nodeType === parent.ELEMENT_NODE) {
-        const parentElement = (parent as unknown) as HTMLElement;
+        const parentElement = parent as HTMLElement;
         if (parentElement.scrollLeft || parentElement.scrollTop) {
           // store scroll position state
           this.elementStateMap.set(parent, {
@@ -1907,7 +1914,7 @@ export class Replayer {
           );
         const children = parentElement.children;
         for (const child of Array.from(children)) {
-          this.storeState((child as unknown) as INode);
+          this.storeState(child);
         }
       }
     }
@@ -1917,9 +1924,9 @@ export class Replayer {
    * restore the state of elements recursively, which was stored before elements were unmounted from dom in virtual parent mode
    * this function corresponds to function storeState
    */
-  private restoreState(parent: INode) {
+  private restoreState(parent: Node) {
     if (parent.nodeType === parent.ELEMENT_NODE) {
-      const parentElement = (parent as unknown) as HTMLElement;
+      const parentElement = parent as HTMLElement;
       if (this.elementStateMap.has(parent)) {
         const storedState = this.elementStateMap.get(parent)!;
         // restore scroll position
@@ -1931,12 +1938,12 @@ export class Replayer {
       }
       const children = parentElement.children;
       for (const child of Array.from(children)) {
-        this.restoreState((child as unknown) as INode);
+        this.restoreState(child);
       }
     }
   }
 
-  private restoreNodeSheet(node: INode) {
+  private restoreNodeSheet(node: Node) {
     const storedRules = this.virtualStyleRulesMap.get(node);
     if (node.nodeName !== 'STYLE') {
       return;
@@ -1946,7 +1953,7 @@ export class Replayer {
       return;
     }
 
-    const styleNode = (node as unknown) as HTMLStyleElement;
+    const styleNode = node as HTMLStyleElement;
 
     applyVirtualStyleRulesToNode(storedRules, styleNode);
   }
