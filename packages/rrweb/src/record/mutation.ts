@@ -527,7 +527,7 @@ export default class MutationBuffer {
           if (
             isBlocked(m.target, this.blockClass) ||
             isIgnored(n, this.mirror) ||
-            !isSerialized(n)
+            !isSerialized(n, this.mirror)
           ) {
             return;
           }

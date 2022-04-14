@@ -213,8 +213,8 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   return isBlocked(node.parentNode, blockClass);
 }
 
-export function isSerialized(n: Node): boolean {
-  return '__sn' in n;
+export function isSerialized(n: Node, mirror: Mirror): boolean {
+  return mirror.getId(n) !== -1;
 }
 
 export function isIgnored(n: Node, mirror: Mirror): boolean {
