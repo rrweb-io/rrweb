@@ -1,5 +1,3 @@
-import { INode } from 'rrweb-snapshot';
-
 export enum StyleRuleType {
   Insert,
   Remove,
@@ -37,7 +35,7 @@ type RemovePropertyRule = {
 export type VirtualStyleRules = Array<
   InsertRule | RemoveRule | SnapshotRule | SetPropertyRule | RemovePropertyRule
 >;
-export type VirtualStyleRulesMap = Map<INode, VirtualStyleRules>;
+export type VirtualStyleRulesMap = Map<Node, VirtualStyleRules>;
 
 export function getNestedRule(
   rules: CSSRuleList,
@@ -173,7 +171,7 @@ export function storeCSSRules(
     const cssTexts = Array.from(
       (parentElement as HTMLStyleElement).sheet?.cssRules || [],
     ).map((rule) => rule.cssText);
-    virtualStyleRulesMap.set((parentElement as unknown) as INode, [
+    virtualStyleRulesMap.set(parentElement, [
       {
         type: StyleRuleType.Snapshot,
         cssTexts,

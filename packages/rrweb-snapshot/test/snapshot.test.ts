@@ -8,6 +8,7 @@ import {
   _isBlockedElement,
 } from '../src/snapshot';
 import { serializedNodeWithId } from '../src/types';
+import { Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
@@ -139,7 +140,7 @@ describe('style elements', () => {
   const serializeNode = (node: Node): serializedNodeWithId | null => {
     return serializeNodeWithId(node, {
       doc: document,
-      map: {},
+      mirror: new Mirror(),
       blockClass: 'blockblock',
       blockSelector: null,
       maskTextClass: 'maskmask',

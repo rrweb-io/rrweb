@@ -892,7 +892,7 @@ function addParent(obj: Stylesheet, parent?: Stylesheet) {
         addParent(v, childParent);
       });
     } else if (value && typeof value === 'object') {
-      addParent((value as unknown) as Stylesheet, childParent);
+      addParent(value as Stylesheet, childParent);
     }
   }
 
