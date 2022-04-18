@@ -149,6 +149,16 @@ describe('serializeArg', () => {
     });
   });
 
+  it('should support HTMLCanvasElements saved to image', async () => {
+    const canvas = document.createElement('canvas');
+    // polyfill canvas.toDataURL as it doesn't exist in jsdom
+    canvas.toDataURL = () => 'data:image/png;base64,...';
+    expect(serializeArg(canvas, window, context)).toMatchObject({
+      rr_type: 'HTMLImageElement',
+      src: 'data:image/png;base64,...',
+    });
+  });
+
   it('should serialize ImageData', async () => {
     const arr = new Uint8ClampedArray(40000);
 
@@ -174,6 +184,21 @@ describe('serializeArg', () => {
         200,
         50,
       ],
+    });
+  });
+
+  // we do not yet support async serializing which is needed to call Blob.arrayBuffer()
+  it.skip('should serialize a blob', async () => {
+    const arrayBuffer = new Uint8Array([1, 2, 0, 4]).buffer;
+    const blob = new Blob([arrayBuffer], { type: 'image/png' });
+    const expected = {
+      rr_type: 'ArrayBuffer',
+      base64: 'AQIABA==',
+    };
+
+    expect(await serializeArg(blob, window, context)).toStrictEqual({
+      rr_type: 'Blob',
+      args: [expected, { type: 'image/png' }],
     });
   });
 });

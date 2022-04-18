@@ -11,7 +11,12 @@ import {
   IncrementalSource,
   CanvasContext,
 } from '../../src/types';
-import { assertSnapshot, launchPuppeteer, waitForRAF } from '../utils';
+import {
+  assertSnapshot,
+  launchPuppeteer,
+  stripBase64,
+  waitForRAF,
+} from '../utils';
 import { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
@@ -31,7 +36,11 @@ interface IWindow extends Window {
   emit: (e: eventWithTime) => undefined;
 }
 
-const setup = function (this: ISuite, content: string): ISuite {
+const setup = function (
+  this: ISuite,
+  content: string,
+  canvasSample: 'all' | number = 'all',
+): ISuite {
   const ctx = {} as ISuite;
 
   beforeAll(async () => {
@@ -56,13 +65,16 @@ const setup = function (this: ISuite, content: string): ISuite {
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
-    await ctx.page.evaluate(() => {
+    await ctx.page.evaluate((canvasSample) => {
       const { record } = ((window as unknown) as IWindow).rrweb;
       record({
         recordCanvas: true,
+        sampling: {
+          canvas: canvasSample,
+        },
         emit: ((window as unknown) as IWindow).emit,
       });
-    });
+    }, canvasSample);
   });
 
   afterEach(async () => {
@@ -256,5 +268,53 @@ describe('record webgl', function (this: ISuite) {
 
     assertSnapshot(ctx.events);
     expect(ctx.events.length).toEqual(5);
+  });
+
+  describe('recordCanvas FPS', function (this: ISuite) {
+    jest.setTimeout(10_000);
+
+    const maxFPS = 60;
+
+    const ctx: ISuite = setup.call(
+      this,
+      `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <canvas id="canvas"></canvas>
+        </body>
+      </html>
+    `,
+      maxFPS,
+    );
+
+    it('should record snapshots', async () => {
+      await ctx.page.evaluate(() => {
+        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true })!;
+        // Set the clear color to darkish green.
+        gl.clearColor(0.0, 0.5, 0.0, 1.0);
+        // Clear the context with the newly set color. This is
+        // the function call that actually does the drawing.
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      });
+
+      await ctx.page.waitForTimeout(200); // give it some time buffer
+
+      await ctx.page.evaluate(() => {
+        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true })!;
+        // Set the clear color to darkish blue.
+        gl.clearColor(0.0, 0.0, 0.5, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      });
+
+      await ctx.page.waitForTimeout(200);
+
+      await waitForRAF(ctx.page);
+
+      // should yield a frame for each change at a max of 60fps
+      assertSnapshot(stripBase64(ctx.events));
+    });
   });
 });

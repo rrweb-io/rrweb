@@ -1,31 +1,6 @@
-import { decode } from 'base64-arraybuffer';
-import { Replayer } from '../';
-import {
-  CanvasContext,
-  canvasMutationCommand,
-  SerializedWebGlArg,
-} from '../../types';
-
-// TODO: add ability to wipe this list
-type GLVarMap = Map<string, any[]>;
-const webGLVarMap: Map<
-  WebGLRenderingContext | WebGL2RenderingContext,
-  GLVarMap
-> = new Map();
-export function variableListFor(
-  ctx: WebGLRenderingContext | WebGL2RenderingContext,
-  ctor: string,
-) {
-  let contextMap = webGLVarMap.get(ctx);
-  if (!contextMap) {
-    contextMap = new Map();
-    webGLVarMap.set(ctx, contextMap);
-  }
-  if (!contextMap.has(ctor)) {
-    contextMap.set(ctor, []);
-  }
-  return contextMap.get(ctor) as any[];
-}
+import type { Replayer } from '../';
+import { CanvasContext, canvasMutationCommand } from '../../types';
+import { deserializeArg, variableListFor } from './deserialize-args';
 
 function getContext(
   target: HTMLCanvasElement,
@@ -72,41 +47,7 @@ function saveToWebGLVarMap(
   if (!variables.includes(result)) variables.push(result);
 }
 
-export function deserializeArg(
-  imageMap: Replayer['imageMap'],
-  ctx: WebGLRenderingContext | WebGL2RenderingContext,
-): (arg: SerializedWebGlArg) => any {
-  return (arg: SerializedWebGlArg): any => {
-    if (arg && typeof arg === 'object' && 'rr_type' in arg) {
-      if ('index' in arg) {
-        const { rr_type: name, index } = arg;
-        return variableListFor(ctx, name)[index];
-      } else if ('args' in arg) {
-        const { rr_type: name, args } = arg;
-        const ctor = window[name as keyof Window];
-
-        return new ctor(...args.map(deserializeArg(imageMap, ctx)));
-      } else if ('base64' in arg) {
-        return decode(arg.base64);
-      } else if ('src' in arg) {
-        const image = imageMap.get(arg.src);
-        if (image) {
-          return image;
-        } else {
-          const image = new Image();
-          image.src = arg.src;
-          imageMap.set(arg.src, image);
-          return image;
-        }
-      }
-    } else if (Array.isArray(arg)) {
-      return arg.map(deserializeArg(imageMap, ctx));
-    }
-    return arg;
-  };
-}
-
-export default function webglMutation({
+export default async function webglMutation({
   mutation,
   target,
   type,
@@ -118,7 +59,7 @@ export default function webglMutation({
   type: CanvasContext;
   imageMap: Replayer['imageMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
-}): void {
+}): Promise<void> {
   try {
     const ctx = getContext(target, type);
     if (!ctx) return;
@@ -137,7 +78,9 @@ export default function webglMutation({
       mutation.property as Exclude<keyof typeof ctx, 'canvas'>
     ] as Function;
 
-    const args = mutation.args.map(deserializeArg(imageMap, ctx));
+    const args = await Promise.all(
+      mutation.args.map(deserializeArg(imageMap, ctx)),
+    );
     const result = original.apply(ctx, args);
     saveToWebGLVarMap(ctx, result);
 

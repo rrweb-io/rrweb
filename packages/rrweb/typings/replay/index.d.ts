@@ -22,6 +22,7 @@ export declare class Replayer {
     private virtualStyleRulesMap;
     private cache;
     private imageMap;
+    private canvasEventMap;
     private mirror;
     private firstFullSnapshot;
     private newDocumentQueue;
@@ -56,6 +57,7 @@ export declare class Replayer {
     private getImageArgs;
     private preloadAllImages;
     private preloadImages;
+    private deserializeAndPreloadCanvasEvents;
     private applyIncremental;
     private applyMutation;
     private applyScroll;

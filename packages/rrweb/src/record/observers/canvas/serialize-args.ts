@@ -1,20 +1,14 @@
 import { encode } from 'base64-arraybuffer';
-import { IWindow, SerializedWebGlArg } from '../../../types';
+import { IWindow, CanvasArg } from '../../../types';
 
 // TODO: unify with `replay/webgl.ts`
-type GLVarMap = Map<string, any[]>;
-const webGLVarMap: Map<
-  WebGLRenderingContext | WebGL2RenderingContext,
-  GLVarMap
-> = new Map();
-export function variableListFor(
-  ctx: WebGLRenderingContext | WebGL2RenderingContext,
-  ctor: string,
-) {
-  let contextMap = webGLVarMap.get(ctx);
+type CanvasVarMap = Map<string, any[]>;
+const canvasVarMap: Map<RenderingContext, CanvasVarMap> = new Map();
+export function variableListFor(ctx: RenderingContext, ctor: string) {
+  let contextMap = canvasVarMap.get(ctx);
   if (!contextMap) {
     contextMap = new Map();
-    webGLVarMap.set(ctx, contextMap);
+    canvasVarMap.set(ctx, contextMap);
   }
   if (!contextMap.has(ctor)) {
     contextMap.set(ctor, []);
@@ -25,7 +19,7 @@ export function variableListFor(
 export const saveWebGLVar = (
   value: any,
   win: IWindow,
-  ctx: WebGL2RenderingContext | WebGLRenderingContext,
+  ctx: RenderingContext,
 ): number | void => {
   if (
     !value ||
@@ -48,8 +42,8 @@ export const saveWebGLVar = (
 export function serializeArg(
   value: any,
   win: IWindow,
-  ctx: WebGL2RenderingContext | WebGLRenderingContext,
-): SerializedWebGlArg {
+  ctx: RenderingContext,
+): CanvasArg {
   if (value instanceof Array) {
     return value.map((arg) => serializeArg(arg, win, ctx));
   } else if (value === null) {
@@ -100,12 +94,27 @@ export function serializeArg(
       rr_type: name,
       src,
     };
+  } else if (value instanceof HTMLCanvasElement) {
+    const name = 'HTMLImageElement';
+    // TODO: move `toDataURL` to web worker if possible
+    const src = value.toDataURL(); // heavy on large canvas
+    return {
+      rr_type: name,
+      src,
+    };
   } else if (value instanceof ImageData) {
     const name = value.constructor.name;
     return {
       rr_type: name,
       args: [serializeArg(value.data, win, ctx), value.width, value.height],
     };
+    // } else if (value instanceof Blob) {
+    //   const name = value.constructor.name;
+    //   return {
+    //     rr_type: name,
+    //     data: [serializeArg(await value.arrayBuffer(), win, ctx)],
+    //     type: value.type,
+    //   };
   } else if (isInstanceOfWebGLObject(value, win) || typeof value === 'object') {
     const name = value.constructor.name;
     const index = saveWebGLVar(value, win, ctx) as number;
@@ -122,7 +131,7 @@ export function serializeArg(
 export const serializeArgs = (
   args: Array<any>,
   win: IWindow,
-  ctx: WebGLRenderingContext | WebGL2RenderingContext,
+  ctx: RenderingContext,
 ) => {
   return [...args].map((arg) => serializeArg(arg, win, ctx));
 };

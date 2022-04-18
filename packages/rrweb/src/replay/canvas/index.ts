@@ -3,48 +3,59 @@ import {
   CanvasContext,
   canvasMutationCommand,
   canvasMutationData,
+  canvasMutationParam,
 } from '../../types';
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
 
-export default function canvasMutation({
+export default async function canvasMutation({
   event,
   mutation,
   target,
   imageMap,
+  canvasEventMap,
   errorHandler,
 }: {
   event: Parameters<Replayer['applyIncremental']>[0];
   mutation: canvasMutationData;
   target: HTMLCanvasElement;
   imageMap: Replayer['imageMap'];
+  canvasEventMap: Replayer['canvasEventMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
-}): void {
+}): Promise<void> {
   try {
-    const mutations: canvasMutationCommand[] =
-      'commands' in mutation ? mutation.commands : [mutation];
+    let precomputedMutation: canvasMutationParam =
+      canvasEventMap.get(event) || mutation;
+
+    const commands: canvasMutationCommand[] =
+      'commands' in precomputedMutation
+        ? precomputedMutation.commands
+        : [precomputedMutation];
 
     if ([CanvasContext.WebGL, CanvasContext.WebGL2].includes(mutation.type)) {
-      return mutations.forEach((command) => {
-        webglMutation({
+      for (let i = 0; i < commands.length; i++) {
+        const command = commands[i];
+        await webglMutation({
           mutation: command,
           type: mutation.type,
           target,
           imageMap,
           errorHandler,
         });
-      });
+      }
+      return;
     }
     // default is '2d' for backwards compatibility (rrweb below 1.1.x)
-    return mutations.forEach((command) => {
-      canvas2DMutation({
+    for (let i = 0; i < commands.length; i++) {
+      const command = commands[i];
+      await canvas2DMutation({
         event,
         mutation: command,
         target,
         imageMap,
         errorHandler,
       });
-    });
+    }
   } catch (error) {
     errorHandler(mutation, error);
   }

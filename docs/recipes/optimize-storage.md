@@ -17,6 +17,7 @@ Some common patterns may emit lots of events are:
 - long list
 - complex SVG
 - element with JS controlled animation
+- canvas animations
 
 ## Sampling
 

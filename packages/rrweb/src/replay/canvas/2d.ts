@@ -1,7 +1,8 @@
 import { Replayer } from '../';
 import { canvasMutationCommand } from '../../types';
+import { deserializeArg } from './deserialize-args';
 
-export default function canvasMutation({
+export default async function canvasMutation({
   event,
   mutation,
   target,
@@ -13,7 +14,7 @@ export default function canvasMutation({
   target: HTMLCanvasElement;
   imageMap: Replayer['imageMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
-}): void {
+}): Promise<void> {
   try {
     const ctx = target.getContext('2d')!;
 
@@ -37,10 +38,12 @@ export default function canvasMutation({
       typeof mutation.args[0] === 'string'
     ) {
       const image = imageMap.get(event);
-      mutation.args[0] = image;
       original.apply(ctx, mutation.args);
     } else {
-      original.apply(ctx, mutation.args);
+      const args = await Promise.all(
+        mutation.args.map(deserializeArg(imageMap, ctx)),
+      );
+      original.apply(ctx, args);
     }
   } catch (error) {
     errorHandler(mutation, error);
