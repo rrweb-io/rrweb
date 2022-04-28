@@ -4,6 +4,7 @@ import {
   throttle,
   on,
   hookSetter,
+  getWindowScroll,
   getWindowHeight,
   getWindowWidth,
   isBlocked,
@@ -272,11 +273,11 @@ export function initScrollObserver({
     }
     const id = mirror.getId(target as Node);
     if (target === doc) {
-      const scrollEl = (doc.scrollingElement || doc.documentElement)!;
+      const scrollLeftTop = getWindowScroll(doc.defaultView);
       scrollCb({
         id,
-        x: scrollEl.scrollLeft,
-        y: scrollEl.scrollTop,
+        x: scrollLeftTop.left,
+        y: scrollLeftTop.top,
       });
     } else {
       scrollCb({

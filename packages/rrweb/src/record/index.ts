@@ -9,6 +9,7 @@ import {
   on,
   getWindowWidth,
   getWindowHeight,
+  getWindowScroll,
   polyfill,
   hasShadowRoot,
   isSerializedIframe,
@@ -296,22 +297,7 @@ function record<T = eventWithTime>(
         type: EventType.FullSnapshot,
         data: {
           node,
-          initialOffset: {
-            left:
-              window.pageXOffset !== undefined
-                ? window.pageXOffset
-                : document?.documentElement.scrollLeft ||
-                  document?.body?.parentElement?.scrollLeft ||
-                  document?.body.scrollLeft ||
-                  0,
-            top:
-              window.pageYOffset !== undefined
-                ? window.pageYOffset
-                : document?.documentElement.scrollTop ||
-                  document?.body?.parentElement?.scrollTop ||
-                  document?.body.scrollTop ||
-                  0,
-          },
+          initialOffset: getWindowScroll(window),
         },
       }),
     );
