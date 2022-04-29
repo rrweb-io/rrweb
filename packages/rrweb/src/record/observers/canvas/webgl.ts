@@ -1,4 +1,4 @@
-import type { INode } from 'rrweb-snapshot';
+import type { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
@@ -6,7 +6,6 @@ import {
   canvasMutationWithType,
   IWindow,
   listenerHandler,
-  Mirror,
 } from '../../../types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
@@ -32,8 +31,8 @@ function patchGLPrototype(
         return function (this: typeof prototype, ...args: Array<unknown>) {
           const result = original.apply(this, args);
           saveWebGLVar(result, win, prototype);
-          if (!isBlocked((this.canvas as unknown) as INode, blockClass)) {
-            const id = mirror.getId((this.canvas as unknown) as INode);
+          if (!isBlocked(this.canvas as HTMLCanvasElement, blockClass)) {
+            const id = mirror.getId(this.canvas as HTMLCanvasElement);
 
             const recordArgs = serializeArgs([...args], win, prototype);
             const mutation: canvasMutationWithType = {

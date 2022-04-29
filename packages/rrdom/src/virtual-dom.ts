@@ -1,4 +1,9 @@
-import { INode, NodeType as RRNodeType } from 'rrweb-snapshot';
+import {
+  NodeType as RRNodeType,
+  serializedNodeWithId,
+  createMirror as createNodeMirror,
+} from 'rrweb-snapshot';
+import type { Mirror as NodeMirror } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
   incrementalSnapshotEvent,
@@ -18,34 +23,22 @@ import {
   IRRElement,
   IRRNode,
   NodeType,
+  createMirror,
+  Mirror,
 } from './document';
-import { VirtualStyleRules } from './diff';
+import type { VirtualStyleRules } from './diff';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
-  public mirror: Mirror = {
-    map: {},
-    getId(n) {
-      return n?.__sn?.id >= 0 ? n.__sn.id : -1;
-    },
-    getNode(id) {
-      return this.map[id] || null;
-    },
-    removeNodeFromMap(n) {
-      const id = n.__sn.id;
-      delete this.map[id];
-      if (n.childNodes) {
-        n.childNodes.forEach((child) => this.removeNodeFromMap(child));
-      }
-    },
-    has(id) {
-      return this.map.hasOwnProperty(id);
-    },
-    reset() {
-      this.map = {};
-    },
-  };
+  public mirror: Mirror = createMirror();
 
   scrollData: scrollData | null = null;
+
+  constructor(mirror?: Mirror) {
+    super();
+    if (mirror) {
+      this.mirror = mirror;
+    }
+  }
 
   createDocument(
     _namespace: string | null,
@@ -82,7 +75,7 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
-        element = new RRIFrameElement(upperTagName);
+        element = new RRIFrameElement(upperTagName, this.mirror);
         break;
       case 'CANVAS':
         element = new RRCanvasElement(upperTagName);
@@ -153,6 +146,10 @@ export class RRStyleElement extends RRElement {
 
 export class RRIFrameElement extends RRElement {
   contentDocument: RRDocument = new RRDocument();
+  constructor(upperTagName: string, mirror: Mirror) {
+    super(upperTagName);
+    this.contentDocument.mirror = mirror;
+  }
 }
 
 export const RRText = BaseRRTextImpl(RRNode);
@@ -163,17 +160,6 @@ export type RRComment = typeof RRComment;
 
 export const RRCDATASection = BaseRRCDATASectionImpl(RRNode);
 export type RRCDATASection = typeof RRCDATASection;
-
-export type Mirror = {
-  map: {
-    [key: number]: RRNode;
-  };
-  getId(n: RRNode): number;
-  getNode(id: number): RRNode | null;
-  removeNodeFromMap(n: RRNode): void;
-  has(id: number): boolean;
-  reset(): void;
-};
 
 interface RRElementTagNameMap {
   audio: RRMediaElement;
@@ -199,14 +185,17 @@ function getValidTagName(element: HTMLElement): string {
  * Build a RRNode from a real Node.
  * @param node the real Node
  * @param rrdom the RRDocument
+ * @param domMirror the NodeMirror that records the real document tree
  * @returns the built RRNode
  */
 export function buildFromNode(
-  node: INode,
+  node: Node,
   rrdom: IRRDocument,
+  domMirror: NodeMirror,
   parentRRNode?: IRRNode | null,
 ): IRRNode | null {
   let rrNode: IRRNode;
+  const rrdomMirror = rrdom.mirror;
 
   switch (node.nodeType) {
     case NodeType.DOCUMENT_NODE:
@@ -216,7 +205,12 @@ export function buildFromNode(
         (parentRRNode as IRRElement).tagName === 'IFRAME'
       )
         rrNode = (parentRRNode as RRIFrameElement).contentDocument;
-      else rrNode = rrdom;
+      else {
+        rrNode = rrdom;
+        (rrNode as IRRDocument).compatMode = (node as Document).compatMode as
+          | 'BackCompat'
+          | 'CSS1Compat';
+      }
       break;
     case NodeType.DOCUMENT_TYPE_NODE:
       const documentType = (node as Node) as DocumentType;
@@ -260,10 +254,14 @@ export function buildFromNode(
       return null;
   }
 
-  if (!node.__sn || node.__sn.id < 0) {
-    rrNode.setDefaultSN(rrdom.unserializedId);
-    node.__sn = rrNode.__sn;
-  } else rrNode.__sn = node.__sn;
+  let sn: serializedNodeWithId | null = domMirror.getMeta(node);
+  if (!sn) {
+    const { unserializedId } = rrdom;
+    rrNode.setDefaultSN(unserializedId);
+    sn = rrNode.getDefaultSN(unserializedId);
+  } else rrNode.__sn = sn;
+
+  rrdomMirror.add(rrNode, { ...sn });
 
   return rrNode;
 }
@@ -271,21 +269,20 @@ export function buildFromNode(
 /**
  * Build a RRDocument from a real document tree.
  * @param dom the real document tree
- * @param rrdomToBuild the rrdom object to be constructed
+ * @param domMirror the NodeMirror that records the real document tree
+ * @param rrdom the rrdom object to be constructed
  * @returns the build rrdom
  */
 export function buildFromDom(
   dom: Document,
-  rrdomToBuild?: IRRDocument,
-  mirror?: Mirror,
+  domMirror: NodeMirror = createNodeMirror(),
+  rrdom: IRRDocument = new RRDocument(),
 ) {
-  let rrdom = rrdomToBuild || new RRDocument();
+  const rrdomMirror = rrdom.mirror;
 
-  function walk(node: INode, parentRRNode: IRRNode | null) {
-    const rrNode = buildFromNode(node, rrdom, parentRRNode);
+  function walk(node: Node, parentRRNode: IRRNode | null) {
+    const rrNode = buildFromNode(node, rrdom, domMirror, parentRRNode);
     if (rrNode === null) return;
-    mirror && (mirror.map[rrNode.__sn.id] = rrNode);
-
     if (
       // if the parentRRNode isn't a RRIFrameElement
       !(
@@ -302,14 +299,10 @@ export function buildFromDom(
 
     if (
       node.nodeType === NodeType.ELEMENT_NODE &&
-      ((node as Node) as HTMLElement).tagName === 'IFRAME'
-    )
-      walk(
-        (((node as Node) as HTMLIFrameElement)
-          .contentDocument as unknown) as INode,
-        rrNode,
-      );
-    else if (
+      (node as HTMLElement).tagName === 'IFRAME'
+    ) {
+      walk((node as HTMLIFrameElement).contentDocument!, rrNode);
+    } else if (
       node.nodeType === NodeType.DOCUMENT_NODE ||
       node.nodeType === NodeType.ELEMENT_NODE ||
       node.nodeType === NodeType.DOCUMENT_FRAGMENT_NODE
@@ -319,16 +312,11 @@ export function buildFromDom(
         node.nodeType === NodeType.ELEMENT_NODE &&
         ((node as Node) as HTMLElement).shadowRoot
       )
-        walk(
-          (((node as Node) as HTMLElement).shadowRoot! as unknown) as INode,
-          rrNode,
-        );
-      node.childNodes.forEach((node) =>
-        walk((node as unknown) as INode, rrNode),
-      );
+        walk(((node as Node) as HTMLElement).shadowRoot!, rrNode);
+      node.childNodes.forEach((childNode) => walk(childNode, rrNode));
     }
   }
-  walk((dom as unknown) as INode, null);
+  walk(dom, null);
   return rrdom;
 }
 

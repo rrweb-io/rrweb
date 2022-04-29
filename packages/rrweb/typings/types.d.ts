@@ -1,4 +1,4 @@
-import type { serializedNodeWithId, idNodeMap, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
+import type { serializedNodeWithId, Mirror, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
@@ -402,11 +402,13 @@ export declare type DocumentDimension = {
     relativeScale: number;
     absoluteScale: number;
 };
-export declare type Mirror = {
-    map: idNodeMap;
-    getId: (n: INode) => number;
+export declare type DeprecatedMirror = {
+    map: {
+        [key: number]: INode;
+    };
+    getId: (n: Node) => number;
     getNode: (id: number) => INode | null;
-    removeNodeFromMap: (n: INode) => void;
+    removeNodeFromMap: (n: Node) => void;
     has: (id: number) => boolean;
     reset: () => void;
 };

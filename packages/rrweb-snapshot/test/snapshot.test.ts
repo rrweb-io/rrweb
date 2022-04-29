@@ -1,5 +1,14 @@
+/**
+ * @jest-environment jsdom
+ */
 import { JSDOM } from 'jsdom';
-import { absoluteToStylesheet, _isBlockedElement } from '../src/snapshot';
+import {
+  absoluteToStylesheet,
+  serializeNodeWithId,
+  _isBlockedElement,
+} from '../src/snapshot';
+import { serializedNodeWithId } from '../src/types';
+import { Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
@@ -124,5 +133,50 @@ describe('isBlockedElement()', () => {
     expect(
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
+  });
+});
+
+describe('style elements', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+    });
+  };
+
+  const render = (html: string): HTMLStyleElement => {
+    document.write(html);
+    return document.querySelector('style')!;
+  };
+
+  it('should serialize all rules of stylesheet when the sheet has a single child node', () => {
+    const styleEl = render(`<style>body { color: red; }</style>`);
+    styleEl.sheet?.insertRule('section { color: blue; }');
+    expect(serializeNode(styleEl.childNodes[0])).toMatchObject({
+      isStyle: true,
+      rootId: undefined,
+      textContent: 'section {color: blue;}body {color: red;}',
+      type: 3,
+    });
+  });
+
+  it('should serialize individual text nodes on stylesheets with multiple child nodes', () => {
+    const styleEl = render(`<style>body { color: red; }</style>`);
+    styleEl.append(document.createTextNode('section { color: blue; }'));
+    expect(serializeNode(styleEl.childNodes[1])).toMatchObject({
+      isStyle: true,
+      rootId: undefined,
+      textContent: 'section { color: blue; }',
+      type: 3,
+    });
   });
 });

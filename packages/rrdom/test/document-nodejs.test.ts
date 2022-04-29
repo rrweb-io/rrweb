@@ -25,7 +25,7 @@ describe('RRDocument for nodejs environment', () => {
       // initialize rrdom
       document.write(getHtml('main.html'));
       rrdom = new RRDocument();
-      buildFromDom(document, rrdom);
+      buildFromDom(document, undefined, rrdom);
     });
 
     it('can create different type of RRNodes', () => {
@@ -249,7 +249,7 @@ describe('RRDocument for nodejs environment', () => {
       // initialize rrdom
       document.write(getHtml('main.html'));
       rrdom = new RRDocument();
-      buildFromDom(document, rrdom);
+      buildFromDom(document, undefined, rrdom);
     });
 
     it('can get attribute', () => {

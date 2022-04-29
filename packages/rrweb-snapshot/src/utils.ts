@@ -1,12 +1,84 @@
-import { INode, MaskInputFn, MaskInputOptions } from './types';
+import {
+  idNodeMap,
+  MaskInputFn,
+  MaskInputOptions,
+  nodeMetaMap,
+  IMirror,
+  serializedNodeWithId,
+} from './types';
 
-export function isElement(n: Node | INode): n is Element {
+export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
 }
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
   const host: Element | null = (n as ShadowRoot)?.host;
   return Boolean(host && host.shadowRoot && host.shadowRoot === n);
+}
+
+export class Mirror implements IMirror<Node> {
+  private idNodeMap: idNodeMap = new Map();
+  private nodeMetaMap: nodeMetaMap = new WeakMap();
+
+  getId(n: Node | undefined | null): number {
+    if (!n) return -1;
+
+    const id = this.getMeta(n)?.id;
+
+    // if n is not a serialized Node, use -1 as its id.
+    return id ?? -1;
+  }
+
+  getNode(id: number): Node | null {
+    return this.idNodeMap.get(id) || null;
+  }
+
+  getIds(): number[] {
+    return Array.from(this.idNodeMap.keys());
+  }
+
+  getMeta(n: Node): serializedNodeWithId | null {
+    return this.nodeMetaMap.get(n) || null;
+  }
+
+  // removes the node from idNodeMap
+  // doesn't remove the node from nodeMetaMap
+  removeNodeFromMap(n: Node) {
+    const id = this.getId(n);
+    this.idNodeMap.delete(id);
+
+    if (n.childNodes) {
+      n.childNodes.forEach((childNode) =>
+        this.removeNodeFromMap((childNode as unknown) as Node),
+      );
+    }
+  }
+  has(id: number): boolean {
+    return this.idNodeMap.has(id);
+  }
+
+  hasNode(node: Node): boolean {
+    return this.nodeMetaMap.has(node);
+  }
+
+  add(n: Node, meta: serializedNodeWithId) {
+    const id = meta.id;
+    this.idNodeMap.set(id, n);
+    this.nodeMetaMap.set(n, meta);
+  }
+
+  replace(id: number, n: Node) {
+    this.idNodeMap.set(id, n);
+  }
+
+  reset() {
+    this.idNodeMap = new Map();
+    this.nodeMetaMap = new WeakMap();
+  }
+}
+
+export function createMirror(): Mirror {
+  return new Mirror();
 }
 
 export function maskInputValue({

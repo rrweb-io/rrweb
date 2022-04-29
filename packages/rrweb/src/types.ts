@@ -1,6 +1,6 @@
 import type {
   serializedNodeWithId,
-  idNodeMap,
+  Mirror,
   INode,
   MaskInputOptions,
   SlimDOMOptions,
@@ -572,11 +572,13 @@ export type DocumentDimension = {
   absoluteScale: number;
 };
 
-export type Mirror = {
-  map: idNodeMap;
-  getId: (n: INode) => number;
+export type DeprecatedMirror = {
+  map: {
+    [key: number]: INode;
+  };
+  getId: (n: Node) => number;
   getNode: (id: number) => INode | null;
-  removeNodeFromMap: (n: INode) => void;
+  removeNodeFromMap: (n: Node) => void;
   has: (id: number) => boolean;
   reset: () => void;
 };

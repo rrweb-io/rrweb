@@ -1,5 +1,4 @@
 import type {
-  Mirror,
   throttleOptions,
   listenerHandler,
   hookResetter,
@@ -7,15 +6,11 @@ import type {
   addedNodeMutation,
   DocumentDimension,
   IWindow,
+  DeprecatedMirror,
 } from './types';
-import {
-  INode,
-  IGNORED_NODE,
-  serializedNodeWithId,
-  NodeType,
-  isShadowRoot,
-} from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
+import type { IMirror, Mirror } from 'rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE } from 'rrweb-snapshot';
+import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
 
 export function on(
   type: string,
@@ -27,38 +22,6 @@ export function on(
   return () => target.removeEventListener(type, fn, options);
 }
 
-export function createMirror(): Mirror {
-  return {
-    map: {},
-    getId(n) {
-      // if n is not a serialized INode, use -1 as its id.
-      if (!n || !n.__sn) {
-        return -1;
-      }
-      return n.__sn.id;
-    },
-    getNode(id) {
-      return this.map[id] || null;
-    },
-    // TODO: use a weakmap to get rid of manually memory management
-    removeNodeFromMap(n) {
-      const id = n.__sn && n.__sn.id;
-      delete this.map[id];
-      if (n.childNodes) {
-        n.childNodes.forEach((child) =>
-          this.removeNodeFromMap((child as Node) as INode),
-        );
-      }
-    },
-    has(id) {
-      return this.map.hasOwnProperty(id);
-    },
-    reset() {
-      this.map = {};
-    },
-  };
-}
-
 // https://github.com/rrweb-io/rrweb/pull/407
 const DEPARTED_MIRROR_ACCESS_WARNING =
   'Please stop import mirror directly. Instead of that,' +
@@ -66,7 +29,7 @@ const DEPARTED_MIRROR_ACCESS_WARNING =
   'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
   '\r\n' +
   'or you can use record.mirror to access the mirror instance during recording.';
-export let _mirror: Mirror = {
+export let _mirror: DeprecatedMirror = {
   map: {},
   getId() {
     console.error(DEPARTED_MIRROR_ACCESS_WARNING);
@@ -245,16 +208,13 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
   return isBlocked(node.parentNode, blockClass);
 }
 
-export function isIgnored(n: Node | INode): boolean {
-  if ('__sn' in n) {
-    return (n as INode).__sn.id === IGNORED_NODE;
-  }
+export function isIgnored(n: Node, mirror: Mirror): boolean {
   // The main part of the slimDOM check happens in
   // rrweb-snapshot::serializeNodeWithId
-  return false;
+  return mirror.getId(n) === IGNORED_NODE;
 }
 
-export function isAncestorRemoved(target: INode, mirror: Mirror): boolean {
+export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   if (isShadowRoot(target)) {
     return false;
   }
@@ -272,7 +232,7 @@ export function isAncestorRemoved(target: INode, mirror: Mirror): boolean {
   if (!target.parentNode) {
     return true;
   }
-  return isAncestorRemoved((target.parentNode as unknown) as INode, mirror);
+  return isAncestorRemoved(target.parentNode, mirror);
 }
 
 export function isTouchEvent(
@@ -376,39 +336,16 @@ export function iterateResolveTree(
   }
 }
 
-type HTMLIFrameINode = HTMLIFrameElement & {
-  __sn: serializedNodeWithId;
-};
 export type AppendedIframe = {
   mutationInQueue: addedNodeMutation;
-  builtNode: HTMLIFrameINode | RRIFrameElement;
+  builtNode: HTMLIFrameElement | RRIFrameElement;
 };
 
-export function isIframeINode(
-  node: INode | ShadowRoot | RRNode,
-): node is HTMLIFrameINode {
-  if ('__sn' in node) {
-    return (
-      node.__sn.type === NodeType.Element && node.__sn.tagName === 'iframe'
-    );
-  }
-  return false;
-}
-
-/**
- * This function is quite similar to isIframeINode. It is used to make the type inference of node accurate but won't affect isIframeINode's original functionality.
- */
-export function isRRIFrameElement(
-  node: INode | ShadowRoot | RRNode,
-): node is RRIFrameElement {
-  if ('__sn' in node) {
-    return (
-      node.__sn.type === NodeType.Element &&
-      node.__sn.tagName === 'iframe' &&
-      node instanceof RRIFrameElement
-    );
-  }
-  return false;
+export function isSerializedIframe<TNode extends Node | RRNode>(
+  n: TNode,
+  mirror: IMirror<TNode>,
+): boolean {
+  return Boolean(n.nodeName === 'IFRAME' && mirror.getMeta(n));
 }
 
 export function getBaseDimension(

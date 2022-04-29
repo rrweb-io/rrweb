@@ -1,10 +1,11 @@
 {
   "name": "rrdom",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "scripts": {
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
+    "check-types": "tsc -noEmit",
     "test": "jest",
     "prepublish": "npm run bundle"
   },
@@ -37,7 +38,7 @@
     "rollup": "^2.56.3",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
-    "rrweb-snapshot": "^1.1.13",
+    "rrweb-snapshot": "^1.1.14",
     "ts-jest": "^27.1.3",
     "typescript": "^4.6.2"
   },

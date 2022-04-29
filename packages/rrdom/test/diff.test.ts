@@ -1,30 +1,26 @@
 /**
  * @jest-environment jsdom
  */
-import {
-  RRDocument,
-  RRElement,
-  RRMediaElement,
-  StyleRuleType,
-  VirtualStyleRules,
-} from '../src/virtual-dom';
+import { RRDocument, RRMediaElement } from '../src/virtual-dom';
 import {
   applyVirtualStyleRulesToNode,
   createOrGetNode,
   diff,
   ReplayerHandler,
+  StyleRuleType,
+  VirtualStyleRules,
 } from '../src/diff';
 import {
-  INode,
   NodeType as RRNodeType,
   serializedNodeWithId,
-} from 'rrweb-snapshot/';
-import { IRRNode } from '../src/document';
+  createMirror,
+  Mirror,
+} from 'rrweb-snapshot';
+import { IRRNode, setDefaultSN } from '../src/document';
 import {
   canvasMutationData,
   EventType,
   IncrementalSource,
-  Mirror,
 } from 'rrweb/src/types';
 
 const elementSn = {
@@ -48,24 +44,36 @@ type RRNode = IRRNode;
  *
  * @param treeNode the given data structure
  * @param rrDocument determine to generate a RRDom tree.
+ * @param mirror determine to generate the Dom tree.
  */
 function createTree(
   treeNode: ElementType,
-  rrDocument?: RRDocument,
-): INode | RRNode {
-  let root: INode | RRNode;
-  root = rrDocument
+  rrDocument?: RRDocument | undefined,
+  mirror: Mirror = createMirror(),
+): Node | RRNode {
+  type TNode = typeof rrDocument extends RRDocument ? RRNode : Node;
+  let root: TNode;
+
+  root = (rrDocument
     ? rrDocument.createElement(treeNode.tagName)
-    : ((document.createElement(treeNode.tagName) as unknown) as INode);
-  root.__sn = Object.assign({}, elementSn, {
+    : document.createElement(treeNode.tagName)) as TNode;
+
+  const sn = Object.assign({}, elementSn, {
     tagName: treeNode.tagName,
     id: treeNode.id,
   });
+
+  if (rrDocument) {
+    rrDocument.mirror.add((root as unknown) as RRNode, sn);
+  } else {
+    mirror.add((root as unknown) as Node, sn);
+  }
+
   if (treeNode.children)
     for (let child of treeNode.children) {
-      const childNode = createTree(child, rrDocument);
-      if (rrDocument) (root as RRElement).appendChild(childNode as RRNode);
-      else (root as INode).appendChild(childNode as Node);
+      const childNode = createTree(child, rrDocument, mirror) as TNode;
+      if (rrDocument) root.appendChild(childNode);
+      else root.appendChild(childNode);
     }
   return root;
 }
@@ -83,29 +91,18 @@ function shuffle(list: number[]) {
 }
 
 describe('diff algorithm for rrdom', () => {
-  // An adhoc mirror just for unit tests.
-  const mirror: Mirror = {
-    map: {},
-    getId() {
-      return 0;
-    },
-    getNode() {
-      return null;
-    },
-    removeNodeFromMap() {},
-    has(id: number) {
-      return this.map.hasOwnProperty(id);
-    },
-    reset() {
-      this.map = {};
-    },
-  };
-  const replayer: ReplayerHandler = {
-    mirror,
-    applyCanvas: () => {},
-    applyInput: () => {},
-    applyScroll: () => {},
-  };
+  let mirror: Mirror;
+  let replayer: ReplayerHandler;
+
+  beforeEach(() => {
+    mirror = createMirror();
+    replayer = {
+      mirror,
+      applyCanvas: () => {},
+      applyInput: () => {},
+      applyScroll: () => {},
+    };
+  });
 
   describe('diff single node', () => {
     it('should diff a document node', () => {
@@ -124,7 +121,7 @@ describe('diff algorithm for rrdom', () => {
         y: 0,
       };
       replayer.applyScroll = jest.fn();
-      diff((document as unknown) as INode, rrNode, replayer);
+      diff(document, rrNode, replayer);
       expect(document.childNodes.length).toEqual(1);
       expect(document.childNodes[0]).toBeInstanceOf(DocumentType);
       expect(document.doctype?.name).toEqual('html');
@@ -136,7 +133,7 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('should apply input data on an input element', () => {
-      const element = (document.createElement('input') as unknown) as INode;
+      const element = document.createElement('input');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement('input');
       rrNode.inputData = {
@@ -151,7 +148,7 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('should diff a Text node', () => {
-      const node = (document.createTextNode('old text') as unknown) as INode;
+      const node = document.createTextNode('old text');
       expect(node.textContent).toEqual('old text');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createTextNode('new text');
@@ -168,7 +165,7 @@ describe('diff algorithm for rrdom', () => {
       rrStyle.rules = [
         { cssText: 'div{color: black;}', type: StyleRuleType.Insert, index: 0 },
       ];
-      diff((element as unknown) as INode, rrStyle, replayer);
+      diff(element, rrStyle, replayer);
       expect(element.sheet!.cssRules.length).toEqual(1);
       expect(element.sheet!.cssRules[0].cssText).toEqual('div {color: black;}');
     });
@@ -195,7 +192,7 @@ describe('diff algorithm for rrdom', () => {
         }),
       );
       replayer.applyCanvas = jest.fn();
-      diff((element as unknown) as INode, rrCanvas, replayer);
+      diff(element, rrCanvas, replayer);
       expect(replayer.applyCanvas).toHaveBeenCalledTimes(MutationNumber);
     });
 
@@ -228,14 +225,14 @@ describe('diff algorithm for rrdom', () => {
         rrMedia.muted = true;
         rrMedia.paused = false;
 
-        diff((element as unknown) as INode, rrMedia, replayer);
+        diff(element, rrMedia, replayer);
         expect(element.volume).toEqual(0.5);
         expect(element.currentTime).toEqual(100);
         expect(element.muted).toEqual(true);
         expect(element.paused).toEqual(false);
 
         rrMedia.paused = true;
-        diff((element as unknown) as INode, rrMedia, replayer);
+        diff(element, rrMedia, replayer);
         expect(element.paused).toEqual(true);
       }
     });
@@ -244,11 +241,15 @@ describe('diff algorithm for rrdom', () => {
   describe('diff properties', () => {
     it('can add new properties', () => {
       const tagName = 'DIV';
-      const node = (document.createElement(tagName) as unknown) as INode;
-      node.__sn = Object.assign({}, elementSn, { tagName });
+      const node = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, { tagName });
+      mirror.add(node, sn);
+
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      const sn2 = Object.assign({}, elementSn, { tagName });
+      rrDocument.mirror.add(rrNode, sn2);
+
       rrNode.attributes = { id: 'node1', class: 'node' };
       diff(node, rrNode, replayer);
       expect(((node as Node) as HTMLElement).id).toBe('node1');
@@ -257,14 +258,18 @@ describe('diff algorithm for rrdom', () => {
 
     it('can update exist properties', () => {
       const tagName = 'DIV';
-      const node = (document.createElement(tagName) as unknown) as INode;
-      node.__sn = Object.assign({}, elementSn, { tagName });
+      const node = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, { tagName });
+      mirror.add(node, sn);
+
       ((node as Node) as HTMLElement).id = 'element1';
       ((node as Node) as HTMLElement).className = 'element';
       ((node as Node) as HTMLElement).setAttribute('style', 'color: black');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      const sn2 = Object.assign({}, elementSn, { tagName });
+      rrDocument.mirror.add(rrNode, sn2);
+
       rrNode.attributes = { id: 'node1', class: 'node', style: 'color: white' };
       diff(node, rrNode, replayer);
       expect(((node as Node) as HTMLElement).id).toBe('node1');
@@ -282,14 +287,18 @@ describe('diff algorithm for rrdom', () => {
 
     it('can delete old properties', () => {
       const tagName = 'DIV';
-      const node = (document.createElement(tagName) as unknown) as INode;
-      node.__sn = Object.assign({}, elementSn, { tagName });
+      const node = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, { tagName });
+      mirror.add(node, sn);
+
       ((node as Node) as HTMLElement).id = 'element1';
       ((node as Node) as HTMLElement).className = 'element';
       ((node as Node) as HTMLElement).setAttribute('style', 'color: black');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      const sn2 = Object.assign({}, elementSn, { tagName });
+      rrDocument.mirror.add(rrNode, sn2);
+
       rrNode.attributes = { id: 'node1' };
       diff(node, rrNode, replayer);
       expect(((node as Node) as HTMLElement).id).toBe('node1');
@@ -305,13 +314,17 @@ describe('diff algorithm for rrdom', () => {
 
     it('can diff scroll positions', () => {
       const tagName = 'DIV';
-      const node = (document.createElement(tagName) as unknown) as INode;
-      node.__sn = Object.assign({}, elementSn, { tagName });
+      const node = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, { tagName });
+      mirror.add(node, sn);
+
       expect(((node as Node) as HTMLElement).scrollLeft).toEqual(0);
       expect(((node as Node) as HTMLElement).scrollTop).toEqual(0);
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      const sn2 = Object.assign({}, elementSn, { tagName });
+      rrDocument.mirror.add(rrNode, sn2);
+
       rrNode.scrollLeft = 100;
       rrNode.scrollTop = 200;
       diff(node, rrNode, replayer);
@@ -320,10 +333,12 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('can diff properties for SVG elements', () => {
-      const element = (document.createElement('svg') as unknown) as INode;
+      const element = document.createElement('svg');
       const rrDocument = new RRDocument();
       const node = rrDocument.createElement('svg');
-      node.__sn = Object.assign({}, elementSn, { tagName: 'svg', isSVG: true });
+      const sn = Object.assign({}, elementSn, { tagName: 'svg', isSVG: true });
+      rrDocument.mirror.add(node, sn);
+
       const value = 'http://www.w3.org/2000/svg';
       node.attributes.xmlns = value;
 
@@ -341,10 +356,11 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('can diff properties for canvas', async () => {
-      const element = (document.createElement('canvas') as unknown) as INode;
+      const element = document.createElement('canvas');
       const rrDocument = new RRDocument();
       const rrCanvas = rrDocument.createElement('canvas');
-      rrCanvas.__sn = Object.assign({}, elementSn, { tagName: 'canvas' });
+      const sn = Object.assign({}, elementSn, { tagName: 'canvas' });
+      rrDocument.mirror.add(rrCanvas, sn);
       rrCanvas.attributes['rr_dataURL'] = 'data:image/png;base64,';
 
       jest.spyOn(document, 'createElement');
@@ -357,11 +373,15 @@ describe('diff algorithm for rrdom', () => {
 
   describe('diff children', () => {
     it('append elements', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(1);
       const rrNode = createTree(
         {
@@ -375,19 +395,23 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+      ]);
     });
 
     it('prepends elements', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(2);
       const rrNode = createTree(
         {
@@ -401,19 +425,25 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
     });
 
     it('add elements in the middle', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(4);
       const rrNode = createTree(
         {
@@ -427,19 +457,25 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
     });
 
     it('add elements at begin and end', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(3);
       const rrNode = createTree(
         {
@@ -453,18 +489,24 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
     });
 
     it('add children to parent with no children', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(0);
       const rrNode = createTree(
         {
@@ -478,19 +520,23 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+      ]);
     });
 
     it('remove all children from parent', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(4);
       const rrNode = createTree(
         {
@@ -506,17 +552,23 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('remove elements from the beginning', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
       const rrNode = createTree(
         {
           tagName: 'p',
@@ -529,25 +581,31 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        3,
+        4,
+        5,
+      ]);
     });
 
     it('remove elements from end', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
       const rrNode = createTree(
         {
           tagName: 'p',
@@ -560,25 +618,31 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+      ]);
     });
 
     it('remove elements from the middle', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
       const rrNode = createTree(
         {
           tagName: 'p',
@@ -591,25 +655,32 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        4,
+        5,
+      ]);
     });
 
     it('moves element forward', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3, 4, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+        4,
+        5,
+      ]);
       const rrNode = createTree(
         {
           tagName: 'p',
@@ -622,25 +693,31 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([2, 3, 4, 1, 5]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        2,
+        3,
+        4,
+        1,
+        5,
+      ]);
     });
 
     it('move elements to end', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(3);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 2, 3]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        2,
+        3,
+      ]);
       const rrNode = createTree(
         {
           tagName: 'p',
@@ -653,19 +730,23 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([2, 3, 1]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        2,
+        3,
+        1,
+      ]);
     });
 
     it('move element backwards', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(4);
       const rrNode = createTree(
         {
@@ -679,19 +760,24 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([1, 4, 2, 3]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        1,
+        4,
+        2,
+        3,
+      ]);
     });
 
     it('swap first and last', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(4);
       const rrNode = createTree(
         {
@@ -705,19 +791,24 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([4, 2, 3, 1]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        4,
+        2,
+        3,
+        1,
+      ]);
     });
 
     it('move to left and replace', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(5);
       const rrNode = createTree(
         {
@@ -731,19 +822,25 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([4, 1, 2, 3, 6]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        4,
+        1,
+        2,
+        3,
+        6,
+      ]);
     });
 
     it('move to left and leaves hold', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 4, 5].map((c) => ({ tagName: 'span', id: c })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 4, 5].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(3);
       const rrNode = createTree(
         {
@@ -757,22 +854,25 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(2);
       expect(rrNode.childNodes.length).toEqual(2);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([4, 6]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        4,
+        6,
+      ]);
     });
 
     it('reverse elements', () => {
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: [1, 2, 3, 4, 5, 6, 7, 8].map((c) => ({
-          tagName: 'span',
-          id: c,
-        })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2, 3, 4, 5, 6, 7, 8].map((c) => ({
+            tagName: 'span',
+            id: c,
+          })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(8);
       const rrNode = createTree(
         {
@@ -789,11 +889,16 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(8);
       expect(rrNode.childNodes.length).toEqual(8);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual([8, 7, 6, 5, 4, 3, 2, 1]);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1,
+      ]);
     });
 
     it('handle random shuffle 1', () => {
@@ -808,14 +913,18 @@ describe('diff algorithm for rrdom', () => {
       }
       shuffle(oldElementsIds);
       shuffle(newElementsIds);
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: oldElementsIds.map((c) => ({
-          tagName: 'span',
-          id: c,
-        })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: oldElementsIds.map((c) => ({
+            tagName: 'span',
+            id: c,
+          })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(oldElementsNum);
       const rrNode = createTree(
         {
@@ -832,11 +941,9 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(newElementsNum);
       expect(rrNode.childNodes.length).toEqual(newElementsNum);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual(newElementsIds);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual(
+        newElementsIds,
+      );
     });
 
     it('handle random shuffle 2', () => {
@@ -851,14 +958,18 @@ describe('diff algorithm for rrdom', () => {
       shuffle(newElementsIds);
       oldElementsIds = oldElementsIds.slice(0, oldElementsNum);
       newElementsIds = newElementsIds.slice(0, newElementsNum);
-      const node = createTree({
-        tagName: 'p',
-        id: 0,
-        children: oldElementsIds.map((c) => ({
-          tagName: 'span',
-          id: c,
-        })),
-      }) as INode;
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: oldElementsIds.map((c) => ({
+            tagName: 'span',
+            id: c,
+          })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
       expect(node.childNodes.length).toEqual(oldElementsNum);
       const rrNode = createTree(
         {
@@ -875,31 +986,38 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect(node.childNodes.length).toEqual(newElementsNum);
       expect(rrNode.childNodes.length).toEqual(newElementsNum);
-      expect(
-        Array.from(node.childNodes).map(
-          (c) => ((c as unknown) as INode).__sn.id,
-        ),
-      ).toEqual(newElementsIds);
+      expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual(
+        newElementsIds,
+      );
     });
   });
 
   describe('diff shadow dom', () => {
     it('should add a shadow dom', () => {
       const tagName = 'DIV';
-      const node = (document.createElement(tagName) as unknown) as INode;
-      node.__sn = Object.assign({}, elementSn, { tagName });
+      const node = document.createElement(tagName);
+      mirror.add(node, {
+        ...elementSn,
+        tagName,
+        id: 1,
+      } as serializedNodeWithId);
+
       expect(((node as Node) as HTMLElement).shadowRoot).toBeNull();
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.__sn = Object.assign({}, elementSn, { tagName });
+      const sn2 = Object.assign({}, elementSn, { tagName, id: 1 });
+      rrDocument.mirror.add(rrNode, sn2);
+
       rrNode.attachShadow({ mode: 'open' });
       const child = rrDocument.createElement('div');
-      child.__sn = Object.assign({}, elementSn, { tagName, id: 1 });
+      const sn3 = Object.assign({}, elementSn, { tagName, id: 2 });
+      rrDocument.mirror.add(child, sn3);
+
       rrNode.shadowRoot!.appendChild(child);
       expect(rrNode.shadowRoot!.childNodes.length).toBe(1);
 
-      diff(node, rrNode, replayer);
+      diff(node, rrNode, replayer, rrDocument.mirror);
       expect(((node as Node) as HTMLElement).shadowRoot).not.toBeNull();
       expect(
         ((node as Node) as HTMLElement).shadowRoot!.childNodes.length,
@@ -919,19 +1037,24 @@ describe('diff algorithm for rrdom', () => {
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement('iframe');
-      rrNode.contentDocument.setDefaultSN(1);
+      setDefaultSN(rrNode.contentDocument, 1, rrDocument.mirror);
       const childElement = rrNode.contentDocument.createElement('div');
-      childElement.__sn = Object.assign({}, elementSn, {
+
+      rrNode.contentDocument.appendChild(childElement);
+      rrDocument.mirror.add(childElement, {
+        ...elementSn,
         tagName: 'div',
         id: 2,
-      });
-      rrNode.contentDocument.appendChild(childElement);
+      } as serializedNodeWithId);
 
-      diff((node as unknown) as INode, rrNode, replayer);
+      console.log('pre diff');
+      diff(node, rrNode, replayer);
+      console.log('post diff');
+      console.log(node.contentDocument, node.contentDocument!.documentElement);
       expect(node.contentDocument!.childNodes.length).toBe(1);
       const element = node.contentDocument!.childNodes[0] as HTMLElement;
       expect(element.tagName).toBe('DIV');
-      expect(((element as unknown) as INode).__sn.id).toEqual(2);
+      expect(mirror.getId(element)).toEqual(2);
     });
   });
 
@@ -939,39 +1062,41 @@ describe('diff algorithm for rrdom', () => {
     it('create a real HTML element from RRElement', () => {
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement('DIV');
-      rrNode.__sn = Object.assign({}, elementSn, { id: 0 });
-      let result = createOrGetNode(rrNode, mirror);
+      const sn2 = Object.assign({}, elementSn, { id: 0 });
+      rrDocument.mirror.add(rrNode, sn2);
+
+      let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(HTMLElement);
-      expect(result.__sn.id).toBe(0);
+      expect(mirror.getId(result)).toBe(0);
       expect(((result as Node) as HTMLElement).tagName).toBe('DIV');
     });
 
     it('create a node from RRNode', () => {
       const rrDocument = new RRDocument();
-      rrDocument.setDefaultSN(0);
-      let result = createOrGetNode(rrDocument, mirror);
+      setDefaultSN(rrDocument, 0, rrDocument.mirror);
+      let result = createOrGetNode(rrDocument, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Document);
-      expect(result.__sn.id).toBe(0);
+      expect(mirror.getId(result)).toBe(0);
 
       const textContent = 'Text Content';
       let rrNode: RRNode = rrDocument.createTextNode(textContent);
-      rrNode.setDefaultSN(0);
-      result = createOrGetNode(rrNode, mirror);
+      setDefaultSN(rrNode, 1, rrDocument.mirror);
+      result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Text);
-      expect(result.__sn.id).toBe(0);
+      expect(mirror.getId(result)).toBe(1);
       expect(((result as Node) as Text).textContent).toBe(textContent);
 
       rrNode = rrDocument.createComment(textContent);
-      rrNode.setDefaultSN(0);
-      result = createOrGetNode(rrNode, mirror);
+      setDefaultSN(rrNode, 2, rrDocument.mirror);
+      result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Comment);
-      expect(result.__sn.id).toBe(0);
+      expect(mirror.getId(result)).toBe(2);
       expect(((result as Node) as Comment).textContent).toBe(textContent);
 
       rrNode = rrDocument.createCDATASection('');
-      rrNode.setDefaultSN(0);
+      setDefaultSN(rrNode, 3, rrDocument.mirror);
       expect(() =>
-        createOrGetNode(rrNode, mirror),
+        createOrGetNode(rrNode, mirror, rrDocument.mirror),
       ).toThrowErrorMatchingInlineSnapshot(
         `"Cannot create CDATA sections in HTML documents"`,
       );
@@ -981,39 +1106,36 @@ describe('diff algorithm for rrdom', () => {
       const rrDocument = new RRDocument();
       const publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
       let rrNode: RRNode = rrDocument.createDocumentType('html', publicId, '');
-      rrNode.setDefaultSN(0);
-      let result = createOrGetNode(rrNode, mirror);
+      setDefaultSN(rrNode, 0, rrDocument.mirror);
+      let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(DocumentType);
-      expect(result.__sn.id).toBe(0);
+      expect(mirror.getId(result)).toBe(0);
       expect(((result as Node) as DocumentType).name).toEqual('html');
       expect(((result as Node) as DocumentType).publicId).toEqual(publicId);
       expect(((result as Node) as DocumentType).systemId).toEqual('');
     });
 
     it('can get a node if it already exists', () => {
-      mirror.getNode = function (id) {
-        return this.map[id] || null;
-      };
       const rrDocument = new RRDocument();
       const textContent = 'Text Content';
       const text = document.createTextNode(textContent);
-      ((text as unknown) as INode).__sn = {
+      const sn: serializedNodeWithId = {
         id: 0,
         type: RRNodeType.Text,
         textContent: 'text of the existed node',
       };
       // Add the text node to the mirror to make it look like already existing.
-      mirror.map[0] = (text as unknown) as INode;
+      mirror.add(text, sn);
       const rrNode: RRNode = rrDocument.createTextNode(textContent);
-      rrNode.setDefaultSN(0);
-      let result = createOrGetNode(rrNode, mirror);
+      setDefaultSN(rrNode, 0, rrDocument.mirror);
+      let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
 
       expect(result).toBeInstanceOf(Text);
-      expect(result.__sn.id).toBe(0);
+      expect(mirror.getId(result)).toBe(0);
       expect(((result as Node) as Text).textContent).toBe(textContent);
       expect(result).toEqual(text);
       // To make sure the existed text node is used.
-      expect(result.__sn).toEqual(((text as unknown) as INode).__sn);
+      expect(mirror.getMeta(result)).toEqual(mirror.getMeta(text));
     });
   });
 

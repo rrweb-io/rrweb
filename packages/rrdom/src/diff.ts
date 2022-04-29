@@ -1,12 +1,11 @@
-import { elementNode, INode, NodeType as RRNodeType } from 'rrweb-snapshot';
+import { NodeType as RRNodeType, Mirror as NodeMirror } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
   incrementalSnapshotEvent,
   inputData,
-  Mirror,
   scrollData,
 } from 'rrweb/src/types';
-import {
+import type {
   IRRCDATASection,
   IRRComment,
   IRRDocument,
@@ -14,14 +13,15 @@ import {
   IRRElement,
   IRRNode,
   IRRText,
+  Mirror,
 } from './document';
 import type {
   RRCanvasElement,
-  RRDocument,
   RRElement,
   RRIFrameElement,
   RRMediaElement,
   RRStyleElement,
+  RRDocument,
 } from './virtual-dom';
 
 const NAMESPACES: Record<string, string> = {
@@ -71,7 +71,7 @@ const SVGTagMap: Record<string, string> = {
 };
 
 export type ReplayerHandler = {
-  mirror: Mirror;
+  mirror: NodeMirror;
   applyCanvas: (
     canvasEvent: incrementalSnapshotEvent & {
       timestamp: number;
@@ -85,18 +85,25 @@ export type ReplayerHandler = {
 };
 
 export function diff(
-  oldTree: INode,
+  oldTree: Node,
   newTree: IRRNode,
   replayer: ReplayerHandler,
+  rrnodeMirror?: Mirror,
 ) {
   const oldChildren = oldTree.childNodes;
   const newChildren = newTree.childNodes;
+  rrnodeMirror =
+    rrnodeMirror ||
+    (newTree as IRRDocument).mirror ||
+    newTree.ownerDocument.mirror;
+
   if (oldChildren.length > 0 || newChildren.length > 0) {
     diffChildren(
-      (Array.from(oldChildren) as unknown) as INode[],
+      Array.from(oldChildren),
       newChildren,
       oldTree,
       replayer,
+      rrnodeMirror,
     );
   }
 
@@ -110,7 +117,7 @@ export function diff(
     case RRNodeType.Element:
       const oldElement = (oldTree as Node) as HTMLElement;
       const newRRElement = newTree as IRRElement;
-      diffProps(oldElement, newRRElement);
+      diffProps(oldElement, newRRElement, rrnodeMirror);
       scrollDataToApply = (newRRElement as RRElement).scrollData;
       inputDataToApply = (newRRElement as RRElement).inputData;
       switch (newRRElement.tagName) {
@@ -152,10 +159,11 @@ export function diff(
         const newChildren = newRRElement.shadowRoot.childNodes;
         if (oldChildren.length > 0 || newChildren.length > 0)
           diffChildren(
-            (Array.from(oldChildren) as unknown) as INode[],
+            Array.from(oldChildren),
             newChildren,
-            (oldElement.shadowRoot! as unknown) as INode,
+            oldElement.shadowRoot!,
             replayer,
+            rrnodeMirror,
           );
       }
       break;
@@ -186,29 +194,32 @@ export function diff(
     newTree.RRNodeType === RRNodeType.Element &&
     (newTree as IRRElement).tagName === 'IFRAME'
   ) {
-    const oldContentDocument = (((oldTree as Node) as HTMLIFrameElement)
-      .contentDocument as unknown) as INode;
+    const oldContentDocument = ((oldTree as Node) as HTMLIFrameElement)
+      .contentDocument;
     const newIFrameElement = newTree as RRIFrameElement;
     // If the iframe is cross-origin, the contentDocument will be null.
     if (oldContentDocument) {
-      if (newIFrameElement.contentDocument.__sn) {
-        oldContentDocument.__sn = newIFrameElement.contentDocument.__sn;
-        replayer.mirror.map[
-          newIFrameElement.contentDocument.__sn.id
-        ] = oldContentDocument;
+      const sn = rrnodeMirror.getMeta(newIFrameElement.contentDocument);
+      if (sn) {
+        replayer.mirror.add(oldContentDocument, { ...sn });
       }
       diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
     }
   }
 }
 
-function diffProps(oldTree: HTMLElement, newTree: IRRElement) {
+function diffProps(
+  oldTree: HTMLElement,
+  newTree: IRRElement,
+  rrnodeMirror: Mirror,
+) {
   const oldAttributes = oldTree.attributes;
   const newAttributes = newTree.attributes;
 
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
-    if ((newTree.__sn as elementNode).isSVG && NAMESPACES[name])
+    const sn = rrnodeMirror.getMeta(newTree);
+    if (sn && 'isSVG' in sn && sn.isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
     else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
       const image = document.createElement('img');
@@ -230,10 +241,11 @@ function diffProps(oldTree: HTMLElement, newTree: IRRElement) {
 }
 
 function diffChildren(
-  oldChildren: (INode | undefined)[],
+  oldChildren: (Node | undefined)[],
   newChildren: IRRNode[],
-  parentNode: INode,
+  parentNode: Node,
   replayer: ReplayerHandler,
+  rrnodeMirror: Mirror,
 ) {
   let oldStartIndex = 0,
     oldEndIndex = oldChildren.length - 1,
@@ -250,20 +262,28 @@ function diffChildren(
       oldStartNode = oldChildren[++oldStartIndex];
     } else if (oldEndNode === undefined) {
       oldEndNode = oldChildren[--oldEndIndex];
-    } else if (oldStartNode.__sn?.id === newStartNode.__sn.id) {
+    } else if (
+      replayer.mirror.getId(oldStartNode) === rrnodeMirror.getId(newStartNode)
+    ) {
       diff(oldStartNode, newStartNode, replayer);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
-    } else if (oldEndNode.__sn?.id === newEndNode.__sn.id) {
+    } else if (
+      replayer.mirror.getId(oldEndNode) === rrnodeMirror.getId(newEndNode)
+    ) {
       diff(oldEndNode, newEndNode, replayer);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
-    } else if (oldStartNode.__sn?.id === newEndNode.__sn.id) {
+    } else if (
+      replayer.mirror.getId(oldStartNode) === rrnodeMirror.getId(newEndNode)
+    ) {
       parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
       diff(oldStartNode, newEndNode, replayer);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
-    } else if (oldEndNode.__sn?.id === newStartNode.__sn.id) {
+    } else if (
+      replayer.mirror.getId(oldEndNode) === rrnodeMirror.getId(newStartNode)
+    ) {
       parentNode.insertBefore(oldEndNode, oldStartNode);
       diff(oldEndNode, newStartNode, replayer);
       oldEndNode = oldChildren[--oldEndIndex];
@@ -273,25 +293,30 @@ function diffChildren(
         oldIdToIndex = {};
         for (let i = oldStartIndex; i <= oldEndIndex; i++) {
           const oldChild = oldChildren[i];
-          if (oldChild?.__sn) oldIdToIndex[oldChild.__sn.id] = i;
+          if (oldChild && replayer.mirror.hasNode(oldChild))
+            oldIdToIndex[replayer.mirror.getId(oldChild)] = i;
         }
       }
-      indexInOld = oldIdToIndex[newStartNode.__sn.id];
+      indexInOld = oldIdToIndex[rrnodeMirror.getId(newStartNode)];
       if (indexInOld) {
         const nodeToMove = oldChildren[indexInOld]!;
         parentNode.insertBefore(nodeToMove, oldStartNode);
         diff(nodeToMove, newStartNode, replayer);
         oldChildren[indexInOld] = undefined;
       } else {
-        const newNode = createOrGetNode(newStartNode, replayer.mirror);
+        const newNode = createOrGetNode(
+          newStartNode,
+          replayer.mirror,
+          rrnodeMirror,
+        );
 
         /**
          * A mounted iframe element has an automatically created HTML element.
          * We should delete it before insert a serialized one. Otherwise, an error 'Only one element on document allowed' will be thrown.
          */
         if (
-          parentNode.__sn.type === RRNodeType.Document &&
-          newNode.__sn.type === RRNodeType.Element &&
+          replayer.mirror.getMeta(parentNode)?.type === RRNodeType.Document &&
+          replayer.mirror.getMeta(newNode)?.type === RRNodeType.Element &&
           ((parentNode as Node) as Document).documentElement
         ) {
           parentNode.removeChild(
@@ -311,13 +336,16 @@ function diffChildren(
     let referenceNode = null;
     if (referenceRRNode)
       parentNode.childNodes.forEach((child) => {
-        if (((child as unknown) as INode).__sn.id === referenceRRNode.__sn.id)
+        if (
+          replayer.mirror.getId(child) === rrnodeMirror.getId(referenceRRNode)
+        )
           referenceNode = child;
       });
     for (; newStartIndex <= newEndIndex; ++newStartIndex) {
       const newNode = createOrGetNode(
         newChildren[newStartIndex],
         replayer.mirror,
+        rrnodeMirror,
       );
       parentNode.insertBefore(newNode, referenceNode);
       diff(newNode, newChildren[newStartIndex], replayer);
@@ -333,51 +361,47 @@ function diffChildren(
   }
 }
 
-export function createOrGetNode(rrNode: IRRNode, mirror: Mirror): INode {
-  let node = mirror.getNode(rrNode.__sn.id);
+export function createOrGetNode(
+  rrNode: IRRNode,
+  domMirror: NodeMirror,
+  rrnodeMirror: Mirror,
+): Node {
+  let node = domMirror.getNode(rrnodeMirror.getId(rrNode));
+  const sn = rrnodeMirror.getMeta(rrNode);
   if (node !== null) return node;
   switch (rrNode.RRNodeType) {
     case RRNodeType.Document:
-      node = (new Document() as unknown) as INode;
+      node = new Document();
       break;
     case RRNodeType.DocumentType:
-      node = (document.implementation.createDocumentType(
+      node = document.implementation.createDocumentType(
         (rrNode as IRRDocumentType).name,
         (rrNode as IRRDocumentType).publicId,
         (rrNode as IRRDocumentType).systemId,
-      ) as unknown) as INode;
+      );
       break;
     case RRNodeType.Element:
       let tagName = (rrNode as IRRElement).tagName.toLowerCase();
       tagName = SVGTagMap[tagName] || tagName;
-      if ((rrNode.__sn as elementNode).isSVG) {
-        node = (document.createElementNS(
+      if (sn && 'isSVG' in sn && sn?.isSVG) {
+        node = document.createElementNS(
           NAMESPACES['svg'],
           (rrNode as IRRElement).tagName.toLowerCase(),
-        ) as unknown) as INode;
-      } else
-        node = (document.createElement(
-          (rrNode as IRRElement).tagName,
-        ) as unknown) as INode;
+        );
+      } else node = document.createElement((rrNode as IRRElement).tagName);
       break;
     case RRNodeType.Text:
-      node = (document.createTextNode(
-        (rrNode as IRRText).data,
-      ) as unknown) as INode;
+      node = document.createTextNode((rrNode as IRRText).data);
       break;
     case RRNodeType.Comment:
-      node = (document.createComment(
-        (rrNode as IRRComment).data,
-      ) as unknown) as INode;
+      node = document.createComment((rrNode as IRRComment).data);
       break;
     case RRNodeType.CDATA:
-      node = (document.createCDATASection(
-        (rrNode as IRRCDATASection).data,
-      ) as unknown) as INode;
+      node = document.createCDATASection((rrNode as IRRCDATASection).data);
       break;
   }
-  node.__sn = { ...rrNode.__sn };
-  mirror.map[rrNode.__sn.id] = node;
+
+  if (sn) domMirror.add(node, { ...sn });
   return node;
 }
 

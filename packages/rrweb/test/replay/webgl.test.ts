@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 import events from '../events/webgl';
 
 interface ISuite {

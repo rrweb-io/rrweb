@@ -1,6 +1,9 @@
-import { NodeType as RRNodeType, serializedNodeWithId } from 'rrweb-snapshot';
+import {
+  IMirror,
+  NodeType as RRNodeType,
+  serializedNodeWithId,
+} from 'rrweb-snapshot';
 import { parseCSSText, camelize, toCSSText } from './style';
-
 export interface IRRNode {
   __sn: serializedNodeWithId;
   parentElement: IRRNode | null;
@@ -11,9 +14,11 @@ export interface IRRNode {
   readonly TEXT_NODE: number;
   // corresponding nodeType value of standard HTML Node
   readonly nodeType: number;
+  readonly nodeName: string; // https://dom.spec.whatwg.org/#dom-node-nodename
   readonly RRNodeType: RRNodeType;
 
   firstChild: IRRNode | null;
+  lastChild: IRRNode | null;
 
   nextSibling: IRRNode | null;
 
@@ -28,14 +33,23 @@ export interface IRRNode {
   removeChild(node: IRRNode): IRRNode;
 
   /**
+   * @deprecated
    * Set a default value for RRNode's __sn property.
    * @param id the serialized id to assign
    */
   setDefaultSN(id: number): void;
 
+  /**
+   * Get a default value for RRNode's mirror.
+   * @param id the serialized id to assign
+   */
+  getDefaultSN(id: number): serializedNodeWithId;
+
   toString(nodeName?: string): string;
 }
 export interface IRRDocument extends IRRNode {
+  mirror: Mirror;
+
   unserializedId: number;
 
   documentElement: IRRElement | null;
@@ -47,6 +61,10 @@ export interface IRRDocument extends IRRNode {
   implementation: IRRDocument;
 
   firstElementChild: IRRElement | null;
+
+  nodeName: '#document';
+
+  compatMode: 'BackCompat' | 'CSS1Compat';
 
   createDocument(
     _namespace: string | null,
@@ -109,12 +127,15 @@ export interface IRRDocumentType extends IRRNode {
   readonly systemId: string;
 }
 export interface IRRText extends IRRNode {
+  nodeName: '#text';
   data: string;
 }
 export interface IRRComment extends IRRNode {
+  nodeName: '#comment';
   data: string;
 }
 export interface IRRCDATASection extends IRRNode {
+  nodeName: '#cdata-section';
   data: string;
 }
 
@@ -134,12 +155,17 @@ export class BaseRRNode implements IRRNode {
   public readonly TEXT_NODE: number = NodeType.TEXT_NODE;
   // corresponding nodeType value of standard HTML Node
   public readonly nodeType: number;
+  public readonly nodeName: string;
   public readonly RRNodeType: RRNodeType;
 
   constructor(...args: any[]) {}
 
   public get firstChild(): IRRNode | null {
     return this.childNodes[0] || null;
+  }
+
+  public get lastChild(): IRRNode | null {
+    return this.childNodes[this.childNodes.length - 1] || null;
   }
 
   public get nextSibling(): IRRNode | null {
@@ -176,56 +202,55 @@ export class BaseRRNode implements IRRNode {
     );
   }
 
-  public setDefaultSN(id: number) {
+  public getDefaultSN(id: number): serializedNodeWithId {
     switch (this.RRNodeType) {
       case RRNodeType.Document:
-        this.__sn = {
+        return {
           id,
           type: this.RRNodeType,
           childNodes: [],
         };
-        break;
       case RRNodeType.DocumentType:
         const doctype = (this as unknown) as IRRDocumentType;
-        this.__sn = {
+        return {
           id,
           type: this.RRNodeType,
           name: doctype.name,
           publicId: doctype.publicId,
           systemId: doctype.systemId,
         };
-        break;
       case RRNodeType.Element:
-        this.__sn = {
+        return {
           id,
           type: this.RRNodeType,
           tagName: ((this as unknown) as IRRElement).tagName.toLowerCase(), // In rrweb data, all tagNames are lowercase.
           attributes: {},
           childNodes: [],
         };
-        break;
       case RRNodeType.Text:
-        this.__sn = {
+        return {
           id,
           type: this.RRNodeType,
           textContent: ((this as unknown) as IRRText).textContent || '',
         };
-        break;
       case RRNodeType.Comment:
-        this.__sn = {
+        return {
           id,
           type: this.RRNodeType,
           textContent: ((this as unknown) as IRRComment).textContent || '',
         };
-        break;
       case RRNodeType.CDATA:
-        this.__sn = {
+        return {
           id,
           type: this.RRNodeType,
           textContent: '',
         };
-        break;
     }
+  }
+
+  // @deprecated
+  public setDefaultSN(id: number) {
+    this.__sn = this.getDefaultSN(id);
   }
 
   public toString(nodeName: string) {
@@ -237,7 +262,10 @@ export function BaseRRDocumentImpl<
   RRNode extends ConstrainedConstructor<IRRNode>
 >(RRNodeClass: RRNode) {
   return class BaseRRDocument extends RRNodeClass implements IRRDocument {
+    public mirror: Mirror = createMirror();
     public readonly nodeType: number = NodeType.DOCUMENT_NODE;
+    public readonly nodeName: '#document' = '#document';
+    public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
     public readonly RRNodeType = RRNodeType.Document;
     public textContent: string | null = null;
     // In the rrweb replayer, there are some unserialized nodes like the element that stores the injected style rules.
@@ -375,7 +403,7 @@ export function BaseRRDocumentImpl<
         publicId = '-//W3C//DTD HTML 4.0 Transitional//EN';
       if (publicId) {
         const doctype = this.createDocumentType('html', publicId, '');
-        doctype.setDefaultSN(this.unserializedId);
+        setDefaultSN(doctype, this.unserializedId, this.mirror);
         this.open();
         this.appendChild(doctype);
       }
@@ -471,6 +499,7 @@ export function BaseRRElementImpl<
   return class BaseRRElement extends RRNodeClass implements IRRElement {
     public readonly nodeType: number = NodeType.ELEMENT_NODE;
     public readonly RRNodeType = RRNodeType.Element;
+    public readonly nodeName: string;
     public tagName: string;
     public attributes: Record<string, string> = {};
     public shadowRoot: IRRElement | null = null;
@@ -480,6 +509,7 @@ export function BaseRRElementImpl<
     constructor(tagName: string) {
       super();
       this.tagName = tagName.toUpperCase();
+      this.nodeName = tagName.toUpperCase();
     }
 
     public get textContent(): string {
@@ -637,6 +667,7 @@ export function BaseRRTextImpl<RRNode extends ConstrainedConstructor<IRRNode>>(
   // @ts-ignore
   return class BaseRRText extends RRNodeClass implements IRRText {
     public readonly nodeType: number = NodeType.TEXT_NODE;
+    public readonly nodeName: '#text' = '#text';
     public readonly RRNodeType = RRNodeType.Text;
     public data: string;
 
@@ -665,6 +696,7 @@ export function BaseRRCommentImpl<
   // @ts-ignore
   return class BaseRRComment extends RRNodeClass implements IRRComment {
     public readonly nodeType: number = NodeType.COMMENT_NODE;
+    public readonly nodeName: '#comment' = '#comment';
     public readonly RRNodeType = RRNodeType.Comment;
     public data: string;
 
@@ -694,6 +726,7 @@ export function BaseRRCDATASectionImpl<
   return class BaseRRCDATASection
     extends RRNodeClass
     implements IRRCDATASection {
+    public readonly nodeName: '#cdata-section' = '#cdata-section';
     public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
     public readonly RRNodeType = RRNodeType.CDATA;
     public data: string;
@@ -774,4 +807,79 @@ export enum NodeType {
   DOCUMENT_NODE,
   DOCUMENT_TYPE_NODE,
   DOCUMENT_FRAGMENT_NODE,
+}
+
+export function createMirror(): Mirror {
+  return new Mirror();
+}
+
+// based on Mirror from rrweb-snapshots
+export class Mirror implements IMirror<BaseRRNode> {
+  private idNodeMap: Map<number, BaseRRNode> = new Map();
+  private nodeMetaMap: WeakMap<
+    BaseRRNode,
+    serializedNodeWithId
+  > = new WeakMap();
+
+  getId(n: BaseRRNode | undefined | null): number {
+    if (!n) return -1;
+
+    const id = this.getMeta(n)?.id;
+
+    // if n is not a serialized Node, use -1 as its id.
+    return id ?? -1;
+  }
+
+  getNode(id: number): BaseRRNode | null {
+    return this.idNodeMap.get(id) || null;
+  }
+
+  getIds(): number[] {
+    return Array.from(this.idNodeMap.keys());
+  }
+
+  getMeta(n: BaseRRNode): serializedNodeWithId | null {
+    return this.nodeMetaMap.get(n) || null;
+  }
+
+  // removes the node from idNodeMap
+  // doesn't remove the node from nodeMetaMap
+  removeNodeFromMap(n: BaseRRNode) {
+    const id = this.getId(n);
+    this.idNodeMap.delete(id);
+
+    if (n.childNodes) {
+      n.childNodes.forEach((childNode) =>
+        this.removeNodeFromMap((childNode as unknown) as BaseRRNode),
+      );
+    }
+  }
+  has(id: number): boolean {
+    return this.idNodeMap.has(id);
+  }
+
+  hasNode(node: BaseRRNode): boolean {
+    return this.nodeMetaMap.has(node);
+  }
+
+  add(n: BaseRRNode, meta: serializedNodeWithId) {
+    const id = meta.id;
+    this.idNodeMap.set(id, n);
+    this.nodeMetaMap.set(n, meta);
+  }
+
+  replace(id: number, n: BaseRRNode) {
+    this.idNodeMap.set(id, n);
+  }
+
+  reset() {
+    this.idNodeMap = new Map();
+    this.nodeMetaMap = new WeakMap();
+  }
+}
+
+export function setDefaultSN(node: IRRNode, id: number, mirror: Mirror) {
+  const sn = node.getDefaultSN(id);
+  node.setDefaultSN(id); // DEPRECATED
+  mirror.add(node, sn);
 }

@@ -67,6 +67,7 @@ export type tagMap = {
   [key: string]: string;
 };
 
+// @deprecated
 export interface INode extends Node {
   __sn: serializedNodeWithId;
 }
@@ -75,9 +76,31 @@ export interface ICanvas extends HTMLCanvasElement {
   __context: string;
 }
 
-export type idNodeMap = {
-  [key: number]: INode;
-};
+export interface IMirror<TNode> {
+  getId(n: TNode | undefined | null): number;
+
+  getNode(id: number): TNode | null;
+
+  getIds(): number[];
+
+  getMeta(n: TNode): serializedNodeWithId | null;
+
+  removeNodeFromMap(n: TNode): void;
+
+  has(id: number): boolean;
+
+  hasNode(node: TNode): boolean;
+
+  add(n: TNode, meta: serializedNodeWithId): void;
+
+  replace(id: number, n: TNode): void;
+
+  reset(): void;
+}
+
+export type idNodeMap = Map<number, Node>;
+
+export type nodeMetaMap = WeakMap<Node, serializedNodeWithId>;
 
 export type MaskInputOptions = Partial<{
   color: boolean;

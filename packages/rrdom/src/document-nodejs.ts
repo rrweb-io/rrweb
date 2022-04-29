@@ -1,5 +1,5 @@
 import { NodeType as RRNodeType } from 'rrweb-snapshot';
-import { NWSAPI } from 'nwsapi';
+import type { NWSAPI } from 'nwsapi';
 import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
 import {
   BaseRRCDATASectionImpl,
@@ -13,6 +13,8 @@ import {
   ClassList,
   IRRDocument,
   CSSStyleDeclaration,
+  Mirror,
+  createMirror,
 } from './document';
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
@@ -33,7 +35,9 @@ export class RRWindow {
 export class RRDocument
   extends BaseRRDocumentImpl(RRNode)
   implements IRRDocument {
+  readonly nodeName: '#document' = '#document';
   private _nwsapi: NWSAPI;
+  public mirror: Mirror = createMirror();
   get nwsapi() {
     if (!this._nwsapi) {
       this._nwsapi = nwsapi({
@@ -137,7 +141,7 @@ export class RRDocument
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
-        element = new RRIFrameElement(upperTagName);
+        element = new RRIFrameElement(upperTagName, this.mirror);
         break;
       case 'IMG':
         element = new RRImageElement(upperTagName);
@@ -340,8 +344,9 @@ export class RRIFrameElement extends RRElement {
   contentDocument: RRDocument = new RRDocument();
   contentWindow: RRWindow = new RRWindow();
 
-  constructor(tagName: string) {
+  constructor(tagName: string, mirror: Mirror) {
     super(tagName);
+    this.contentDocument.mirror = mirror;
     const htmlElement = this.contentDocument.createElement('HTML');
     this.contentDocument.appendChild(htmlElement);
     htmlElement.appendChild(this.contentDocument.createElement('HEAD'));
@@ -349,11 +354,17 @@ export class RRIFrameElement extends RRElement {
   }
 }
 
-export class RRText extends BaseRRTextImpl(RRNode) {}
+export class RRText extends BaseRRTextImpl(RRNode) {
+  readonly nodeName: '#text' = '#text';
+}
 
-export class RRComment extends BaseRRCommentImpl(RRNode) {}
+export class RRComment extends BaseRRCommentImpl(RRNode) {
+  readonly nodeName: '#comment' = '#comment';
+}
 
-export class RRCDATASection extends BaseRRCDATASectionImpl(RRNode) {}
+export class RRCDATASection extends BaseRRCDATASectionImpl(RRNode) {
+  readonly nodeName: '#cdata-section' = '#cdata-section';
+}
 
 interface RRElementTagNameMap {
   audio: RRMediaElement;

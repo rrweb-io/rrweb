@@ -1,11 +1,11 @@
 import {
   rebuild,
   buildNodeWithSN,
-  INode,
   NodeType,
   BuildCache,
   createCache,
-  idNodeMap,
+  Mirror,
+  createMirror,
 } from 'rrweb-snapshot';
 import {
   RRNode,
@@ -22,6 +22,7 @@ import {
   buildFromDom,
   diff,
 } from 'rrdom/es/virtual-dom';
+import type { Mirror as RRDOMMirror } from 'rrdom/es/document';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -49,7 +50,6 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
-  Mirror,
   styleAttributeValue,
   styleValueWithPriority,
   mouseMovePos,
@@ -57,15 +57,13 @@ import {
   canvasMutationCommand,
 } from '../types';
 import {
-  createMirror,
   polyfill,
   queueToResolveTrees,
   iterateResolveTree,
   AppendedIframe,
-  isIframeINode,
-  isRRIFrameElement,
   getBaseDimension,
   hasShadowRoot,
+  isSerializedIframe,
   getNestedRule,
   getPositionsAndIndex,
 } from '../utils';
@@ -196,9 +194,10 @@ export class Replayer {
           applyScroll: this.applyScroll.bind(this),
         };
         diff(
-          (this.iframe.contentDocument! as unknown) as INode,
+          this.iframe.contentDocument!,
           this.virtualDom,
           replayerHandler,
+          this.virtualDom.mirror,
         );
         this.virtualDom.destroyTree();
         this.usingVirtualDom = false;
@@ -211,8 +210,14 @@ export class Replayer {
               const realNode = createOrGetNode(
                 value.node as RRNode,
                 this.mirror,
+                this.virtualDom.mirror,
               );
-              diff(realNode, value.node as RRNode, replayerHandler);
+              diff(
+                realNode,
+                value.node as RRNode,
+                replayerHandler,
+                this.virtualDom.mirror,
+              );
               value.node = realNode;
             } catch (error) {
               if (this.config.showWarning) {
@@ -403,7 +408,7 @@ export class Replayer {
     }
     this.iframe.contentDocument
       ?.getElementsByTagName('html')[0]
-      .classList.remove('rrweb-paused');
+      ?.classList.remove('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Start);
   }
 
@@ -417,7 +422,7 @@ export class Replayer {
     }
     this.iframe.contentDocument
       ?.getElementsByTagName('html')[0]
-      .classList.add('rrweb-paused');
+      ?.classList.add('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -676,13 +681,14 @@ export class Replayer {
     }
     this.legacy_missingNodeRetryMap = {};
     const collected: AppendedIframe[] = [];
-    this.mirror.map = rebuild(event.data.node, {
+    rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
       },
       cache: this.cache,
-    })[1];
+      mirror: this.mirror,
+    });
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
@@ -748,19 +754,24 @@ export class Replayer {
     mutation: addedNodeMutation,
     iframeEl: HTMLIFrameElement | RRIFrameElement,
   ) {
+    const mirror: RRDOMMirror | Mirror = this.usingVirtualDom
+      ? this.virtualDom.mirror
+      : this.mirror;
+    type TNode = typeof mirror extends Mirror ? Node : RRNode;
+    type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
+
     const collected: AppendedIframe[] = [];
     buildNodeWithSN(mutation.node, {
-      doc: (iframeEl.contentDocument! as unknown) as Document,
-      map: this.usingVirtualDom
-        ? ((this.virtualDom.mirror.map as unknown) as idNodeMap)
-        : this.mirror.map,
+      doc: iframeEl.contentDocument! as Document,
+      mirror: mirror as Mirror,
       hackCss: true,
       skipChild: false,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
+        const sn = (mirror as TMirror).getMeta((builtNode as unknown) as TNode);
         if (
-          builtNode.__sn.type === NodeType.Element &&
-          builtNode.__sn.tagName.toUpperCase() === 'HTML'
+          sn?.type === NodeType.Element &&
+          sn?.tagName.toUpperCase() === 'HTML'
         ) {
           const { documentElement, head } = iframeEl.contentDocument!;
           this.insertStyleRules(
@@ -781,14 +792,17 @@ export class Replayer {
 
   private collectIframeAndAttachDocument(
     collected: AppendedIframe[],
-    builtNode: INode,
+    builtNode: Node,
   ) {
-    if (isIframeINode(builtNode) || isRRIFrameElement(builtNode)) {
+    if (isSerializedIframe(builtNode, this.mirror)) {
       const mutationInQueue = this.newDocumentQueue.find(
-        (m) => m.parentId === builtNode.__sn.id,
+        (m) => m.parentId === this.mirror.getId(builtNode),
       );
       if (mutationInQueue) {
-        collected.push({ mutationInQueue, builtNode });
+        collected.push({
+          mutationInQueue,
+          builtNode: builtNode as HTMLIFrameElement,
+        });
       }
     }
   }
@@ -988,13 +1002,13 @@ export class Replayer {
         const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
-            if ('blur' in ((target as Node) as HTMLElement)) {
-              ((target as Node) as HTMLElement).blur();
+            if ('blur' in (target as HTMLElement)) {
+              (target as HTMLElement).blur();
             }
             break;
           case MouseInteractions.Focus:
-            if (triggerFocus && ((target as Node) as HTMLElement).focus) {
-              ((target as Node) as HTMLElement).focus({
+            if (triggerFocus && (target as HTMLElement).focus) {
+              (target as HTMLElement).focus({
                 preventScroll: true,
               });
             }
@@ -1300,22 +1314,19 @@ export class Replayer {
   }
 
   private applyMutation(d: mutationData, isSync: boolean) {
-    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
+    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of cr  eating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
     if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
       this.usingVirtualDom = true;
-      buildFromDom(
-        this.iframe.contentDocument!,
-        this.virtualDom,
-        this.virtualDom.mirror,
-      );
+      buildFromDom(this.iframe.contentDocument!, this.mirror, this.virtualDom);
       // If these legacy missing nodes haven't been resolved, they should be converted to virtual nodes.
       if (Object.keys(this.legacy_missingNodeRetryMap).length) {
         for (const key in this.legacy_missingNodeRetryMap) {
           try {
             const value = this.legacy_missingNodeRetryMap[key];
             const virtualNode = buildFromNode(
-              value.node as INode,
+              value.node as Node,
               this.virtualDom,
+              this.mirror,
             );
             if (virtualNode) value.node = virtualNode;
           } catch (error) {
@@ -1327,6 +1338,8 @@ export class Replayer {
       }
     }
     const mirror = this.usingVirtualDom ? this.virtualDom.mirror : this.mirror;
+    type TNode = typeof mirror extends Mirror ? Node : RRNode;
+
     d.removes.forEach((mutation) => {
       let target = mirror.getNode(mutation.id);
       if (!target) {
@@ -1336,7 +1349,7 @@ export class Replayer {
         }
         return this.warnNodeNotFound(d, mutation.id);
       }
-      let parent: INode | null | ShadowRoot | RRNode = mirror.getNode(
+      let parent: Node | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,
       );
       if (!parent) {
@@ -1346,10 +1359,10 @@ export class Replayer {
         parent = (parent as Element | RRElement).shadowRoot;
       }
       // target may be removed with its parents before
-      mirror.removeNodeFromMap(target as INode & RRNode);
+      mirror.removeNodeFromMap(target as Node & RRNode);
       if (parent)
         try {
-          parent.removeChild(target as INode & RRNode);
+          parent.removeChild(target as Node & RRNode);
         } catch (error) {
           if (error instanceof DOMException) {
             this.warn(
@@ -1372,9 +1385,9 @@ export class Replayer {
 
     // next not present at this moment
     const nextNotInDOM = (mutation: addedNodeMutation) => {
-      let next: Node | null = null;
+      let next: TNode | null = null;
       if (mutation.nextId) {
-        next = mirror.getNode(mutation.nextId) as Node;
+        next = mirror.getNode(mutation.nextId) as TNode | null;
       }
       // next not present at this moment
       if (
@@ -1392,7 +1405,7 @@ export class Replayer {
       if (!this.iframe.contentDocument) {
         return console.warn('Looks like your replayer has been destroyed.');
       }
-      let parent: INode | null | ShadowRoot | RRNode = mirror.getNode(
+      let parent: Node | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,
       );
       if (!parent) {
@@ -1407,17 +1420,17 @@ export class Replayer {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
         if (!hasShadowRoot(parent)) {
           (parent as Element | RRElement).attachShadow({ mode: 'open' });
-          parent = (parent as Element | RRElement).shadowRoot!;
-        } else parent = parent.shadowRoot;
+          parent = (parent as Element | RRElement).shadowRoot! as Node | RRNode;
+        } else parent = parent.shadowRoot as Node | RRNode;
       }
 
       let previous: Node | RRNode | null = null;
       let next: Node | RRNode | null = null;
       if (mutation.previousId) {
-        previous = mirror.getNode(mutation.previousId) as Node | RRNode;
+        previous = mirror.getNode(mutation.previousId);
       }
       if (mutation.nextId) {
-        next = mirror.getNode(mutation.nextId) as Node | RRNode;
+        next = mirror.getNode(mutation.nextId);
       }
       if (nextNotInDOM(mutation)) {
         return queue.push(mutation);
@@ -1432,17 +1445,20 @@ export class Replayer {
         : this.usingVirtualDom
         ? this.virtualDom
         : this.iframe.contentDocument;
-      if (isIframeINode(parent) || isRRIFrameElement(parent)) {
-        this.attachDocumentToIframe(mutation, parent);
+      if (isSerializedIframe<typeof parent>(parent, mirror)) {
+        this.attachDocumentToIframe(
+          mutation,
+          parent as HTMLIFrameElement | RRIFrameElement,
+        );
         return;
       }
       const target = buildNodeWithSN(mutation.node, {
-        doc: targetDoc as Document,
-        map: mirror.map as idNodeMap,
+        doc: targetDoc as Document, // can be Document or RRDocument
+        mirror: mirror as Mirror, // can be this.mirror or virtualDom.mirror
         skipChild: true,
         hackCss: true,
         cache: this.cache,
-      }) as INode | RRNode;
+      }) as Node | RRNode;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1453,59 +1469,64 @@ export class Replayer {
         return;
       }
 
+      // Typescripts type system is not smart enough
+      // to understand what is going on with the types below
+      type TNode = typeof mirror extends Mirror ? Node : RRNode;
+      type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
+
+      const parentSn = (mirror as TMirror).getMeta(parent as TNode);
       if (
-        '__sn' in parent &&
-        parent.__sn.type === NodeType.Element &&
-        parent.__sn.tagName === 'textarea' &&
+        parentSn &&
+        parentSn.type === NodeType.Element &&
+        parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
+        // ES6-TODO: rename this to Array.from(parent.childNodes)
+        const childNodeArray = Array.prototype.slice.call(parent.childNodes);
+
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
-        for (const c of Array.from(
-          parent.childNodes as Iterable<INode | RRNode>,
-        )) {
+        for (const c of childNodeArray) {
           if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c as INode & RRNode);
+            parent.removeChild(c);
           }
         }
       }
 
       if (previous && previous.nextSibling && previous.nextSibling.parentNode) {
-        parent.insertBefore(
-          target as INode & RRNode,
-          previous.nextSibling as INode & RRNode,
+        (parent as TNode).insertBefore(
+          target as TNode,
+          previous.nextSibling as TNode,
         );
       } else if (next && next.parentNode) {
         // making sure the parent contains the reference nodes
         // before we insert target before next.
-        parent.contains(next as Node & RRNode)
-          ? parent.insertBefore(
-              target as INode & RRNode,
-              next as INode & RRNode,
-            )
-          : parent.insertBefore(target as INode & RRNode, null);
+        (parent as TNode).contains(next as TNode)
+          ? (parent as TNode).insertBefore(target as TNode, next as TNode)
+          : (parent as TNode).insertBefore(target as TNode, null);
       } else {
         /**
          * Sometimes the document changes and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded. After the change of document, we may get another mutation which adds a new html element, while the old html element still exists in the dom, and we need to remove the old html element first to avoid collision.
          */
         if (parent === targetDoc) {
           while (targetDoc.firstChild) {
-            targetDoc.removeChild(targetDoc.firstChild as Node & RRNode);
+            (targetDoc as TNode).removeChild(targetDoc.firstChild as TNode);
           }
         }
 
-        parent.appendChild(target as Node & RRNode);
+        (parent as TNode).appendChild(target as TNode);
       }
 
-      /**
-       * isRRIFrameElement won't actually be executed but it's used to make type inference of variable 'target' right.
-       */
-      if (isIframeINode(target) || isRRIFrameElement(target)) {
+      if (isSerializedIframe(target, this.mirror)) {
+        const targetId = this.mirror.getId(target as HTMLIFrameElement);
         const mutationInQueue = this.newDocumentQueue.find(
-          (m) => m.parentId === target.__sn.id,
+          (m) => m.parentId === targetId,
         );
         if (mutationInQueue) {
-          this.attachDocumentToIframe(mutationInQueue, target);
+          this.attachDocumentToIframe(
+            mutationInQueue,
+            target as HTMLIFrameElement,
+          );
           this.newDocumentQueue = this.newDocumentQueue.filter(
             (m) => m !== mutationInQueue,
           );
@@ -1636,23 +1657,24 @@ export class Replayer {
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
     }
-    if ((target as Node) === this.iframe.contentDocument) {
+    const sn = this.mirror.getMeta(target);
+    if (target === this.iframe.contentDocument) {
       this.iframe.contentWindow!.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
       });
-    } else if (target.__sn.type === NodeType.Document) {
+    } else if (sn?.type === NodeType.Document) {
       // nest iframe content document
-      ((target as unknown) as Document).defaultView!.scrollTo({
+      (target as Document).defaultView!.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
       });
     } else {
       try {
-        ((target as Node) as Element).scrollTop = d.y;
-        ((target as Node) as Element).scrollLeft = d.x;
+        (target as Element).scrollTop = d.y;
+        (target as Element).scrollLeft = d.x;
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before
@@ -1668,8 +1690,8 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     try {
-      ((target as Node) as HTMLInputElement).checked = d.isChecked;
-      ((target as Node) as HTMLInputElement).value = d.text;
+      (target as HTMLInputElement).checked = d.isChecked;
+      (target as HTMLInputElement).value = d.text;
     } catch (error) {
       // for safe
     }
@@ -1728,7 +1750,7 @@ export class Replayer {
     if (!isSync) {
       this.drawMouseTail({ x: _x, y: _y });
     }
-    this.hoverElements((target as Node) as Element);
+    this.hoverElements(target as Element);
   }
 
   private drawMouseTail(position: { x: number; y: number }) {
