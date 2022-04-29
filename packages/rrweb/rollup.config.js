@@ -1,8 +1,9 @@
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import renameNodeModules from 'rollup-plugin-rename-node-modules';
+import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import pkg from './package.json';
 
 function toRecordPath(path) {
@@ -45,6 +46,13 @@ function toMinPath(path) {
 }
 
 const baseConfigs = [
+  // all in one
+  {
+    input: './src/entries/all.ts',
+    name: 'rrweb',
+    pathFn: toAllPath,
+    esm: true,
+  },
   // record only
   {
     input: './src/record/index.ts',
@@ -75,13 +83,6 @@ const baseConfigs = [
     name: 'rrweb',
     pathFn: (p) => p,
   },
-  // all in one
-  {
-    input: './src/entries/all.ts',
-    name: 'rrweb',
-    pathFn: toAllPath,
-    esm: true,
-  },
   // plugins
   {
     input: './src/plugins/console/record/index.ts',
@@ -110,10 +111,8 @@ let configs = [];
 for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
-    typescript({
-      // a trick to avoid @rollup/plugin-typescript error
-      outDir: 'es/rrweb',
-    }),
+    webWorkerLoader(),
+    typescript(),
   ];
   const plugins = basePlugins.concat(
     postcss({
@@ -200,6 +199,7 @@ if (process.env.BROWSER_ONLY) {
   for (const c of browserOnlyBaseConfigs) {
     const plugins = [
       resolve({ browser: true }),
+      webWorkerLoader(),
       typescript({
         outDir: null,
       }),

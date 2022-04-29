@@ -202,6 +202,12 @@ export type SamplingStrategy = Partial<{
    * 'last' will only record the last input value while input a sequence of chars
    */
   input: 'all' | 'last';
+  /**
+   * 'all' will record every single canvas call
+   * number between 1 and 60, will record an image snapshots in a web-worker a (maximum) number of times per second.
+   *                          Number only supported where [`OffscreenCanvas`](http://mdn.io/offscreencanvas) is supported.
+   */
+  canvas: 'all' | number;
 }>;
 
 export type RecordPlugin<TOptions = unknown> = {
@@ -417,10 +423,15 @@ export enum CanvasContext {
   WebGL2,
 }
 
-export type SerializedWebGlArg =
+export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
+    }
+  | {
+      rr_type: 'Blob';
+      data: Array<CanvasArg>;
+      type?: string;
     }
   | {
       rr_type: string;
@@ -428,17 +439,20 @@ export type SerializedWebGlArg =
     }
   | {
       rr_type: string;
-      args: SerializedWebGlArg[];
+      args: Array<CanvasArg>;
     }
   | {
       rr_type: string;
       index: number;
-    }
+    };
+
+export type CanvasArg =
+  | SerializedCanvasArg
   | string
   | number
   | boolean
   | null
-  | SerializedWebGlArg[];
+  | CanvasArg[];
 
 type mouseInteractionParam = {
   type: MouseInteractions;
@@ -516,6 +530,25 @@ export type canvasManagerMutationCallback = (
   target: HTMLCanvasElement,
   p: canvasMutationWithType,
 ) => void;
+
+export type ImageBitmapDataURLWorkerParams = {
+  id: number;
+  bitmap: ImageBitmap;
+  width: number;
+  height: number;
+};
+
+export type ImageBitmapDataURLWorkerResponse =
+  | {
+      id: number;
+    }
+  | {
+      id: number;
+      type: string;
+      base64: string;
+      width: number;
+      height: number;
+    };
 
 export type fontParam = {
   family: string;

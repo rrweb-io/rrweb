@@ -7,7 +7,7 @@ polyfillWebGLGlobals();
 import { Replayer } from '../../src/replay';
 import {
   CanvasContext,
-  SerializedWebGlArg,
+  CanvasArg,
   IncrementalSource,
   EventType,
   eventWithTime,
@@ -15,9 +15,7 @@ import {
 
 let replayer: Replayer;
 
-const canvasMutationEventWithArgs = (
-  args: SerializedWebGlArg[],
-): eventWithTime => {
+const canvasMutationEventWithArgs = (args: CanvasArg[]): eventWithTime => {
   return {
     timestamp: 100,
     type: EventType.IncrementalSnapshot,
@@ -66,11 +64,11 @@ describe('preloadAllImages', () => {
     );
   });
 
-  it('should preload nested image', () => {
+  it('should preload nested image', async () => {
     replayer.service.state.context.events = [
       canvasMutationEventWithArgs([
         {
-          rr_type: 'something',
+          rr_type: 'Array',
           args: [
             {
               rr_type: 'HTMLImageElement',
@@ -81,7 +79,7 @@ describe('preloadAllImages', () => {
       ]),
     ];
 
-    (replayer as any).preloadAllImages();
+    await (replayer as any).preloadAllImages();
 
     const expectedImage = new Image();
     expectedImage.src = 'http://example.com';

@@ -125,7 +125,7 @@ describe('e2e webgl', () => {
       });
       replayer.play(500);
     `);
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
 
     const element = await page.$('iframe');
     const frameImage = await element!.screenshot();
@@ -160,7 +160,7 @@ describe('e2e webgl', () => {
     // wait for iframe to get added and `preloadAllImages` to ge called
     await page.waitForSelector('iframe');
     await page.evaluate(`replayer.play(500);`);
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
 
     const element = await page.$('iframe');
     const frameImage = await element!.screenshot();

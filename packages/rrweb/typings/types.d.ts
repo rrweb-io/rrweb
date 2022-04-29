@@ -125,6 +125,7 @@ export declare type SamplingStrategy = Partial<{
     scroll: number;
     media: number;
     input: 'all' | 'last';
+    canvas: 'all' | number;
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
@@ -292,19 +293,24 @@ export declare enum CanvasContext {
     WebGL = 1,
     WebGL2 = 2
 }
-export declare type SerializedWebGlArg = {
+export declare type SerializedCanvasArg = {
     rr_type: 'ArrayBuffer';
     base64: string;
+} | {
+    rr_type: 'Blob';
+    data: Array<CanvasArg>;
+    type?: string;
 } | {
     rr_type: string;
     src: string;
 } | {
     rr_type: string;
-    args: SerializedWebGlArg[];
+    args: Array<CanvasArg>;
 } | {
     rr_type: string;
     index: number;
-} | string | number | boolean | null | SerializedWebGlArg[];
+};
+export declare type CanvasArg = SerializedCanvasArg | string | number | boolean | null | CanvasArg[];
 declare type mouseInteractionParam = {
     type: MouseInteractions;
     id: number;
@@ -362,6 +368,21 @@ export declare type canvasMutationWithType = {
 } & canvasMutationCommand;
 export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
 export declare type canvasManagerMutationCallback = (target: HTMLCanvasElement, p: canvasMutationWithType) => void;
+export declare type ImageBitmapDataURLWorkerParams = {
+    id: number;
+    bitmap: ImageBitmap;
+    width: number;
+    height: number;
+};
+export declare type ImageBitmapDataURLWorkerResponse = {
+    id: number;
+} | {
+    id: number;
+    type: string;
+    base64: string;
+    width: number;
+    height: number;
+};
 export declare type fontParam = {
     family: string;
     fontSource: string;
