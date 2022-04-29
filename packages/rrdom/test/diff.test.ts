@@ -1047,10 +1047,7 @@ describe('diff algorithm for rrdom', () => {
         id: 2,
       } as serializedNodeWithId);
 
-      console.log('pre diff');
       diff(node, rrNode, replayer);
-      console.log('post diff');
-      console.log(node.contentDocument, node.contentDocument!.documentElement);
       expect(node.contentDocument!.childNodes.length).toBe(1);
       const element = node.contentDocument!.childNodes[0] as HTMLElement;
       expect(element.tagName).toBe('DIV');
