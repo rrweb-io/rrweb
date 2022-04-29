@@ -7,6 +7,7 @@ import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import * as typescript from 'rollup-plugin-typescript2';
+import { JSDOM } from 'jsdom';
 import { Mirror, NodeType, NodeType as RRNodeType } from 'rrweb-snapshot';
 import {
   buildFromDom,
@@ -48,8 +49,11 @@ describe('RRDocument for browser environment', () => {
 
   describe('create a RRNode from a real Node', () => {
     it('should support quicksmode documents', () => {
-      document.doctype?.remove();
-      expect(document.compatMode).toBe('BackCompat');
+      // seperate jsdom document as changes to the document would otherwise bleed into other tests
+      const dom = new JSDOM();
+      const document = dom.window.document;
+
+      expect(document.doctype).toBeNull(); // confirm compatMode is 'BackCompat' in JSDOM
 
       const rrdom = new RRDocument();
       let rrNode = buildFromNode(document, rrdom, mirror)!;
