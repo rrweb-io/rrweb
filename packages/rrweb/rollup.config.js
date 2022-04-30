@@ -111,7 +111,10 @@ let configs = [];
 for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
+
+    // supports bundling `web-worker:..filename`
     webWorkerLoader(),
+
     typescript(),
   ];
   const plugins = basePlugins.concat(
@@ -199,7 +202,10 @@ if (process.env.BROWSER_ONLY) {
   for (const c of browserOnlyBaseConfigs) {
     const plugins = [
       resolve({ browser: true }),
+
+      // supports bundling `web-worker:..filename`
       webWorkerLoader(),
+
       typescript({
         outDir: null,
       }),

@@ -170,6 +170,11 @@ export type eventWithTime = event & {
   delay?: number;
 };
 
+export type canvasEventWithTime = eventWithTime & {
+  type: EventType.IncrementalSnapshot;
+  data: canvasMutationData;
+};
+
 export type blockClass = string | RegExp;
 
 export type maskTextClass = string | RegExp;

@@ -116,6 +116,10 @@ export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;
 };
+export declare type canvasEventWithTime = eventWithTime & {
+    type: EventType.IncrementalSnapshot;
+    data: canvasMutationData;
+};
 export declare type blockClass = string | RegExp;
 export declare type maskTextClass = string | RegExp;
 export declare type SamplingStrategy = Partial<{

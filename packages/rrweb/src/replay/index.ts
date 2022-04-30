@@ -56,6 +56,7 @@ import {
   IWindow,
   canvasMutationCommand,
   canvasMutationParam,
+  canvasEventWithTime,
 } from '../types';
 import {
   polyfill,
@@ -72,6 +73,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
+import type { ReplayerHandler } from 'rrdom/es/diff';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -175,13 +177,10 @@ export class Replayer {
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingVirtualDom) {
-        const replayerHandler = {
+        const replayerHandler: ReplayerHandler = {
           mirror: this.mirror,
           applyCanvas: (
-            canvasEvent: incrementalSnapshotEvent & {
-              timestamp: number;
-              delay?: number | undefined;
-            },
+            canvasEvent: canvasEventWithTime,
             canvasMutationData: canvasMutationData,
             target: HTMLCanvasElement,
           ) => {
@@ -1310,7 +1309,10 @@ export class Replayer {
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
-          target.canvasMutations.push({ event: e, mutation: d });
+          target.canvasMutations.push({
+            event: e as canvasEventWithTime,
+            mutation: d,
+          });
         } else {
           const target = this.mirror.getNode(d.id);
           if (!target) {

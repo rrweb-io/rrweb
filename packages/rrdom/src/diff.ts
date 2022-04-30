@@ -1,7 +1,7 @@
 import { NodeType as RRNodeType, Mirror as NodeMirror } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
-  incrementalSnapshotEvent,
+  canvasEventWithTime,
   inputData,
   scrollData,
 } from 'rrweb/src/types';
@@ -73,10 +73,7 @@ const SVGTagMap: Record<string, string> = {
 export type ReplayerHandler = {
   mirror: NodeMirror;
   applyCanvas: (
-    canvasEvent: incrementalSnapshotEvent & {
-      timestamp: number;
-      delay?: number | undefined;
-    },
+    canvasEvent: canvasEventWithTime,
     canvasMutationData: canvasMutationData,
     target: HTMLCanvasElement,
   ) => void;

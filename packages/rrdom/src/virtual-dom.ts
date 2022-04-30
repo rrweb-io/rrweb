@@ -6,7 +6,7 @@ import {
 import type { Mirror as NodeMirror } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
-  incrementalSnapshotEvent,
+  canvasEventWithTime,
   inputData,
   scrollData,
 } from 'rrweb/src/types';
@@ -126,10 +126,7 @@ export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
 
 export class RRCanvasElement extends RRElement implements IRRElement {
   public canvasMutations: {
-    event: incrementalSnapshotEvent & {
-      timestamp: number;
-      delay?: number | undefined;
-    };
+    event: canvasEventWithTime;
     mutation: canvasMutationData;
   }[] = [];
   /**
