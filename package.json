@@ -21,6 +21,8 @@
     "packages/rrdom"
   ],
   "devDependencies": {
+    "cross-env": "^7.0.3",
+    "increase-memory-limit": "^1.0.7",
     "lerna": "^4.0.0"
   },
   "scripts": {
@@ -29,7 +31,8 @@
     "test": "yarn lerna run test",
     "test:watch": "yarn lerna run test:watch --parallel",
     "dev": "yarn lerna run dev --parallel",
-    "repl": "cd packages/rrweb && npm run repl"
+    "repl": "cd packages/rrweb && npm run repl",
+    "increase-memory-limit": "cross-env LIMIT=4096 increase-memory-limit"
   },
   "resolutions": {
     "**/jsdom/cssom": "^0.5.0"

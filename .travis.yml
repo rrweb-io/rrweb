@@ -9,6 +9,7 @@ node_js:
 
 install:
   - yarn
+  - yarn increase-memory-limit
 
 script:
   - yarn lerna run prepublish
