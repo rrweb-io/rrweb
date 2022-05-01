@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
     "strictNullChecks": true,
