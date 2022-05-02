@@ -4,8 +4,10 @@ import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
-import esbuild from 'rollup-plugin-esbuild';
+import * as typescript from '@rollup/plugin-typescript';
 import * as assert from 'assert';
+
+const _typescript = (typescript as unknown) as typeof typescript.default;
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map((filePath) => {
@@ -71,7 +73,7 @@ describe('integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [esbuild()],
+      plugins: [_typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -223,7 +225,7 @@ describe('iframe integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [esbuild()],
+      plugins: [_typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -272,7 +274,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [esbuild()],
+      plugins: [_typescript()],
     });
     const {
       output: [{ code: _code }],

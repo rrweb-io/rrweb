@@ -1,6 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import esbuild, { minify } from 'rollup-plugin-esbuild';
+import { terser } from 'rollup-plugin-terser';
+import typescript from 'rollup-plugin-typescript2';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import pkg from './package.json';
 
@@ -15,7 +16,9 @@ const basePlugins = [
   // supports bundling `web-worker:..filename` from rrweb
   webWorkerLoader(),
 
-  esbuild(),
+  typescript({
+    tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
+  }),
 ];
 
 const baseConfigs = [
@@ -67,7 +70,7 @@ for (let config of baseConfigs) {
     },
     {
       input: config.input,
-      plugins: basePlugins.concat(minify()),
+      plugins: basePlugins.concat(terser()),
       output: [
         {
           name: config.name,
@@ -91,7 +94,7 @@ for (let config of baseConfigs) {
     // ES module (packed)
     {
       input: config.input,
-      plugins: basePlugins.concat(minify()),
+      plugins: basePlugins.concat(terser()),
       output: [
         {
           format: 'esm',

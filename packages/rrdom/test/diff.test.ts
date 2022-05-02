@@ -7,8 +7,9 @@ import {
   createOrGetNode,
   diff,
   ReplayerHandler,
+  StyleRuleType,
+  VirtualStyleRules,
 } from '../src/diff';
-import { StyleRuleType, VirtualStyleRules } from '../src/types';
 import {
   NodeType as RRNodeType,
   serializedNodeWithId,

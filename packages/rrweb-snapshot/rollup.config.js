@@ -1,4 +1,5 @@
-import esbuild from 'rollup-plugin-esbuild';
+import typescript from '@rollup/plugin-typescript';
+import { terser } from 'rollup-plugin-terser';
 import pkg from './package.json';
 
 function toMinPath(path) {
@@ -9,7 +10,7 @@ let configs = [
   // ES module - for building rrweb
   {
     input: './src/index.ts',
-    plugins: [esbuild()],
+    plugins: [typescript()],
     output: [
       {
         format: 'esm',
@@ -22,7 +23,7 @@ let extra_configs = [
   // browser
   {
     input: './src/index.ts',
-    plugins: [esbuild()],
+    plugins: [typescript()],
     output: [
       {
         name: 'rrwebSnapshot',
@@ -33,11 +34,7 @@ let extra_configs = [
   },
   {
     input: './src/index.ts',
-    plugins: [
-      esbuild({
-        minify: true,
-      }),
-    ],
+    plugins: [typescript(), terser()],
     output: [
       {
         name: 'rrwebSnapshot',
@@ -50,7 +47,7 @@ let extra_configs = [
   // CommonJS
   {
     input: './src/index.ts',
-    plugins: [esbuild()],
+    plugins: [typescript()],
     output: [
       {
         format: 'cjs',
@@ -61,11 +58,7 @@ let extra_configs = [
   // ES module (packed)
   {
     input: './src/index.ts',
-    plugins: [
-      esbuild({
-        minify: true,
-      }),
-    ],
+    plugins: [typescript(), terser()],
     output: [
       {
         format: 'esm',

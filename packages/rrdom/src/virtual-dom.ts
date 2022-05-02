@@ -26,7 +26,7 @@ import {
   createMirror,
   Mirror,
 } from './document';
-import type { VirtualStyleRules } from './types';
+import type { VirtualStyleRules } from './diff';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   public mirror: Mirror = createMirror();
@@ -318,3 +318,9 @@ export function buildFromDom(
 }
 
 export { RRNode };
+export {
+  diff,
+  createOrGetNode,
+  StyleRuleType,
+  VirtualStyleRules,
+} from './diff';

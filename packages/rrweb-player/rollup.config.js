@@ -2,9 +2,10 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
+import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
-import esbuild, { minify } from 'rollup-plugin-esbuild';
+import typescript from '@rollup/plugin-typescript';
 import pkg from './package.json';
 import css from 'rollup-plugin-css-only';
 
@@ -70,7 +71,7 @@ export default entries.map((output) => ({
     // supports bundling `web-worker:..filename` from rrweb
     webWorkerLoader(),
 
-    esbuild(),
+    typescript(),
 
     css({
       // we'll extract any component CSS out into
@@ -88,7 +89,7 @@ export default entries.map((output) => ({
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
-    production && minify(),
+    production && terser(),
   ],
   watch: {
     clearScreen: false,

@@ -1,5 +1,5 @@
 import { Mirror } from 'rrweb-snapshot';
-import { RRDocument } from 'rrdom/src/virtual-dom';
+import { RRDocument } from 'rrdom/es/virtual-dom';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import { eventWithTime, playerConfig, playerMetaData, Handler } from '../types';
