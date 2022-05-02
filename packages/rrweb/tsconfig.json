@@ -2,14 +2,14 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
-    "target": "ES5",
+    "target": "ES6",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": ["es6", "dom"],
+    "lib": ["ES6", "DOM"],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error"
   },

@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
-import * as typescript from 'rollup-plugin-typescript2';
+import esbuild from 'rollup-plugin-esbuild';
 import { JSDOM } from 'jsdom';
 import { Mirror, NodeType, NodeType as RRNodeType } from 'rrweb-snapshot';
 import {
@@ -19,7 +19,6 @@ import {
 } from '../src/virtual-dom';
 import { setDefaultSN } from '../src/document';
 
-const _typescript = (typescript as unknown) as typeof typescript.default;
 const printRRDomCode = `
 /**
  * Print the RRDom as a string.
@@ -207,12 +206,7 @@ describe('RRDocument for browser environment', () => {
       browser = await puppeteer.launch();
       const bundle = await rollup.rollup({
         input: path.resolve(__dirname, '../src/virtual-dom.ts'),
-        plugins: [
-          resolve(),
-          _typescript({
-            tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
-          }),
-        ],
+        plugins: [resolve(), esbuild()],
       });
       const {
         output: [{ code: _code }],

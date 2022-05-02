@@ -318,9 +318,4 @@ export function buildFromDom(
 }
 
 export { RRNode };
-export {
-  diff,
-  createOrGetNode,
-  StyleRuleType,
-  VirtualStyleRules,
-} from './diff';
+export { diff, createOrGetNode, StyleRuleType } from './diff';

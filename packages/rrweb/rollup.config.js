@@ -1,6 +1,5 @@
-import typescript from 'rollup-plugin-typescript2';
+import esbuild, { minify } from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import renameNodeModules from 'rollup-plugin-rename-node-modules';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
@@ -115,7 +114,7 @@ for (const c of baseConfigs) {
     // supports bundling `web-worker:..filename`
     webWorkerLoader(),
 
-    typescript(),
+    esbuild(),
   ];
   const plugins = basePlugins.concat(
     postcss({
@@ -144,7 +143,7 @@ for (const c of baseConfigs) {
         minimize: true,
         sourceMap: true,
       }),
-      terser(),
+      minify(),
     ),
     output: [
       {
@@ -206,15 +205,15 @@ if (process.env.BROWSER_ONLY) {
       // supports bundling `web-worker:..filename`
       webWorkerLoader(),
 
-      typescript({
-        outDir: null,
+      esbuild({
+        minify: true,
       }),
+
       postcss({
         extract: false,
         inject: false,
         sourceMap: true,
       }),
-      terser(),
     ];
 
     configs.push({
