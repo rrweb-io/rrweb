@@ -1,7 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import esbuild, { minify } from 'rollup-plugin-esbuild';
-
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import pkg from './package.json';
 

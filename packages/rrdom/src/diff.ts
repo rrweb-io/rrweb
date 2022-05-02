@@ -15,6 +15,7 @@ import type {
   IRRText,
   Mirror,
 } from './document';
+import { StyleRuleType, VirtualStyleRules } from './types';
 import type {
   RRCanvasElement,
   RRElement,
@@ -418,38 +419,6 @@ export function getNestedRule(
   }
 }
 
-export enum StyleRuleType {
-  Insert,
-  Remove,
-  Snapshot,
-  SetProperty,
-  RemoveProperty,
-}
-type InsertRule = {
-  cssText: string;
-  type: StyleRuleType.Insert;
-  index?: number | number[];
-};
-type RemoveRule = {
-  type: StyleRuleType.Remove;
-  index: number | number[];
-};
-type SetPropertyRule = {
-  type: StyleRuleType.SetProperty;
-  index: number[];
-  property: string;
-  value: string | null;
-  priority: string | undefined;
-};
-type RemovePropertyRule = {
-  type: StyleRuleType.RemoveProperty;
-  index: number[];
-  property: string;
-};
-
-export type VirtualStyleRules = Array<
-  InsertRule | RemoveRule | SetPropertyRule | RemovePropertyRule
->;
 
 export function getPositionsAndIndex(nestedIndex: number[]) {
   const positions = [...nestedIndex];

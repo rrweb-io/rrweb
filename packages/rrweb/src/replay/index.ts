@@ -15,14 +15,13 @@ import {
   RRIFrameElement,
   RRMediaElement,
   RRCanvasElement,
-  StyleRuleType,
-  VirtualStyleRules,
-  createOrGetNode,
   buildFromNode,
   buildFromDom,
-  diff,
-} from 'rrdom/es/virtual-dom';
-import type { Mirror as RRDOMMirror } from 'rrdom/es/document';
+} from 'rrdom/src/virtual-dom';
+import type { Mirror as RRDOMMirror } from 'rrdom/src/document';
+import type { VirtualStyleRules } from 'rrdom/src/types';
+import { StyleRuleType } from 'rrdom/src/types';
+import { createOrGetNode, diff } from 'rrdom/src/diff';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -73,7 +72,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
-import type { ReplayerHandler } from 'rrdom/es/diff';
+import type { ReplayerHandler } from 'rrdom/src/diff';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -125,7 +124,7 @@ export class Replayer {
   private nextUserInteractionEvent: eventWithTime | null;
 
   // tslint:disable-next-line: variable-name
-  private legacy_missingNodeRetryMap: missingNodeMap = {};
+  private legacy_missingNodeRetryMap: missingNodeMap<Node | RRNode> = {};
 
   // The replayer uses the cache to speed up replay and scrubbing.
   private cache: BuildCache = createCache();
@@ -1413,7 +1412,7 @@ export class Replayer {
     });
 
     // tslint:disable-next-line: variable-name
-    const legacy_missingNodeMap: missingNodeMap = {
+    const legacy_missingNodeMap: missingNodeMap<Node | RRNode> = {
       ...this.legacy_missingNodeRetryMap,
     };
     const queue: addedNodeMutation[] = [];
@@ -1733,7 +1732,7 @@ export class Replayer {
   }
 
   private legacy_resolveMissingNode(
-    map: missingNodeMap,
+    map: missingNodeMap<Node | RRNode>,
     parent: Node | RRNode,
     target: Node | RRNode,
     targetMutation: addedNodeMutation,
@@ -1742,7 +1741,7 @@ export class Replayer {
     const previousInMap = previousId && map[previousId];
     const nextInMap = nextId && map[nextId];
     if (previousInMap) {
-      const { node, mutation } = previousInMap as missingNode;
+      const { node, mutation } = previousInMap as missingNode<Node | RRNode>;
       parent.insertBefore(node as Node & RRNode, target as Node & RRNode);
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
@@ -1751,7 +1750,7 @@ export class Replayer {
       }
     }
     if (nextInMap) {
-      const { node, mutation } = nextInMap as missingNode;
+      const { node, mutation } = nextInMap as missingNode<Node | RRNode>;
       parent.insertBefore(
         node as Node & RRNode,
         target.nextSibling as Node & RRNode,

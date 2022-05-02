@@ -11,7 +11,6 @@ import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom/es/virtual-dom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 
 export enum EventType {
@@ -669,12 +668,12 @@ export type playerMetaData = {
   totalTime: number;
 };
 
-export type missingNode = {
-  node: Node | RRNode;
+export type missingNode<TNode> = {
+  node: TNode;
   mutation: addedNodeMutation;
 };
-export type missingNodeMap = {
-  [id: number]: missingNode;
+export type missingNodeMap<TNode> = {
+  [id: number]: missingNode<TNode>;
 };
 
 export type actionWithDelay = {
