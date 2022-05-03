@@ -209,9 +209,9 @@ describe('RRDocument for browser environment', () => {
         input: path.resolve(__dirname, '../src/virtual-dom.ts'),
         plugins: [
           resolve(),
-          _typescript({
+          (_typescript({
             tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
-          }),
+          }) as unknown) as rollup.Plugin,
         ],
       });
       const {
