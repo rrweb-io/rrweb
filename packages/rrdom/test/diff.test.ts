@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { RRDocument, RRMediaElement } from '../src/virtual-dom';
+import { getDefaultSN, RRDocument, RRMediaElement } from '../src/virtual-dom';
 import {
   applyVirtualStyleRulesToNode,
   createOrGetNode,
@@ -16,7 +16,7 @@ import {
   createMirror,
   Mirror,
 } from 'rrweb-snapshot';
-import { IRRNode, setDefaultSN } from '../src/document';
+import type { IRRNode } from '../src/document';
 import {
   canvasMutationData,
   EventType,
@@ -48,7 +48,7 @@ type RRNode = IRRNode;
  */
 function createTree(
   treeNode: ElementType,
-  rrDocument?: RRDocument | undefined,
+  rrDocument?: RRDocument,
   mirror: Mirror = createMirror(),
 ): Node | RRNode {
   type TNode = typeof rrDocument extends RRDocument ? RRNode : Node;
@@ -1037,7 +1037,10 @@ describe('diff algorithm for rrdom', () => {
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement('iframe');
-      setDefaultSN(rrNode.contentDocument, 1, rrDocument.mirror);
+      rrDocument.mirror.add(
+        rrNode.contentDocument,
+        getDefaultSN(rrNode.contentDocument, 1),
+      );
       const childElement = rrNode.contentDocument.createElement('div');
 
       rrNode.contentDocument.appendChild(childElement);
@@ -1070,28 +1073,28 @@ describe('diff algorithm for rrdom', () => {
 
     it('create a node from RRNode', () => {
       const rrDocument = new RRDocument();
-      setDefaultSN(rrDocument, 0, rrDocument.mirror);
+      rrDocument.mirror.add(rrDocument, getDefaultSN(rrDocument, 0));
       let result = createOrGetNode(rrDocument, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Document);
       expect(mirror.getId(result)).toBe(0);
 
       const textContent = 'Text Content';
       let rrNode: RRNode = rrDocument.createTextNode(textContent);
-      setDefaultSN(rrNode, 1, rrDocument.mirror);
+      rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 1));
       result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Text);
       expect(mirror.getId(result)).toBe(1);
       expect(((result as Node) as Text).textContent).toBe(textContent);
 
       rrNode = rrDocument.createComment(textContent);
-      setDefaultSN(rrNode, 2, rrDocument.mirror);
+      rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 2));
       result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Comment);
       expect(mirror.getId(result)).toBe(2);
       expect(((result as Node) as Comment).textContent).toBe(textContent);
 
       rrNode = rrDocument.createCDATASection('');
-      setDefaultSN(rrNode, 3, rrDocument.mirror);
+      rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 3));
       expect(() =>
         createOrGetNode(rrNode, mirror, rrDocument.mirror),
       ).toThrowErrorMatchingInlineSnapshot(
@@ -1103,7 +1106,7 @@ describe('diff algorithm for rrdom', () => {
       const rrDocument = new RRDocument();
       const publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
       let rrNode: RRNode = rrDocument.createDocumentType('html', publicId, '');
-      setDefaultSN(rrNode, 0, rrDocument.mirror);
+      rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 0));
       let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(DocumentType);
       expect(mirror.getId(result)).toBe(0);
@@ -1124,7 +1127,7 @@ describe('diff algorithm for rrdom', () => {
       // Add the text node to the mirror to make it look like already existing.
       mirror.add(text, sn);
       const rrNode: RRNode = rrDocument.createTextNode(textContent);
-      setDefaultSN(rrNode, 0, rrDocument.mirror);
+      rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 0));
       let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
 
       expect(result).toBeInstanceOf(Text);

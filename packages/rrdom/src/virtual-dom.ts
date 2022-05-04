@@ -1,9 +1,12 @@
 import {
   NodeType as RRNodeType,
-  serializedNodeWithId,
   createMirror as createNodeMirror,
 } from 'rrweb-snapshot';
-import type { Mirror as NodeMirror } from 'rrweb-snapshot';
+import type {
+  Mirror as NodeMirror,
+  IMirror,
+  serializedNodeWithId,
+} from 'rrweb-snapshot';
 import type {
   canvasMutationData,
   canvasEventWithTime,
@@ -23,15 +26,28 @@ import {
   IRRElement,
   IRRNode,
   NodeType,
-  createMirror,
-  Mirror,
+  IRRDocumentType,
+  IRRText,
+  IRRComment,
 } from './document';
 import type { VirtualStyleRules } from './diff';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
+  // In the rrweb replayer, there are some unserialized nodes like the element that stores the injected style rules.
+  // These unserialized nodes may interfere the execution of the diff algorithm.
+  // The id of serialized node is larger than 0. So this value ​​less than 0 is used as id for these unserialized nodes.
+  private _unserializedId = -1;
+
+  /**
+   * Every time the id is used, it will minus 1 automatically to avoid collisions.
+   */
+  public get unserializedId(): number {
+    return this._unserializedId--;
+  }
+
   public mirror: Mirror = createMirror();
 
-  scrollData: scrollData | null = null;
+  public scrollData: scrollData | null = null;
 
   constructor(mirror?: Mirror) {
     super();
@@ -113,6 +129,11 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
     this.childNodes = [];
     this.mirror.reset();
   }
+
+  open() {
+    super.open();
+    this._unserializedId = -1;
+  }
 }
 
 export const RRDocumentType = BaseRRDocumentTypeImpl(RRNode);
@@ -192,15 +213,10 @@ export function buildFromNode(
   parentRRNode?: IRRNode | null,
 ): IRRNode | null {
   let rrNode: IRRNode;
-  const rrdomMirror = rrdom.mirror;
 
   switch (node.nodeType) {
     case NodeType.DOCUMENT_NODE:
-      if (
-        parentRRNode &&
-        parentRRNode.RRNodeType === RRNodeType.Element &&
-        (parentRRNode as IRRElement).tagName === 'IFRAME'
-      )
+      if (parentRRNode && parentRRNode.nodeName === 'IFRAME')
         rrNode = (parentRRNode as RRIFrameElement).contentDocument;
       else {
         rrNode = rrdom;
@@ -252,13 +268,14 @@ export function buildFromNode(
   }
 
   let sn: serializedNodeWithId | null = domMirror.getMeta(node);
-  if (!sn) {
-    const { unserializedId } = rrdom;
-    rrNode.setDefaultSN(unserializedId);
-    sn = rrNode.getDefaultSN(unserializedId);
-  } else rrNode.__sn = sn;
 
-  rrdomMirror.add(rrNode, { ...sn });
+  if (rrdom instanceof RRDocument) {
+    if (!sn) {
+      sn = getDefaultSN(rrNode, rrdom.unserializedId);
+      domMirror.add(node, sn);
+    }
+    rrdom.mirror.add(rrNode, { ...sn });
+  }
 
   return rrNode;
 }
@@ -275,17 +292,12 @@ export function buildFromDom(
   domMirror: NodeMirror = createNodeMirror(),
   rrdom: IRRDocument = new RRDocument(),
 ) {
-  const rrdomMirror = rrdom.mirror;
-
   function walk(node: Node, parentRRNode: IRRNode | null) {
     const rrNode = buildFromNode(node, rrdom, domMirror, parentRRNode);
     if (rrNode === null) return;
     if (
       // if the parentRRNode isn't a RRIFrameElement
-      !(
-        parentRRNode?.RRNodeType === RRNodeType.Element &&
-        (parentRRNode as IRRElement).tagName === 'IFRAME'
-      ) &&
+      parentRRNode?.nodeName !== 'IFRAME' &&
       // if node isn't a shadow root
       node.nodeType !== NodeType.DOCUMENT_FRAGMENT_NODE
     ) {
@@ -294,10 +306,7 @@ export function buildFromDom(
       rrNode.parentElement = parentRRNode as RRElement;
     }
 
-    if (
-      node.nodeType === NodeType.ELEMENT_NODE &&
-      (node as HTMLElement).tagName === 'IFRAME'
-    ) {
+    if (node.nodeName === 'IFRAME') {
       walk((node as HTMLIFrameElement).contentDocument!, rrNode);
     } else if (
       node.nodeType === NodeType.DOCUMENT_NODE ||
@@ -315,6 +324,120 @@ export function buildFromDom(
   }
   walk(dom, null);
   return rrdom;
+}
+
+export function createMirror(): Mirror {
+  return new Mirror();
+}
+
+// based on Mirror from rrweb-snapshots
+export class Mirror implements IMirror<RRNode> {
+  private idNodeMap: Map<number, RRNode> = new Map();
+  private nodeMetaMap: WeakMap<RRNode, serializedNodeWithId> = new WeakMap();
+
+  getId(n: RRNode | undefined | null): number {
+    if (!n) return -1;
+
+    const id = this.getMeta(n)?.id;
+
+    // if n is not a serialized Node, use -1 as its id.
+    return id ?? -1;
+  }
+
+  getNode(id: number): RRNode | null {
+    return this.idNodeMap.get(id) || null;
+  }
+
+  getIds(): number[] {
+    return Array.from(this.idNodeMap.keys());
+  }
+
+  getMeta(n: RRNode): serializedNodeWithId | null {
+    return this.nodeMetaMap.get(n) || null;
+  }
+
+  // removes the node from idNodeMap
+  // doesn't remove the node from nodeMetaMap
+  removeNodeFromMap(n: RRNode) {
+    const id = this.getId(n);
+    this.idNodeMap.delete(id);
+
+    if (n.childNodes) {
+      n.childNodes.forEach((childNode) => this.removeNodeFromMap(childNode));
+    }
+  }
+  has(id: number): boolean {
+    return this.idNodeMap.has(id);
+  }
+
+  hasNode(node: RRNode): boolean {
+    return this.nodeMetaMap.has(node);
+  }
+
+  add(n: RRNode, meta: serializedNodeWithId) {
+    const id = meta.id;
+    this.idNodeMap.set(id, n);
+    this.nodeMetaMap.set(n, meta);
+  }
+
+  replace(id: number, n: RRNode) {
+    this.idNodeMap.set(id, n);
+  }
+
+  reset() {
+    this.idNodeMap = new Map();
+    this.nodeMetaMap = new WeakMap();
+  }
+}
+
+/**
+ * Get a default serializedNodeWithId value for a RRNode.
+ * @param id the serialized id to assign
+ */
+export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
+  switch (node.RRNodeType) {
+    case RRNodeType.Document:
+      return {
+        id,
+        type: node.RRNodeType,
+        childNodes: [],
+      };
+    case RRNodeType.DocumentType:
+      const doctype = node as IRRDocumentType;
+      return {
+        id,
+        type: node.RRNodeType,
+        name: doctype.name,
+        publicId: doctype.publicId,
+        systemId: doctype.systemId,
+      };
+    case RRNodeType.Element:
+      return {
+        id,
+        type: node.RRNodeType,
+        tagName: (node as IRRElement).tagName.toLowerCase(), // In rrweb data, all tagNames are lowercase.
+        attributes: {},
+        childNodes: [],
+      };
+    case RRNodeType.Text:
+      return {
+        id,
+        type: node.RRNodeType,
+        textContent: (node as IRRText).textContent || '',
+      };
+    case RRNodeType.Comment:
+      return {
+        id,
+        type: node.RRNodeType,
+        textContent: (node as IRRComment).textContent || '',
+      };
+    case RRNodeType.CDATA:
+      return {
+        id,
+        type: node.RRNodeType,
+        textContent: '',
+      };
+  }
 }
 
 export { RRNode };

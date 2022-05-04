@@ -13,8 +13,6 @@ import {
   ClassList,
   IRRDocument,
   CSSStyleDeclaration,
-  Mirror,
-  createMirror,
 } from './document';
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
@@ -37,7 +35,6 @@ export class RRDocument
   implements IRRDocument {
   readonly nodeName: '#document' = '#document';
   private _nwsapi: NWSAPI;
-  public mirror: Mirror = createMirror();
   get nwsapi() {
     if (!this._nwsapi) {
       this._nwsapi = nwsapi({
@@ -57,13 +54,15 @@ export class RRDocument
   }
 
   get documentElement(): RRElement | null {
-    return (
-      (this.childNodes.find(
-        (node) =>
-          node.RRNodeType === RRNodeType.Element &&
-          (node as RRElement).tagName === 'HTML',
-      ) as RRElement) || null
-    );
+    return super.documentElement as RRElement | null;
+  }
+
+  get body(): RRElement | null {
+    return super.body as RRElement | null;
+  }
+
+  get head() {
+    return super.head as RRElement | null;
   }
 
   get implementation(): RRDocument {
@@ -141,7 +140,7 @@ export class RRDocument
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
-        element = new RRIFrameElement(upperTagName, this.mirror);
+        element = new RRIFrameElement(upperTagName);
         break;
       case 'IMG':
         element = new RRImageElement(upperTagName);
@@ -344,9 +343,8 @@ export class RRIFrameElement extends RRElement {
   contentDocument: RRDocument = new RRDocument();
   contentWindow: RRWindow = new RRWindow();
 
-  constructor(tagName: string, mirror: Mirror) {
+  constructor(tagName: string) {
     super(tagName);
-    this.contentDocument.mirror = mirror;
     const htmlElement = this.contentDocument.createElement('HTML');
     this.contentDocument.appendChild(htmlElement);
     htmlElement.appendChild(this.contentDocument.createElement('HEAD'));

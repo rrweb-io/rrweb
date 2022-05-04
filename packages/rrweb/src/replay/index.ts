@@ -21,8 +21,9 @@ import {
   buildFromNode,
   buildFromDom,
   diff,
+  getDefaultSN,
 } from 'rrdom/es/virtual-dom';
-import type { Mirror as RRDOMMirror } from 'rrdom/es/document';
+import type { Mirror as RRDOMMirror } from 'rrdom/es/virtual-dom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -728,7 +729,10 @@ export class Replayer {
     }
     if (this.usingVirtualDom) {
       const styleEl = this.virtualDom.createElement('style') as RRStyleElement;
-      styleEl.setDefaultSN(this.virtualDom.unserializedId);
+      this.virtualDom.mirror.add(
+        styleEl,
+        getDefaultSN(styleEl, this.virtualDom.unserializedId),
+      );
       (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
         // push virtual styles

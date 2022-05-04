@@ -13,7 +13,6 @@ import type {
   IRRElement,
   IRRNode,
   IRRText,
-  Mirror,
 } from './document';
 import type {
   RRCanvasElement,
@@ -22,6 +21,7 @@ import type {
   RRMediaElement,
   RRStyleElement,
   RRDocument,
+  Mirror,
 } from './virtual-dom';
 
 const NAMESPACES: Record<string, string> = {
@@ -91,8 +91,8 @@ export function diff(
   const newChildren = newTree.childNodes;
   rrnodeMirror =
     rrnodeMirror ||
-    (newTree as IRRDocument).mirror ||
-    newTree.ownerDocument.mirror;
+    (newTree as RRDocument).mirror ||
+    (newTree.ownerDocument as RRDocument).mirror;
 
   if (oldChildren.length > 0 || newChildren.length > 0) {
     diffChildren(
@@ -187,10 +187,7 @@ export function diff(
   inputDataToApply && replayer.applyInput(inputDataToApply);
 
   // IFrame element doesn't have child nodes.
-  if (
-    newTree.RRNodeType === RRNodeType.Element &&
-    (newTree as IRRElement).tagName === 'IFRAME'
-  ) {
+  if (newTree.nodeName === 'IFRAME') {
     const oldContentDocument = ((oldTree as Node) as HTMLIFrameElement)
       .contentDocument;
     const newIFrameElement = newTree as RRIFrameElement;
@@ -200,7 +197,12 @@ export function diff(
       if (sn) {
         replayer.mirror.add(oldContentDocument, { ...sn });
       }
-      diff(oldContentDocument, newIFrameElement.contentDocument, replayer);
+      diff(
+        oldContentDocument,
+        newIFrameElement.contentDocument,
+        replayer,
+        rrnodeMirror,
+      );
     }
   }
 }
@@ -262,27 +264,27 @@ function diffChildren(
     } else if (
       replayer.mirror.getId(oldStartNode) === rrnodeMirror.getId(newStartNode)
     ) {
-      diff(oldStartNode, newStartNode, replayer);
+      diff(oldStartNode, newStartNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (
       replayer.mirror.getId(oldEndNode) === rrnodeMirror.getId(newEndNode)
     ) {
-      diff(oldEndNode, newEndNode, replayer);
+      diff(oldEndNode, newEndNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
       replayer.mirror.getId(oldStartNode) === rrnodeMirror.getId(newEndNode)
     ) {
       parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
-      diff(oldStartNode, newEndNode, replayer);
+      diff(oldStartNode, newEndNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
       replayer.mirror.getId(oldEndNode) === rrnodeMirror.getId(newStartNode)
     ) {
       parentNode.insertBefore(oldEndNode, oldStartNode);
-      diff(oldEndNode, newStartNode, replayer);
+      diff(oldEndNode, newStartNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
     } else {
@@ -298,7 +300,7 @@ function diffChildren(
       if (indexInOld) {
         const nodeToMove = oldChildren[indexInOld]!;
         parentNode.insertBefore(nodeToMove, oldStartNode);
-        diff(nodeToMove, newStartNode, replayer);
+        diff(nodeToMove, newStartNode, replayer, rrnodeMirror);
         oldChildren[indexInOld] = undefined;
       } else {
         const newNode = createOrGetNode(
@@ -323,7 +325,7 @@ function diffChildren(
           oldStartNode = undefined;
         }
         parentNode.insertBefore(newNode, oldStartNode || null);
-        diff(newNode, newStartNode, replayer);
+        diff(newNode, newStartNode, replayer, rrnodeMirror);
       }
       newStartNode = newChildren[++newStartIndex];
     }
@@ -345,7 +347,7 @@ function diffChildren(
         rrnodeMirror,
       );
       parentNode.insertBefore(newNode, referenceNode);
-      diff(newNode, newChildren[newStartIndex], replayer);
+      diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
     }
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
