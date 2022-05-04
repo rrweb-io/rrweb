@@ -94,6 +94,136 @@ exports[`record can add custom event 1`] = `
 ]"
 `;
 
+exports[`record captures inserted style text nodes correctly 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"div { color: red; }\\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 6
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"section { color: blue; }\\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 11
+                  }
+                ],
+                \\"id\\": 8
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 5,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"h1 { color: pink; }\\",
+            \\"isStyle\\": true,
+            \\"id\\": 12
+          }
+        },
+        {
+          \\"parentId\\": 5,
+          \\"nextId\\": 12,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"span { color: orange; }\\",
+            \\"isStyle\\": true,
+            \\"id\\": 13
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record captures nested stylesheet rules 1`] = `
 "[
   {

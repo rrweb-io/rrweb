@@ -344,6 +344,26 @@ describe('record', function (this: ISuite) {
     await ctx.page.waitForTimeout(50);
     assertSnapshot(ctx.events);
   });
+
+  it('captures inserted style text nodes correctly', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      const styleEl = document.createElement(`style`);
+      styleEl.append(document.createTextNode('div { color: red; }'));
+      styleEl.append(document.createTextNode('section { color: blue; }'));
+      document.head.appendChild(styleEl);
+
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      styleEl.append(document.createTextNode('span { color: orange; }'));
+      styleEl.append(document.createTextNode('h1 { color: pink; }'));
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
 });
 
 describe('record iframes', function (this: ISuite) {
