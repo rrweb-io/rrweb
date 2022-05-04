@@ -52,6 +52,7 @@ import {
   getBaseDimension,
   hasShadowRoot,
   isSerializedIframe,
+  uniqueTextMutations,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -179,9 +180,10 @@ export class Replayer {
       this.fragmentParentMap.forEach((parent, frag) =>
         this.restoreRealParent(frag, parent),
       );
+
       // apply text needs to happen before virtual style rules gets applied
       // as it can overwrite the contents of a stylesheet
-      for (const d of mutationData.texts) {
+      for (const d of uniqueTextMutations(mutationData.texts)) {
         this.applyText(d, mutationData);
       }
 
@@ -1613,7 +1615,7 @@ export class Replayer {
       Object.assign(this.legacy_missingNodeRetryMap, legacy_missingNodeMap);
     }
 
-    d.texts.forEach((mutation) => {
+    uniqueTextMutations(d.texts).forEach((mutation) => {
       let target = this.mirror.getNode(mutation.id);
       if (!target) {
         if (d.removes.find((r) => r.id === mutation.id)) {
