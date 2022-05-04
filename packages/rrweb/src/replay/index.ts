@@ -1353,7 +1353,7 @@ export class Replayer {
   }
 
   private applyMutation(d: mutationData, isSync: boolean) {
-    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of cr  eating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
+    // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
     if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
       this.usingVirtualDom = true;
       buildFromDom(this.iframe.contentDocument!, this.mirror, this.virtualDom);
