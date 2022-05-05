@@ -16,6 +16,7 @@ import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import shadowDomEvents from './events/shadow-dom';
+import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 
 interface ISuite {
   code: string;
@@ -257,6 +258,62 @@ describe('replayer', function () {
         );
     `);
 
+    expect(result).toEqual(true);
+  });
+
+  it('should overwrite all StyleSheetRules by appending a text node to stylesheet element while fast-forwarding', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1600);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-1000-overwritten-at-1500');
+    `);
+    expect(result).toEqual(false);
+  });
+
+  it('should apply fast-forwarded StyleSheetRules that came after appending text node to stylesheet element', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2100);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-2000-overwritten-at-2500');
+    `);
+    expect(result).toEqual(true);
+  });
+
+  it('should overwrite all StyleSheetRules by removing text node from stylesheet element while fast-forwarding', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2600);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-2000-overwritten-at-2500');
+    `);
+    expect(result).toEqual(false);
+  });
+
+  it('should apply fast-forwarded StyleSheetRules that came after removing text node from stylesheet element', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3100);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-3000');
+    `);
     expect(result).toEqual(true);
   });
 
