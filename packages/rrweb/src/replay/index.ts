@@ -1531,15 +1531,15 @@ export class Replayer {
         parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
-        const childNodeArray = Array.from(
-          parent.childNodes as Iterable<Node & RRNode>,
-        );
+        const childNodeArray = Array.isArray(parent.childNodes)
+          ? parent.childNodes
+          : Array.from(parent.childNodes);
 
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
         for (const c of childNodeArray) {
           if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c);
+            parent.removeChild(c as Node & RRNode);
           }
         }
       }
