@@ -1520,8 +1520,9 @@ export class Replayer {
         parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
-        // ES6-TODO: rename this to Array.from(parent.childNodes)
-        const childNodeArray = Array.prototype.slice.call(parent.childNodes);
+        const childNodeArray = Array.from(
+          parent.childNodes as Iterable<Node & RRNode>,
+        );
 
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
