@@ -8,22 +8,25 @@ import {
   createMirror,
 } from 'rrweb-snapshot';
 import {
-  RRNode,
   RRDocument,
-  RRElement,
-  RRStyleElement,
-  RRIFrameElement,
-  RRMediaElement,
-  RRCanvasElement,
   StyleRuleType,
-  VirtualStyleRules,
   createOrGetNode,
   buildFromNode,
   buildFromDom,
   diff,
   getDefaultSN,
 } from 'rrdom/es/virtual-dom';
-import type { Mirror as RRDOMMirror } from 'rrdom/es/virtual-dom';
+import type {
+  RRNode,
+  RRElement,
+  RRStyleElement,
+  RRIFrameElement,
+  RRMediaElement,
+  RRCanvasElement,
+  ReplayerHandler,
+  Mirror as RRDOMMirror,
+  VirtualStyleRules,
+} from 'rrdom/es/virtual-dom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -74,7 +77,6 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
-import type { ReplayerHandler } from 'rrdom/es/diff';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;

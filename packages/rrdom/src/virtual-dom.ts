@@ -446,4 +446,5 @@ export {
   createOrGetNode,
   StyleRuleType,
   VirtualStyleRules,
+  ReplayerHandler,
 } from './diff';
