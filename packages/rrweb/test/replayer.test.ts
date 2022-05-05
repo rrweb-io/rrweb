@@ -255,24 +255,27 @@ describe('replayer', function () {
     expect(result).toEqual(true);
   });
 
-  it('should delete all inserted StyleSheetRules by adding a text to style element while fast-forwarding', async () => {
+  it('should overwrite all StyleSheetRules by appending a text node to stylesheet element while fast-forwarding', async () => {
     await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
     const result = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
       replayer.pause(1600);
-      let rules = [...replayer.iframe.contentDocument.styleSheets].map(
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
       rules.some((x) => x.selectorText === '.css-added-at-1000-overwritten-at-1500');
     `);
     expect(result).toEqual(false);
+  });
 
-    await page.evaluate('replayer.play(0);');
-    await waitForRAF(page);
-    await page.evaluate(`
+  it('should apply fast-forwarded StyleSheetRules that came after appending text node to stylesheet element', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
       replayer.pause(2100);
-      rules = [...replayer.iframe.contentDocument.styleSheets].map(
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
       rules.some((x) => x.selectorText === '.css-added-at-2000-overwritten-at-2500');
@@ -280,24 +283,27 @@ describe('replayer', function () {
     expect(result).toEqual(true);
   });
 
-  it("should delete all inserted StyleSheetRules by removing style element's textContent while fast-forwarding", async () => {
+  it('should overwrite all StyleSheetRules by removing text node from stylesheet element while fast-forwarding', async () => {
     await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
     const result = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
       replayer.pause(2600);
-      let rules = [...replayer.iframe.contentDocument.styleSheets].map(
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
       rules.some((x) => x.selectorText === '.css-added-at-2000-overwritten-at-2500');
     `);
     expect(result).toEqual(false);
+  });
 
-    await page.evaluate('replayer.play(0);');
-    await waitForRAF(page);
-    await page.evaluate(`
+  it('should apply fast-forwarded StyleSheetRules that came after removing text node from stylesheet element', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
       replayer.pause(3100);
-      rules = [...replayer.iframe.contentDocument.styleSheets].map(
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
       rules.some((x) => x.selectorText === '.css-added-at-3000');
