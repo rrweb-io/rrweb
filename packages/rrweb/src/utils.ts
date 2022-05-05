@@ -594,12 +594,16 @@ export function hasShadowRoot<T extends Node>(
  * @returns {textMutation[]} The filtered text mutations.
  */
 export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
-  const textMuatationsMap = new Map<number, textMutation>();
-  mutations
-    .slice()
-    .reverse()
-    .forEach((text) => {
-      if (!textMuatationsMap.has(text.id)) textMuatationsMap.set(text.id, text);
-    });
-  return Array.from(textMuatationsMap.values());
+  const idSet = new Set<number>();
+  const uniqueMutations: textMutation[] = [];
+
+  for (let i = mutations.length; i--; ) {
+    const mutation = mutations[i];
+    if (!idSet.has(mutation.id)) {
+      uniqueMutations.push(mutation);
+      idSet.add(mutation.id);
+    }
+  }
+
+  return uniqueMutations;
 }
