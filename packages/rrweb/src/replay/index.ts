@@ -1402,6 +1402,17 @@ export class Replayer {
       if (parent)
         try {
           parent.removeChild(target as Node & RRNode);
+          /**
+           * https://github.com/rrweb-io/rrweb/pull/887
+           * Remove any virtual style rules for stylesheets if a child text node is removed.
+           */
+          if (
+            this.usingVirtualDom &&
+            target.nodeName === '#text' &&
+            parent.nodeName === 'STYLE' &&
+            (parent as RRStyleElement).rules?.length > 0
+          )
+            (parent as RRStyleElement).rules = [];
         } catch (error) {
           if (error instanceof DOMException) {
             this.warn(
@@ -1556,6 +1567,17 @@ export class Replayer {
 
         (parent as TNode).appendChild(target as TNode);
       }
+      /**
+       * https://github.com/rrweb-io/rrweb/pull/887
+       * Remove any virtual style rules for stylesheets if a new text node is appended.
+       */
+      if (
+        this.usingVirtualDom &&
+        target.nodeName === '#text' &&
+        parent.nodeName === 'STYLE' &&
+        (parent as RRStyleElement).rules?.length > 0
+      )
+        (parent as RRStyleElement).rules = [];
 
       if (isSerializedIframe(target, this.mirror)) {
         const targetId = this.mirror.getId(target as HTMLIFrameElement);
