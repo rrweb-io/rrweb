@@ -587,3 +587,23 @@ export function hasShadowRoot<T extends Node>(
 ): n is T & { shadowRoot: ShadowRoot } {
   return Boolean(((n as unknown) as Element)?.shadowRoot);
 }
+
+/**
+ * Returns the latest mutation in the queue for each node.
+ * @param  {textMutation[]} mutations The text mutations to filter.
+ * @returns {textMutation[]} The filtered text mutations.
+ */
+export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
+  const idSet = new Set<number>();
+  const uniqueMutations: textMutation[] = [];
+
+  for (let i = mutations.length; i--; ) {
+    const mutation = mutations[i];
+    if (!idSet.has(mutation.id)) {
+      uniqueMutations.push(mutation);
+      idSet.add(mutation.id);
+    }
+  }
+
+  return uniqueMutations;
+}
