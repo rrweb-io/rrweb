@@ -1,4 +1,4 @@
-import type { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, DocumentDimension, IWindow, DeprecatedMirror } from './types';
+import type { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, DocumentDimension, IWindow, DeprecatedMirror, textMutation } from './types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
@@ -37,4 +37,5 @@ export declare function getPositionsAndIndex(nestedIndex: number[]): {
     positions: number[];
     index: number | undefined;
 };
+export declare function uniqueTextMutations(mutations: textMutation[]): textMutation[];
 export {};

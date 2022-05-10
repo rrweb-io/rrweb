@@ -72,6 +72,7 @@ import {
   isSerializedIframe,
   getNestedRule,
   getPositionsAndIndex,
+  uniqueTextMutations,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -1642,7 +1643,7 @@ export class Replayer {
       Object.assign(this.legacy_missingNodeRetryMap, legacy_missingNodeMap);
     }
 
-    d.texts.forEach((mutation) => {
+    uniqueTextMutations(d.texts).forEach((mutation) => {
       let target = mirror.getNode(mutation.id);
       if (!target) {
         if (d.removes.find((r) => r.id === mutation.id)) {

@@ -7,6 +7,7 @@ import type {
   DocumentDimension,
   IWindow,
   DeprecatedMirror,
+  textMutation,
 } from './types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE } from 'rrweb-snapshot';
@@ -408,4 +409,24 @@ export function getPositionsAndIndex(nestedIndex: number[]) {
   const positions = [...nestedIndex];
   const index = positions.pop();
   return { positions, index };
+}
+
+/**
+ * Returns the latest mutation in the queue for each node.
+ * @param  {textMutation[]} mutations The text mutations to filter.
+ * @returns {textMutation[]} The filtered text mutations.
+ */
+export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
+  const idSet = new Set<number>();
+  const uniqueMutations: textMutation[] = [];
+
+  for (let i = mutations.length; i--; ) {
+    const mutation = mutations[i];
+    if (!idSet.has(mutation.id)) {
+      uniqueMutations.push(mutation);
+      idSet.add(mutation.id);
+    }
+  }
+
+  return uniqueMutations;
 }
