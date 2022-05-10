@@ -1,4 +1,4 @@
-import type { Replayer } from '..';
+import { Replayer } from '..';
 import { canvasMutationData } from '../../types';
 export default function canvasMutation({ event, mutation, target, imageMap, canvasEventMap, errorHandler, }: {
     event: Parameters<Replayer['applyIncremental']>[0];

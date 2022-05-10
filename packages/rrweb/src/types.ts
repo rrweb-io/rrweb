@@ -1,4 +1,4 @@
-import type {
+import {
   serializedNodeWithId,
   Mirror,
   INode,
@@ -7,12 +7,11 @@ import type {
   MaskInputFn,
   MaskTextFn,
 } from 'rrweb-snapshot';
-import type { PackFn, UnpackFn } from './packer/base';
-import type { IframeManager } from './record/iframe-manager';
-import type { ShadowDomManager } from './record/shadow-dom-manager';
+import { PackFn, UnpackFn } from './packer/base';
+import { IframeManager } from './record/iframe-manager';
+import { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom/es/virtual-dom';
-import type { CanvasManager } from './record/observers/canvas/canvas-manager';
+import { CanvasManager } from './record/observers/canvas/canvas-manager';
 
 export enum EventType {
   DomContentLoaded,
@@ -168,11 +167,6 @@ export type event =
 export type eventWithTime = event & {
   timestamp: number;
   delay?: number;
-};
-
-export type canvasEventWithTime = eventWithTime & {
-  type: EventType.IncrementalSnapshot;
-  data: canvasMutationData;
 };
 
 export type blockClass = string | RegExp;
@@ -659,7 +653,6 @@ export type playerConfig = {
         strokeStyle?: string;
       };
   unpackFn?: UnpackFn;
-  useVirtualDom: boolean;
   plugins?: ReplayPlugin[];
 };
 
@@ -670,7 +663,7 @@ export type playerMetaData = {
 };
 
 export type missingNode = {
-  node: Node | RRNode;
+  node: Node;
   mutation: addedNodeMutation;
 };
 export type missingNodeMap = {
@@ -712,6 +705,12 @@ export enum ReplayerEvents {
   StateChange = 'state-change',
   PlayBack = 'play-back',
 }
+
+// store the state that would be changed during the process(unmount from dom and mount again)
+export type ElementState = {
+  // [scrollLeft,scrollTop]
+  scroll?: [number, number];
+};
 
 export type KeepIframeSrcFn = (src: string) => boolean;
 

@@ -1,10 +1,5 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
   "include": ["src/**/*"],
-  "exclude": [
-    "node_modules/*",
-    "__sapper__/*",
-    "public/*",
-    "../rrweb/src/record/workers/workers.d.ts"
-  ]
+  "exclude": ["node_modules/*", "__sapper__/*", "public/*"],
 }

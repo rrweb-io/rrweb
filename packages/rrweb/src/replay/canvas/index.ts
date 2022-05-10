@@ -1,4 +1,4 @@
-import type { Replayer } from '..';
+import { Replayer } from '..';
 import {
   CanvasContext,
   canvasMutationCommand,

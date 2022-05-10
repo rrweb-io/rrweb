@@ -1,5 +1,5 @@
 import type { SequentialIdOptions } from '../record';
-import type { ReplayPlugin } from '../../../types';
+import { ReplayPlugin } from '../../../types';
 declare type Options = SequentialIdOptions & {
     warnOnMissingId: boolean;
 };

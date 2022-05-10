@@ -1,5 +1,5 @@
-import type { Mirror } from 'rrweb-snapshot';
-import type { blockClass, canvasMutationCallback, IWindow } from '../../../types';
+import { Mirror } from 'rrweb-snapshot';
+import { blockClass, canvasMutationCallback, IWindow } from '../../../types';
 export declare type RafStamps = {
     latestId: number;
     invokeId: number | null;

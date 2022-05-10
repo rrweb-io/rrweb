@@ -1,7 +1,7 @@
-import { MaskInputFn, MaskInputOptions, IMirror, serializedNodeWithId } from './types';
+import { MaskInputFn, MaskInputOptions, serializedNodeWithId } from './types';
 export declare function isElement(n: Node): n is Element;
 export declare function isShadowRoot(n: Node): n is ShadowRoot;
-export declare class Mirror implements IMirror<Node> {
+export declare class Mirror {
     private idNodeMap;
     private nodeMetaMap;
     getId(n: Node | undefined | null): number;

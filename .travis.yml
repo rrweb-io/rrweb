@@ -5,7 +5,7 @@ os: linux
 dist: focal
 
 node_js:
-  - lts/*
+  - 12
 
 install:
   - yarn

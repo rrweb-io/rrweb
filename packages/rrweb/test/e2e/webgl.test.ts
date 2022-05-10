@@ -1,7 +1,7 @@
-import type * as http from 'http';
+import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
-import type * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import {
   startServer,
   launchPuppeteer,
@@ -9,7 +9,12 @@ import {
   replaceLast,
   waitForRAF,
 } from '../utils';
-import type { recordOptions, eventWithTime } from '../../src/types';
+import {
+  recordOptions,
+  eventWithTime,
+  EventType,
+  IncrementalSource,
+} from '../../src/types';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 expect.extend({ toMatchImageSnapshot });
 

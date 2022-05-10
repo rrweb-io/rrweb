@@ -5,6 +5,5 @@ module.exports = {
   testMatch: ['**/**.test.ts'],
   moduleNameMapper: {
     '\\.css$': 'identity-obj-proxy',
-    'rrdom/es/(.*)': 'rrdom/lib/$1',
   },
 };

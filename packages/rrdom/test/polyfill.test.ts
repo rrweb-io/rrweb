@@ -1,4 +1,3 @@
-import { compare } from 'compare-versions';
 import { RRDocument, RRNode } from '../src/document-nodejs';
 import {
   polyfillPerformance,
@@ -10,8 +9,7 @@ import {
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {
-    if (compare(process.version, 'v16.0.0', '<'))
-      expect(global.performance).toBeUndefined();
+    expect(global.performance).toBeUndefined();
     polyfillPerformance();
     expect(global.performance).toBeDefined();
     expect(performance).toBeDefined();
@@ -20,18 +18,6 @@ describe('polyfill for nodejs', () => {
       require('perf_hooks').performance.now(),
       1e-10,
     );
-  });
-
-  it('should not polyfill performance if it already exists', () => {
-    if (compare(process.version, 'v16.0.0', '>=')) {
-      const originalPerformance = global.performance;
-      polyfillPerformance();
-      expect(global.performance).toBe(originalPerformance);
-    }
-    const fakePerformance = (jest.fn() as unknown) as Performance;
-    global.performance = fakePerformance;
-    polyfillPerformance();
-    expect(global.performance).toEqual(fakePerformance);
   });
 
   it('should polyfill requestAnimationFrame', () => {
@@ -73,30 +59,10 @@ describe('polyfill for nodejs', () => {
     jest.useRealTimers();
   });
 
-  it('should not polyfill requestAnimationFrame if it already exists', () => {
-    const fakeRequestAnimationFrame = (jest.fn() as unknown) as typeof global.requestAnimationFrame;
-    global.requestAnimationFrame = fakeRequestAnimationFrame;
-    const fakeCancelAnimationFrame = (jest.fn() as unknown) as typeof global.cancelAnimationFrame;
-    global.cancelAnimationFrame = fakeCancelAnimationFrame;
-    polyfillRAF();
-    expect(global.requestAnimationFrame).toBe(fakeRequestAnimationFrame);
-    expect(global.cancelAnimationFrame).toBe(fakeCancelAnimationFrame);
-  });
-
   it('should polyfill Event type', () => {
-    // if the second version is greater
-    if (compare(process.version, 'v15.0.0', '<'))
-      expect(global.Event).toBeUndefined();
     polyfillEvent();
     expect(global.Event).toBeDefined();
     expect(Event).toBeDefined();
-  });
-
-  it('should not polyfill Event type if it already exists', () => {
-    const fakeEvent = (jest.fn() as unknown) as typeof global.Event;
-    global.Event = fakeEvent;
-    polyfillEvent();
-    expect(global.Event).toBe(fakeEvent);
   });
 
   it('should polyfill Node type', () => {
@@ -107,25 +73,11 @@ describe('polyfill for nodejs', () => {
     expect(Node).toEqual(RRNode);
   });
 
-  it('should not polyfill Node type if it already exists', () => {
-    const fakeNode = (jest.fn() as unknown) as typeof global.Node;
-    global.Node = fakeNode;
-    polyfillNode();
-    expect(global.Node).toBe(fakeNode);
-  });
-
   it('should polyfill document object', () => {
     expect(global.document).toBeUndefined();
     polyfillDocument();
     expect(global.document).toBeDefined();
     expect(document).toBeDefined();
     expect(document).toBeInstanceOf(RRDocument);
-  });
-
-  it('should not polyfill document object if it already exists', () => {
-    const fakeDocument = (jest.fn() as unknown) as typeof global.document;
-    global.document = fakeDocument;
-    polyfillDocument();
-    expect(global.document).toBe(fakeDocument);
   });
 });

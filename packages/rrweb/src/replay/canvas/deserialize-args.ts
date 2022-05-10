@@ -1,6 +1,6 @@
 import { decode } from 'base64-arraybuffer';
 import type { Replayer } from '../';
-import type { CanvasArg, SerializedCanvasArg } from '../../types';
+import { CanvasArg, SerializedCanvasArg } from '../../types';
 
 // TODO: add ability to wipe this list
 type GLVarMap = Map<string, any[]>;

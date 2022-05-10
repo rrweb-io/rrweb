@@ -7,7 +7,7 @@ import {
   maskInputValue,
   Mirror,
 } from 'rrweb-snapshot';
-import type {
+import {
   mutationRecord,
   textCursor,
   attributeCursor,
@@ -298,7 +298,7 @@ export default class MutationBuffer {
         inlineImages: this.inlineImages,
         onSerialize: (currentN) => {
           if (isSerializedIframe(currentN, this.mirror)) {
-            this.iframeManager.addIframe(currentN as HTMLIFrameElement);
+            this.iframeManager.addIframe(currentN);
           }
           if (hasShadowRoot(n)) {
             this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
@@ -322,7 +322,7 @@ export default class MutationBuffer {
       this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
     }
 
-    for (const n of Array.from(this.movedSet.values())) {
+    for (const n of this.movedSet) {
       if (
         isParentRemoved(this.removes, n, this.mirror) &&
         !this.movedSet.has(n.parentNode!)
@@ -332,7 +332,7 @@ export default class MutationBuffer {
       pushAdd(n);
     }
 
-    for (const n of Array.from(this.addedSet.values())) {
+    for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
         !isParentRemoved(this.removes, n, this.mirror)

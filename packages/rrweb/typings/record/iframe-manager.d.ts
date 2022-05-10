@@ -1,5 +1,5 @@
-import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
-import type { mutationCallBack } from '../types';
+import { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
+import { mutationCallBack } from '../types';
 export declare class IframeManager {
     private iframes;
     private mutationCb;

@@ -1,4 +1,4 @@
-import type { RecordPlugin } from '../../../types';
+import { RecordPlugin } from '../../../types';
 export declare type SequentialIdOptions = {
     key: string;
 };

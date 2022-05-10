@@ -1,4 +1,4 @@
-import type { eventWithTime } from '../types';
+import { eventWithTime } from '../types';
 
 export type PackFn = (event: eventWithTime) => string;
 export type UnpackFn = (raw: string) => eventWithTime;

@@ -56,7 +56,7 @@ html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { ani
 file-cid-1
 @charset \\"utf-8\\";
 
-.css-added-at-400 { padding: 1.3125rem; flex: 0 0 auto; width: 100%; }
+.css-added-at-500 { padding: 1.3125rem; flex: 0 0 auto; width: 100%; }
 
 
 file-cid-2
@@ -64,7 +64,7 @@ file-cid-2
 
 .css-added-at-200-overwritten-at-3000 { opacity: 1; transform: translateX(0px); }
 
-.css-added-at-500-overwritten-at-3000 { border: 1px solid blue; }
+.css-added-at-400-overwritten-at-3000 { border: 1px solid blue; }
 
 
 file-cid-3

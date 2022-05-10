@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import type { IWindow, CanvasArg } from '../../../types';
+import { IWindow, CanvasArg } from '../../../types';
 
 // TODO: unify with `replay/webgl.ts`
 type CanvasVarMap = Map<string, any[]>;

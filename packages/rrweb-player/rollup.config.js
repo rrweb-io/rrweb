@@ -4,7 +4,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
-import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import typescript from '@rollup/plugin-typescript';
 import pkg from './package.json';
 import css from 'rollup-plugin-css-only';
@@ -65,11 +64,7 @@ export default entries.map((output) => ({
       browser: true,
       dedupe: ['svelte'],
     }),
-
     commonjs(),
-
-    // supports bundling `web-worker:..filename` from rrweb
-    webWorkerLoader(),
 
     typescript(),
 

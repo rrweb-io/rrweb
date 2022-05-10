@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type * as http from 'http';
-import type * as puppeteer from 'puppeteer';
+import * as http from 'http';
+import * as puppeteer from 'puppeteer';
 import {
   assertSnapshot,
   startServer,

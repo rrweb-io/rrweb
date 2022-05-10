@@ -1,6 +1,7 @@
-import type { ICanvas, Mirror } from 'rrweb-snapshot';
-import type {
+import { ICanvas, Mirror } from 'rrweb-snapshot';
+import {
   blockClass,
+  CanvasContext,
   canvasManagerMutationCallback,
   canvasMutationCallback,
   canvasMutationCommand,
@@ -9,12 +10,11 @@ import type {
   listenerHandler,
   CanvasArg,
 } from '../../../types';
-import { CanvasContext } from '../../../types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
-import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
+import { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 

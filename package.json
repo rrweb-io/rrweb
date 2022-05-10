@@ -30,8 +30,5 @@
     "test:watch": "yarn lerna run test:watch --parallel",
     "dev": "yarn lerna run dev --parallel",
     "repl": "cd packages/rrweb && npm run repl"
-  },
-  "resolutions": {
-    "**/jsdom/cssom": "^0.5.0"
   }
 }

@@ -1,5 +1,5 @@
-import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
-import type { mutationCallBack } from '../types';
+import { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
+import { mutationCallBack } from '../types';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();

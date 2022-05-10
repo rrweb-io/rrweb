@@ -299,12 +299,10 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | insertStyleRules    | []            | accepts multiple CSS rule string, which will be injected into the replay iframe                                                                                                                                                |
 | triggerFocus        | true          | whether to trigger focus during replay                                                                                                                                                                                         |
 | UNSAFE_replayCanvas | false         | whether to replay the canvas element. **Enable this will remove the sandbox, which is unsafe.**                                                                                                                                |
-| pauseAnimation      | true          | whether to pause CSS animation when the replayer is paused                                                                                                                                                                     |
 | mouseTail           | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn            | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
 | logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
 | plugins             | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
-| useVirtualDom       | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
 
 #### Use rrweb-player
 

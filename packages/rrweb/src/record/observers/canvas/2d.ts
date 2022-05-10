@@ -1,4 +1,4 @@
-import type { Mirror } from 'rrweb-snapshot';
+import { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
