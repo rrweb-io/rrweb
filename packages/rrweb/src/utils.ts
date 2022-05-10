@@ -185,7 +185,7 @@ export function getWindowWidth(): number {
   );
 }
 
-export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
+export function isBlocked(node: Node | null, blockClass: blockClass, blockSelector: string | null): boolean {
   if (!node) {
     return false;
   }
@@ -204,13 +204,17 @@ export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
         }
       });
     }
-    return needBlock || isBlocked(node.parentNode, blockClass);
+    if (blockSelector) {
+      needBlock = (node as HTMLElement).matches(blockSelector);
+    }
+
+    return needBlock || isBlocked(node.parentNode, blockClass, blockSelector);
   }
   if (node.nodeType === node.TEXT_NODE) {
     // check parent node since text node do not have class name
-    return isBlocked(node.parentNode, blockClass);
+    return isBlocked(node.parentNode, blockClass, blockSelector);
   }
-  return isBlocked(node.parentNode, blockClass);
+  return isBlocked(node.parentNode, blockClass, blockSelector);
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {

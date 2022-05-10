@@ -206,6 +206,7 @@ function initMouseInteractionObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
@@ -221,7 +222,7 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target, blockClass)) {
+      if (isBlocked(target, blockClass, blockSelector)) {
         return;
       }
       const e = isTouchEvent(event) ? event.changedTouches[0] : event;
@@ -260,14 +261,15 @@ export function initScrollObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   sampling,
 }: Pick<
   observerParam,
-  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'sampling'
+  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'blockSelector' | 'sampling'
 >): listenerHandler {
   const updatePosition = throttle<UIEvent>((evt) => {
     const target = getEventTarget(evt);
-    if (!target || isBlocked(target as Node, blockClass)) {
+    if (!target || isBlocked(target as Node, blockClass, blockSelector)) {
       return;
     }
     const id = mirror.getId(target as Node);
@@ -325,6 +327,7 @@ function initInputObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   ignoreClass,
   maskInputOptions,
   maskInputFn,
@@ -344,7 +347,7 @@ function initInputObserver({
       !target ||
       !(target as Element).tagName ||
       INPUT_TAGS.indexOf((target as Element).tagName) < 0 ||
-      isBlocked(target as Node, blockClass)
+      isBlocked(target as Node, blockClass, blockSelector)
     ) {
       return;
     }
@@ -647,13 +650,14 @@ function initStyleDeclarationObserver(
 function initMediaInteractionObserver({
   mediaInteractionCb,
   blockClass,
+  blockSelector,
   mirror,
   sampling,
 }: observerParam): listenerHandler {
   const handler = (type: MediaInteractions) =>
     throttle((event: Event) => {
       const target = getEventTarget(event);
-      if (!target || isBlocked(target as Node, blockClass)) {
+      if (!target || isBlocked(target as Node, blockClass, blockSelector)) {
         return;
       }
       const { currentTime, volume, muted } = target as HTMLMediaElement;

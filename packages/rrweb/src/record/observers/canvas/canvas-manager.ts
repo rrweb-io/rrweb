@@ -59,17 +59,18 @@ export class CanvasManager {
     mutationCb: canvasMutationCallback;
     win: IWindow;
     blockClass: blockClass;
+    blockSelector: string | null,
     mirror: Mirror;
     sampling?: 'all' | number;
   }) {
-    const { sampling = 'all', win, blockClass, recordCanvas } = options;
+    const { sampling = 'all', win, blockClass, blockSelector, recordCanvas } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass);
+      this.initCanvasMutationObserver(win, blockClass, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass);
+      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector);
   }
 
   private processMutation: canvasManagerMutationCallback = function (
@@ -93,8 +94,9 @@ export class CanvasManager {
     fps: number,
     win: IWindow,
     blockClass: blockClass,
+    blockSelector: string | null,
   ) {
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const canvasContextReset = initCanvasContextObserver(win, blockClass, blockSelector);
     const snapshotInProgressMap: Map<number, boolean> = new Map();
     const worker = new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
     worker.onmessage = (e) => {
@@ -197,15 +199,17 @@ export class CanvasManager {
   private initCanvasMutationObserver(
     win: IWindow,
     blockClass: blockClass,
+    blockSelector: string | null,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
 
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const canvasContextReset = initCanvasContextObserver(win, blockClass, blockSelector);
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
       win,
       blockClass,
+      blockSelector,
       this.mirror,
     );
 
@@ -213,6 +217,7 @@ export class CanvasManager {
       this.processMutation.bind(this),
       win,
       blockClass,
+      blockSelector,
       this.mirror,
     );
 

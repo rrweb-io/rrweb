@@ -220,6 +220,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
     blockClass,
+    blockSelector,
     mirror,
     sampling: sampling.canvas,
   });

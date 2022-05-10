@@ -5,6 +5,7 @@ import { isBlocked, patch } from '../../../utils';
 export default function initCanvasContextObserver(
   win: IWindow,
   blockClass: blockClass,
+  blockSelector: string | null,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   try {
@@ -17,7 +18,7 @@ export default function initCanvasContextObserver(
           contextType: string,
           ...args: Array<unknown>
         ) {
-          if (!isBlocked(this, blockClass)) {
+          if (!isBlocked(this, blockClass, blockSelector)) {
             if (!('__context' in this))
               (this as ICanvas).__context = contextType;
           }
