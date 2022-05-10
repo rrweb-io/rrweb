@@ -1,4 +1,4 @@
-import { RecordPlugin } from '../../../types';
+import type { RecordPlugin } from '../../../types';
 export declare type StringifyOptions = {
     stringLengthLimit?: number;
     numOfKeysLimit: number;

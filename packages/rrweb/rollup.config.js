@@ -1,6 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
+import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import renameNodeModules from 'rollup-plugin-rename-node-modules';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
@@ -108,10 +108,34 @@ const baseConfigs = [
 
 let configs = [];
 
+function getPlugins(options = {}) {
+  const { minify = false, sourceMap = false } = options;
+  return [
+    resolve({ browser: true }),
+    webWorkerLoader({
+      targetPlatform: 'browser',
+      inline: true,
+      sourceMap,
+    }),
+    esbuild({
+      minify,
+    }),
+    postcss({
+      extract: false,
+      inject: false,
+      minimize: minify,
+      sourceMap,
+    }),
+  ];
+}
+
 for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
+
+    // supports bundling `web-worker:..filename`
     webWorkerLoader(),
+
     typescript(),
   ];
   const plugins = basePlugins.concat(
@@ -123,7 +147,7 @@ for (const c of baseConfigs) {
   // browser
   configs.push({
     input: c.input,
-    plugins,
+    plugins: getPlugins(),
     output: [
       {
         name: c.name,
@@ -135,14 +159,7 @@ for (const c of baseConfigs) {
   // browser + minify
   configs.push({
     input: c.input,
-    plugins: basePlugins.concat(
-      postcss({
-        extract: true,
-        minimize: true,
-        sourceMap: true,
-      }),
-      terser(),
-    ),
+    plugins: getPlugins({ minify: true, sourceMap: true }),
     output: [
       {
         name: c.name,
@@ -197,23 +214,9 @@ if (process.env.BROWSER_ONLY) {
   configs = [];
 
   for (const c of browserOnlyBaseConfigs) {
-    const plugins = [
-      resolve({ browser: true }),
-      webWorkerLoader(),
-      typescript({
-        outDir: null,
-      }),
-      postcss({
-        extract: false,
-        inject: false,
-        sourceMap: true,
-      }),
-      terser(),
-    ];
-
     configs.push({
       input: c.input,
-      plugins,
+      plugins: getPlugins({ sourceMap: true, minify: true }),
       output: [
         {
           name: c.name,

@@ -2,16 +2,21 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 import {
   assertDomSnapshot,
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
+  waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
+import scrollEvents from './events/scroll';
+import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
+import shadowDomEvents from './events/shadow-dom';
+import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 
 interface ISuite {
   code: string;
@@ -247,10 +252,204 @@ describe('replayer', function () {
       const rules = [...replayer.iframe.contentDocument.styleSheets].map(
         (sheet) => [...sheet.rules],
       ).flat();
-      rules.some((x) => x.selectorText === '.css-added-at-3100');
+      rules.some((x) => x.selectorText === '.css-added-at-3100') &&
+        !rules.some(
+          (x) => x.selectorText === '.css-added-at-500-overwritten-at-3000',
+        );
     `);
 
     expect(result).toEqual(true);
+  });
+
+  it('should overwrite all StyleSheetRules by appending a text node to stylesheet element while fast-forwarding', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1600);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-1000-overwritten-at-1500');
+    `);
+    expect(result).toEqual(false);
+  });
+
+  it('should apply fast-forwarded StyleSheetRules that came after appending text node to stylesheet element', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2100);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-2000-overwritten-at-2500');
+    `);
+    expect(result).toEqual(true);
+  });
+
+  it('should overwrite all StyleSheetRules by removing text node from stylesheet element while fast-forwarding', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2600);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-2000-overwritten-at-2500');
+    `);
+    expect(result).toEqual(false);
+  });
+
+  it('should apply fast-forwarded StyleSheetRules that came after removing text node from stylesheet element', async () => {
+    await page.evaluate(`events = ${JSON.stringify(StyleSheetTextMutation)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3100);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.selectorText === '.css-added-at-3000');
+    `);
+    expect(result).toEqual(true);
+  });
+
+  it('can fast forward scroll events', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(scrollEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add the "#container" element at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('#container')).not.toBeNull();
+    expect(await contentDocument!.$('#block')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        '#container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(0);
+
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    await page.evaluate('replayer.pause(1050);');
+    // scroll the "#container" div' at 1000
+    expect(
+      await contentDocument!.$eval(
+        '#container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(2500);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(1550);');
+    // scroll the document at 1500
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(250);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(2050);');
+    // remove the "#container" element at 2000
+    expect(await contentDocument!.$('#container')).toBeNull();
+    expect(await contentDocument!.$('#block')).toBeNull();
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(0);
+  });
+
+  it('can fast forward input events', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(inputEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(1050);
+    `);
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('select')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        'select',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('valueB'); // the default value
+
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    await page.evaluate('replayer.pause(1550);');
+    // the value get changed to 'valueA' at 1500
+    expect(
+      await contentDocument!.$eval(
+        'select',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('valueA');
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(2050);');
+    // the value get changed to 'valueC' at 2000
+    expect(
+      await contentDocument!.$eval(
+        'select',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('valueC');
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(2550);');
+    // add a new input element at 2500
+    expect(
+      await contentDocument!.$eval(
+        'input',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('');
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(3050);');
+    // set the value 'test input' for the input element at 3000
+    expect(
+      await contentDocument!.$eval(
+        'input',
+        (element: Element) => (element as HTMLSelectElement).value,
+      ),
+    ).toEqual('test input');
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(3550);');
+    // remove the select element at 3500
+    expect(await contentDocument!.$('select')).toBeNull();
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(4050);');
+    // remove the input element at 4000
+    expect(await contentDocument!.$('input')).toBeNull();
   });
 
   it('can fast-forward mutation events containing nested iframe elements', async () => {
@@ -264,13 +463,12 @@ describe('replayer', function () {
     const contentDocument = await iframe!.contentFrame()!;
     expect(await contentDocument!.$('iframe')).toBeNull();
 
-    const delay = 50;
     // restart the replayer
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(550);'); // add 'iframe one' at 500
     expect(await contentDocument!.$('iframe')).not.toBeNull();
-    const iframeOneDocument = await (await contentDocument!.$(
+    let iframeOneDocument = await (await contentDocument!.$(
       'iframe',
     ))!.contentFrame();
     expect(iframeOneDocument).not.toBeNull();
@@ -286,14 +484,21 @@ describe('replayer', function () {
 
     // add 'iframe two' and 'iframe three' at 1000
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(1050);');
+    // check the inserted style of iframe 'one' again
+    iframeOneDocument = await (await contentDocument!.$(
+      'iframe',
+    ))!.contentFrame();
+    expect((await iframeOneDocument!.$$('style')).length).toBe(1);
+
     expect((await contentDocument!.$$('iframe')).length).toEqual(2);
     let iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
     )[1]!.contentFrame();
     expect(iframeTwoDocument).not.toBeNull();
     expect((await iframeTwoDocument!.$$('iframe')).length).toEqual(2);
+    expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
     let iframeThreeDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[0]!.contentFrame();
@@ -301,25 +506,27 @@ describe('replayer', function () {
       await iframeTwoDocument!.$$('iframe')
     )[1]!.contentFrame();
     expect(iframeThreeDocument).not.toBeNull();
+    expect((await iframeThreeDocument!.$$('style')).length).toBe(1);
     expect(iframeFourDocument).not.toBeNull();
 
     // add 'iframe four' at 1500
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(1550);');
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
     )[1]!.contentFrame();
+    expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
     iframeFourDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[1]!.contentFrame();
     expect(await iframeFourDocument!.$('iframe')).toBeNull();
-    expect(await iframeFourDocument!.$('style')).not.toBeNull();
+    expect((await iframeFourDocument!.$$('style')).length).toBe(1);
     expect(await iframeFourDocument!.title()).toEqual('iframe 4');
 
     // add 'iframe five' at 2000
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2050);');
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
@@ -327,6 +534,7 @@ describe('replayer', function () {
     iframeFourDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[1]!.contentFrame();
+    expect((await iframeFourDocument!.$$('style')).length).toBe(1);
     expect(await iframeFourDocument!.$('iframe')).not.toBeNull();
     const iframeFiveDocument = await (await iframeFourDocument!.$(
       'iframe',
@@ -343,7 +551,7 @@ describe('replayer', function () {
 
     // remove the html element of 'iframe four' at 2500
     await page.evaluate('replayer.play(0);');
-    await page.waitForTimeout(delay);
+    await waitForRAF(page);
     await page.evaluate('replayer.pause(2550);');
     iframeTwoDocument = await (
       await contentDocument!.$$('iframe')
@@ -360,6 +568,51 @@ describe('replayer', function () {
         (await iframeTwoDocument!.$$('iframe'))[1],
       ),
     ).not.toBeNull();
+  });
+
+  it('can fast-forward mutation events containing nested shadow doms', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(shadowDomEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add shadow dom 'one' at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(
+      await contentDocument!.$eval('div', (element) => element.shadowRoot),
+    ).not.toBeNull();
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('body > div')!
+            .shadowRoot!.querySelector('span')!.textContent,
+      ),
+    ).toEqual('shadow dom one');
+
+    // add shadow dom 'two' at 1000
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(1050);');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('body > div')!
+            .shadowRoot!.querySelector('div')!.shadowRoot,
+      ),
+    ).not.toBeNull();
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('body > div')!
+            .shadowRoot!.querySelector('div')!
+            .shadowRoot!.querySelector('span')!.textContent,
+      ),
+    ).toEqual('shadow dom two');
   });
 
   it('can stream events in live mode', async () => {
