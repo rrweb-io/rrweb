@@ -1,21 +1,17 @@
-import {
+import type {
   throttleOptions,
   listenerHandler,
   hookResetter,
   blockClass,
-  IncrementalSource,
   addedNodeMutation,
-  removedNodeMutation,
-  textMutation,
-  attributeMutation,
-  mutationData,
-  scrollData,
-  inputData,
   DocumentDimension,
   IWindow,
   DeprecatedMirror,
+  textMutation,
 } from './types';
-import { Mirror, IGNORED_NODE, isShadowRoot } from 'rrweb-snapshot';
+import type { IMirror, Mirror } from 'rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE } from 'rrweb-snapshot';
+import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
 
 export function on(
   type: string,
@@ -284,201 +280,6 @@ export function polyfill(win = window) {
   }
 }
 
-export type TreeNode = {
-  id: number;
-  mutation: addedNodeMutation;
-  parent?: TreeNode;
-  children: Record<number, TreeNode>;
-  texts: textMutation[];
-  attributes: attributeMutation[];
-};
-
-export class TreeIndex {
-  public tree!: Record<number, TreeNode>;
-
-  private removeNodeMutations!: removedNodeMutation[];
-  private textMutations!: textMutation[];
-  private attributeMutations!: attributeMutation[];
-  private indexes!: Map<number, TreeNode>;
-  private removeIdSet!: Set<number>;
-  private scrollMap!: Map<number, scrollData>;
-  private inputMap!: Map<number, inputData>;
-
-  constructor() {
-    this.reset();
-  }
-
-  public add(mutation: addedNodeMutation) {
-    const parentTreeNode = this.indexes.get(mutation.parentId);
-    const treeNode: TreeNode = {
-      id: mutation.node.id,
-      mutation,
-      children: [],
-      texts: [],
-      attributes: [],
-    };
-    if (!parentTreeNode) {
-      this.tree[treeNode.id] = treeNode;
-    } else {
-      treeNode.parent = parentTreeNode;
-      parentTreeNode.children[treeNode.id] = treeNode;
-    }
-    this.indexes.set(treeNode.id, treeNode);
-  }
-
-  public remove(mutation: removedNodeMutation, mirror: Mirror) {
-    const parentTreeNode = this.indexes.get(mutation.parentId);
-    const treeNode = this.indexes.get(mutation.id);
-
-    const deepRemoveFromMirror = (id: number) => {
-      if (id === -1) return;
-
-      this.removeIdSet.add(id);
-      const node = mirror.getNode(id);
-      node?.childNodes.forEach((childNode) => {
-        deepRemoveFromMirror(mirror.getId(childNode));
-      });
-    };
-    const deepRemoveFromTreeIndex = (node: TreeNode) => {
-      this.removeIdSet.add(node.id);
-      Object.values(node.children).forEach((n) => deepRemoveFromTreeIndex(n));
-      const _treeNode = this.indexes.get(node.id);
-      if (_treeNode) {
-        const _parentTreeNode = _treeNode.parent;
-        if (_parentTreeNode) {
-          delete _treeNode.parent;
-          delete _parentTreeNode.children[_treeNode.id];
-          this.indexes.delete(mutation.id);
-        }
-      }
-    };
-
-    if (!treeNode) {
-      this.removeNodeMutations.push(mutation);
-      deepRemoveFromMirror(mutation.id);
-    } else if (!parentTreeNode) {
-      delete this.tree[treeNode.id];
-      this.indexes.delete(treeNode.id);
-      deepRemoveFromTreeIndex(treeNode);
-    } else {
-      delete treeNode.parent;
-      delete parentTreeNode.children[treeNode.id];
-      this.indexes.delete(mutation.id);
-      deepRemoveFromTreeIndex(treeNode);
-    }
-  }
-
-  public text(mutation: textMutation) {
-    const treeNode = this.indexes.get(mutation.id);
-    if (treeNode) {
-      treeNode.texts.push(mutation);
-    } else {
-      this.textMutations.push(mutation);
-    }
-  }
-
-  public attribute(mutation: attributeMutation) {
-    const treeNode = this.indexes.get(mutation.id);
-    if (treeNode) {
-      treeNode.attributes.push(mutation);
-    } else {
-      this.attributeMutations.push(mutation);
-    }
-  }
-
-  public scroll(d: scrollData) {
-    this.scrollMap.set(d.id, d);
-  }
-
-  public input(d: inputData) {
-    this.inputMap.set(d.id, d);
-  }
-
-  public flush(): {
-    mutationData: mutationData;
-    scrollMap: TreeIndex['scrollMap'];
-    inputMap: TreeIndex['inputMap'];
-  } {
-    const {
-      tree,
-      removeNodeMutations,
-      textMutations,
-      attributeMutations,
-    } = this;
-
-    const batchMutationData: mutationData = {
-      source: IncrementalSource.Mutation,
-      removes: removeNodeMutations,
-      texts: textMutations,
-      attributes: attributeMutations,
-      adds: [],
-    };
-
-    const walk = (treeNode: TreeNode, removed: boolean) => {
-      if (removed) {
-        this.removeIdSet.add(treeNode.id);
-      }
-      batchMutationData.texts = batchMutationData.texts
-        .concat(removed ? [] : treeNode.texts)
-        .filter((m) => !this.removeIdSet.has(m.id));
-      batchMutationData.attributes = batchMutationData.attributes
-        .concat(removed ? [] : treeNode.attributes)
-        .filter((m) => !this.removeIdSet.has(m.id));
-      if (
-        !this.removeIdSet.has(treeNode.id) &&
-        !this.removeIdSet.has(treeNode.mutation.parentId) &&
-        !removed
-      ) {
-        batchMutationData.adds.push(treeNode.mutation);
-        if (treeNode.children) {
-          Object.values(treeNode.children).forEach((n) => walk(n, false));
-        }
-      } else {
-        Object.values(treeNode.children).forEach((n) => walk(n, true));
-      }
-    };
-
-    Object.values(tree).forEach((n) => walk(n, false));
-
-    for (const id of this.scrollMap.keys()) {
-      if (this.removeIdSet.has(id)) {
-        this.scrollMap.delete(id);
-      }
-    }
-    for (const id of this.inputMap.keys()) {
-      if (this.removeIdSet.has(id)) {
-        this.inputMap.delete(id);
-      }
-    }
-
-    const scrollMap = new Map(this.scrollMap);
-    const inputMap = new Map(this.inputMap);
-
-    this.reset();
-
-    return {
-      mutationData: batchMutationData,
-      scrollMap,
-      inputMap,
-    };
-  }
-
-  private reset() {
-    this.tree = [];
-    this.indexes = new Map();
-    this.removeNodeMutations = [];
-    this.textMutations = [];
-    this.attributeMutations = [];
-    this.removeIdSet = new Set();
-    this.scrollMap = new Map();
-    this.inputMap = new Map();
-  }
-
-  public idRemoved(id: number): boolean {
-    return this.removeIdSet.has(id);
-  }
-}
-
 type ResolveTree = {
   value: addedNodeMutation;
   children: ResolveTree[];
@@ -546,13 +347,13 @@ export function iterateResolveTree(
 
 export type AppendedIframe = {
   mutationInQueue: addedNodeMutation;
-  builtNode: HTMLIFrameElement;
+  builtNode: HTMLIFrameElement | RRIFrameElement;
 };
 
-export function isSerializedIframe(
-  n: Node,
-  mirror: Mirror,
-): n is HTMLIFrameElement {
+export function isSerializedIframe<TNode extends Node | RRNode>(
+  n: TNode,
+  mirror: IMirror<TNode>,
+): boolean {
   return Boolean(n.nodeName === 'IFRAME' && mirror.getMeta(n));
 }
 
@@ -586,10 +387,32 @@ export function getBaseDimension(
   };
 }
 
-export function hasShadowRoot<T extends Node>(
+export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
   return Boolean(((n as unknown) as Element)?.shadowRoot);
+}
+
+export function getNestedRule(
+  rules: CSSRuleList,
+  position: number[],
+): CSSGroupingRule {
+  const rule = rules[position[0]] as CSSGroupingRule;
+  if (position.length === 1) {
+    return rule;
+  } else {
+    return getNestedRule(
+      ((rule as CSSGroupingRule).cssRules[position[1]] as CSSGroupingRule)
+        .cssRules,
+      position.slice(2),
+    );
+  }
+}
+
+export function getPositionsAndIndex(nestedIndex: number[]) {
+  const positions = [...nestedIndex];
+  const index = positions.pop();
+  return { positions, index };
 }
 
 /**

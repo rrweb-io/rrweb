@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -11,9 +11,10 @@
     "outDir": "build",
     "lib": ["es6", "dom"],
     "skipLibCheck": true,
-    "declaration": true
+    "declaration": true,
+    "importsNotUsedAsValues": "error"
   },
   "compileOnSave": true,
   "exclude": ["test"],
-  "include": ["src", "test.d.ts"]
+  "include": ["src", "test.d.ts", "../rrweb/src/record/workers/workers.d.ts"]
 }

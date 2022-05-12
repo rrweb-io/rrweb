@@ -1,9 +1,10 @@
-import { serializedNodeWithId, Mirror, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
-import { PackFn, UnpackFn } from './packer/base';
-import { IframeManager } from './record/iframe-manager';
-import { ShadowDomManager } from './record/shadow-dom-manager';
+import type { serializedNodeWithId, Mirror, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
+import type { PackFn, UnpackFn } from './packer/base';
+import type { IframeManager } from './record/iframe-manager';
+import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import { CanvasManager } from './record/observers/canvas/canvas-manager';
+import type { RRNode } from 'rrdom/es/virtual-dom';
+import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 export declare enum EventType {
     DomContentLoaded = 0,
     Load = 1,
@@ -114,6 +115,10 @@ export declare type event = domContentLoadedEvent | loadedEvent | fullSnapshotEv
 export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;
+};
+export declare type canvasEventWithTime = eventWithTime & {
+    type: EventType.IncrementalSnapshot;
+    data: canvasMutationData;
 };
 export declare type blockClass = string | RegExp;
 export declare type maskTextClass = string | RegExp;
@@ -464,6 +469,7 @@ export declare type playerConfig = {
         strokeStyle?: string;
     };
     unpackFn?: UnpackFn;
+    useVirtualDom: boolean;
     plugins?: ReplayPlugin[];
 };
 export declare type playerMetaData = {
@@ -472,7 +478,7 @@ export declare type playerMetaData = {
     totalTime: number;
 };
 export declare type missingNode = {
-    node: Node;
+    node: Node | RRNode;
     mutation: addedNodeMutation;
 };
 export declare type missingNodeMap = {
@@ -507,9 +513,6 @@ export declare enum ReplayerEvents {
     StateChange = "state-change",
     PlayBack = "play-back"
 }
-export declare type ElementState = {
-    scroll?: [number, number];
-};
 export declare type KeepIframeSrcFn = (src: string) => boolean;
 declare global {
     interface Window {

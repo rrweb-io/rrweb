@@ -24,8 +24,7 @@
   "settings": {
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
-      "rrweb-player (package)",
-      "rrdom (package)"
+      "rrweb-player (package)"
     ]
   }
 }

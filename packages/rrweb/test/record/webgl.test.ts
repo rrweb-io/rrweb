@@ -2,7 +2,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 import {
   recordOptions,
   listenerHandler,
@@ -17,7 +17,7 @@ import {
   stripBase64,
   waitForRAF,
 } from '../utils';
-import { ICanvas } from 'rrweb-snapshot';
+import type { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
   code: string;
