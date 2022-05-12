@@ -1,4 +1,4 @@
-import { mutationRecord, MutationBufferParam } from '../types';
+import type { mutationRecord, MutationBufferParam } from '../types';
 export default class MutationBuffer {
     private frozen;
     private locked;

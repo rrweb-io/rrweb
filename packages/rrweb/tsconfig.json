@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
-    "target": "ES5",
+    "target": "ES6",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
@@ -10,7 +10,8 @@
     "rootDir": "src",
     "outDir": "build",
     "lib": ["es6", "dom"],
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "importsNotUsedAsValues": "error"
   },
   "exclude": ["test"],
   "include": [

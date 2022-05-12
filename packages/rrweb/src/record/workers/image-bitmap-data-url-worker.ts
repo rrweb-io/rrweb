@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import {
+import type {
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
 } from '../../types';

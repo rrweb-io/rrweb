@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iframe</title>
+  </head>
+  <body>
+    <iframe
+      id="iframe1"
+      srcdoc="
+	    <html>
+        <head>
+          <meta charset='UTF-8' />
+          <meta
+            name='viewport'
+            content='width=device-width, initial-scale=1.0'
+          />
+        </head>
+        <body>
+          <div>This is a block inside the iframe1.</div>
+          <iframe id='iframe3' srcdoc='<div>This is a block inside the iframe3.</div>'>
+        </body>
+      </html>"
+    ></iframe>
+    <iframe
+      id="iframe2"
+      srcdoc="<div>This is a block inside the iframe2.</div>"
+    ></iframe>
+  </body>
+</html>

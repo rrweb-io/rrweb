@@ -1,5 +1,5 @@
 import { MaskInputOptions, maskInputValue } from 'rrweb-snapshot';
-import { FontFaceSet } from 'css-font-loading-module';
+import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
   on,
@@ -108,9 +108,9 @@ export function initMutationObserver(
       typeof MutationObserver
     >)[angularZoneSymbol];
   }
-  const observer = new mutationObserverCtor(
-    mutationBuffer.processMutations.bind(mutationBuffer),
-  );
+  const observer = new (mutationObserverCtor as new (
+    callback: MutationCallback,
+  ) => MutationObserver)(mutationBuffer.processMutations.bind(mutationBuffer));
   observer.observe(rootEl, {
     attributes: true,
     attributeOldValue: true,

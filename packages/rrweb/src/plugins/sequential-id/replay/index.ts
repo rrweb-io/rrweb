@@ -1,5 +1,5 @@
 import type { SequentialIdOptions } from '../record';
-import { ReplayPlugin, eventWithTime } from '../../../types';
+import type { ReplayPlugin, eventWithTime } from '../../../types';
 
 type Options = SequentialIdOptions & {
   warnOnMissingId: boolean;
