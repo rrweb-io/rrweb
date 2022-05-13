@@ -1,7 +1,6 @@
 // tslint:disable:no-console
 import * as fs from 'fs';
 import * as path from 'path';
-import type * as http from 'http';
 import type * as puppeteer from 'puppeteer';
 import {
   assertSnapshot,
@@ -11,16 +10,10 @@ import {
   waitForRAF,
   replaceLast,
   generateRecordSnippet,
+  ISuite,
 } from './utils';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
-
-interface ISuite {
-  server: http.Server;
-  serverURL: string;
-  code: string;
-  browser: puppeteer.Browser;
-}
 
 describe('record integration tests', function (this: ISuite) {
   jest.setTimeout(10_000);

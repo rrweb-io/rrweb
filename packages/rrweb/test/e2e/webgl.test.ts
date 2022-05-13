@@ -1,4 +1,3 @@
-import type * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
@@ -9,19 +8,11 @@ import {
   replaceLast,
   waitForRAF,
   generateRecordSnippet,
+  ISuite,
 } from '../utils';
 import type { recordOptions, eventWithTime } from '../../src/types';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 expect.extend({ toMatchImageSnapshot });
-
-interface ISuite {
-  code: string;
-  browser: puppeteer.Browser;
-  server: http.Server;
-  page: puppeteer.Page;
-  events: eventWithTime[];
-  serverURL: string;
-}
 
 describe('e2e webgl', () => {
   let code: ISuite['code'];

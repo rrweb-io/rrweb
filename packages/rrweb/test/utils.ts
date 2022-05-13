@@ -17,20 +17,31 @@ import * as http from 'http';
 import * as url from 'url';
 import * as fs from 'fs';
 
-export async function launchPuppeteer() {
+export async function launchPuppeteer(
+  options?: Parameters<typeof puppeteer['launch']>[0],
+) {
   return await puppeteer.launch({
     headless: process.env.PUPPETEER_HEADLESS ? true : false,
     defaultViewport: {
       width: 1920,
       height: 1080,
     },
-    // devtools: true,
     args: ['--no-sandbox'],
+    ...options,
   });
 }
 
 interface IMimeType {
   [key: string]: string;
+}
+
+export interface ISuite {
+  server: http.Server;
+  serverURL: string;
+  code: string;
+  browser: puppeteer.Browser;
+  page: puppeteer.Page;
+  events: eventWithTime[];
 }
 
 export const startServer = (defaultPort: number = 3030) =>
