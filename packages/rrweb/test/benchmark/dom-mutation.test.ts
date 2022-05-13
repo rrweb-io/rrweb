@@ -57,6 +57,7 @@ describe('benchmark: mutation observer', () => {
     {
       title: 'create 1000x10 DOM nodes',
       html: 'benchmark-dom-mutation.html',
+      times: 10,
     },
   ];
 
@@ -64,9 +65,7 @@ describe('benchmark: mutation observer', () => {
     it(suite.title, async () => {
       page = await browser.newPage();
       page.on('console', (message) =>
-        console.log(
-          `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`,
-        ),
+        console.log(`${message.type().toUpperCase()} ${message.text()}`),
       );
 
       const times = suite.times ?? 5;

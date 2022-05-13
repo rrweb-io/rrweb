@@ -4,6 +4,7 @@
     window.workload = () => {
       const branches = 1000;
       const depth = 10;
+      const frag = document.createDocumentFragment();
       for (let b = 0; b < branches; b++) {
         const node = document.createElement('div');
         let d = 0;
@@ -18,8 +19,9 @@
           current.appendChild(child);
           current = child;
         }
-        document.body.appendChild(node);
+        frag.appendChild(node);
       }
+      document.body.appendChild(frag);
     };
   </script>
 </html>
