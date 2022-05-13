@@ -1,3 +1,4 @@
+// tslint:disable:no-console
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as http from 'http';
@@ -9,6 +10,7 @@ import {
   launchPuppeteer,
   waitForRAF,
   replaceLast,
+  generateRecordSnippet,
 } from './utils';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
@@ -18,10 +20,6 @@ interface ISuite {
   serverURL: string;
   code: string;
   browser: puppeteer.Browser;
-}
-
-interface IMimeType {
-  [key: string]: string;
 }
 
 describe('record integration tests', function (this: ISuite) {
@@ -40,19 +38,7 @@ describe('record integration tests', function (this: ISuite) {
     <script>
       ${code}
       window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();
-      window.snapshots = [];
-      rrweb.record({
-        emit: event => {          
-          window.snapshots.push(event);
-        },
-        maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
-        maskAllInputs: ${options.maskAllInputs},
-        maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
-        userTriggeredOnInput: ${options.userTriggeredOnInput},
-        maskTextFn: ${options.maskTextFn},
-        recordCanvas: ${options.recordCanvas},
-        plugins: ${options.plugins}        
-      });
+      ${generateRecordSnippet(options)}
     </script>
     </body>
     `,
@@ -73,7 +59,7 @@ describe('record integration tests', function (this: ISuite) {
     const pluginsCode = [
       path.resolve(__dirname, '../dist/plugins/console-record.min.js'),
     ]
-      .map((path) => fs.readFileSync(path, 'utf8'))
+      .map((p) => fs.readFileSync(p, 'utf8'))
       .join();
     code = fs.readFileSync(bundlePath, 'utf8') + pluginsCode;
   });
