@@ -445,8 +445,15 @@ function serializeNode(
       );
       const tagName = getValidTagName(n as HTMLElement);
       let attributes: attributes = {};
-      for (const { name, value } of Array.from((n as HTMLElement).attributes)) {
-        attributes[name] = transformAttribute(doc, tagName, name, value);
+      const len = (n as HTMLElement).attributes.length;
+      for (let i = 0; i < len; i++) {
+        const attr = (n as HTMLElement).attributes[i];
+        attributes[attr.name] = transformAttribute(
+          doc,
+          tagName,
+          attr.name,
+          attr.value,
+        );
       }
       // remote css
       if (tagName === 'link' && inlineStylesheet) {

@@ -24,7 +24,8 @@
     "trailing-comma": false,
     "curly": false,
     "no-namespace": false,
-    "interface-name": false
+    "interface-name": false,
+    "forin": false
   },
   "rulesDirectory": []
 }

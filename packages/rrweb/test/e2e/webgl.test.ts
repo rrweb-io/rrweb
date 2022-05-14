@@ -1,4 +1,3 @@
-import type * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
@@ -8,19 +7,12 @@ import {
   getServerURL,
   replaceLast,
   waitForRAF,
+  generateRecordSnippet,
+  ISuite,
 } from '../utils';
 import type { recordOptions, eventWithTime } from '../../src/types';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 expect.extend({ toMatchImageSnapshot });
-
-interface ISuite {
-  code: string;
-  browser: puppeteer.Browser;
-  server: http.Server;
-  page: puppeteer.Page;
-  events: eventWithTime[];
-  serverURL: string;
-}
 
 describe('e2e webgl', () => {
   let code: ISuite['code'];
@@ -59,26 +51,14 @@ describe('e2e webgl', () => {
       `
     <script>
       ${code}
-      window.snapshots = [];
-      rrweb.record({
-        emit: event => {          
-          window.snapshots.push(event);
-        },
-        maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
-        maskAllInputs: ${options.maskAllInputs},
-        maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
-        userTriggeredOnInput: ${options.userTriggeredOnInput},
-        maskTextFn: ${options.maskTextFn},
-        recordCanvas: ${options.recordCanvas},
-        plugins: ${options.plugins}        
-      });
+      ${generateRecordSnippet(options)}
     </script>
     </body>
     `,
     );
   };
 
-  const fakeGoto = async (page: puppeteer.Page, url: string) => {
+  const fakeGoto = async (p: puppeteer.Page, url: string) => {
     const intercept = async (request: puppeteer.HTTPRequest) => {
       await request.respond({
         status: 200,
@@ -86,15 +66,15 @@ describe('e2e webgl', () => {
         body: ' ', // non-empty string or page will load indefinitely
       });
     };
-    await page.setRequestInterception(true);
-    page.on('request', intercept);
-    await page.goto(url);
-    page.off('request', intercept);
-    await page.setRequestInterception(false);
+    await p.setRequestInterception(true);
+    p.on('request', intercept);
+    await p.goto(url);
+    p.off('request', intercept);
+    await p.setRequestInterception(false);
   };
 
-  const hideMouseAnimation = async (page: puppeteer.Page) => {
-    await page.addStyleTag({
+  const hideMouseAnimation = async (p: puppeteer.Page) => {
+    await p.addStyleTag({
       content: '.replayer-mouse-tail{display: none !important;}',
     });
   };
