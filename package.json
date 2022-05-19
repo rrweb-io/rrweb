@@ -21,10 +21,14 @@
     "packages/rrdom"
   ],
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.25.0",
+    "@typescript-eslint/parser": "^5.25.0",
     "concurrently": "^7.1.0",
+    "eslint": "^8.15.0",
     "lerna": "^4.0.0",
     "markdownlint": "^0.25.1",
-    "markdownlint-cli": "^0.31.1"
+    "markdownlint-cli": "^0.31.1",
+    "typescript": "^4.6.4"
   },
   "scripts": {
     "lerna": "lerna",
@@ -33,7 +37,7 @@
     "test:watch": "yarn lerna run test:watch --parallel",
     "dev": "yarn lerna run dev --parallel",
     "repl": "cd packages/rrweb && npm run repl",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn lerna run lint --no-bail'"
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'"
   },
   "resolutions": {
     "**/jsdom/cssom": "^0.5.0"
