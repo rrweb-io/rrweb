@@ -11,7 +11,8 @@
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "dev": "yarn bundle:es-only --watch",
     "typings": "tsc -d --declarationDir typings",
-    "prepublish": "npm run typings && npm run bundle"
+    "prepublish": "npm run typings && npm run bundle",
+    "lint": "yarn tslint src/**/*.ts"
   },
   "repository": {
     "type": "git",
@@ -55,7 +56,7 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
-    "tslint": "^4.5.1",
+    "tslint": "^6.1.3",
     "typescript": "^3.9.7"
   }
 }

@@ -21,7 +21,10 @@
     "packages/rrdom"
   ],
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "concurrently": "^7.1.0",
+    "lerna": "^4.0.0",
+    "markdownlint": "^0.25.1",
+    "markdownlint-cli": "^0.31.1"
   },
   "scripts": {
     "lerna": "lerna",
@@ -29,7 +32,8 @@
     "test": "yarn lerna run test",
     "test:watch": "yarn lerna run test:watch --parallel",
     "dev": "yarn lerna run dev --parallel",
-    "repl": "cd packages/rrweb && npm run repl"
+    "repl": "cd packages/rrweb && npm run repl",
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn lerna run lint --no-bail'"
   },
   "resolutions": {
     "**/jsdom/cssom": "^0.5.0"
