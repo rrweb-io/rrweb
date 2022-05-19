@@ -6,7 +6,7 @@ import {
 } from '../types';
 
 export class Timer {
-  public timeOffset: number = 0;
+  public timeOffset = 0;
   public speed: number;
 
   private actions: actionWithDelay[];
@@ -83,7 +83,7 @@ export class Timer {
     let start = 0;
     let end = this.actions.length - 1;
     while (start <= end) {
-      let mid = Math.floor((start + end) / 2);
+      const mid = Math.floor((start + end) / 2);
       if (this.actions[mid].delay < action.delay) {
         start = mid + 1;
       } else if (this.actions[mid].delay > action.delay) {

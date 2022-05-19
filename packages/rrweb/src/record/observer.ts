@@ -549,8 +549,8 @@ function initStyleSheetObserver(
 
   Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
     unmodifiedFunctions[typeKey] = {
-      insertRule: (type as GroupingCSSRuleTypes).prototype.insertRule,
-      deleteRule: (type as GroupingCSSRuleTypes).prototype.deleteRule,
+      insertRule: (type ).prototype.insertRule,
+      deleteRule: (type ).prototype.deleteRule,
     };
 
     type.prototype.insertRule = function (rule: string, index?: number) {

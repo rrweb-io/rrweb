@@ -70,7 +70,7 @@ export class RRDocument
   }
 
   get firstElementChild(): RRElement | null {
-    return this.documentElement as RRElement | null;
+    return this.documentElement;
   }
 
   appendChild(childNode: RRNode) {
@@ -87,21 +87,19 @@ export class RRDocument
 
   getElementsByTagName(tagName: string): RRElement[] {
     if (this.documentElement)
-      return (this.documentElement as RRElement).getElementsByTagName(tagName);
+      return this.documentElement.getElementsByTagName(tagName);
     return [];
   }
 
   getElementsByClassName(className: string): RRElement[] {
     if (this.documentElement)
-      return (this.documentElement as RRElement).getElementsByClassName(
-        className,
-      );
+      return this.documentElement.getElementsByClassName(className);
     return [];
   }
 
   getElementById(elementId: string): RRElement | null {
     if (this.documentElement)
-      return (this.documentElement as RRElement).getElementById(elementId);
+      return this.documentElement.getElementById(elementId);
     return null;
   }
 
@@ -217,7 +215,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
   }
 
   getAttribute(name: string) {
-    let upperName = name && name.toLowerCase();
+    const upperName = name && name.toLowerCase();
     if (upperName in this.attributes) return this.attributes[upperName];
     return null;
   }
@@ -231,16 +229,16 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
   }
 
   get firstElementChild(): RRElement | null {
-    for (let child of this.childNodes)
+    for (const child of this.childNodes)
       if (child.RRNodeType === RRNodeType.Element) return child as RRElement;
     return null;
   }
 
   get nextElementSibling(): RRElement | null {
-    let parentNode = this.parentNode;
+    const parentNode = this.parentNode;
     if (!parentNode) return null;
     const siblings = parentNode.childNodes;
-    let index = siblings.indexOf(this);
+    const index = siblings.indexOf(this);
     for (let i = index + 1; i < siblings.length; i++)
       if (siblings[i] instanceof RRElement) return siblings[i] as RRElement;
     return null;
@@ -327,7 +325,7 @@ export class RRStyleElement extends RRElement {
   get sheet() {
     if (!this._sheet) {
       let result = '';
-      for (let child of this.childNodes)
+      for (const child of this.childNodes)
         if (child.RRNodeType === RRNodeType.Text)
           result += (child as RRText).textContent;
       this._sheet = cssom.parse(result);
@@ -337,9 +335,9 @@ export class RRStyleElement extends RRElement {
 }
 
 export class RRIFrameElement extends RRElement {
-  width: string = '';
-  height: string = '';
-  src: string = '';
+  width = '';
+  height = '';
+  src = '';
   contentDocument: RRDocument = new RRDocument();
   contentWindow: RRWindow = new RRWindow();
 

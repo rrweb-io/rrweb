@@ -12,7 +12,7 @@ function getContext(
   try {
     if (type === CanvasContext.WebGL) {
       return (target.getContext('webgl')! ||
-        target.getContext('experimental-webgl')) as WebGLRenderingContext;
+        target.getContext('experimental-webgl'));
     }
     return target.getContext('webgl2')!;
   } catch (e) {

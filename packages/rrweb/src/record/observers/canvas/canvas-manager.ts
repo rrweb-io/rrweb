@@ -30,8 +30,8 @@ export class CanvasManager {
 
   private mutationCb: canvasMutationCallback;
   private resetObservers?: listenerHandler;
-  private frozen: boolean = false;
-  private locked: boolean = false;
+  private frozen = false;
+  private locked = false;
 
   public reset() {
     this.pendingCanvasMutations.clear();

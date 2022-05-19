@@ -107,20 +107,21 @@ export function diff(
   let inputDataToApply = null,
     scrollDataToApply = null;
   switch (newTree.RRNodeType) {
-    case RRNodeType.Document:
+    case RRNodeType.Document: {
       const newRRDocument = newTree as IRRDocument;
       scrollDataToApply = (newRRDocument as RRDocument).scrollData;
       break;
-    case RRNodeType.Element:
-      const oldElement = (oldTree as Node) as HTMLElement;
+    }
+    case RRNodeType.Element: {
+      const oldElement = (oldTree ) as HTMLElement;
       const newRRElement = newTree as IRRElement;
       diffProps(oldElement, newRRElement, rrnodeMirror);
       scrollDataToApply = (newRRElement as RRElement).scrollData;
       inputDataToApply = (newRRElement as RRElement).inputData;
       switch (newRRElement.tagName) {
         case 'AUDIO':
-        case 'VIDEO':
-          const oldMediaElement = (oldTree as Node) as HTMLMediaElement;
+        case 'VIDEO': {
+          const oldMediaElement = (oldTree ) as HTMLMediaElement;
           const newMediaRRElement = newRRElement as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
@@ -133,13 +134,14 @@ export function diff(
           if (newMediaRRElement.currentTime !== undefined)
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
           break;
+        }
         case 'CANVAS':
           (newTree as RRCanvasElement).canvasMutations.forEach(
             (canvasMutation) =>
               replayer.applyCanvas(
                 canvasMutation.event,
                 canvasMutation.mutation,
-                (oldTree as Node) as HTMLCanvasElement,
+                (oldTree ) as HTMLCanvasElement,
               ),
           );
           break;
@@ -164,6 +166,7 @@ export function diff(
           );
       }
       break;
+    }
     case RRNodeType.Text:
     case RRNodeType.Comment:
     case RRNodeType.CDATA:
@@ -188,7 +191,7 @@ export function diff(
 
   // IFrame element doesn't have child nodes.
   if (newTree.nodeName === 'IFRAME') {
-    const oldContentDocument = ((oldTree as Node) as HTMLIFrameElement)
+    const oldContentDocument = ((oldTree ) as HTMLIFrameElement)
       .contentDocument;
     const newIFrameElement = newTree as RRIFrameElement;
     // If the iframe is cross-origin, the contentDocument will be null.
@@ -316,10 +319,10 @@ function diffChildren(
         if (
           replayer.mirror.getMeta(parentNode)?.type === RRNodeType.Document &&
           replayer.mirror.getMeta(newNode)?.type === RRNodeType.Element &&
-          ((parentNode as Node) as Document).documentElement
+          ((parentNode ) as Document).documentElement
         ) {
           parentNode.removeChild(
-            ((parentNode as Node) as Document).documentElement,
+            ((parentNode ) as Document).documentElement,
           );
           oldChildren[oldStartIndex] = undefined;
           oldStartNode = undefined;
@@ -379,7 +382,7 @@ export function createOrGetNode(
         (rrNode as IRRDocumentType).systemId,
       );
       break;
-    case RRNodeType.Element:
+    case RRNodeType.Element: {
       let tagName = (rrNode as IRRElement).tagName.toLowerCase();
       tagName = SVGTagMap[tagName] || tagName;
       if (sn && 'isSVG' in sn && sn?.isSVG) {
@@ -389,6 +392,7 @@ export function createOrGetNode(
         );
       } else node = document.createElement((rrNode as IRRElement).tagName);
       break;
+    }
     case RRNodeType.Text:
       node = document.createTextNode((rrNode as IRRText).data);
       break;
@@ -413,7 +417,7 @@ export function getNestedRule(
     return rule;
   } else {
     return getNestedRule(
-      ((rule as CSSGroupingRule).cssRules[position[1]] as CSSGroupingRule)
+      ((rule ).cssRules[position[1]] as CSSGroupingRule)
         .cssRules,
       position.slice(2),
     );

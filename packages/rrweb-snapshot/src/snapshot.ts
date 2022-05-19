@@ -154,7 +154,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
 
   function collectCharacters(regEx: RegExp) {
     let chars: string;
-    let match = regEx.exec(attributeValue.substring(pos));
+    const match = regEx.exec(attributeValue.substring(pos));
     if (match) {
       chars = match[0];
       pos += chars.length;
@@ -163,7 +163,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     return '';
   }
 
-  let output = [];
+  const output = [];
   while (true) {
     collectCharacters(SRCSET_COMMAS_OR_SPACES);
     if (pos >= attributeValue.length) {
@@ -182,7 +182,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
       url = absoluteToDoc(doc, url);
       let inParens = false;
       while (true) {
-        let c = attributeValue.charAt(pos);
+        const c = attributeValue.charAt(pos);
         if (c === '') {
           output.push((url + descriptorsStr).trim());
           break;
@@ -462,7 +462,7 @@ function serializeNode(
         });
         let cssText: string | null = null;
         if (stylesheet) {
-          cssText = getCssRulesString(stylesheet as CSSStyleSheet);
+          cssText = getCssRulesString(stylesheet );
         }
         if (cssText) {
           delete attributes.rel;

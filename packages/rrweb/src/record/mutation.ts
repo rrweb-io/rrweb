@@ -123,8 +123,8 @@ const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
  * controls behaviour of a MutationObserver
  */
 export default class MutationBuffer {
-  private frozen: boolean = false;
-  private locked: boolean = false;
+  private frozen = false;
+  private locked = false;
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
@@ -597,7 +597,7 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass))
-      (n as Node).childNodes.forEach((childN) => this.genAdds(childN));
+      (n ).childNodes.forEach((childN) => this.genAdds(childN));
   };
 }
 

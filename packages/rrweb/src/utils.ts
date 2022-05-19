@@ -70,15 +70,14 @@ export function throttle<T>(
 ) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let previous = 0;
-  // tslint:disable-next-line: only-arrow-functions
   return function (arg: T) {
-    let now = Date.now();
+    const now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
     }
-    let remaining = wait - (now - previous);
-    let context = this;
-    let args = arguments;
+    const remaining = wait - (now - previous);
+    const context = this;
+    const args = arguments;
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
         clearTimeout(timeout);
@@ -398,8 +397,7 @@ export function getNestedRule(
     return rule;
   } else {
     return getNestedRule(
-      ((rule as CSSGroupingRule).cssRules[position[1]] as CSSGroupingRule)
-        .cssRules,
+      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
       position.slice(2),
     );
   }
