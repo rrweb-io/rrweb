@@ -28,7 +28,7 @@ function padZero(num: number, len = 2): string {
   const threshold = Math.pow(10, len - 1);
   if (num < threshold) {
     while (String(threshold).length > str.length) {
-      str = '0' + num;
+      str = `0${num}`;
     }
   }
   return str;

@@ -14,7 +14,8 @@
     "bundle": "rollup --config",
     "typings": "tsc -d --declarationDir typings",
     "check-types": "tsc -noEmit",
-    "prepublish": "npm run typings && npm run bundle"
+    "prepublish": "npm run typings && npm run bundle",
+    "lint": "yarn eslint src"
   },
   "repository": {
     "type": "git",
@@ -70,7 +71,6 @@
     "ts-jest": "^27.1.3",
     "ts-node": "^10.7.0",
     "tslib": "^2.3.1",
-    "tslint": "^6.1.3",
     "typescript": "^4.6.2"
   },
   "dependencies": {

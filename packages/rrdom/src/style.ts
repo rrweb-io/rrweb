@@ -17,7 +17,7 @@ export function parseCSSText(cssText: string): Record<string, string> {
 
 export function toCSSText(style: Record<string, string>): string {
   const properties = [];
-  for (let name in style) {
+  for (const name in style) {
     const value = style[name];
     if (typeof value !== 'string') continue;
     const normalizedName = hyphenate(name);

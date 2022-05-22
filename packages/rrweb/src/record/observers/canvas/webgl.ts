@@ -31,8 +31,8 @@ function patchGLPrototype(
         return function (this: typeof prototype, ...args: Array<unknown>) {
           const result = original.apply(this, args);
           saveWebGLVar(result, win, prototype);
-          if (!isBlocked(this.canvas as HTMLCanvasElement, blockClass)) {
-            const id = mirror.getId(this.canvas as HTMLCanvasElement);
+          if (!isBlocked(this.canvas , blockClass)) {
+            const id = mirror.getId(this.canvas );
 
             const recordArgs = serializeArgs([...args], win, prototype);
             const mutation: canvasMutationWithType = {
@@ -41,7 +41,7 @@ function patchGLPrototype(
               args: recordArgs,
             };
             // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
-            cb(this.canvas as HTMLCanvasElement, mutation);
+            cb(this.canvas , mutation);
           }
 
           return result;

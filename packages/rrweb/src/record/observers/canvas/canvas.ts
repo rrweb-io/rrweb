@@ -19,7 +19,7 @@ export default function initCanvasContextObserver(
         ) {
           if (!isBlocked(this, blockClass)) {
             if (!('__context' in this))
-              (this as ICanvas).__context = contextType;
+              (this ).__context = contextType;
           }
           return original.apply(this, [contextType, ...args]);
         };

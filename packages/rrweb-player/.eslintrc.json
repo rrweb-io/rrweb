@@ -1,25 +1,22 @@
 {
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 2019,
-    "sourceType": "module"
-  },
+  "extends": ["../../.eslintrc.js"],
   "rules": {
     "require-jsdoc": "off",
     "arrow-parens": "off",
     "object-curly-spacing": "off",
     "indent": "off"
   },
-  "env": {
-    "es6": true,
-    "browser": true
+  "parserOptions": {
+    "extraFileExtensions": [".svelte"]
   },
-  "plugins": ["svelte3", "@typescript-eslint"],
+  "plugins": ["svelte3"],
   "overrides": [
     {
       "files": ["*.svelte"],
       "processor": "svelte3/svelte3"
     }
-  ]
+  ],
+  "settings": {
+    "svelte3/typescript": true
+  }
 }

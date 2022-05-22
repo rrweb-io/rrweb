@@ -1,4 +1,4 @@
-/* tslint:disable: no-console */
+/* eslint:disable: no-console */
 
 const fs = require('fs');
 const path = require('path');
@@ -13,11 +13,11 @@ function getCode() {
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
-(async () => {
+void (async () => {
   const code = getCode();
   let events = [];
 
-  start();
+  await start();
 
   const fakeGoto = async (page, url) => {
     const intercept = async (request) => {
