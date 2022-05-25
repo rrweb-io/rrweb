@@ -27,6 +27,7 @@ export declare function serializeNodeWithId(n: Node, options: {
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
+    newlyAddedElement?: boolean;
 }): serializedNodeWithId | null;
 declare function snapshot(n: Document, options?: {
     mirror?: Mirror;

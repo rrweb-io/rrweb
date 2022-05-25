@@ -389,6 +389,7 @@ function serializeNode(
     inlineImages: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
+    newlyAddedElement?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -406,6 +407,7 @@ function serializeNode(
     inlineImages,
     recordCanvas,
     keepIframeSrcFn,
+    newlyAddedElement = false,
   } = options;
   // Only record root id when document object is not the base document
   let rootId: number | undefined;
@@ -462,7 +464,7 @@ function serializeNode(
         });
         let cssText: string | null = null;
         if (stylesheet) {
-          cssText = getCssRulesString(stylesheet );
+          cssText = getCssRulesString(stylesheet);
         }
         if (cssText) {
           delete attributes.rel;
@@ -595,12 +597,17 @@ function serializeNode(
           : 'played';
         attributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime;
       }
-      // scroll
-      if ((n as HTMLElement).scrollLeft) {
-        attributes.rr_scrollLeft = (n as HTMLElement).scrollLeft;
-      }
-      if ((n as HTMLElement).scrollTop) {
-        attributes.rr_scrollTop = (n as HTMLElement).scrollTop;
+      // Scroll
+      if (!newlyAddedElement) {
+        // `scrollTop` and `scrollLeft` are expensive calls because they trigger reflow
+        // since `scrollTop` & `scrollLeft` are always 0 when an element is added
+        // to the DOM we can safely skip them for new elements
+        if ((n as HTMLElement).scrollLeft) {
+          attributes.rr_scrollLeft = (n as HTMLElement).scrollLeft;
+        }
+        if ((n as HTMLElement).scrollTop) {
+          attributes.rr_scrollTop = (n as HTMLElement).scrollTop;
+        }
       }
       // block element
       if (needBlock) {
@@ -620,6 +627,7 @@ function serializeNode(
         }
         delete attributes.src; // prevent auto loading
       }
+
       return {
         type: NodeType.Element,
         tagName,
@@ -671,6 +679,7 @@ function serializeNode(
           ? maskTextFn(textContent)
           : textContent.replace(/[\S]/g, '*');
       }
+
       return {
         type: NodeType.Text,
         textContent: textContent || '',
@@ -819,6 +828,7 @@ export function serializeNodeWithId(
       node: serializedNodeWithId,
     ) => unknown;
     iframeLoadTimeout?: number;
+    newlyAddedElement?: boolean;
   },
 ): serializedNodeWithId | null {
   const {
@@ -841,6 +851,7 @@ export function serializeNodeWithId(
     onIframeLoad,
     iframeLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
+    newlyAddedElement = false,
   } = options;
   let { preserveWhiteSpace = true } = options;
   const _serializedNode = serializeNode(n, {
@@ -858,6 +869,7 @@ export function serializeNodeWithId(
     inlineImages,
     recordCanvas,
     keepIframeSrcFn,
+    newlyAddedElement,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1109,6 +1121,7 @@ function snapshot(
     onIframeLoad,
     iframeLoadTimeout,
     keepIframeSrcFn,
+    newlyAddedElement: false,
   });
 }
 

@@ -56,7 +56,17 @@ export const startServer = (defaultPort: number = 3030) =>
       const sanitizePath = path
         .normalize(parsedUrl.pathname!)
         .replace(/^(\.\.[\/\\])+/, '');
-      const pathname = path.join(__dirname, sanitizePath);
+
+      let pathname = path.join(__dirname, sanitizePath);
+      if (sanitizePath === '/rrweb.js') {
+        pathname = path.join(__dirname, '../dist/rrweb.js');
+      }
+      if (sanitizePath === '/rrweb.min.js') {
+        pathname = path.join(__dirname, '../dist/rrweb.min.js');
+      }
+      if (sanitizePath === '/rrweb.min.js.map') {
+        pathname = path.join(__dirname, '../dist/rrweb.min.js.map');
+      }
 
       try {
         const data = fs.readFileSync(pathname);
