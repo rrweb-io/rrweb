@@ -389,6 +389,9 @@ function serializeNode(
     inlineImages: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
+    /**
+     * `newlyAddedElement: true` skips scrollTop and scrollLeft check
+     */
     newlyAddedElement?: boolean;
   },
 ): serializedNode | false {
@@ -599,9 +602,10 @@ function serializeNode(
       }
       // Scroll
       if (!newlyAddedElement) {
-        // `scrollTop` and `scrollLeft` are expensive calls because they trigger reflow
-        // since `scrollTop` & `scrollLeft` are always 0 when an element is added
-        // to the DOM we can safely skip them for new elements
+        // `scrollTop` and `scrollLeft` are expensive calls because they trigger reflow.
+        // Since `scrollTop` & `scrollLeft` are always 0 when an element is added to the DOM.
+        // And scrolls also get picked up by rrweb's ScrollObserver
+        // So we can safely skip the `scrollTop/Left` calls for newly added elements
         if ((n as HTMLElement).scrollLeft) {
           attributes.rr_scrollLeft = (n as HTMLElement).scrollLeft;
         }
