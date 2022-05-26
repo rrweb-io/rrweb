@@ -283,44 +283,50 @@ export function _isBlockedElement(
   return false;
 }
 
+function classMatchesRegex(node: Node | null, regex: RegExp): boolean {
+  if (!node) return false;
+  if (node.nodeType !== node.ELEMENT_NODE)
+    return classMatchesRegex(node.parentNode, regex);
+
+  for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
+    const className = (node as HTMLElement).classList[eIndex];
+    if (regex.test(className)) {
+      return true;
+    }
+  }
+  return classMatchesRegex(node.parentNode, regex);
+}
+
 export function needMaskingText(
-  node: Node | null,
+  node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
-  if (!node) {
-    return false;
+  const matchers: Array<() => boolean> = [];
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  if (el === null) return false;
+
+  if (typeof maskTextClass === 'string') {
+    matchers.push(() => el.classList.contains(maskTextClass));
+    matchers.push(() => Boolean(el.closest(`.${maskTextClass}`)));
+  } else {
+    matchers.push(() => classMatchesRegex(el, maskTextClass));
   }
-  if (node.nodeType === node.ELEMENT_NODE) {
-    if (typeof maskTextClass === 'string') {
-      if ((node as HTMLElement).classList.contains(maskTextClass)) {
-        return true;
-      }
-    } else {
-      // tslint:disable-next-line: prefer-for-of
-      for (
-        let eIndex = 0;
-        eIndex < (node as HTMLElement).classList.length;
-        eIndex++
-      ) {
-        const className = (node as HTMLElement).classList[eIndex];
-        if (maskTextClass.test(className)) {
-          return true;
-        }
-      }
+
+  if (maskTextSelector) {
+    matchers.push(() => el.matches(maskTextSelector));
+    matchers.push(() => Boolean(el.closest(maskTextSelector)));
+  }
+
+  for (const matcher of matchers) {
+    if (matcher()) {
+      return true;
     }
-    if (maskTextSelector) {
-      if ((node as HTMLElement).matches(maskTextSelector)) {
-        return true;
-      }
-    }
-    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector);
   }
-  if (node.nodeType === node.TEXT_NODE) {
-    // check parent node since text node do not have class name
-    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector);
-  }
-  return needMaskingText(node.parentNode, maskTextClass, maskTextSelector);
+  return false;
 }
 
 // https://stackoverflow.com/a/36155560
