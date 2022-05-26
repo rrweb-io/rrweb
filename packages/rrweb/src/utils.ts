@@ -188,7 +188,7 @@ export function isBlocked(node: Node | null, blockClass: blockClass, blockSelect
     let needBlock = false;
     if (typeof blockClass === 'string') {
       if ((node as HTMLElement).closest !== undefined) {
-        return (node as HTMLElement).closest('.' + blockClass) !== null;
+        needBlock = (node as HTMLElement).closest('.' + blockClass) !== null;
       } else {
         needBlock = (node as HTMLElement).classList.contains(blockClass);
       }
@@ -200,7 +200,7 @@ export function isBlocked(node: Node | null, blockClass: blockClass, blockSelect
       });
     }
     if (blockSelector) {
-      needBlock = (node as HTMLElement).matches(blockSelector);
+      needBlock = needBlock || (node as HTMLElement).matches(blockSelector);
     }
 
     return needBlock || isBlocked(node.parentNode, blockClass, blockSelector);

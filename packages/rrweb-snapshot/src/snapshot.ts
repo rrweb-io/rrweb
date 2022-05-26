@@ -259,29 +259,41 @@ export function transformAttribute(
 }
 
 export function _isBlockedElement(
-  element: HTMLElement,
+  node: Node | null,
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
-  if (typeof blockClass === 'string') {
-    if (element.classList.contains(blockClass)) {
-      return true;
-    }
-  } else {
-    // tslint:disable-next-line: prefer-for-of
-    for (let eIndex = 0; eIndex < element.classList.length; eIndex++) {
-      const className = element.classList[eIndex];
-      if (blockClass.test(className)) {
-        return true;
+  if (!node) {
+    return false;
+  }
+  if (node.nodeType === node.ELEMENT_NODE) {
+    let needBlock = false;
+    if (typeof blockClass === 'string') {
+      if ((node as HTMLElement).closest !== undefined) {
+        needBlock = (node as HTMLElement).closest('.' + blockClass) !== null;
+      } else {
+        needBlock = (node as HTMLElement).classList.contains(blockClass);
       }
+    } else {
+      (node as HTMLElement).classList.forEach((className) => {
+        if (blockClass.test(className)) {
+          needBlock = true;
+        }
+      });
     }
-  }
-  if (blockSelector) {
-    return element.matches(blockSelector);
-  }
+    if (blockSelector) {
+      needBlock = needBlock || (node as HTMLElement).matches(blockSelector);
+    }
 
-  return false;
+    return needBlock || _isBlockedElement(node.parentNode, blockClass, blockSelector);
+  }
+  if (node.nodeType === node.TEXT_NODE) {
+    // check parent node since text node do not have class name
+    return _isBlockedElement(node.parentNode, blockClass, blockSelector); 
+  }
+  return _isBlockedElement(node.parentNode, blockClass, blockSelector);
 }
+
 
 export function needMaskingText(
   node: Node | null,
@@ -439,7 +451,7 @@ function serializeNode(
       };
     case n.ELEMENT_NODE:
       const needBlock = _isBlockedElement(
-        n as HTMLElement,
+        n,
         blockClass,
         blockSelector,
       );

@@ -4,7 +4,7 @@ export declare const IGNORED_NODE = -2;
 export declare function absoluteToStylesheet(cssText: string | null, href: string): string;
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
 export declare function transformAttribute(doc: Document, tagName: string, name: string, value: string): string;
-export declare function _isBlockedElement(element: HTMLElement, blockClass: string | RegExp, blockSelector: string | null): boolean;
+export declare function _isBlockedElement(node: Node | null, blockClass: string | RegExp, blockSelector: string | null): boolean;
 export declare function needMaskingText(node: Node | null, maskTextClass: string | RegExp, maskTextSelector: string | null): boolean;
 export declare function serializeNodeWithId(n: Node, options: {
     doc: Document;
