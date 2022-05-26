@@ -31,7 +31,6 @@ function avg(v: number[]): number {
 }
 
 describe('benchmark: mutation observer', () => {
-  let code: ISuite['code'];
   let page: ISuite['page'];
   let browser: ISuite['browser'];
   let server: ISuite['server'];
@@ -42,9 +41,6 @@ describe('benchmark: mutation observer', () => {
       dumpio: true,
       headless: true,
     });
-
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
-    code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   afterEach(async () => {
@@ -62,6 +58,7 @@ describe('benchmark: mutation observer', () => {
   };
 
   const addRecordingScript = async (page: Page) => {
+    // const scriptUrl = `${getServerURL(server)}/rrweb-1.1.3.js`;
     const scriptUrl = `${getServerURL(server)}/rrweb.js`;
     await page.evaluate((url) => {
       const scriptEl = document.createElement('script');
@@ -126,6 +123,10 @@ describe('benchmark: mutation observer', () => {
       const tempDirectory = path.resolve(path.join(__dirname, '../../temp'));
       fs.mkdirSync(tempDirectory, { recursive: true });
       const profilePath = path.resolve(tempDirectory, profileFilename);
+
+      const client = await page.target().createCDPSession();
+      await client.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+
       await page.tracing.start({
         path: profilePath,
         screenshots: true,
@@ -146,7 +147,9 @@ describe('benchmark: mutation observer', () => {
       });
       await loadPage();
       await getDuration();
+      await page.waitForTimeout(1000);
       await page.tracing.stop();
+      await client.send('Emulation.setCPUThrottlingRate', { rate: 1 });
 
       // calculate durations
       const times = suite.times ?? 5;
