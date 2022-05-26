@@ -31,6 +31,7 @@ function avg(v: number[]): number {
 }
 
 describe('benchmark: mutation observer', () => {
+  jest.setTimeout(240000);
   let page: ISuite['page'];
   let browser: ISuite['browser'];
   let server: ISuite['server'];
