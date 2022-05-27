@@ -268,8 +268,7 @@ export function _isBlockedElement(
       return true;
     }
   } else {
-    // tslint:disable-next-line: prefer-for-of
-    for (let eIndex = 0; eIndex < element.classList.length; eIndex++) {
+    for (let eIndex = element.classList.length; eIndex--; ) {
       const className = element.classList[eIndex];
       if (blockClass.test(className)) {
         return true;
