@@ -618,6 +618,15 @@ function isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
+  if (removes.length === 0) return false;
+  return _isParentRemoved(removes, n, mirror);
+}
+
+function _isParentRemoved(
+  removes: removedNodeMutation[],
+  n: Node,
+  mirror: Mirror,
+): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
@@ -626,10 +635,15 @@ function isParentRemoved(
   if (removes.some((r) => r.id === parentId)) {
     return true;
   }
-  return isParentRemoved(removes, parentNode, mirror);
+  return _isParentRemoved(removes, parentNode, mirror);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
+  if (set.size === 0) return false;
+  return _isAncestorInSet(set, n);
+}
+
+function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
@@ -637,5 +651,5 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
   if (set.has(parentNode)) {
     return true;
   }
-  return isAncestorInSet(set, parentNode);
+  return _isAncestorInSet(set, parentNode);
 }

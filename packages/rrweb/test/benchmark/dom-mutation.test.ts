@@ -24,6 +24,12 @@ const suites: Array<
     eval: 'window.workload()',
     times: 10,
   },
+  {
+    title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
+    html: 'benchmark-dom-mutation-add-and-remove.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
 ];
 
 function avg(v: number[]): number {
