@@ -148,7 +148,8 @@ function buildNode(
         }
         let value = n.attributes[name];
         if (tagName === 'option' && name === 'selected' && value === false) {
-          // legacy fix (TODO: if `value === false` can be generated for other attrs, should we also omit those other attrs from build?)
+          // legacy fix (TODO: if `value === false` can be generated for other attrs,
+          // should we also omit those other attrs from build ?)
           continue;
         }
         value =

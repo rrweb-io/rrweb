@@ -1,0 +1,45 @@
+name: Bug Report
+description: Report an rrweb bug
+title: '[Bug]: '
+labels:
+  - 'bug'
+body:
+  - type: checkboxes
+    attributes:
+      label: Preflight Checklist
+      description: Please ensure you've completed all of the following.
+      options:
+        - label: I have searched the [issue tracker](https://www.github.com/rrweb-io/rrweb/issues) for a bug report that matches the one I want to file, without success.
+          required: true
+  - type: dropdown
+    attributes:
+      label: What package is this bug report for?
+      options:
+        - rrweb
+        - rrweb-snapshot
+        - rrdom
+        - rrweb-player
+        - Other (specify below)
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual Behavior
+      description: A clear description of what actually happens.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Testcase Gist URL
+      description: If you can reproduce the issue in a standalone test case, please save your recording events.json to a [GitHub gist](https://gist.github.com), paste that gist link into [rrwebdebug.com](https://rrwebdebug.com) and put the rrwebdebug.com URL here. This is **the best way** to ensure this issue is triaged quickly.
+      placeholder: https://rrwebdebug.com/...
+  - type: textarea
+    attributes:
+      label: Additional Information
+      description: If your problem needs further explanation, or if the issue you're seeing cannot be reproduced in a gist, please add more information here.

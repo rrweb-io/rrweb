@@ -15,11 +15,11 @@ export function polyfill(w: Window = window, d = document) {
   }
 
   // globals
-  var Element = w.HTMLElement || w.Element;
-  var SCROLL_TIME = 468;
+  const Element = w.HTMLElement || w.Element;
+  const SCROLL_TIME = 468;
 
   // object gathering original scroll methods
-  var original = {
+  const original = {
     scroll: w.scroll || w.scrollTo,
     scrollBy: w.scrollBy,
     elementScroll: Element.prototype.scroll || scrollElement,
@@ -27,7 +27,7 @@ export function polyfill(w: Window = window, d = document) {
   };
 
   // define timing method
-  var now =
+  const now =
     w.performance && w.performance.now
       ? w.performance.now.bind(w.performance)
       : Date.now;
@@ -39,7 +39,7 @@ export function polyfill(w: Window = window, d = document) {
    * @returns {Boolean}
    */
   function isMicrosoftBrowser(userAgent) {
-    var userAgentPatterns = ['MSIE ', 'Trident/', 'Edge/'];
+    const userAgentPatterns = ['MSIE ', 'Trident/', 'Edge/'];
 
     return new RegExp(userAgentPatterns.join('|')).test(userAgent);
   }
@@ -49,7 +49,7 @@ export function polyfill(w: Window = window, d = document) {
    * rounding up scrollHeight and scrollWidth causing false positives
    * on hasScrollableSpace
    */
-  var ROUNDING_TOLERANCE = isMicrosoftBrowser(w.navigator.userAgent) ? 1 : 0;
+  const ROUNDING_TOLERANCE = isMicrosoftBrowser(w.navigator.userAgent) ? 1 : 0;
 
   /**
    * changes scroll position inside an element
@@ -130,7 +130,7 @@ export function polyfill(w: Window = window, d = document) {
    * @returns {Boolean}
    */
   function canOverflow(el, axis) {
-    var overflowValue = w.getComputedStyle(el, null)['overflow' + axis];
+    const overflowValue = w.getComputedStyle(el, null)['overflow' + axis];
 
     return overflowValue === 'auto' || overflowValue === 'scroll';
   }
@@ -143,8 +143,8 @@ export function polyfill(w: Window = window, d = document) {
    * @returns {Boolean}
    */
   function isScrollable(el) {
-    var isScrollableY = hasScrollableSpace(el, 'Y') && canOverflow(el, 'Y');
-    var isScrollableX = hasScrollableSpace(el, 'X') && canOverflow(el, 'X');
+    const isScrollableY = hasScrollableSpace(el, 'Y') && canOverflow(el, 'Y');
+    const isScrollableX = hasScrollableSpace(el, 'X') && canOverflow(el, 'X');
 
     return isScrollableY || isScrollableX;
   }
@@ -170,11 +170,11 @@ export function polyfill(w: Window = window, d = document) {
    * @returns {undefined}
    */
   function step(context) {
-    var time = now();
-    var value;
-    var currentX;
-    var currentY;
-    var elapsed = (time - context.startTime) / SCROLL_TIME;
+    const time = now();
+    let value;
+    let currentX;
+    let currentY;
+    let elapsed = (time - context.startTime) / SCROLL_TIME;
 
     // avoid elapsed times higher than one
     elapsed = elapsed > 1 ? 1 : elapsed;
@@ -202,11 +202,11 @@ export function polyfill(w: Window = window, d = document) {
    * @returns {undefined}
    */
   function smoothScroll(el, x, y) {
-    var scrollable;
-    var startX;
-    var startY;
-    var method;
-    var startTime = now();
+    let scrollable;
+    let startX;
+    let startY;
+    let method;
+    const startTime = now();
 
     // define scroll context
     if (el === d.body) {
@@ -342,8 +342,8 @@ export function polyfill(w: Window = window, d = document) {
       return;
     }
 
-    var left = arguments[0].left;
-    var top = arguments[0].top;
+    const left = arguments[0].left;
+    const top = arguments[0].top;
 
     // LET THE SMOOTHNESS BEGIN!
     smoothScroll.call(
@@ -396,9 +396,9 @@ export function polyfill(w: Window = window, d = document) {
     }
 
     // LET THE SMOOTHNESS BEGIN!
-    var scrollableParent = findScrollableParent(this);
-    var parentRects = scrollableParent.getBoundingClientRect();
-    var clientRects = this.getBoundingClientRect();
+    const scrollableParent = findScrollableParent(this);
+    const parentRects = scrollableParent.getBoundingClientRect();
+    const clientRects = this.getBoundingClientRect();
 
     if (scrollableParent !== d.body) {
       // reveal element inside parent

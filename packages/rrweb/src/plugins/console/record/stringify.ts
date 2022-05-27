@@ -22,14 +22,14 @@ function pathToSelector(node: HTMLElement): string | '' {
       break;
     }
     name = name.toLowerCase();
-    let parent = node.parentElement;
+    const parent = node.parentElement;
 
-    let domSiblings = [];
+    const domSiblings = [];
 
     if (parent.children && parent.children.length > 0) {
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < parent.children.length; i++) {
-        let sibling = parent.children[i];
+        const sibling = parent.children[i];
         if (sibling.localName && sibling.localName.toLowerCase) {
           if (sibling.localName.toLowerCase() === name) {
             domSiblings.push(sibling);

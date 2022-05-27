@@ -242,7 +242,7 @@ export function parse(css: string, options: ParserOptions = {}) {
     if (lines) {
       lineno += lines.length;
     }
-    let i = str.lastIndexOf('\n');
+    const i = str.lastIndexOf('\n');
     column = i === -1 ? column + str.length : str.length - i;
   }
 
@@ -457,7 +457,7 @@ export function parse(css: string, options: ParserOptions = {}) {
     const pos = position();
 
     // prop
-    let propMatch = match(/^(\*?[-#\/\*\\\w]+(\[[0-9a-z_-]+\])?)\s*/);
+    const propMatch = match(/^(\*?[-#\/\*\\\w]+(\[[0-9a-z_-]+\])?)\s*/);
     if (!propMatch) {
       return;
     }

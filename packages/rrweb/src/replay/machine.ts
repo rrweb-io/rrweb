@@ -248,7 +248,7 @@ export function createPlayerService(
               let insertionIndex = -1;
               let start = 0;
               while (start <= end) {
-                let mid = Math.floor((start + end) / 2);
+                const mid = Math.floor((start + end) / 2);
                 if (events[mid].timestamp <= event.timestamp) {
                   start = mid + 1;
                 } else {
