@@ -283,10 +283,16 @@ export function _isBlockedElement(
   return false;
 }
 
-function classMatchesRegex(node: Node | null, regex: RegExp): boolean {
+export function classMatchesRegex(
+  node: Node | null,
+  regex: RegExp,
+  ignoreParents = false,
+): boolean {
   if (!node) return false;
-  if (node.nodeType !== node.ELEMENT_NODE)
+  if (node.nodeType !== node.ELEMENT_NODE) {
+    if (ignoreParents) return false;
     return classMatchesRegex(node.parentNode, regex);
+  }
 
   for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
     const className = (node as HTMLElement).classList[eIndex];
@@ -294,6 +300,7 @@ function classMatchesRegex(node: Node | null, regex: RegExp): boolean {
       return true;
     }
   }
+  if (ignoreParents) return false;
   return classMatchesRegex(node.parentNode, regex);
 }
 
@@ -302,7 +309,6 @@ export function needMaskingText(
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
-  const matchers: Array<() => boolean> = [];
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
@@ -310,21 +316,15 @@ export function needMaskingText(
   if (el === null) return false;
 
   if (typeof maskTextClass === 'string') {
-    matchers.push(() => el.classList.contains(maskTextClass));
-    matchers.push(() => Boolean(el.closest(`.${maskTextClass}`)));
+    if (el.classList.contains(maskTextClass)) return true;
+    if (el.closest(`.${maskTextClass}`)) return true;
   } else {
-    matchers.push(() => classMatchesRegex(el, maskTextClass));
+    if (classMatchesRegex(el, maskTextClass)) return true;
   }
 
   if (maskTextSelector) {
-    matchers.push(() => el.matches(maskTextSelector));
-    matchers.push(() => Boolean(el.closest(maskTextSelector)));
-  }
-
-  for (const matcher of matchers) {
-    if (matcher()) {
-      return true;
-    }
+    if (el.matches(maskTextSelector)) return true;
+    if (el.closest(maskTextSelector)) return true;
   }
   return false;
 }

@@ -572,9 +572,9 @@ export default class MutationBuffer {
     }
   };
 
-  private genAdds = (n: Node, target?: Node) => {
+  private genAdds = (n: Node, target?: Node, parentsArentBlocked = false) => {
     // parent was blocked, so we can ignore this node
-    if (target && isBlocked(target, this.blockClass)) {
+    if (target && isBlocked(target, this.blockClass, false)) {
       return;
     }
 
@@ -597,8 +597,8 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass))
-      n.childNodes.forEach((childN) => this.genAdds(childN));
+    if (!isBlocked(n, this.blockClass, Boolean(target || parentsArentBlocked)))
+      n.childNodes.forEach((childN) => this.genAdds(childN, undefined, true));
   };
 }
 
