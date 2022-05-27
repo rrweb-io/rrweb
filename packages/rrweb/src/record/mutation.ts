@@ -578,13 +578,13 @@ export default class MutationBuffer {
       return;
     }
 
-    if (this.mirror.getMeta(n)) {
+    if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
         return;
       }
       this.movedSet.add(n);
       let targetId: number | null = null;
-      if (target && this.mirror.getMeta(target)) {
+      if (target && this.mirror.hasNode(target)) {
         targetId = this.mirror.getId(target);
       }
       if (targetId && targetId !== -1) {
