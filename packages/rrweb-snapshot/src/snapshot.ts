@@ -285,12 +285,12 @@ export function _isBlockedElement(
 export function classMatchesRegex(
   node: Node | null,
   regex: RegExp,
-  ignoreParents = false,
+  checkAncestors: boolean,
 ): boolean {
   if (!node) return false;
   if (node.nodeType !== node.ELEMENT_NODE) {
-    if (ignoreParents) return false;
-    return classMatchesRegex(node.parentNode, regex);
+    if (!checkAncestors) return false;
+    return classMatchesRegex(node.parentNode, regex, checkAncestors);
   }
 
   for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
@@ -299,8 +299,8 @@ export function classMatchesRegex(
       return true;
     }
   }
-  if (ignoreParents) return false;
-  return classMatchesRegex(node.parentNode, regex);
+  if (!checkAncestors) return false;
+  return classMatchesRegex(node.parentNode, regex, checkAncestors);
 }
 
 export function needMaskingText(
@@ -318,7 +318,7 @@ export function needMaskingText(
     if (el.classList.contains(maskTextClass)) return true;
     if (el.closest(`.${maskTextClass}`)) return true;
   } else {
-    if (classMatchesRegex(el, maskTextClass)) return true;
+    if (classMatchesRegex(el, maskTextClass, true)) return true;
   }
 
   if (maskTextSelector) {

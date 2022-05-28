@@ -190,7 +190,7 @@ export function getWindowWidth(): number {
 export function isBlocked(
   node: Node | null,
   blockClass: blockClass,
-  ignoreParents = false,
+  checkAncestors: boolean,
 ): boolean {
   if (!node) {
     return false;
@@ -203,9 +203,9 @@ export function isBlocked(
 
   if (typeof blockClass === 'string') {
     if (el.classList.contains(blockClass)) return true;
-    if (!ignoreParents && el.closest('.' + blockClass) !== null) return true;
+    if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
   } else {
-    if (classMatchesRegex(el, blockClass, ignoreParents)) return true;
+    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
   }
   return false;
 }
