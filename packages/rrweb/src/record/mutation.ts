@@ -169,6 +169,7 @@ export default class MutationBuffer {
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
   private iframeManager: observerParam['iframeManager'];
+  private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
 
@@ -189,6 +190,7 @@ export default class MutationBuffer {
       'doc',
       'mirror',
       'iframeManager',
+      'stylesheetManager',
       'shadowDomManager',
       'canvasManager',
     ] as const).forEach((key) => {
@@ -307,6 +309,9 @@ export default class MutationBuffer {
         onIframeLoad: (iframe, childSn) => {
           this.iframeManager.attachIframe(iframe, childSn, this.mirror);
           this.shadowDomManager.observeAttachShadow(iframe);
+        },
+        onStylesheetLoad: (link, childSn) => {
+          this.stylesheetManager.attachStylesheet(link, childSn, this.mirror);
         },
       });
       if (sn) {

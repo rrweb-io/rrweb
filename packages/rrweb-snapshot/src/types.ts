@@ -63,6 +63,11 @@ export type serializedNode = (
 
 export type serializedNodeWithId = serializedNode & { id: number };
 
+export type serializedElementNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Element>
+>;
+
 export type tagMap = {
   [key: string]: string;
 };

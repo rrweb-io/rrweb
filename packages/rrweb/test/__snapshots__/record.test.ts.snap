@@ -640,6 +640,196 @@ exports[`record captures stylesheet rules 1`] = `
 ]"
 `;
 
+exports[`record captures stylesheets that are still loading 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"link\\",
+            \\"attributes\\": {
+              \\"_cssText\\": \\"body { color: pink; }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 9
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": []
+    }
+  }
+]"
+`;
+
+exports[`record captures stylesheets with \`blob:\` url 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"link\\",
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"body { color: pink; }\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 9
+                  }
+                ],
+                \\"id\\": 6
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  }
+]"
+`;
+
 exports[`record iframes captures stylesheet mutations in iframes 1`] = `
 "[
   {

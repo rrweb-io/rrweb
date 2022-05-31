@@ -1,4 +1,4 @@
-import { serializedNodeWithId, MaskInputOptions, SlimDOMOptions, DataURLOptions, MaskTextFn, MaskInputFn, KeepIframeSrcFn } from './types';
+import { serializedNodeWithId, MaskInputOptions, SlimDOMOptions, DataURLOptions, MaskTextFn, MaskInputFn, KeepIframeSrcFn, serializedElementNodeWithId } from './types';
 import { Mirror } from './utils';
 export declare const IGNORED_NODE = -2;
 export declare function absoluteToStylesheet(cssText: string | null, href: string): string;
@@ -25,8 +25,10 @@ export declare function serializeNodeWithId(n: Node, options: {
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
-    onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedElementNodeWithId) => unknown;
     iframeLoadTimeout?: number;
+    onStylesheetLoad?: (linkNode: HTMLLinkElement, node: serializedElementNodeWithId) => unknown;
+    stylesheetLoadTimeout?: number;
 }): serializedNodeWithId | null;
 declare function snapshot(n: Document, options?: {
     mirror?: Mirror;
@@ -44,8 +46,10 @@ declare function snapshot(n: Document, options?: {
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
-    onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
+    onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedElementNodeWithId) => unknown;
     iframeLoadTimeout?: number;
+    onStylesheetLoad?: (linkNode: HTMLLinkElement, node: serializedElementNodeWithId) => unknown;
+    stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
 }): serializedNodeWithId | null;
 export declare function visitSnapshot(node: serializedNodeWithId, onVisit: (node: serializedNodeWithId) => unknown): void;

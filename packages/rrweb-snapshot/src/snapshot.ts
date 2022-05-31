@@ -10,6 +10,7 @@ import {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
+  serializedElementNodeWithId,
 } from './types';
 import {
   Mirror,
@@ -372,6 +373,44 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
+function isStylesheetLoaded(link: HTMLLinkElement) {
+  return link.sheet !== null;
+}
+
+function onceStylesheetLoaded(
+  link: HTMLLinkElement,
+  listener: () => unknown,
+  iframeLoadTimeout: number,
+) {
+  let fired = false;
+  let styleSheetLoaded: StyleSheet | null;
+  try {
+    styleSheetLoaded = link.sheet;
+  } catch (error) {
+    return;
+  }
+
+  if (!styleSheetLoaded) {
+    const timer = setTimeout(() => {
+      if (!fired) {
+        listener();
+        fired = true;
+      }
+    }, iframeLoadTimeout);
+    link.addEventListener('load', () => {
+      clearTimeout(timer);
+      fired = true;
+      listener();
+    });
+    return;
+  }
+
+  // stylesheet was already loaded, make sure we wait to trigger the listener
+  // till _after_ the mutation that found this stylesheet has had time to process
+  setTimeout(listener, 0);
+  return;
+}
+
 function serializeNode(
   n: Node,
   options: {
@@ -462,7 +501,7 @@ function serializeNode(
         });
         let cssText: string | null = null;
         if (stylesheet) {
-          cssText = getCssRulesString(stylesheet );
+          cssText = getCssRulesString(stylesheet);
         }
         if (cssText) {
           delete attributes.rel;
@@ -816,9 +855,14 @@ export function serializeNodeWithId(
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (
       iframeNode: HTMLIFrameElement,
-      node: serializedNodeWithId,
+      node: serializedElementNodeWithId,
     ) => unknown;
     iframeLoadTimeout?: number;
+    onStylesheetLoad?: (
+      linkNode: HTMLLinkElement,
+      node: serializedElementNodeWithId,
+    ) => unknown;
+    stylesheetLoadTimeout?: number;
   },
 ): serializedNodeWithId | null {
   const {
@@ -840,6 +884,8 @@ export function serializeNodeWithId(
     onSerialize,
     onIframeLoad,
     iframeLoadTimeout = 5000,
+    onStylesheetLoad,
+    stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
   } = options;
   let { preserveWhiteSpace = true } = options;
@@ -931,6 +977,8 @@ export function serializeNodeWithId(
       onSerialize,
       onIframeLoad,
       iframeLoadTimeout,
+      onStylesheetLoad,
+      stylesheetLoadTimeout,
       keepIframeSrcFn,
     };
     for (const childN of Array.from(n.childNodes)) {
@@ -988,12 +1036,62 @@ export function serializeNodeWithId(
           });
 
           if (serializedIframeNode) {
-            onIframeLoad(n as HTMLIFrameElement, serializedIframeNode);
+            onIframeLoad(
+              n as HTMLIFrameElement,
+              serializedIframeNode as serializedElementNodeWithId,
+            );
           }
         }
       },
       iframeLoadTimeout,
     );
+  }
+
+  // <link rel=stylesheet href=...>
+  if (
+    serializedNode.type === NodeType.Element &&
+    serializedNode.tagName === 'link' &&
+    serializedNode.attributes.rel === 'stylesheet'
+  ) {
+    onceStylesheetLoaded(
+      n as HTMLLinkElement,
+      () => {
+        if (onStylesheetLoad) {
+          const serializedLinkNode = serializeNodeWithId(n, {
+            doc,
+            mirror,
+            blockClass,
+            blockSelector,
+            maskTextClass,
+            maskTextSelector,
+            skipChild: false,
+            inlineStylesheet,
+            maskInputOptions,
+            maskTextFn,
+            maskInputFn,
+            slimDOMOptions,
+            dataURLOptions,
+            inlineImages,
+            recordCanvas,
+            preserveWhiteSpace,
+            onSerialize,
+            onIframeLoad,
+            onStylesheetLoad,
+            iframeLoadTimeout,
+            keepIframeSrcFn,
+          });
+
+          if (serializedLinkNode) {
+            onStylesheetLoad(
+              n as HTMLLinkElement,
+              serializedLinkNode as serializedElementNodeWithId,
+            );
+          }
+        }
+      },
+      stylesheetLoadTimeout,
+    );
+    if (isStylesheetLoaded(n as HTMLLinkElement) === false) return null; // add stylesheet in later mutation
   }
 
   return serializedNode;
@@ -1019,9 +1117,14 @@ function snapshot(
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (
       iframeNode: HTMLIFrameElement,
-      node: serializedNodeWithId,
+      node: serializedElementNodeWithId,
     ) => unknown;
     iframeLoadTimeout?: number;
+    onStylesheetLoad?: (
+      linkNode: HTMLLinkElement,
+      node: serializedElementNodeWithId,
+    ) => unknown;
+    stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
   },
 ): serializedNodeWithId | null {
@@ -1043,6 +1146,8 @@ function snapshot(
     onSerialize,
     onIframeLoad,
     iframeLoadTimeout,
+    onStylesheetLoad,
+    stylesheetLoadTimeout,
     keepIframeSrcFn = () => false,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
@@ -1108,6 +1213,8 @@ function snapshot(
     onSerialize,
     onIframeLoad,
     iframeLoadTimeout,
+    onStylesheetLoad,
+    stylesheetLoadTimeout,
     keepIframeSrcFn,
   });
 }

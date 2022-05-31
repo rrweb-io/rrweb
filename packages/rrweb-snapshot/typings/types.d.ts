@@ -49,6 +49,7 @@ export declare type serializedNode = (documentNode | documentTypeNode | elementN
 export declare type serializedNodeWithId = serializedNode & {
     id: number;
 };
+export declare type serializedElementNodeWithId = Extract<serializedNodeWithId, Record<'type', NodeType.Element>>;
 export declare type tagMap = {
     [key: string]: string;
 };
