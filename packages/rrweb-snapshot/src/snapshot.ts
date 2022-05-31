@@ -582,7 +582,7 @@ function serializeNode(
           }
           oldValue
             ? (attributes.crossOrigin = oldValue)
-            : delete attributes.crossOrigin;
+            : image.removeAttribute('crossorigin');
         };
         // The image content may not have finished loading yet.
         if (image.complete && image.naturalWidth !== 0) recordInlineImage();
