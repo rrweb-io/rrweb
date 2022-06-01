@@ -25,6 +25,7 @@ import {
   isSerialized,
   hasShadowRoot,
   isSerializedIframe,
+  isSerializedStylesheet,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -302,6 +303,9 @@ export default class MutationBuffer {
           if (isSerializedIframe(currentN, this.mirror)) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
+          if (isSerializedStylesheet(currentN, this.mirror)) {
+            this.stylesheetManager.addStylesheet(currentN as HTMLLinkElement);
+          }
           if (hasShadowRoot(n)) {
             this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
           }
@@ -469,6 +473,21 @@ export default class MutationBuffer {
         if (isBlocked(m.target, this.blockClass) || value === m.oldValue) {
           return;
         }
+
+        // external stylesheets might need to be loaded before their mutations can be applied
+        if (
+          m.attributeName === 'href' &&
+          m.target.nodeName === 'LINK' &&
+          'getAttribute' in m.target &&
+          (m.target as HTMLLinkElement).getAttribute('rel') === 'stylesheet'
+        ) {
+          this.stylesheetManager.attributeMutation(
+            m.target as HTMLLinkElement,
+            m.oldValue,
+            value,
+          );
+        }
+
         let item: attributeCursor | undefined = this.attributes.find(
           (a) => a.node === m.target,
         );
@@ -602,7 +621,7 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass))
-      (n ).childNodes.forEach((childN) => this.genAdds(childN));
+      n.childNodes.forEach((childN) => this.genAdds(childN));
   };
 }
 

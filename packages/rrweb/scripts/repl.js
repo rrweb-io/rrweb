@@ -119,7 +119,7 @@ void (async () => {
     await page.evaluate(`;${code}
       window.__IS_RECORDING__ = true
       rrweb.record({
-        emit: event => window._replLog(event),
+        emit: event => console.log(event),
         recordCanvas: true,
         collectFonts: true
       });

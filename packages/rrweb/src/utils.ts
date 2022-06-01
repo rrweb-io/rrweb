@@ -352,6 +352,19 @@ export function isSerializedIframe<TNode extends Node | RRNode>(
   return Boolean(n.nodeName === 'IFRAME' && mirror.getMeta(n));
 }
 
+export function isSerializedStylesheet<TNode extends Node | RRNode>(
+  n: TNode,
+  mirror: IMirror<TNode>,
+): boolean {
+  return Boolean(
+    n.nodeName === 'LINK' &&
+      n.nodeType === n.ELEMENT_NODE &&
+      (n as HTMLElement).getAttribute &&
+      (n as HTMLElement).getAttribute('rel') === 'stylesheet' &&
+      mirror.getMeta(n),
+  );
+}
+
 export function getBaseDimension(
   node: Node,
   rootIframe: Node,

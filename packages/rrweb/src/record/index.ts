@@ -12,6 +12,7 @@ import {
   polyfill,
   hasShadowRoot,
   isSerializedIframe,
+  isSerializedStylesheet,
 } from '../utils';
 import {
   EventType,
@@ -282,6 +283,9 @@ function record<T = eventWithTime>(
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
+        // if (isSerializedStylesheet(n, mirror)) {
+        //   stylesheetManager.addStylesheet(n as HTMLLinkElement);
+        // }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
