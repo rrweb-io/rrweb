@@ -425,134 +425,30 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
-  // it.only('captures stylesheets that change href', async () => {
-  //   await ctx.page.evaluate(() => {
-  //     const link1 = document.createElement('link');
-  //     link1.setAttribute('rel', 'stylesheet');
-  //     const blobUrl = URL.createObjectURL(
-  //       new Blob(['.old { color: pink; }'], {
-  //         type: 'text/css',
-  //       }),
-  //     );
-  //     (window as any).blobUrl = blobUrl;
-  //     link1.setAttribute('href', blobUrl);
-  //     document.head.appendChild(link1);
-  //   });
-  //   await waitForRAF(ctx.page);
+  it('captures CORS stylesheets that are still loading', async () => {
+    const corsStylesheetURL =
+      'https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css';
 
-  //   await ctx.page.evaluate(() => {
-  //     const { record } = ((window as unknown) as IWindow).rrweb;
+    // do not `await` the following function, otherwise `waitForResponse` _might_ not be called
+    void ctx.page.evaluate((corsStylesheetURL) => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
 
-  //     record({
-  //       inlineStylesheet: true,
-  //       emit: ((window as unknown) as IWindow).emit,
-  //     });
+      record({
+        inlineStylesheet: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
 
-  //     const link = document.querySelector('link')!;
-  //     link.addEventListener('load', () => console.log('loaded stylesheet'));
-  //     link.setAttribute(
-  //       'href',
-  //       URL.createObjectURL(
-  //         new Blob(['.new { color: orange; }'], {
-  //           type: 'text/css',
-  //         }),
-  //       ),
-  //     );
-  //   });
-  //   // await waitForRAF(ctx.page);
-  //   await ctx.page.waitForTimeout(60000);
+      const link1 = document.createElement('link');
+      link1.setAttribute('rel', 'stylesheet');
+      link1.setAttribute('href', corsStylesheetURL);
+      document.head.appendChild(link1);
+    }, corsStylesheetURL);
 
-  //   // await ctx.page.evaluate(() => {
-  //   //   const { record } = ((window as unknown) as IWindow).rrweb;
+    await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
+    await waitForRAF(ctx.page); // wait for rrweb to emit events
 
-  //   //   record({
-  //   //     inlineStylesheet: true,
-  //   //     emit: ((window as unknown) as IWindow).emit,
-  //   //   });
-
-  //   //   const link = document.querySelector('link')!;
-  //   //   link.setAttribute('href', (window as any).blobUrl);
-  //   // });
-
-  //   // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
-  //   await waitForRAF(ctx.page);
-
-  //   assertSnapshot(ctx.events);
-  // });
-
-  // it('captures contents of blob: uris even when those change', async () => {
-  //   await ctx.page.evaluate(() => {
-  //     const link1 = document.createElement('link');
-  //     link1.setAttribute('rel', 'stylesheet');
-  //     link1.setAttribute(
-  //       'href',
-  //       URL.createObjectURL(
-  //         new Blob(['body { color: pink; }'], {
-  //           type: 'text/css',
-  //         }),
-  //       ),
-  //     );
-  //     document.head.appendChild(link1);
-  //     console.log(
-  //       'doc',
-  //       JSON.stringify(document.location),
-  //       document.location.href,
-  //       link1.getAttribute('href'),
-  //     );
-  //     console.log('link1', link1.sheet?.cssRules[0].cssText);
-  //     setTimeout(() => {
-  //       console.log('link1-settimeout', link1.sheet?.cssRules[0].cssText);
-  //     }, 10);
-
-  //     const { record } = ((window as unknown) as IWindow).rrweb;
-
-  //     record({
-  //       inlineStylesheet: true,
-  //       emit: ((window as unknown) as IWindow).emit,
-  //     });
-
-  //     const link = document.createElement('link');
-  //     link.setAttribute('rel', 'stylesheet');
-  //     link.setAttribute(
-  //       'href',
-  //       URL.createObjectURL(
-  //         new Blob(['body { color: red; }'], {
-  //           type: 'text/css',
-  //         }),
-  //       ),
-  //     );
-  //     document.head.appendChild(link);
-
-  //     setTimeout(() => {
-  //       link.setAttribute(
-  //         'href',
-  //         URL.createObjectURL(
-  //           new Blob(['body { color: blue; }'], {
-  //             type: 'text/css',
-  //           }),
-  //         ),
-  //       );
-  //     }, 0);
-  //   });
-  //   // await ctx.page.waitForTimeout(60 * 1000 * 2);
-  //   await waitForRAF(ctx.page);
-  //   await ctx.page.evaluate(() => {
-  //     const link3 = document.createElement('link');
-  //     link3.setAttribute('rel', 'stylesheet');
-  //     link3.setAttribute(
-  //       'href',
-  //       URL.createObjectURL(
-  //         new Blob(['body { color: orange; }'], {
-  //           type: 'text/css',
-  //         }),
-  //       ),
-  //     );
-  //     document.head.appendChild(link3);
-  //   });
-  //   await waitForRAF(ctx.page);
-
-  //   assertSnapshot(ctx.events);
-  // });
+    assertSnapshot(ctx.events);
+  });
 });
 
 describe('record iframes', function (this: ISuite) {

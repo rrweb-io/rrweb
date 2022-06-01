@@ -391,25 +391,20 @@ function onceStylesheetLoaded(
     return;
   }
 
-  if (!styleSheetLoaded) {
-    const timer = setTimeout(() => {
-      if (!fired) {
-        listener();
-        fired = true;
-      }
-    }, iframeLoadTimeout);
-    link.addEventListener('load', () => {
-      clearTimeout(timer);
-      fired = true;
-      listener();
-    });
-    return;
-  }
+  if (styleSheetLoaded) return;
 
-  // stylesheet was already loaded, make sure we wait to trigger the listener
-  // till _after_ the mutation that found this stylesheet has had time to process
-  setTimeout(listener, 0);
-  return;
+  const timer = setTimeout(() => {
+    if (!fired) {
+      listener();
+      fired = true;
+    }
+  }, iframeLoadTimeout);
+
+  link.addEventListener('load', () => {
+    clearTimeout(timer);
+    fired = true;
+    listener();
+  });
 }
 
 function serializeNode(
