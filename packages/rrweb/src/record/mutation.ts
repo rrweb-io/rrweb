@@ -474,20 +474,6 @@ export default class MutationBuffer {
           return;
         }
 
-        // external stylesheets might need to be loaded before their mutations can be applied
-        if (
-          m.attributeName === 'href' &&
-          m.target.nodeName === 'LINK' &&
-          'getAttribute' in m.target &&
-          (m.target as HTMLLinkElement).getAttribute('rel') === 'stylesheet'
-        ) {
-          this.stylesheetManager.attributeMutation(
-            m.target as HTMLLinkElement,
-            m.oldValue,
-            value,
-          );
-        }
-
         let item: attributeCursor | undefined = this.attributes.find(
           (a) => a.node === m.target,
         );
