@@ -213,6 +213,19 @@ if (process.env.BROWSER_ONLY) {
 
   configs = [];
 
+  // browser record + replay, unminified (for profiling and performance testing)
+  configs.push({
+    input: './src/index.ts',
+    plugins: getPlugins(),
+    output: [
+      {
+        name: 'rrweb',
+        format: 'iife',
+        file: pkg.unpkg,
+      },
+    ],
+  });
+
   for (const c of browserOnlyBaseConfigs) {
     configs.push({
       input: c.input,

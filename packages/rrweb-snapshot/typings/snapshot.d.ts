@@ -5,7 +5,8 @@ export declare function absoluteToStylesheet(cssText: string | null, href: strin
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
 export declare function transformAttribute(doc: Document, tagName: string, name: string, value: string): string;
 export declare function _isBlockedElement(element: HTMLElement, blockClass: string | RegExp, blockSelector: string | null): boolean;
-export declare function needMaskingText(node: Node | null, maskTextClass: string | RegExp, maskTextSelector: string | null): boolean;
+export declare function classMatchesRegex(node: Node | null, regex: RegExp, checkAncestors: boolean): boolean;
+export declare function needMaskingText(node: Node, maskTextClass: string | RegExp, maskTextSelector: string | null): boolean;
 export declare function serializeNodeWithId(n: Node, options: {
     doc: Document;
     mirror: Mirror;
@@ -27,6 +28,7 @@ export declare function serializeNodeWithId(n: Node, options: {
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (iframeNode: HTMLIFrameElement, node: serializedNodeWithId) => unknown;
     iframeLoadTimeout?: number;
+    newlyAddedElement?: boolean;
 }): serializedNodeWithId | null;
 declare function snapshot(n: Document, options?: {
     mirror?: Mirror;

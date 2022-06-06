@@ -4,6 +4,7 @@ import snapshot, {
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
+  classMatchesRegex,
   IGNORED_NODE,
 } from './snapshot';
 import rebuild, {
@@ -25,5 +26,6 @@ export {
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
+  classMatchesRegex,
   IGNORED_NODE,
 };
