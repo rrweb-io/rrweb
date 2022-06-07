@@ -150,11 +150,18 @@ describe('record', function (this: ISuite) {
       await ctx.page.type('input', 'a');
     }
     await ctx.page.waitForTimeout(300);
-    expect(ctx.events.length).toEqual(33); // before first automatic snapshot
-    await ctx.page.waitForTimeout(200); // could be 33 or 35 events by now depending on speed of test env
+    expect(
+      ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
+        .length,
+    ).toEqual(1); // before first automatic snapshot
+    expect(
+      ctx.events.filter(
+        (event: eventWithTime) => event.type === EventType.FullSnapshot,
+      ).length,
+    ).toEqual(1); // before first automatic snapshot
+    await ctx.page.waitForTimeout(200);
     await ctx.page.type('input', 'a');
     await ctx.page.waitForTimeout(10);
-    expect(ctx.events.length).toEqual(36); // additionally includes the 2 checkout events
     expect(
       ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
         .length,
@@ -164,8 +171,6 @@ describe('record', function (this: ISuite) {
         (event: eventWithTime) => event.type === EventType.FullSnapshot,
       ).length,
     ).toEqual(2);
-    expect(ctx.events[1].type).toEqual(EventType.FullSnapshot);
-    expect(ctx.events[35].type).toEqual(EventType.FullSnapshot);
   });
 
   it('is safe to checkout during async callbacks', async () => {
