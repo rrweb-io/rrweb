@@ -416,6 +416,38 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
+  it('captures stylesheets in iframes with `blob:` url', async () => {
+    await ctx.page.evaluate(() => {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('src', 'about:blank');
+      document.body.appendChild(iframe);
+
+      const linkEl = document.createElement('link');
+      linkEl.setAttribute('rel', 'stylesheet');
+      linkEl.setAttribute(
+        'href',
+        URL.createObjectURL(
+          new Blob(['body { color: pink; }'], {
+            type: 'text/css',
+          }),
+        ),
+      );
+      const iframeDoc = iframe.contentDocument!;
+      iframeDoc.head.appendChild(linkEl);
+    });
+    await waitForRAF(ctx.page);
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        inlineStylesheet: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
   it('captures stylesheets that are still loading', async () => {
     await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;
@@ -436,6 +468,39 @@ describe('record', function (this: ISuite) {
         ),
       );
       document.head.appendChild(link1);
+    });
+
+    // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
+    await waitForRAF(ctx.page);
+
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures stylesheets in iframes that are still loading', async () => {
+    await ctx.page.evaluate(() => {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('src', 'about:blank');
+      document.body.appendChild(iframe);
+      const iframeDoc = iframe.contentDocument!;
+
+      const { record } = ((window as unknown) as IWindow).rrweb;
+
+      record({
+        inlineStylesheet: true,
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      const linkEl = document.createElement('link');
+      linkEl.setAttribute('rel', 'stylesheet');
+      linkEl.setAttribute(
+        'href',
+        URL.createObjectURL(
+          new Blob(['body { color: pink; }'], {
+            type: 'text/css',
+          }),
+        ),
+      );
+      iframeDoc.head.appendChild(linkEl);
     });
 
     // `blob:` URLs are not available immediately, so we need to wait for the browser to load them

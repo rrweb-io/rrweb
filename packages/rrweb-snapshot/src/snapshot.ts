@@ -1103,6 +1103,8 @@ export function serializeNodeWithId(
             onSerialize,
             onIframeLoad,
             iframeLoadTimeout,
+            onStylesheetLoad,
+            stylesheetLoadTimeout,
             keepIframeSrcFn,
           });
 
@@ -1147,8 +1149,9 @@ export function serializeNodeWithId(
             preserveWhiteSpace,
             onSerialize,
             onIframeLoad,
-            onStylesheetLoad,
             iframeLoadTimeout,
+            onStylesheetLoad,
+            stylesheetLoadTimeout,
             keepIframeSrcFn,
           });
 

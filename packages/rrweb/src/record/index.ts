@@ -283,6 +283,9 @@ function record<T = eventWithTime>(
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
+        if (isSerializedStylesheet(n, mirror)) {
+          stylesheetManager.addStylesheet(n as HTMLLinkElement);
+        }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
@@ -292,7 +295,7 @@ function record<T = eventWithTime>(
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
-        this.stylesheetManager.attachStylesheet(linkEl, childSn, this.mirror);
+        stylesheetManager.attachStylesheet(linkEl, childSn, mirror);
       },
       keepIframeSrcFn,
     });
