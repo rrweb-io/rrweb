@@ -70,8 +70,7 @@ const setup = function (this: ISuite, content: string): ISuite {
 };
 
 describe('record', function (this: ISuite) {
-  jest.setTimeout(180_000);
-  // jest.setTimeout(10_000);
+  jest.setTimeout(10_000);
 
   const ctx: ISuite = setup.call(
     this,
