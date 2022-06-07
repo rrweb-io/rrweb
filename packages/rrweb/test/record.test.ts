@@ -145,10 +145,7 @@ describe('record', function (this: ISuite) {
         checkoutEveryNms: 500,
       });
     });
-    let count = 30;
-    while (count--) {
-      await ctx.page.type('input', 'a');
-    }
+    await ctx.page.type('input', 'a');
     await ctx.page.waitForTimeout(300);
     expect(
       ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
