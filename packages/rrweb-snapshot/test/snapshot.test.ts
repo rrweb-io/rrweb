@@ -180,3 +180,41 @@ describe('style elements', () => {
     });
   });
 });
+
+describe('scrollTop/scrollLeft', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+    });
+  };
+
+  const render = (html: string): HTMLDivElement => {
+    document.write(html);
+    return document.querySelector('div')!;
+  };
+
+  it('should serialize scroll positions', () => {
+    const el = render(`<div stylel='overflow: auto; width: 1px; height: 1px;'>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </div>`);
+    el.scrollTop = 10;
+    el.scrollLeft = 20;
+    expect(serializeNode(el)).toMatchObject({
+      attributes: {
+        rr_scrollTop: 10,
+        rr_scrollLeft: 20,
+      },
+    });
+  });
+});

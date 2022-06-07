@@ -1,15 +1,43 @@
 // tslint:disable:no-console no-any
 import * as fs from 'fs';
 import * as path from 'path';
+import type { Page } from 'puppeteer';
 import type { eventWithTime, recordOptions } from '../../src/types';
-import { startServer, launchPuppeteer, replaceLast, ISuite } from '../utils';
+import { startServer, launchPuppeteer, ISuite, getServerURL } from '../utils';
+
+const suites: Array<
+  {
+    title: string;
+    eval: string;
+    times?: number; // defaults to 5
+  } & ({ html: string } | { url: string })
+> = [
+  // {
+  //   title: 'benchmarking external website',
+  //   url: 'http://localhost:5050',
+  //   eval: 'document.querySelector("button").click()',
+  //   times: 10,
+  // },
+  {
+    title: 'create 1000x10 DOM nodes',
+    html: 'benchmark-dom-mutation.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
+  {
+    title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
+    html: 'benchmark-dom-mutation-add-and-remove.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
+];
 
 function avg(v: number[]): number {
   return v.reduce((prev, cur) => prev + cur, 0) / v.length;
 }
 
 describe('benchmark: mutation observer', () => {
-  let code: ISuite['code'];
+  jest.setTimeout(240000);
   let page: ISuite['page'];
   let browser: ISuite['browser'];
   let server: ISuite['server'];
@@ -20,9 +48,6 @@ describe('benchmark: mutation observer', () => {
       dumpio: true,
       headless: true,
     });
-
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
-    code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   afterEach(async () => {
@@ -36,30 +61,19 @@ describe('benchmark: mutation observer', () => {
 
   const getHtml = (fileName: string): string => {
     const filePath = path.resolve(__dirname, `../html/${fileName}`);
-    const html = fs.readFileSync(filePath, 'utf8');
-    return replaceLast(
-      html,
-      '</body>',
-      `
-    <script>
-      ${code}
-    </script>
-    </body>
-    `,
-    );
+    return fs.readFileSync(filePath, 'utf8');
   };
 
-  const suites: {
-    title: string;
-    html: string;
-    times?: number; // default to 5
-  }[] = [
-    {
-      title: 'create 1000x10 DOM nodes',
-      html: 'benchmark-dom-mutation.html',
-      times: 10,
-    },
-  ];
+  const addRecordingScript = async (page: Page) => {
+    // const scriptUrl = `${getServerURL(server)}/rrweb-1.1.3.js`;
+    const scriptUrl = `${getServerURL(server)}/rrweb.js`;
+    await page.evaluate((url) => {
+      const scriptEl = document.createElement('script');
+      scriptEl.src = url;
+      document.head.append(scriptEl);
+    }, scriptUrl);
+    await page.waitForFunction('window.rrweb');
+  };
 
   for (const suite of suites) {
     it(suite.title, async () => {
@@ -68,12 +82,19 @@ describe('benchmark: mutation observer', () => {
         console.log(`${message.type().toUpperCase()} ${message.text()}`),
       );
 
-      const times = suite.times ?? 5;
-      const durations: number[] = [];
-      for (let i = 0; i < times; i++) {
-        await page.goto('about:blank');
-        await page.setContent(getHtml.call(this, suite.html));
-        const duration = (await page.evaluate(() => {
+      const loadPage = async () => {
+        if ('html' in suite) {
+          await page.goto('about:blank');
+          await page.setContent(getHtml.call(this, suite.html));
+        } else {
+          await page.goto(suite.url);
+        }
+
+        await addRecordingScript(page);
+      };
+
+      const getDuration = async (): Promise<number> => {
+        return (await page.evaluate((triggerWorkloadScript) => {
           return new Promise((resolve, reject) => {
             let start = 0;
             let lastEvent: eventWithTime | null;
@@ -94,14 +115,55 @@ describe('benchmark: mutation observer', () => {
             const record = (window as any).rrweb.record;
             record(options);
 
-            (window as any).workload();
-
             start = Date.now();
-            setTimeout(() => {
+            eval(triggerWorkloadScript);
+
+            requestAnimationFrame(() => {
               record.addCustomEvent('FTAG', {});
-            }, 0);
+            });
           });
-        })) as number;
+        }, suite.eval)) as number;
+      };
+
+      // generate profile.json file
+      const profileFilename = `profile-${new Date().toISOString()}.json`;
+      const tempDirectory = path.resolve(path.join(__dirname, '../../temp'));
+      fs.mkdirSync(tempDirectory, { recursive: true });
+      const profilePath = path.resolve(tempDirectory, profileFilename);
+
+      const client = await page.target().createCDPSession();
+      await client.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+
+      await page.tracing.start({
+        path: profilePath,
+        screenshots: true,
+        categories: [
+          '-*',
+          'devtools.timeline',
+          'v8.execute',
+          'disabled-by-default-devtools.timeline',
+          'disabled-by-default-devtools.timeline.frame',
+          'toplevel',
+          'blink.console',
+          'blink.user_timing',
+          'latencyInfo',
+          'disabled-by-default-devtools.timeline.stack',
+          'disabled-by-default-v8.cpu_profiler',
+          'disabled-by-default-v8.cpu_profiler.hires',
+        ],
+      });
+      await loadPage();
+      await getDuration();
+      await page.waitForTimeout(1000);
+      await page.tracing.stop();
+      await client.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+
+      // calculate durations
+      const times = suite.times ?? 5;
+      const durations: number[] = [];
+      for (let i = 0; i < times; i++) {
+        await loadPage();
+        const duration = await getDuration();
         durations.push(duration);
       }
 
@@ -112,6 +174,7 @@ describe('benchmark: mutation observer', () => {
           durations: durations.join(', '),
         },
       ]);
+      console.log('profile: ', profilePath);
     });
   }
 });

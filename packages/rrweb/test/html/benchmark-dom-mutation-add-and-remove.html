@@ -1,0 +1,46 @@
+<html>
+  <body></body>
+  <script>
+    function add() {
+      const branches = 1000;
+      const depth = 10;
+      const frag = document.createDocumentFragment();
+      for (let b = 0; b < branches; b++) {
+        const node = document.createElement('div');
+        let d = 0;
+        node.setAttribute('branch', b.toString());
+        node.setAttribute('depth', d.toString());
+        let current = node;
+        while (d < depth - 1) {
+          d++;
+          const child = document.createElement('div');
+          child.setAttribute('branch', b.toString());
+          child.setAttribute('depth', d.toString());
+          current.appendChild(child);
+          current = child;
+        }
+        frag.appendChild(node);
+      }
+      document.body.appendChild(frag);
+    }
+
+    function remove() {
+      // const divs = Array.from(document.querySelectorAll('div'));
+      // const half = divs.length / 2;
+      // while (divs.length > half) {
+      //   const i = (divs.length * Math.random()) | 0;
+      //   divs[i].remove();
+      //   divs.splice(i, 1);
+      // }
+      document.querySelectorAll('div').forEach((node) => {
+        node.parentNode.removeChild(node);
+      });
+    }
+
+    window.workload = () => {
+      add();
+      remove();
+      add();
+    };
+  </script>
+</html>
