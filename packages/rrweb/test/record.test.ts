@@ -59,7 +59,6 @@ const setup = function (this: ISuite, content: string): ISuite {
   });
 
   afterEach(async () => {
-    // await ctx.page.waitForTimeout(60000);
     await ctx.page.close();
   });
 
