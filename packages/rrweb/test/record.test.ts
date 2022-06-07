@@ -545,7 +545,8 @@ describe('record iframes', function (this: ISuite) {
         }, 10);
       }, 10);
     });
-    await ctx.page.waitForTimeout(50);
+    await ctx.page.waitForTimeout(50); // wait till setTimeout is called
+    await waitForRAF(ctx.page); // wait till events get sent
     const styleRelatedEvents = ctx.events.filter(
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
