@@ -466,7 +466,7 @@ describe('record', function (this: ISuite) {
 });
 
 describe('record iframes', function (this: ISuite) {
-  jest.setTimeout(180_000);
+  jest.setTimeout(10_000);
 
   const ctx: ISuite = setup.call(
     this,
