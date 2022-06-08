@@ -70,9 +70,6 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
   } = options;
-  options.ignoreCSSAttributes?.forEach((s) => {
-    console.log(`element: ${s}`);
-  });
 
   // runtime checks for user options
   if (!emit) {

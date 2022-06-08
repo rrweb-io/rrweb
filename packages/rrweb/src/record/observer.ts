@@ -610,7 +610,6 @@ function initStyleDeclarationObserver(
   ) {
     // ignore this mutation if we do not care about this css attribute
     if (ignoreCSSAttributes.has(property)) {
-      console.log('here?');
       return setProperty.apply(this, arguments);
     }
     const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
@@ -635,7 +634,6 @@ function initStyleDeclarationObserver(
   ) {
     // ignore this mutation if we do not care about this css attribute
     if (ignoreCSSAttributes.has(property)) {
-      console.log('here??');
       return setProperty.apply(this, arguments);
     }
     const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
