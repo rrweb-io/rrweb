@@ -345,6 +345,34 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
+  // it('does not capture style property changes when the css element is ignored', async () => {
+  //   await ctx.page.evaluate(() => {
+  //     const { record } = ((window as unknown) as IWindow).rrweb;
+
+  //     record({
+  //       emit: ((window as unknown) as IWindow).emit,
+  //       ignoreCSSAttributes: new Set(['color']),
+  //     });
+
+  //     const styleElement = document.createElement('style');
+  //     document.head.appendChild(styleElement);
+
+  //     const styleSheet = <CSSStyleSheet>styleElement.sheet;
+  //     styleSheet.insertRule('body { background: #000; }');
+  //     setTimeout(() => {
+  //       (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty(
+  //         'color',
+  //         'green',
+  //       );
+  //       (styleSheet.cssRules[0] as CSSStyleRule).style.removeProperty(
+  //         'background',
+  //       );
+  //     }, 0);
+  //   });
+  //   await ctx.page.waitForTimeout(50);
+  //   assertSnapshot(ctx.events);
+  // });
+
   it('captures inserted style text nodes correctly', async () => {
     await ctx.page.evaluate(() => {
       const { record } = ((window as unknown) as IWindow).rrweb;

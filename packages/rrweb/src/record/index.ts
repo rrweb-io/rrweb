@@ -68,7 +68,12 @@ function record<T = eventWithTime>(
     inlineImages = false,
     plugins,
     keepIframeSrcFn = () => false,
+    ignoreCSSAttributes = new Set([]),
   } = options;
+  options.ignoreCSSAttributes?.forEach((s) => {
+    console.log(`element: ${s}`);
+  });
+
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
@@ -438,6 +443,7 @@ function record<T = eventWithTime>(
           iframeManager,
           shadowDomManager,
           canvasManager,
+          ignoreCSSAttributes,
           plugins:
             plugins
               ?.filter((p) => p.observer)
