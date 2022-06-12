@@ -1,6 +1,6 @@
 import type { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, DocumentDimension, IWindow, DeprecatedMirror, textMutation } from './types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
+import type { RRNode, RRIFrameElement } from 'rrdom';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
 export declare let _mirror: DeprecatedMirror;
 export declare function throttle<T>(func: (arg: T) => void, wait: number, options?: throttleOptions): (arg: T) => void;

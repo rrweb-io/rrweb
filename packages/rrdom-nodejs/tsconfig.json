@@ -16,5 +16,5 @@
   },
   "compileOnSave": true,
   "exclude": ["test"],
-  "include": ["src", "../rrweb/src/record/workers/workers.d.ts"]
+  "include": ["src", "test.d.ts", "../rrweb/src/record/workers/workers.d.ts"]
 }
