@@ -30,14 +30,16 @@
     "lerna": "^4.0.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "nx": "14.2.4"
   },
   "scripts": {
     "lerna": "lerna",
-    "build:all": "yarn lerna run prepublish",
-    "test": "yarn lerna run test",
-    "test:watch": "yarn lerna run test:watch --parallel",
-    "dev": "yarn lerna run dev --parallel",
+    "build:all": "nx run-many --target=prepublish --all",
+    "test": "nx run-many --target=test --all --parallel 1",
+    "test:watch": "nx run-many --target=test:watch --all",
+    "dev": "nx run-many --target=dev --all",
+    "check-types": "nx run-many --target=check-types --all",
     "repl": "cd packages/rrweb && npm run repl",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'"
   },

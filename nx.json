@@ -1,0 +1,46 @@
+{
+  "extends": "nx/presets/npm.json",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": [
+          "dev",
+          "bundle",
+          "bundle:es-only",
+          "check-types",
+          "test",
+          "prepublish",
+          "lint",
+          "prepare",
+          "prepack",
+          "test:headless",
+          "test:watch",
+          "repl",
+          "bundle:browser",
+          "typings",
+          "build",
+          "prepublishOnly",
+          "validate"
+        ]
+      }
+    }
+  },
+  "targetDependencies": {
+    "prepare": [
+      {
+        "target": "prepare",
+        "projects": "dependencies"
+      }
+    ],
+    "build": [
+      {
+        "target": "build",
+        "projects": "dependencies"
+      }
+    ]
+  },
+  "affected": {
+    "defaultBase": "master"
+  }
+}

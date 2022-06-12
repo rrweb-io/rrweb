@@ -6,5 +6,6 @@
     "publish": {
       "message": "chore(release): publish new version"
     }
-  }
+  },
+  "useNx": true
 }
