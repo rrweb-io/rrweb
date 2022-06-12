@@ -11,6 +11,7 @@ install:
   - yarn
 
 script:
+  - yarn lerna bootstrap
   - yarn build:all
   - yarn check-types
   - xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
