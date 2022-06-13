@@ -67,4 +67,4 @@ source -> IncrementalSource.Font
 data -> fontData
 ```
 
-enum IncrementalSource's definition can be found in this [list](https://github.com/rrweb-io/rrweb/blob/master/src/types.ts#L64).
+enum IncrementalSource's definition can be found in this [list](https://github.com/rrweb-io/rrweb/blob/master/packages/rrweb/typings/types.d.ts#L62).
