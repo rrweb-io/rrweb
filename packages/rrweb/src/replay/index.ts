@@ -263,7 +263,7 @@ export class Replayer {
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
-        this.iframe.contentWindow!.scrollTo(
+        this.iframe.contentWindow?.scrollTo(
           (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
         );
       }, 1);
