@@ -308,6 +308,7 @@ export default class MutationBuffer {
           this.iframeManager.attachIframe(iframe, childSn, this.mirror);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
+        newlyAddedElement: true,
       });
       if (sn) {
         adds.push({
@@ -432,7 +433,10 @@ export default class MutationBuffer {
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
-        if (!isBlocked(m.target, this.blockClass, this.blockSelector) && value !== m.oldValue) {
+        if (
+          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
+          value !== m.oldValue
+        ) {
           this.texts.push({
             value:
               needMaskingText(
@@ -461,7 +465,10 @@ export default class MutationBuffer {
             maskInputFn: this.maskInputFn,
           });
         }
-        if (isBlocked(m.target, this.blockClass, this.blockSelector) || value === m.oldValue) {
+        if (
+          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+          value === m.oldValue
+        ) {
           return;
         }
         let item: attributeCursor | undefined = this.attributes.find(
@@ -518,6 +525,11 @@ export default class MutationBuffer {
         break;
       }
       case 'childList': {
+        /**
+         * Parent is blocked, ignore all child mutations
+         */
+        if (isBlocked(m.target, this.blockClass, this.blockSelector, true)) return;
+
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
@@ -525,7 +537,7 @@ export default class MutationBuffer {
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector) ||
+            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
             isIgnored(n, this.mirror) ||
             !isSerialized(n, this.mirror)
           ) {
@@ -571,19 +583,17 @@ export default class MutationBuffer {
     }
   };
 
+  /**
+   * Make sure you check if `n`'s parent is blocked before calling this function
+   * */
   private genAdds = (n: Node, target?: Node) => {
-    // parent was blocked, so we can ignore this node
-    if (target && isBlocked(target, this.blockClass, this.blockSelector)) {
-      return;
-    }
-
-    if (this.mirror.getMeta(n)) {
+    if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
         return;
       }
       this.movedSet.add(n);
       let targetId: number | null = null;
-      if (target && this.mirror.getMeta(target)) {
+      if (target && this.mirror.hasNode(target)) {
         targetId = this.mirror.getId(target);
       }
       if (targetId && targetId !== -1) {
@@ -596,8 +606,8 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector))
-      (n ).childNodes.forEach((childN) => this.genAdds(childN));
+    if (!isBlocked(n, this.blockClass, this.blockSelector, false))
+      n.childNodes.forEach((childN) => this.genAdds(childN));
   };
 }
 
@@ -617,6 +627,15 @@ function isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
+  if (removes.length === 0) return false;
+  return _isParentRemoved(removes, n, mirror);
+}
+
+function _isParentRemoved(
+  removes: removedNodeMutation[],
+  n: Node,
+  mirror: Mirror,
+): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
@@ -625,10 +644,15 @@ function isParentRemoved(
   if (removes.some((r) => r.id === parentId)) {
     return true;
   }
-  return isParentRemoved(removes, parentNode, mirror);
+  return _isParentRemoved(removes, parentNode, mirror);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
+  if (set.size === 0) return false;
+  return _isAncestorInSet(set, n);
+}
+
+function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
@@ -636,5 +660,5 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
   if (set.has(parentNode)) {
     return true;
   }
-  return isAncestorInSet(set, parentNode);
+  return _isAncestorInSet(set, parentNode);
 }

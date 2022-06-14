@@ -10,7 +10,7 @@ import type {
   textMutation,
 } from './types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE } from 'rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
 
 export function on(
@@ -180,36 +180,39 @@ export function getWindowWidth(): number {
   );
 }
 
-export function isBlocked(node: Node | null, blockClass: blockClass, blockSelector: string | null): boolean {
+/**
+ * Checks if the given element set to be blocked by rrweb
+ * @param node - node to check
+ * @param blockClass - class name to check
+ * @param blockSelector - css selectors to check
+ * @param checkAncestors - whether to search through parent nodes for the block class
+ * @returns true/false if the node was blocked or not
+ */
+export function isBlocked(
+  node: Node | null,
+  blockClass: blockClass,
+  blockSelector: string | null,
+  checkAncestors: boolean,
+): boolean {
   if (!node) {
     return false;
   }
-  if (node.nodeType === node.ELEMENT_NODE) {
-    let needBlock = false;
-    if (typeof blockClass === 'string') {
-      if ((node as HTMLElement).closest !== undefined) {
-        needBlock = (node as HTMLElement).closest('.' + blockClass) !== null;
-      } else {
-        needBlock = (node as HTMLElement).classList.contains(blockClass);
-      }
-    } else {
-      (node as HTMLElement).classList.forEach((className) => {
-        if (blockClass.test(className)) {
-          needBlock = true;
-        }
-      });
-    }
-    if (blockSelector) {
-      needBlock = needBlock || (node as HTMLElement).matches(blockSelector);
-    }
-
-    return needBlock || isBlocked(node.parentNode, blockClass, blockSelector);
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  if (!el) return false;
+  
+  if (typeof blockClass === 'string') {
+    if (el.classList.contains(blockClass)) return true;
+    if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
+  } else {
+    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
   }
-  if (node.nodeType === node.TEXT_NODE) {
-    // check parent node since text node do not have class name
-    return isBlocked(node.parentNode, blockClass, blockSelector);
+  if (blockSelector) {
+    if ((node as HTMLElement).matches(blockSelector)) return true;
   }
-  return isBlocked(node.parentNode, blockClass, blockSelector);
+  return isBlocked(node.parentNode, blockClass, blockSelector, checkAncestors);
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {

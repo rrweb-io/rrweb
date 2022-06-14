@@ -13,7 +13,7 @@ export function isElement(n: Node): n is Element {
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
   const host: Element | null = (n as ShadowRoot)?.host;
-  return Boolean(host && host.shadowRoot && host.shadowRoot === n);
+  return Boolean(host?.shadowRoot === n);
 }
 
 export class Mirror implements IMirror<Node> {

@@ -192,6 +192,23 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
+  it('should record scroll position', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+      const p = document.createElement('p');
+      p.innerText = 'testtesttesttesttesttesttesttesttesttest';
+      p.setAttribute('style', 'overflow: auto; height: 1px; width: 1px;');
+      document.body.appendChild(p);
+      p.scrollTop = 10;
+      p.scrollLeft = 10;
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
   it('can add custom event', async () => {
     await ctx.page.evaluate(() => {
       const { record, addCustomEvent } = ((window as unknown) as IWindow).rrweb;

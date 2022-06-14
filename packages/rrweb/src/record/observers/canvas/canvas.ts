@@ -18,9 +18,8 @@ export default function initCanvasContextObserver(
           contextType: string,
           ...args: Array<unknown>
         ) {
-          if (!isBlocked(this, blockClass, blockSelector)) {
-            if (!('__context' in this))
-              (this ).__context = contextType;
+          if (!isBlocked(this, blockClass, blockSelector, true)) {
+            if (!('__context' in this)) this.__context = contextType;
           }
           return original.apply(this, [contextType, ...args]);
         };

@@ -10,7 +10,7 @@ export declare function patch(source: {
 }, name: string, replacement: (...args: any[]) => any): () => void;
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
-export declare function isBlocked(node: Node | null, blockClass: blockClass, blockSelector: string | null): boolean;
+export declare function isBlocked(node: Node | null, blockClass: blockClass, blockSelector: string | null, checkAncestors: boolean): boolean;
 export declare function isSerialized(n: Node, mirror: Mirror): boolean;
 export declare function isIgnored(n: Node, mirror: Mirror): boolean;
 export declare function isAncestorRemoved(target: Node, mirror: Mirror): boolean;
