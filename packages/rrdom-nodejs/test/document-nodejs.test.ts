@@ -16,7 +16,7 @@ import {
   RRStyleElement,
   RRText,
 } from '../src/document-nodejs';
-import { buildFromDom } from '../src/virtual-dom';
+import { buildFromDom } from 'rrdom';
 
 describe('RRDocument for nodejs environment', () => {
   describe('RRDocument API', () => {
@@ -542,6 +542,6 @@ describe('RRDocument for nodejs environment', () => {
 });
 
 function getHtml(fileName: string) {
-  const filePath = path.resolve(__dirname, `./html/${fileName}`);
+  const filePath = path.resolve(__dirname, `../../rrdom/test/html/${fileName}`);
   return fs.readFileSync(filePath, 'utf8');
 }

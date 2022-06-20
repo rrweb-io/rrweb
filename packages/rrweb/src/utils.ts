@@ -11,7 +11,7 @@ import type {
 } from './types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
+import type { RRNode, RRIFrameElement } from 'rrdom';
 
 export function on(
   type: string,

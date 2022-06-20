@@ -13,7 +13,7 @@ import {
   ClassList,
   IRRDocument,
   CSSStyleDeclaration,
-} from './document';
+} from 'rrdom';
 const nwsapi = require('nwsapi');
 const cssom = require('cssom');
 const cssstyle = require('cssstyle');
@@ -53,22 +53,27 @@ export class RRDocument
     return this._nwsapi;
   }
 
+  // @ts-ignore
   get documentElement(): RRElement | null {
     return super.documentElement as RRElement | null;
   }
 
+  // @ts-ignore
   get body(): RRElement | null {
     return super.body as RRElement | null;
   }
 
+  // @ts-ignore
   get head() {
     return super.head as RRElement | null;
   }
 
+  // @ts-ignore
   get implementation(): RRDocument {
     return this;
   }
 
+  // @ts-ignore
   get firstElementChild(): RRElement | null {
     return this.documentElement;
   }
@@ -198,6 +203,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
     });
   }
 
+  // @ts-ignore
   get style() {
     return (this._style as unknown) as CSSStyleDeclaration;
   }

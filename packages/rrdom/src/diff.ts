@@ -22,7 +22,7 @@ import type {
   RRStyleElement,
   RRDocument,
   Mirror,
-} from './virtual-dom';
+} from '.';
 
 const NAMESPACES: Record<string, string> = {
   svg: 'http://www.w3.org/2000/svg',
@@ -113,7 +113,7 @@ export function diff(
       break;
     }
     case RRNodeType.Element: {
-      const oldElement = (oldTree ) as HTMLElement;
+      const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as IRRElement;
       diffProps(oldElement, newRRElement, rrnodeMirror);
       scrollDataToApply = (newRRElement as RRElement).scrollData;
@@ -121,7 +121,7 @@ export function diff(
       switch (newRRElement.tagName) {
         case 'AUDIO':
         case 'VIDEO': {
-          const oldMediaElement = (oldTree ) as HTMLMediaElement;
+          const oldMediaElement = oldTree as HTMLMediaElement;
           const newMediaRRElement = newRRElement as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
@@ -141,7 +141,7 @@ export function diff(
               replayer.applyCanvas(
                 canvasMutation.event,
                 canvasMutation.mutation,
-                (oldTree ) as HTMLCanvasElement,
+                oldTree as HTMLCanvasElement,
               ),
           );
           break;
@@ -191,8 +191,7 @@ export function diff(
 
   // IFrame element doesn't have child nodes.
   if (newTree.nodeName === 'IFRAME') {
-    const oldContentDocument = ((oldTree ) as HTMLIFrameElement)
-      .contentDocument;
+    const oldContentDocument = (oldTree as HTMLIFrameElement).contentDocument;
     const newIFrameElement = newTree as RRIFrameElement;
     // If the iframe is cross-origin, the contentDocument will be null.
     if (oldContentDocument) {
@@ -319,11 +318,9 @@ function diffChildren(
         if (
           replayer.mirror.getMeta(parentNode)?.type === RRNodeType.Document &&
           replayer.mirror.getMeta(newNode)?.type === RRNodeType.Element &&
-          ((parentNode ) as Document).documentElement
+          (parentNode as Document).documentElement
         ) {
-          parentNode.removeChild(
-            ((parentNode ) as Document).documentElement,
-          );
+          parentNode.removeChild((parentNode as Document).documentElement);
           oldChildren[oldStartIndex] = undefined;
           oldStartNode = undefined;
         }
@@ -417,8 +414,7 @@ export function getNestedRule(
     return rule;
   } else {
     return getNestedRule(
-      ((rule ).cssRules[position[1]] as CSSGroupingRule)
-        .cssRules,
+      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
       position.slice(2),
     );
   }

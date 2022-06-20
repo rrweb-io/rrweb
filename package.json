@@ -18,7 +18,8 @@
     "packages/rrweb",
     "packages/rrweb-snapshot",
     "packages/rrweb-player",
-    "packages/rrdom"
+    "packages/rrdom",
+    "packages/rrdom-nodejs"
   ],
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.25.0",
