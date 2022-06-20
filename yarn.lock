@@ -10808,6 +10808,84 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
+turbo-darwin-64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-darwin-64/download/turbo-darwin-64-1.2.4.tgz#421d68e548150da80ce846a81476f24cb335cc2f"
+  integrity sha1-Qh1o5UgVDagM6EaoFHbyTLM1zC8=
+
+turbo-darwin-arm64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-darwin-arm64/download/turbo-darwin-arm64-1.2.4.tgz#0fa601b4c54c5011d2dc9d3e8698287da483ee94"
+  integrity sha1-D6YBtMVMUBHS3J0+hpgofaSD7pQ=
+
+turbo-freebsd-64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-freebsd-64/download/turbo-freebsd-64-1.2.4.tgz#296f3f555df382d90280df402ea338a0b46c35a4"
+  integrity sha1-KW8/VV3zgtkCgN9ALqM4oLRsNaQ=
+
+turbo-freebsd-arm64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-freebsd-arm64/download/turbo-freebsd-arm64-1.2.4.tgz#037a650a79781ccc3c013d9b2b0e104a4563430a"
+  integrity sha1-A3plCnl4HMw8AT2bKw4QSkVjQwo=
+
+turbo-linux-32@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-linux-32/download/turbo-linux-32-1.2.4.tgz#a3a4a54e460193cb8b780b007b143b3918c490a6"
+  integrity sha1-o6SlTkYBk8uLeAsAexQ7ORjEkKY=
+
+turbo-linux-64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-linux-64/download/turbo-linux-64-1.2.4.tgz#8c5562d21ef48c35a39bc69712ddb5254ffeac0e"
+  integrity sha1-jFVi0h70jDWjm8aXEt21JU/+rA4=
+
+turbo-linux-arm64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-linux-arm64/download/turbo-linux-arm64-1.2.4.tgz#24cd81deb2b42086cb6c0ad313b30328e348ef00"
+  integrity sha1-JM2B3rK0IIbLbArTE7MDKONI7wA=
+
+turbo-linux-arm@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-linux-arm/download/turbo-linux-arm-1.2.4.tgz#dcb4917941dc8b6c8572ce17d0ed52c427b93c29"
+  integrity sha1-3LSReUHci2yFcs4X0O1SxCe5PCk=
+
+turbo-linux-mips64le@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-linux-mips64le/download/turbo-linux-mips64le-1.2.4.tgz#34b7c345e21ed84d80e271c957e40c8cab454663"
+  integrity sha1-NLfDReIe2E2A4nHJV+QMjKtFRmM=
+
+turbo-linux-ppc64le@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-linux-ppc64le/download/turbo-linux-ppc64le-1.2.4.tgz#d12993caa4c43624fa87f61e1d8a1049ad3dc012"
+  integrity sha1-0SmTyqTENiT6h/YeHYoQSa09wBI=
+
+turbo-windows-32@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-windows-32/download/turbo-windows-32-1.2.4.tgz#21263011af742297b94746cd4f42434a11f628b2"
+  integrity sha1-ISYwEa90Ipe5R0bNT0JDShH2KLI=
+
+turbo-windows-64@1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo-windows-64/download/turbo-windows-64-1.2.4.tgz#65a1ab8259515e06b1c285895a90105af9db0f4a"
+  integrity sha1-ZaGrgllRXgaxwoWJWpAQWvnbD0o=
+
+turbo@^1.2.4:
+  version "1.2.4"
+  resolved "http://192.168.26.29:7001/turbo/download/turbo-1.2.4.tgz#feeee3487bd5cafaf9cbba0f46f9b5970309d04a"
+  integrity sha1-/u7jSHvVyvr5y7oPRvm1lwMJ0Eo=
+  optionalDependencies:
+    turbo-darwin-64 "1.2.4"
+    turbo-darwin-arm64 "1.2.4"
+    turbo-freebsd-64 "1.2.4"
+    turbo-freebsd-arm64 "1.2.4"
+    turbo-linux-32 "1.2.4"
+    turbo-linux-64 "1.2.4"
+    turbo-linux-arm "1.2.4"
+    turbo-linux-arm64 "1.2.4"
+    turbo-linux-mips64le "1.2.4"
+    turbo-linux-ppc64le "1.2.4"
+    turbo-windows-32 "1.2.4"
+    turbo-windows-64 "1.2.4"
+
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
   resolved "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz"
