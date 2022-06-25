@@ -27,19 +27,9 @@ export class StackFrame {
   toString() {
     const lineNumber = this.lineNumber || '';
     const columnNumber = this.columnNumber || '';
-    if (this.functionName) {
-      return (
-        this.functionName +
-        ' (' +
-        this.fileName +
-        ':' +
-        lineNumber +
-        ':' +
-        columnNumber +
-        ')'
-      );
-    }
-    return this.fileName + ':' + lineNumber + ':' + columnNumber;
+    if (this.functionName)
+      return `${this.functionName} (${this.fileName}:${lineNumber}:${columnNumber})`;
+    return `${this.fileName}:${lineNumber}:${columnNumber}`;
   }
 }
 
@@ -55,9 +45,6 @@ const SAFARI_NATIVE_CODE_REGEXP = /^(eval@)?(\[native code])?$/;
 export const ErrorStackParser = {
   /**
    * Given an Error object, extract the most information from it.
-   *
-   * @param {Error} error object
-   * @return {Array} of StackFrames
    */
   parse: function (error: Error): StackFrame[] {
     // https://github.com/rrweb-io/rrweb/issues/782
@@ -65,8 +52,10 @@ export const ErrorStackParser = {
       return [];
     }
     if (
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       typeof error.stacktrace !== 'undefined' ||
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       typeof error['opera#sourceloc'] !== 'undefined'
     ) {
