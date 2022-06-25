@@ -12,7 +12,12 @@ import {
   generateRecordSnippet,
   ISuite,
 } from './utils';
-import { recordOptions, eventWithTime, EventType } from '../src/types';
+import {
+  recordOptions,
+  eventWithTime,
+  EventType,
+  RecordPlugin,
+} from '../src/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
@@ -442,8 +447,8 @@ describe('record integration tests', function (this: ISuite) {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
-      getHtml.call(this, 'log.html', {
-        plugins: '[rrwebConsoleRecord.getRecordConsolePlugin()]',
+      getHtml('log.html', {
+        plugins: ('[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown) as RecordPlugin<unknown>[],
       }),
     );
 
