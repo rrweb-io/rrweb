@@ -386,7 +386,7 @@ function isStylesheetLoaded(link: HTMLLinkElement) {
 function onceStylesheetLoaded(
   link: HTMLLinkElement,
   listener: () => unknown,
-  iframeLoadTimeout: number,
+  styleSheetLoadTimeout: number,
 ) {
   let fired = false;
   let styleSheetLoaded: StyleSheet | null;
@@ -403,7 +403,7 @@ function onceStylesheetLoaded(
       listener();
       fired = true;
     }
-  }, iframeLoadTimeout);
+  }, styleSheetLoadTimeout);
 
   link.addEventListener('load', () => {
     clearTimeout(timer);
