@@ -27,6 +27,11 @@ const baseConfigs = [
     name: pkg.name,
     path: pkg.name,
   },
+  {
+    input: './src/document-nodejs.ts',
+    name: 'RRDocument',
+    path: 'document-nodejs',
+  },
 ];
 
 let configs = [];
@@ -46,30 +51,6 @@ for (let config of baseConfigs) {
     },
   );
   extraConfigs.push(
-    // browser
-    {
-      input: config.input,
-      plugins: basePlugins,
-      output: [
-        {
-          name: config.name,
-          format: 'iife',
-          file: pkg.unpkg.replace(pkg.name, config.path),
-        },
-      ],
-    },
-    {
-      input: config.input,
-      plugins: basePlugins.concat(terser()),
-      output: [
-        {
-          name: config.name,
-          format: 'iife',
-          file: toMinPath(pkg.unpkg).replace(pkg.name, config.path),
-          sourcemap: true,
-        },
-      ],
-    },
     // CommonJS
     {
       input: config.input,

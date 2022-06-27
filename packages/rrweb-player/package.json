@@ -4,7 +4,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@rollup/plugin-typescript": "^8.3.2",
+    "rollup-plugin-typescript2": "^0.31.2",
     "@types/offscreencanvas": "^2019.6.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -20,7 +20,7 @@
     "svelte-check": "^1.4.0",
     "svelte-preprocess": "^4.0.0",
     "tslib": "^2.0.0",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.3"
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",

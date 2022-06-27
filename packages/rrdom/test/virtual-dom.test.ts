@@ -27,8 +27,8 @@ import {
   RRCanvasElement,
   RRDocument,
   RRElement,
-  RRNode,
-} from '../src/virtual-dom';
+  BaseRRNode as RRNode,
+} from '../src';
 
 const _typescript = (typescript as unknown) as typeof typescript.default;
 const printRRDomCode = `
@@ -219,9 +219,9 @@ describe('RRDocument for browser environment', () => {
     beforeAll(async () => {
       browser = await puppeteer.launch();
       const bundle = await rollup.rollup({
-        input: path.resolve(__dirname, '../src/virtual-dom.ts'),
+        input: path.resolve(__dirname, '../src/index.ts'),
         plugins: [
-          resolve(),
+          (resolve() as unknown) as rollup.Plugin,
           (_typescript({
             tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
           }) as unknown) as rollup.Plugin,

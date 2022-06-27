@@ -1791,10 +1791,10 @@
     magic-string "^0.25.7"
     resolve "^1.17.0"
 
-"@rollup/plugin-node-resolve@^13.0.4":
-  version "13.0.6"
-  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-13.0.6.tgz"
-  integrity sha512-sFsPDMPd4gMqnh2gS0uIxELnoRUp5kBl5knxD2EO0778G1oOJv4G1vyT2cpWz75OU2jDVcXhjVUuTAczGyFNKA==
+"@rollup/plugin-node-resolve@^13.0.4", "@rollup/plugin-node-resolve@^13.2.1":
+  version "13.2.1"
+  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-13.2.1.tgz"
+  integrity sha512-btX7kzGvp1JwShQI9V6IM841YKNPYjKCvUbNrQ2EcVYbULtUd/GH6wZ/qdqH13j9pOHBER+EZXNN2L8RSJhVRA==
   dependencies:
     "@rollup/pluginutils" "^3.1.0"
     "@types/resolve" "1.17.1"
@@ -1814,34 +1814,6 @@
     deepmerge "^4.2.2"
     is-module "^1.0.0"
     resolve "^1.19.0"
-
-"@rollup/plugin-node-resolve@^13.2.1":
-  version "13.2.1"
-  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-13.2.1.tgz"
-  integrity sha512-btX7kzGvp1JwShQI9V6IM841YKNPYjKCvUbNrQ2EcVYbULtUd/GH6wZ/qdqH13j9pOHBER+EZXNN2L8RSJhVRA==
-  dependencies:
-    "@rollup/pluginutils" "^3.1.0"
-    "@types/resolve" "1.17.1"
-    builtin-modules "^3.1.0"
-    deepmerge "^4.2.2"
-    is-module "^1.0.0"
-    resolve "^1.19.0"
-
-"@rollup/plugin-typescript@^8.2.5":
-  version "8.2.5"
-  resolved "https://registry.npmjs.org/@rollup/plugin-typescript/-/plugin-typescript-8.2.5.tgz"
-  integrity sha512-QL/LvDol/PAGB2O0S7/+q2HpSUNodpw7z6nGn9BfoVCPOZ0r4EALrojFU29Bkoi2Hr2jgTocTejJ5GGWZfOxbQ==
-  dependencies:
-    "@rollup/pluginutils" "^3.1.0"
-    resolve "^1.17.0"
-
-"@rollup/plugin-typescript@^8.3.2":
-  version "8.3.2"
-  resolved "https://registry.npmjs.org/@rollup/plugin-typescript/-/plugin-typescript-8.3.2.tgz"
-  integrity sha512-MtgyR5LNHZr3GyN0tM7gNO9D0CS+Y+vflS4v/PHmrX17JCkHUYKvQ5jN5o3cz1YKllM3duXUqu3yOHwMPUxhDg==
-  dependencies:
-    "@rollup/pluginutils" "^3.1.0"
-    resolve "^1.17.0"
 
 "@rollup/pluginutils@4":
   version "4.1.1"
@@ -1965,12 +1937,12 @@
 
 "@types/cssom@^0.4.1":
   version "0.4.1"
-  resolved "https://registry.npmjs.org/@types/cssom/-/cssom-0.4.1.tgz"
+  resolved "https://registry.npmjs.org/@types/cssom/-/cssom-0.4.1.tgz#fb64e145b425bd6c1b0ed78ebd66ba43b6e088ab"
   integrity sha512-hHGVfUuGZe5FpgCxpTJccH0gD1bui5gWceW0We0TyAzUr6wBaqDnSLG9Yr3xqS4AkGhnclNOwRSXH/LIfki3fQ==
 
 "@types/cssstyle@^2.2.1":
   version "2.2.1"
-  resolved "https://registry.npmjs.org/@types/cssstyle/-/cssstyle-2.2.1.tgz"
+  resolved "https://registry.npmjs.org/@types/cssstyle/-/cssstyle-2.2.1.tgz#fa010824006ff47af94a6b9baf9759e031815347"
   integrity sha512-CSQFKdZc3dmWoZXLAM0pPL6XiYLG8hMGzImM2MwQ9kavB5LnbeMGan94CCj4oxY65xMl5mRMwrFUfKPOWO4WpQ==
 
 "@types/estree@*":
@@ -2088,7 +2060,7 @@
 
 "@types/nwsapi@^2.2.2":
   version "2.2.2"
-  resolved "https://registry.npmjs.org/@types/nwsapi/-/nwsapi-2.2.2.tgz"
+  resolved "https://registry.npmjs.org/@types/nwsapi/-/nwsapi-2.2.2.tgz#1b1dccfc38b2b7e1b9ea71d5285796878375e862"
   integrity sha512-C4G47l3cAra4729xbhL9y3PjTpO7LJwXd47Fn1mbnZ6WcTkFPo8iDJPyMGCIudxpc7aeM8K1Fmw+lZfOb5ya9g==
 
 "@types/offscreencanvas@^2019.6.4":
@@ -3499,7 +3471,7 @@ compare-func@^2.0.0:
 
 compare-versions@^4.1.3:
   version "4.1.3"
-  resolved "https://registry.npmjs.org/compare-versions/-/compare-versions-4.1.3.tgz"
+  resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-4.1.3.tgz#8f7b8966aef7dc4282b45dfa6be98434fc18a1a4"
   integrity sha512-WQfnbDcrYnGr55UwbxKiQKASnTtNnaAWVi8jZyy8NTpVAXWACSne8lMD1iaIo9AiU6mnuLvSVshCzewVuWxHUg==
 
 concat-map@0.0.1:
@@ -9676,6 +9648,14 @@ resolve@^1.1.7, resolve@^1.10.0, resolve@^1.16.1, resolve@^1.17.0, resolve@^1.19
     is-core-module "^2.2.0"
     path-parse "^1.0.6"
 
+resolve@~1.19.0:
+  version "1.19.0"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.19.0.tgz#1af5bf630409734a067cae29318aac7fa29a267c"
+  integrity sha512-rArEXAgsBG4UgRGcynxWIWKFvh/XZCcS8UJdHhwy91zwAvCZIbcs+vAbflgBnNjYMs/i/i+/Ux6IZhML1yPvxg==
+  dependencies:
+    is-core-module "^2.1.0"
+    path-parse "^1.0.6"
+
 restore-cursor@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/restore-cursor/-/restore-cursor-2.0.0.tgz"
@@ -10812,6 +10792,90 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
+turbo-darwin-64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-darwin-64/-/turbo-darwin-64-1.2.16.tgz#1586fd6e52ffb5ad5e1e3ec8afe1c873f7fd98d9"
+  integrity sha512-dyitLQJdH3uLVdlH9jAkP4LqEO/K+wOXjUqOzjTciRLjQPzmsNY60/bmFHODADK4eBBl1nxbtn7tmmoT4vS1qA==
+
+turbo-darwin-arm64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-darwin-arm64/-/turbo-darwin-arm64-1.2.16.tgz#3faf9c657fa5feb16465316ac8d47c4a2790c2f1"
+  integrity sha512-Ex6uM4HU7rGXdhvJMpzNpp6qxglJ98nWeIi5qR/lBXHLjK3UCvSW8BEALArUJYJTXS9FZBq1a5LowFqXYsfDcA==
+
+turbo-freebsd-64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-freebsd-64/-/turbo-freebsd-64-1.2.16.tgz#2674c2078eaa79200a3b91639e530b287a735cb4"
+  integrity sha512-onRGKMvog8B3XDssSBIAg+FrEq9pcBoAybP7bpi/uYIH1L/WQ7YMmLn88X9JX19ehYuVOVZrjap4jWH2GIkU8A==
+
+turbo-freebsd-arm64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-freebsd-arm64/-/turbo-freebsd-arm64-1.2.16.tgz#88cc25733b19880b4a14a9d4f34770da9e898a92"
+  integrity sha512-S0EqPqxwnJuVNNXRgcHB0r8ai8LSrpHdihVJKRM7WYmIR7isccBEf/G9agrt73sCXwjvenxFs4HDR7cSvGt14Q==
+
+turbo-linux-32@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-linux-32/-/turbo-linux-32-1.2.16.tgz#7c60a19acd32862085566da0f9389d2db36a7aee"
+  integrity sha512-ecbqmGOxgTWePGrowtwyvZGfvwaLxFWmPK21cU0PS+fzoZBaVmzYmniTdd/2EkGCw7TOPhtiT22v96fWcnRycA==
+
+turbo-linux-64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-linux-64/-/turbo-linux-64-1.2.16.tgz#d589bf73bbfa38fa73ad8ec786c0b89b678e7af8"
+  integrity sha512-q6gtdMWCzM0Sktkd73zcaQjNoeM1MjtrbwQBctWN/Sgj0eiPBPnzpIvokvx98x7RLf4qyI99/mlme0Dn5fx21A==
+
+turbo-linux-arm64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-linux-arm64/-/turbo-linux-arm64-1.2.16.tgz#9eaaee4094f71a266553248dfaadc59756696242"
+  integrity sha512-gUf67tYJ/N09WAZTTmtUWYrqm381tZxiulnRGAIM+iRsaTrweyUKZaYXwJvlPpI/cQOw25wCG9/IyvxLeagL8A==
+
+turbo-linux-arm@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-linux-arm/-/turbo-linux-arm-1.2.16.tgz#54774c7e6e4f91ebdb211fa48b1b2a46b1e3c61c"
+  integrity sha512-du7uvExELNb89V3g7iM0XP21fR1Yl3EoHRcOfQz32oUqnS7idCKvbEowM9LtiluQl1dKcOIJjn1nlvvsqzkhOg==
+
+turbo-linux-mips64le@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-linux-mips64le/-/turbo-linux-mips64le-1.2.16.tgz#fa49b858f8ed399b44cdce285a0feb67c30ee99b"
+  integrity sha512-U5BM+Ql3z13uRtwMmKH/8eL+9DdTgyijC2gaX4xP0RTlcN7WfAstg8Fg/Tn2Vw9vtpVDdxwpw7dvX4kw2ghhpA==
+
+turbo-linux-ppc64le@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-linux-ppc64le/-/turbo-linux-ppc64le-1.2.16.tgz#0a419310b938ef5eace46cb6c53b18099caae60c"
+  integrity sha512-HQWSCmVZyc5chw7Ie2ZcfZPfmM06mbEEu0Wl11Y5QWh1ZzhPNQHs/TsF4I9r146wHi62XgcrKFjkw4ARZiWsLA==
+
+turbo-windows-32@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-windows-32/-/turbo-windows-32-1.2.16.tgz#8307dea3fab91be4e3e46aa37d76ce8e7ce3fdcb"
+  integrity sha512-0ZtPz5FK2qZjznMG4vvRyaabrhO8BgbN+tBx1wjXSuoICTAjYi5TwRVVRh59c3x7qQmR21Cv33CrhLBPRfeAlg==
+
+turbo-windows-64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-windows-64/-/turbo-windows-64-1.2.16.tgz#9f5f725d6ab829d3cf7944ba92714e9e5bdd09d0"
+  integrity sha512-j8iAIixq/rGfBpHNbYOosxMasZrGuMzLILEuQGDxZgKNpYgobJ15QFHQlGR9sit1b8qPU5zZX4CtByRtkgH1Bw==
+
+turbo-windows-arm64@1.2.16:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo-windows-arm64/-/turbo-windows-arm64-1.2.16.tgz#75894186e9f1d6340a30c436d563c34999e5b87c"
+  integrity sha512-4GpcJG3B8R9WDhwfT8fu6ZmOOfseCg6Q1cy/G8/zpJQk769yYcSnD8MgQhYgHB58aVFxZcMxBvLL6UA0UrpgWA==
+
+turbo@^1.2.4:
+  version "1.2.16"
+  resolved "https://registry.yarnpkg.com/turbo/-/turbo-1.2.16.tgz#324c2d586f6fa77aa9173274f3b9d9efbe0735e4"
+  integrity sha512-PPUa2COKgFkyb6N3uF9AnIY3l9FZkF15QQ3U1K2wpI01D3gyGKQO0Q3DUQ4ipmciP0teBfL7H+l/QTrUA9IVvQ==
+  optionalDependencies:
+    turbo-darwin-64 "1.2.16"
+    turbo-darwin-arm64 "1.2.16"
+    turbo-freebsd-64 "1.2.16"
+    turbo-freebsd-arm64 "1.2.16"
+    turbo-linux-32 "1.2.16"
+    turbo-linux-64 "1.2.16"
+    turbo-linux-arm "1.2.16"
+    turbo-linux-arm64 "1.2.16"
+    turbo-linux-mips64le "1.2.16"
+    turbo-linux-ppc64le "1.2.16"
+    turbo-windows-32 "1.2.16"
+    turbo-windows-64 "1.2.16"
+    turbo-windows-arm64 "1.2.16"
+
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
   resolved "https://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz"
@@ -10891,25 +10955,10 @@ typedarray@^0.0.6:
   resolved "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@*:
-  version "4.3.5"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-4.3.5.tgz"
-  integrity sha512-DqQgihaQ9cUrskJo9kIyW/+g0Vxsk8cDtZ52a3NGh0YNTfpUSArXSohyUGnvbPazEPLu398C0UxmKSOrPumUzA==
-
-typescript@^3.9.7:
-  version "3.9.10"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-3.9.10.tgz"
-  integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
-
-typescript@^4.6.2:
-  version "4.6.2"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-4.6.2.tgz"
-  integrity sha512-HM/hFigTBHZhLXshn9sN37H085+hQGeJHJ/X7LpBWLID/fbc2acUMfU+lGD98X81sKP+pFa9f0DZmCwB9GnbAg==
-
-typescript@^4.6.4:
-  version "4.6.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.4.tgz#caa78bbc3a59e6a5c510d35703f6a09877ce45e9"
-  integrity sha512-9ia/jWHIEbo49HfjrLGfKbZSuWo9iTMwXO+Ca3pRsSpbsMbc7/IU8NKdCZVRRBafVPGnoJeFL76ZOAA84I9fEg==
+typescript@*, typescript@^4.7.3:
+  version "4.7.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.4.tgz#1a88596d1cf47d59507a1bcdfb5b9dfe4d488235"
+  integrity sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"

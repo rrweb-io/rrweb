@@ -15,10 +15,7 @@
   "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "workspaces": [
-    "packages/rrweb",
-    "packages/rrweb-snapshot",
-    "packages/rrweb-player",
-    "packages/rrdom"
+    "packages/*"
   ],
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.25.0",
@@ -29,14 +26,15 @@
     "lerna": "^4.0.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
-    "typescript": "^4.6.4"
+    "turbo": "^1.2.4",
+    "typescript": "^4.7.3"
   },
   "scripts": {
     "lerna": "lerna",
-    "build:all": "yarn lerna run prepublish",
-    "test": "yarn lerna run test",
-    "test:watch": "yarn lerna run test:watch --parallel",
-    "dev": "yarn lerna run dev --parallel",
+    "build:all": "yarn turbo run prepublish",
+    "test": "yarn turbo run test",
+    "test:watch": "yarn turbo run test:watch",
+    "dev": "yarn turbo run dev",
     "repl": "cd packages/rrweb && npm run repl",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'"
   },

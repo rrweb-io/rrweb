@@ -40,7 +40,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@rollup/plugin-typescript": "^8.2.5",
+    "rollup-plugin-typescript2": "^0.31.2",
     "@types/chai": "^4.1.4",
     "@types/jest": "^27.0.2",
     "@types/jsdom": "^16.2.4",
@@ -56,6 +56,6 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
-    "typescript": "^3.9.7"
+    "typescript": "^4.7.3"
   }
 }

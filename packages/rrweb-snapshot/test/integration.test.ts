@@ -4,10 +4,10 @@ import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
-import * as typescript from '@rollup/plugin-typescript';
+import * as typescript from 'rollup-plugin-typescript2';
 import * as assert from 'assert';
 
-const _typescript = (typescript as unknown) as typeof typescript.default;
+const _typescript = (typescript as unknown) as () => rollup.Plugin;
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map((filePath) => {

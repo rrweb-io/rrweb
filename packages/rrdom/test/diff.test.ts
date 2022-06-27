@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { getDefaultSN, RRDocument, RRMediaElement } from '../src/virtual-dom';
+import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
 import {
   applyVirtualStyleRulesToNode,
   createOrGetNode,

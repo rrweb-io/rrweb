@@ -15,7 +15,7 @@ import {
   buildFromDom,
   diff,
   getDefaultSN,
-} from 'rrdom/es/virtual-dom';
+} from 'rrdom';
 import type {
   RRNode,
   RRElement,
@@ -26,7 +26,7 @@ import type {
   ReplayerHandler,
   Mirror as RRDOMMirror,
   VirtualStyleRules,
-} from 'rrdom/es/virtual-dom';
+} from 'rrdom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -731,7 +731,7 @@ export class Replayer {
       );
     }
     if (this.usingVirtualDom) {
-      const styleEl = this.virtualDom.createElement('style') ;
+      const styleEl = this.virtualDom.createElement('style');
       this.virtualDom.mirror.add(
         styleEl,
         getDefaultSN(styleEl, this.virtualDom.unserializedId),
@@ -752,10 +752,7 @@ export class Replayer {
         head as HTMLHeadElement,
       );
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
-        (styleEl.sheet! ).insertRule(
-          injectStylesRules[idx],
-          idx,
-        );
+        styleEl.sheet!.insertRule(injectStylesRules[idx], idx);
       }
     }
   }
@@ -1210,7 +1207,7 @@ export class Replayer {
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
-          const styleSheet = ((target ) as HTMLStyleElement).sheet!;
+          const styleSheet = (target as HTMLStyleElement).sheet!;
           d.adds?.forEach(({ rule, index: nestedIndex }) => {
             try {
               if (Array.isArray(nestedIndex)) {
@@ -1692,7 +1689,7 @@ export class Replayer {
               }
             }
           } else if (attributeName === 'style') {
-            const styleValues = value ;
+            const styleValues = value;
             const targetEl = target as HTMLElement | RRElement;
             for (const s in styleValues) {
               if (styleValues[s] === false) {
@@ -1772,7 +1769,7 @@ export class Replayer {
     const previousInMap = previousId && map[previousId];
     const nextInMap = nextId && map[nextId];
     if (previousInMap) {
-      const { node, mutation } = previousInMap ;
+      const { node, mutation } = previousInMap;
       parent.insertBefore(node as Node & RRNode, target as Node & RRNode);
       delete map[mutation.node.id];
       delete this.legacy_missingNodeRetryMap[mutation.node.id];
@@ -1781,7 +1778,7 @@ export class Replayer {
       }
     }
     if (nextInMap) {
-      const { node, mutation } = nextInMap ;
+      const { node, mutation } = nextInMap;
       parent.insertBefore(
         node as Node & RRNode,
         target.nextSibling as Node & RRNode,
