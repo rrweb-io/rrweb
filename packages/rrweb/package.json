@@ -1,6 +1,9 @@
 {
-  "name": "rrweb",
-  "version": "1.1.3",
+  "name": "@fullview/rrweb",
+  "version": "1.1.31",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",

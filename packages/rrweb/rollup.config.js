@@ -111,7 +111,7 @@ let configs = [];
 for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
-    webWorkerLoader(),
+    webWorkerLoader({ targetPlatform: 'browser' }),
     typescript(),
   ];
   const plugins = basePlugins.concat(
@@ -199,7 +199,7 @@ if (process.env.BROWSER_ONLY) {
   for (const c of browserOnlyBaseConfigs) {
     const plugins = [
       resolve({ browser: true }),
-      webWorkerLoader(),
+      webWorkerLoader({ targetPlatform: 'browser' }),
       typescript({
         outDir: null,
       }),
