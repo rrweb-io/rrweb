@@ -495,6 +495,36 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should record images with blob url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    page.setContent(
+      getHtml.call(this, 'image-blob-url.html', { inlineImages: true }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForSelector('img'); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
+  it('should record images inside iframe with blob url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      getHtml.call(this, 'frame-image-blob-url.html', { inlineImages: true }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForTimeout(50); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('should record shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
