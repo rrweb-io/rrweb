@@ -525,9 +525,9 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
   takeFullSnapshot(isCheckout);
 };
 
-record.triggerScrollSnapshot = (target: HTMLElement) => {
+record.takeScrollSnapshot = (target: HTMLElement) => {
   if (!wrappedEmit) {
-    throw new Error('please trigger scroll snapshot after start recording');
+    throw new Error('please take scroll snapshot after start recording');
   }
 
   const p: scrollPosition = {
