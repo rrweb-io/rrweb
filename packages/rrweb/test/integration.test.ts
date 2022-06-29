@@ -576,7 +576,7 @@ describe('record integration tests', function (this: ISuite) {
           );
         });
     });
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
