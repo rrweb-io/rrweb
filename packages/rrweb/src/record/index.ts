@@ -23,6 +23,7 @@ import {
   mutationCallbackParam,
   scrollCallback,
   canvasMutationParam,
+  scrollPosition,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -522,6 +523,28 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
     throw new Error('please take full snapshot after start recording');
   }
   takeFullSnapshot(isCheckout);
+};
+
+record.triggerScrollSnapshot = (target: HTMLElement) => {
+  if (!wrappedEmit) {
+    throw new Error('please trigger scroll snapshot after start recording');
+  }
+
+  const p: scrollPosition = {
+    id: mirror.getId(target),
+    x: target.scrollLeft,
+    y: target.scrollTop,
+  };
+
+  wrappedEmit(
+    wrapEvent({
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: IncrementalSource.Scroll,
+        ...p,
+      },
+    }),
+  );
 };
 
 record.mirror = mirror;
