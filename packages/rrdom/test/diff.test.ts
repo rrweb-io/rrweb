@@ -1056,6 +1056,24 @@ describe('diff algorithm for rrdom', () => {
       expect(element.tagName).toBe('DIV');
       expect(mirror.getId(element)).toEqual(2);
     });
+
+    it('should remove children from document before adding new nodes', () => {
+      document.write('<style></style>'); // old document with elements that need removing
+
+      const rrDocument = new RRDocument();
+      const docType = rrDocument.createDocumentType('html', '', '');
+      rrDocument.mirror.add(docType, getDefaultSN(docType, 1));
+      rrDocument.appendChild(docType);
+      const htmlEl = rrDocument.createElement('html');
+      rrDocument.mirror.add(htmlEl, getDefaultSN(htmlEl, 2));
+      rrDocument.appendChild(htmlEl);
+
+      diff(document, rrDocument, replayer);
+      expect(document.childNodes.length).toBe(2);
+      const element = document.childNodes[0] as HTMLElement;
+      expect(element.DOCUMENT_TYPE_NODE).toBe(10);
+      expect(mirror.getId(element)).toEqual(1);
+    });
   });
 
   describe('create or get a Node', () => {
