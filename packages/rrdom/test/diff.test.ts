@@ -1071,7 +1071,7 @@ describe('diff algorithm for rrdom', () => {
       diff(document, rrDocument, replayer);
       expect(document.childNodes.length).toBe(2);
       const element = document.childNodes[0] as HTMLElement;
-      expect(element.DOCUMENT_TYPE_NODE).toBe(10);
+      expect(element.nodeType).toBe(element.DOCUMENT_TYPE_NODE);
       expect(mirror.getId(element)).toEqual(1);
     });
   });
