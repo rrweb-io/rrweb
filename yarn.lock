@@ -3878,7 +3878,11 @@ csso@^4.0.2:
   dependencies:
     css-tree "^1.1.2"
 
-cssom@^0.4.4, cssom@^0.5.0:
+cssom@^0.4.4, "cssom@https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz":
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz#ed298055b97cbddcdeb278f904857629dec5e0e1"
+
+cssom@^0.5.0:
   version "0.5.0"
   resolved "https://registry.npmjs.org/cssom/-/cssom-0.5.0.tgz"
   integrity sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==
