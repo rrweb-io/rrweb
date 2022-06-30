@@ -1192,8 +1192,6 @@ describe('diff algorithm for rrdom', () => {
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
     });
 
-    // JSDOM/CSSOM is currently broken for this test
-    // remove '.skip' once https://github.com/NV/CSSOM/pull/113#issue-712485075 is merged
     it('should insert rule at index [0,0] and keep existing rules', () => {
       document.write(`
         <style>
