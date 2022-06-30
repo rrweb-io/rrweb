@@ -164,6 +164,7 @@ export default class MutationBuffer {
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
   private maskInputFn: observerParam['maskInputFn'];
+  private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
@@ -185,6 +186,7 @@ export default class MutationBuffer {
       'maskInputOptions',
       'maskTextFn',
       'maskInputFn',
+      'keepIframeSrcFn',
       'recordCanvas',
       'inlineImages',
       'slimDOMOptions',
@@ -484,6 +486,19 @@ export default class MutationBuffer {
         let item: attributeCursor | undefined = this.attributes.find(
           (a) => a.node === m.target,
         );
+        if (
+          target.tagName === 'IFRAME' &&
+          m.attributeName === 'src' &&
+          !this.keepIframeSrcFn(value as string)
+        ) {
+          if (!(target as HTMLIFrameElement).contentDocument) {
+            // we can't record it directly as we can't see into it
+            // preserve the src attribute so a decision can be taken at replay time
+            m.attributeName = 'rr_src';
+          } else {
+            return;
+          }
+        }
         if (!item) {
           item = {
             node: m.target,
@@ -527,7 +542,7 @@ export default class MutationBuffer {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[m.attributeName!] = transformAttribute(
             this.doc,
-            (m.target as HTMLElement).tagName,
+            target.tagName,
             m.attributeName!,
             value!,
           );

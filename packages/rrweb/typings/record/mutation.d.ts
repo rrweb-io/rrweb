@@ -19,6 +19,7 @@ export default class MutationBuffer {
     private maskInputOptions;
     private maskTextFn;
     private maskInputFn;
+    private keepIframeSrcFn;
     private recordCanvas;
     private inlineImages;
     private slimDOMOptions;

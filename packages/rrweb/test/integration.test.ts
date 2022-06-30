@@ -613,6 +613,35 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should record mutations in iframes accross pages', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`${serverURL}/html`);
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.setContent(getHtml.call(this, 'frame2.html'));
+
+    await page.waitForSelector('iframe'); // wait for iframe to get added
+    await waitForRAF(page); // wait for iframe to load
+
+    page.evaluate((serverURL) => {
+      const iframe = document.querySelector('iframe')!;
+      iframe.setAttribute('src', `${serverURL}/html`); // load new page
+    }, serverURL);
+
+    await page.waitForResponse(`${serverURL}/html`); // wait for iframe to load pt1
+    await waitForRAF(page); // wait for iframe to load pt2
+
+    await page.evaluate(() => {
+      const iframeDocument = document.querySelector('iframe')!.contentDocument!;
+      const div = iframeDocument.createElement('div');
+      iframeDocument.body.appendChild(div);
+    });
+
+    await waitForRAF(page); // wait for snapshot to be updated
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('should mask texts', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');

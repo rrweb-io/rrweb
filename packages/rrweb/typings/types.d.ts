@@ -180,6 +180,7 @@ export declare type observerParam = {
     maskInputOptions: MaskInputOptions;
     maskInputFn?: MaskInputFn;
     maskTextFn?: MaskTextFn;
+    keepIframeSrcFn: KeepIframeSrcFn;
     inlineStylesheet: boolean;
     styleSheetRuleCb: styleSheetRuleCallback;
     styleDeclarationCb: styleDeclarationCallback;
@@ -203,7 +204,7 @@ export declare type observerParam = {
         options: unknown;
     }>;
 };
-export declare type MutationBufferParam = Pick<observerParam, 'mutationCb' | 'blockClass' | 'blockSelector' | 'maskTextClass' | 'maskTextSelector' | 'inlineStylesheet' | 'maskInputOptions' | 'maskTextFn' | 'maskInputFn' | 'recordCanvas' | 'inlineImages' | 'slimDOMOptions' | 'doc' | 'mirror' | 'iframeManager' | 'stylesheetManager' | 'shadowDomManager' | 'canvasManager'>;
+export declare type MutationBufferParam = Pick<observerParam, 'mutationCb' | 'blockClass' | 'blockSelector' | 'maskTextClass' | 'maskTextSelector' | 'inlineStylesheet' | 'maskInputOptions' | 'maskTextFn' | 'maskInputFn' | 'keepIframeSrcFn' | 'recordCanvas' | 'inlineImages' | 'slimDOMOptions' | 'doc' | 'mirror' | 'iframeManager' | 'stylesheetManager' | 'shadowDomManager' | 'canvasManager'>;
 export declare type hooksParam = {
     mutation?: mutationCallBack;
     mousemove?: mousemoveCallBack;

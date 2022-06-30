@@ -267,6 +267,7 @@ export type observerParam = {
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
+  keepIframeSrcFn: KeepIframeSrcFn;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
@@ -302,6 +303,7 @@ export type MutationBufferParam = Pick<
   | 'maskInputOptions'
   | 'maskTextFn'
   | 'maskInputFn'
+  | 'keepIframeSrcFn'
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
