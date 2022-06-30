@@ -1660,12 +1660,20 @@ export class Replayer {
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
       });
+      this.iframe.contentWindow!.scrollTo({
+        top: d.y,
+        left: d.x,
+      });
     } else if (target.__sn.type === NodeType.Document) {
       // nest iframe content document
       ((target as unknown) as Document).defaultView!.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
+      });
+      ((target as unknown) as Document).defaultView!.scrollTo({
+        top: d.y,
+        left: d.x,
       });
     } else {
       try {
