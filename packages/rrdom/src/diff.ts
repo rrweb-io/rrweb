@@ -316,7 +316,7 @@ function diffChildren(
          * We should delete it before insert a serialized one. Otherwise, an error 'Only one element on document allowed' will be thrown.
          */
         if (
-          replayer.mirror.getMeta(parentNode)?.type === RRNodeType.Document &&
+          parentNode.nodeName === '#document' &&
           replayer.mirror.getMeta(newNode)?.type === RRNodeType.Element &&
           (parentNode as Document).documentElement
         ) {
