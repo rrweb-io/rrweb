@@ -28,6 +28,7 @@ export declare type AppendedIframe = {
     builtNode: HTMLIFrameElement | RRIFrameElement;
 };
 export declare function isSerializedIframe<TNode extends Node | RRNode>(n: TNode, mirror: IMirror<TNode>): boolean;
+export declare function isSerializedStylesheet<TNode extends Node | RRNode>(n: TNode, mirror: IMirror<TNode>): boolean;
 export declare function getBaseDimension(node: Node, rootIframe: Node): DocumentDimension;
 export declare function hasShadowRoot<T extends Node | RRNode>(n: T): n is T & {
     shadowRoot: ShadowRoot;
