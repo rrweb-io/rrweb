@@ -134,7 +134,7 @@ export declare type SamplingStrategy = Partial<{
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
-    observer?: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
+    observer?: (cb: (...args: Array<unknown>) => void, win: IWindow, options: TOptions) => listenerHandler;
     eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
     options: TOptions;
 };
@@ -198,8 +198,8 @@ export declare type observerParam = {
     shadowDomManager: ShadowDomManager;
     canvasManager: CanvasManager;
     plugins: Array<{
-        observer: Function;
-        callback: Function;
+        observer: (cb: (...arg: Array<unknown>) => void, win: IWindow, options: unknown) => listenerHandler;
+        callback: (...arg: Array<unknown>) => void;
         options: unknown;
     }>;
 };

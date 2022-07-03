@@ -15,7 +15,6 @@ export declare type LogData = {
     trace: string[];
     payload: string[];
 };
-export declare type LogLevel = 'assert' | 'clear' | 'count' | 'countReset' | 'debug' | 'dir' | 'dirxml' | 'error' | 'group' | 'groupCollapsed' | 'groupEnd' | 'info' | 'log' | 'table' | 'time' | 'timeEnd' | 'timeLog' | 'trace' | 'warn';
 export declare type Logger = {
     assert?: typeof console.assert;
     clear?: typeof console.clear;
@@ -37,6 +36,7 @@ export declare type Logger = {
     trace?: typeof console.trace;
     warn?: typeof console.warn;
 };
+export declare type LogLevel = keyof Logger;
 export declare const PLUGIN_NAME = "rrweb/console@1";
 export declare const getRecordConsolePlugin: (options?: LogRecordOptions) => RecordPlugin;
 export {};

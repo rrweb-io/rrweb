@@ -129,6 +129,7 @@ function initMoveObserver({
   mirror,
 }: observerParam): listenerHandler {
   if (sampling.mousemove === false) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
 
@@ -209,6 +210,7 @@ function initMouseInteractionObserver({
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
   const disableMap: Record<string, boolean | undefined> =
@@ -438,7 +440,7 @@ function initInputObserver({
         hookSetter<HTMLElement>(p[0], p[1], {
           set() {
             // mock to a normal event
-            eventHandler({ target: this } as Event);
+            eventHandler({ target: this as EventTarget } as Event);
           },
         }),
       ),
@@ -497,26 +499,26 @@ function initStyleSheetObserver(
     rule: string,
     index?: number,
   ) {
-    const id = mirror.getId(this.ownerNode);
+    const id = mirror.getId(this.ownerNode as Node);
     if (id !== -1) {
       styleSheetRuleCb({
         id,
         adds: [{ rule, index }],
       });
     }
-    return insertRule.apply(this, arguments);
+    return insertRule.apply(this, [rule, index]);
   };
 
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
   win.CSSStyleSheet.prototype.deleteRule = function (index: number) {
-    const id = mirror.getId(this.ownerNode);
+    const id = mirror.getId(this.ownerNode as Node);
     if (id !== -1) {
       styleSheetRuleCb({
         id,
         removes: [{ index }],
       });
     }
-    return deleteRule.apply(this, arguments);
+    return deleteRule.apply(this, [index]);
   };
 
   const supportedNestedCSSRuleTypes: {
@@ -554,7 +556,7 @@ function initStyleSheetObserver(
     };
 
     type.prototype.insertRule = function (rule: string, index?: number) {
-      const id = mirror.getId(this.parentStyleSheet.ownerNode);
+      const id = mirror.getId(this.parentStyleSheet.ownerNode as Node);
       if (id !== -1) {
         styleSheetRuleCb({
           id,
@@ -562,25 +564,27 @@ function initStyleSheetObserver(
             {
               rule,
               index: [
-                ...getNestedCSSRulePositions(this),
+                ...getNestedCSSRulePositions(this as CSSRule),
                 index || 0, // defaults to 0
               ],
             },
           ],
         });
       }
-      return unmodifiedFunctions[typeKey].insertRule.apply(this, arguments);
+      return unmodifiedFunctions[typeKey].insertRule.apply(this, [rule, index]);
     };
 
     type.prototype.deleteRule = function (index: number) {
-      const id = mirror.getId(this.parentStyleSheet.ownerNode);
+      const id = mirror.getId(this.parentStyleSheet.ownerNode as Node);
       if (id !== -1) {
         styleSheetRuleCb({
           id,
-          removes: [{ index: [...getNestedCSSRulePositions(this), index] }],
+          removes: [
+            { index: [...getNestedCSSRulePositions(this as CSSRule), index] },
+          ],
         });
       }
-      return unmodifiedFunctions[typeKey].deleteRule.apply(this, arguments);
+      return unmodifiedFunctions[typeKey].deleteRule.apply(this, [index]);
     };
   });
 
@@ -617,7 +621,7 @@ function initStyleDeclarationObserver(
         index: getNestedCSSRulePositions(this.parentRule!),
       });
     }
-    return setProperty.apply(this, arguments);
+    return setProperty.apply(this, [property, value, priority]);
   };
 
   const removeProperty = win.CSSStyleDeclaration.prototype.removeProperty;
@@ -635,7 +639,7 @@ function initStyleDeclarationObserver(
         index: getNestedCSSRulePositions(this.parentRule!),
       });
     }
-    return removeProperty.apply(this, arguments);
+    return removeProperty.apply(this, [property]);
   };
 
   return () => {
@@ -679,6 +683,7 @@ function initMediaInteractionObserver({
 function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   const win = doc.defaultView as IWindow;
   if (!win) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
 
@@ -689,7 +694,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   const originalFontFace = win.FontFace;
   win.FontFace = (function FontFace(
     family: string,
-    source: string | ArrayBufferView,
+    source: string | ArrayBufferLike,
     descriptors?: FontFaceDescriptors,
   ) {
     const fontFace = new originalFontFace(family, source, descriptors);
@@ -701,23 +706,27 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
         typeof source === 'string'
           ? source
           : // tslint:disable-next-line: no-any
-            JSON.stringify(Array.from(new Uint8Array(source as any))),
+            JSON.stringify(Array.from(new Uint8Array(source))),
     });
     return fontFace;
   } as unknown) as typeof FontFace;
 
-  const restoreHandler = patch(doc.fonts, 'add', function (original) {
-    return function (this: FontFaceSet, fontFace: FontFace) {
-      setTimeout(() => {
-        const p = fontMap.get(fontFace);
-        if (p) {
-          fontCb(p);
-          fontMap.delete(fontFace);
-        }
-      }, 0);
-      return original.apply(this, [fontFace]);
-    };
-  });
+  const restoreHandler = patch(
+    doc.fonts,
+    'add',
+    function (original: (font: FontFace) => void) {
+      return function (this: FontFaceSet, fontFace: FontFace) {
+        setTimeout(() => {
+          const p = fontMap.get(fontFace);
+          if (p) {
+            fontCb(p);
+            fontMap.delete(fontFace);
+          }
+        }, 0);
+        return original.apply(this, [fontFace]);
+      };
+    },
+  );
 
   handlers.push(() => {
     win.FontFace = originalFontFace;
@@ -817,6 +826,7 @@ export function initObservers(
 ): listenerHandler {
   const currentWindow = o.doc.defaultView; // basically document.window
   if (!currentWindow) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
 
@@ -833,6 +843,7 @@ export function initObservers(
   const styleDeclarationObserver = initStyleDeclarationObserver(o, {
     win: currentWindow,
   });
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const fontObserver = o.collectFonts ? initFontObserver(o) : () => {};
   // plugins
   const pluginHandlers: listenerHandler[] = [];
