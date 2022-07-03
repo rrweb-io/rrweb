@@ -4,6 +4,7 @@ import { SyncReplayer } from './SyncReplayer';
 type CutterConfig = {
   points: number[];
 };
+
 export function sessionCut(
   events: eventWithTime[],
   config: CutterConfig,
@@ -98,7 +99,7 @@ function getValidSortedPoints(points: number[], totalTime: number) {
   const validSortedPoints = [];
   for (let i = 0; i < points.length; i++) {
     const point = points[i];
-    if (point <= 0 || point > totalTime) continue;
+    if (point <= 0 || point >= totalTime) continue;
     validSortedPoints.push(point);
   }
   return validSortedPoints.sort();

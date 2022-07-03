@@ -85,10 +85,6 @@ function getRootId(doc: RRDocument, mirror: Mirror): number | undefined {
 }
 
 function getValidTagName(element: RRElement): string {
-  if (element instanceof HTMLFormElement) {
-    return 'form';
-  }
-
   const processedTagName = element.tagName.toLowerCase().trim();
   const tagNameRegex = new RegExp('[^a-z0-9-_:]');
   if (tagNameRegex.test(processedTagName)) {
@@ -118,6 +114,13 @@ function serializeElementNode(
       ? 'paused'
       : 'played';
     attributes.rr_mediaCurrentTime = (n as RRMediaElement).currentTime || '';
+  } else if (
+    (tagName === 'link' || tagName === 'style') &&
+    n.textContent !== ''
+  ) {
+    // the child text is inserted and untracked by the rrweb replayer
+    if (n.childNodes[0] && mirror.getId(n.childNodes[0]) < 0)
+      attributes._cssText = n.textContent;
   }
   if (n.scrollLeft) {
     attributes.rr_scrollLeft = n.scrollLeft;

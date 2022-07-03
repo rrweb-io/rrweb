@@ -25,6 +25,7 @@ import { sessionCut } from '../src/tools/session-cutter';
 import { snapshot as RRDomSnapshot } from '../src/tools/snapshot';
 import { SyncReplayer } from '../src/tools/SyncReplayer';
 import { events as mutationEvents } from './events/mutation.event';
+import { events as inlineStyleEvents } from './events/inline-style.event';
 
 const rewiredSessionCutter = rewire('../lib/session-cutter');
 const getValidSortedPoints: (
@@ -68,8 +69,9 @@ describe('session cutter', () => {
   it('should sort and validate cutting points array', () => {
     const inputPoints = [10, 250.5, -10, -1, 0, 100];
     expect(getValidSortedPoints([], 100)).toEqual([]);
-    expect(getValidSortedPoints(inputPoints, 10)).toEqual([10]);
-    expect(getValidSortedPoints(inputPoints, 100)).toEqual([10, 100]);
+    expect(getValidSortedPoints(inputPoints, 11)).toEqual([10]);
+    expect(getValidSortedPoints(inputPoints, 10)).toEqual([]);
+    expect(getValidSortedPoints(inputPoints, 100)).toEqual([10]);
     expect(getValidSortedPoints(inputPoints, 300)).toEqual([10, 100, 250.5]);
   });
 
@@ -156,6 +158,28 @@ describe('session cutter', () => {
         printRRDom(replayer.virtualDom, replayer.getMirror()),
       ).toMatchSnapshot('screenshot at 3000ms');
     });
+  });
+
+  it('should cut events with inline styles', () => {
+    const events = inlineStyleEvents;
+    const result = sessionCut(events, { points: [1000] });
+    expect(result).toHaveLength(2);
+    // all events before 1000ms
+    const sessionBefore1s = result[0];
+    const cutPoint1Length = 5;
+    expect(sessionBefore1s).toHaveLength(cutPoint1Length);
+    // These events are directly sliced from the original events.
+    expect(sessionBefore1s).toEqual(events.slice(0, cutPoint1Length));
+
+    // all events after 1000ms
+    const sessionAfter1s = result[1];
+    expect(sessionAfter1s).toHaveLength(3);
+    const replayer = new SyncReplayer(sessionAfter1s.slice(0, 2)); // only play meta and full snapshot events
+    replayer.play();
+    // screenshot at 1000ms
+    expect(
+      printRRDom(replayer.virtualDom, replayer.getMirror()),
+    ).toMatchSnapshot('screenshot at 1000ms');
   });
 });
 
