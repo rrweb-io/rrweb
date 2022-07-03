@@ -42,7 +42,6 @@ import {
   viewportResizeDimension,
   missingNodeMap,
   addedNodeMutation,
-  missingNode,
   incrementalSnapshotEvent,
   incrementalData,
   ReplayerEvents,
@@ -54,7 +53,6 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
-  styleAttributeValue,
   styleValueWithPriority,
   mouseMovePos,
   IWindow,
@@ -83,8 +81,7 @@ const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
-// tslint:disable-next-line
-const mitt = (mittProxy as any).default || mittProxy;
+const mitt = mittProxy.default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
@@ -188,7 +185,7 @@ export class Replayer {
             canvasMutationData: canvasMutationData,
             target: HTMLCanvasElement,
           ) => {
-            canvasMutation({
+            void canvasMutation({
               event: canvasEvent,
               mutation: canvasMutationData,
               target,
@@ -340,8 +337,10 @@ export class Replayer {
 
   public setConfig(config: Partial<playerConfig>) {
     Object.keys(config).forEach((key) => {
-      // @ts-ignore
-      this.config[key] = config[key];
+      const newConfigValue = config[key as keyof playerConfig];
+      (this.config as Record<keyof playerConfig, typeof newConfigValue>)[
+        key as keyof playerConfig
+      ] = config[key as keyof playerConfig];
     });
     if (!this.config.skipInactive) {
       this.backToNormal();
@@ -404,7 +403,7 @@ export class Replayer {
    * So the implementation of play at any time offset will always iterate
    * all of the events, cast event before the offset synchronously
    * and cast event after the offset asynchronously with timer.
-   * @param timeOffset number
+   * @param timeOffset - number
    */
   public play(timeOffset = 0) {
     if (this.service.state.matches('paused')) {
@@ -452,7 +451,7 @@ export class Replayer {
     if (indicatesTouchDevice(event)) {
       this.mouse.classList.add('touch-device');
     }
-    Promise.resolve().then(() =>
+    void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
   }
@@ -714,7 +713,7 @@ export class Replayer {
       this.waitForStylesheetLoad();
     }
     if (this.config.UNSAFE_replayCanvas) {
-      this.preloadAllImages();
+      void this.preloadAllImages();
     }
   }
 
@@ -875,7 +874,7 @@ export class Replayer {
       if (!arg || typeof arg !== 'object') {
         // do nothing
       } else if ('rr_type' in arg && 'args' in arg) {
-        if (this.hasImageArg(arg.args)) return true;
+        if (this.hasImageArg(arg.args as any[])) return true;
       } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
         return true; // has image!
       } else if (arg instanceof Array) {
@@ -891,9 +890,9 @@ export class Replayer {
       if (!arg || typeof arg !== 'object') {
         // do nothing
       } else if ('rr_type' in arg && 'args' in arg) {
-        images.push(...this.getImageArgs(arg.args));
+        images.push(...this.getImageArgs(arg.args as any[]));
       } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
-        images.push(arg.src);
+        images.push(arg.src as string);
       } else if (arg instanceof Array) {
         images.push(...this.getImageArgs(arg));
       }
@@ -940,7 +939,7 @@ export class Replayer {
       const ctx = canvas.getContext('2d');
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
       let d = imgd?.data;
-      d = JSON.parse(data.args[0]);
+      d = JSON.parse(data.args[0]) as Uint8ClampedArray;
       ctx?.putImageData(imgd!, 0, 0);
     }
   }
@@ -1013,6 +1012,7 @@ export class Replayer {
           });
           // add a dummy action to keep timer alive
           this.timer.addAction({
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             doAction() {},
             delay: e.delay! - d.positions[0]?.timeOffset,
           });
@@ -1174,7 +1174,7 @@ export class Replayer {
             // i.e. media will evntualy start to play when data is loaded
             // 'canplay' event fires even when currentTime attribute changes which may lead to
             // unexpeted behavior
-            mediaEl.play();
+            void mediaEl.play();
           }
         } catch (error) {
           if (this.config.showWarning) {
@@ -1322,7 +1322,7 @@ export class Replayer {
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
-          canvasMutation({
+          void canvasMutation({
             event: e,
             mutation: d,
             target: target as HTMLCanvasElement,
@@ -1337,7 +1337,9 @@ export class Replayer {
         try {
           const fontFace = new FontFace(
             d.family,
-            d.buffer ? new Uint8Array(JSON.parse(d.fontSource)) : d.fontSource,
+            d.buffer
+              ? new Uint8Array(JSON.parse(d.fontSource) as Iterable<number>)
+              : d.fontSource,
             d.descriptors,
           );
           this.iframe.contentDocument?.fonts.add(fontFace);
@@ -1711,8 +1713,8 @@ export class Replayer {
   /**
    * Apply the scroll data on real elements.
    * If the replayer is in sync mode, smooth scroll behavior should be disabled.
-   * @param d the scroll data
-   * @param isSync whether the replayer is in sync mode(fast-forward)
+   * @param d - the scroll data
+   * @param isSync - whether the replayer is in sync mode(fast-forward)
    */
   private applyScroll(d: scrollData, isSync: boolean) {
     const target = this.mirror.getNode(d.id);
