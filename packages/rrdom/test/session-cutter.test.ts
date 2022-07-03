@@ -1,7 +1,11 @@
 import rewire from 'rewire';
 import { EventType, eventWithTime } from 'rrweb/src/types';
-import { sessionCut } from '../src/trim';
-const rewiredSessionCutter = rewire('../lib/trim');
+import { RRNode, RRElement, RRIFrameElement, Mirror } from '../src/';
+import { sessionCut } from '../src/tools/session-cutter';
+import { SyncReplayer } from '../src/tools/SyncReplayer';
+import { events as mutationEvents } from './events/mutation.event';
+
+const rewiredSessionCutter = rewire('../lib/session-cutter');
 const getValidSortedPoints = rewiredSessionCutter.__get__(
   'getValidSortedPoints',
 );
@@ -46,4 +50,36 @@ describe('session cutter', () => {
     expect(getValidSortedPoints(inputPoints, 100)).toEqual([10, 100]);
     expect(getValidSortedPoints(inputPoints, 300)).toEqual([10, 100, 250.5]);
   });
+
+  describe('A synchronous replayer purely built with RRDom', () => {
+    it('should play mutation events synchronously', () => {
+      const events = mutationEvents;
+      const replayer = new SyncReplayer(events);
+      replayer.play(({ event, currentTime }) => {
+        if (event.type === EventType.FullSnapshot) {
+          expect(
+            printRRDom(replayer.virtualDom, replayer.getMirror()),
+          ).toMatchSnapshot(`Full Snapshot @ ${currentTime}`);
+        } else if (event.type === EventType.IncrementalSnapshot) {
+          expect(
+            printRRDom(replayer.virtualDom, replayer.getMirror()),
+          ).toMatchSnapshot(`Incremental Snapshot @ ${currentTime}`);
+        }
+      });
+    });
+  });
 });
+
+function printRRDom(rootNode: RRNode, mirror: Mirror) {
+  return walk(rootNode, mirror, '');
+}
+function walk(node: RRNode, mirror: Mirror, blankSpace: string) {
+  let printText = `${blankSpace}${mirror.getId(node)} ${node.toString()}\n`;
+  if (node instanceof RRElement && node.shadowRoot)
+    printText += walk(node.shadowRoot, mirror, blankSpace + '  ');
+  for (const child of node.childNodes)
+    printText += walk(child, mirror, blankSpace + '  ');
+  if (node instanceof RRIFrameElement)
+    printText += walk(node.contentDocument, mirror, blankSpace + '  ');
+  return printText;
+}

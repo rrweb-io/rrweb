@@ -28,9 +28,9 @@ const baseConfigs = [
     path: pkg.name,
   },
   {
-    input: './src/trim.ts',
+    input: './src/tools/session-cutter.ts',
     name: pkg.name,
-    path: 'trim',
+    path: 'session-cutter',
   },
 ];
 
