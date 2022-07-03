@@ -16,6 +16,5 @@
     "strictBindCallApply": true
   },
   "compileOnSave": true,
-  "exclude": ["test"],
-  "include": ["src", "../rrweb/src/record/workers/workers.d.ts"]
+  "include": ["src", "test", "../rrweb/src/record/workers/workers.d.ts"]
 }

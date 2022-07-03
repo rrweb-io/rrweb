@@ -1,14 +1,36 @@
+/**
+ * @jest-environment jsdom
+ */
 import rewire from 'rewire';
+import path from 'path';
+import fs from 'fs';
 import { EventType, eventWithTime } from 'rrweb/src/types';
-import { RRNode, RRElement, RRIFrameElement, Mirror } from '../src/';
+import {
+  createMirror,
+  snapshot,
+  serializedNodeWithId,
+  NodeType,
+  elementNode,
+  documentNode,
+} from 'rrweb-snapshot';
+import {
+  RRNode,
+  RRElement,
+  RRIFrameElement,
+  RRDocument,
+  buildFromDom,
+  Mirror as RRDomMirror,
+} from '../src/';
 import { sessionCut } from '../src/tools/session-cutter';
+import { snapshot as RRDomSnapshot } from '../src/tools/snapshot';
 import { SyncReplayer } from '../src/tools/SyncReplayer';
 import { events as mutationEvents } from './events/mutation.event';
 
 const rewiredSessionCutter = rewire('../lib/session-cutter');
-const getValidSortedPoints = rewiredSessionCutter.__get__(
-  'getValidSortedPoints',
-);
+const getValidSortedPoints: (
+  points: number[],
+  totalTime: number,
+) => number[] = rewiredSessionCutter.__get__('getValidSortedPoints');
 
 describe('session cutter', () => {
   it('should return the same events if the events length is too short', () => {
@@ -68,12 +90,36 @@ describe('session cutter', () => {
       });
     });
   });
+
+  describe('Build full snapshot events from RRDom', () => {
+    it("should build full snapshot events from RRDom's mirror: main.html", () => {
+      document.write(getHtml('main.html'));
+      const rrdom = new RRDocument();
+      const mirror = createMirror();
+      // the full snapshot that is built on jsdom
+      const originalSnapshot = snapshot(document, { mirror });
+      if (originalSnapshot) snapshotFilter(originalSnapshot);
+      // Create a RRDom according to the jsdom (real dom).
+      buildFromDom(document, mirror, rrdom);
+
+      const newFullSnapshot = RRDomSnapshot(rrdom, {
+        mirror: rrdom.mirror,
+      });
+      if (newFullSnapshot) snapshotFilter(newFullSnapshot);
+      expect(newFullSnapshot).toEqual(originalSnapshot);
+    });
+  });
 });
 
-function printRRDom(rootNode: RRNode, mirror: Mirror) {
+function getHtml(fileName: string) {
+  const filePath = path.resolve(__dirname, `./html/${fileName}`);
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+function printRRDom(rootNode: RRNode, mirror: RRDomMirror) {
   return walk(rootNode, mirror, '');
 }
-function walk(node: RRNode, mirror: Mirror, blankSpace: string) {
+function walk(node: RRNode, mirror: RRDomMirror, blankSpace: string) {
   let printText = `${blankSpace}${mirror.getId(node)} ${node.toString()}\n`;
   if (node instanceof RRElement && node.shadowRoot)
     printText += walk(node.shadowRoot, mirror, blankSpace + '  ');
@@ -82,4 +128,21 @@ function walk(node: RRNode, mirror: Mirror, blankSpace: string) {
   if (node instanceof RRIFrameElement)
     printText += walk(node.contentDocument, mirror, blankSpace + '  ');
   return printText;
+}
+
+/**
+ * Some properties in the snapshot shouldn't be checked.
+ * 1. css styles' format are different.
+ * 2. href and src attributes are different.
+ */
+function snapshotFilter(n: serializedNodeWithId) {
+  if (n.type === NodeType.Element) {
+    delete n.attributes['href'];
+    delete n.attributes['src'];
+  } else if (n.type === NodeType.Text && n.isStyle) n.textContent = '';
+  if (
+    [NodeType.Document, NodeType.Element].includes(n.type) &&
+    (n as documentNode | elementNode).childNodes
+  )
+    for (const child of (n as elementNode).childNodes) snapshotFilter(child);
 }
