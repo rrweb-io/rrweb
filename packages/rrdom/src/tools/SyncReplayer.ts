@@ -76,6 +76,8 @@ export class SyncReplayer {
 
   public events: eventWithTime[];
 
+  public latestMetaEvent: eventWithTime | null = null;
+
   public unhandledEvents: eventWithTime[] = [];
 
   private currentTime = 0;
@@ -89,8 +91,6 @@ export class SyncReplayer {
   private cache: BuildCache = createCache();
 
   private mirror: RRDOMMirror = this.virtualDom.mirror;
-
-  private firstFullSnapshot: eventWithTime | true | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
@@ -119,16 +119,12 @@ export class SyncReplayer {
     this.config = Object.assign({}, defaultConfig, config);
 
     this.emitter.on(ReplayerEvents.PlayBack, () => {
-      this.firstFullSnapshot = null;
       this.mirror.reset();
     });
 
     // rebuild first full snapshot as the poster of the player
     // maybe we can cache it for performance optimization
     const firstMeta = this.events.find((e) => e.type === EventType.Meta);
-    const firstFullsnapshot = this.events.find(
-      (e) => e.type === EventType.FullSnapshot,
-    );
     if (firstMeta) {
       const { width, height } = firstMeta.data as metaEvent['data'];
       setTimeout(() => {
@@ -137,23 +133,6 @@ export class SyncReplayer {
           height,
         });
       }, 0);
-    }
-    if (firstFullsnapshot) {
-      setTimeout(() => {
-        // when something has been played, there is no need to rebuild poster
-        if (this.firstFullSnapshot) {
-          // true if any other fullSnapshot has been executed by Timer already
-          return;
-        }
-        this.firstFullSnapshot = firstFullsnapshot;
-        this.rebuildFullSnapshot(
-          firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
-        );
-        const initialOffset = (firstFullsnapshot as fullSnapshotEvent).data
-          .initialOffset;
-        this.virtualDom.scrollTop = initialOffset.top;
-        this.virtualDom.scrollLeft = initialOffset.left;
-      }, 1);
     }
   }
 
@@ -248,19 +227,10 @@ export class SyncReplayer {
             width: event.data.width,
             height: event.data.height,
           });
+        this.latestMetaEvent = event;
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          if (this.firstFullSnapshot) {
-            if (this.firstFullSnapshot === event) {
-              // we've already built this exact FullSnapshot when the player was mounted, and haven't built any other FullSnapshot since
-              this.firstFullSnapshot = true; // forget as we might need to re-execute this FullSnapshot later e.g. to rebuild after scrubbing
-              return;
-            }
-          } else {
-            // Timer (requestAnimationFrame) can be faster than setTimeout(..., 1)
-            this.firstFullSnapshot = true;
-          }
           this.rebuildFullSnapshot(event);
           this.virtualDom.scrollTop = event.data.initialOffset.top;
           this.virtualDom.scrollLeft = event.data.initialOffset.left;

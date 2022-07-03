@@ -1,13 +1,17 @@
-import type { eventWithTime } from 'rrweb/src/types';
+import { EventType, eventWithTime } from 'rrweb/src/types';
+import snapshot from './snapshot';
 import { SyncReplayer } from './SyncReplayer';
 type CutterConfig = {
   points: number[];
 };
-export function sessionCut(events: eventWithTime[], config: CutterConfig) {
+export function sessionCut(
+  events: eventWithTime[],
+  config: CutterConfig,
+): eventWithTime[][] {
   // Events length is too short so that cutting process is not needed.
-  if (events.length < 2) return events;
+  if (events.length < 2) return [events];
   const { points } = config;
-  if (!points || points.length == 0) return events;
+  if (!points || points.length == 0) return [events];
 
   events = events.sort((a1, a2) => a1.timestamp - a2.timestamp);
   const totalTime = events[events.length - 1].timestamp - events[0].timestamp;
@@ -23,7 +27,7 @@ export function sessionCut(events: eventWithTime[], config: CutterConfig) {
   );
   replayer.play(({ index, event }) => {
     if (
-      event.timestamp < validSortedTimestamp[cutPointIndex] &&
+      event.timestamp <= validSortedTimestamp[cutPointIndex] &&
       index + 1 < events.length
     ) {
       const nextEvent = events[index + 1];
@@ -42,6 +46,7 @@ export function sessionCut(events: eventWithTime[], config: CutterConfig) {
         const result = cutEvents(
           events.slice(index + 1),
           replayer,
+          event.timestamp,
           nextCutTimestamp,
         );
         results.push(result);
@@ -55,10 +60,38 @@ export function sessionCut(events: eventWithTime[], config: CutterConfig) {
 function cutEvents(
   events: eventWithTime[],
   replayer: SyncReplayer,
+  currentTimestamp: number,
   endTimestamp: number,
 ) {
-  // TODO
-  return [];
+  const result: eventWithTime[] = [];
+  if (replayer.latestMetaEvent) {
+    const metaEvent = replayer.latestMetaEvent;
+    metaEvent.timestamp = currentTimestamp;
+    result.push(metaEvent);
+  }
+  result.push(
+    ...replayer.unhandledEvents.map((e) => {
+      e.timestamp = currentTimestamp + 10;
+      return e;
+    }),
+  );
+  const fullSnapshot = snapshot(replayer.virtualDom, {
+    mirror: replayer.getMirror(),
+  });
+  if (fullSnapshot)
+    result.push({
+      type: EventType.FullSnapshot,
+      data: {
+        node: fullSnapshot,
+        initialOffset: {
+          top: 0,
+          left: 0,
+        },
+      },
+      timestamp: currentTimestamp,
+    });
+  result.push(...events.filter((event) => event.timestamp <= endTimestamp));
+  return result;
 }
 
 function getValidSortedPoints(points: number[], totalTime: number) {

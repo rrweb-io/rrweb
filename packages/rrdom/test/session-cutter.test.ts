@@ -36,7 +36,7 @@ describe('session cutter', () => {
   it('should return the same events if the events length is too short', () => {
     const events1: eventWithTime[] = [];
     const config = { points: [10] };
-    expect(sessionCut(events1, config)).toEqual(events1);
+    expect(sessionCut(events1, config)).toEqual([events1]);
 
     const events2: eventWithTime[] = [
       {
@@ -45,7 +45,7 @@ describe('session cutter', () => {
         timestamp: 1,
       } as eventWithTime,
     ];
-    expect(sessionCut(events2, config)).toEqual(events2);
+    expect(sessionCut(events2, config)).toEqual([events2]);
   });
 
   it('should return the same events if the points length is 0', () => {
@@ -62,7 +62,7 @@ describe('session cutter', () => {
       } as eventWithTime,
     ];
     const config = { points: [] };
-    expect(sessionCut(events, config)).toEqual(events);
+    expect(sessionCut(events, config)).toEqual([events]);
   });
 
   it('should sort and validate cutting points array', () => {
@@ -107,6 +107,54 @@ describe('session cutter', () => {
       });
       if (newFullSnapshot) snapshotFilter(newFullSnapshot);
       expect(newFullSnapshot).toEqual(originalSnapshot);
+    });
+  });
+
+  describe('Cut the session events from several time points', () => {
+    it('should cut the simplest mutation events', () => {
+      const events = mutationEvents;
+      const result = sessionCut(events, { points: [1000, 2000] });
+      expect(result).toHaveLength(3);
+
+      // all events before 1000ms
+      const sessionBefore1s = result[0];
+      const cutPoint1Length = 5;
+      expect(sessionBefore1s).toHaveLength(cutPoint1Length);
+      // These events are directly sliced from the original events.
+      expect(sessionBefore1s).toEqual(events.slice(0, cutPoint1Length));
+
+      // all events between 1000ms and 2000ms
+      const sessionBetween1s2s = result[1];
+      expect(sessionBetween1s2s).toHaveLength(3);
+      expect(sessionBetween1s2s[0].type).toEqual(EventType.Meta);
+      expect(sessionBetween1s2s[1].type).toEqual(EventType.FullSnapshot);
+      expect(sessionBetween1s2s[2].type).toEqual(EventType.IncrementalSnapshot);
+      let replayer = new SyncReplayer(sessionBetween1s2s.slice(0, 2)); // only play meta and full snapshot events
+      replayer.play();
+      // screenshot at 1000ms
+      expect(
+        printRRDom(replayer.virtualDom, replayer.getMirror()),
+      ).toMatchSnapshot('screenshot at 1000ms');
+
+      // all events after 2000ms
+      const sessionAfter2s = result[2];
+      expect(sessionAfter2s).toHaveLength(3);
+      expect(sessionAfter2s[0].type).toEqual(EventType.Meta);
+      expect(sessionAfter2s[1].type).toEqual(EventType.FullSnapshot);
+      expect(sessionAfter2s[2].type).toEqual(EventType.IncrementalSnapshot);
+      replayer = new SyncReplayer(sessionAfter2s);
+      replayer.play(({ index }) => {
+        if (index === 1)
+          // full snapshot
+          // screen shot at 2000ms
+          expect(
+            printRRDom(replayer.virtualDom, replayer.getMirror()),
+          ).toMatchSnapshot('screenshot at 2000ms');
+      });
+      // screen shot at 3000ms
+      expect(
+        printRRDom(replayer.virtualDom, replayer.getMirror()),
+      ).toMatchSnapshot('screenshot at 3000ms');
     });
   });
 });

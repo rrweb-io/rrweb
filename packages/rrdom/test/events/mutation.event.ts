@@ -73,7 +73,7 @@ export const events: eventWithTime[] = [
     },
     timestamp: now + 100,
   },
-  // mutation that adds five div elements
+  // mutation that adds five div elements at 1000ms
   {
     type: EventType.IncrementalSnapshot,
     data: {
@@ -166,6 +166,7 @@ export const events: eventWithTime[] = [
     },
     timestamp: now + 1000,
   },
+  // mutation that reverses the order of five div elements at 2000ms
   {
     type: EventType.IncrementalSnapshot,
     data: {
@@ -264,6 +265,7 @@ export const events: eventWithTime[] = [
     },
     timestamp: now + 2000,
   },
+  // mutation that removes five div elements at 3000ms
   {
     type: EventType.IncrementalSnapshot,
     data: {

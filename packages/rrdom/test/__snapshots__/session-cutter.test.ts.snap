@@ -76,3 +76,62 @@ exports[`session cutter A synchronous replayer purely built with RRDom should pl
       19 RRText text=\\"\\\\n  \\\\n  \\"
 "
 `;
+
+exports[`session cutter Cut the session events from several time points should cut the simplest mutation events: screenshot at 1000ms 1`] = `
+"1 RRDocument
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+        34 DIV 
+          35 RRText text=\\"1\\"
+        33 DIV 
+          36 RRText text=\\"2\\"
+        32 DIV 
+          37 RRText text=\\"3\\"
+        31 DIV 
+          38 RRText text=\\"4\\"
+        29 DIV 
+          30 RRText text=\\"5\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
+
+exports[`session cutter Cut the session events from several time points should cut the simplest mutation events: screenshot at 2000ms 1`] = `
+"1 RRDocument
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+        29 DIV 
+          30 RRText text=\\"5\\"
+        31 DIV 
+          38 RRText text=\\"4\\"
+        32 DIV 
+          37 RRText text=\\"3\\"
+        33 DIV 
+          36 RRText text=\\"2\\"
+        34 DIV 
+          35 RRText text=\\"1\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
+
+exports[`session cutter Cut the session events from several time points should cut the simplest mutation events: screenshot at 3000ms 1`] = `
+"1 RRDocument
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
