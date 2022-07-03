@@ -27,6 +27,11 @@ const baseConfigs = [
     name: pkg.name,
     path: pkg.name,
   },
+  {
+    input: './src/trim.ts',
+    name: pkg.name,
+    path: 'trim',
+  },
 ];
 
 let configs = [];

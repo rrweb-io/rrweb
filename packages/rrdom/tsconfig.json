@@ -12,7 +12,8 @@
     "lib": ["es6", "dom"],
     "skipLibCheck": true,
     "declaration": true,
-    "importsNotUsedAsValues": "error"
+    "importsNotUsedAsValues": "error",
+    "esModuleInterop": true
   },
   "compileOnSave": true,
   "exclude": ["test"],

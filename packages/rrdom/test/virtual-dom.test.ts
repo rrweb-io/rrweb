@@ -3,10 +3,10 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
-import * as typescript from 'rollup-plugin-typescript2';
+import typescript from 'rollup-plugin-typescript2';
 import { JSDOM } from 'jsdom';
 import {
   cdataNode,
@@ -30,7 +30,6 @@ import {
   BaseRRNode as RRNode,
 } from '../src';
 
-const _typescript = (typescript as unknown) as typeof typescript.default;
 const printRRDomCode = `
 /**
  * Print the RRDom as a string.
@@ -222,7 +221,7 @@ describe('RRDocument for browser environment', () => {
         input: path.resolve(__dirname, '../src/index.ts'),
         plugins: [
           (resolve() as unknown) as rollup.Plugin,
-          (_typescript({
+          (typescript({
             tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
           }) as unknown) as rollup.Plugin,
         ],
