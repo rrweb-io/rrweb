@@ -73,6 +73,7 @@ export class ShadowDomManager {
    */
   public observeAttachShadow(iframeElement: HTMLIFrameElement) {
     if (iframeElement.contentWindow) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const manager = this;
       this.restorePatches.push(
         patch(
@@ -81,8 +82,8 @@ export class ShadowDomManager {
           }).HTMLElement.prototype,
           'attachShadow',
           function (original) {
-            return function () {
-              const shadowRoot = original.apply(this, arguments);
+            return function (this: HTMLElement, ...args: unknown[]) {
+              const shadowRoot = original.apply(this, args);
               if (this.shadowRoot)
                 manager.addShadowRoot(
                   this.shadowRoot,

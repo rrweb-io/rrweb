@@ -496,6 +496,7 @@ function initStyleSheetObserver(
 ): listenerHandler {
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = function (
+    this: CSSStyleSheet,
     rule: string,
     index?: number,
   ) {
@@ -510,7 +511,10 @@ function initStyleSheetObserver(
   };
 
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
-  win.CSSStyleSheet.prototype.deleteRule = function (index: number) {
+  win.CSSStyleSheet.prototype.deleteRule = function (
+    this: CSSStyleSheet,
+    index: number,
+  ) {
     const id = mirror.getId(this.ownerNode as Node);
     if (id !== -1) {
       styleSheetRuleCb({
