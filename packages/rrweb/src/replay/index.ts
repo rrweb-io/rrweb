@@ -1845,7 +1845,7 @@ export class Replayer {
     }
   }
 
-  private isUserInteraction(event: eventWithTime): boolean {
+  public isUserInteraction(event: eventWithTime): boolean {
     if (event.type !== EventType.IncrementalSnapshot) {
       return false;
     }
