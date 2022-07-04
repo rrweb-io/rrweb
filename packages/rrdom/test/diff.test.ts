@@ -1056,6 +1056,24 @@ describe('diff algorithm for rrdom', () => {
       expect(element.tagName).toBe('DIV');
       expect(mirror.getId(element)).toEqual(2);
     });
+
+    it('should remove children from document before adding new nodes', () => {
+      document.write('<style></style>'); // old document with elements that need removing
+
+      const rrDocument = new RRDocument();
+      const docType = rrDocument.createDocumentType('html', '', '');
+      rrDocument.mirror.add(docType, getDefaultSN(docType, 1));
+      rrDocument.appendChild(docType);
+      const htmlEl = rrDocument.createElement('html');
+      rrDocument.mirror.add(htmlEl, getDefaultSN(htmlEl, 2));
+      rrDocument.appendChild(htmlEl);
+
+      diff(document, rrDocument, replayer);
+      expect(document.childNodes.length).toBe(2);
+      const element = document.childNodes[0] as HTMLElement;
+      expect(element.nodeType).toBe(element.DOCUMENT_TYPE_NODE);
+      expect(mirror.getId(element)).toEqual(1);
+    });
   });
 
   describe('create or get a Node', () => {
@@ -1192,9 +1210,7 @@ describe('diff algorithm for rrdom', () => {
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
     });
 
-    // JSDOM/CSSOM is currently broken for this test
-    // remove '.skip' once https://github.com/NV/CSSOM/pull/113#issue-712485075 is merged
-    it.skip('should insert rule at index [0,0] and keep existing rules', () => {
+    it('should insert rule at index [0,0] and keep existing rules', () => {
       document.write(`
         <style>
           @media {
@@ -1210,10 +1226,6 @@ describe('diff algorithm for rrdom', () => {
         { cssText, index: [0, 0], type: StyleRuleType.Insert },
       ];
       applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      console.log(
-        Array.from((styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules),
-      );
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,

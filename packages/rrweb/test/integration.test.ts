@@ -552,36 +552,39 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'frame2.html'));
 
+    await page.waitForTimeout(10); // wait till frame was added to dom
+    await waitForRAF(page); // wait till browser loaded contents of frame
+
     await page.evaluate(() => {
-      const sleep = (ms: number) =>
-        new Promise((resolve) => setTimeout(resolve, ms));
-      let iframe: HTMLIFrameElement;
-      sleep(10)
-        .then(() => {
-          // get contentDocument of iframe five
-          const contentDocument1 = document.querySelector('iframe')!
-            .contentDocument!;
-          // create shadow dom #1
-          contentDocument1.body.attachShadow({ mode: 'open' });
-          contentDocument1.body.shadowRoot!.appendChild(
-            document.createElement('div'),
-          );
-          const div = contentDocument1.body.shadowRoot!.childNodes[0];
-          iframe = contentDocument1.createElement('iframe');
-          // append an iframe to shadow dom #1
-          div.appendChild(iframe);
-          return sleep(10);
-        })
-        .then(() => {
-          const contentDocument2 = iframe.contentDocument!;
-          // create shadow dom #2 in the iframe
-          contentDocument2.body.attachShadow({ mode: 'open' });
-          contentDocument2.body.shadowRoot!.appendChild(
-            document.createElement('span'),
-          );
-        });
+      // get contentDocument of iframe five
+      const contentDocument1 = document.querySelector('iframe')!
+        .contentDocument!;
+      // create shadow dom #1
+      contentDocument1.body.attachShadow({ mode: 'open' });
+      contentDocument1.body.shadowRoot!.appendChild(
+        document.createElement('div'),
+      );
+      const div = contentDocument1.body.shadowRoot!.childNodes[0];
+      const iframe = contentDocument1.createElement('iframe');
+      // append an iframe to shadow dom #1
+      div.appendChild(iframe);
     });
-    await page.waitForTimeout(50);
+
+    await waitForRAF(page); // wait till browser loaded contents of frame
+
+    page.evaluate(() => {
+      const iframe: HTMLIFrameElement = document
+        .querySelector('iframe')!
+        .contentDocument!.body.shadowRoot!.querySelector('iframe')!;
+
+      const contentDocument2 = iframe.contentDocument!;
+      // create shadow dom #2 in the iframe
+      contentDocument2.body.attachShadow({ mode: 'open' });
+      contentDocument2.body.shadowRoot!.appendChild(
+        document.createElement('span'),
+      );
+    });
+    await waitForRAF(page); // wait till browser sent snapshots
 
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);

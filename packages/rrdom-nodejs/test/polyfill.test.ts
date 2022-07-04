@@ -7,6 +7,7 @@ import {
   polyfillNode,
   polyfillDocument,
 } from '../src/polyfill';
+import { performance as nativePerformance } from 'perf_hooks';
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {
@@ -16,10 +17,7 @@ describe('polyfill for nodejs', () => {
     expect(global.performance).toBeDefined();
     expect(performance).toBeDefined();
     expect(performance.now).toBeDefined();
-    expect(performance.now()).toBeCloseTo(
-      require('perf_hooks').performance.now(),
-      1e-10,
-    );
+    expect(performance.now()).toBeCloseTo(nativePerformance.now(), 1e-10);
   });
 
   it('should not polyfill performance if it already exists', () => {

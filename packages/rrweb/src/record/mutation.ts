@@ -25,6 +25,7 @@ import {
   isSerialized,
   hasShadowRoot,
   isSerializedIframe,
+  isSerializedStylesheet,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -169,6 +170,7 @@ export default class MutationBuffer {
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
   private iframeManager: observerParam['iframeManager'];
+  private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
 
@@ -189,6 +191,7 @@ export default class MutationBuffer {
       'doc',
       'mirror',
       'iframeManager',
+      'stylesheetManager',
       'shadowDomManager',
       'canvasManager',
     ] as const).forEach((key) => {
@@ -289,6 +292,7 @@ export default class MutationBuffer {
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
         skipChild: true,
+        newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
         maskTextFn: this.maskTextFn,
@@ -300,6 +304,9 @@ export default class MutationBuffer {
           if (isSerializedIframe(currentN, this.mirror)) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
+          if (isSerializedStylesheet(currentN, this.mirror)) {
+            this.stylesheetManager.addStylesheet(currentN as HTMLLinkElement);
+          }
           if (hasShadowRoot(n)) {
             this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
           }
@@ -308,7 +315,9 @@ export default class MutationBuffer {
           this.iframeManager.attachIframe(iframe, childSn, this.mirror);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
-        newlyAddedElement: true,
+        onStylesheetLoad: (link, childSn) => {
+          this.stylesheetManager.attachStylesheet(link, childSn, this.mirror);
+        },
       });
       if (sn) {
         adds.push({
@@ -471,6 +480,7 @@ export default class MutationBuffer {
         ) {
           return;
         }
+
         let item: attributeCursor | undefined = this.attributes.find(
           (a) => a.node === m.target,
         );

@@ -12,6 +12,7 @@ import {
   polyfill,
   hasShadowRoot,
   isSerializedIframe,
+  isSerializedStylesheet,
 } from '../utils';
 import {
   EventType,
@@ -27,6 +28,7 @@ import {
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
+import { StylesheetManager } from './stylesheet-manager';
 
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -215,6 +217,10 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
   });
 
+  const stylesheetManager = new StylesheetManager({
+    mutationCb: wrappedMutationEmit,
+  });
+
   const canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
@@ -241,6 +247,7 @@ function record<T = eventWithTime>(
       sampling,
       slimDOMOptions,
       iframeManager,
+      stylesheetManager,
       canvasManager,
     },
     mirror,
@@ -276,6 +283,9 @@ function record<T = eventWithTime>(
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
+        if (isSerializedStylesheet(n, mirror)) {
+          stylesheetManager.addStylesheet(n as HTMLLinkElement);
+        }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
@@ -283,6 +293,9 @@ function record<T = eventWithTime>(
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn, mirror);
         shadowDomManager.observeAttachShadow(iframe);
+      },
+      onStylesheetLoad: (linkEl, childSn) => {
+        stylesheetManager.attachStylesheet(linkEl, childSn, mirror);
       },
       keepIframeSrcFn,
     });
@@ -435,6 +448,7 @@ function record<T = eventWithTime>(
           slimDOMOptions,
           mirror,
           iframeManager,
+          stylesheetManager,
           shadowDomManager,
           canvasManager,
           plugins:

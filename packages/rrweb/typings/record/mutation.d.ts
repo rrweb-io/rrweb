@@ -25,6 +25,7 @@ export default class MutationBuffer {
     private doc;
     private mirror;
     private iframeManager;
+    private stylesheetManager;
     private shadowDomManager;
     private canvasManager;
     init(options: MutationBufferParam): void;
