@@ -24,6 +24,12 @@ function toReplayPath(path) {
     .replace('rrweb', 'rrweb-replay');
 }
 
+function toSyncReplayPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/replay/')
+    .replace('rrweb', 'rrweb-sync-replay');
+}
+
 function toReplayUnpackPath(path) {
   return path
     .replace(/^([\w]+)\//, '$1/replay/')
@@ -70,6 +76,12 @@ const baseConfigs = [
     input: './src/replay/index.ts',
     name: 'rrwebReplay',
     pathFn: toReplayPath,
+  },
+  // sync-replayer only
+  {
+    input: './src/replay/sync-replayer.ts',
+    name: 'rrwebSyncReplay',
+    pathFn: toSyncReplayPath,
   },
   // replay and unpack
   {

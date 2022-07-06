@@ -30,27 +30,6 @@ import {
   BaseRRNode as RRNode,
 } from '../src';
 
-const printRRDomCode = `
-/**
- * Print the RRDom as a string.
- * @param rootNode the root node of the RRDom tree
- * @returns printed string
- */
-function printRRDom(rootNode, mirror) {
-  return walk(rootNode, mirror, '');
-}
-function walk(node, mirror, blankSpace) {
-  let printText = \`\${blankSpace}\${mirror.getId(node)} \${node.toString()}\n\`;
-  if(node instanceof rrdom.RRElement && node.shadowRoot)
-    printText += walk(node.shadowRoot, mirror, blankSpace + '  ');
-  for (const child of node.childNodes)
-    printText += walk(child, mirror, blankSpace + '  ');
-  if (node instanceof rrdom.RRIFrameElement)
-    printText += walk(node.contentDocument, mirror, blankSpace + '  ');
-  return printText;
-}
-`;
-
 describe('RRDocument for browser environment', () => {
   let mirror: Mirror;
   beforeEach(() => {
@@ -241,7 +220,7 @@ describe('RRDocument for browser environment', () => {
     beforeEach(async () => {
       page = await browser.newPage();
       await page.goto('about:blank');
-      await page.evaluate(code + printRRDomCode);
+      await page.evaluate(code);
     });
 
     afterEach(async () => {
@@ -252,7 +231,7 @@ describe('RRDocument for browser environment', () => {
       const result = await page.evaluate(`
         const doc = new rrdom.RRDocument();
         rrdom.buildFromDom(document, undefined, doc);
-        printRRDom(doc, doc.mirror);
+        rrdom.printRRDom(doc, doc.mirror);
       `);
       expect(result).toMatchSnapshot();
     });
@@ -262,7 +241,7 @@ describe('RRDocument for browser environment', () => {
       const result = await page.evaluate(`
         const doc = new rrdom.RRDocument();
         rrdom.buildFromDom(document, undefined, doc);
-        printRRDom(doc, doc.mirror);
+        rrdom.printRRDom(doc, doc.mirror);
       `);
       expect(result).toMatchSnapshot();
     });
@@ -272,7 +251,7 @@ describe('RRDocument for browser environment', () => {
       const result = await page.evaluate(`
         const doc = new rrdom.RRDocument();
         rrdom.buildFromDom(document, undefined, doc);
-        printRRDom(doc, doc.mirror);
+        rrdom.printRRDom(doc, doc.mirror);
       `);
       expect(result).toMatchSnapshot();
     });
@@ -286,7 +265,7 @@ describe('RRDocument for browser environment', () => {
 
       const doc = new rrdom.RRDocument();
       rrdom.buildFromDom(docu, undefined, doc);
-      printRRDom(doc, doc.mirror);
+      rrdom.printRRDom(doc, doc.mirror);
       `);
       expect(result).toMatchSnapshot();
     });

@@ -1,10 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import rewire from 'rewire';
 import path from 'path';
 import fs from 'fs';
-import { EventType, eventWithTime } from 'rrweb/src/types';
 import {
   createMirror,
   snapshot,
@@ -13,25 +11,13 @@ import {
   elementNode,
   documentNode,
 } from 'rrweb-snapshot';
-import {
-  RRNode,
-  RRElement,
-  RRIFrameElement,
-  RRDocument,
-  buildFromDom,
-  Mirror as RRDomMirror,
-} from '../src/';
-import { sessionCut } from '../src/tools/session-cutter';
-import { snapshot as RRDomSnapshot } from '../src/tools/snapshot';
-import { SyncReplayer } from '../src/tools/SyncReplayer';
+import { EventType, SyncReplayer } from 'rrweb';
+import type { eventWithTime } from 'rrweb/typings/types';
+import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
+import { sessionCut, getValidSortedPoints } from '../src';
+import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
 import { events as inlineStyleEvents } from './events/inline-style.event';
-
-const rewiredSessionCutter = rewire('../lib/session-cutter');
-const getValidSortedPoints: (
-  points: number[],
-  totalTime: number,
-) => number[] = rewiredSessionCutter.__get__('getValidSortedPoints');
 
 describe('session cutter', () => {
   it('should return the same events if the events length is too short', () => {
@@ -75,24 +61,6 @@ describe('session cutter', () => {
     expect(getValidSortedPoints(inputPoints, 300)).toEqual([10, 100, 250.5]);
   });
 
-  describe('A synchronous replayer purely built with RRDom', () => {
-    it('should play mutation events synchronously', () => {
-      const events = mutationEvents;
-      const replayer = new SyncReplayer(events);
-      replayer.play(({ event, currentTime }) => {
-        if (event.type === EventType.FullSnapshot) {
-          expect(
-            printRRDom(replayer.virtualDom, replayer.getMirror()),
-          ).toMatchSnapshot(`Full Snapshot @ ${currentTime}`);
-        } else if (event.type === EventType.IncrementalSnapshot) {
-          expect(
-            printRRDom(replayer.virtualDom, replayer.getMirror()),
-          ).toMatchSnapshot(`Incremental Snapshot @ ${currentTime}`);
-        }
-      });
-    });
-  });
-
   describe('Build full snapshot events from RRDom', () => {
     it("should build full snapshot events from RRDom's mirror: main.html", () => {
       document.write(getHtml('main.html'));
@@ -114,7 +82,7 @@ describe('session cutter', () => {
 
   describe('Cut the session events from several time points', () => {
     it('should cut the simplest mutation events', () => {
-      const events = mutationEvents;
+      const events = mutationEvents as eventWithTime[];
       const result = sessionCut(events, { points: [1000, 2000] });
       expect(result).toHaveLength(3);
 
@@ -161,7 +129,7 @@ describe('session cutter', () => {
   });
 
   it('should cut events with inline styles', () => {
-    const events = inlineStyleEvents;
+    const events = inlineStyleEvents as eventWithTime[];
     const result = sessionCut(events, { points: [1000] });
     expect(result).toHaveLength(2);
     // all events before 1000ms
@@ -186,20 +154,6 @@ describe('session cutter', () => {
 function getHtml(fileName: string) {
   const filePath = path.resolve(__dirname, `./html/${fileName}`);
   return fs.readFileSync(filePath, 'utf8');
-}
-
-function printRRDom(rootNode: RRNode, mirror: RRDomMirror) {
-  return walk(rootNode, mirror, '');
-}
-function walk(node: RRNode, mirror: RRDomMirror, blankSpace: string) {
-  let printText = `${blankSpace}${mirror.getId(node)} ${node.toString()}\n`;
-  if (node instanceof RRElement && node.shadowRoot)
-    printText += walk(node.shadowRoot, mirror, blankSpace + '  ');
-  for (const child of node.childNodes)
-    printText += walk(child, mirror, blankSpace + '  ');
-  if (node instanceof RRIFrameElement)
-    printText += walk(node.contentDocument, mirror, blankSpace + '  ');
-  return printText;
 }
 
 /**

@@ -23,6 +23,10 @@
     {
       "name": "rrweb-snapshot (package)",
       "path": "../packages/rrweb-snapshot"
+    },
+    {
+      "name": "rrweb-cutter (package)",
+      "path": "../packages/rrweb-cutter"
     }
   ],
   "settings": {

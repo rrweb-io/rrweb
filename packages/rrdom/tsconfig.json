@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
@@ -16,5 +17,5 @@
     "strictBindCallApply": true
   },
   "compileOnSave": true,
-  "include": ["src", "test", "../rrweb/src/record/workers/workers.d.ts"]
+  "include": ["src", "../rrweb/src/record/workers/workers.d.ts"]
 }

@@ -7,7 +7,7 @@ import {
   IMirror,
   Mirror,
 } from 'rrweb-snapshot';
-import { RRDocument as BaseRRDocument, StyleRuleType } from '../index';
+import { RRDocument as BaseRRDocument, StyleRuleType } from 'rrdom';
 import type {
   RRNode,
   RRElement,
@@ -17,11 +17,9 @@ import type {
   RRCanvasElement,
   Mirror as RRDOMMirror,
   VirtualStyleRules,
-} from '../index';
+} from 'rrdom';
 import * as mittProxy from 'mitt';
 import {
-  EventType,
-  IncrementalSource,
   fullSnapshotEvent,
   eventWithTime,
   playerConfig,
@@ -29,24 +27,26 @@ import {
   addedNodeMutation,
   incrementalSnapshotEvent,
   incrementalData,
-  ReplayerEvents,
   Handler,
   Emitter,
-  MediaInteractions,
   metaEvent,
   mutationData,
   styleValueWithPriority,
   mouseMovePos,
   canvasEventWithTime,
-} from 'rrweb/src/types';
+  MediaInteractions,
+  ReplayerEvents,
+  EventType,
+  IncrementalSource,
+} from '../types';
 import {
   queueToResolveTrees,
   iterateResolveTree,
   hasShadowRoot,
   isSerializedIframe,
   uniqueTextMutations,
-} from 'rrweb/src/utils';
-import type { Replayer } from 'rrweb/src/replay';
+} from '../utils';
+import type { Replayer } from '.';
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 const mitt = mittProxy.default || mittProxy;

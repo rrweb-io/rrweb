@@ -1,6 +1,6 @@
-import { EventType, eventWithTime } from 'rrweb/src/types';
+import type { eventWithTime } from 'rrweb/typings/types';
+import { EventType, SyncReplayer } from 'rrweb';
 import snapshot from './snapshot';
-import { SyncReplayer } from './SyncReplayer';
 type CutterConfig = {
   points: number[];
 };
@@ -54,6 +54,7 @@ export function sessionCut(
       }
       return cutPointIndex < validSortedTimestamp.length;
     }
+    return false;
   });
   return results;
 }
@@ -95,7 +96,7 @@ function cutEvents(
   return result;
 }
 
-function getValidSortedPoints(points: number[], totalTime: number) {
+export function getValidSortedPoints(points: number[], totalTime: number) {
   const validSortedPoints = [];
   for (let i = 0; i < points.length; i++) {
     const point = points[i];

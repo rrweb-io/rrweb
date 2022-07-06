@@ -1,15 +1,15 @@
 import { elementNode, NodeType, serializedNode } from 'rrweb-snapshot';
 import type { serializedNodeWithId, attributes } from 'rrweb-snapshot';
-import {
-  Mirror,
-  RRDocument,
-  RRDocumentType,
-  RRElement,
-  RRIFrameElement,
+import { Mirror } from 'rrdom';
+import type {
   RRNode,
   RRMediaElement,
+  RRElement,
+  RRDocument,
+  RRDocumentType,
+  RRIFrameElement,
   RRComment,
-} from '..';
+} from 'rrdom';
 
 function serializeNode(
   n: RRNode,

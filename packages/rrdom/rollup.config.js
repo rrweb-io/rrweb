@@ -27,11 +27,6 @@ const baseConfigs = [
     name: pkg.name,
     path: pkg.name,
   },
-  {
-    input: './src/tools/session-cutter.ts',
-    name: pkg.name,
-    path: 'session-cutter',
-  },
 ];
 
 let configs = [];

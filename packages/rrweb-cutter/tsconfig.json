@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "target": "ES5",
+    "module": "commonjs",
+    "lib": ["ES6", "DOM"],
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true
+  },
+  "compileOnSave": true,
+  "include": ["src", "../rrweb/src/record/workers/workers.d.ts"]
+}
