@@ -383,10 +383,7 @@ export function createOrGetNode(
       let tagName = (rrNode as IRRElement).tagName.toLowerCase();
       tagName = SVGTagMap[tagName] || tagName;
       if (sn && 'isSVG' in sn && sn?.isSVG) {
-        node = document.createElementNS(
-          NAMESPACES['svg'],
-          (rrNode as IRRElement).tagName.toLowerCase(),
-        );
+        node = document.createElementNS(NAMESPACES['svg'], tagName);
       } else node = document.createElement((rrNode as IRRElement).tagName);
       break;
     }

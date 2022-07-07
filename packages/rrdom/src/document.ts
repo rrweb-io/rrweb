@@ -119,6 +119,7 @@ export interface IRRCDATASection extends IRRNode {
 }
 
 type ConstrainedConstructor<T = Record<string, unknown>> = new (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any[]
 ) => T;
 
@@ -138,7 +139,7 @@ export class BaseRRNode implements IRRNode {
   public readonly nodeName: string;
   public readonly RRNodeType: RRNodeType;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   constructor(..._args: any[]) {
     //
   }

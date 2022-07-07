@@ -119,8 +119,11 @@ export class RRDocument
   }
 
   createDocument(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _namespace: string | null,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _qualifiedName: string | null,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _doctype?: DocumentType | null,
   ) {
     return new RRDocument();
@@ -323,7 +326,7 @@ export class RRImageElement extends RRElement {
   src: string;
   width: number;
   height: number;
-  onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+  onload: ((this: GlobalEventHandlers, ev: Event) => unknown) | null;
 }
 
 export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}

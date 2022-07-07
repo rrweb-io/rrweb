@@ -4,8 +4,7 @@
  * 1. The css library was built for node.js which does not have tree-shaking supports.
  * 2. Rewrites into typescript give us a better type interface.
  */
-
-/* tslint:disable no-conditional-assignment interface-name no-shadowed-variable */
+/* eslint-disable tsdoc/syntax */
 
 export interface ParserOptions {
   /** Silently fail on parse errors */

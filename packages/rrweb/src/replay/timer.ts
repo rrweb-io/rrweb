@@ -19,7 +19,6 @@ export class Timer {
   }
   /**
    * Add an action after the timer starts.
-   * @param action
    */
   public addAction(action: actionWithDelay) {
     const index = this.findActionIndex(action);

@@ -20,8 +20,8 @@ export default async function canvasMutation({
 
     if (mutation.setter) {
       // skip some read-only type checks
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (ctx as any)[mutation.property] = mutation.args[0];
+      ((ctx as unknown) as Record<string, unknown>)[mutation.property] =
+        mutation.args[0];
       return;
     }
     const original = ctx[
