@@ -125,8 +125,8 @@ export function diff(
           const newMediaRRElement = newRRElement as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
-              ? oldMediaElement.pause()
-              : oldMediaElement.play();
+              ? void oldMediaElement.pause()
+              : void oldMediaElement.play();
           if (newMediaRRElement.muted !== undefined)
             oldMediaElement.muted = newMediaRRElement.muted;
           if (newMediaRRElement.volume !== undefined)

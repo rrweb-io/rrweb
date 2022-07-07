@@ -288,7 +288,7 @@ export function parse(css: string, options: ParserOptions = {}) {
 
   function error(msg: string) {
     const err = new Error(
-      options.source + ':' + lineno + ':' + column + ': ' + msg,
+      `${options.source || ''}:${lineno}:${column}: ${msg}`,
     ) as ParserError;
     err.reason = msg;
     err.filename = options.source;
@@ -457,6 +457,7 @@ export function parse(css: string, options: ParserOptions = {}) {
     const pos = position();
 
     // prop
+    // eslint-disable-next-line no-useless-escape
     const propMatch = match(/^(\*?[-#\/\*\\\w]+(\[[0-9a-z_-]+\])?)\s*/);
     if (!propMatch) {
       return;
@@ -469,6 +470,7 @@ export function parse(css: string, options: ParserOptions = {}) {
     }
 
     // val
+    // eslint-disable-next-line no-useless-escape
     const val = match(/^((?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+)/);
 
     const ret = pos({
@@ -889,6 +891,7 @@ function addParent(obj: Stylesheet, parent?: Stylesheet) {
     const value = obj[k as keyof Stylesheet];
     if (Array.isArray(value)) {
       value.forEach((v) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         addParent(v, childParent);
       });
     } else if (value && typeof value === 'object') {

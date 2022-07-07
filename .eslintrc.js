@@ -19,8 +19,5 @@ module.exports = {
   plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc'],
   rules: {
     'tsdoc/syntax': 'warn',
-    '@typescript-eslint/unbound-method': 'off',
-    '@typescript-eslint/no-unsafe-member-access': 'off',
-    '@typescript-eslint/restrict-template-expressions': 'off',
   },
 };

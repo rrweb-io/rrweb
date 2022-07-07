@@ -17,11 +17,11 @@ export declare enum EventType {
 }
 export declare type domContentLoadedEvent = {
     type: EventType.DomContentLoaded;
-    data: {};
+    data: unknown;
 };
 export declare type loadedEvent = {
     type: EventType.Load;
-    data: {};
+    data: unknown;
 };
 export declare type fullSnapshotEvent = {
     type: EventType.FullSnapshot;
@@ -59,7 +59,6 @@ export declare type pluginEvent<T = unknown> = {
         payload: T;
     };
 };
-export declare type styleSheetEvent = {};
 export declare enum IncrementalSource {
     Mutation = 0,
     MouseMove = 1,

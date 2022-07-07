@@ -100,8 +100,9 @@ function initLogObserver(
   };
   const loggerType = logOptions.logger;
   if (!loggerType) {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    return () => {};
+    return () => {
+      //
+    };
   }
   let logger: Logger;
   if (typeof loggerType === 'string') {
@@ -147,8 +148,9 @@ function initLogObserver(
    */
   function replace(_logger: Logger, level: LogLevel) {
     if (!_logger[level]) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      return () => {};
+      return () => {
+        //
+      };
     }
     // replace the logger.{level}. return a restore function
     return patch(

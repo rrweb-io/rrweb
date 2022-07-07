@@ -905,8 +905,8 @@ describe('diff algorithm for rrdom', () => {
       /* Number of elements remains the same and no element will be added or removed. */
       let oldElementsNum = 15,
         newElementsNum = 15;
-      let oldElementsIds = [],
-        newElementsIds = [];
+      let oldElementsIds: number[] = [],
+        newElementsIds: number[] = [];
       for (let i = 1; i <= oldElementsNum; i++) {
         oldElementsIds.push(i);
         newElementsIds.push(i);
@@ -950,8 +950,8 @@ describe('diff algorithm for rrdom', () => {
       /* May need to add or remove some elements. */
       let oldElementsNum = 20,
         newElementsNum = 30;
-      let oldElementsIds = [],
-        newElementsIds = [];
+      let oldElementsIds: number[] = [],
+        newElementsIds: number[] = [];
       for (let i = 1; i <= oldElementsNum + 10; i++) oldElementsIds.push(i);
       for (let i = 1; i <= newElementsNum + 10; i++) newElementsIds.push(i);
       shuffle(oldElementsIds);
