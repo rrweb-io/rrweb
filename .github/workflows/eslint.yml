@@ -3,8 +3,9 @@ name: Eslint Check
 on: [pull_request]
 
 jobs:
-  ESLint-Check-and-Report-Upload:
+  eslint_check_upload:
     runs-on: ubuntu-latest
+    name: ESLint Check and Report Upload
 
     steps:
       - uses: actions/checkout@v3
