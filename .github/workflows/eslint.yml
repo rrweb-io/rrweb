@@ -3,7 +3,7 @@ name: Eslint Check
 on: [pull_request]
 
 jobs:
-  ESLint Check and Report Upload:
+  ESLint-Check-and-Report-Upload:
     runs-on: ubuntu-latest
 
     steps:
