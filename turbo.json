@@ -3,17 +3,13 @@
   "baseBranch": "origin/master",
   "pipeline": {
     "prepublish": {
-      "dependsOn": [
-        "^prepublish"
-      ],
-      "outputs": [
-        "lib/**",
-        "es/**",
-        "dist/**"
-      ]
+      "dependsOn": ["^prepublish"],
+      "outputs": ["lib/**", "es/**", "dist/**"]
     },
     "test": {},
     "test:watch": {},
-    "dev": {}
+    "dev": {},
+    "lint": {},
+    "check-types": {}
   }
 }

@@ -11,6 +11,6 @@ install:
   - yarn
 
 script:
-  - yarn lerna run prepublish
-  - yarn lerna run check-types
-  - xvfb-run --server-args="-screen 0 1920x1080x24" yarn lerna run test
+  - yarn build:all
+  - yarn turbo run check-types
+  - xvfb-run --server-args="-screen 0 1920x1080x24" yarn test

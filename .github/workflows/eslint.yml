@@ -1,9 +1,9 @@
 name: Eslint Check
 
-on: [pull_request, push]
+on: [pull_request]
 
 jobs:
-  node_test:
+  ESLint Check and Report Upload:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
       - name: Build Packages
         run: yarn build:all
       - name: Test Code Linting
-        run: yarn lerna run lint
+        run: yarn turbo run lint
       - name: Save Code Linting Report JSON
         run: yarn lint:report
         # Continue to the next step even if this fails
