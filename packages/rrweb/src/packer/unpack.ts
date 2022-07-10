@@ -7,7 +7,7 @@ export const unpack: UnpackFn = (raw: string) => {
     return raw;
   }
   try {
-    const e: eventWithTime = JSON.parse(raw);
+    const e: eventWithTime = JSON.parse(raw) as eventWithTime;
     if (e.timestamp) {
       return e;
     }
@@ -17,7 +17,7 @@ export const unpack: UnpackFn = (raw: string) => {
   try {
     const e: eventWithTimeAndPacker = JSON.parse(
       strFromU8(unzlibSync(strToU8(raw, true))),
-    );
+    ) as eventWithTimeAndPacker;
     if (e.v === MARK) {
       return e;
     }

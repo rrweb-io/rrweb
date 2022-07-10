@@ -70,7 +70,7 @@ class LogReplayPlugin {
               ]
             : console.log;
           logger(
-            ...data.payload.map((s) => JSON.parse(s)),
+            ...data.payload.map((s) => JSON.parse(s) as object),
             this.formatMessage(data),
           );
         };
@@ -84,7 +84,7 @@ class LogReplayPlugin {
               ]
             : console[level];
           logger(
-            ...data.payload.map((s) => JSON.parse(s)),
+            ...data.payload.map((s) => JSON.parse(s) as object),
             this.formatMessage(data),
           );
         };
@@ -95,7 +95,7 @@ class LogReplayPlugin {
 
   /**
    * format the trace data to a string
-   * @param data the log data
+   * @param data - the log data
    */
   private formatMessage(data: LogData): string {
     if (data.trace.length === 0) {

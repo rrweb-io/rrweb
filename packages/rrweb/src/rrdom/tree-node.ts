@@ -46,6 +46,7 @@ export class RRdomTreeNode implements AnyObject {
   }
 
   public setCachedIndex(parentNode: AnyObject, index: number) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.cachedIndexVersion = parentNode.childrenVersion;
     this.cachedIndex = index;
   }

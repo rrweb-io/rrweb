@@ -20,13 +20,13 @@ export default async function canvasMutation({
 
     if (mutation.setter) {
       // skip some read-only type checks
-      // tslint:disable-next-line:no-any
-      (ctx as any)[mutation.property] = mutation.args[0];
+      ((ctx as unknown) as Record<string, unknown>)[mutation.property] =
+        mutation.args[0];
       return;
     }
     const original = ctx[
       mutation.property as Exclude<keyof typeof ctx, 'canvas'>
-    ] as Function;
+    ] as (ctx: CanvasRenderingContext2D, args: unknown[]) => void;
 
     /**
      * We have serialized the image source into base64 string during recording,
@@ -37,7 +37,7 @@ export default async function canvasMutation({
       mutation.property === 'drawImage' &&
       typeof mutation.args[0] === 'string'
     ) {
-      const image = imageMap.get(event);
+      imageMap.get(event);
       original.apply(ctx, mutation.args);
     } else {
       const args = await Promise.all(

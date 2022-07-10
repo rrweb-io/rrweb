@@ -134,7 +134,7 @@ function buildNode(
         n.publicId,
         n.systemId,
       );
-    case NodeType.Element:
+    case NodeType.Element: {
       const tagName = getTagName(n);
       let node: Element;
       if (n.isSVG) {
@@ -143,7 +143,7 @@ function buildNode(
         node = doc.createElement(tagName);
       }
       for (const name in n.attributes) {
-        if (!n.attributes.hasOwnProperty(name)) {
+        if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
         }
         let value = n.attributes[name];
@@ -290,6 +290,7 @@ function buildNode(
         }
       }
       return node;
+    }
     case NodeType.Text:
       return doc.createTextNode(
         n.isStyle && hackCss
@@ -417,7 +418,12 @@ function handleScroll(node: Node, mirror: Mirror) {
   }
   const el = node as HTMLElement;
   for (const name in n.attributes) {
-    if (!(n.attributes.hasOwnProperty(name) && name.startsWith('rr_'))) {
+    if (
+      !(
+        Object.prototype.hasOwnProperty.call(n.attributes, name) &&
+        name.startsWith('rr_')
+      )
+    ) {
       continue;
     }
     const value = n.attributes[name];

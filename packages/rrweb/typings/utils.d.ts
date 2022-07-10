@@ -3,11 +3,11 @@ import type { IMirror, Mirror } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
 export declare let _mirror: DeprecatedMirror;
-export declare function throttle<T>(func: (arg: T) => void, wait: number, options?: throttleOptions): (arg: T) => void;
+export declare function throttle<T>(func: (arg: T) => void, wait: number, options?: throttleOptions): (...args: T[]) => void;
 export declare function hookSetter<T>(target: T, key: string | number | symbol, d: PropertyDescriptor, isRevoked?: boolean, win?: Window & typeof globalThis): hookResetter;
 export declare function patch(source: {
     [key: string]: any;
-}, name: string, replacement: (...args: any[]) => any): () => void;
+}, name: string, replacement: (...args: unknown[]) => unknown): () => void;
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
 export declare function isBlocked(node: Node | null, blockClass: blockClass, checkAncestors: boolean): boolean;

@@ -122,6 +122,7 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
   // get chunks of the canvas and check if it is blank
   for (let x = 0; x < canvas.width; x += chunkSize) {
     for (let y = 0; y < canvas.height; y += chunkSize) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const getImageData = ctx.getImageData as PatchedGetImageData;
       const originalGetImageData =
         ORIGINAL_ATTRIBUTE_NAME in getImageData
@@ -132,6 +133,7 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
       // even if we can already tell from the first chunk(s) that
       // the canvas isn't blank
       const pixelBuffer = new Uint32Array(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         originalGetImageData.call(
           ctx,
           x,
