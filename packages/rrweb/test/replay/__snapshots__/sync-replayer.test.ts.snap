@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`A synchronous replayer purely built with RRDom should play mutation events synchronously: Full Snapshot @ 100 1`] = `
+"1 RRDocument
+  -1 RRDocumentType
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+        18 RRText text=\\"\\\\nempty\\\\n\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
+
+exports[`A synchronous replayer purely built with RRDom should play mutation events synchronously: Incremental Snapshot @ 1000 1`] = `
+"1 RRDocument
+  -1 RRDocumentType
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+        34 DIV 
+          35 RRText text=\\"1\\"
+        33 DIV 
+          36 RRText text=\\"2\\"
+        32 DIV 
+          37 RRText text=\\"3\\"
+        31 DIV 
+          38 RRText text=\\"4\\"
+        29 DIV 
+          30 RRText text=\\"5\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
+
+exports[`A synchronous replayer purely built with RRDom should play mutation events synchronously: Incremental Snapshot @ 2000 1`] = `
+"1 RRDocument
+  -1 RRDocumentType
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+        29 DIV 
+          30 RRText text=\\"5\\"
+        31 DIV 
+          38 RRText text=\\"4\\"
+        32 DIV 
+          37 RRText text=\\"3\\"
+        33 DIV 
+          36 RRText text=\\"2\\"
+        34 DIV 
+          35 RRText text=\\"1\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
+
+exports[`A synchronous replayer purely built with RRDom should play mutation events synchronously: Incremental Snapshot @ 3000 1`] = `
+"1 RRDocument
+  -1 RRDocumentType
+  2 HTML 
+    3 HEAD 
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
+    6 BODY 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+      19 RRText text=\\"\\\\n  \\\\n  \\"
+"
+`;
