@@ -510,7 +510,7 @@ export class Replayer {
     }
   }
 
-  private handleResize(dimension: viewportResizeDimension) {
+  private handleResize = (dimension: viewportResizeDimension) => {
     this.iframe.style.display = 'inherit';
     for (const el of [this.mouseTail, this.iframe]) {
       if (!el) {
@@ -519,9 +519,9 @@ export class Replayer {
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
     }
-  }
+  };
 
-  private applyEventsSynchronously(events: Array<eventWithTime>) {
+  private applyEventsSynchronously = (events: Array<eventWithTime>) => {
     for (const event of events) {
       switch (event.type) {
         case EventType.DomContentLoaded:
@@ -545,9 +545,9 @@ export class Replayer {
       this.mouse.classList.remove('touch-active');
     }
     this.touchActive = null;
-  }
+  };
 
-  private getCastFn(event: eventWithTime, isSync = false) {
+  private getCastFn = (event: eventWithTime, isSync = false) => {
     let castFn: undefined | (() => void);
     switch (event.type) {
       case EventType.DomContentLoaded:
@@ -670,7 +670,7 @@ export class Replayer {
       this.emitter.emit(ReplayerEvents.EventCast, event);
     };
     return wrappedCastFn;
-  }
+  };
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
@@ -869,37 +869,6 @@ export class Replayer {
     }
   }
 
-  private hasImageArg(args: any[]): boolean {
-    for (const arg of args) {
-      if (!arg || typeof arg !== 'object') {
-        // do nothing
-      } else if ('rr_type' in arg && 'args' in arg) {
-        if (this.hasImageArg(arg.args as any[])) return true;
-      } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
-        return true; // has image!
-      } else if (arg instanceof Array) {
-        if (this.hasImageArg(arg)) return true;
-      }
-    }
-    return false;
-  }
-
-  private getImageArgs(args: any[]): string[] {
-    const images: string[] = [];
-    for (const arg of args) {
-      if (!arg || typeof arg !== 'object') {
-        // do nothing
-      } else if ('rr_type' in arg && 'args' in arg) {
-        images.push(...this.getImageArgs(arg.args as any[]));
-      } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
-        images.push(arg.src as string);
-      } else if (arg instanceof Array) {
-        images.push(...this.getImageArgs(arg));
-      }
-    }
-    return images;
-  }
-
   /**
    * pause when there are some canvas drawImage args need to be loaded
    */
@@ -982,6 +951,7 @@ export class Replayer {
         try {
           this.applyMutation(d, isSync);
         } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
           this.warn(`Exception in mutation ${error.message || error}`, d);
         }
         break;
@@ -1012,8 +982,9 @@ export class Replayer {
           });
           // add a dummy action to keep timer alive
           this.timer.addAction({
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            doAction() {},
+            doAction() {
+              //
+            },
             delay: e.delay! - d.positions[0]?.timeOffset,
           });
         }
@@ -1179,6 +1150,7 @@ export class Replayer {
         } catch (error) {
           if (this.config.showWarning) {
             console.warn(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
               `Failed to replay media interactions: ${error.message || error}`,
             );
           }

@@ -35,7 +35,7 @@ import {
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   // In the rrweb replayer, there are some unserialized nodes like the element that stores the injected style rules.
   // These unserialized nodes may interfere the execution of the diff algorithm.
-  // The id of serialized node is larger than 0. So this value ​​less than 0 is used as id for these unserialized nodes.
+  // The id of serialized node is larger than 0. So this value less than 0 is used as id for these unserialized nodes.
   private _unserializedId = -1;
 
   /**
@@ -57,8 +57,11 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   }
 
   createDocument(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _namespace: string | null,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _qualifiedName: string | null,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _doctype?: DocumentType | null,
   ) {
     return new RRDocument();
@@ -198,9 +201,9 @@ function getValidTagName(element: HTMLElement): string {
 
 /**
  * Build a RRNode from a real Node.
- * @param node the real Node
- * @param rrdom the RRDocument
- * @param domMirror the NodeMirror that records the real document tree
+ * @param node - the real Node
+ * @param rrdom - the RRDocument
+ * @param domMirror - the NodeMirror that records the real document tree
  * @returns the built RRNode
  */
 export function buildFromNode(
@@ -222,7 +225,7 @@ export function buildFromNode(
           | 'CSS1Compat';
       }
       break;
-    case NodeType.DOCUMENT_TYPE_NODE:
+    case NodeType.DOCUMENT_TYPE_NODE: {
       const documentType = node as DocumentType;
       rrNode = rrdom.createDocumentType(
         documentType.name,
@@ -230,7 +233,8 @@ export function buildFromNode(
         documentType.systemId,
       );
       break;
-    case NodeType.ELEMENT_NODE:
+    }
+    case NodeType.ELEMENT_NODE: {
       const elementNode = node as HTMLElement;
       const tagName = getValidTagName(elementNode);
       rrNode = rrdom.createElement(tagName);
@@ -245,6 +249,7 @@ export function buildFromNode(
        * Because if these values are changed later, the mutation will be applied through the batched input events on its RRElement after the diff algorithm is executed.
        */
       break;
+    }
     case NodeType.TEXT_NODE:
       rrNode = rrdom.createTextNode((node as Text).textContent || '');
       break;
@@ -277,9 +282,9 @@ export function buildFromNode(
 
 /**
  * Build a RRDocument from a real document tree.
- * @param dom the real document tree
- * @param domMirror the NodeMirror that records the real document tree
- * @param rrdom the rrdom object to be constructed
+ * @param dom - the real document tree
+ * @param domMirror - the NodeMirror that records the real document tree
+ * @param rrdom - the rrdom object to be constructed
  * @returns the build rrdom
  */
 export function buildFromDom(
@@ -387,7 +392,7 @@ export class Mirror implements IMirror<RRNode> {
 
 /**
  * Get a default serializedNodeWithId value for a RRNode.
- * @param id the serialized id to assign
+ * @param id - the serialized id to assign
  */
 export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
   switch (node.RRNodeType) {
@@ -397,7 +402,7 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         type: node.RRNodeType,
         childNodes: [],
       };
-    case RRNodeType.DocumentType:
+    case RRNodeType.DocumentType: {
       const doctype = node as IRRDocumentType;
       return {
         id,
@@ -406,6 +411,7 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         publicId: doctype.publicId,
         systemId: doctype.systemId,
       };
+    }
     case RRNodeType.Element:
       return {
         id,
@@ -433,6 +439,33 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         textContent: '',
       };
   }
+}
+
+/**
+ * Print the RRDom as a string.
+ * @param rootNode - the root node of the RRDom tree
+ * @param mirror - a rrweb or rrdom Mirror
+ * @returns printed string
+ */
+export function printRRDom(rootNode: IRRNode, mirror: IMirror<IRRNode>) {
+  return walk(rootNode, mirror, '');
+}
+function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
+  let printText = `${blankSpace}${mirror.getId(node)} ${node.toString()}\n`;
+  if (node.RRNodeType === RRNodeType.Element) {
+    const element = node as IRRElement;
+    if (element.shadowRoot)
+      printText += walk(element.shadowRoot, mirror, blankSpace + '  ');
+  }
+  for (const child of node.childNodes)
+    printText += walk(child, mirror, blankSpace + '  ');
+  if (node.nodeName === 'IFRAME')
+    printText += walk(
+      (node as RRIFrameElement).contentDocument,
+      mirror,
+      blankSpace + '  ',
+    );
+  return printText;
 }
 
 export { RRNode };

@@ -7,7 +7,7 @@ export declare function throttle<T>(func: (arg: T) => void, wait: number, option
 export declare function hookSetter<T>(target: T, key: string | number | symbol, d: PropertyDescriptor, isRevoked?: boolean, win?: Window & typeof globalThis): hookResetter;
 export declare function patch(source: {
     [key: string]: any;
-}, name: string, replacement: (...args: any[]) => any): () => void;
+}, name: string, replacement: (...args: unknown[]) => unknown): () => void;
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
 export declare function isBlocked(node: Node | null, blockClass: blockClass, checkAncestors: boolean): boolean;

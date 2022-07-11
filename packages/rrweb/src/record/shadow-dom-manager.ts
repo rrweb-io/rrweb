@@ -34,16 +34,21 @@ export class ShadowDomManager {
     this.mirror = options.mirror;
 
     // Patch 'attachShadow' to observe newly added shadow doms.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const manager = this;
     this.restorePatches.push(
-      patch(HTMLElement.prototype, 'attachShadow', function (original) {
-        return function () {
-          const shadowRoot = original.apply(this, arguments);
-          if (this.shadowRoot)
-            manager.addShadowRoot(this.shadowRoot, this.ownerDocument);
-          return shadowRoot;
-        };
-      }),
+      patch(
+        HTMLElement.prototype,
+        'attachShadow',
+        function (original: (init: ShadowRootInit) => ShadowRoot) {
+          return function (this: HTMLElement, option: ShadowRootInit) {
+            const shadowRoot = original.call(this, option);
+            if (this.shadowRoot)
+              manager.addShadowRoot(this.shadowRoot, this.ownerDocument);
+            return shadowRoot;
+          };
+        },
+      ),
     );
   }
 
@@ -73,6 +78,7 @@ export class ShadowDomManager {
    */
   public observeAttachShadow(iframeElement: HTMLIFrameElement) {
     if (iframeElement.contentWindow) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const manager = this;
       this.restorePatches.push(
         patch(
@@ -80,9 +86,9 @@ export class ShadowDomManager {
             HTMLElement: { prototype: HTMLElement };
           }).HTMLElement.prototype,
           'attachShadow',
-          function (original) {
-            return function () {
-              const shadowRoot = original.apply(this, arguments);
+          function (original: (init: ShadowRootInit) => ShadowRoot) {
+            return function (this: HTMLElement, option: ShadowRootInit) {
+              const shadowRoot = original.call(this, option);
               if (this.shadowRoot)
                 manager.addShadowRoot(
                   this.shadowRoot,

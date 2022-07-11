@@ -72,10 +72,10 @@ export class CanvasManager {
       this.initCanvasFPSObserver(sampling, win, blockClass);
   }
 
-  private processMutation: canvasManagerMutationCallback = function (
+  private processMutation: canvasManagerMutationCallback = (
     target,
     mutation,
-  ) {
+  ) => {
     const newFrame =
       this.rafStamps.invokeId &&
       this.rafStamps.latestId !== this.rafStamps.invokeId;
@@ -148,7 +148,8 @@ export class CanvasManager {
       lastSnapshotTime = timestamp;
 
       win.document
-        .querySelectorAll(`canvas:not(.${blockClass} *)`)
+        .querySelectorAll(`canvas:not(.${blockClass as string} *)`)
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
           if (snapshotInProgressMap.get(id)) return;

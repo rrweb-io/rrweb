@@ -19,7 +19,6 @@ export class Timer {
   }
   /**
    * Add an action after the timer starts.
-   * @param action
    */
   public addAction(action: actionWithDelay) {
     const index = this.findActionIndex(action);
@@ -27,7 +26,6 @@ export class Timer {
   }
   /**
    * Add all actions before the timer starts
-   * @param actions
    */
   public addActions(actions: actionWithDelay[]) {
     this.actions = this.actions.concat(actions);
@@ -37,25 +35,24 @@ export class Timer {
     this.timeOffset = 0;
     let lastTimestamp = performance.now();
     const { actions } = this;
-    const self = this;
-    function check() {
+    const check = () => {
       const time = performance.now();
-      self.timeOffset += (time - lastTimestamp) * self.speed;
+      this.timeOffset += (time - lastTimestamp) * this.speed;
       lastTimestamp = time;
       while (actions.length) {
         const action = actions[0];
 
-        if (self.timeOffset >= action.delay) {
+        if (this.timeOffset >= action.delay) {
           actions.shift();
           action.doAction();
         } else {
           break;
         }
       }
-      if (actions.length > 0 || self.liveMode) {
-        self.raf = requestAnimationFrame(check);
+      if (actions.length > 0 || this.liveMode) {
+        this.raf = requestAnimationFrame(check);
       }
-    }
+    };
     this.raf = requestAnimationFrame(check);
   }
 

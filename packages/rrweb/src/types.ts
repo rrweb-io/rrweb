@@ -27,12 +27,12 @@ export enum EventType {
 
 export type domContentLoadedEvent = {
   type: EventType.DomContentLoaded;
-  data: {};
+  data: unknown;
 };
 
 export type loadedEvent = {
   type: EventType.Load;
-  data: {};
+  data: unknown;
 };
 
 export type fullSnapshotEvent = {
@@ -75,8 +75,6 @@ export type pluginEvent<T = unknown> = {
     payload: T;
   };
 };
-
-export type styleSheetEvent = {};
 
 export enum IncrementalSource {
   Mutation,

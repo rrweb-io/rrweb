@@ -40,6 +40,7 @@ async function getTransparentBlobFor(
 // `as any` because: https://github.com/Microsoft/TypeScript/issues/20595
 const worker: ImageBitmapDataURLResponseWorker = self;
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 worker.onmessage = async function (e) {
   if (!('OffscreenCanvas' in globalThis))
     return worker.postMessage({ id: e.data.id });
