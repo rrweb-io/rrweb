@@ -34,8 +34,8 @@
     "vite": "^2.9.13"
   },
   "dependencies": {
-    "rrdom": "^0.1.2",
-    "rrweb-snapshot": "^1.1.14",
-    "rrweb": "^1.1.3"
+    "rrdom": "^0.1.3",
+    "rrweb-snapshot": "^2.0.0-alpha.0",
+    "rrweb": "^2.0.0-alpha.0"
   }
 }

@@ -68,14 +68,13 @@ describe('session cutter', () => {
       const mirror = createMirror();
       // the full snapshot that is built on jsdom
       const originalSnapshot = snapshot(document, { mirror });
-      if (originalSnapshot) snapshotFilter(originalSnapshot);
+
       // Create a RRDom according to the jsdom (real dom).
       buildFromDom(document, mirror, rrdom);
 
       const newFullSnapshot = RRDomSnapshot(rrdom, {
         mirror: rrdom.mirror,
       });
-      if (newFullSnapshot) snapshotFilter(newFullSnapshot);
       expect(newFullSnapshot).toEqual(originalSnapshot);
     });
   });
@@ -154,21 +153,4 @@ describe('session cutter', () => {
 function getHtml(fileName: string) {
   const filePath = path.resolve(__dirname, `./html/${fileName}`);
   return fs.readFileSync(filePath, 'utf8');
-}
-
-/**
- * Some properties in the snapshot shouldn't be checked.
- * 1. css styles' format are different.
- * 2. href and src attributes are different.
- */
-function snapshotFilter(n: serializedNodeWithId) {
-  if (n.type === NodeType.Element) {
-    delete n.attributes['href'];
-    delete n.attributes['src'];
-  } else if (n.type === NodeType.Text && n.isStyle) n.textContent = '';
-  if (
-    [NodeType.Document, NodeType.Element].includes(n.type) &&
-    (n as documentNode | elementNode).childNodes
-  )
-    for (const child of (n as elementNode).childNodes) snapshotFilter(child);
 }
