@@ -125,7 +125,6 @@ export class Replayer {
 
   private nextUserInteractionEvent: eventWithTime | null;
 
-  // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
   // The replayer uses the cache to speed up replay and scrubbing.
@@ -1050,7 +1049,6 @@ export class Replayer {
                  * triggers the 'click' css animation in styles/style.css
                  */
                 this.mouse.classList.remove('active');
-                // tslint:disable-next-line
                 void this.mouse.offsetWidth;
                 this.mouse.classList.add('active');
               } else if (d.type === MouseInteractions.TouchStart) {
@@ -1401,7 +1399,6 @@ export class Replayer {
         }
     });
 
-    // tslint:disable-next-line: variable-name
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
@@ -1893,7 +1890,6 @@ export class Replayer {
     if (!this.config.showDebug) {
       return;
     }
-    // tslint:disable-next-line: no-console
     console.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }

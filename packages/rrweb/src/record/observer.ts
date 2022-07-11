@@ -720,8 +720,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
       fontSource:
         typeof source === 'string'
           ? source
-          : // tslint:disable-next-line: no-any
-            JSON.stringify(Array.from(new Uint8Array(source))),
+          : JSON.stringify(Array.from(new Uint8Array(source))),
     });
     return fontFace;
   } as unknown) as typeof FontFace;

@@ -2,8 +2,7 @@
 
 These are the style guidelines for coding in Electron.
 
-You can run `yarn lint` to show any style issues detected by `tslint` and
-`eslint`.
+You can run `yarn lint` to show any style issues detected by `eslint`.
 
 ## General Code
 

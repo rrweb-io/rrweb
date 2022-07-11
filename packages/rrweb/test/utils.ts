@@ -1,4 +1,3 @@
-// tslint:disable:no-console no-any
 import { NodeType } from 'rrweb-snapshot';
 import {
   EventType,
