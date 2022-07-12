@@ -1320,6 +1320,31 @@ export class Replayer {
         }
         break;
       }
+      case IncrementalSource.Selection: {
+        const doc = this.iframe.contentDocument;
+
+        const ranges = d.ranges.map(
+          ({ start, startOffset, end, endOffset }) => {
+            const startContainer = this.mirror.getNode(start);
+            const endContainer = this.mirror.getNode(end);
+
+            if (!startContainer || !endContainer) return;
+
+            const result = new Range();
+
+            result.setStart(startContainer, startOffset);
+            result.setEnd(endContainer, endOffset);
+
+            return result;
+          },
+        );
+
+        const selection = doc?.getSelection();
+        selection?.removeAllRanges();
+
+        ranges.forEach((r) => r && selection?.addRange(r));
+        break;
+      }
       default:
     }
   }

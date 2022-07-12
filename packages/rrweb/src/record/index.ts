@@ -430,6 +430,17 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
+          selectionCb: (p) => {
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.Selection,
+                  ...p,
+                },
+              }),
+            );
+          },
           blockClass,
           ignoreClass,
           maskTextClass,

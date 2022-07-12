@@ -35,6 +35,8 @@ import {
   styleDeclarationCallback,
   IWindow,
   MutationBufferParam,
+  SelectionRange,
+  selectionCallback,
 } from '../types';
 import MutationBuffer from './mutation';
 
@@ -752,6 +754,47 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   };
 }
 
+function initSelectionObserver(param: observerParam): listenerHandler {
+  const { mirror, blockClass, selectionCb } = param;
+  let collapsed = true;
+
+  const updateSelection = () => {
+    const selection = document.getSelection();
+
+    if (!selection || (collapsed && selection?.isCollapsed)) return;
+
+    collapsed = selection.isCollapsed || false;
+
+    const ranges: SelectionRange[] = [];
+    const count = selection.rangeCount || 0;
+
+    for (let i = 0; i < count; i++) {
+      const range = selection.getRangeAt(i);
+
+      const { startContainer, startOffset, endContainer, endOffset } = range;
+
+      const blocked =
+        isBlocked(startContainer, blockClass, true) ||
+        isBlocked(endContainer, blockClass, true);
+
+      if (blocked) continue;
+
+      ranges.push({
+        start: mirror.getId(startContainer),
+        startOffset,
+        end: mirror.getId(endContainer),
+        endOffset,
+      });
+    }
+
+    selectionCb({ ranges });
+  };
+
+  updateSelection();
+
+  return on('selectionchange', updateSelection);
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -765,6 +808,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     styleDeclarationCb,
     canvasMutationCb,
     fontCb,
+    selectionCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -832,6 +876,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     fontCb(...p);
   };
+  o.selectionCb = (...p: Arguments<selectionCallback>) => {
+    if (hooks.selection) {
+      hooks.selection(...p);
+    }
+    selectionCb(...p);
+  };
 }
 
 export function initObservers(
@@ -863,6 +913,8 @@ export function initObservers(
     : () => {
         //
       };
+  const selectionObserver = initSelectionObserver(o);
+
   // plugins
   const pluginHandlers: listenerHandler[] = [];
   for (const plugin of o.plugins) {
@@ -883,6 +935,7 @@ export function initObservers(
     styleSheetObserver();
     styleDeclarationObserver();
     fontObserver();
+    selectionObserver();
     pluginHandlers.forEach((h) => h());
   };
 }

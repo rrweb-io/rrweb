@@ -5,6 +5,7 @@ import {
   assertDomSnapshot,
   launchPuppeteer,
   sampleEvents as events,
+  sampleSelectionEvents,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
   waitForRAF,
 } from './utils';
@@ -200,6 +201,21 @@ describe('replayer', function () {
       __filename,
       'style-sheet-remove-events-play-at-2500',
     );
+  });
+
+  it('can restore selection', async () => {
+    await page.evaluate(`events = ${JSON.stringify(sampleSelectionEvents)}`);
+    const [startOffset, endOffset] = (await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1500);
+      const range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+
+      [range.startOffset, range.endOffset];
+    `)) as [startOffset: number, endOffset: number];
+
+    expect(startOffset).toEqual(11);
+    expect(endOffset).toEqual(6);
   });
 
   it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
