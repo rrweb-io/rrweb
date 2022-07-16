@@ -248,7 +248,8 @@ export function transformAttribute(
   value: string,
 ): string {
   // relative path in attribute
-  if (name === 'src' || (name === 'href' && value)) {
+  if (name === 'src' || (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))) {
+    // href starts with a # is an id pointer for svg
     return absoluteToDoc(doc, value);
   } else if (name === 'xlink:href' && value && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
