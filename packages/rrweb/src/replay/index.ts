@@ -315,9 +315,11 @@ export class Replayer {
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
-        this.iframe.contentWindow!.scrollTo(
-          (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
-        );
+        if (this.iframe.contentWindow) {
+          this.iframe.contentWindow.scrollTo(
+            (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
+          );
+        }
       }, 1);
     }
     if (this.service.state.context.events.find(indicatesTouchDevice)) {
@@ -583,7 +585,9 @@ export class Replayer {
             this.firstFullSnapshot = true;
           }
           this.rebuildFullSnapshot(event, isSync);
-          this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
+          if (this.iframe.contentWindow) {
+            this.iframe.contentWindow.scrollTo(event.data.initialOffset);
+          }
         };
         break;
       case EventType.IncrementalSnapshot:
@@ -1695,11 +1699,13 @@ export class Replayer {
     }
     const sn = this.mirror.getMeta(target);
     if (target === this.iframe.contentDocument) {
-      this.iframe.contentWindow!.scrollTo({
-        top: d.y,
-        left: d.x,
-        behavior: isSync ? 'auto' : 'smooth',
-      });
+      if (this.iframe.contentWindow) {
+        this.iframe.contentWindow.scrollTo({
+          top: d.y,
+          left: d.x,
+          behavior: isSync ? 'auto' : 'smooth',
+        });
+      }
     } else if (sn?.type === NodeType.Document) {
       // nest iframe content document
       (target as Document).defaultView!.scrollTo({
