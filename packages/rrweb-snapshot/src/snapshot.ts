@@ -18,6 +18,7 @@ import {
   isElement,
   isShadowRoot,
   maskInputValue,
+  isNativeShadowDom,
 } from './utils';
 
 let _id = 1;
@@ -248,7 +249,10 @@ export function transformAttribute(
   value: string,
 ): string {
   // relative path in attribute
-  if (name === 'src' || (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))) {
+  if (
+    name === 'src' ||
+    (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))
+  ) {
     // href starts with a # is an id pointer for svg
     return absoluteToDoc(doc, value);
   } else if (name === 'xlink:href' && value && value[0] !== '#') {
@@ -1025,7 +1029,8 @@ export function serializeNodeWithId(
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
-    if ((n as HTMLElement).shadowRoot) serializedNode.isShadowHost = true;
+    if ((n as HTMLElement).shadowRoot && isNativeShadowDom())
+      serializedNode.isShadowHost = true;
   }
   if (
     (serializedNode.type === NodeType.Document ||
@@ -1075,14 +1080,14 @@ export function serializeNodeWithId(
       for (const childN of Array.from(n.shadowRoot.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          serializedChildNode.isShadow = true;
+          isNativeShadowDom() && (serializedChildNode.isShadow = true);
           serializedNode.childNodes.push(serializedChildNode);
         }
       }
     }
   }
 
-  if (n.parentNode && isShadowRoot(n.parentNode)) {
+  if (n.parentNode && isShadowRoot(n.parentNode) && isNativeShadowDom()) {
     serializedNode.isShadow = true;
   }
 
