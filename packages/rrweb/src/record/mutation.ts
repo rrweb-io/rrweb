@@ -583,7 +583,7 @@ export default class MutationBuffer {
               parentId,
               id: nodeId,
               isShadow:
-                isShadowRoot(m.target) && isNativeShadowDom()
+                isShadowRoot(m.target) && isNativeShadowDom(m.target)
                   ? true
                   : undefined,
             });

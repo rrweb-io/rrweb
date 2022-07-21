@@ -2,25 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script>
-      window.onload = function () {
-        const target1 = document.querySelector('#target1');
-        target1.attachShadow({
-          mode: 'open',
-        });
-        target1.shadowRoot.appendChild(document.createElement('div'));
-        const target2 = document.querySelector('#target2');
-        target2.attachShadow({
-          mode: 'open',
-          '$$lwc-synthetic-mode': true,
-        });
-        target2.shadowRoot.appendChild(document.createElement('p'));
-      };
-    </script>
   </head>
   <body>
     <div id="target1"></div>
     <div id="target2"></div>
     <div id="target3"></div>
+    <script>
+      const target1 = document.querySelector('#target1');
+      target1.attachShadow({
+        mode: 'open',
+      });
+      target1.shadowRoot.appendChild(document.createElement('div'));
+      const target2 = document.querySelector('#target2');
+      target2.attachShadow({
+        mode: 'open',
+        '$$lwc-synthetic-mode': true,
+      });
+      target2.shadowRoot.appendChild(document.createElement('p'));
+    </script>
   </body>
 </html>

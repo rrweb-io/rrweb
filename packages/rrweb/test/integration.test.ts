@@ -648,6 +648,7 @@ describe('record integration tests', function (this: ISuite) {
       } as ShadowRootInit);
       target3?.shadowRoot?.appendChild(document.createElement('span'));
       const target4 = document.createElement('div');
+      target4.id = 'target4';
       // create a native shadow dom
       document.body.appendChild(target4);
       target4.attachShadow({

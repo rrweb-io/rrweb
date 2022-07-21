@@ -1029,7 +1029,8 @@ export function serializeNodeWithId(
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
-    if ((n as HTMLElement).shadowRoot && isNativeShadowDom())
+    const shadowRoot = (n as HTMLElement).shadowRoot;
+    if (shadowRoot && isNativeShadowDom(shadowRoot))
       serializedNode.isShadowHost = true;
   }
   if (
@@ -1080,14 +1081,19 @@ export function serializeNodeWithId(
       for (const childN of Array.from(n.shadowRoot.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          isNativeShadowDom() && (serializedChildNode.isShadow = true);
+          isNativeShadowDom(n.shadowRoot) &&
+            (serializedChildNode.isShadow = true);
           serializedNode.childNodes.push(serializedChildNode);
         }
       }
     }
   }
 
-  if (n.parentNode && isShadowRoot(n.parentNode) && isNativeShadowDom()) {
+  if (
+    n.parentNode &&
+    isShadowRoot(n.parentNode) &&
+    isNativeShadowDom(n.parentNode)
+  ) {
     serializedNode.isShadow = true;
   }
 

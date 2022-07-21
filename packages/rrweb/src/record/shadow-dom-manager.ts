@@ -54,7 +54,7 @@ export class ShadowDomManager {
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
-    if (!isNativeShadowDom()) return;
+    if (!isNativeShadowDom(shadowRoot)) return;
     initMutationObserver(
       {
         ...this.bypassOptions,
