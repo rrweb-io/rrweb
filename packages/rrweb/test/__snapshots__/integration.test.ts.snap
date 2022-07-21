@@ -10764,6 +10764,252 @@ exports[`record integration tests should record shadow DOM 1`] = `
 ]"
 `;
 
+exports[`record integration tests should record shadow doms polyfilled by shadydom 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"src\\": \\"https://cdn.jsdelivr.net/npm/@webcomponents/shadydom@1.9.0/shadydom.min.js\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\",
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 15
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 16
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"target1\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 20
+                      }
+                    ],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"target2\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"p\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 23
+                      }
+                    ],
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 24
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"target3\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 26
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 28
+                      }
+                    ],
+                    \\"id\\": 27
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 29
+                  }
+                ],
+                \\"id\\": 17
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 25,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 30
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record integration tests should record webgl canvas mutations 1`] = `
 "[
   {
