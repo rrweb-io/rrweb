@@ -21,21 +21,7 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
  * Some websites use polyfilled shadow dom and this function is used to detect this situation.
  */
 export function isNativeShadowDom(shadowRoot: ShadowRoot) {
-  return (
-    /**
-     * Some websites use shady dom https://github.com/webcomponents/polyfills/tree/master/packages/shadydom to polyfill the shadow dom and this will cause some issues during the recording.
-     * This statement is to determine whether the current website is polyfilled by shadydom or not.
-     */
-    !(window as Window & typeof globalThis & { ShadyDOM: object }).ShadyDOM &&
-    shadowRoot &&
-    /**
-     * https://github.com/salesforce/lwc/blob/v2.20.3/packages/@lwc/shared/src/keys.ts#L9
-     * All synthetic shadow roots contain the property $shadowResolver$ and this can be used to distinguish them from the native shadowRoot.
-     */
-    !(shadowRoot as ShadowRoot & {
-      $shadowResolver$?: (...args: unknown[]) => unknown;
-    }).$shadowResolver$
-  );
+  return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
 
 export class Mirror implements IMirror<Node> {
