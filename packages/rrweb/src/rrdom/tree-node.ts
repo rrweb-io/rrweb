@@ -1,4 +1,3 @@
-// tslint:disable-next-line: no-any
 export type AnyObject = { [key: string]: any; __rrdom__?: RRdomTreeNode };
 
 export class RRdomTreeNode implements AnyObject {
@@ -30,7 +29,6 @@ export class RRdomTreeNode implements AnyObject {
   }
 
   public childrenChanged() {
-    // tslint:disable-next-line: no-bitwise
     this.childrenVersion = (this.childrenVersion + 1) & 0xffffffff;
     this.childIndexCachedUpTo = null;
   }
