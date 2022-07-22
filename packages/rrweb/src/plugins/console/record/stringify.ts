@@ -117,9 +117,8 @@ export function stringify(
       }
       /* END of the FORK */
 
-      if (value === null || value === undefined) {
-        return value;
-      }
+      if (value === null) return value;
+      if (value === undefined) return 'undefined';
       if (shouldIgnore(value as object)) {
         return toString(value as object);
       }
