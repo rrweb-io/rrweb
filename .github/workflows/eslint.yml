@@ -31,7 +31,8 @@ jobs:
           path: eslint_report.json
 
   Annotation:
-    if: github.repository == 'rrweb-io/rrweb'
+    # Skip the annotation action in PRs from the forked repositories
+    if: github.event.pull_request.head.repo.full_name == 'rrweb-io/rrweb'
     needs: eslint_check_upload
     runs-on: ubuntu-latest
     steps:
