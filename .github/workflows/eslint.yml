@@ -24,13 +24,23 @@ jobs:
         run: yarn lint:report
         # Continue to the next step even if this fails
         continue-on-error: true
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v3
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
+
+  Annotation:
+    if: github.repository == 'rrweb-io/rrweb'
+    needs: eslint_check_upload
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: eslint_report.json
       - name: Annotate Code Linting Results
         uses: ataylorme/eslint-annotate-action@v2
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
           report-json: 'eslint_report.json'
-      - name: Upload ESLint report
-        uses: actions/upload-artifact@v2
-        with:
-          name: eslint_report.json
-          path: eslint_report.json
