@@ -136,14 +136,27 @@ export function diff(
           break;
         }
         case 'CANVAS':
-          (newTree as RRCanvasElement).canvasMutations.forEach(
-            (canvasMutation) =>
+          {
+            const rrCanvasElement = newTree as RRCanvasElement;
+            // This canvas element is created with image data in an iframe element.
+            if (rrCanvasElement.rr_dataURL !== null) {
+              const image = document.createElement('img');
+              image.src = rrCanvasElement.rr_dataURL;
+              image.onload = () => {
+                const ctx = (oldElement as HTMLCanvasElement).getContext('2d');
+                if (ctx) {
+                  ctx.drawImage(image, 0, 0, image.width, image.height);
+                }
+              };
+            }
+            rrCanvasElement.canvasMutations.forEach((canvasMutation) =>
               replayer.applyCanvas(
                 canvasMutation.event,
                 canvasMutation.mutation,
                 oldTree as HTMLCanvasElement,
               ),
-          );
+            );
+          }
           break;
         case 'STYLE':
           applyVirtualStyleRulesToNode(

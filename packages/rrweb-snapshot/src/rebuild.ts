@@ -235,6 +235,13 @@ function buildNode(
                 ctx.drawImage(image, 0, 0, image.width, image.height);
               }
             };
+            type RRCanvasElement = {
+              RRNodeType: NodeType;
+              rr_dataURL: string;
+            };
+            // If the canvas element is created in RRDom runtime (seeking to a time point), the canvas context isn't supported. So the data has to be stored and not handled until diff process.
+            if (((node as unknown) as RRCanvasElement).RRNodeType)
+              ((node as unknown) as RRCanvasElement).rr_dataURL = value;
           } else if (tagName === 'img' && name === 'rr_dataURL') {
             const image = node as HTMLImageElement;
             if (!image.currentSrc.startsWith('data:')) {
