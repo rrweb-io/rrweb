@@ -138,7 +138,7 @@ export function diff(
         case 'CANVAS':
           {
             const rrCanvasElement = newTree as RRCanvasElement;
-            // This canvas element is created with image data in an iframe element.
+            // This canvas element is created with initial data in an iframe element. https://github.com/rrweb-io/rrweb/pull/944
             if (rrCanvasElement.rr_dataURL !== null) {
               const image = document.createElement('img');
               image.src = rrCanvasElement.rr_dataURL;
