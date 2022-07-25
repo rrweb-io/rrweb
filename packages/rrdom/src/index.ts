@@ -135,7 +135,7 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
 
   open() {
     super.open();
-    this._unserializedId = -1;
+    this._unserializedId = -2;
   }
 }
 
