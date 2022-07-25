@@ -263,10 +263,6 @@ function diffChildren(
     const oldEndId = replayer.mirror.getId(oldEndNode);
     const newStartId = rrnodeMirror.getId(newStartNode);
     const newEndId = rrnodeMirror.getId(newEndNode);
-    console.log('oldStartId', oldStartId);
-    console.log('oldEndId', oldEndId);
-    console.log('newStartId', newStartId);
-    console.log('newEndId', newEndId);
 
     // rrdom contains elements with negative ids, we don't want to accidentally match those to a mirror mismatch (-1) id.
     // Negative oldStartId happen when nodes are not in the mirror, but are in the DOM.
