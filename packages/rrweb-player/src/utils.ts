@@ -118,6 +118,7 @@ export function typeOf(
   | 'undefined'
   | 'null'
   | 'object' {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const toString = Object.prototype.toString;
   const map = {
     '[object Boolean]': 'boolean',
@@ -131,5 +132,6 @@ export function typeOf(
     '[object Null]': 'null',
     '[object Object]': 'object',
   };
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return map[toString.call(obj)];
 }

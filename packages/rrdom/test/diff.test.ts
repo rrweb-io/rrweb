@@ -905,8 +905,8 @@ describe('diff algorithm for rrdom', () => {
       /* Number of elements remains the same and no element will be added or removed. */
       let oldElementsNum = 15,
         newElementsNum = 15;
-      let oldElementsIds = [],
-        newElementsIds = [];
+      let oldElementsIds: number[] = [],
+        newElementsIds: number[] = [];
       for (let i = 1; i <= oldElementsNum; i++) {
         oldElementsIds.push(i);
         newElementsIds.push(i);
@@ -950,8 +950,8 @@ describe('diff algorithm for rrdom', () => {
       /* May need to add or remove some elements. */
       let oldElementsNum = 20,
         newElementsNum = 30;
-      let oldElementsIds = [],
-        newElementsIds = [];
+      let oldElementsIds: number[] = [],
+        newElementsIds: number[] = [];
       for (let i = 1; i <= oldElementsNum + 10; i++) oldElementsIds.push(i);
       for (let i = 1; i <= newElementsNum + 10; i++) newElementsIds.push(i);
       shuffle(oldElementsIds);
@@ -1316,9 +1316,7 @@ describe('diff algorithm for rrdom', () => {
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
     });
 
-    // JSDOM/CSSOM is currently broken for this test
-    // remove '.skip' once https://github.com/NV/CSSOM/pull/113#issue-712485075 is merged
-    it.skip('should insert rule at index [0,0] and keep existing rules', () => {
+    it('should insert rule at index [0,0] and keep existing rules', () => {
       document.write(`
         <style>
           @media {
@@ -1334,10 +1332,6 @@ describe('diff algorithm for rrdom', () => {
         { cssText, index: [0, 0], type: StyleRuleType.Insert },
       ];
       applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      console.log(
-        Array.from((styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules),
-      );
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,

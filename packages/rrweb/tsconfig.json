@@ -11,7 +11,8 @@
     "outDir": "build",
     "lib": ["es6", "dom"],
     "downlevelIteration": true,
-    "importsNotUsedAsValues": "error"
+    "importsNotUsedAsValues": "error",
+    "strictBindCallApply": true
   },
   "exclude": ["test"],
   "include": [

@@ -125,8 +125,8 @@ export function diff(
           const newMediaRRElement = newRRElement as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
-              ? oldMediaElement.pause()
-              : oldMediaElement.play();
+              ? void oldMediaElement.pause()
+              : void oldMediaElement.play();
           if (newMediaRRElement.muted !== undefined)
             oldMediaElement.muted = newMediaRRElement.muted;
           if (newMediaRRElement.volume !== undefined)
@@ -406,10 +406,7 @@ export function createOrGetNode(
       let tagName = (rrNode as IRRElement).tagName.toLowerCase();
       tagName = SVGTagMap[tagName] || tagName;
       if (sn && 'isSVG' in sn && sn?.isSVG) {
-        node = document.createElementNS(
-          NAMESPACES['svg'],
-          (rrNode as IRRElement).tagName.toLowerCase(),
-        );
+        node = document.createElementNS(NAMESPACES['svg'], tagName);
       } else node = document.createElement((rrNode as IRRElement).tagName);
       break;
     }

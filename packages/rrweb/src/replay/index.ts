@@ -42,7 +42,6 @@ import {
   viewportResizeDimension,
   missingNodeMap,
   addedNodeMutation,
-  missingNode,
   incrementalSnapshotEvent,
   incrementalData,
   ReplayerEvents,
@@ -54,7 +53,6 @@ import {
   scrollData,
   inputData,
   canvasMutationData,
-  styleAttributeValue,
   styleValueWithPriority,
   mouseMovePos,
   IWindow,
@@ -83,8 +81,7 @@ const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
-// tslint:disable-next-line
-const mitt = (mittProxy as any).default || mittProxy;
+const mitt = mittProxy.default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
@@ -128,7 +125,6 @@ export class Replayer {
 
   private nextUserInteractionEvent: eventWithTime | null;
 
-  // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
   // The replayer uses the cache to speed up replay and scrubbing.
@@ -188,7 +184,7 @@ export class Replayer {
             canvasMutationData: canvasMutationData,
             target: HTMLCanvasElement,
           ) => {
-            canvasMutation({
+            void canvasMutation({
               event: canvasEvent,
               mutation: canvasMutationData,
               target,
@@ -340,8 +336,10 @@ export class Replayer {
 
   public setConfig(config: Partial<playerConfig>) {
     Object.keys(config).forEach((key) => {
-      // @ts-ignore
-      this.config[key] = config[key];
+      const newConfigValue = config[key as keyof playerConfig];
+      (this.config as Record<keyof playerConfig, typeof newConfigValue>)[
+        key as keyof playerConfig
+      ] = config[key as keyof playerConfig];
     });
     if (!this.config.skipInactive) {
       this.backToNormal();
@@ -404,7 +402,7 @@ export class Replayer {
    * So the implementation of play at any time offset will always iterate
    * all of the events, cast event before the offset synchronously
    * and cast event after the offset asynchronously with timer.
-   * @param timeOffset number
+   * @param timeOffset - number
    */
   public play(timeOffset = 0) {
     if (this.service.state.matches('paused')) {
@@ -452,7 +450,7 @@ export class Replayer {
     if (indicatesTouchDevice(event)) {
       this.mouse.classList.add('touch-device');
     }
-    Promise.resolve().then(() =>
+    void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
   }
@@ -511,7 +509,7 @@ export class Replayer {
     }
   }
 
-  private handleResize(dimension: viewportResizeDimension) {
+  private handleResize = (dimension: viewportResizeDimension) => {
     this.iframe.style.display = 'inherit';
     for (const el of [this.mouseTail, this.iframe]) {
       if (!el) {
@@ -520,9 +518,9 @@ export class Replayer {
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
     }
-  }
+  };
 
-  private applyEventsSynchronously(events: Array<eventWithTime>) {
+  private applyEventsSynchronously = (events: Array<eventWithTime>) => {
     for (const event of events) {
       switch (event.type) {
         case EventType.DomContentLoaded:
@@ -546,9 +544,9 @@ export class Replayer {
       this.mouse.classList.remove('touch-active');
     }
     this.touchActive = null;
-  }
+  };
 
-  private getCastFn(event: eventWithTime, isSync = false) {
+  private getCastFn = (event: eventWithTime, isSync = false) => {
     let castFn: undefined | (() => void);
     switch (event.type) {
       case EventType.DomContentLoaded:
@@ -671,7 +669,7 @@ export class Replayer {
       this.emitter.emit(ReplayerEvents.EventCast, event);
     };
     return wrappedCastFn;
-  }
+  };
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
@@ -714,7 +712,7 @@ export class Replayer {
       this.waitForStylesheetLoad();
     }
     if (this.config.UNSAFE_replayCanvas) {
-      this.preloadAllImages();
+      void this.preloadAllImages();
     }
   }
 
@@ -870,37 +868,6 @@ export class Replayer {
     }
   }
 
-  private hasImageArg(args: any[]): boolean {
-    for (const arg of args) {
-      if (!arg || typeof arg !== 'object') {
-        // do nothing
-      } else if ('rr_type' in arg && 'args' in arg) {
-        if (this.hasImageArg(arg.args)) return true;
-      } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
-        return true; // has image!
-      } else if (arg instanceof Array) {
-        if (this.hasImageArg(arg)) return true;
-      }
-    }
-    return false;
-  }
-
-  private getImageArgs(args: any[]): string[] {
-    const images: string[] = [];
-    for (const arg of args) {
-      if (!arg || typeof arg !== 'object') {
-        // do nothing
-      } else if ('rr_type' in arg && 'args' in arg) {
-        images.push(...this.getImageArgs(arg.args));
-      } else if ('rr_type' in arg && arg.rr_type === 'HTMLImageElement') {
-        images.push(arg.src);
-      } else if (arg instanceof Array) {
-        images.push(...this.getImageArgs(arg));
-      }
-    }
-    return images;
-  }
-
   /**
    * pause when there are some canvas drawImage args need to be loaded
    */
@@ -940,7 +907,7 @@ export class Replayer {
       const ctx = canvas.getContext('2d');
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
       let d = imgd?.data;
-      d = JSON.parse(data.args[0]);
+      d = JSON.parse(data.args[0]) as Uint8ClampedArray;
       ctx?.putImageData(imgd!, 0, 0);
     }
   }
@@ -983,6 +950,7 @@ export class Replayer {
         try {
           this.applyMutation(d, isSync);
         } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
           this.warn(`Exception in mutation ${error.message || error}`, d);
         }
         break;
@@ -1013,7 +981,9 @@ export class Replayer {
           });
           // add a dummy action to keep timer alive
           this.timer.addAction({
-            doAction() {},
+            doAction() {
+              //
+            },
             delay: e.delay! - d.positions[0]?.timeOffset,
           });
         }
@@ -1079,7 +1049,6 @@ export class Replayer {
                  * triggers the 'click' css animation in styles/style.css
                  */
                 this.mouse.classList.remove('active');
-                // tslint:disable-next-line
                 void this.mouse.offsetWidth;
                 this.mouse.classList.add('active');
               } else if (d.type === MouseInteractions.TouchStart) {
@@ -1174,11 +1143,12 @@ export class Replayer {
             // i.e. media will evntualy start to play when data is loaded
             // 'canplay' event fires even when currentTime attribute changes which may lead to
             // unexpeted behavior
-            mediaEl.play();
+            void mediaEl.play();
           }
         } catch (error) {
           if (this.config.showWarning) {
             console.warn(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
               `Failed to replay media interactions: ${error.message || error}`,
             );
           }
@@ -1322,7 +1292,7 @@ export class Replayer {
           if (!target) {
             return this.debugNodeNotFound(d, d.id);
           }
-          canvasMutation({
+          void canvasMutation({
             event: e,
             mutation: d,
             target: target as HTMLCanvasElement,
@@ -1337,7 +1307,9 @@ export class Replayer {
         try {
           const fontFace = new FontFace(
             d.family,
-            d.buffer ? new Uint8Array(JSON.parse(d.fontSource)) : d.fontSource,
+            d.buffer
+              ? new Uint8Array(JSON.parse(d.fontSource) as Iterable<number>)
+              : d.fontSource,
             d.descriptors,
           );
           this.iframe.contentDocument?.fonts.add(fontFace);
@@ -1427,7 +1399,6 @@ export class Replayer {
         }
     });
 
-    // tslint:disable-next-line: variable-name
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
@@ -1711,8 +1682,8 @@ export class Replayer {
   /**
    * Apply the scroll data on real elements.
    * If the replayer is in sync mode, smooth scroll behavior should be disabled.
-   * @param d the scroll data
-   * @param isSync whether the replayer is in sync mode(fast-forward)
+   * @param d - the scroll data
+   * @param isSync - whether the replayer is in sync mode(fast-forward)
    */
   private applyScroll(d: scrollData, isSync: boolean) {
     const target = this.mirror.getNode(d.id);
@@ -1919,7 +1890,6 @@ export class Replayer {
     if (!this.config.showDebug) {
       return;
     }
-    // tslint:disable-next-line: no-console
     console.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }

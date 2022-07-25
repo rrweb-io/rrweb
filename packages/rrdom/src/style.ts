@@ -33,7 +33,7 @@ const camelizeRE = /-([a-z])/g;
 const CUSTOM_PROPERTY_REGEX = /^--[a-zA-Z0-9-]+$/;
 export const camelize = (str: string): string => {
   if (CUSTOM_PROPERTY_REGEX.test(str)) return str;
-  return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''));
+  return str.replace(camelizeRE, (_, c: string) => (c ? c.toUpperCase() : ''));
 };
 
 /**

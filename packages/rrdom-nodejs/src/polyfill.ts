@@ -7,8 +7,9 @@ import { RRDocument, RRNode } from './document-nodejs';
  */
 export function polyfillPerformance() {
   if (typeof window !== 'undefined' || 'performance' in global) return;
-  ((global as Window & typeof globalThis)
-    .performance as unknown) = require('perf_hooks').performance;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires
+  const performance = require('perf_hooks').performance;
+  ((global as Window & typeof globalThis).performance as unknown) = performance;
 }
 
 /**
@@ -22,11 +23,11 @@ export function polyfillRAF() {
     INTERVAL = 1_000 / FPS;
   let timeoutHandle: NodeJS.Timeout | null = null,
     rafCount = 0,
-    requests = Object.create(null);
+    requests = Object.create(null) as Record<string, (time: number) => void>;
 
   function onFrameTimer() {
     const currentRequests = requests;
-    requests = Object.create(null);
+    requests = Object.create(null) as Record<string, (time: number) => void>;
     timeoutHandle = null;
     Object.keys(currentRequests).forEach(function (id) {
       const request = currentRequests[id];
@@ -63,7 +64,9 @@ export function polyfillRAF() {
  */
 export function polyfillEvent() {
   if (typeof Event !== 'undefined') return;
-  (global.Event as unknown) = function () {};
+  (global.Event as unknown) = function () {
+    //
+  };
 }
 
 /**
