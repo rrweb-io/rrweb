@@ -33,10 +33,11 @@ import {
 } from './document';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
+  private UNSERIALIZED_STARTING_ID = -2;
   // In the rrweb replayer, there are some unserialized nodes like the element that stores the injected style rules.
   // These unserialized nodes may interfere the execution of the diff algorithm.
   // The id of serialized node is larger than 0. So this value less than 0 is used as id for these unserialized nodes.
-  private _unserializedId = -2;
+  private _unserializedId = this.UNSERIALIZED_STARTING_ID;
 
   /**
    * Every time the id is used, it will minus 1 automatically to avoid collisions.
@@ -135,7 +136,7 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
 
   open() {
     super.open();
-    this._unserializedId = -2;
+    this._unserializedId = this.UNSERIALIZED_STARTING_ID;
   }
 }
 
