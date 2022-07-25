@@ -141,13 +141,13 @@ export function diff(
             // This canvas element is created with initial data in an iframe element. https://github.com/rrweb-io/rrweb/pull/944
             if (rrCanvasElement.rr_dataURL !== null) {
               const image = document.createElement('img');
-              image.src = rrCanvasElement.rr_dataURL;
               image.onload = () => {
                 const ctx = (oldElement as HTMLCanvasElement).getContext('2d');
                 if (ctx) {
                   ctx.drawImage(image, 0, 0, image.width, image.height);
                 }
               };
+              image.src = rrCanvasElement.rr_dataURL;
             }
             rrCanvasElement.canvasMutations.forEach((canvasMutation) =>
               replayer.applyCanvas(
