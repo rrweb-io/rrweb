@@ -228,13 +228,13 @@ function buildNode(
           // handle internal attributes
           if (tagName === 'canvas' && name === 'rr_dataURL') {
             const image = document.createElement('img');
-            image.src = value;
             image.onload = () => {
               const ctx = (node as HTMLCanvasElement).getContext('2d');
               if (ctx) {
                 ctx.drawImage(image, 0, 0, image.width, image.height);
               }
             };
+            image.src = value;
             type RRCanvasElement = {
               RRNodeType: NodeType;
               rr_dataURL: string;
