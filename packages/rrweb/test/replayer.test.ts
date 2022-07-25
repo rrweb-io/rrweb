@@ -158,11 +158,7 @@ describe('replayer', function () {
       ).length,
     );
 
-    await assertDomSnapshot(
-      page,
-      __filename,
-      'style-sheet-rule-events-play-at-1500',
-    );
+    await assertDomSnapshot(page);
   });
 
   it('should apply fast forwarded StyleSheetRules that where added', async () => {
@@ -194,21 +190,20 @@ describe('replayer', function () {
       ).length,
     );
 
-    await assertDomSnapshot(
-      page,
-      __filename,
-      'style-sheet-remove-events-play-at-2500',
-    );
+    await assertDomSnapshot(page);
   });
 
   it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
     await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
 
-    await assertDomSnapshot(
-      page,
-      __filename,
-      'style-sheet-rule-events-play-at-2500',
-    );
+    const actionLength = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2600);
+      replayer['timer']['actions'].length;
+    `);
+
+    await assertDomSnapshot(page);
   });
 
   it('should delete fast forwarded StyleSheetRules that where removed', async () => {
@@ -634,7 +629,7 @@ describe('replayer', function () {
     `);
     await page.waitForTimeout(50);
 
-    await assertDomSnapshot(page, __filename, 'ordering-events');
+    await assertDomSnapshot(page);
   });
 
   it('replays same timestamp events in correct order (with addAction)', async () => {
@@ -648,6 +643,6 @@ describe('replayer', function () {
     `);
     await page.waitForTimeout(50);
 
-    await assertDomSnapshot(page, __filename, 'ordering-events');
+    await assertDomSnapshot(page);
   });
 });

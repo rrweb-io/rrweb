@@ -257,11 +257,7 @@ export function replaceLast(str: string, find: string, replace: string) {
   return str.substring(0, index) + replace + str.substring(index + find.length);
 }
 
-export async function assertDomSnapshot(
-  page: puppeteer.Page,
-  filename: string,
-  name: string,
-) {
+export async function assertDomSnapshot(page: puppeteer.Page) {
   const cdp = await page.target().createCDPSession();
   const { data } = await cdp.send('Page.captureSnapshot', {
     format: 'mhtml',
