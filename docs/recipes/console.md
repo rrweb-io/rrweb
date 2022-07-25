@@ -9,9 +9,11 @@ You can enable the logger using default option like this:
 
 ```js
 rrweb.record({
-  emit: emit(event) {
+  emit: function emit(event) {
     // you should use console.log in this way to avoid errors.
-    const defaultLog = console.log["__rrweb_original__"] ? console.log["__rrweb_original__"] : console.log;
+    const defaultLog = console.log['__rrweb_original__']
+      ? console.log['__rrweb_original__']
+      : console.log;
     defaultLog(event);
   },
   // to use default record option
@@ -26,22 +28,26 @@ You can also customize the behavior of logger like this:
 
 ```js
 rrweb.record({
-  emit: emit(event) {
+  emit: function emit(event) {
     // you should use console.log in this way to avoid errors.
-    const defaultLog = console.log["__rrweb_original__"] ? console.log["__rrweb_original__"] : console.log;
+    const defaultLog = console.log['__rrweb_original__']
+      ? console.log['__rrweb_original__']
+      : console.log;
     defaultLog(event);
   },
   // customized options
-  plugins: [rrweb.getRecordConsolePlugin({
-    level: ["info", "log", "warn", "error"],
-    lengthThreshold: 10000,
-    stringifyOptions: {
-      stringLengthLimit: 1000,
-      numOfKeysLimit: 100,
-      depthOfLimit: 1
-    },
-    logger: window.console,
-  })],
+  plugins: [
+    rrweb.getRecordConsolePlugin({
+      level: ['info', 'log', 'warn', 'error'],
+      lengthThreshold: 10000,
+      stringifyOptions: {
+        stringLengthLimit: 1000,
+        numOfKeysLimit: 100,
+        depthOfLimit: 1,
+      },
+      logger: window.console,
+    }),
+  ],
 });
 ```
 
