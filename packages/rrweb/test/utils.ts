@@ -154,12 +154,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
             }
 
             // strip blob:urls as they are different every time
-            console.log(
-              a.attributes.src,
-              'src' in a.attributes &&
-                a.attributes.src &&
-                typeof a.attributes.src === 'string',
-            );
+            stripBlobURLsFromAttributes(a);
           });
           s.data.adds.forEach((add) => {
             if (add.node.type === NodeType.Element) {
@@ -176,16 +171,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
 
               // strip blob:urls as they are different every time
-              if (
-                'src' in add.node.attributes &&
-                add.node.attributes.src &&
-                typeof add.node.attributes.src === 'string' &&
-                add.node.attributes.src.startsWith('blob:')
-              ) {
-                add.node.attributes.src = add.node.attributes.src
-                  .replace(/[\w-]+$/, '...')
-                  .replace(/:[0-9]+\//, ':xxxx/');
-              }
+              stripBlobURLsFromAttributes(add.node);
 
               // strip rr_dataURL as they are not consistent
               if (
@@ -207,6 +193,23 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
     null,
     2,
   );
+}
+
+function stripBlobURLsFromAttributes(node: {
+  attributes: {
+    src?: string;
+  };
+}) {
+  if (
+    'src' in node.attributes &&
+    node.attributes.src &&
+    typeof node.attributes.src === 'string' &&
+    node.attributes.src.startsWith('blob:')
+  ) {
+    node.attributes.src = node.attributes.src
+      .replace(/[\w-]+$/, '...')
+      .replace(/:[0-9]+\//, ':xxxx/');
+  }
 }
 
 function stringifyDomSnapshot(mhtml: string): string {
