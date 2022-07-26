@@ -182,10 +182,9 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
                 typeof add.node.attributes.src === 'string' &&
                 add.node.attributes.src.startsWith('blob:')
               ) {
-                add.node.attributes.src = add.node.attributes.src.replace(
-                  /[\w-]+$/,
-                  '...',
-                );
+                add.node.attributes.src = add.node.attributes.src
+                  .replace(/[\w-]+$/, '...')
+                  .replace(/:[0-9]+\//, ':xxxx/');
               }
 
               // strip rr_dataURL as they are not consistent
