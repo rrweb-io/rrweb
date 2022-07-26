@@ -12,12 +12,20 @@
     "lib": ["es6", "dom"],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",
-    "strictBindCallApply": true
+    "strictBindCallApply": true,
+    "composite": true
   },
-  "exclude": ["test"],
+  "references": [
+    {
+      "path": "../rrdom"
+    },
+    {
+      "path": "../rrweb-snapshot"
+    }
+  ],
+  "exclude": ["test", "scripts"],
   "include": [
     "src",
-    "scripts",
     "node_modules/@types/css-font-loading-module/index.d.ts",
     "node_modules/@types/jest-image-snapshot/index.d.ts"
   ]

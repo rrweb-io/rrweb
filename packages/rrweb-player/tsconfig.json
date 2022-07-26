@@ -6,5 +6,13 @@
     "__sapper__/*",
     "public/*",
     "../rrweb/src/record/workers/workers.d.ts"
+  ],
+  "compilerOptions": {
+    "composite": true
+  },
+  "references": [
+    {
+      "path": "../rrweb"
+    }
   ]
 }
