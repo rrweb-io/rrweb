@@ -18,6 +18,7 @@
     "prepublish": "npm run typings && npm run bundle",
     "lint": "yarn eslint src"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"

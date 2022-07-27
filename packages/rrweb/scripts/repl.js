@@ -1,10 +1,14 @@
 /* eslint:disable: no-console */
 
-const fs = require('fs');
-const path = require('path');
-const EventEmitter = require('events');
-const inquirer = require('inquirer');
-const puppeteer = require('puppeteer');
+import * as path from 'path';
+import * as fs from 'fs';
+import { EventEmitter } from 'node:events';
+import inquirer from 'inquirer';
+import puppeteer from 'puppeteer';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
 
