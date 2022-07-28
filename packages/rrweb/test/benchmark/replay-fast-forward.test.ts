@@ -10,7 +10,7 @@ const suites: Array<{
   times?: number; // defaults to 5
 }> = [
   {
-    title: 'append 70 * 70 * 70 elements',
+    title: 'append 70 x 70 x 70 elements',
     eval: `
     () => {
       return new Promise((resolve) => {
