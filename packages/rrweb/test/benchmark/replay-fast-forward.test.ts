@@ -78,7 +78,7 @@ describe('benchmark: replayer fast-forward performance', () => {
   let browser: ISuite['browser'];
 
   beforeAll(async () => {
-    browser = await launchPuppeteer({      
+    browser = await launchPuppeteer({
       headless: true,
       args: ['--disable-dev-shm-usage'],
     });
@@ -136,6 +136,9 @@ describe('benchmark: replayer fast-forward performance', () => {
     );
   }
 
+  /**
+   * Get the recorded events after the mutation function is executed.
+   */
   async function generateEvents(mutateNodesFn: string): Promise<string> {
     const page = await browser.newPage();
 
