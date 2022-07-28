@@ -1,0 +1,35 @@
+declare const mediaStreamConstraints: {
+    video: boolean;
+};
+declare const offerOptions: {
+    offerToReceiveVideo: number;
+};
+declare let startTime: null | number;
+declare const remoteVideo: HTMLVideoElement;
+declare let remoteStream: any;
+declare let localPeerConnection: RTCPeerConnection;
+declare let remotePeerConnection: RTCPeerConnection;
+declare function gotLocalMediaStream(mediaStream: any): void;
+declare function handleLocalMediaStreamError(error: any): void;
+declare function gotRemoteMediaStream(event: any): void;
+declare function logVideoLoaded(event: any): void;
+declare function logResizedVideo(event: any): void;
+declare function handleConnection(event: any): void;
+declare function handleConnectionSuccess(peerConnection: any): void;
+declare function handleConnectionFailure(peerConnection: any, error: any): void;
+declare function handleConnectionChange(event: any): void;
+declare function setSessionDescriptionError(error: any): void;
+declare function setDescriptionSuccess(peerConnection: any, functionName: any): void;
+declare function setLocalDescriptionSuccess(peerConnection: any): void;
+declare function setRemoteDescriptionSuccess(peerConnection: any): void;
+declare function createdOffer(description: any): void;
+declare function createdAnswer(description: any): void;
+declare const startButton: HTMLElement | null;
+declare const callButton: HTMLElement | null;
+declare const hangupButton: HTMLElement | null;
+declare function startAction(): void;
+declare function callAction(): void;
+declare function hangupAction(): void;
+declare function getOtherPeer(peerConnection: any): RTCPeerConnection;
+declare function getPeerName(peerConnection: any): "localPeerConnection" | "remotePeerConnection";
+declare function trace(text: any): void;

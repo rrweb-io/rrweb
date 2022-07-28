@@ -59,6 +59,7 @@ import {
   canvasMutationCommand,
   canvasMutationParam,
   canvasEventWithTime,
+  CanvasContext,
 } from '../types';
 import {
   polyfill,
@@ -882,7 +883,8 @@ export class Replayer {
     for (const event of this.service.state.context.events) {
       if (
         event.type === EventType.IncrementalSnapshot &&
-        event.data.source === IncrementalSource.CanvasMutation
+        event.data.source === IncrementalSource.CanvasMutation &&
+        event.data.type !== CanvasContext.WebRTC
       ) {
         promises.push(
           this.deserializeAndPreloadCanvasEvents(event.data, event),
@@ -930,6 +932,8 @@ export class Replayer {
         );
         if (status.isUnchanged === false)
           this.canvasEventMap.set(event, { ...data, commands });
+      } else if (data.type === CanvasContext.WebRTC) {
+        // ignore
       } else {
         const args = await Promise.all(
           data.args.map(deserializeArg(this.imageMap, null, status)),

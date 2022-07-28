@@ -9,6 +9,10 @@ import { fileURLToPath } from 'url';
 
 import { startServer, getServerURL } from './utils.js';
 
+// Turn on devtools for debugging:
+const devtools = false;
+const defaultURL = 'https://webglsamples.org/';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,6 +24,8 @@ function getCode() {
 }
 
 async function startRecording(page, serverURL) {
+  page.on('recording - console', (msg) => console.log('PAGE LOG:', msg.text()));
+
   await page.evaluate((serverURL) => {
     const el = document.createElement('script');
     el.addEventListener('load', () => {
@@ -34,6 +40,9 @@ async function startRecording(page, serverURL) {
         recordCanvas: true,
         collectFonts: true,
         inlineImages: true,
+        sampling: {
+          canvas: 'webrtc',
+        },
       });
     });
     el.src = `${serverURL}/rrweb.js`;
@@ -41,7 +50,15 @@ async function startRecording(page, serverURL) {
   }, serverURL);
 }
 
-function startReplay(page, serverURL) {
+async function startReplay(page, serverURL, recordedPage) {
+  page.on('replay - console', (msg) => console.log('PAGE LOG:', msg.text()));
+
+  await page.exposeFunction('_signal', (signal) => {
+    recordedPage.evaluate((signal) => {
+      window.p.signal(signal);
+    }, signal);
+  });
+
   return page.evaluate((serverURL) => {
     const el = document.createElement('script');
     el.addEventListener('load', () => {
@@ -68,9 +85,8 @@ async function resizeWindow(page, top, left, width, height) {
 
 void (async () => {
   const code = getCode();
-  const server = await startServer();
-  const serverURL = getServerURL(server);
-  let events = [];
+  let server;
+  let serverURL;
 
   await start();
 
@@ -90,13 +106,14 @@ void (async () => {
   };
 
   async function start() {
-    events = [];
+    server = await startServer();
+    serverURL = getServerURL(server);
+
     const { url } = await inquirer.prompt([
       {
         type: 'input',
         name: 'url',
-        message:
-          'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
+        message: `Enter the url you want to record, e.g ${defaultURL}: `,
       },
     ]);
 
@@ -120,11 +137,11 @@ void (async () => {
   }
 
   async function record(url) {
-    if (url === '') url = 'https://react-redux.realworld.io';
+    if (url === '') url = defaultURL;
 
     const replayingBrowser = await puppeteer.launch({
       headless: false,
-      // devtools: true,
+      devtools,
       defaultViewport: {
         width: 1600,
         height: 900,
@@ -142,11 +159,10 @@ void (async () => {
     await replayerPage.addStyleTag({
       path: path.resolve(__dirname, '../dist/rrweb.min.css'),
     });
-    await startReplay(replayerPage, serverURL);
 
     const recordingBrowser = await puppeteer.launch({
       headless: false,
-      // devtools: true,
+      devtools,
       defaultViewport: {
         width: 1600,
         height: 900,
@@ -165,6 +181,8 @@ void (async () => {
     // disables content security policy which enables us to insert rrweb as a script tag
     await recordedPage.setBypassCSP(true);
 
+    await startReplay(replayerPage, serverURL, recordedPage);
+
     await Promise.all([
       resizeWindow(recordedPage, 0, 0, 800, 800),
       resizeWindow(replayerPage, 0, 800, 800, 800),
@@ -178,7 +196,9 @@ void (async () => {
     if (!replayerPage) throw new Error('No replayer page found');
 
     await recordedPage.exposeFunction('_replLog', (event) => {
-      replayerPage.evaluate((event) => window.replayer?.addEvent(event), event);
+      replayerPage.evaluate((event) => {
+        window.replayer?.addEvent(event);
+      }, event);
     });
     await startRecording(recordedPage, serverURL);
     recordedPage.on('framenavigated', async () => {

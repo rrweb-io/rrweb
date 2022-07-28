@@ -12,7 +12,7 @@ import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 function patchGLPrototype(
   prototype: WebGLRenderingContext | WebGL2RenderingContext,
-  type: CanvasContext,
+  type: Exclude<CanvasContext, CanvasContext.WebRTC>,
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
   mirror: Mirror,

@@ -15,6 +15,7 @@ import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
+import SimplePeer from 'simple-peer-light';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -60,12 +61,14 @@ export class CanvasManager {
     win: IWindow;
     blockClass: blockClass;
     mirror: Mirror;
-    sampling?: 'all' | number;
+    sampling?: 'all' | 'webrtc' | number;
   }) {
     const { sampling = 'all', win, blockClass, recordCanvas } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
+    if (recordCanvas && sampling === 'webrtc')
+      this.initCanvasWebRTCObserver(win, blockClass);
     if (recordCanvas && sampling === 'all')
       this.initCanvasMutationObserver(win, blockClass);
     if (recordCanvas && typeof sampling === 'number')
@@ -188,6 +191,64 @@ export class CanvasManager {
     };
 
     rafId = requestAnimationFrame(takeCanvasSnapshots);
+
+    this.resetObservers = () => {
+      canvasContextReset();
+      cancelAnimationFrame(rafId);
+    };
+  }
+
+  // private sdpOffer: RTCSessionDescriptionInit;
+
+  private setupPeer(id: number, stream: MediaStream) {
+    console.log('setupPeer', id);
+    const p = new SimplePeer({
+      initiator: true,
+      stream,
+      trickle: false, // only send one WebRTC offer per canvas
+    });
+
+    (window as any).p = p;
+
+    p.on('signal', (data: RTCSessionDescriptionInit) => {
+      this.mutationCb({
+        id,
+        type: CanvasContext.WebRTC,
+        msg: data,
+        stream,
+      });
+    });
+
+    p.on('connect', () => {
+      // eslint-disable-next-line prefer-rest-params
+      console.log('connected', arguments);
+    });
+  }
+
+  private initCanvasWebRTCObserver(win: IWindow, blockClass: blockClass) {
+    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const streamMap: Map<number, MediaStream> = new Map();
+    let rafId: number;
+
+    const captureStreams = () => {
+      win.document
+        .querySelectorAll(`canvas:not(.${blockClass as string} *)`)
+        .forEach((canvas: HTMLCanvasElement) => {
+          const id = this.mirror.getId(canvas);
+          if (streamMap.has(id)) return;
+
+          // streamMap.set(id, (null as unknown) as MediaStream);
+          // setTimeout(() => {
+          console.log('captureStream', canvas, canvas.width, canvas.height);
+          const stream = canvas.captureStream();
+          streamMap.set(id, stream);
+          this.setupPeer(id, stream);
+          // }, 2000);
+        });
+      rafId = requestAnimationFrame(captureStreams);
+    };
+
+    rafId = requestAnimationFrame(captureStreams);
 
     this.resetObservers = () => {
       canvasContextReset();

@@ -208,10 +208,11 @@ export type SamplingStrategy = Partial<{
   input: 'all' | 'last';
   /**
    * 'all' will record every single canvas call
+   * 'webrtc' will stream the canvas data via WebRTC
    * number between 1 and 60, will record an image snapshots in a web-worker a (maximum) number of times per second.
    *                          Number only supported where [`OffscreenCanvas`](http://mdn.io/offscreencanvas) is supported.
    */
-  canvas: 'all' | number;
+  canvas: 'all' | 'webrtc' | number;
 }>;
 
 export type RecordPlugin<TOptions = unknown> = {
@@ -437,6 +438,7 @@ export enum CanvasContext {
   '2D',
   WebGL,
   WebGL2,
+  WebRTC,
 }
 
 export type SerializedCanvasArg =
@@ -528,16 +530,22 @@ export type canvasMutationCommand = {
 export type canvasMutationParam =
   | {
       id: number;
-      type: CanvasContext;
+      type: Exclude<CanvasContext, CanvasContext.WebRTC>;
       commands: canvasMutationCommand[];
     }
   | ({
       id: number;
-      type: CanvasContext;
-    } & canvasMutationCommand);
+      type: Exclude<CanvasContext, CanvasContext.WebRTC>;
+    } & canvasMutationCommand)
+  | {
+      id: number;
+      type: CanvasContext.WebRTC;
+      msg: RTCSessionDescriptionInit;
+      stream?: MediaStream;
+    };
 
 export type canvasMutationWithType = {
-  type: CanvasContext;
+  type: Exclude<CanvasContext, CanvasContext.WebRTC>;
 } & canvasMutationCommand;
 
 export type canvasMutationCallback = (p: canvasMutationParam) => void;

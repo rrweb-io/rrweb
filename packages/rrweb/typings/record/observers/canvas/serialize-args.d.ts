@@ -3,4 +3,4 @@ export declare function variableListFor(ctx: RenderingContext, ctor: string): un
 export declare const saveWebGLVar: (value: unknown, win: IWindow, ctx: RenderingContext) => number | void;
 export declare function serializeArg(value: unknown, win: IWindow, ctx: RenderingContext): CanvasArg;
 export declare const serializeArgs: (args: Array<unknown>, win: IWindow, ctx: RenderingContext) => CanvasArg[];
-export declare const isInstanceOfWebGLObject: (value: unknown, win: IWindow) => value is WebGLTexture | WebGLShader | WebGLBuffer | WebGLVertexArrayObject | WebGLProgram | WebGLActiveInfo | WebGLUniformLocation | WebGLFramebuffer | WebGLRenderbuffer | WebGLShaderPrecisionFormat;
+export declare const isInstanceOfWebGLObject: (value: unknown, win: IWindow) => value is WebGLActiveInfo | WebGLBuffer | WebGLFramebuffer | WebGLProgram | WebGLRenderbuffer | WebGLShader | WebGLShaderPrecisionFormat | WebGLTexture | WebGLUniformLocation | WebGLVertexArrayObject;
