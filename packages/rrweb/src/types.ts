@@ -574,6 +574,10 @@ export type ImageBitmapDataURLWorkerResponse =
       height: number;
     };
 
+export interface WebRTCDataChannel {
+  id: number;
+}
+
 export type fontParam = {
   family: string;
   fontSource: string;
@@ -680,6 +684,12 @@ export type playerConfig = {
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
   plugins?: ReplayPlugin[];
+  /**
+   * When using webRTC to live stream contents of canvas elements you'll need to setup a `webRTCSignalCallback`
+   * This callback will include a `RTCSessionDescriptionInit` signal object
+   * that you have to pass back to the recording script's `record.webRTCSignal(signal)` function.
+   */
+  webRTCSignalCallback: null | ((signal: RTCSessionDescriptionInit) => void);
 };
 
 export type playerMetaData = {

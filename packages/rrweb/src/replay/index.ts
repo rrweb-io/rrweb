@@ -166,6 +166,7 @@ export class Replayer {
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
+      webRTCSignalCallback: null,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -192,6 +193,8 @@ export class Replayer {
               imageMap: this.imageMap,
               canvasEventMap: this.canvasEventMap,
               errorHandler: this.warnCanvasMutationFailed.bind(this),
+              mirror: this.mirror,
+              webRTCSignalCallback: this.config.webRTCSignalCallback,
             });
           },
           applyInput: this.applyInput.bind(this),
@@ -1303,6 +1306,8 @@ export class Replayer {
             imageMap: this.imageMap,
             canvasEventMap: this.canvasEventMap,
             errorHandler: this.warnCanvasMutationFailed.bind(this),
+            mirror: this.mirror,
+            webRTCSignalCallback: this.config.webRTCSignalCallback,
           });
         }
         break;

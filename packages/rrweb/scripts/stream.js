@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import { startServer, getServerURL } from './utils.js';
 
 // Turn on devtools for debugging:
-const devtools = false;
+const devtools = true;
 const defaultURL = 'https://webglsamples.org/';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,38 +24,39 @@ function getCode() {
 }
 
 async function startRecording(page, serverURL) {
-  page.on('recording - console', (msg) => console.log('PAGE LOG:', msg.text()));
-
-  await page.evaluate((serverURL) => {
-    const el = document.createElement('script');
-    el.addEventListener('load', () => {
-      const win = window;
-      win.__IS_RECORDING__ = true;
-      win.events = [];
-      win.rrweb?.record({
-        emit: (event) => {
-          win.events?.push(event);
-          win._replLog?.(event);
-        },
-        recordCanvas: true,
-        collectFonts: true,
-        inlineImages: true,
-        sampling: {
-          canvas: 'webrtc',
-        },
+  try {
+    await page.evaluate((serverURL) => {
+      const el = document.createElement('script');
+      el.addEventListener('load', () => {
+        const win = window;
+        win.__IS_RECORDING__ = true;
+        win.events = [];
+        window.record = win.rrweb.record;
+        window.record({
+          emit: (event) => {
+            win.events?.push(event);
+            win._captureEvent?.(event);
+          },
+          recordCanvas: true,
+          collectFonts: true,
+          inlineImages: true,
+          sampling: {
+            canvas: 'webrtc',
+          },
+        });
       });
-    });
-    el.src = `${serverURL}/rrweb.js`;
-    document.head.appendChild(el);
-  }, serverURL);
+      el.src = `${serverURL}/rrweb.js`;
+      document.head.appendChild(el);
+    }, serverURL);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function startReplay(page, serverURL, recordedPage) {
-  page.on('replay - console', (msg) => console.log('PAGE LOG:', msg.text()));
-
-  await page.exposeFunction('_signal', (signal) => {
-    recordedPage.evaluate((signal) => {
-      window.p.signal(signal);
+  await page.exposeFunction('_signal', async (signal) => {
+    await recordedPage.evaluate((signal) => {
+      window.record.webRTCSignal(signal);
     }, signal);
   });
 
@@ -65,6 +66,9 @@ async function startReplay(page, serverURL, recordedPage) {
       window.replayer = new rrweb.Replayer([], {
         UNSAFE_replayCanvas: true,
         liveMode: true,
+        webRTCSignalCallback: async (data) => {
+          await _signal(JSON.stringify(data));
+        },
       });
       window.replayer.startLive();
     });
@@ -181,6 +185,12 @@ void (async () => {
     // disables content security policy which enables us to insert rrweb as a script tag
     await recordedPage.setBypassCSP(true);
 
+    replayerPage.on('console', (msg) =>
+      console.log('REPLAY PAGE LOG:', msg.text()),
+    );
+    recordedPage.on('console', (msg) =>
+      console.log('RECORD PAGE LOG:', msg.text()),
+    );
     await startReplay(replayerPage, serverURL, recordedPage);
 
     await Promise.all([
@@ -195,7 +205,7 @@ void (async () => {
 
     if (!replayerPage) throw new Error('No replayer page found');
 
-    await recordedPage.exposeFunction('_replLog', (event) => {
+    await recordedPage.exposeFunction('_captureEvent', (event) => {
       replayerPage.evaluate((event) => {
         window.replayer?.addEvent(event);
       }, event);

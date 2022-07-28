@@ -4,6 +4,7 @@ import {
   canvasMutationCommand,
   canvasMutationData,
   canvasMutationParam,
+  WebRTCDataChannel,
 } from '../../types';
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
@@ -16,6 +17,8 @@ export default async function canvasMutation({
   imageMap,
   canvasEventMap,
   errorHandler,
+  mirror,
+  webRTCSignalCallback,
 }: {
   event: Parameters<Replayer['applyIncremental']>[0];
   mutation: canvasMutationData;
@@ -23,13 +26,20 @@ export default async function canvasMutation({
   imageMap: Replayer['imageMap'];
   canvasEventMap: Replayer['canvasEventMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
+  mirror: Replayer['mirror'];
+  webRTCSignalCallback: null | ((signal: RTCSessionDescriptionInit) => void);
 }): Promise<void> {
   try {
+    console.log('canvasMutation', mutation);
     const precomputedMutation: canvasMutationParam =
       canvasEventMap.get(event) || mutation;
 
     if (precomputedMutation.type === CanvasContext.WebRTC) {
-      return setupWebRTC(precomputedMutation, target);
+      if (!webRTCSignalCallback)
+        throw new Error(
+          'webRTCSignalCallback is null, webRTC events will be ignored and Canvas or Video elements will be empty',
+        );
+      return setupWebRTC(precomputedMutation, webRTCSignalCallback, mirror);
     }
 
     const commands: canvasMutationCommand[] =
@@ -125,41 +135,55 @@ function startStream(
   }
 }
 
+let peer: SimplePeer.Instance | null = null;
+let streamId: number;
 function setupWebRTC(
   mutation: canvasMutationParam & {
     type: CanvasContext.WebRTC;
   },
-  target: HTMLCanvasElement | HTMLVideoElement,
-  // mirror: Replayer['mirror'],
+  webRTCSignalCallback: (signal: RTCSessionDescriptionInit) => void,
+  mirror: Replayer['mirror'],
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const p = ((window as any).p = new SimplePeer({
-    initiator: false,
-    trickle: false,
-  }));
+  if (!peer) {
+    peer = new SimplePeer({
+      initiator: false,
+      // trickle: false,
+    });
 
-  p.on('error', (err: Error) => console.log('error', err));
+    peer.on('error', (err: Error) => {
+      peer = null;
+      console.log('error', err);
+    });
 
-  p.on('signal', (data: SimplePeer.SignalData) => {
-    console.log('SIGNAL', JSON.stringify(data));
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    _signal(JSON.stringify(data));
-  });
+    peer.on('close', () => {
+      peer = null;
+      console.log('closing');
+    });
 
-  p.on('connect', () => {
-    console.log('CONNECT');
-  });
+    peer.on('signal', (data: RTCSessionDescriptionInit) => {
+      webRTCSignalCallback(data);
+    });
 
-  // p.on('data', (data) => {
-  //   console.log('data: ', data);
-  // });
+    peer.on('connect', () => {
+      console.log('connect');
+    });
 
-  p.on('stream', (stream: MediaStream) => {
-    // got remote video stream, now let's show it in a video or canvas element
-    startStream(target, stream);
-  });
+    peer.on('data', (data: SimplePeer.SimplePeerData) => {
+      try {
+        const json = JSON.parse(data as string) as WebRTCDataChannel;
+        streamId = json.id;
+      } catch (error) {
+        console.error('Could not parse data', error);
+      }
+    });
 
-  p.signal(mutation.msg);
+    peer.on('stream', (stream: MediaStream) => {
+      // got remote video stream, now let's show it in a video or canvas element
+      const target = mirror.getNode(streamId) as
+        | HTMLCanvasElement
+        | HTMLVideoElement;
+      startStream(target, stream);
+    });
+  }
+  peer.signal(mutation.msg);
 }

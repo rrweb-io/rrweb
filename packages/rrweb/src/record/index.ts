@@ -40,6 +40,7 @@ function wrapEvent(e: event): eventWithTime {
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
+let canvasManager!: CanvasManager;
 
 const mirror = createMirror();
 function record<T = eventWithTime>(
@@ -221,7 +222,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
   });
 
-  const canvasManager = new CanvasManager({
+  canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
@@ -527,6 +528,15 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
       },
     }),
   );
+};
+
+/**
+ * Insert response to an WebRTC Offer to complete the WebRTC connection
+ *
+ * @param signal - WebRTC signal supplied by the replayer's `webRTCSignalCallback` function
+ */
+record.webRTCSignal = (signal: RTCSessionDescriptionInit) => {
+  canvasManager.webRTCSignalCallback(signal);
 };
 
 record.freezePage = () => {
