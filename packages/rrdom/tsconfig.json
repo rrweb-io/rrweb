@@ -18,6 +18,9 @@
   "references": [
     {
       "path": "../rrweb-snapshot"
+    },
+    {
+      "path": "../rrweb"
     }
   ],
   "compileOnSave": true,
