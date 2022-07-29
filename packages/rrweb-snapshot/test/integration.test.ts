@@ -97,7 +97,6 @@ describe('integration tests', function (this: ISuite) {
     it(title, async () => {
       const page: puppeteer.Page = await browser.newPage();
       // console for debug
-      // tslint:disable-next-line: no-console
       page.on('console', (msg) => console.log(msg.text()));
       if (html.filePath === 'iframe.html') {
         // loading directly is needed to ensure we don't trigger compatMode='BackCompat'
@@ -147,7 +146,6 @@ describe('integration tests', function (this: ISuite) {
   it('correctly triggers backCompat mode and rendering', async () => {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
-    // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
 
     await page.goto('http://localhost:3030/html/compat-mode.html', {
@@ -244,7 +242,6 @@ describe('iframe integration tests', function (this: ISuite) {
   it('snapshot async iframes', async () => {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
-    // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`http://localhost:3030/iframe-html/main.html`, {
       waitUntil: 'load',
@@ -293,7 +290,6 @@ describe('shadow DOM integration tests', function (this: ISuite) {
   it('snapshot shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
-    // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`http://localhost:3030/html/shadow-dom.html`, {
       waitUntil: 'load',

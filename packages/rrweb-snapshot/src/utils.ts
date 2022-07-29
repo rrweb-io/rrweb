@@ -16,6 +16,14 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
   return Boolean(host?.shadowRoot === n);
 }
 
+/**
+ * To fix the issue https://github.com/rrweb-io/rrweb/issues/933.
+ * Some websites use polyfilled shadow dom and this function is used to detect this situation.
+ */
+export function isNativeShadowDom(shadowRoot: ShadowRoot) {
+  return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
+}
+
 export class Mirror implements IMirror<Node> {
   private idNodeMap: idNodeMap = new Map();
   private nodeMetaMap: nodeMetaMap = new WeakMap();

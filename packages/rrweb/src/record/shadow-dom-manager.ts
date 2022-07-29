@@ -7,6 +7,7 @@ import type {
 import { initMutationObserver, initScrollObserver } from './observer';
 import { patch } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
+import { isNativeShadowDom } from 'rrweb-snapshot';
 
 type BypassOptions = Omit<
   MutationBufferParam,
@@ -53,6 +54,7 @@ export class ShadowDomManager {
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
+    if (!isNativeShadowDom(shadowRoot)) return;
     initMutationObserver(
       {
         ...this.bypassOptions,
