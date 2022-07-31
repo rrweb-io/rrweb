@@ -5,8 +5,8 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run bundle",
-    "test": "npm run bundle:browser && jest",
-    "test:headless": "npm run bundle:browser && PUPPETEER_HEADLESS=true jest",
+    "test": "npm run bundle:browser && jest --testPathIgnorePatterns test/benchmark",
+    "test:headless": "PUPPETEER_HEADLESS=true npm run test",
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch",
     "repl": "npm run bundle:browser && node scripts/repl.js",
     "dev": "yarn bundle:browser --watch",
@@ -15,7 +15,8 @@
     "typings": "tsc -d --declarationDir typings",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run typings && npm run bundle",
-    "lint": "yarn eslint src"
+    "lint": "yarn eslint src",
+    "benchmark": "jest test/benchmark"
   },
   "repository": {
     "type": "git",
