@@ -4,7 +4,7 @@
   "pipeline": {
     "prepublish": {
       "dependsOn": ["^prepublish"],
-      "outputs": ["lib/**", "es/**", "dist/**"]
+      "outputs": ["lib/**", "es/**", "dist/**", "typings/**"]
     },
     "test": {},
     "test:watch": {},
