@@ -759,7 +759,7 @@ function initSelectionObserver(param: observerParam): listenerHandler {
   let collapsed = true;
 
   const updateSelection = () => {
-    const selection = document.getSelection();
+    const selection = doc.getSelection();
 
     if (!selection || (collapsed && selection?.isCollapsed)) return;
 
