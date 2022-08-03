@@ -5,7 +5,6 @@ import {
   assertDomSnapshot,
   launchPuppeteer,
   sampleEvents as events,
-  sampleSelectionEvents,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
   waitForRAF,
 } from './utils';
@@ -14,6 +13,7 @@ import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
+import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
@@ -204,7 +204,7 @@ describe('replayer', function () {
   });
 
   it('can restore selection', async () => {
-    await page.evaluate(`events = ${JSON.stringify(sampleSelectionEvents)}`);
+    await page.evaluate(`events = ${JSON.stringify(selectionEvents)}`);
     const [startOffset, endOffset] = (await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
