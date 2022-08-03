@@ -1321,8 +1321,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.Selection: {
-        const doc = this.iframe.contentDocument;
-
+        const selectionSet = new Set<Selection>();
         const ranges = d.ranges.map(
           ({ start, startOffset, end, endOffset }) => {
             const startContainer = this.mirror.getNode(start);
@@ -1334,15 +1333,20 @@ export class Replayer {
 
             result.setStart(startContainer, startOffset);
             result.setEnd(endContainer, endOffset);
+            const doc = startContainer.ownerDocument;
+            const selection = doc?.getSelection();
+            selection && selectionSet.add(selection);
 
-            return result;
+            return {
+              range: result,
+              selection,
+            };
           },
         );
 
-        const selection = doc?.getSelection();
-        selection?.removeAllRanges();
+        selectionSet.forEach((s) => s.removeAllRanges());
 
-        ranges.forEach((r) => r && selection?.addRange(r));
+        ranges.forEach((r) => r && r.selection?.addRange(r.range));
         break;
       }
       default:
