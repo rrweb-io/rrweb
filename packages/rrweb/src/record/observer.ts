@@ -789,7 +789,7 @@ function initSelectionObserver(param: observerParam): listenerHandler {
 
     selectionCb({ ranges });
   };
-
+  updateSelection();
   updateSelection();
 
   return on('selectionchange', updateSelection);
