@@ -755,7 +755,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { mirror, blockClass, selectionCb } = param;
+  const { doc, mirror, blockClass, selectionCb } = param;
   let collapsed = true;
 
   const updateSelection = () => {
