@@ -15,6 +15,7 @@ import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
+import canvasInIframe from './events/canvas-in-iframe';
 
 interface ISuite {
   code: string;
@@ -606,6 +607,31 @@ describe('replayer', function () {
             .shadowRoot!.querySelector('span')!.textContent,
       ),
     ).toEqual('shadow dom two');
+  });
+
+  it('can fast-forward mutation events containing painted canvas in iframe', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(canvasInIframe)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);            
+    `);
+    const replayerIframe = await page.$('iframe');
+    const contentDocument = await replayerIframe!.contentFrame()!;
+    const iframe = await contentDocument!.$('iframe');
+    expect(iframe).not.toBeNull();
+    const docInIFrame = await iframe?.contentFrame();
+    expect(docInIFrame).not.toBeNull();
+    const canvasElements = await docInIFrame!.$$('canvas');
+    // The first canvas is a blank one and the second is a painted one.
+    expect(canvasElements.length).toEqual(2);
+
+    const dataUrls = await docInIFrame?.$$eval('canvas', (elements) =>
+      elements.map((element) => (element as HTMLCanvasElement).toDataURL()),
+    );
+    expect(dataUrls?.length).toEqual(2);
+    // The painted canvas's data should not be empty.
+    expect(dataUrls![1]).not.toEqual(dataUrls![0]);
   });
 
   it('can stream events in live mode', async () => {
