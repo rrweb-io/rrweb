@@ -152,20 +152,54 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
                 coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
               }
             }
+
+            // strip blob:urls as they are different every time
+            console.log(
+              a.attributes.src,
+              'src' in a.attributes &&
+                a.attributes.src &&
+                typeof a.attributes.src === 'string',
+            );
           });
           s.data.adds.forEach((add) => {
-            if (
-              add.node.type === NodeType.Element &&
-              'style' in add.node.attributes &&
-              typeof add.node.attributes.style === 'string' &&
-              coordinatesReg.test(add.node.attributes.style)
-            ) {
-              add.node.attributes.style = add.node.attributes.style.replace(
-                coordinatesReg,
-                '$1: Npx',
-              );
+            if (add.node.type === NodeType.Element) {
+              if (
+                'style' in add.node.attributes &&
+                typeof add.node.attributes.style === 'string' &&
+                coordinatesReg.test(add.node.attributes.style)
+              ) {
+                add.node.attributes.style = add.node.attributes.style.replace(
+                  coordinatesReg,
+                  '$1: Npx',
+                );
+              }
+              coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
+
+              // strip blob:urls as they are different every time
+              if (
+                'src' in add.node.attributes &&
+                add.node.attributes.src &&
+                typeof add.node.attributes.src === 'string' &&
+                add.node.attributes.src.startsWith('blob:')
+              ) {
+                add.node.attributes.src = add.node.attributes.src.replace(
+                  /[\w-]+$/,
+                  '...',
+                );
+              }
+
+              // strip rr_dataURL as they are not consistent
+              if (
+                'rr_dataURL' in add.node.attributes &&
+                add.node.attributes.rr_dataURL &&
+                typeof add.node.attributes.rr_dataURL === 'string'
+              ) {
+                add.node.attributes.rr_dataURL = add.node.attributes.rr_dataURL.replace(
+                  /,.+$/,
+                  ',...',
+                );
+              }
             }
-            coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
           });
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
@@ -223,11 +257,7 @@ export function replaceLast(str: string, find: string, replace: string) {
   return str.substring(0, index) + replace + str.substring(index + find.length);
 }
 
-export async function assertDomSnapshot(
-  page: puppeteer.Page,
-  filename: string,
-  name: string,
-) {
+export async function assertDomSnapshot(page: puppeteer.Page) {
   const cdp = await page.target().createCDPSession();
   const { data } = await cdp.send('Page.captureSnapshot', {
     format: 'mhtml',
@@ -555,6 +585,7 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     userTriggeredOnInput: ${options.userTriggeredOnInput},
     maskTextFn: ${options.maskTextFn},
     recordCanvas: ${options.recordCanvas},
+    inlineImages: ${options.inlineImages},
     plugins: ${options.plugins}
   });
   `;

@@ -249,6 +249,7 @@ function record<T = eventWithTime>(
       iframeManager,
       stylesheetManager,
       canvasManager,
+      keepIframeSrcFn,
     },
     mirror,
   });
@@ -455,6 +456,7 @@ function record<T = eventWithTime>(
           doc,
           maskInputFn,
           maskTextFn,
+          keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
           mirror,
