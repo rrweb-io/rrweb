@@ -1320,6 +1320,35 @@ export class Replayer {
         }
         break;
       }
+      case IncrementalSource.Selection: {
+        const selectionSet = new Set<Selection>();
+        const ranges = d.ranges.map(
+          ({ start, startOffset, end, endOffset }) => {
+            const startContainer = this.mirror.getNode(start);
+            const endContainer = this.mirror.getNode(end);
+
+            if (!startContainer || !endContainer) return;
+
+            const result = new Range();
+
+            result.setStart(startContainer, startOffset);
+            result.setEnd(endContainer, endOffset);
+            const doc = startContainer.ownerDocument;
+            const selection = doc?.getSelection();
+            selection && selectionSet.add(selection);
+
+            return {
+              range: result,
+              selection,
+            };
+          },
+        );
+
+        selectionSet.forEach((s) => s.removeAllRanges());
+
+        ranges.forEach((r) => r && r.selection?.addRange(r.range));
+        break;
+      }
       default:
     }
   }

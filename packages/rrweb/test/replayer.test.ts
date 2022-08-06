@@ -13,6 +13,7 @@ import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
+import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
@@ -200,6 +201,21 @@ describe('replayer', function () {
       __filename,
       'style-sheet-remove-events-play-at-2500',
     );
+  });
+
+  it('can restore selection', async () => {
+    await page.evaluate(`events = ${JSON.stringify(selectionEvents)}`);
+    const [startOffset, endOffset] = (await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1500);
+      const range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+
+      [range.startOffset, range.endOffset];
+    `)) as [startOffset: number, endOffset: number];
+
+    expect(startOffset).toEqual(11);
+    expect(endOffset).toEqual(6);
   });
 
   it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
