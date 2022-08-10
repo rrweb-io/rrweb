@@ -46,11 +46,6 @@ const events: eventWithTime[] = [
                 attributes: {},
                 childNodes: [
                   {
-                    type: 3,
-                    textContent: '\\\\n    ',
-                    id: 5,
-                  },
-                  {
                     type: 2,
                     tagName: 'meta',
                     attributes: {
@@ -59,18 +54,8 @@ const events: eventWithTime[] = [
                     childNodes: [],
                     id: 6,
                   },
-                  {
-                    type: 3,
-                    textContent: '\\\\n  ',
-                    id: 7,
-                  },
                 ],
                 id: 4,
-              },
-              {
-                type: 3,
-                textContent: '\\\\n  ',
-                id: 8,
               },
               {
                 type: 2,
@@ -78,30 +63,18 @@ const events: eventWithTime[] = [
                 attributes: {},
                 childNodes: [
                   {
-                    type: 3,
-                    textContent: '\\\\n    Lorem, ipsum\\\\n    ',
-                    id: 10,
-                  },
-                  {
                     type: 2,
                     tagName: 'span',
                     attributes: {
                       id: 'startNode',
                     },
-                    childNodes: [
-                      {
-                        type: 3,
-                        textContent:
-                          '\\\\n      Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolores culpa\\\\n      corporis voluptas odit nobis recusandae inventore, magni praesentium\\\\n      maiores perferendis quaerat excepturi officia minus velit voluptate\\\\n      placeat minima? Nesciunt, eum!\\\\n    ',
-                        id: 12,
-                      },
-                    ],
+                    childNodes: [],
                     id: 11,
                   },
                   {
                     type: 3,
                     textContent:
-                      '\\\\n    dolor sit amet consectetur adipisicing elit. Ad repellendus quas hic\\\\n    deleniti, delectus consequatur voluptas aliquam dolore voluptates repellat\\\\n    perferendis aperiam saepe maxime officia rem corporis beatae, assumenda\\\\n    doloribus.\\\\n    ',
+                      'some text between the start node and the end node',
                     id: 13,
                   },
                   {
@@ -110,38 +83,8 @@ const events: eventWithTime[] = [
                     attributes: {
                       id: 'endNode',
                     },
-                    childNodes: [
-                      {
-                        type: 3,
-                        textContent:
-                          '\\\\n      Lorem ipsum dolor sit amet consectetur adipisicing elit. Recusandae\\\\n      explicabo omnis dolores magni, ea doloribus possimus debitis reiciendis\\\\n      distinctio perferendis nihil ipsum officiis pariatur laboriosam quas,\\\\n      corrupti vero vitae minus.\\\\n    ',
-                        id: 15,
-                      },
-                    ],
+                    childNodes: [],
                     id: 14,
-                  },
-                  {
-                    type: 3,
-                    textContent: '\\\\n  \\\\n    ',
-                    id: 16,
-                  },
-                  {
-                    type: 2,
-                    tagName: 'script',
-                    attributes: {},
-                    childNodes: [
-                      {
-                        type: 3,
-                        textContent: 'SCRIPT_PLACEHOLDER',
-                        id: 18,
-                      },
-                    ],
-                    id: 17,
-                  },
-                  {
-                    type: 3,
-                    textContent: '\\\\n    \\\\n    \\\\n\\\\n',
-                    id: 19,
                   },
                 ],
                 id: 9,
@@ -157,7 +100,53 @@ const events: eventWithTime[] = [
         top: 0,
       },
     },
+    timestamp: now + 250,
+  },
+  // add selection targets through incremental mutation
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 11,
+          nextId: null,
+          node: {
+            type: 3,
+            textContent: 'This the text of the start node.',
+            id: 12,
+          },
+        },
+        {
+          parentId: 14,
+          nextId: null,
+          node: {
+            type: 3,
+            textContent: 'This the text of the end node.',
+            id: 15,
+          },
+        },
+      ],
+    },
     timestamp: now + 300,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Selection,
+      ranges: [
+        {
+          start: 12,
+          startOffset: 5,
+          end: 15,
+          endOffset: 15,
+        },
+      ],
+    },
+    timestamp: now + 350,
   },
   {
     type: EventType.IncrementalSnapshot,

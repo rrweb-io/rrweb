@@ -59,6 +59,7 @@ import {
   canvasMutationCommand,
   canvasMutationParam,
   canvasEventWithTime,
+  selectionData,
 } from '../types';
 import {
   polyfill,
@@ -141,6 +142,9 @@ export class Replayer {
 
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
+
+  // In the fast-forward mode, only the last selection data needs to be applied.
+  private lastSelectionData: selectionData | null = null;
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -239,8 +243,12 @@ export class Replayer {
           true,
           this.mousePos.debugData,
         );
+        this.mousePos = null;
       }
-      this.mousePos = null;
+      if (this.lastSelectionData) {
+        this.applySelection(this.lastSelectionData);
+        this.lastSelectionData = null;
+      }
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
@@ -1321,32 +1329,11 @@ export class Replayer {
         break;
       }
       case IncrementalSource.Selection: {
-        const selectionSet = new Set<Selection>();
-        const ranges = d.ranges.map(
-          ({ start, startOffset, end, endOffset }) => {
-            const startContainer = this.mirror.getNode(start);
-            const endContainer = this.mirror.getNode(end);
-
-            if (!startContainer || !endContainer) return;
-
-            const result = new Range();
-
-            result.setStart(startContainer, startOffset);
-            result.setEnd(endContainer, endOffset);
-            const doc = startContainer.ownerDocument;
-            const selection = doc?.getSelection();
-            selection && selectionSet.add(selection);
-
-            return {
-              range: result,
-              selection,
-            };
-          },
-        );
-
-        selectionSet.forEach((s) => s.removeAllRanges());
-
-        ranges.forEach((r) => r && r.selection?.addRange(r.range));
+        if (isSync) {
+          this.lastSelectionData = d;
+          break;
+        }
+        this.applySelection(d);
         break;
       }
       default:
@@ -1754,6 +1741,37 @@ export class Replayer {
     try {
       (target as HTMLInputElement).checked = d.isChecked;
       (target as HTMLInputElement).value = d.text;
+    } catch (error) {
+      // for safe
+    }
+  }
+
+  private applySelection(d: selectionData) {
+    try {
+      const selectionSet = new Set<Selection>();
+      const ranges = d.ranges.map(({ start, startOffset, end, endOffset }) => {
+        const startContainer = this.mirror.getNode(start);
+        const endContainer = this.mirror.getNode(end);
+
+        if (!startContainer || !endContainer) return;
+
+        const result = new Range();
+
+        result.setStart(startContainer, startOffset);
+        result.setEnd(endContainer, endOffset);
+        const doc = startContainer.ownerDocument;
+        const selection = doc?.getSelection();
+        selection && selectionSet.add(selection);
+
+        return {
+          range: result,
+          selection,
+        };
+      });
+
+      selectionSet.forEach((s) => s.removeAllRanges());
+
+      ranges.forEach((r) => r && r.selection?.addRange(r.range));
     } catch (error) {
       // for safe
     }
