@@ -249,6 +249,7 @@ function record<T = eventWithTime>(
       iframeManager,
       stylesheetManager,
       canvasManager,
+      keepIframeSrcFn,
     },
     mirror,
   });
@@ -430,6 +431,17 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
+          selectionCb: (p) => {
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.Selection,
+                  ...p,
+                },
+              }),
+            );
+          },
           blockClass,
           ignoreClass,
           maskTextClass,
@@ -444,6 +456,7 @@ function record<T = eventWithTime>(
           doc,
           maskInputFn,
           maskTextFn,
+          keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
           mirror,

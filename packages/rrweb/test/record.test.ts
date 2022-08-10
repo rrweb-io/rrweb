@@ -1,5 +1,3 @@
-/* tslint:disable no-console */
-
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
@@ -10,6 +8,7 @@ import {
   EventType,
   IncrementalSource,
   styleSheetRuleData,
+  selectionData,
 } from '../src/types';
 import { assertSnapshot, launchPuppeteer, waitForRAF } from './utils';
 
@@ -211,6 +210,47 @@ describe('record', function (this: ISuite) {
     });
     await waitForRAF(ctx.page);
     assertSnapshot(ctx.events);
+  });
+
+  it('should record selection event', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+      const startNode = document.createElement('p');
+
+      startNode.innerText =
+        'Lorem ipsum dolor sit amet consectetur adipisicing elit.';
+
+      const endNode = document.createElement('span');
+      endNode.innerText =
+        'nihil ipsum officiis pariatur laboriosam quas,corrupti vero vitae minus.';
+
+      document.body.appendChild(startNode);
+      document.body.appendChild(endNode);
+
+      const selection = window.getSelection();
+      const range = new Range();
+
+      range.setStart(startNode!.firstChild!, 10);
+      range.setEnd(endNode!.firstChild!, 2);
+
+      selection?.addRange(range);
+    });
+    await waitForRAF(ctx.page);
+    const selectionData = ctx.events
+      .filter(({ type, data }) => {
+        return (
+          type === EventType.IncrementalSnapshot &&
+          data.source === IncrementalSource.Selection
+        );
+      })
+      .map((ev) => ev.data as selectionData);
+
+    expect(selectionData.length).toEqual(1);
+    expect(selectionData[0].ranges[0].startOffset).toEqual(10);
+    expect(selectionData[0].ranges[0].endOffset).toEqual(2);
   });
 
   it('can add custom event', async () => {

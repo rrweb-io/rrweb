@@ -91,6 +91,7 @@ export enum IncrementalSource {
   Log,
   Drag,
   StyleDeclaration,
+  Selection,
 }
 
 export type mutationData = {
@@ -142,6 +143,10 @@ export type fontData = {
   source: IncrementalSource.Font;
 } & fontParam;
 
+export type selectionData = {
+  source: IncrementalSource.Selection;
+} & selectionParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -153,6 +158,7 @@ export type incrementalData =
   | styleSheetRuleData
   | canvasMutationData
   | fontData
+  | selectionData
   | styleDeclarationData;
 
 export type event =
@@ -261,6 +267,7 @@ export type observerParam = {
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
+  selectionCb: selectionCallback;
   blockClass: blockClass;
   blockSelector: string | null;
   ignoreClass: string;
@@ -269,6 +276,7 @@ export type observerParam = {
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
+  keepIframeSrcFn: KeepIframeSrcFn;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
@@ -308,6 +316,7 @@ export type MutationBufferParam = Pick<
   | 'maskInputOptions'
   | 'maskTextFn'
   | 'maskInputFn'
+  | 'keepIframeSrcFn'
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
@@ -331,6 +340,7 @@ export type hooksParam = {
   styleDeclaration?: styleDeclarationCallback;
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
+  selection?: selectionCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -618,6 +628,19 @@ export type DocumentDimension = {
   // scale value relative to the root iframe
   absoluteScale: number;
 };
+
+export type SelectionRange = {
+  start: number;
+  startOffset: number;
+  end: number;
+  endOffset: number;
+};
+
+export type selectionParam = {
+  ranges: Array<SelectionRange>;
+};
+
+export type selectionCallback = (p: selectionParam) => void;
 
 export type DeprecatedMirror = {
   map: {

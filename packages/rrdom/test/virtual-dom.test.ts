@@ -56,24 +56,24 @@ describe('RRDocument for browser environment', () => {
       const rrdom = new RRDocument();
       let rrNode = buildFromNode(document, rrdom, mirror)!;
       expect(mirror.getMeta(document)).toBeDefined();
-      expect(mirror.getId(document)).toEqual(-1);
+      expect(mirror.getId(document)).toEqual(-2);
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(RRNodeType.Document);
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-1);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-2);
       expect(rrNode).toBe(rrdom);
 
       // build from document type
       expect(mirror.getMeta(document.doctype!)).toBeNull();
       rrNode = buildFromNode(document.doctype!, rrdom, mirror)!;
       expect(mirror.getMeta(document.doctype!)).toBeDefined();
-      expect(mirror.getId(document.doctype)).toEqual(-2);
+      expect(mirror.getId(document.doctype)).toEqual(-3);
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(
         RRNodeType.DocumentType,
       );
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-2);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-3);
 
       // build from element
       expect(mirror.getMeta(document.documentElement)).toBeNull();
@@ -83,33 +83,33 @@ describe('RRDocument for browser environment', () => {
         mirror,
       )!;
       expect(mirror.getMeta(document.documentElement)).toBeDefined();
-      expect(mirror.getId(document.documentElement)).toEqual(-3);
+      expect(mirror.getId(document.documentElement)).toEqual(-4);
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(RRNodeType.Element);
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-3);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-4);
 
       // build from text
       const text = document.createTextNode('text');
       expect(mirror.getMeta(text)).toBeNull();
       rrNode = buildFromNode(text, rrdom, mirror)!;
       expect(mirror.getMeta(text)).toBeDefined();
-      expect(mirror.getId(text)).toEqual(-4);
+      expect(mirror.getId(text)).toEqual(-5);
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(RRNodeType.Text);
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-4);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-5);
 
       // build from comment
       const comment = document.createComment('comment');
       expect(mirror.getMeta(comment)).toBeNull();
       rrNode = buildFromNode(comment, rrdom, mirror)!;
       expect(mirror.getMeta(comment)).toBeDefined();
-      expect(mirror.getId(comment)).toEqual(-5);
+      expect(mirror.getId(comment)).toEqual(-6);
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(RRNodeType.Comment);
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-5);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-6);
 
       // build from CDATASection
       const xmlDoc = new DOMParser().parseFromString(
@@ -122,11 +122,11 @@ describe('RRDocument for browser environment', () => {
       expect(mirror.getMeta(cdataSection)).toBeNull();
       rrNode = buildFromNode(cdataSection, rrdom, mirror)!;
       expect(mirror.getMeta(cdataSection)).toBeDefined();
-      expect(mirror.getId(cdataSection)).toEqual(-6);
+      expect(mirror.getId(cdataSection)).toEqual(-7);
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(RRNodeType.CDATA);
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-6);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-7);
       expect(rrNode.textContent).toEqual(cdata);
     });
 
@@ -162,8 +162,8 @@ describe('RRDocument for browser environment', () => {
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
       expect(rrdom.mirror.getMeta(rrNode)!.type).toEqual(RRNodeType.Document);
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-1);
-      expect(mirror.getId(iframe.contentDocument)).toEqual(-1);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-2);
+      expect(mirror.getId(iframe.contentDocument)).toEqual(-2);
       expect(rrNode).toBe(RRIFrame.contentDocument);
     });
 
@@ -181,8 +181,8 @@ describe('RRDocument for browser environment', () => {
       )!;
       expect(rrNode).not.toBeNull();
       expect(rrdom.mirror.getMeta(rrNode)).toBeDefined();
-      expect(rrdom.mirror.getId(rrNode)).toEqual(-1);
-      expect(mirror.getId(div.shadowRoot)).toEqual(-1);
+      expect(rrdom.mirror.getId(rrNode)).toEqual(-2);
+      expect(mirror.getId(div.shadowRoot)).toEqual(-2);
       expect(rrNode.RRNodeType).toEqual(RRNodeType.Element);
       expect((rrNode as RRElement).tagName).toEqual('SHADOWROOT');
       expect(rrNode).toBe(parentRRNode.shadowRoot);
@@ -274,7 +274,7 @@ describe('RRDocument for browser environment', () => {
   describe('RRDocument build for virtual dom', () => {
     it('can access a unique, decremented unserializedId every time', () => {
       const node = new RRDocument();
-      for (let i = 1; i <= 100; i++) expect(node.unserializedId).toBe(-i);
+      for (let i = 2; i <= 100; i++) expect(node.unserializedId).toBe(-i);
     });
 
     it('can create a new RRDocument', () => {
@@ -335,12 +335,12 @@ describe('RRDocument for browser environment', () => {
       const documentType = dom.createDocumentType('html', '', '');
       dom.appendChild(documentType);
       expect(dom.childNodes[0]).toBe(documentType);
-      expect(dom.unserializedId).toBe(-1);
       expect(dom.unserializedId).toBe(-2);
+      expect(dom.unserializedId).toBe(-3);
       expect(dom.close());
       expect(dom.open());
       expect(dom.childNodes.length).toEqual(0);
-      expect(dom.unserializedId).toBe(-1);
+      expect(dom.unserializedId).toBe(-2);
     });
 
     it('can execute a dummy getContext function in RRCanvasElement', () => {

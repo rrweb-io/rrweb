@@ -1,4 +1,3 @@
-// tslint:disable:no-any no-bitwise forin
 /**
  * this file is used to serialize log message to string
  *
@@ -27,7 +26,6 @@ function pathToSelector(node: HTMLElement): string | '' {
     const domSiblings = [];
 
     if (parent.children && parent.children.length > 0) {
-      // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < parent.children.length; i++) {
         const sibling = parent.children[i];
         if (sibling.localName && sibling.localName.toLowerCase) {
@@ -117,9 +115,8 @@ export function stringify(
       }
       /* END of the FORK */
 
-      if (value === null || value === undefined) {
-        return value;
-      }
+      if (value === null) return value;
+      if (value === undefined) return 'undefined';
       if (shouldIgnore(value as object)) {
         return toString(value as object);
       }

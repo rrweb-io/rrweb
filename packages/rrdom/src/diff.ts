@@ -136,14 +136,27 @@ export function diff(
           break;
         }
         case 'CANVAS':
-          (newTree as RRCanvasElement).canvasMutations.forEach(
-            (canvasMutation) =>
+          {
+            const rrCanvasElement = newTree as RRCanvasElement;
+            // This canvas element is created with initial data in an iframe element. https://github.com/rrweb-io/rrweb/pull/944
+            if (rrCanvasElement.rr_dataURL !== null) {
+              const image = document.createElement('img');
+              image.onload = () => {
+                const ctx = (oldElement as HTMLCanvasElement).getContext('2d');
+                if (ctx) {
+                  ctx.drawImage(image, 0, 0, image.width, image.height);
+                }
+              };
+              image.src = rrCanvasElement.rr_dataURL;
+            }
+            rrCanvasElement.canvasMutations.forEach((canvasMutation) =>
               replayer.applyCanvas(
                 canvasMutation.event,
                 canvasMutation.mutation,
                 oldTree as HTMLCanvasElement,
               ),
-          );
+            );
+          }
           break;
         case 'STYLE':
           applyVirtualStyleRulesToNode(
@@ -259,37 +272,57 @@ function diffChildren(
   let oldIdToIndex: Record<number, number> | undefined = undefined,
     indexInOld;
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
+    const oldStartId = replayer.mirror.getId(oldStartNode);
+    const oldEndId = replayer.mirror.getId(oldEndNode);
+    const newStartId = rrnodeMirror.getId(newStartNode);
+    const newEndId = rrnodeMirror.getId(newEndNode);
+
+    // rrdom contains elements with negative ids, we don't want to accidentally match those to a mirror mismatch (-1) id.
+    // Negative oldStartId happen when nodes are not in the mirror, but are in the DOM.
+    // eg.iframes come with a document, html, head and body nodes.
+    // thats why below we always check if an id is negative.
+
     if (oldStartNode === undefined) {
       oldStartNode = oldChildren[++oldStartIndex];
     } else if (oldEndNode === undefined) {
       oldEndNode = oldChildren[--oldEndIndex];
     } else if (
-      replayer.mirror.getId(oldStartNode) === rrnodeMirror.getId(newStartNode)
+      oldStartId !== -1 &&
+      // same first element?
+      oldStartId === newStartId
     ) {
       diff(oldStartNode, newStartNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (
-      replayer.mirror.getId(oldEndNode) === rrnodeMirror.getId(newEndNode)
+      oldEndId !== -1 &&
+      // same last element?
+      oldEndId === newEndId
     ) {
       diff(oldEndNode, newEndNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
-      replayer.mirror.getId(oldStartNode) === rrnodeMirror.getId(newEndNode)
+      oldStartId !== -1 &&
+      // is the first old element the same as the last new element?
+      oldStartId === newEndId
     ) {
       parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
       diff(oldStartNode, newEndNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
-      replayer.mirror.getId(oldEndNode) === rrnodeMirror.getId(newStartNode)
+      oldEndId !== -1 &&
+      // is the last old element the same as the first new element?
+      oldEndId === newStartId
     ) {
       parentNode.insertBefore(oldEndNode, oldStartNode);
       diff(oldEndNode, newStartNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
     } else {
+      // none of the elements matched
+
       if (!oldIdToIndex) {
         oldIdToIndex = {};
         for (let i = oldStartIndex; i <= oldEndIndex; i++) {
@@ -365,8 +398,11 @@ export function createOrGetNode(
   domMirror: NodeMirror,
   rrnodeMirror: Mirror,
 ): Node {
-  let node = domMirror.getNode(rrnodeMirror.getId(rrNode));
+  const nodeId = rrnodeMirror.getId(rrNode);
   const sn = rrnodeMirror.getMeta(rrNode);
+  let node: Node | null = null;
+  // negative ids shouldn't be compared accross mirrors
+  if (nodeId > -1) node = domMirror.getNode(nodeId);
   if (node !== null) return node;
   switch (rrNode.RRNodeType) {
     case RRNodeType.Document:

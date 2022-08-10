@@ -1,4 +1,3 @@
-// tslint:disable:no-console
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
@@ -500,6 +499,57 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should record images with blob url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    page.setContent(
+      getHtml.call(this, 'image-blob-url.html', { inlineImages: true }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForSelector('img'); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
+  it('should record images inside iframe with blob url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      getHtml.call(this, 'frame-image-blob-url.html', { inlineImages: true }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForTimeout(50); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
+  it('should record images inside iframe with blob url after iframe was reloaded', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      getHtml.call(this, 'frame2.html', { inlineImages: true }),
+    );
+    await page.waitForSelector('iframe'); // wait for iframe to get added
+    await waitForRAF(page); // wait for iframe to load
+    page.evaluate(() => {
+      const iframe = document.querySelector('iframe')!;
+      iframe.setAttribute('src', '/html/image-blob-url.html');
+    });
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`); // wait for image to get loaded
+    await page.waitForTimeout(50); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('should record shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -583,6 +633,106 @@ describe('record integration tests', function (this: ISuite) {
       contentDocument2.body.shadowRoot!.appendChild(
         document.createElement('span'),
       );
+    });
+    await waitForRAF(page); // wait till browser sent snapshots
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
+  it('should record mutations in iframes accross pages', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`${serverURL}/html`);
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.setContent(getHtml.call(this, 'frame2.html'));
+
+    await page.waitForSelector('iframe'); // wait for iframe to get added
+    await waitForRAF(page); // wait for iframe to load
+
+    page.evaluate((serverURL) => {
+      const iframe = document.querySelector('iframe')!;
+      iframe.setAttribute('src', `${serverURL}/html`); // load new page
+    }, serverURL);
+
+    await page.waitForResponse(`${serverURL}/html`); // wait for iframe to load pt1
+    await waitForRAF(page); // wait for iframe to load pt2
+
+    await page.evaluate(() => {
+      const iframeDocument = document.querySelector('iframe')!.contentDocument!;
+      const div = iframeDocument.createElement('div');
+      iframeDocument.body.appendChild(div);
+    });
+
+    await waitForRAF(page); // wait for snapshot to be updated
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+  
+  // https://github.com/webcomponents/polyfills/tree/master/packages/shadydom
+  it('should record shadow doms polyfilled by shadydom', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      // insert shadydom script
+      replaceLast(
+        getHtml.call(this, 'polyfilled-shadowdom-mutation.html'),
+        '<head>',
+        `
+        <head>
+        <script>
+          // To force ShadyDOM to be used even when native ShadowDOM is available, set the ShadyDOM = {force: true} in a script prior to loading the polyfill.
+          window.ShadyDOM = { force: true };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/@webcomponents/shadydom@1.9.0/shadydom.min.js"></script>
+    `,
+      ),
+    );
+    await page.evaluate(() => {
+      const target3 = document.querySelector('#target3');
+      target3?.attachShadow({
+        mode: 'open',
+      });
+      target3?.shadowRoot?.appendChild(document.createElement('span'));
+    });
+    await waitForRAF(page); // wait till browser sent snapshots
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
+  // https://github.com/salesforce/lwc/tree/master/packages/%40lwc/synthetic-shadow
+  it('should record shadow doms polyfilled by synthetic-shadow', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      // insert lwc's synthetic-shadow script
+      replaceLast(
+        getHtml.call(this, 'polyfilled-shadowdom-mutation.html'),
+        '<head>',
+        `
+        <head>
+        <script>var process = {env: {NODE_ENV: "production"}};</script>
+        <script src="https://cdn.jsdelivr.net/npm/@lwc/synthetic-shadow@2.20.3/dist/synthetic-shadow.js"></script>
+      `,
+      ),
+    );
+    await page.evaluate(() => {
+      const target3 = document.querySelector('#target3');
+      // create a shadow dom with synthetic shadow
+      // https://github.com/salesforce/lwc/blob/v2.20.3/packages/@lwc/synthetic-shadow/src/faux-shadow/element.ts#L81-L87
+      target3?.attachShadow({
+        mode: 'open',
+        '$$lwc-synthetic-mode': true,
+      } as ShadowRootInit);
+      target3?.shadowRoot?.appendChild(document.createElement('span'));
+      const target4 = document.createElement('div');
+      target4.id = 'target4';
+      // create a native shadow dom
+      document.body.appendChild(target4);
+      target4.attachShadow({
+        mode: 'open',
+      });
+      target4.shadowRoot?.appendChild(document.createElement('ul'));
     });
     await waitForRAF(page); // wait till browser sent snapshots
 

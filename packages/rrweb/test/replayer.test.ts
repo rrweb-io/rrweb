@@ -1,5 +1,3 @@
-/* tslint:disable no-string-literal no-console */
-
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
@@ -15,8 +13,10 @@ import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
+import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
+import canvasInIframe from './events/canvas-in-iframe';
 
 interface ISuite {
   code: string;
@@ -160,11 +160,7 @@ describe('replayer', function () {
       ).length,
     );
 
-    await assertDomSnapshot(
-      page,
-      __filename,
-      'style-sheet-rule-events-play-at-1500',
-    );
+    await assertDomSnapshot(page);
   });
 
   it('should apply fast forwarded StyleSheetRules that where added', async () => {
@@ -196,21 +192,35 @@ describe('replayer', function () {
       ).length,
     );
 
-    await assertDomSnapshot(
-      page,
-      __filename,
-      'style-sheet-remove-events-play-at-2500',
-    );
+    await assertDomSnapshot(page);
+  });
+
+  it('can restore selection', async () => {
+    await page.evaluate(`events = ${JSON.stringify(selectionEvents)}`);
+    const [startOffset, endOffset] = (await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1500);
+      const range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+
+      [range.startOffset, range.endOffset];
+    `)) as [startOffset: number, endOffset: number];
+
+    expect(startOffset).toEqual(11);
+    expect(endOffset).toEqual(6);
   });
 
   it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
     await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
 
-    await assertDomSnapshot(
-      page,
-      __filename,
-      'style-sheet-rule-events-play-at-2500',
-    );
+    const actionLength = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(2600);
+      replayer['timer']['actions'].length;
+    `);
+
+    await assertDomSnapshot(page);
   });
 
   it('should delete fast forwarded StyleSheetRules that where removed', async () => {
@@ -615,6 +625,31 @@ describe('replayer', function () {
     ).toEqual('shadow dom two');
   });
 
+  it('can fast-forward mutation events containing painted canvas in iframe', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(canvasInIframe)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);            
+    `);
+    const replayerIframe = await page.$('iframe');
+    const contentDocument = await replayerIframe!.contentFrame()!;
+    const iframe = await contentDocument!.$('iframe');
+    expect(iframe).not.toBeNull();
+    const docInIFrame = await iframe?.contentFrame();
+    expect(docInIFrame).not.toBeNull();
+    const canvasElements = await docInIFrame!.$$('canvas');
+    // The first canvas is a blank one and the second is a painted one.
+    expect(canvasElements.length).toEqual(2);
+
+    const dataUrls = await docInIFrame?.$$eval('canvas', (elements) =>
+      elements.map((element) => (element as HTMLCanvasElement).toDataURL()),
+    );
+    expect(dataUrls?.length).toEqual(2);
+    // The painted canvas's data should not be empty.
+    expect(dataUrls![1]).not.toEqual(dataUrls![0]);
+  });
+
   it('can stream events in live mode', async () => {
     const status = await page.evaluate(`
       const { Replayer } = rrweb;
@@ -636,7 +671,7 @@ describe('replayer', function () {
     `);
     await page.waitForTimeout(50);
 
-    await assertDomSnapshot(page, __filename, 'ordering-events');
+    await assertDomSnapshot(page);
   });
 
   it('replays same timestamp events in correct order (with addAction)', async () => {
@@ -650,6 +685,6 @@ describe('replayer', function () {
     `);
     await page.waitForTimeout(50);
 
-    await assertDomSnapshot(page, __filename, 'ordering-events');
+    await assertDomSnapshot(page);
   });
 });
