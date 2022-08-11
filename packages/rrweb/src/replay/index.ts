@@ -322,7 +322,7 @@ export class Replayer {
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
         );
-        this.iframe.contentWindow!.scrollTo(
+        this.iframe.contentWindow?.scrollTo(
           (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
         );
       }, 1);
@@ -441,10 +441,20 @@ export class Replayer {
 
   public resume(timeOffset = 0) {
     console.warn(
-      `The 'resume' will be departed in 1.0. Please use 'play' method which has the same interface.`,
+      `The 'resume' was deprecated in 1.0. Please use 'play' method which has the same interface.`,
     );
     this.play(timeOffset);
     this.emitter.emit(ReplayerEvents.Resume);
+  }
+
+  /**
+   * Totally destroy this replayer and please be careful that this operation is irreversible.
+   * Memory occupation can be released by removing all references to this replayer.
+   */
+  public destroy() {
+    this.pause();
+    this.config.root.removeChild(this.wrapper);
+    this.emitter.emit(ReplayerEvents.Destroy);
   }
 
   public startLive(baselineTime?: number) {
@@ -590,7 +600,7 @@ export class Replayer {
             this.firstFullSnapshot = true;
           }
           this.rebuildFullSnapshot(event, isSync);
-          this.iframe.contentWindow!.scrollTo(event.data.initialOffset);
+          this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
         };
         break;
       case EventType.IncrementalSnapshot:
@@ -611,6 +621,7 @@ export class Replayer {
               }
               if (this.isUserInteraction(_event)) {
                 if (
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   _event.delay! - event.delay! >
                   SKIP_TIME_THRESHOLD *
                     this.speedService.state.context.timer.speed
@@ -622,6 +633,7 @@ export class Replayer {
             }
             if (this.nextUserInteractionEvent) {
               const skipTime =
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.nextUserInteractionEvent.delay! - event.delay!;
               const payload = {
                 speed: Math.min(
@@ -742,7 +754,7 @@ export class Replayer {
         styleEl,
         getDefaultSN(styleEl, this.virtualDom.unserializedId),
       );
-      (documentElement as RRElement)!.insertBefore(styleEl, head as RRElement);
+      (documentElement as RRElement).insertBefore(styleEl, head as RRElement);
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
         // push virtual styles
         styleEl.rules.push({
@@ -753,12 +765,12 @@ export class Replayer {
       }
     } else {
       const styleEl = document.createElement('style');
-      (documentElement as HTMLElement)!.insertBefore(
+      (documentElement as HTMLElement).insertBefore(
         styleEl,
         head as HTMLHeadElement,
       );
       for (let idx = 0; idx < injectStylesRules.length; idx++) {
-        styleEl.sheet!.insertRule(injectStylesRules[idx], idx);
+        styleEl.sheet?.insertRule(injectStylesRules[idx], idx);
       }
     }
   }
@@ -992,6 +1004,7 @@ export class Replayer {
             doAction() {
               //
             },
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             delay: e.delay! - d.positions[0]?.timeOffset,
           });
         }
@@ -1708,14 +1721,14 @@ export class Replayer {
     }
     const sn = this.mirror.getMeta(target);
     if (target === this.iframe.contentDocument) {
-      this.iframe.contentWindow!.scrollTo({
+      this.iframe.contentWindow?.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',
       });
     } else if (sn?.type === NodeType.Document) {
       // nest iframe content document
-      (target as Document).defaultView!.scrollTo({
+      (target as Document).defaultView?.scrollTo({
         top: d.y,
         left: d.x,
         behavior: isSync ? 'auto' : 'smooth',

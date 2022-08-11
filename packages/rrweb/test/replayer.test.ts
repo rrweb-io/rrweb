@@ -701,4 +701,21 @@ describe('replayer', function () {
 
     await assertDomSnapshot(page);
   });
+
+  it('should destroy the replayer after calling destroy()', async () => {
+    await page.evaluate(`events = ${JSON.stringify(events)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      let replayer = new Replayer(events);
+      replayer.play();      
+    `);
+
+    const replayerWrapperClassName = 'replayer-wrapper';
+    let wrapper = await page.$(`.${replayerWrapperClassName}`);
+    expect(wrapper).not.toBeNull();
+
+    await page.evaluate(`replayer.destroy(); replayer = null;`);
+    wrapper = await page.$(`.${replayerWrapperClassName}`);
+    expect(wrapper).toBeNull();
+  });
 });

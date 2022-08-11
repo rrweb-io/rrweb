@@ -743,6 +743,7 @@ export enum ReplayerEvents {
   Flush = 'flush',
   StateChange = 'state-change',
   PlayBack = 'play-back',
+  Destroy = 'destroy',
 }
 
 export type KeepIframeSrcFn = (src: string) => boolean;
