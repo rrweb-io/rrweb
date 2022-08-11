@@ -433,7 +433,7 @@ export class Replayer {
 
   public resume(timeOffset = 0) {
     console.warn(
-      `The 'resume' was departed in 1.0. Please use 'play' method which has the same interface.`,
+      `The 'resume' was deprecated in 1.0. Please use 'play' method which has the same interface.`,
     );
     this.play(timeOffset);
     this.emitter.emit(ReplayerEvents.Resume);
