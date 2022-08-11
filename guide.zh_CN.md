@@ -276,6 +276,9 @@ replayer.pause();
 
 // 暂停至第 5 秒处
 replayer.pause(5000);
+
+// 销毁播放器 (提示： 这个操作不可逆)
+replayer.destroy();
 ```
 
 #### 配置参数
@@ -384,6 +387,7 @@ replayer.on(EVENT_NAME, (payload) => {
 | mouse-interaction      | 回放鼠标交互事件       | { type, target }  |
 | event-cast             | 回放 event             | event             |
 | custom-event           | 回放自定义事件         | event             |
+| destroy                | 销毁播放器             | -                 |
 
 使用 `rrweb-player` 时，也可以通过 `addEventListener` API 使用相同的事件功能，并且会获得 3 个额外的事件：
 
