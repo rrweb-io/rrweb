@@ -384,7 +384,7 @@ export default class MutationBuffer {
             }
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
-              const nodeInShadowDom = (_node.value as Node) as HTMLElement;
+              const nodeInShadowDom = _node.value;
               // Get the host of the shadow dom and treat it as parent node.
               const shadowHost: Element | null = nodeInShadowDom.getRootNode
                 ? (nodeInShadowDom.getRootNode() as ShadowRoot)?.host
