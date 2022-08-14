@@ -570,6 +570,68 @@ describe('record', function (this: ISuite) {
 
     assertSnapshot(ctx.events);
   });
+
+  it('captures adopted stylesheets in shadow doms and iframe', async () => {
+    ctx.events = [];
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div>div in outermost document</div>
+        <div id="shadow-host1"></div>
+        <div id="shadow-host2"></div>
+        <iframe></iframe>
+      `;
+
+      const sheet = new CSSStyleSheet();
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
+      sheet.replaceSync('div { color: yellow; }');
+      // Add stylesheet to a document.
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      document.adoptedStyleSheets = [sheet];
+
+      // Add stylesheet to a shadow host.
+      const host = document.querySelector('#shadow-host1');
+      const shadow = host!.attachShadow({ mode: 'open' });
+      shadow.innerHTML =
+        '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
+      const sheet2 = new CSSStyleSheet();
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      sheet2.replaceSync('span { color: red; }');
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      shadow.adoptedStyleSheets = [sheet, sheet2];
+
+      // Add stylesheet to an IFrame document.
+      const iframe = document.querySelector('iframe');
+      // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
+      const sheet3 = new iframe!.contentWindow!.CSSStyleSheet();
+      sheet3.replaceSync('h1 { color: blue; }');
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      iframe.contentDocument.adoptedStyleSheets = [sheet3];
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      const ele = iframe.contentDocument.createElement('h1');
+      ele.innerText = 'h1 in iframe';
+      iframe!.contentDocument!.body.appendChild(ele);
+
+      ((window as unknown) as IWindow).rrweb.record({
+        emit: ((window.top as unknown) as IWindow).emit,
+      });
+
+      // Make incremental changes to shadow dom.
+      setTimeout(() => {
+        const host = document.querySelector('#shadow-host2');
+        const shadow = host!.attachShadow({ mode: 'open' });
+        shadow.innerHTML =
+          '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
+        const sheet3 = new CSSStyleSheet();
+        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
+        sheet3.replaceSync('span { color: green; }');
+        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
+        shadow.adoptedStyleSheets = [sheet, sheet3];
+      }, 10);
+    });
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    assertSnapshot(ctx.events);
+  });
 });
 
 describe('record iframes', function (this: ISuite) {
