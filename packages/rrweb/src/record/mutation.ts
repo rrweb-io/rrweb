@@ -370,14 +370,30 @@ export default class MutationBuffer {
       }
       if (!node) {
         for (let index = addList.length - 1; index >= 0; index--) {
-          const _node = addList.get(index)!;
+          const _node = addList.get(index);
           // ensure _node is defined before attempting to find value
           if (_node) {
             const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value);
-            if (parentId !== -1 && nextId !== -1) {
+
+            if (nextId === -1) continue;
+            // nextId !== -1 && parentId !== -1
+            else if (parentId !== -1) {
               node = _node;
               break;
+            }
+            // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
+            else {
+              const nodeInShadowDom = (_node.value as Node) as HTMLElement;
+              // Get the host of the shadow dom and treat it as parent node.
+              const shadowHost: Element | null = nodeInShadowDom.getRootNode
+                ? (nodeInShadowDom.getRootNode() as ShadowRoot)?.host
+                : null;
+              const parentId = this.mirror.getId(shadowHost);
+              if (parentId !== -1) {
+                node = _node;
+                break;
+              }
             }
           }
         }
