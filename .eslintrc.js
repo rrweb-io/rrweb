@@ -3,6 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
     node: true,
+    'jest/globals': true,
   },
   extends: [
     'eslint:recommended',
@@ -16,7 +17,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.eslint.json', './packages/*/tsconfig.json'],
   },
-  plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc'],
+  plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc', 'jest'],
   rules: {
     'tsdoc/syntax': 'warn',
   },
