@@ -160,9 +160,12 @@ function record<T = eventWithTime>(
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
-    } else if (e.type === EventType.IncrementalSnapshot) {
+    } else if (
+      [EventType.IncrementalSnapshot, EventType.Custom].includes(e.type)
+    ) {
       // attach iframe should be considered as full snapshot
       if (
+        e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.Mutation &&
         e.data.isAttachIframe
       ) {
