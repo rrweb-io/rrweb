@@ -92,6 +92,7 @@ export enum IncrementalSource {
   Drag,
   StyleDeclaration,
   Selection,
+  AdoptStyleSheet,
 }
 
 export type mutationData = {
@@ -147,6 +148,10 @@ export type selectionData = {
   source: IncrementalSource.Selection;
 } & selectionParam;
 
+export type adoptedStyleSheetData = {
+  source: IncrementalSource.AdoptStyleSheet;
+} & adoptedStyleSheetParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -159,7 +164,8 @@ export type incrementalData =
   | canvasMutationData
   | fontData
   | selectionData
-  | styleDeclarationData;
+  | styleDeclarationData
+  | adoptedStyleSheetData;
 
 export type event =
   | domContentLoadedEvent
@@ -505,9 +511,18 @@ export type styleSheetDeleteRule = {
 };
 
 export type styleSheetRuleParam = {
-  id: number;
+  id?: number;
+  styleId?: number;
   removes?: styleSheetDeleteRule[];
   adds?: styleSheetAddRule[];
+  replace?: string;
+  replaceSync?: string;
+};
+
+export type adoptedStyleSheetParam = {
+  // 0 indicates the outermost document, other numbers indicate id of IFrame elements or shadow DOMs' hosts.
+  id: number;
+  styleId: number;
 };
 
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
