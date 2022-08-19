@@ -11,8 +11,9 @@ import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom/es/virtual-dom';
+import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
+import type { StylesheetManager } from './record/stylesheet-manager';
 
 export enum EventType {
   DomContentLoaded,
@@ -26,12 +27,12 @@ export enum EventType {
 
 export type domContentLoadedEvent = {
   type: EventType.DomContentLoaded;
-  data: {};
+  data: unknown;
 };
 
 export type loadedEvent = {
   type: EventType.Load;
-  data: {};
+  data: unknown;
 };
 
 export type fullSnapshotEvent = {
@@ -75,8 +76,6 @@ export type pluginEvent<T = unknown> = {
   };
 };
 
-export type styleSheetEvent = {};
-
 export enum IncrementalSource {
   Mutation,
   MouseMove,
@@ -92,6 +91,7 @@ export enum IncrementalSource {
   Log,
   Drag,
   StyleDeclaration,
+  Selection,
 }
 
 export type mutationData = {
@@ -143,6 +143,10 @@ export type fontData = {
   source: IncrementalSource.Font;
 } & fontParam;
 
+export type selectionData = {
+  source: IncrementalSource.Selection;
+} & selectionParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -154,6 +158,7 @@ export type incrementalData =
   | styleSheetRuleData
   | canvasMutationData
   | fontData
+  | selectionData
   | styleDeclarationData;
 
 export type event =
@@ -217,7 +222,11 @@ export type SamplingStrategy = Partial<{
 
 export type RecordPlugin<TOptions = unknown> = {
   name: string;
-  observer?: (cb: Function, win: IWindow, options: TOptions) => listenerHandler;
+  observer?: (
+    cb: (...args: Array<unknown>) => void,
+    win: IWindow,
+    options: TOptions,
+  ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
   options: TOptions;
 };
@@ -259,6 +268,7 @@ export type observerParam = {
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
+  selectionCb: selectionCallback;
   blockClass: blockClass;
   blockSelector: string | null;
   ignoreClass: string;
@@ -267,6 +277,7 @@ export type observerParam = {
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
+  keepIframeSrcFn: KeepIframeSrcFn;
   inlineStylesheet: boolean;
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
@@ -281,12 +292,17 @@ export type observerParam = {
   doc: Document;
   mirror: Mirror;
   iframeManager: IframeManager;
+  stylesheetManager: StylesheetManager;
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
   ignoreCSSAttributes:Set<string>;
   plugins: Array<{
-    observer: Function;
-    callback: Function;
+    observer: (
+      cb: (...arg: Array<unknown>) => void,
+      win: IWindow,
+      options: unknown,
+    ) => listenerHandler;
+    callback: (...arg: Array<unknown>) => void;
     options: unknown;
   }>;
 };
@@ -302,12 +318,14 @@ export type MutationBufferParam = Pick<
   | 'maskInputOptions'
   | 'maskTextFn'
   | 'maskInputFn'
+  | 'keepIframeSrcFn'
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
   | 'doc'
   | 'mirror'
   | 'iframeManager'
+  | 'stylesheetManager'
   | 'shadowDomManager'
   | 'canvasManager'
 >;
@@ -324,6 +342,7 @@ export type hooksParam = {
   styleDeclaration?: styleDeclarationCallback;
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
+  selection?: selectionCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -612,6 +631,19 @@ export type DocumentDimension = {
   absoluteScale: number;
 };
 
+export type SelectionRange = {
+  start: number;
+  startOffset: number;
+  end: number;
+  endOffset: number;
+};
+
+export type selectionParam = {
+  ranges: Array<SelectionRange>;
+};
+
+export type selectionCallback = (p: selectionParam) => void;
+
 export type DeprecatedMirror = {
   map: {
     [key: number]: INode;
@@ -713,6 +745,7 @@ export enum ReplayerEvents {
   Flush = 'flush',
   StateChange = 'state-change',
   PlayBack = 'play-back',
+  Destroy = 'destroy',
 }
 
 export type KeepIframeSrcFn = (src: string) => boolean;

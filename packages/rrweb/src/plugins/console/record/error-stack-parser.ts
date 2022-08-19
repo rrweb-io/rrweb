@@ -1,4 +1,4 @@
-// tslint:disable
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 /**
  * Class StackFrame is a fork of https://github.com/stacktracejs/stackframe/blob/master/stackframe.js
  * I fork it because:
@@ -27,19 +27,9 @@ export class StackFrame {
   toString() {
     const lineNumber = this.lineNumber || '';
     const columnNumber = this.columnNumber || '';
-    if (this.functionName) {
-      return (
-        this.functionName +
-        ' (' +
-        this.fileName +
-        ':' +
-        lineNumber +
-        ':' +
-        columnNumber +
-        ')'
-      );
-    }
-    return this.fileName + ':' + lineNumber + ':' + columnNumber;
+    if (this.functionName)
+      return `${this.functionName} (${this.fileName}:${lineNumber}:${columnNumber})`;
+    return `${this.fileName}:${lineNumber}:${columnNumber}`;
   }
 }
 
@@ -55,9 +45,6 @@ const SAFARI_NATIVE_CODE_REGEXP = /^(eval@)?(\[native code])?$/;
 export const ErrorStackParser = {
   /**
    * Given an Error object, extract the most information from it.
-   *
-   * @param {Error} error object
-   * @return {Array} of StackFrames
    */
   parse: function (error: Error): StackFrame[] {
     // https://github.com/rrweb-io/rrweb/issues/782
@@ -65,8 +52,10 @@ export const ErrorStackParser = {
       return [];
     }
     if (
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       typeof error.stacktrace !== 'undefined' ||
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       typeof error['opera#sourceloc'] !== 'undefined'
     ) {

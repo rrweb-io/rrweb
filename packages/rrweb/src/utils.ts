@@ -11,7 +11,7 @@ import type {
 } from './types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom/es/virtual-dom';
+import type { RRNode, RRIFrameElement } from 'rrdom';
 
 export function on(
   type: string,
@@ -57,6 +57,7 @@ if (typeof window !== 'undefined' && window.Proxy && window.Reflect) {
       if (prop === 'map') {
         console.error(DEPARTED_MIRROR_ACCESS_WARNING);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return Reflect.get(target, prop, receiver);
     },
   });
@@ -70,14 +71,14 @@ export function throttle<T>(
 ) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let previous = 0;
-  return function (arg: T) {
+  return function (...args: T[]) {
     const now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
     }
     const remaining = wait - (now - previous);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-this-alias
     const context = this;
-    const args = arguments;
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
         clearTimeout(timeout);
@@ -125,15 +126,15 @@ export function hookSetter<T>(
 
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
 export function patch(
-  // tslint:disable-next-line:no-any
   source: { [key: string]: any },
   name: string,
-  // tslint:disable-next-line:no-any
-  replacement: (...args: any[]) => any,
+  replacement: (...args: unknown[]) => unknown,
 ): () => void {
   try {
     if (!(name in source)) {
-      return () => {};
+      return () => {
+        //
+      };
     }
 
     const original = source[name] as () => unknown;
@@ -141,8 +142,8 @@ export function patch(
 
     // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
     // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
-    // tslint:disable-next-line:strict-type-predicates
     if (typeof wrapped === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       wrapped.prototype = wrapped.prototype || {};
       Object.defineProperties(wrapped, {
         __rrweb_original__: {
@@ -158,7 +159,9 @@ export function patch(
       source[name] = original;
     };
   } catch {
-    return () => {};
+    return () => {
+      //
+    };
     // This can throw if multiple fill happens on a global object like XMLHttpRequest
     // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
   }
@@ -254,19 +257,22 @@ export function isTouchEvent(
 
 export function polyfill(win = window) {
   if ('NodeList' in win && !win.NodeList.prototype.forEach) {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     win.NodeList.prototype.forEach = (Array.prototype
       .forEach as unknown) as NodeList['forEach'];
   }
 
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     win.DOMTokenList.prototype.forEach = (Array.prototype
       .forEach as unknown) as DOMTokenList['forEach'];
   }
 
   // https://github.com/Financial-Times/polyfill-service/pull/183
   if (!Node.prototype.contains) {
-    Node.prototype.contains = function contains(node) {
-      if (!(0 in arguments)) {
+    Node.prototype.contains = (...args: unknown[]) => {
+      let node = args[0] as Node | null;
+      if (!(0 in args)) {
         throw new TypeError('1 argument is required');
       }
 
@@ -274,7 +280,6 @@ export function polyfill(win = window) {
         if (this === node) {
           return true;
         }
-        // tslint:disable-next-line: no-conditional-assignment
       } while ((node = node && node.parentNode));
 
       return false;
@@ -359,6 +364,19 @@ export function isSerializedIframe<TNode extends Node | RRNode>(
   return Boolean(n.nodeName === 'IFRAME' && mirror.getMeta(n));
 }
 
+export function isSerializedStylesheet<TNode extends Node | RRNode>(
+  n: TNode,
+  mirror: IMirror<TNode>,
+): boolean {
+  return Boolean(
+    n.nodeName === 'LINK' &&
+      n.nodeType === n.ELEMENT_NODE &&
+      (n as HTMLElement).getAttribute &&
+      (n as HTMLElement).getAttribute('rel') === 'stylesheet' &&
+      mirror.getMeta(n),
+  );
+}
+
 export function getBaseDimension(
   node: Node,
   rootIframe: Node,
@@ -418,8 +436,8 @@ export function getPositionsAndIndex(nestedIndex: number[]) {
 
 /**
  * Returns the latest mutation in the queue for each node.
- * @param  {textMutation[]} mutations The text mutations to filter.
- * @returns {textMutation[]} The filtered text mutations.
+ * @param mutations - mutations The text mutations to filter.
+ * @returns The filtered text mutations.
  */
 export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
   const idSet = new Set<number>();

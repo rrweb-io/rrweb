@@ -35,6 +35,8 @@ import {
   styleDeclarationCallback,
   IWindow,
   MutationBufferParam,
+  SelectionRange,
+  selectionCallback,
 } from '../types';
 import MutationBuffer from './mutation';
 
@@ -129,7 +131,9 @@ function initMoveObserver({
   mirror,
 }: observerParam): listenerHandler {
   if (sampling.mousemove === false) {
-    return () => {};
+    return () => {
+      //
+    };
   }
 
   const threshold =
@@ -210,7 +214,9 @@ function initMouseInteractionObserver({
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
-    return () => {};
+    return () => {
+      //
+    };
   }
   const disableMap: Record<string, boolean | undefined> =
     sampling.mouseInteraction === true ||
@@ -441,7 +447,7 @@ function initInputObserver({
         hookSetter<HTMLElement>(p[0], p[1], {
           set() {
             // mock to a normal event
-            eventHandler({ target: this } as Event);
+            eventHandler({ target: this as EventTarget } as Event);
           },
         }),
       ),
@@ -495,31 +501,37 @@ function initStyleSheetObserver(
   { styleSheetRuleCb, mirror }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = function (
+    this: CSSStyleSheet,
     rule: string,
     index?: number,
   ) {
-    const id = mirror.getId(this.ownerNode);
+    const id = mirror.getId(this.ownerNode as Node);
     if (id !== -1) {
       styleSheetRuleCb({
         id,
         adds: [{ rule, index }],
       });
     }
-    return insertRule.apply(this, arguments);
+    return insertRule.apply(this, [rule, index]);
   };
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
-  win.CSSStyleSheet.prototype.deleteRule = function (index: number) {
-    const id = mirror.getId(this.ownerNode);
+  win.CSSStyleSheet.prototype.deleteRule = function (
+    this: CSSStyleSheet,
+    index: number,
+  ) {
+    const id = mirror.getId(this.ownerNode as Node);
     if (id !== -1) {
       styleSheetRuleCb({
         id,
         removes: [{ index }],
       });
     }
-    return deleteRule.apply(this, arguments);
+    return deleteRule.apply(this, [index]);
   };
 
   const supportedNestedCSSRuleTypes: {
@@ -552,12 +564,15 @@ function initStyleSheetObserver(
 
   Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
     unmodifiedFunctions[typeKey] = {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       insertRule: type.prototype.insertRule,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       deleteRule: type.prototype.deleteRule,
     };
 
     type.prototype.insertRule = function (rule: string, index?: number) {
-      const id = mirror.getId(this.parentStyleSheet.ownerNode);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const id = mirror.getId(this.parentStyleSheet.ownerNode as Node);
       if (id !== -1) {
         styleSheetRuleCb({
           id,
@@ -565,25 +580,28 @@ function initStyleSheetObserver(
             {
               rule,
               index: [
-                ...getNestedCSSRulePositions(this),
+                ...getNestedCSSRulePositions(this as CSSRule),
                 index || 0, // defaults to 0
               ],
             },
           ],
         });
       }
-      return unmodifiedFunctions[typeKey].insertRule.apply(this, arguments);
+      return unmodifiedFunctions[typeKey].insertRule.apply(this, [rule, index]);
     };
 
     type.prototype.deleteRule = function (index: number) {
-      const id = mirror.getId(this.parentStyleSheet.ownerNode);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const id = mirror.getId(this.parentStyleSheet.ownerNode as Node);
       if (id !== -1) {
         styleSheetRuleCb({
           id,
-          removes: [{ index: [...getNestedCSSRulePositions(this), index] }],
+          removes: [
+            { index: [...getNestedCSSRulePositions(this as CSSRule), index] },
+          ],
         });
       }
-      return unmodifiedFunctions[typeKey].deleteRule.apply(this, arguments);
+      return unmodifiedFunctions[typeKey].deleteRule.apply(this, [index]);
     };
   });
 
@@ -601,6 +619,7 @@ function initStyleDeclarationObserver(
   { styleDeclarationCb, mirror, ignoreCSSAttributes }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const setProperty = win.CSSStyleDeclaration.prototype.setProperty;
   win.CSSStyleDeclaration.prototype.setProperty = function (
     this: CSSStyleDeclaration,
@@ -624,9 +643,10 @@ function initStyleDeclarationObserver(
         index: getNestedCSSRulePositions(this.parentRule!),
       });
     }
-    return setProperty.apply(this, arguments);
+    return setProperty.apply(this, [property, value, priority]);
   };
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const removeProperty = win.CSSStyleDeclaration.prototype.removeProperty;
   win.CSSStyleDeclaration.prototype.removeProperty = function (
     this: CSSStyleDeclaration,
@@ -646,7 +666,7 @@ function initStyleDeclarationObserver(
         index: getNestedCSSRulePositions(this.parentRule!),
       });
     }
-    return removeProperty.apply(this, arguments);
+    return removeProperty.apply(this, [property]);
   };
 
   return () => {
@@ -691,7 +711,9 @@ function initMediaInteractionObserver({
 function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   const win = doc.defaultView as IWindow;
   if (!win) {
-    return () => {};
+    return () => {
+      //
+    };
   }
 
   const handlers: listenerHandler[] = [];
@@ -701,7 +723,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   const originalFontFace = win.FontFace;
   win.FontFace = (function FontFace(
     family: string,
-    source: string | ArrayBufferView,
+    source: string | ArrayBufferLike,
     descriptors?: FontFaceDescriptors,
   ) {
     const fontFace = new originalFontFace(family, source, descriptors);
@@ -712,24 +734,27 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
       fontSource:
         typeof source === 'string'
           ? source
-          : // tslint:disable-next-line: no-any
-            JSON.stringify(Array.from(new Uint8Array(source as any))),
+          : JSON.stringify(Array.from(new Uint8Array(source))),
     });
     return fontFace;
   } as unknown) as typeof FontFace;
 
-  const restoreHandler = patch(doc.fonts, 'add', function (original) {
-    return function (this: FontFaceSet, fontFace: FontFace) {
-      setTimeout(() => {
-        const p = fontMap.get(fontFace);
-        if (p) {
-          fontCb(p);
-          fontMap.delete(fontFace);
-        }
-      }, 0);
-      return original.apply(this, [fontFace]);
-    };
-  });
+  const restoreHandler = patch(
+    doc.fonts,
+    'add',
+    function (original: (font: FontFace) => void) {
+      return function (this: FontFaceSet, fontFace: FontFace) {
+        setTimeout(() => {
+          const p = fontMap.get(fontFace);
+          if (p) {
+            fontCb(p);
+            fontMap.delete(fontFace);
+          }
+        }, 0);
+        return original.apply(this, [fontFace]);
+      };
+    },
+  );
 
   handlers.push(() => {
     win.FontFace = originalFontFace;
@@ -739,6 +764,47 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   return () => {
     handlers.forEach((h) => h());
   };
+}
+
+function initSelectionObserver(param: observerParam): listenerHandler {
+  const { doc, mirror, blockClass, selectionCb } = param;
+  let collapsed = true;
+
+  const updateSelection = () => {
+    const selection = doc.getSelection();
+
+    if (!selection || (collapsed && selection?.isCollapsed)) return;
+
+    collapsed = selection.isCollapsed || false;
+
+    const ranges: SelectionRange[] = [];
+    const count = selection.rangeCount || 0;
+
+    for (let i = 0; i < count; i++) {
+      const range = selection.getRangeAt(i);
+
+      const { startContainer, startOffset, endContainer, endOffset } = range;
+
+      const blocked =
+        isBlocked(startContainer, blockClass, true) ||
+        isBlocked(endContainer, blockClass, true);
+
+      if (blocked) continue;
+
+      ranges.push({
+        start: mirror.getId(startContainer),
+        startOffset,
+        end: mirror.getId(endContainer),
+        endOffset,
+      });
+    }
+
+    selectionCb({ ranges });
+  };
+
+  updateSelection();
+
+  return on('selectionchange', updateSelection);
 }
 
 function mergeHooks(o: observerParam, hooks: hooksParam) {
@@ -754,6 +820,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     styleDeclarationCb,
     canvasMutationCb,
     fontCb,
+    selectionCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -821,6 +888,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     fontCb(...p);
   };
+  o.selectionCb = (...p: Arguments<selectionCallback>) => {
+    if (hooks.selection) {
+      hooks.selection(...p);
+    }
+    selectionCb(...p);
+  };
 }
 
 export function initObservers(
@@ -829,7 +902,9 @@ export function initObservers(
 ): listenerHandler {
   const currentWindow = o.doc.defaultView; // basically document.window
   if (!currentWindow) {
-    return () => {};
+    return () => {
+      //
+    };
   }
 
   mergeHooks(o, hooks);
@@ -845,7 +920,13 @@ export function initObservers(
   const styleDeclarationObserver = initStyleDeclarationObserver(o, {
     win: currentWindow,
   });
-  const fontObserver = o.collectFonts ? initFontObserver(o) : () => {};
+  const fontObserver = o.collectFonts
+    ? initFontObserver(o)
+    : () => {
+        //
+      };
+  const selectionObserver = initSelectionObserver(o);
+
   // plugins
   const pluginHandlers: listenerHandler[] = [];
   for (const plugin of o.plugins) {
@@ -866,6 +947,7 @@ export function initObservers(
     styleSheetObserver();
     styleDeclarationObserver();
     fontObserver();
+    selectionObserver();
     pluginHandlers.forEach((h) => h());
   };
 }

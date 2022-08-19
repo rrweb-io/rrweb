@@ -8,9 +8,11 @@
 
 ```js
 rrweb.record({
-  emit: emit(event) {
+  emit: function emit(event) {
     // 如果要使用console来输出信息，请使用如下的写法
-    const defaultLog = console.log["__rrweb_original__"] ? console.log["__rrweb_original__"] : console.log;
+    const defaultLog = console.log['__rrweb_original__']
+      ? console.log['__rrweb_original__']
+      : console.log;
     defaultLog(event);
   },
   // 使用默认的配置选项
@@ -25,22 +27,26 @@ rrweb.record({
 
 ```js
 rrweb.record({
-  emit: emit(event) {
+  emit: function emit(event) {
     // 如果要使用console来输出信息，请使用如下的写法
-    const defaultLog = console.log["__rrweb_original__"] ? console.log["__rrweb_original__"] : console.log;
+    const defaultLog = console.log['__rrweb_original__']
+      ? console.log['__rrweb_original__']
+      : console.log;
     defaultLog(event);
   },
   // 定制的选项
-  plugins: [rrweb.getRecordConsolePlugin({
-    level: ["info", "log", "warn", "error"],
-    lengthThreshold: 10000,
-    stringifyOptions: {
-      stringLengthLimit: 1000,
-      numOfKeysLimit: 100,
-      depthOfLimit: 1
-    },
-    logger: window.console,
-  })],
+  plugins: [
+    rrweb.getRecordConsolePlugin({
+      level: ['info', 'log', 'warn', 'error'],
+      lengthThreshold: 10000,
+      stringifyOptions: {
+        stringLengthLimit: 1000,
+        numOfKeysLimit: 100,
+        depthOfLimit: 1,
+      },
+      logger: window.console,
+    }),
+  ],
 });
 ```
 

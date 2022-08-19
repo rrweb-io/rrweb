@@ -6,6 +6,7 @@ import {
   needMaskingText,
   maskInputValue,
   Mirror,
+  isNativeShadowDom,
 } from 'rrweb-snapshot';
 import type {
   mutationRecord,
@@ -25,6 +26,7 @@ import {
   isSerialized,
   hasShadowRoot,
   isSerializedIframe,
+  isSerializedStylesheet,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -163,12 +165,14 @@ export default class MutationBuffer {
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
   private maskInputFn: observerParam['maskInputFn'];
+  private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
   private iframeManager: observerParam['iframeManager'];
+  private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
 
@@ -183,12 +187,14 @@ export default class MutationBuffer {
       'maskInputOptions',
       'maskTextFn',
       'maskInputFn',
+      'keepIframeSrcFn',
       'recordCanvas',
       'inlineImages',
       'slimDOMOptions',
       'doc',
       'mirror',
       'iframeManager',
+      'stylesheetManager',
       'shadowDomManager',
       'canvasManager',
     ] as const).forEach((key) => {
@@ -289,6 +295,7 @@ export default class MutationBuffer {
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
         skipChild: true,
+        newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
         maskTextFn: this.maskTextFn,
@@ -300,6 +307,9 @@ export default class MutationBuffer {
           if (isSerializedIframe(currentN, this.mirror)) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
+          if (isSerializedStylesheet(currentN, this.mirror)) {
+            this.stylesheetManager.addStylesheet(currentN as HTMLLinkElement);
+          }
           if (hasShadowRoot(n)) {
             this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
           }
@@ -308,7 +318,9 @@ export default class MutationBuffer {
           this.iframeManager.attachIframe(iframe, childSn, this.mirror);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
-        newlyAddedElement: true,
+        onStylesheetLoad: (link, childSn) => {
+          this.stylesheetManager.attachStylesheet(link, childSn, this.mirror);
+        },
       });
       if (sn) {
         adds.push({
@@ -471,9 +483,23 @@ export default class MutationBuffer {
         ) {
           return;
         }
+
         let item: attributeCursor | undefined = this.attributes.find(
           (a) => a.node === m.target,
         );
+        if (
+          target.tagName === 'IFRAME' &&
+          m.attributeName === 'src' &&
+          !this.keepIframeSrcFn(value as string)
+        ) {
+          if (!(target as HTMLIFrameElement).contentDocument) {
+            // we can't record it directly as we can't see into it
+            // preserve the src attribute so a decision can be taken at replay time
+            m.attributeName = 'rr_src';
+          } else {
+            return;
+          }
+        }
         if (!item) {
           item = {
             node: m.target,
@@ -517,7 +543,7 @@ export default class MutationBuffer {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[m.attributeName!] = transformAttribute(
             this.doc,
-            (m.target as HTMLElement).tagName,
+            target.tagName,
             m.attributeName!,
             value!,
           );
@@ -571,7 +597,10 @@ export default class MutationBuffer {
             this.removes.push({
               parentId,
               id: nodeId,
-              isShadow: isShadowRoot(m.target) ? true : undefined,
+              isShadow:
+                isShadowRoot(m.target) && isNativeShadowDom(m.target)
+                  ? true
+                  : undefined,
             });
           }
           this.mapRemoves.push(n);

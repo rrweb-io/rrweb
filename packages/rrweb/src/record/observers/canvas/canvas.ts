@@ -12,7 +12,13 @@ export default function initCanvasContextObserver(
     const restoreHandler = patch(
       win.HTMLCanvasElement.prototype,
       'getContext',
-      function (original) {
+      function (
+        original: (
+          this: ICanvas,
+          contextType: string,
+          ...args: Array<unknown>
+        ) => void,
+      ) {
         return function (
           this: ICanvas,
           contextType: string,

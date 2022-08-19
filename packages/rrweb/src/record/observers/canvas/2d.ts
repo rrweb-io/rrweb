@@ -32,7 +32,12 @@ export default function initCanvas2DMutationObserver(
       const restoreHandler = patch(
         win.CanvasRenderingContext2D.prototype,
         prop,
-        function (original) {
+        function (
+          original: (
+            this: CanvasRenderingContext2D,
+            ...args: unknown[]
+          ) => void,
+        ) {
           return function (
             this: CanvasRenderingContext2D,
             ...args: Array<unknown>
@@ -60,6 +65,7 @@ export default function initCanvas2DMutationObserver(
         prop,
         {
           set(v) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             cb(this.canvas, {
               type: CanvasContext['2D'],
               property: prop,

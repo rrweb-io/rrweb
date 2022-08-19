@@ -28,30 +28,36 @@ function patchGLPrototype(
       if (typeof prototype[prop as keyof typeof prototype] !== 'function') {
         continue;
       }
-      const restoreHandler = patch(prototype, prop, function (original) {
-        return function (this: typeof prototype, ...args: Array<unknown>) {
-          const result = original.apply(this, args);
-          saveWebGLVar(result, win, prototype);
-          if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
+      const restoreHandler = patch(
+        prototype,
+        prop,
+        function (
+          original: (this: typeof prototype, ...args: Array<unknown>) => void,
+        ) {
+          return function (this: typeof prototype, ...args: Array<unknown>) {
+            const result = original.apply(this, args);
+            saveWebGLVar(result, win, prototype);
+            if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
+              const recordArgs = serializeArgs([...args], win, prototype);
+              const mutation: canvasMutationWithType = {
+                type,
+                property: prop,
+                args: recordArgs,
+              };
+              // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
+              cb(this.canvas, mutation);
+            }
 
-            const recordArgs = serializeArgs([...args], win, prototype);
-            const mutation: canvasMutationWithType = {
-              type,
-              property: prop,
-              args: recordArgs,
-            };
-            // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
-            cb(this.canvas, mutation);
-          }
-
-          return result;
-        };
-      });
+            return result;
+          };
+        },
+      );
       handlers.push(restoreHandler);
     } catch {
       const hookHandler = hookSetter<typeof prototype>(prototype, prop, {
         set(v) {
           // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           cb(this.canvas as HTMLCanvasElement, {
             type,
             property: prop,

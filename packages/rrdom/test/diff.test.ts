@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { getDefaultSN, RRDocument, RRMediaElement } from '../src/virtual-dom';
+import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
 import {
   applyVirtualStyleRulesToNode,
   createOrGetNode,
@@ -905,8 +905,8 @@ describe('diff algorithm for rrdom', () => {
       /* Number of elements remains the same and no element will be added or removed. */
       let oldElementsNum = 15,
         newElementsNum = 15;
-      let oldElementsIds = [],
-        newElementsIds = [];
+      let oldElementsIds: number[] = [],
+        newElementsIds: number[] = [];
       for (let i = 1; i <= oldElementsNum; i++) {
         oldElementsIds.push(i);
         newElementsIds.push(i);
@@ -950,8 +950,8 @@ describe('diff algorithm for rrdom', () => {
       /* May need to add or remove some elements. */
       let oldElementsNum = 20,
         newElementsNum = 30;
-      let oldElementsIds = [],
-        newElementsIds = [];
+      let oldElementsIds: number[] = [],
+        newElementsIds: number[] = [];
       for (let i = 1; i <= oldElementsNum + 10; i++) oldElementsIds.push(i);
       for (let i = 1; i <= newElementsNum + 10; i++) newElementsIds.push(i);
       shuffle(oldElementsIds);
@@ -1055,6 +1055,130 @@ describe('diff algorithm for rrdom', () => {
       const element = node.contentDocument!.childNodes[0] as HTMLElement;
       expect(element.tagName).toBe('DIV');
       expect(mirror.getId(element)).toEqual(2);
+    });
+
+    it('should remove children from document before adding new nodes', () => {
+      document.write('<style></style>'); // old document with elements that need removing
+
+      const rrDocument = new RRDocument();
+      const docType = rrDocument.createDocumentType('html', '', '');
+      rrDocument.mirror.add(docType, getDefaultSN(docType, 1));
+      rrDocument.appendChild(docType);
+      const htmlEl = rrDocument.createElement('html');
+      rrDocument.mirror.add(htmlEl, getDefaultSN(htmlEl, 2));
+      rrDocument.appendChild(htmlEl);
+
+      diff(document, rrDocument, replayer);
+      expect(document.childNodes.length).toBe(2);
+      const element = document.childNodes[0] as HTMLElement;
+      expect(element.nodeType).toBe(element.DOCUMENT_TYPE_NODE);
+      expect(mirror.getId(element)).toEqual(1);
+    });
+
+    it('should remove children from document before adding new nodes 2', () => {
+      document.write('<html><iframe></iframe></html>');
+
+      const iframe = document.querySelector('iframe')!;
+      // Remove everthing from the iframe but the root html element
+      // `buildNodeWithSn` injects docType elements to trigger compatMode in iframes
+      iframe.contentDocument!.write(
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">',
+      );
+
+      replayer.mirror.add(iframe.contentDocument!, {
+        id: 1,
+        type: 0,
+        childNodes: [
+          {
+            id: 2,
+            rootId: 1,
+            type: 2,
+            tagName: 'html',
+            childNodes: [],
+            attributes: {},
+          },
+        ],
+      } as serializedNodeWithId);
+      replayer.mirror.add(iframe.contentDocument!.childNodes[0], {
+        id: 2,
+        rootId: 1,
+        type: 2,
+        tagName: 'html',
+        childNodes: [],
+        attributes: {},
+      } as serializedNodeWithId);
+
+      const rrDocument = new RRDocument();
+      rrDocument.mirror.add(rrDocument, getDefaultSN(rrDocument, 1));
+      const docType = rrDocument.createDocumentType('html', '', '');
+      rrDocument.mirror.add(docType, getDefaultSN(docType, 2));
+      rrDocument.appendChild(docType);
+      const htmlEl = rrDocument.createElement('html');
+      rrDocument.mirror.add(htmlEl, getDefaultSN(htmlEl, 3));
+      rrDocument.appendChild(htmlEl);
+      const styleEl = rrDocument.createElement('style');
+      rrDocument.mirror.add(styleEl, getDefaultSN(styleEl, 4));
+      htmlEl.appendChild(styleEl);
+      const headEl = rrDocument.createElement('head');
+      rrDocument.mirror.add(headEl, getDefaultSN(headEl, 5));
+      htmlEl.appendChild(headEl);
+      const bodyEl = rrDocument.createElement('body');
+      rrDocument.mirror.add(bodyEl, getDefaultSN(bodyEl, 6));
+      htmlEl.appendChild(bodyEl);
+
+      diff(iframe.contentDocument!, rrDocument, replayer);
+      expect(iframe.contentDocument!.childNodes.length).toBe(2);
+      const element = iframe.contentDocument!.childNodes[0] as HTMLElement;
+      expect(element.nodeType).toBe(element.DOCUMENT_TYPE_NODE);
+      expect(mirror.getId(element)).toEqual(2);
+    });
+
+    it('should remove children from document before adding new nodes 3', () => {
+      document.write('<html><body><iframe></iframe></body></html>');
+
+      const iframeInDom = document.querySelector('iframe')!;
+
+      replayer.mirror.add(iframeInDom, {
+        id: 3,
+        type: 2,
+        rootId: 1,
+        tagName: 'iframe',
+        childNodes: [],
+        attributes: {},
+      } as serializedNodeWithId);
+      replayer.mirror.add(iframeInDom.contentDocument!, {
+        id: 4,
+        type: 0,
+        childNodes: [],
+      } as serializedNodeWithId);
+
+      const rrDocument = new RRDocument();
+
+      const rrIframeEl = rrDocument.createElement('iframe');
+      rrDocument.mirror.add(rrIframeEl, getDefaultSN(rrIframeEl, 3));
+      rrDocument.appendChild(rrIframeEl);
+      rrDocument.mirror.add(
+        rrIframeEl.contentDocument!,
+        getDefaultSN(rrIframeEl.contentDocument!, 4),
+      );
+
+      const rrDocType = rrDocument.createDocumentType('html', '', '');
+      rrIframeEl.contentDocument.appendChild(rrDocType);
+      const rrHtmlEl = rrDocument.createElement('html');
+      rrDocument.mirror.add(rrHtmlEl, getDefaultSN(rrHtmlEl, 6));
+      rrIframeEl.contentDocument.appendChild(rrHtmlEl);
+      const rrHeadEl = rrDocument.createElement('head');
+      rrDocument.mirror.add(rrHeadEl, getDefaultSN(rrHeadEl, 8));
+      rrHtmlEl.appendChild(rrHeadEl);
+      const bodyEl = rrDocument.createElement('body');
+      rrDocument.mirror.add(bodyEl, getDefaultSN(bodyEl, 9));
+      rrHtmlEl.appendChild(bodyEl);
+
+      diff(iframeInDom, rrIframeEl, replayer);
+      expect(iframeInDom.contentDocument!.childNodes.length).toBe(2);
+      const element = iframeInDom.contentDocument!.childNodes[0] as HTMLElement;
+      expect(element.nodeType).toBe(element.DOCUMENT_TYPE_NODE);
+      expect(mirror.getId(element)).toEqual(-1);
     });
   });
 
@@ -1192,9 +1316,7 @@ describe('diff algorithm for rrdom', () => {
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
     });
 
-    // JSDOM/CSSOM is currently broken for this test
-    // remove '.skip' once https://github.com/NV/CSSOM/pull/113#issue-712485075 is merged
-    it.skip('should insert rule at index [0,0] and keep existing rules', () => {
+    it('should insert rule at index [0,0] and keep existing rules', () => {
       document.write(`
         <style>
           @media {
@@ -1210,10 +1332,6 @@ describe('diff algorithm for rrdom', () => {
         { cssText, index: [0, 0], type: StyleRuleType.Insert },
       ];
       applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      console.log(
-        Array.from((styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules),
-      );
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,

@@ -27,16 +27,6 @@ const baseConfigs = [
     name: pkg.name,
     path: pkg.name,
   },
-  {
-    input: './src/document-nodejs.ts',
-    name: 'RRDocument',
-    path: 'document-nodejs',
-  },
-  {
-    input: './src/virtual-dom.ts',
-    name: 'RRDocument',
-    path: 'virtual-dom',
-  },
 ];
 
 let configs = [];

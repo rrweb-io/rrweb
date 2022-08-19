@@ -134,7 +134,7 @@ function buildNode(
         n.publicId,
         n.systemId,
       );
-    case NodeType.Element:
+    case NodeType.Element: {
       const tagName = getTagName(n);
       let node: Element;
       if (n.isSVG) {
@@ -143,7 +143,7 @@ function buildNode(
         node = doc.createElement(tagName);
       }
       for (const name in n.attributes) {
-        if (!n.attributes.hasOwnProperty(name)) {
+        if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
         }
         let value = n.attributes[name];
@@ -228,13 +228,20 @@ function buildNode(
           // handle internal attributes
           if (tagName === 'canvas' && name === 'rr_dataURL') {
             const image = document.createElement('img');
-            image.src = value;
             image.onload = () => {
               const ctx = (node as HTMLCanvasElement).getContext('2d');
               if (ctx) {
                 ctx.drawImage(image, 0, 0, image.width, image.height);
               }
             };
+            image.src = value;
+            type RRCanvasElement = {
+              RRNodeType: NodeType;
+              rr_dataURL: string;
+            };
+            // If the canvas element is created in RRDom runtime (seeking to a time point), the canvas context isn't supported. So the data has to be stored and not handled until diff process. https://github.com/rrweb-io/rrweb/pull/944
+            if (((node as unknown) as RRCanvasElement).RRNodeType)
+              ((node as unknown) as RRCanvasElement).rr_dataURL = value;
           } else if (tagName === 'img' && name === 'rr_dataURL') {
             const image = node as HTMLImageElement;
             if (!image.currentSrc.startsWith('data:')) {
@@ -290,6 +297,7 @@ function buildNode(
         }
       }
       return node;
+    }
     case NodeType.Text:
       return doc.createTextNode(
         n.isStyle && hackCss
@@ -417,7 +425,12 @@ function handleScroll(node: Node, mirror: Mirror) {
   }
   const el = node as HTMLElement;
   for (const name in n.attributes) {
-    if (!(n.attributes.hasOwnProperty(name) && name.startsWith('rr_'))) {
+    if (
+      !(
+        Object.prototype.hasOwnProperty.call(n.attributes, name) &&
+        name.startsWith('rr_')
+      )
+    ) {
       continue;
     }
     const value = n.attributes[name];

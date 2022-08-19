@@ -4,10 +4,11 @@ import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
-import * as typescript from '@rollup/plugin-typescript';
+import * as typescript from 'rollup-plugin-typescript2';
 import * as assert from 'assert';
+import { waitForRAF } from './utils';
 
-const _typescript = (typescript as unknown) as typeof typescript.default;
+const _typescript = (typescript as unknown) as () => rollup.Plugin;
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map((filePath) => {
@@ -97,7 +98,6 @@ describe('integration tests', function (this: ISuite) {
     it(title, async () => {
       const page: puppeteer.Page = await browser.newPage();
       // console for debug
-      // tslint:disable-next-line: no-console
       page.on('console', (msg) => console.log(msg.text()));
       if (html.filePath === 'iframe.html') {
         // loading directly is needed to ensure we don't trigger compatMode='BackCompat'
@@ -147,7 +147,6 @@ describe('integration tests', function (this: ISuite) {
   it('correctly triggers backCompat mode and rendering', async () => {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
-    // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
 
     await page.goto('http://localhost:3030/html/compat-mode.html', {
@@ -209,6 +208,74 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
   });
+
+  it('correctly saves blob:images offline', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto('http://localhost:3030/html/picture-blob.html', {
+      waitUntil: 'load',
+    });
+    await page.waitForSelector('img', { timeout: 1000 });
+    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false
+    })`);
+    await page.waitFor(100);
+    const snapshot = await page.evaluate('JSON.stringify(snapshot, null, 2);');
+    assert(snapshot.includes('"rr_dataURL"'));
+    assert(snapshot.includes('data:image/webp;base64,'));
+  });
+
+  it('correctly saves images in iframes offline', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto('http://localhost:3030/html/picture-in-frame.html', {
+      waitUntil: 'load',
+    });
+    await page.waitForSelector('iframe', { timeout: 1000 });
+    await waitForRAF(page); // wait for page to render
+    await page.evaluate(`${code}
+        rrweb.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false,
+        onIframeLoad: function(iframe, sn) {
+          window.snapshot = sn;
+        }
+    })`);
+    await page.waitFor(100);
+    const snapshot = await page.evaluate(
+      'JSON.stringify(window.snapshot, null, 2);',
+    );
+    assert(snapshot.includes('"rr_dataURL"'));
+    assert(snapshot.includes('data:image/webp;base64,'));
+  });
+
+  it('correctly saves blob:images in iframes offline', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto('http://localhost:3030/html/picture-blob-in-frame.html', {
+      waitUntil: 'load',
+    });
+    await page.waitForSelector('iframe', { timeout: 1000 });
+    await waitForRAF(page); // wait for page to render
+    await page.evaluate(`${code}
+        rrweb.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false,
+        onIframeLoad: function(iframe, sn) {
+          window.snapshot = sn;
+        }
+    })`);
+    await page.waitFor(100);
+    const snapshot = await page.evaluate(
+      'JSON.stringify(window.snapshot, null, 2);',
+    );
+    assert(snapshot.includes('"rr_dataURL"'));
+    assert(snapshot.includes('data:image/webp;base64,'));
+  });
 });
 
 describe('iframe integration tests', function (this: ISuite) {
@@ -244,7 +311,6 @@ describe('iframe integration tests', function (this: ISuite) {
   it('snapshot async iframes', async () => {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
-    // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`http://localhost:3030/iframe-html/main.html`, {
       waitUntil: 'load',
@@ -293,7 +359,6 @@ describe('shadow DOM integration tests', function (this: ISuite) {
   it('snapshot shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
-    // tslint:disable-next-line: no-console
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`http://localhost:3030/html/shadow-dom.html`, {
       waitUntil: 'load',
