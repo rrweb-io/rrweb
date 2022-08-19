@@ -92,7 +92,7 @@ export enum IncrementalSource {
   Drag,
   StyleDeclaration,
   Selection,
-  AdoptStyleSheet,
+  AdoptedStyleSheet,
 }
 
 export type mutationData = {
@@ -149,7 +149,7 @@ export type selectionData = {
 } & selectionParam;
 
 export type adoptedStyleSheetData = {
-  source: IncrementalSource.AdoptStyleSheet;
+  source: IncrementalSource.AdoptedStyleSheet;
 } & adoptedStyleSheetParam;
 
 export type incrementalData =
@@ -519,13 +519,15 @@ export type styleSheetRuleParam = {
   replaceSync?: string;
 };
 
+export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
+
 export type adoptedStyleSheetParam = {
   // 0 indicates the outermost document, other numbers indicate id of IFrame elements or shadow DOMs' hosts.
   id: number;
-  styleId: number;
+  styleIds: number[];
 };
 
-export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
+export type adoptedStyleSheetCallback = (a: adoptedStyleSheetParam) => void;
 
 export type styleDeclarationParam = {
   id: number;

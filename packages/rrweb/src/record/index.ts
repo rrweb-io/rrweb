@@ -3,7 +3,6 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
-  getCssRuleString,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
@@ -14,7 +13,6 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
-  StyleSheetMirror,
 } from '../utils';
 import {
   EventType,
@@ -27,6 +25,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   styleSheetRuleParam,
+  adoptedStyleSheetParam,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -45,7 +44,6 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 
 const mirror = createMirror();
-const styleMirror = new StyleSheetMirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -228,12 +226,26 @@ function record<T = eventWithTime>(
       }),
     );
 
-  const iframeManager = new IframeManager({
-    mutationCb: wrappedMutationEmit,
-  });
+  const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.AdoptedStyleSheet,
+          ...a,
+        },
+      }),
+    );
 
   const stylesheetManager = new StylesheetManager({
     mutationCb: wrappedMutationEmit,
+    styleRulesCb: wrappedStyleSheetRulesEmit,
+    adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
+  });
+
+  const iframeManager = new IframeManager({
+    mutationCb: wrappedMutationEmit,
+    stylesheetManager: stylesheetManager,
   });
 
   const canvasManager = new CanvasManager({
@@ -300,7 +312,7 @@ function record<T = eventWithTime>(
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
         if (isSerializedStylesheet(n, mirror)) {
-          stylesheetManager.addStylesheet(n as HTMLLinkElement);
+          stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
@@ -311,26 +323,14 @@ function record<T = eventWithTime>(
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
-        stylesheetManager.attachStylesheet(linkEl, childSn, mirror);
+        stylesheetManager.attachLinkElement(linkEl, childSn, mirror);
       },
       keepIframeSrcFn,
     });
 
     // Some old browsers don't support adoptedStyleSheets.
-    if (document.adoptedStyleSheets) {
-      for (const sheet of document.adoptedStyleSheets) {
-        const styleId = styleMirror.add(sheet);
-        const rules = Array.from(sheet.rules || CSSRule);
-        wrappedStyleSheetRulesEmit({
-          adds: rules.map((r) => {
-            return {
-              rule: getCssRuleString(r),
-            };
-          }),
-          styleId,
-        });
-      }
-    }
+    document.adoptedStyleSheets &&
+      stylesheetManager.adoptStyleSheets(document.adoptedStyleSheets);
 
     if (!node) {
       return console.warn('Failed to snapshot the document');

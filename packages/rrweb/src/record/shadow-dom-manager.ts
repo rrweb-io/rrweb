@@ -73,6 +73,10 @@ export class ShadowDomManager {
       doc: (shadowRoot as unknown) as Document,
       mirror: this.mirror,
     });
+    if (shadowRoot.adoptedStyleSheets)
+      this.bypassOptions.stylesheetManager.adoptStyleSheets(
+        shadowRoot.adoptedStyleSheets,
+      );
   }
 
   /**
