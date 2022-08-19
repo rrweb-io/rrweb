@@ -629,7 +629,7 @@ function initStyleDeclarationObserver(
   ) {
     // ignore this mutation if we do not care about this css attribute
     if (ignoreCSSAttributes.has(property)) {
-      return setProperty.apply(this, arguments);
+      return setProperty.apply(this, [property, value, priority]);
     }
     const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
     if (id !== -1) {
@@ -654,7 +654,7 @@ function initStyleDeclarationObserver(
   ) {
     // ignore this mutation if we do not care about this css attribute
     if (ignoreCSSAttributes.has(property)) {
-      return setProperty.apply(this, arguments);
+      return removeProperty.apply(this, [property]);
     }
     const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
     if (id !== -1) {
@@ -767,7 +767,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { doc, mirror, blockClass, selectionCb } = param;
+  const { doc, mirror, blockClass, blockSelector, selectionCb } = param;
   let collapsed = true;
 
   const updateSelection = () => {
@@ -786,8 +786,8 @@ function initSelectionObserver(param: observerParam): listenerHandler {
       const { startContainer, startOffset, endContainer, endOffset } = range;
 
       const blocked =
-        isBlocked(startContainer, blockClass, true) ||
-        isBlocked(endContainer, blockClass, true);
+        isBlocked(startContainer, blockClass, blockSelector, true) ||
+        isBlocked(endContainer, blockClass, blockSelector, true);
 
       if (blocked) continue;
 
