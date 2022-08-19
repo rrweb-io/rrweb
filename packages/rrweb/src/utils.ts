@@ -448,3 +448,27 @@ export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
 
   return uniqueMutations;
 }
+
+export class StyleSheetMirror {
+  private id = 1;
+  private styleIDMap = new WeakMap<CSSStyleSheet, number>();
+
+  getId(stylesheet: CSSStyleSheet): number {
+    return this.styleIDMap.get(stylesheet) ?? -1;
+  }
+
+  has(stylesheet: CSSStyleSheet): boolean {
+    return this.styleIDMap.has(stylesheet);
+  }
+
+  add(stylesheet: CSSStyleSheet): boolean {
+    if (this.has(stylesheet)) return false;
+    this.styleIDMap.set(stylesheet, this.id++);
+    return true;
+  }
+
+  reset(): void {
+    this.styleIDMap = new WeakMap();
+    this.id = 1;
+  }
+}
