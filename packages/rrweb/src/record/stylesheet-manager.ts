@@ -52,20 +52,29 @@ export class StylesheetManager {
     this.trackStylesheetInLinkElement(linkEl);
   }
 
-  public adoptStyleSheets(sheets: CSSStyleSheet[]) {
+  public adoptStyleSheets(sheets: CSSStyleSheet[], hostId: number) {
+    if (sheets.length === 0) return;
+    const adoptedStyleSheetData = {
+      id: hostId,
+      styleIds: [] as number[],
+    };
     for (const sheet of sheets) {
-      if (this.styleMirror.has(sheet)) continue;
-      const styleId = this.styleMirror.add(sheet);
-      const rules = Array.from(sheet.rules || CSSRule);
-      this.styleRulesCb({
-        adds: rules.map((r) => {
-          return {
-            rule: getCssRuleString(r),
-          };
-        }),
-        styleId,
-      });
+      let styleId;
+      if (!this.styleMirror.has(sheet)) {
+        styleId = this.styleMirror.add(sheet);
+        const rules = Array.from(sheet.rules || CSSRule);
+        this.styleRulesCb({
+          adds: rules.map((r) => {
+            return {
+              rule: getCssRuleString(r),
+            };
+          }),
+          styleId,
+        });
+      } else styleId = this.styleMirror.getId(sheet);
+      adoptedStyleSheetData.styleIds.push(styleId);
     }
+    this.adoptedStyleSheetCb(adoptedStyleSheetData);
   }
 
   // TODO: take snapshot on stylesheet reload by applying event listener

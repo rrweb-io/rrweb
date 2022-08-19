@@ -76,6 +76,7 @@ export class ShadowDomManager {
     if (shadowRoot.adoptedStyleSheets)
       this.bypassOptions.stylesheetManager.adoptStyleSheets(
         shadowRoot.adoptedStyleSheets,
+        this.mirror.getId(shadowRoot.host),
       );
   }
 

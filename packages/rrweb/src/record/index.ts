@@ -330,7 +330,10 @@ function record<T = eventWithTime>(
 
     // Some old browsers don't support adoptedStyleSheets.
     document.adoptedStyleSheets &&
-      stylesheetManager.adoptStyleSheets(document.adoptedStyleSheets);
+      stylesheetManager.adoptStyleSheets(
+        document.adoptedStyleSheets,
+        mirror.getId(document),
+      );
 
     if (!node) {
       return console.warn('Failed to snapshot the document');
