@@ -9,6 +9,7 @@ import type {
   listenerHandler,
   CanvasArg,
 } from '../../../types';
+import { isBlocked } from '../../../utils';
 import { CanvasContext } from '../../../types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
@@ -137,6 +138,16 @@ export class CanvasManager {
     let lastSnapshotTime = 0;
     let rafId: number;
 
+    const getCanvas = (): HTMLCanvasElement[] => {
+      const matchedCanvas: HTMLCanvasElement[] = [];
+      win.document.querySelectorAll('canvas').forEach(canvas => {
+        if (!isBlocked(canvas, blockClass, false)) {
+          matchedCanvas.push(canvas);
+        }
+      })
+      return matchedCanvas;
+    };
+
     const takeCanvasSnapshots = (timestamp: DOMHighResTimeStamp) => {
       if (
         lastSnapshotTime &&
@@ -147,8 +158,7 @@ export class CanvasManager {
       }
       lastSnapshotTime = timestamp;
 
-      win.document
-        .querySelectorAll(`canvas:not(.${blockClass as string} *)`)
+      getCanvas()
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
