@@ -19,6 +19,7 @@
     "src",
     "scripts",
     "node_modules/@types/css-font-loading-module/index.d.ts",
-    "node_modules/@types/jest-image-snapshot/index.d.ts"
+    "node_modules/@types/jest-image-snapshot/index.d.ts",
+    "constructableStyleSheets.d.ts"
   ]
 }

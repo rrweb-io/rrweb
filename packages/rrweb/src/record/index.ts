@@ -3,6 +3,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
+  getCssRuleString,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
@@ -13,6 +14,7 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
+  StyleSheetMirror,
 } from '../utils';
 import {
   EventType,
@@ -24,6 +26,7 @@ import {
   mutationCallbackParam,
   scrollCallback,
   canvasMutationParam,
+  styleSheetRuleParam,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -42,6 +45,7 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 
 const mirror = createMirror();
+const styleMirror = new StyleSheetMirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -213,6 +217,17 @@ function record<T = eventWithTime>(
       }),
     );
 
+  const wrappedStyleSheetRulesEmit = (r: styleSheetRuleParam) =>
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.StyleSheetRule,
+          ...r,
+        },
+      }),
+    );
+
   const iframeManager = new IframeManager({
     mutationCb: wrappedMutationEmit,
   });
@@ -300,6 +315,22 @@ function record<T = eventWithTime>(
       },
       keepIframeSrcFn,
     });
+
+    // Some old browsers don't support adoptedStyleSheets.
+    if (document.adoptedStyleSheets) {
+      for (const sheet of document.adoptedStyleSheets) {
+        const styleId = styleMirror.add(sheet);
+        const rules = Array.from(sheet.rules || CSSRule);
+        wrappedStyleSheetRulesEmit({
+          adds: rules.map((r) => {
+            return {
+              rule: getCssRuleString(r),
+            };
+          }),
+          styleId,
+        });
+      }
+    }
 
     if (!node) {
       return console.warn('Failed to snapshot the document');
@@ -400,16 +431,7 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
-          styleSheetRuleCb: (r) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.StyleSheetRule,
-                  ...r,
-                },
-              }),
-            ),
+          styleSheetRuleCb: wrappedStyleSheetRulesEmit,
           styleDeclarationCb: (r) =>
             wrappedEmit(
               wrapEvent({

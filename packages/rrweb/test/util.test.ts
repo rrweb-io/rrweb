@@ -18,14 +18,15 @@ describe('Utilities for other modules', () => {
       const mirror = new StyleSheetMirror();
       const styleSheet = new CSSStyleSheet();
       expect(mirror.has(styleSheet)).toBeFalsy();
-      expect(mirror.add(styleSheet)).toBeTruthy();
+      expect(mirror.add(styleSheet)).toEqual(1);
       expect(mirror.has(styleSheet)).toBeTruthy();
-      expect(mirror.add(styleSheet)).toBeFalsy();
+      // This stylesheet has been added before so just return its assigned id.
+      expect(mirror.add(styleSheet)).toEqual(1);
 
       for (let i = 0; i < 10; i++) {
         const styleSheet = new CSSStyleSheet();
         expect(mirror.has(styleSheet)).toBeFalsy();
-        expect(mirror.add(styleSheet)).toBeTruthy();
+        expect(mirror.add(styleSheet)).toEqual(i + 2);
         expect(mirror.has(styleSheet)).toBeTruthy();
       }
     });

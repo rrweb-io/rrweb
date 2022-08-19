@@ -461,10 +461,13 @@ export class StyleSheetMirror {
     return this.styleIDMap.has(stylesheet);
   }
 
-  add(stylesheet: CSSStyleSheet): boolean {
-    if (this.has(stylesheet)) return false;
+  /**
+   * @returns If the stylesheet is in the mirror, returns the id of the stylesheet. If not, return the new assigned id.
+   */
+  add(stylesheet: CSSStyleSheet): number {
+    if (this.has(stylesheet)) return this.getId(stylesheet);
     this.styleIDMap.set(stylesheet, this.id++);
-    return true;
+    return this.id - 1;
   }
 
   reset(): void {
