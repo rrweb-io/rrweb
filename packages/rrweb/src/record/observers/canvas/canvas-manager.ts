@@ -1,4 +1,4 @@
-import type { ICanvas, Mirror } from 'rrweb-snapshot';
+import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,
@@ -61,15 +61,16 @@ export class CanvasManager {
     blockClass: blockClass;
     mirror: Mirror;
     sampling?: 'all' | number;
+    dataURLOptions: DataURLOptions
   }) {
-    const { sampling = 'all', win, blockClass, recordCanvas } = options;
+    const { sampling = 'all', win, blockClass, recordCanvas, dataURLOptions } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
       this.initCanvasMutationObserver(win, blockClass);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass);
+      this.initCanvasFPSObserver(sampling, win, blockClass, {dataURLOptions});
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -93,6 +94,9 @@ export class CanvasManager {
     fps: number,
     win: IWindow,
     blockClass: blockClass,
+    options: {
+      dataURLOptions: DataURLOptions
+    }
   ) {
     const canvasContextReset = initCanvasContextObserver(win, blockClass);
     const snapshotInProgressMap: Map<number, boolean> = new Map();
@@ -180,6 +184,7 @@ export class CanvasManager {
               bitmap,
               width: canvas.width,
               height: canvas.height,
+              dataURLOptions: options.dataURLOptions
             },
             [bitmap],
           );

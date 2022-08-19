@@ -20,6 +20,11 @@ rrweb.record({
   sampling: {
     canvas: 15,
   },
+  // image format
+  dataURLOptions: {
+   type: 'image/webp',
+   quality: 0.6
+  }
 });
 ```
 

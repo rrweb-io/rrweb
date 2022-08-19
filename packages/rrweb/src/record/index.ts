@@ -63,6 +63,7 @@ function record<T = eventWithTime>(
     hooks,
     packFn,
     sampling = {},
+    dataURLOptions = {},
     mousemoveWait,
     recordCanvas = false,
     userTriggeredOnInput = false,
@@ -228,6 +229,7 @@ function record<T = eventWithTime>(
     blockClass,
     mirror,
     sampling: sampling.canvas,
+    dataURLOptions
   });
 
   const shadowDomManager = new ShadowDomManager({
@@ -240,6 +242,7 @@ function record<T = eventWithTime>(
       maskTextSelector,
       inlineStylesheet,
       maskInputOptions,
+      dataURLOptions,
       maskTextFn,
       maskInputFn,
       recordCanvas,
@@ -278,6 +281,7 @@ function record<T = eventWithTime>(
       maskAllInputs: maskInputOptions,
       maskTextFn,
       slimDOM: slimDOMOptions,
+      dataURLOptions,
       recordCanvas,
       inlineImages,
       onSerialize: (n) => {

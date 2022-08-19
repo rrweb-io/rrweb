@@ -169,6 +169,7 @@ export default class MutationBuffer {
   private recordCanvas: observerParam['recordCanvas'];
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
+  private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
   private iframeManager: observerParam['iframeManager'];
@@ -191,6 +192,7 @@ export default class MutationBuffer {
       'recordCanvas',
       'inlineImages',
       'slimDOMOptions',
+      'dataURLOptions',
       'doc',
       'mirror',
       'iframeManager',
@@ -301,6 +303,7 @@ export default class MutationBuffer {
         maskTextFn: this.maskTextFn,
         maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
+        dataURLOptions: this.dataURLOptions,
         recordCanvas: this.recordCanvas,
         inlineImages: this.inlineImages,
         onSerialize: (currentN) => {

@@ -21,6 +21,11 @@ rrweb.record({
   sampling: {
     canvas: 15,
   },
+  // 图像的格式
+  dataURLOptions: {
+   type: 'image/webp',
+   quality: 0.6
+  }
 });
 ```
 
