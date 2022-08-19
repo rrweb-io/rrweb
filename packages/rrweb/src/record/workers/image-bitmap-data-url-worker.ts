@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import { DataURLOptions } from 'rrweb-snapshot'
+import type { DataURLOptions } from 'rrweb-snapshot'
 import type {
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,

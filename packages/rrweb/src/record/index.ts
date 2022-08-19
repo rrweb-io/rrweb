@@ -463,6 +463,7 @@ function record<T = eventWithTime>(
           keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
+          dataURLOptions,
           mirror,
           iframeManager,
           stylesheetManager,
