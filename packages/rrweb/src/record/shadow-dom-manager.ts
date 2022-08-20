@@ -75,7 +75,7 @@ export class ShadowDomManager {
     });
     if (shadowRoot.adoptedStyleSheets?.length > 0)
       // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created.
-      Promise.resolve().then(() => {
+      void Promise.resolve().then(() => {
         this.bypassOptions.stylesheetManager.adoptStyleSheets(
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(shadowRoot.host),

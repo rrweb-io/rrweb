@@ -496,6 +496,7 @@ describe('record', function (this: ISuite) {
         (sheet2.cssRules[0] as CSSStyleRule).style.setProperty(
           'font-size',
           'medium',
+          'important',
         );
         sheet2.insertRule('h2 { color: red; }');
       }, 10);

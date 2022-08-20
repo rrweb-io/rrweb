@@ -530,7 +530,8 @@ export type adoptedStyleSheetParam = {
 export type adoptedStyleSheetCallback = (a: adoptedStyleSheetParam) => void;
 
 export type styleDeclarationParam = {
-  id: number;
+  id?: number;
+  styleId?: number;
   index: number[];
   set?: {
     property: string;

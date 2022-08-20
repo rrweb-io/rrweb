@@ -1,4 +1,4 @@
-import { MaskInputOptions, maskInputValue } from 'rrweb-snapshot';
+import { MaskInputOptions, maskInputValue, Mirror } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -9,6 +9,7 @@ import {
   isBlocked,
   isTouchEvent,
   patch,
+  StyleSheetMirror,
 } from '../utils';
 import {
   mutationCallBack,
@@ -484,8 +485,8 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
       );
       const index = rules.indexOf(childRule);
       pos.unshift(index);
-    } else {
-      const rules = Array.from(childRule.parentStyleSheet!.cssRules);
+    } else if (childRule.parentStyleSheet) {
+      const rules = Array.from(childRule.parentStyleSheet.cssRules);
       const index = rules.indexOf(childRule);
       pos.unshift(index);
     }
@@ -494,8 +495,30 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
   return recurse(rule, positions);
 }
 
+/**
+ * For StyleSheets in Element, this function retrieves id of its host element.
+ * For adopted StyleSheets, this function retrieves its styleId from a styleMirror.
+ */
+function getIdOrStyleId(
+  sheet: CSSStyleSheet | undefined | null,
+  mirror: Mirror,
+  styleMirror: StyleSheetMirror,
+): {
+  styleId?: number;
+  id?: number;
+} {
+  let id, styleId;
+  if (!sheet) return {};
+  if (sheet.ownerNode) id = mirror.getId(sheet.ownerNode as Node);
+  else styleId = styleMirror.getId(sheet);
+  return {
+    styleId,
+    id,
+  };
+}
+
 function initStyleSheetObserver(
-  { styleSheetRuleCb, mirror }: observerParam,
+  { styleSheetRuleCb, mirror, stylesheetManager }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -505,10 +528,16 @@ function initStyleSheetObserver(
     rule: string,
     index?: number,
   ) {
-    const id = mirror.getId(this.ownerNode as Node);
-    if (id !== -1) {
+    const { id, styleId } = getIdOrStyleId(
+      this,
+      mirror,
+      stylesheetManager.styleMirror,
+    );
+
+    if (id !== -1 || styleId !== -1) {
       styleSheetRuleCb({
         id,
+        styleId,
         adds: [{ rule, index }],
       });
     }
@@ -521,14 +550,64 @@ function initStyleSheetObserver(
     this: CSSStyleSheet,
     index: number,
   ) {
-    const id = mirror.getId(this.ownerNode as Node);
-    if (id !== -1) {
+    const { id, styleId } = getIdOrStyleId(
+      this,
+      mirror,
+      stylesheetManager.styleMirror,
+    );
+
+    if (id !== -1 || styleId !== -1) {
       styleSheetRuleCb({
         id,
+        styleId,
         removes: [{ index }],
       });
     }
     return deleteRule.apply(this, [index]);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const replace = win.CSSStyleSheet.prototype.replace;
+  win.CSSStyleSheet.prototype.replace = function (
+    this: CSSStyleSheet,
+    text: string,
+  ) {
+    const { id, styleId } = getIdOrStyleId(
+      this,
+      mirror,
+      stylesheetManager.styleMirror,
+    );
+
+    if (id !== -1 || styleId !== -1) {
+      styleSheetRuleCb({
+        id,
+        styleId,
+        replace: text,
+      });
+    }
+    return replace.apply(this, [text]);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const replaceSync = win.CSSStyleSheet.prototype.replaceSync;
+  win.CSSStyleSheet.prototype.replaceSync = function (
+    this: CSSStyleSheet,
+    text: string,
+  ) {
+    const { id, styleId } = getIdOrStyleId(
+      this,
+      mirror,
+      stylesheetManager.styleMirror,
+    );
+
+    if (id !== -1 || styleId !== -1) {
+      styleSheetRuleCb({
+        id,
+        styleId,
+        replaceSync: text,
+      });
+    }
+    return replaceSync.apply(this, [text]);
   };
 
   const supportedNestedCSSRuleTypes: {
@@ -567,12 +646,21 @@ function initStyleSheetObserver(
       deleteRule: type.prototype.deleteRule,
     };
 
-    type.prototype.insertRule = function (rule: string, index?: number) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const id = mirror.getId(this.parentStyleSheet.ownerNode as Node);
-      if (id !== -1) {
+    type.prototype.insertRule = function (
+      this: CSSGroupingRule,
+      rule: string,
+      index?: number,
+    ) {
+      const { id, styleId } = getIdOrStyleId(
+        this.parentStyleSheet,
+        mirror,
+        stylesheetManager.styleMirror,
+      );
+
+      if (id !== -1 || styleId !== -1) {
         styleSheetRuleCb({
           id,
+          styleId,
           adds: [
             {
               rule,
@@ -587,12 +675,20 @@ function initStyleSheetObserver(
       return unmodifiedFunctions[typeKey].insertRule.apply(this, [rule, index]);
     };
 
-    type.prototype.deleteRule = function (index: number) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const id = mirror.getId(this.parentStyleSheet.ownerNode as Node);
-      if (id !== -1) {
+    type.prototype.deleteRule = function (
+      this: CSSGroupingRule,
+      index: number,
+    ) {
+      const { id, styleId } = getIdOrStyleId(
+        this.parentStyleSheet,
+        mirror,
+        stylesheetManager.styleMirror,
+      );
+
+      if (id !== -1 || styleId !== -1) {
         styleSheetRuleCb({
           id,
+          styleId,
           removes: [
             { index: [...getNestedCSSRulePositions(this as CSSRule), index] },
           ],
@@ -605,6 +701,8 @@ function initStyleSheetObserver(
   return () => {
     win.CSSStyleSheet.prototype.insertRule = insertRule;
     win.CSSStyleSheet.prototype.deleteRule = deleteRule;
+    win.CSSStyleSheet.prototype.replace = replace;
+    win.CSSStyleSheet.prototype.replaceSync = replaceSync;
     Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
       type.prototype.insertRule = unmodifiedFunctions[typeKey].insertRule;
       type.prototype.deleteRule = unmodifiedFunctions[typeKey].deleteRule;
@@ -613,7 +711,7 @@ function initStyleSheetObserver(
 }
 
 function initStyleDeclarationObserver(
-  { styleDeclarationCb, mirror }: observerParam,
+  { styleDeclarationCb, mirror, stylesheetManager }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -624,15 +722,21 @@ function initStyleDeclarationObserver(
     value: string,
     priority: string,
   ) {
-    const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
-    if (id !== -1) {
+    const { id, styleId } = getIdOrStyleId(
+      this.parentRule?.parentStyleSheet,
+      mirror,
+      stylesheetManager.styleMirror,
+    );
+    if (id !== -1 || styleId !== -1) {
       styleDeclarationCb({
         id,
+        styleId,
         set: {
           property,
           value,
           priority,
         },
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         index: getNestedCSSRulePositions(this.parentRule!),
       });
     }
@@ -645,13 +749,19 @@ function initStyleDeclarationObserver(
     this: CSSStyleDeclaration,
     property: string,
   ) {
-    const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
-    if (id !== -1) {
+    const { id, styleId } = getIdOrStyleId(
+      this.parentRule?.parentStyleSheet,
+      mirror,
+      stylesheetManager.styleMirror,
+    );
+    if (id !== -1 || styleId !== -1) {
       styleDeclarationCb({
         id,
+        styleId,
         remove: {
           property,
         },
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         index: getNestedCSSRulePositions(this.parentRule!),
       });
     }

@@ -327,6 +327,310 @@ exports[`record captures inserted style text nodes correctly 1`] = `
 ]"
 `;
 
+exports[`record captures mutations on adopted stylesheets 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"div in outermost document\\",
+                        \\"id\\": 8
+                      }
+                    ],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"        \\\\n        \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\",
+                    \\"id\\": 11
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"adds\\": [],
+      \\"styleId\\": 1
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 1,
+      \\"styleIds\\": [
+        1
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 12,
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"h1\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"h1 in iframe\\",
+                            \\"rootId\\": 12,
+                            \\"id\\": 17
+                          }
+                        ],
+                        \\"rootId\\": 12,
+                        \\"id\\": 16
+                      }
+                    ],
+                    \\"rootId\\": 12,
+                    \\"id\\": 15
+                  }
+                ],
+                \\"rootId\\": 12,
+                \\"id\\": 13
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 12
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"adds\\": [],
+      \\"styleId\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 10,
+      \\"styleIds\\": [
+        2
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"replace\\": \\"div { color: yellow; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replace\\": \\"h1 { color: blue; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"replaceSync\\": \\"div { display: inline ; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replaceSync\\": \\"h1 { font-size: large; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 1,
+      \\"set\\": {
+        \\"property\\": \\"color\\",
+        \\"value\\": \\"green\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 1,
+      \\"remove\\": {
+        \\"property\\": \\"display\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 2,
+      \\"set\\": {
+        \\"property\\": \\"font-size\\",
+        \\"value\\": \\"medium\\",
+        \\"priority\\": \\"important\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"h2 { color: red; }\\"
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { border: 2px solid blue; }\\",
+          \\"index\\": 1
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"removes\\": [
+        {
+          \\"index\\": 0
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record captures nested stylesheet rules 1`] = `
 "[
   {
