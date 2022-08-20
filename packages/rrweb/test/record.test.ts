@@ -453,6 +453,62 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
+  it('captures mutations on adopted stylesheets', async () => {
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div>div in outermost document</div>        
+        <iframe></iframe>
+      `;
+
+      const sheet = new CSSStyleSheet();
+      // Add stylesheet to a document.
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      document.adoptedStyleSheets = [sheet];
+
+      const iframe = document.querySelector('iframe');
+      // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
+      const sheet2 = new iframe!.contentWindow!.CSSStyleSheet();
+      // Add stylesheet to an IFrame document.
+      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+      iframe.contentDocument.adoptedStyleSheets = [sheet2];
+      iframe!.contentDocument!.body.innerHTML = '<h1>h1 in iframe</h1>';
+
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      setTimeout(() => {
+        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
+        sheet.replace('div { color: yellow; }');
+        sheet2.replace('h1 { color: blue; }');
+      }, 0);
+
+      setTimeout(() => {
+        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
+        sheet.replaceSync('div { display: inline ; }');
+        sheet2.replaceSync('h1 { font-size: large; }');
+      }, 5);
+
+      setTimeout(() => {
+        (sheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        (sheet.cssRules[0] as CSSStyleRule).style.removeProperty('display');
+        (sheet2.cssRules[0] as CSSStyleRule).style.setProperty(
+          'font-size',
+          'medium',
+        );
+        sheet2.insertRule('h2 { color: red; }');
+      }, 10);
+
+      setTimeout(() => {
+        sheet.insertRule('body { border: 2px solid blue; }', 1);
+        sheet2.deleteRule(0);
+      }, 15);
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
   it('captures stylesheets in iframes with `blob:` url', async () => {
     await ctx.page.evaluate(() => {
       const iframe = document.createElement('iframe');
@@ -572,7 +628,6 @@ describe('record', function (this: ISuite) {
   });
 
   it('captures adopted stylesheets in shadow doms and iframe', async () => {
-    ctx.events = [];
     await ctx.page.evaluate(() => {
       document.body.innerHTML = `
         <div>div in outermost document</div>
