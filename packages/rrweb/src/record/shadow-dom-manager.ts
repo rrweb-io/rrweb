@@ -73,11 +73,14 @@ export class ShadowDomManager {
       doc: (shadowRoot as unknown) as Document,
       mirror: this.mirror,
     });
-    if (shadowRoot.adoptedStyleSheets)
-      this.bypassOptions.stylesheetManager.adoptStyleSheets(
-        shadowRoot.adoptedStyleSheets,
-        this.mirror.getId(shadowRoot.host),
-      );
+    if (shadowRoot.adoptedStyleSheets?.length > 0)
+      // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created.
+      Promise.resolve().then(() => {
+        this.bypassOptions.stylesheetManager.adoptStyleSheets(
+          shadowRoot.adoptedStyleSheets,
+          this.mirror.getId(shadowRoot.host),
+        );
+      });
   }
 
   /**

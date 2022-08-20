@@ -328,13 +328,6 @@ function record<T = eventWithTime>(
       keepIframeSrcFn,
     });
 
-    // Some old browsers don't support adoptedStyleSheets.
-    document.adoptedStyleSheets &&
-      stylesheetManager.adoptStyleSheets(
-        document.adoptedStyleSheets,
-        mirror.getId(document),
-      );
-
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
@@ -364,6 +357,13 @@ function record<T = eventWithTime>(
       }),
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+
+    // Some old browsers don't support adoptedStyleSheets.
+    document.adoptedStyleSheets?.length > 0 &&
+      stylesheetManager.adoptStyleSheets(
+        document.adoptedStyleSheets,
+        mirror.getId(document),
+      );
   };
 
   try {

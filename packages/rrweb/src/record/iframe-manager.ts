@@ -44,7 +44,10 @@ export class IframeManager {
     });
     this.loadListener?.(iframeEl);
 
-    if (iframeEl.contentDocument && iframeEl.contentDocument.adoptedStyleSheets)
+    if (
+      iframeEl.contentDocument &&
+      iframeEl.contentDocument.adoptedStyleSheets?.length > 0
+    )
       this.stylesheetManager.adoptStyleSheets(
         iframeEl.contentDocument.adoptedStyleSheets,
         mirror.getId(iframeEl),
