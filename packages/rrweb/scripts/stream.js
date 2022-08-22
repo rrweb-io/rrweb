@@ -34,8 +34,8 @@ async function startRecording(page, serverURL) {
         window.record = win.rrweb.record;
         window.record({
           emit: (event) => {
-            win.events?.push(event);
-            win._captureEvent?.(event);
+            win.events.push(event);
+            win._captureEvent(event);
           },
           recordCanvas: true,
           collectFonts: true,
@@ -207,7 +207,7 @@ void (async () => {
 
     await recordedPage.exposeFunction('_captureEvent', (event) => {
       replayerPage.evaluate((event) => {
-        window.replayer?.addEvent(event);
+        window.replayer.addEvent(event);
       }, event);
     });
     await startRecording(recordedPage, serverURL);
