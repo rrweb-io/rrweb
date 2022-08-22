@@ -5,6 +5,7 @@ import {
   tagMap,
   elementNode,
   BuildCache,
+  attributes,
 } from './types';
 import { isElement, Mirror } from './utils';
 
@@ -116,6 +117,31 @@ export function createCache(): BuildCache {
   };
 }
 
+/**
+ * `rr_` attributes are magic, they change some of the other attributes on the elements,
+ * so we need to parse them last so they can overwrite any conflicting attributes.
+ *
+ * @param attributes list of html attributes to be added to the element
+ * @returns attributes with rr_* attributes last in the array
+ */
+function sortAttributes(attributes: attributes): attributes {
+  // return attributes with rr_ prefix last
+  return Object.keys(attributes)
+    .sort((a, b) => {
+      if (a.startsWith('rr_') && !b.startsWith('rr_')) {
+        return 1;
+      }
+      if (b.startsWith('rr_') && !a.startsWith('rr_')) {
+        return -1;
+      }
+      return 0;
+    })
+    .reduce((acc, key) => {
+      acc[key] = attributes[key];
+      return acc;
+    }, {} as attributes);
+}
+
 function buildNode(
   n: serializedNodeWithId,
   options: {
@@ -142,7 +168,7 @@ function buildNode(
       } else {
         node = doc.createElement(tagName);
       }
-      for (const name in n.attributes) {
+      for (const name in sortAttributes(n.attributes)) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
         }
