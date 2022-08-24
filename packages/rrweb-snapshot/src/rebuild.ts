@@ -121,7 +121,7 @@ export function createCache(): BuildCache {
  * `rr_` attributes are magic, they change some of the other attributes on the elements,
  * so we need to parse them last so they can overwrite any conflicting attributes.
  *
- * @param attributes list of html attributes to be added to the element
+ * @param attributes - list of html attributes to be added to the element
  * @returns attributes with rr_* attributes last in the array
  */
 function sortAttributes(attributes: attributes): attributes {
