@@ -534,7 +534,7 @@ function initStyleSheetObserver(
       stylesheetManager.styleMirror,
     );
 
-    if (id !== -1 || styleId !== -1) {
+    if ((id && id !== -1) || (styleId && styleId !== -1)) {
       styleSheetRuleCb({
         id,
         styleId,
@@ -556,7 +556,7 @@ function initStyleSheetObserver(
       stylesheetManager.styleMirror,
     );
 
-    if (id !== -1 || styleId !== -1) {
+    if ((id && id !== -1) || (styleId && styleId !== -1)) {
       styleSheetRuleCb({
         id,
         styleId,
@@ -578,7 +578,7 @@ function initStyleSheetObserver(
       stylesheetManager.styleMirror,
     );
 
-    if (id !== -1 || styleId !== -1) {
+    if ((id && id !== -1) || (styleId && styleId !== -1)) {
       styleSheetRuleCb({
         id,
         styleId,
@@ -600,7 +600,8 @@ function initStyleSheetObserver(
       stylesheetManager.styleMirror,
     );
 
-    if (id !== -1 || styleId !== -1) {
+    if ((id && id !== -1) || (styleId && styleId !== -1)) {
+      console.log(id, styleId);
       styleSheetRuleCb({
         id,
         styleId,
@@ -657,7 +658,7 @@ function initStyleSheetObserver(
         stylesheetManager.styleMirror,
       );
 
-      if (id !== -1 || styleId !== -1) {
+      if ((id && id !== -1) || (styleId && styleId !== -1)) {
         styleSheetRuleCb({
           id,
           styleId,
@@ -685,7 +686,7 @@ function initStyleSheetObserver(
         stylesheetManager.styleMirror,
       );
 
-      if (id !== -1 || styleId !== -1) {
+      if ((id && id !== -1) || (styleId && styleId !== -1)) {
         styleSheetRuleCb({
           id,
           styleId,
@@ -727,7 +728,7 @@ function initStyleDeclarationObserver(
       mirror,
       stylesheetManager.styleMirror,
     );
-    if (id !== -1 || styleId !== -1) {
+    if ((id && id !== -1) || (styleId && styleId !== -1)) {
       styleDeclarationCb({
         id,
         styleId,
@@ -754,7 +755,7 @@ function initStyleDeclarationObserver(
       mirror,
       stylesheetManager.styleMirror,
     );
-    if (id !== -1 || styleId !== -1) {
+    if ((id && id !== -1) || (styleId && styleId !== -1)) {
       styleDeclarationCb({
         id,
         styleId,
