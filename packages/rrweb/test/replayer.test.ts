@@ -17,6 +17,7 @@ import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
+import adoptedStyleSheet from './events/adopted-style-sheet';
 
 interface ISuite {
   code: string;
@@ -717,5 +718,53 @@ describe('replayer', function () {
     await page.evaluate(`replayer.destroy(); replayer = null;`);
     wrapper = await page.$(`.${replayerWrapperClassName}`);
     expect(wrapper).toBeNull();
+  });
+
+  it('can fast-forward adopted stylesheet events', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(adoptedStyleSheet)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    // check the adopted stylesheet is applied on the outermost document
+    expect(
+      await contentDocument!.$eval(
+        'div',
+        (element) => (element as HTMLElement).style.color,
+      ),
+    ).toEqual('yellow');
+
+    // check the adopted stylesheet is applied on the shadow dom #1's root
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('#shadow-host1')
+            ?.shadowRoot?.querySelector('span')?.style.color,
+      ),
+    ).toEqual('red');
+
+    // check the adopted stylesheet is applied on document of the IFrame element
+    expect(
+      await contentDocument!.$eval(
+        'iframe',
+        (element) =>
+          (element as HTMLIFrameElement).contentDocument?.querySelector('h1')
+            ?.style.color,
+      ),
+    ).toEqual('blue');
+
+    // check the adopted stylesheet is applied on the shadow dom #2's root
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document
+            .querySelector('#shadow-host2')
+            ?.shadowRoot?.querySelector('span')?.style.color,
+      ),
+    ).toEqual('green');
   });
 });
