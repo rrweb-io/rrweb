@@ -15,7 +15,6 @@ import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
-import SimplePeer from 'simple-peer-light';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
