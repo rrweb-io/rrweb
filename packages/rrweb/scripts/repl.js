@@ -169,7 +169,7 @@ void (async () => {
     }
 
     await page.addStyleTag({
-      path: path.resolve(__dirname, '../dist/rrweb.min.css'),
+      path: path.resolve(__dirname, '../dist/rrweb.css'),
     });
     await page.evaluate(`${code}
       const events = ${JSON.stringify(events)};
@@ -200,7 +200,7 @@ void (async () => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Record @${time}</title>
-    <link rel="stylesheet" href="../dist/rrweb.min.css" />
+    <link rel="stylesheet" href="../dist/rrweb.css" />
   </head>
   <body>
     <script src="../dist/rrweb.js"></script>
