@@ -90,6 +90,16 @@ const baseConfigs = [
     pathFn: toPluginPath('console', 'record'),
   },
   {
+    input: './src/plugins/canvas-webrtc/record/index.ts',
+    name: 'rrwebCanvasWebRTCRecord',
+    pathFn: toPluginPath('canvas-webrtc', 'record'),
+  },
+  {
+    input: './src/plugins/canvas-webrtc/replay/index.ts',
+    name: 'rrwebCanvasWebRTCReplay',
+    pathFn: toPluginPath('canvas-webrtc', 'replay'),
+  },
+  {
     input: './src/plugins/console/replay/index.ts',
     name: 'rrwebConsoleReplay',
     pathFn: toPluginPath('console', 'replay'),
@@ -208,6 +218,16 @@ if (process.env.BROWSER_ONLY) {
       input: './src/plugins/console/record/index.ts',
       name: 'rrwebConsoleRecord',
       pathFn: toPluginPath('console', 'record'),
+    },
+    {
+      input: './src/plugins/canvas-webrtc/record/index.ts',
+      name: 'rrwebCanvasWebRTCRecord',
+      pathFn: toPluginPath('canvas-webrtc', 'record'),
+    },
+    {
+      input: './src/plugins/canvas-webrtc/replay/index.ts',
+      name: 'rrwebCanvasWebRTCReplay',
+      pathFn: toPluginPath('canvas-webrtc', 'replay'),
     },
   ];
 

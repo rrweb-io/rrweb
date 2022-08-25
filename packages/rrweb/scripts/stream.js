@@ -25,56 +25,89 @@ function getCode() {
 
 async function startRecording(page, serverURL) {
   try {
+    await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
+    await page.addScriptTag({
+      url: `${serverURL}/plugins/canvas-webrtc-record.js`,
+    });
     await page.evaluate((serverURL) => {
-      const el = document.createElement('script');
-      el.addEventListener('load', () => {
-        const win = window;
-        win.__IS_RECORDING__ = true;
-        win.events = [];
-        window.record = win.rrweb.record;
-        window.record({
-          emit: (event) => {
-            win.events.push(event);
-            win._captureEvent(event);
+      const win = window;
+      win.__IS_RECORDING__ = true;
+      win.events = [];
+      window.record = win.rrweb.record;
+      window.plugin = new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord(
+        {
+          webRTCCallback: (msg) => {
+            // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
+            _signal(msg);
           },
-          recordCanvas: true,
-          collectFonts: true,
-          inlineImages: true,
-          sampling: {
-            canvas: 'webrtc',
-          },
-        });
+        },
+      );
+
+      window.record({
+        emit: (event) => {
+          win.events.push(event);
+          win._captureEvent(event);
+        },
+        plugins: [window.plugin.initPlugin()],
+        recordCanvas: false,
+        collectFonts: true,
+        inlineImages: true,
       });
-      el.src = `${serverURL}/rrweb.js`;
-      document.head.appendChild(el);
-    }, serverURL);
+    });
   } catch (error) {
     console.error(error);
   }
 }
 
 async function startReplay(page, serverURL, recordedPage) {
-  await page.exposeFunction('_signal', async (signal) => {
-    await recordedPage.evaluate((signal) => {
-      window.record.webRTCSignal(signal);
+  await recordedPage.exposeFunction('_signal', async (signal) => {
+    await page.evaluate((signal) => {
+      // [replay#setupWebRTC] creates webrtc connection with sdpOffer signal
+      window.plugin.setupWebRTC(signal, (data) => {
+        _signal(JSON.stringify(data));
+      });
     }, signal);
   });
+  await page.exposeFunction('_signal', async (signal) => {
+    await recordedPage.evaluate((signal) => {
+      // [record#webRTCSignalCallback] creates webrtc connection with sdpOffer signal
+      window.plugin.webRTCSignalCallback(signal);
+    }, signal);
+  });
+  await page.exposeFunction('_canvas', async (id) => {
+    await recordedPage.evaluate((id) => {
+      // [record#setupStream] sets up the canvas stream for a given id.
+      const stream = window.plugin.setupStream(id);
+      console.log('stream for', id, '=>', stream);
+    }, id);
+  });
 
-  return page.evaluate((serverURL) => {
-    const el = document.createElement('script');
-    el.addEventListener('load', () => {
-      window.replayer = new rrweb.Replayer([], {
-        UNSAFE_replayCanvas: true,
-        liveMode: true,
-        webRTCSignalCallback: async (data) => {
-          await _signal(JSON.stringify(data));
-        },
-      });
-      window.replayer.startLive();
+  await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
+  await page.addScriptTag({
+    url: `${serverURL}/plugins/canvas-webrtc-replay.js`,
+  });
+
+  return page.evaluate(() => {
+    window.plugin = new rrwebCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay(
+      // [replay#canvasFoundCallback]
+      (canvas, context) => {
+        console.log('canvas', canvas, context);
+        // [replay#onBuild] gets id of canvas element and sends to recorded page
+        _canvas(context.id);
+      },
+      // [replay#webRTCSignalCallback]
+      (data) => {
+        _signal(JSON.stringify(data));
+      },
+    );
+
+    window.replayer = new rrweb.Replayer([], {
+      UNSAFE_replayCanvas: true,
+      liveMode: true,
+      plugins: [window.plugin.initPlugin()],
     });
-    el.src = `${serverURL}/rrweb.js`;
-    document.head.appendChild(el);
-  }, serverURL);
+    window.replayer.startLive();
+  });
 }
 
 async function resizeWindow(page, top, left, width, height) {
