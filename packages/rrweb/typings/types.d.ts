@@ -129,7 +129,7 @@ export declare type SamplingStrategy = Partial<{
     scroll: number;
     media: number;
     input: 'all' | 'last';
-    canvas: 'all' | 'webrtc' | number;
+    canvas: 'all' | number;
 }>;
 export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
@@ -297,8 +297,7 @@ export declare enum MouseInteractions {
 export declare enum CanvasContext {
     '2D' = 0,
     WebGL = 1,
-    WebGL2 = 2,
-    WebRTC = 3
+    WebGL2 = 2
 }
 export declare type SerializedCanvasArg = {
     rr_type: 'ArrayBuffer';
@@ -364,19 +363,14 @@ export declare type canvasMutationCommand = {
 };
 export declare type canvasMutationParam = {
     id: number;
-    type: Exclude<CanvasContext, CanvasContext.WebRTC>;
+    type: CanvasContext;
     commands: canvasMutationCommand[];
 } | ({
     id: number;
-    type: Exclude<CanvasContext, CanvasContext.WebRTC>;
-} & canvasMutationCommand) | {
-    id: number;
-    type: CanvasContext.WebRTC;
-    msg: RTCSessionDescriptionInit;
-    stream?: MediaStream;
-};
+    type: CanvasContext;
+} & canvasMutationCommand);
 export declare type canvasMutationWithType = {
-    type: Exclude<CanvasContext, CanvasContext.WebRTC>;
+    type: CanvasContext;
 } & canvasMutationCommand;
 export declare type canvasMutationCallback = (p: canvasMutationParam) => void;
 export declare type canvasManagerMutationCallback = (target: HTMLCanvasElement, p: canvasMutationWithType) => void;

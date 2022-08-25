@@ -7,4 +7,5 @@ export default function canvasMutation({ event, mutation, target, imageMap, canv
     imageMap: Replayer['imageMap'];
     canvasEventMap: Replayer['canvasEventMap'];
     errorHandler: Replayer['warnCanvasMutationFailed'];
+    mirror: Replayer['mirror'];
 }): Promise<void>;

@@ -8,7 +8,6 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
-  WebRTCDataChannel,
 } from '../../../types';
 import { CanvasContext } from '../../../types';
 import initCanvas2DMutationObserver from './2d';
@@ -62,14 +61,12 @@ export class CanvasManager {
     win: IWindow;
     blockClass: blockClass;
     mirror: Mirror;
-    sampling?: 'all' | 'webrtc' | number;
+    sampling?: 'all' | number;
   }) {
     const { sampling = 'all', win, blockClass, recordCanvas } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
-    if (recordCanvas && sampling === 'webrtc')
-      this.initCanvasWebRTCObserver(win, blockClass);
     if (recordCanvas && sampling === 'all')
       this.initCanvasMutationObserver(win, blockClass);
     if (recordCanvas && typeof sampling === 'number')
@@ -192,96 +189,6 @@ export class CanvasManager {
     };
 
     rafId = requestAnimationFrame(takeCanvasSnapshots);
-
-    this.resetObservers = () => {
-      canvasContextReset();
-      cancelAnimationFrame(rafId);
-    };
-  }
-
-  private sdpOffer: RTCSessionDescriptionInit;
-  private peer: SimplePeer.Instance;
-
-  public webRTCSignalCallback(signal: RTCSessionDescriptionInit) {
-    this.peer.signal(signal);
-  }
-
-  private startStream(id: number, stream: MediaStream) {
-    const data: WebRTCDataChannel = {
-      id,
-    };
-    this.peer.send(JSON.stringify(data));
-    this.peer.addStream(stream);
-    this.peer.send(JSON.stringify(data));
-  }
-
-  private peerConnected = false;
-  private idSentSet: Set<number> = new Set();
-  private setupPeer(
-    id: number,
-    stream: MediaStream,
-    streamMap: Map<number, MediaStream>,
-  ) {
-    if (!this.peer) {
-      this.peer = new SimplePeer({
-        initiator: true,
-        // trickle: false, // only create one WebRTC offer per session
-      });
-
-      this.peer.on('error', (err) => {
-        console.error('record peer error', err);
-      });
-
-      this.peer.on('signal', (data: RTCSessionDescriptionInit) => {
-        this.sdpOffer = data;
-        this.mutationCb({
-          id,
-          type: CanvasContext.WebRTC,
-          msg: this.sdpOffer,
-          stream,
-        });
-        this.idSentSet.add(id);
-      });
-
-      this.peer.on('connect', () => {
-        this.peerConnected = true;
-        for (const [id, stream] of streamMap) {
-          this.startStream(id, stream);
-          if (!this.idSentSet.has(id)) {
-            this.mutationCb({
-              id,
-              type: CanvasContext.WebRTC,
-              msg: this.sdpOffer,
-              stream,
-            });
-            this.idSentSet.add(id);
-          }
-        }
-      });
-    } else if (this.sdpOffer && this.peerConnected) {
-      this.startStream(id, stream);
-    }
-  }
-
-  private initCanvasWebRTCObserver(win: IWindow, blockClass: blockClass) {
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
-    const streamMap: Map<number, MediaStream> = new Map();
-    let rafId: number;
-
-    const captureStreams = () => {
-      win.document
-        .querySelectorAll(`canvas:not(.${blockClass as string} *)`)
-        .forEach((canvas: HTMLCanvasElement) => {
-          const id = this.mirror.getId(canvas);
-          if (id === -1 || streamMap.has(id)) return;
-          const stream = canvas.captureStream();
-          streamMap.set(id, stream);
-          this.setupPeer(id, stream, streamMap);
-        });
-      rafId = requestAnimationFrame(captureStreams);
-    };
-
-    rafId = requestAnimationFrame(captureStreams);
 
     this.resetObservers = () => {
       canvasContextReset();

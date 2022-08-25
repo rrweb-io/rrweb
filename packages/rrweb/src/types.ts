@@ -208,11 +208,10 @@ export type SamplingStrategy = Partial<{
   input: 'all' | 'last';
   /**
    * 'all' will record every single canvas call
-   * 'webrtc' will stream the canvas data via WebRTC
    * number between 1 and 60, will record an image snapshots in a web-worker a (maximum) number of times per second.
    *                          Number only supported where [`OffscreenCanvas`](http://mdn.io/offscreencanvas) is supported.
    */
-  canvas: 'all' | 'webrtc' | number;
+  canvas: 'all' | number;
 }>;
 
 export type RecordPlugin<TOptions = unknown> = {
@@ -438,7 +437,6 @@ export enum CanvasContext {
   '2D',
   WebGL,
   WebGL2,
-  WebRTC,
 }
 
 export type SerializedCanvasArg =
@@ -530,22 +528,16 @@ export type canvasMutationCommand = {
 export type canvasMutationParam =
   | {
       id: number;
-      type: Exclude<CanvasContext, CanvasContext.WebRTC>;
+      type: CanvasContext;
       commands: canvasMutationCommand[];
     }
   | ({
       id: number;
-      type: Exclude<CanvasContext, CanvasContext.WebRTC>;
-    } & canvasMutationCommand)
-  | {
-      id: number;
-      type: CanvasContext.WebRTC;
-      msg: RTCSessionDescriptionInit;
-      stream?: MediaStream;
-    };
+      type: CanvasContext;
+    } & canvasMutationCommand);
 
 export type canvasMutationWithType = {
-  type: Exclude<CanvasContext, CanvasContext.WebRTC>;
+  type: CanvasContext;
 } & canvasMutationCommand;
 
 export type canvasMutationCallback = (p: canvasMutationParam) => void;
@@ -573,10 +565,6 @@ export type ImageBitmapDataURLWorkerResponse =
       width: number;
       height: number;
     };
-
-export interface WebRTCDataChannel {
-  id: number;
-}
 
 export type fontParam = {
   family: string;
@@ -684,12 +672,6 @@ export type playerConfig = {
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
   plugins?: ReplayPlugin[];
-  /**
-   * When using webRTC to live stream contents of canvas elements you'll need to setup a `webRTCSignalCallback`
-   * This callback will include a `RTCSessionDescriptionInit` signal object
-   * that you have to pass back to the recording script's `record.webRTCSignal(signal)` function.
-   */
-  webRTCSignalCallback: null | ((signal: RTCSessionDescriptionInit) => void);
 };
 
 export type playerMetaData = {

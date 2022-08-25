@@ -166,7 +166,6 @@ export class Replayer {
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
-      webRTCSignalCallback: null,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -886,8 +885,7 @@ export class Replayer {
     for (const event of this.service.state.context.events) {
       if (
         event.type === EventType.IncrementalSnapshot &&
-        event.data.source === IncrementalSource.CanvasMutation &&
-        event.data.type !== CanvasContext.WebRTC
+        event.data.source === IncrementalSource.CanvasMutation
       ) {
         promises.push(
           this.deserializeAndPreloadCanvasEvents(event.data, event),
@@ -935,8 +933,6 @@ export class Replayer {
         );
         if (status.isUnchanged === false)
           this.canvasEventMap.set(event, { ...data, commands });
-      } else if (data.type === CanvasContext.WebRTC) {
-        // ignore
       } else {
         const args = await Promise.all(
           data.args.map(deserializeArg(this.imageMap, null, status)),
@@ -1307,7 +1303,6 @@ export class Replayer {
             canvasEventMap: this.canvasEventMap,
             errorHandler: this.warnCanvasMutationFailed.bind(this),
             mirror: this.mirror,
-            webRTCSignalCallback: this.config.webRTCSignalCallback,
           });
         }
         break;

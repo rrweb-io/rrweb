@@ -23,12 +23,10 @@ export declare class CanvasManager {
         win: IWindow;
         blockClass: blockClass;
         mirror: Mirror;
-        sampling?: 'all' | 'webrtc' | number;
+        sampling?: 'all' | number;
     });
     private processMutation;
     private initCanvasFPSObserver;
-    private setupPeer;
-    private initCanvasWebRTCObserver;
     private initCanvasMutationObserver;
     private startPendingCanvasMutationFlusher;
     private startRAFTimestamping;

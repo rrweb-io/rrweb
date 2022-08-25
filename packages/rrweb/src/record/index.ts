@@ -530,15 +530,6 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
   );
 };
 
-/**
- * Insert response to an WebRTC Offer to complete the WebRTC connection
- *
- * @param signal - WebRTC signal supplied by the replayer's `webRTCSignalCallback` function
- */
-record.webRTCSignal = (signal: RTCSessionDescriptionInit) => {
-  canvasManager.webRTCSignalCallback(signal);
-};
-
 record.freezePage = () => {
   mutationBuffers.forEach((buf) => buf.freeze());
 };
