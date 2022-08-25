@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const emitter = new EventEmitter();
 
 function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+  const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
@@ -203,7 +203,7 @@ void (async () => {
     <link rel="stylesheet" href="../dist/rrweb.min.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.min.js"></script>
+    <script src="../dist/rrweb.js"></script>
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(

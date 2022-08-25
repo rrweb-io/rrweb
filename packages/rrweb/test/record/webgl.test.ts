@@ -44,7 +44,7 @@ const setup = function (
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
