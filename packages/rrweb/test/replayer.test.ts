@@ -13,8 +13,10 @@ import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
+import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
+import canvasInIframe from './events/canvas-in-iframe';
 
 interface ISuite {
   code: string;
@@ -191,6 +193,35 @@ describe('replayer', function () {
     );
 
     await assertDomSnapshot(page);
+  });
+
+  it('can fast forward selection events', async () => {
+    await page.evaluate(`events = ${JSON.stringify(selectionEvents)}`);
+
+    /** check the first selection event */
+    let [startOffset, endOffset] = (await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(360);
+      var range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+      [range.startOffset, range.endOffset];
+    `)) as [startOffset: number, endOffset: number];
+
+    expect(startOffset).toEqual(5);
+    expect(endOffset).toEqual(15);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    /** check the second selection event */
+    [startOffset, endOffset] = (await page.evaluate(`      
+      replayer.pause(410);
+      var range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+      [range.startOffset, range.endOffset];
+    `)) as [startOffset: number, endOffset: number];
+
+    expect(startOffset).toEqual(11);
+    expect(endOffset).toEqual(6);
   });
 
   it('can fast forward past StyleSheetRule deletion on virtual elements', async () => {
@@ -608,6 +639,31 @@ describe('replayer', function () {
     ).toEqual('shadow dom two');
   });
 
+  it('can fast-forward mutation events containing painted canvas in iframe', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(canvasInIframe)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);            
+    `);
+    const replayerIframe = await page.$('iframe');
+    const contentDocument = await replayerIframe!.contentFrame()!;
+    const iframe = await contentDocument!.$('iframe');
+    expect(iframe).not.toBeNull();
+    const docInIFrame = await iframe?.contentFrame();
+    expect(docInIFrame).not.toBeNull();
+    const canvasElements = await docInIFrame!.$$('canvas');
+    // The first canvas is a blank one and the second is a painted one.
+    expect(canvasElements.length).toEqual(2);
+
+    const dataUrls = await docInIFrame?.$$eval('canvas', (elements) =>
+      elements.map((element) => (element as HTMLCanvasElement).toDataURL()),
+    );
+    expect(dataUrls?.length).toEqual(2);
+    // The painted canvas's data should not be empty.
+    expect(dataUrls![1]).not.toEqual(dataUrls![0]);
+  });
+
   it('can stream events in live mode', async () => {
     const status = await page.evaluate(`
       const { Replayer } = rrweb;
@@ -644,5 +700,22 @@ describe('replayer', function () {
     await page.waitForTimeout(50);
 
     await assertDomSnapshot(page);
+  });
+
+  it('should destroy the replayer after calling destroy()', async () => {
+    await page.evaluate(`events = ${JSON.stringify(events)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      let replayer = new Replayer(events);
+      replayer.play();      
+    `);
+
+    const replayerWrapperClassName = 'replayer-wrapper';
+    let wrapper = await page.$(`.${replayerWrapperClassName}`);
+    expect(wrapper).not.toBeNull();
+
+    await page.evaluate(`replayer.destroy(); replayer = null;`);
+    wrapper = await page.$(`.${replayerWrapperClassName}`);
+    expect(wrapper).toBeNull();
   });
 });

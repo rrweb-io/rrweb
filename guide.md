@@ -280,6 +280,9 @@ replayer.pause();
 
 // pause at the fifth seconds
 replayer.pause(5000);
+
+// destroy the replayer (hint: this operation is irreversible)
+replayer.destroy();
 ```
 
 #### Options
@@ -385,6 +388,7 @@ The event list:
 | mouse-interaction      | mouse interaction has been replayed | { type, target }  |
 | event-cast             | event has been replayed             | event             |
 | custom-event           | custom event has been replayed      | event             |
+| destroy                | destroyed the replayer              | -                 |
 
 The rrweb-replayer also re-expose the event listener via a `component.addEventListener` API.
 
