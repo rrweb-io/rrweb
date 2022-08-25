@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import { startServer, getServerURL } from './utils.js';
 
 // Turn on devtools for debugging:
-const devtools = true;
+const devtools = false;
 const defaultURL = 'https://webglsamples.org/';
 
 const __filename = fileURLToPath(import.meta.url);
