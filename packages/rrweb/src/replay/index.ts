@@ -202,7 +202,6 @@ export class Replayer {
               imageMap: this.imageMap,
               canvasEventMap: this.canvasEventMap,
               errorHandler: this.warnCanvasMutationFailed.bind(this),
-              mirror: this.mirror,
             });
           },
           applyInput: this.applyInput.bind(this),
@@ -1343,7 +1342,6 @@ export class Replayer {
             imageMap: this.imageMap,
             canvasEventMap: this.canvasEventMap,
             errorHandler: this.warnCanvasMutationFailed.bind(this),
-            mirror: this.mirror,
           });
         }
         break;

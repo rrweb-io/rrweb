@@ -22,10 +22,8 @@ export default async function canvasMutation({
   imageMap: Replayer['imageMap'];
   canvasEventMap: Replayer['canvasEventMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
-  mirror: Replayer['mirror'];
 }): Promise<void> {
   try {
-    console.log('canvasMutation', mutation);
     const precomputedMutation: canvasMutationParam =
       canvasEventMap.get(event) || mutation;
 
