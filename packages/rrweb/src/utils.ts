@@ -452,6 +452,7 @@ export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
 export class StyleSheetMirror {
   private id = 1;
   private styleIDMap = new WeakMap<CSSStyleSheet, number>();
+  private idStyleMap = new Map<number, CSSStyleSheet>();
 
   getId(stylesheet: CSSStyleSheet): number {
     return this.styleIDMap.get(stylesheet) ?? -1;
@@ -464,10 +465,19 @@ export class StyleSheetMirror {
   /**
    * @returns If the stylesheet is in the mirror, returns the id of the stylesheet. If not, return the new assigned id.
    */
-  add(stylesheet: CSSStyleSheet): number {
+  add(stylesheet: CSSStyleSheet, id?: number): number {
     if (this.has(stylesheet)) return this.getId(stylesheet);
-    this.styleIDMap.set(stylesheet, this.id++);
-    return this.id - 1;
+    let newId: number;
+    if (id === undefined) {
+      newId = this.id++;
+    } else newId = id;
+    this.styleIDMap.set(stylesheet, newId);
+    this.idStyleMap.set(newId, stylesheet);
+    return newId;
+  }
+
+  getStyle(id: number): CSSStyleSheet | null {
+    return this.idStyleMap.get(id) || null;
   }
 
   reset(): void {

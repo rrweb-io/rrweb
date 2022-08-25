@@ -14,7 +14,7 @@ describe('Utilities for other modules', () => {
       expect(mirror.getId).toBeDefined();
     });
 
-    it('can add CSSStyleSheet into the mirror', () => {
+    it('can add CSSStyleSheet into the mirror without ID parameter', () => {
       const mirror = new StyleSheetMirror();
       const styleSheet = new CSSStyleSheet();
       expect(mirror.has(styleSheet)).toBeFalsy();
@@ -31,6 +31,16 @@ describe('Utilities for other modules', () => {
       }
     });
 
+    it('can add CSSStyleSheet into the mirror with ID parameter', () => {
+      const mirror = new StyleSheetMirror();
+      for (let i = 0; i < 10; i++) {
+        const styleSheet = new CSSStyleSheet();
+        expect(mirror.has(styleSheet)).toBeFalsy();
+        expect(mirror.add(styleSheet, i)).toEqual(i);
+        expect(mirror.has(styleSheet)).toBeTruthy();
+      }
+    });
+
     it('can get the id from the mirror', () => {
       const mirror = new StyleSheetMirror();
       for (let i = 0; i < 10; i++) {
@@ -39,6 +49,15 @@ describe('Utilities for other modules', () => {
         expect(mirror.getId(styleSheet)).toBe(i + 1);
       }
       expect(mirror.getId(new CSSStyleSheet())).toBe(-1);
+    });
+
+    it('can get CSSStyleSheet objects with id', () => {
+      const mirror = new StyleSheetMirror();
+      for (let i = 0; i < 10; i++) {
+        const styleSheet = new CSSStyleSheet();
+        mirror.add(styleSheet);
+        expect(mirror.getStyle(i + 1)).toBe(styleSheet);
+      }
     });
 
     it('can reset the mirror', () => {
