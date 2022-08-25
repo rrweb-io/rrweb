@@ -7,14 +7,14 @@ export declare function buildNodeWithSN(n: serializedNodeWithId, options: {
     mirror: Mirror;
     skipChild?: boolean;
     hackCss: boolean;
-    afterAppend?: (n: Node) => unknown;
+    afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
 }): Node | null;
 declare function rebuild(n: serializedNodeWithId, options: {
     doc: Document;
     onVisit?: (node: Node) => unknown;
     hackCss?: boolean;
-    afterAppend?: (n: Node) => unknown;
+    afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
     mirror: Mirror;
 }): Node | null;

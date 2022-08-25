@@ -135,6 +135,7 @@ export declare type RecordPlugin<TOptions = unknown> = {
     name: string;
     observer?: (cb: (...args: Array<unknown>) => void, win: IWindow, options: TOptions) => listenerHandler;
     eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
+    getMirror?: (mirror: Mirror) => void;
     options: TOptions;
 };
 export declare type recordOptions<T> = {
@@ -446,9 +447,14 @@ export declare type throttleOptions = {
 export declare type listenerHandler = () => void;
 export declare type hookResetter = () => void;
 export declare type ReplayPlugin = {
-    handler: (event: eventWithTime, isSync: boolean, context: {
+    handler?: (event: eventWithTime, isSync: boolean, context: {
         replayer: Replayer;
     }) => void;
+    onBuild?: (node: Node | RRNode, context: {
+        id: number;
+        replayer: Replayer;
+    }) => void;
+    getMirror?: (mirror: Mirror) => void;
 };
 export declare type playerConfig = {
     speed: number;
