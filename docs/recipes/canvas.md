@@ -1,6 +1,7 @@
 # Canvas
 
-Canvas is a special HTML element, which will not be recorded by rrweb by default. There are some options for recording and replaying Canvas.
+Canvas is a special HTML element, and will not be recorded by rrweb by default.
+There are some options for recording and replaying Canvas.
 
 Enable recording Canvas：
 
