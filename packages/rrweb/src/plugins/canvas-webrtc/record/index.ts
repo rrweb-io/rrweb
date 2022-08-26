@@ -76,7 +76,6 @@ export class RRWebPluginCanvasWebRTCRecord {
         }
       });
     }
-    (window as any).peer = this.peer;
   }
 
   public setupStream(id: number): false | MediaStream {

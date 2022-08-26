@@ -149,7 +149,6 @@ export class RRWebPluginCanvasWebRTCReplay {
         this.streams.add(stream);
         this.flushStreams();
       });
-      (window as any).peer = this.peer;
     }
     this.peer.signal(msg);
   }
