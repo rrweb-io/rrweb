@@ -13,15 +13,18 @@ export class RRWebPluginCanvasWebRTCReplay {
     node: Node | RRNode,
     context: { id: number; replayer: Replayer },
   ) => void;
-  private webRTCSignalCallback: (signal: RTCSessionDescriptionInit) => void;
+  private signalSendCallback: (signal: RTCSessionDescriptionInit) => void;
   private mirror: Mirror;
 
-  constructor(
-    canvasFoundCallback: RRWebPluginCanvasWebRTCReplay['canvasFoundCallback'],
-    webRTCSignalCallback: RRWebPluginCanvasWebRTCReplay['webRTCSignalCallback'],
-  ) {
+  constructor({
+    canvasFoundCallback,
+    signalSendCallback,
+  }: {
+    canvasFoundCallback: RRWebPluginCanvasWebRTCReplay['canvasFoundCallback'];
+    signalSendCallback: RRWebPluginCanvasWebRTCReplay['signalSendCallback'];
+  }) {
     this.canvasFoundCallback = canvasFoundCallback;
-    this.webRTCSignalCallback = webRTCSignalCallback;
+    this.signalSendCallback = signalSendCallback;
   }
 
   public initPlugin(): ReplayPlugin {
@@ -44,10 +47,13 @@ export class RRWebPluginCanvasWebRTCReplay {
     target: HTMLCanvasElement | HTMLVideoElement,
     stream: MediaStream,
   ) {
+    if (this.runningStreams.has(stream)) return;
+
     if (target.tagName === 'VIDEO') {
       const remoteVideo = target as HTMLVideoElement;
       remoteVideo.srcObject = stream;
       void remoteVideo.play();
+      this.runningStreams.add(stream);
       return;
     }
 
@@ -82,6 +88,7 @@ export class RRWebPluginCanvasWebRTCReplay {
         });
       };
       readChunk();
+      this.runningStreams.add(stream);
     } else {
       // Fallback for non-Chromium browsers.
       // Replaces the canvas element with a video element.
@@ -100,8 +107,10 @@ export class RRWebPluginCanvasWebRTCReplay {
   }
 
   private peer: SimplePeer.Instance | null = null;
-  private streamId: number;
-  public setupWebRTC(msg: RTCSessionDescriptionInit) {
+  private streamNodeMap = new Map<string, number>();
+  private streams = new Set<MediaStream>();
+  private runningStreams = new WeakSet<MediaStream>();
+  public signalReceive(msg: RTCSessionDescriptionInit) {
     if (!this.peer) {
       this.peer = new SimplePeer({
         initiator: false,
@@ -119,35 +128,42 @@ export class RRWebPluginCanvasWebRTCReplay {
       });
 
       this.peer.on('signal', (data: RTCSessionDescriptionInit) => {
-        // console.log('replay signal', data);
-        this.webRTCSignalCallback(data);
+        this.signalSendCallback(data);
       });
 
       this.peer.on('connect', () => {
-        console.log('connect');
+        // connected!
       });
 
       this.peer.on('data', (data: SimplePeer.SimplePeerData) => {
         try {
           const json = JSON.parse(data as string) as WebRTCDataChannel;
-          this.streamId = json.id;
+          this.streamNodeMap.set(json.streamId, json.nodeId);
         } catch (error) {
           console.error('Could not parse data', error);
         }
+        this.flushStreams();
       });
 
       this.peer.on('stream', (stream: MediaStream) => {
-        // got remote video stream, now let's show it in a video or canvas element
-        const target = this.mirror.getNode(this.streamId) as
-          | HTMLCanvasElement
-          | HTMLVideoElement;
-        this.startStream(target, stream);
+        this.streams.add(stream);
+        this.flushStreams();
       });
+      (window as any).peer = this.peer;
     }
     this.peer.signal(msg);
   }
 
-  public webRTCSignal(signal: RTCSessionDescriptionInit) {
-    this.webRTCSignalCallback(signal);
+  private flushStreams() {
+    this.streams.forEach((stream) => {
+      const nodeId = this.streamNodeMap.get(stream.id);
+      if (!nodeId) return;
+      const target = this.mirror.getNode(nodeId) as
+        | HTMLCanvasElement
+        | HTMLVideoElement
+        | null;
+      // got remote video stream, now let's show it in a video or canvas element
+      if (target) this.startStream(target, stream);
+    });
   }
 }

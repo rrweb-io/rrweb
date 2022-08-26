@@ -36,7 +36,7 @@ async function startRecording(page, serverURL) {
       window.record = win.rrweb.record;
       window.plugin = new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord(
         {
-          webRTCCallback: (msg) => {
+          signalSendCallback: (msg) => {
             // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
             _signal(msg);
           },
@@ -62,16 +62,14 @@ async function startRecording(page, serverURL) {
 async function startReplay(page, serverURL, recordedPage) {
   await recordedPage.exposeFunction('_signal', async (signal) => {
     await page.evaluate((signal) => {
-      // [replay#setupWebRTC] creates webrtc connection with sdpOffer signal
-      window.plugin.setupWebRTC(signal, (data) => {
-        _signal(JSON.stringify(data));
-      });
+      // [replay#signalReceive] setups up peer and starts creating counter offer
+      window.plugin.signalReceive(signal);
     }, signal);
   });
   await page.exposeFunction('_signal', async (signal) => {
     await recordedPage.evaluate((signal) => {
-      // [record#webRTCSignalCallback] creates webrtc connection with sdpOffer signal
-      window.plugin.webRTCSignalCallback(signal);
+      // [record#signalReceive]  setups up webrtc connection
+      window.plugin.signalReceive(signal);
     }, signal);
   });
   await page.exposeFunction('_canvas', async (id) => {
@@ -88,18 +86,16 @@ async function startReplay(page, serverURL, recordedPage) {
   });
 
   return page.evaluate(() => {
-    window.plugin = new rrwebCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay(
-      // [replay#canvasFoundCallback]
-      (canvas, context) => {
+    window.plugin = new rrwebCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay({
+      canvasFoundCallback(canvas, context) {
         console.log('canvas', canvas, context);
         // [replay#onBuild] gets id of canvas element and sends to recorded page
         _canvas(context.id);
       },
-      // [replay#webRTCSignalCallback]
-      (data) => {
+      signalSendCallback(data) {
         _signal(JSON.stringify(data));
       },
-    );
+    });
 
     window.replayer = new rrweb.Replayer([], {
       UNSAFE_replayCanvas: true,
