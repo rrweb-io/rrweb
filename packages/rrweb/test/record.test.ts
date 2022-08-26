@@ -639,7 +639,9 @@ describe('record', function (this: ISuite) {
 
       const sheet = new CSSStyleSheet();
       // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
-      sheet.replaceSync('div { color: yellow; }');
+      sheet.replaceSync(
+        'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
+      );
       // Add stylesheet to a document.
       // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
       document.adoptedStyleSheets = [sheet];

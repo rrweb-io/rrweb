@@ -64,9 +64,10 @@ export class StylesheetManager {
         styleId = this.styleMirror.add(sheet);
         const rules = Array.from(sheet.rules || CSSRule);
         this.styleRulesCb({
-          adds: rules.map((r) => {
+          adds: rules.map((r, index) => {
             return {
               rule: getCssRuleString(r),
+              index,
             };
           }),
           styleId,
