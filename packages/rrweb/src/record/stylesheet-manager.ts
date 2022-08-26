@@ -70,6 +70,7 @@ export class StylesheetManager {
             };
           }),
           styleId,
+          id: hostId,
         });
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);

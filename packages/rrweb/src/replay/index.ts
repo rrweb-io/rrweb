@@ -72,6 +72,7 @@ import {
   getNestedRule,
   getPositionsAndIndex,
   uniqueTextMutations,
+  StyleSheetMirror,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -135,6 +136,9 @@ export class Replayer {
   private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
   private mirror: Mirror = createMirror();
+
+  // Used to track StyleSheetObjects adopted on multiple document hosts.
+  private styleMirror: StyleSheetMirror = new StyleSheetMirror();
 
   private firstFullSnapshot: eventWithTime | true | null = null;
 
@@ -1178,9 +1182,11 @@ export class Replayer {
       }
       case IncrementalSource.StyleSheetRule: {
         if (this.usingVirtualDom) {
-          const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
+          const target = this.virtualDom.mirror.getNode(
+            d.id!,
+          ) as RRStyleElement;
           if (!target) {
-            return this.debugNodeNotFound(d, d.id);
+            return this.debugNodeNotFound(d, d.id!);
           }
           const rules: VirtualStyleRules = target.rules;
           d.adds?.forEach(({ rule, index: nestedIndex }) =>
@@ -1194,17 +1200,49 @@ export class Replayer {
             rules?.push({ index: nestedIndex, type: StyleRuleType.Remove }),
           );
         } else {
-          const target = this.mirror.getNode(d.id);
-          if (!target) {
-            return this.debugNodeNotFound(d, d.id);
-          }
-          const styleSheet = (target as HTMLStyleElement).sheet!;
+          let styleSheet: CSSStyleSheet | null = null;
+          if (d.styleId) {
+            styleSheet = this.styleMirror.getStyle(d.styleId);
+            if (!styleSheet && d.id) {
+              /**
+               * Constructed StyleSheet can't share across multiple documents.
+               * The replayer has to get the correct host window to recreate a StyleSheetObject.
+               */
+              const host = this.mirror.getNode(d.id);
+              if (host) {
+                let newStyleSheet: CSSStyleSheet | null = null;
+
+                if (host.nodeName === 'IFRAME') {
+                  const iframeWin = (host as HTMLIFrameElement)
+                    .contentWindow as IWindow;
+                  if (iframeWin) newStyleSheet = new iframeWin.CSSStyleSheet();
+                } else if (hasShadowRoot(host)) {
+                  const ownerWindow = host.ownerDocument?.defaultView;
+                  if (ownerWindow)
+                    newStyleSheet = new ownerWindow.CSSStyleSheet();
+                } else if (host.nodeName === '#document') {
+                  const ownerWindow = (host as Document).defaultView;
+                  if (ownerWindow)
+                    newStyleSheet = new ownerWindow.CSSStyleSheet();
+                }
+                if (newStyleSheet) {
+                  this.styleMirror.add(newStyleSheet, d.styleId);
+                  styleSheet = newStyleSheet;
+                }
+              }
+            }
+          } else if (d.id)
+            styleSheet =
+              (this.mirror.getNode(d.id) as HTMLStyleElement)?.sheet || null;
+
+          if (!styleSheet) return;
           d.adds?.forEach(({ rule, index: nestedIndex }) => {
             try {
               if (Array.isArray(nestedIndex)) {
                 const { positions, index } = getPositionsAndIndex(nestedIndex);
                 const nestedRule = getNestedRule(
-                  styleSheet.cssRules,
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                  styleSheet!.cssRules,
                   positions,
                 );
                 nestedRule.insertRule(rule, index);
@@ -1212,8 +1250,10 @@ export class Replayer {
                 const index =
                   nestedIndex === undefined
                     ? undefined
-                    : Math.min(nestedIndex, styleSheet.cssRules.length);
-                styleSheet.insertRule(rule, index);
+                    : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                      Math.min(nestedIndex, styleSheet!.cssRules.length);
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                styleSheet!.insertRule(rule, index);
               }
             } catch (e) {
               /**
@@ -1232,7 +1272,8 @@ export class Replayer {
               if (Array.isArray(nestedIndex)) {
                 const { positions, index } = getPositionsAndIndex(nestedIndex);
                 const nestedRule = getNestedRule(
-                  styleSheet.cssRules,
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                  styleSheet!.cssRules,
                   positions,
                 );
                 nestedRule.deleteRule(index || 0);
@@ -1250,9 +1291,11 @@ export class Replayer {
       }
       case IncrementalSource.StyleDeclaration: {
         if (this.usingVirtualDom) {
-          const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
+          const target = this.virtualDom.mirror.getNode(
+            d.id!,
+          ) as RRStyleElement;
           if (!target) {
-            return this.debugNodeNotFound(d, d.id);
+            return this.debugNodeNotFound(d, d.id!);
           }
           const rules: VirtualStyleRules = target.rules;
           d.set &&
@@ -1268,13 +1311,13 @@ export class Replayer {
               ...d.remove,
             });
         } else {
-          const target = (this.mirror.getNode(
-            d.id,
-          ) as Node) as HTMLStyleElement;
-          if (!target) {
-            return this.debugNodeNotFound(d, d.id);
-          }
-          const styleSheet = target.sheet!;
+          let styleSheet: CSSStyleSheet | null = null;
+          if (d.id)
+            styleSheet =
+              (this.mirror.getNode(d.id) as HTMLStyleElement)?.sheet || null;
+          else if (d.styleId) styleSheet = this.styleMirror.getStyle(d.styleId);
+
+          if (!styleSheet) return;
           if (d.set) {
             const rule = (getNestedRule(
               styleSheet.rules,
@@ -1347,6 +1390,26 @@ export class Replayer {
           break;
         }
         this.applySelection(d);
+        break;
+      }
+      case IncrementalSource.AdoptedStyleSheet: {
+        if (isSync) {
+          // TODO support sync mode
+          break;
+        }
+        const targetHost = this.mirror.getNode(d.id);
+        if (!targetHost) return;
+        const stylesToAdopt = d.styleIds
+          .map((styleId) => this.styleMirror.getStyle(styleId))
+          .filter((style) => style !== null) as CSSStyleSheet[];
+        if (targetHost.nodeName === 'IFRAME') {
+          const iframeDoc = (targetHost as HTMLIFrameElement).contentDocument;
+          if (iframeDoc) iframeDoc.adoptedStyleSheets = stylesToAdopt;
+        } else if (hasShadowRoot(targetHost))
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
+        else if (targetHost.nodeName === '#document')
+          (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
         break;
       }
       default:

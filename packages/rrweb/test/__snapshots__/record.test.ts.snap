@@ -422,7 +422,8 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
     \\"data\\": {
       \\"source\\": 8,
       \\"adds\\": [],
-      \\"styleId\\": 1
+      \\"styleId\\": 1,
+      \\"id\\": 1
     }
   },
   {
@@ -504,7 +505,8 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
     \\"data\\": {
       \\"source\\": 8,
       \\"adds\\": [],
-      \\"styleId\\": 2
+      \\"styleId\\": 2,
+      \\"id\\": 10
     }
   },
   {

@@ -720,51 +720,74 @@ describe('replayer', function () {
     expect(wrapper).toBeNull();
   });
 
-  it('can fast-forward adopted stylesheet events', async () => {
+  it('can replay adopted stylesheet events', async () => {
     await page.evaluate(`
       events = ${JSON.stringify(adoptedStyleSheet)};
       const { Replayer } = rrweb;
       var replayer = new Replayer(events,{showDebug:true});
-      replayer.pause(550);
+      replayer.play();
     `);
+    await page.waitForTimeout(600);
     const iframe = await page.$('iframe');
     const contentDocument = await iframe!.contentFrame()!;
-    // check the adopted stylesheet is applied on the outermost document
-    expect(
-      await contentDocument!.$eval(
-        'div',
-        (element) => (element as HTMLElement).style.color,
-      ),
-    ).toEqual('yellow');
+    const colorRGBMap = {
+      yellow: 'rgb(255, 255, 0)',
+      red: 'rgb(255, 0, 0)',
+      blue: 'rgb(0, 0, 255)',
+      green: 'rgb(0, 128, 0)',
+    };
+    const checkCorrectness = async () => {
+      // check the adopted stylesheet is applied on the outermost document
+      expect(
+        await contentDocument!.$eval(
+          'div',
+          (element) => window.getComputedStyle(element).color,
+        ),
+      ).toEqual(colorRGBMap.yellow);
 
-    // check the adopted stylesheet is applied on the shadow dom #1's root
-    expect(
-      await contentDocument!.evaluate(
-        () =>
-          document
-            .querySelector('#shadow-host1')
-            ?.shadowRoot?.querySelector('span')?.style.color,
-      ),
-    ).toEqual('red');
+      // check the adopted stylesheet is applied on the shadow dom #1's root
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            window.getComputedStyle(
+              document
+                .querySelector('#shadow-host1')!
+                .shadowRoot!.querySelector('span')!,
+            ).color,
+        ),
+      ).toEqual(colorRGBMap.red);
 
-    // check the adopted stylesheet is applied on document of the IFrame element
-    expect(
-      await contentDocument!.$eval(
-        'iframe',
-        (element) =>
-          (element as HTMLIFrameElement).contentDocument?.querySelector('h1')
-            ?.style.color,
-      ),
-    ).toEqual('blue');
+      // check the adopted stylesheet is applied on document of the IFrame element
+      expect(
+        await contentDocument!.$eval(
+          'iframe',
+          (element) =>
+            window.getComputedStyle(
+              (element as HTMLIFrameElement).contentDocument!.querySelector(
+                'h1',
+              )!,
+            ).color,
+        ),
+      ).toEqual(colorRGBMap.blue);
 
-    // check the adopted stylesheet is applied on the shadow dom #2's root
-    expect(
-      await contentDocument!.evaluate(
-        () =>
-          document
-            .querySelector('#shadow-host2')
-            ?.shadowRoot?.querySelector('span')?.style.color,
-      ),
-    ).toEqual('green');
+      // check the adopted stylesheet is applied on the shadow dom #2's root
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            window.getComputedStyle(
+              document
+                .querySelector('#shadow-host2')!
+                .shadowRoot!.querySelector('span')!,
+            ).color,
+        ),
+      ).toEqual(colorRGBMap.green);
+    };
+    await checkCorrectness();
+
+    // To test the correctness of replaying adopted stylesheet events in the fast-forward mode.
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(600);');
+    await checkCorrectness();
   });
 });

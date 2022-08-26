@@ -45,7 +45,7 @@ const events: eventWithTime[] = [
                 childNodes: [
                   {
                     type: 3,
-                    textContent: 'n        ',
+                    textContent: '\n        ',
                     id: 6,
                   },
                   {
@@ -63,7 +63,7 @@ const events: eventWithTime[] = [
                   },
                   {
                     type: 3,
-                    textContent: 'n        ',
+                    textContent: '\n        ',
                     id: 9,
                   },
                   {
@@ -107,7 +107,7 @@ const events: eventWithTime[] = [
                   },
                   {
                     type: 3,
-                    textContent: 'n        ',
+                    textContent: '\n        ',
                     id: 15,
                   },
                   {
@@ -121,7 +121,7 @@ const events: eventWithTime[] = [
                   },
                   {
                     type: 3,
-                    textContent: 'n        ',
+                    textContent: '\n        ',
                     id: 17,
                   },
                   {
@@ -133,7 +133,7 @@ const events: eventWithTime[] = [
                   },
                   {
                     type: 3,
-                    textContent: 'n      ',
+                    textContent: '\n      ',
                     id: 19,
                   },
                 ],
@@ -163,6 +163,7 @@ const events: eventWithTime[] = [
         },
       ],
       styleId: 1,
+      id: 1,
     },
     timestamp: now + 200,
   },
@@ -253,6 +254,7 @@ const events: eventWithTime[] = [
         },
       ],
       styleId: 2,
+      id: 10,
     },
     timestamp: now + 300,
   },
@@ -276,6 +278,7 @@ const events: eventWithTime[] = [
         },
       ],
       styleId: 3,
+      id: 18,
     },
     timestamp: now + 300,
   },
@@ -349,6 +352,7 @@ const events: eventWithTime[] = [
     data: {
       source: IncrementalSource.StyleSheetRule,
       styleId: 4,
+      id: 16,
       adds: [{ rule: 'span { color: green; }' }],
     },
     timestamp: now + 550,
