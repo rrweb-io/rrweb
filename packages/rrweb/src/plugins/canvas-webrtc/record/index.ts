@@ -34,7 +34,7 @@ export class RRWebPluginCanvasWebRTCRecord {
 
   public signalReceive(signal: RTCSessionDescriptionInit) {
     if (!this.peer) this.setupPeer();
-    this.peer!.signal(signal);
+    this.peer?.signal(signal);
   }
 
   private startStream(id: number, stream: MediaStream) {
@@ -44,9 +44,9 @@ export class RRWebPluginCanvasWebRTCRecord {
       nodeId: id,
       streamId: stream.id,
     };
-    this.peer!.send(JSON.stringify(data));
-    this.peer!.addStream(stream);
-    this.peer!.send(JSON.stringify(data));
+    this.peer?.send(JSON.stringify(data));
+    this.peer?.addStream(stream);
+    this.peer?.send(JSON.stringify(data));
   }
 
   public setupPeer() {
