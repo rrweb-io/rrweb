@@ -18,8 +18,11 @@ jobs:
         run: yarn
       - name: Build Packages
         run: yarn build:all
-      - name: Test Code Linting
-        run: yarn turbo run lint
+
+      # FIXME, this doesn't actually lint test code:
+      # - name: Test Code Linting
+      #   run: yarn turbo run lint
+
       - name: Save Code Linting Report JSON
         run: yarn lint:report
         # Continue to the next step even if this fails
