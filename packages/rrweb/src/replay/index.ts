@@ -1211,20 +1211,16 @@ export class Replayer {
               const host = this.mirror.getNode(d.id);
               if (host) {
                 let newStyleSheet: CSSStyleSheet | null = null;
-
-                if (host.nodeName === 'IFRAME') {
-                  const iframeWin = (host as HTMLIFrameElement)
+                let hostWindow: IWindow | null = null;
+                if (host.nodeName === 'IFRAME')
+                  hostWindow = (host as HTMLIFrameElement)
                     .contentWindow as IWindow;
-                  if (iframeWin) newStyleSheet = new iframeWin.CSSStyleSheet();
-                } else if (hasShadowRoot(host)) {
-                  const ownerWindow = host.ownerDocument?.defaultView;
-                  if (ownerWindow)
-                    newStyleSheet = new ownerWindow.CSSStyleSheet();
-                } else if (host.nodeName === '#document') {
-                  const ownerWindow = (host as Document).defaultView;
-                  if (ownerWindow)
-                    newStyleSheet = new ownerWindow.CSSStyleSheet();
-                }
+                else if (hasShadowRoot(host))
+                  hostWindow = host.ownerDocument?.defaultView || null;
+                else if (host.nodeName === '#document')
+                  hostWindow = (host as Document).defaultView;
+
+                hostWindow && (newStyleSheet = new hostWindow.CSSStyleSheet());
                 if (newStyleSheet) {
                   this.styleMirror.add(newStyleSheet, d.styleId);
                   styleSheet = newStyleSheet;
