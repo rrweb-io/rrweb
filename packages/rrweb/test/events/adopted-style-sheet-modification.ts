@@ -182,7 +182,7 @@ const events: eventWithTime[] = [
       source: IncrementalSource.StyleSheetRule,
       adds: [],
       styleId: 2,
-      id: 10,
+      id: 12,
     },
     timestamp: now + 250,
   },
@@ -190,7 +190,7 @@ const events: eventWithTime[] = [
     type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
-      id: 10,
+      id: 12,
       styleIds: [2],
     },
     timestamp: now + 250,

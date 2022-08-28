@@ -4,7 +4,11 @@ import type {
   MutationBufferParam,
   SamplingStrategy,
 } from '../types';
-import { initMutationObserver, initScrollObserver } from './observer';
+import {
+  initMutationObserver,
+  initScrollObserver,
+  initAdoptedStyleSheetObserver,
+} from './observer';
 import { patch } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
@@ -73,14 +77,21 @@ export class ShadowDomManager {
       doc: (shadowRoot as unknown) as Document,
       mirror: this.mirror,
     });
-    if (shadowRoot.adoptedStyleSheets?.length > 0)
-      // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created.
-      void Promise.resolve().then(() => {
+    // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
+    setTimeout(() => {
+      if (shadowRoot.adoptedStyleSheets?.length > 0)
         this.bypassOptions.stylesheetManager.adoptStyleSheets(
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(shadowRoot.host),
         );
-      });
+      initAdoptedStyleSheetObserver(
+        {
+          mirror: this.mirror,
+          stylesheetManager: this.bypassOptions.stylesheetManager,
+        },
+        shadowRoot,
+      );
+    }, 0);
   }
 
   /**

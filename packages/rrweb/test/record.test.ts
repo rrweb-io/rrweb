@@ -680,11 +680,18 @@ describe('record', function (this: ISuite) {
         const shadow = host!.attachShadow({ mode: 'open' });
         shadow.innerHTML =
           '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
-        const sheet3 = new CSSStyleSheet();
+        const sheet4 = new CSSStyleSheet();
         // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
-        sheet3.replaceSync('span { color: green; }');
+        sheet4.replaceSync('span { color: green; }');
         // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
-        shadow.adoptedStyleSheets = [sheet, sheet3];
+        shadow.adoptedStyleSheets = [sheet, sheet4];
+
+        document.adoptedStyleSheets = [sheet4, sheet, sheet2];
+
+        // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
+        const sheet5 = new iframe!.contentWindow!.CSSStyleSheet();
+        sheet5.replaceSync('h2 { color: purple; }');
+        iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
       }, 10);
     });
     await waitForRAF(ctx.page); // wait till events get sent

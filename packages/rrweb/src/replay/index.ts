@@ -1212,10 +1212,7 @@ export class Replayer {
               if (host) {
                 let newStyleSheet: CSSStyleSheet | null = null;
                 let hostWindow: IWindow | null = null;
-                if (host.nodeName === 'IFRAME')
-                  hostWindow = (host as HTMLIFrameElement)
-                    .contentWindow as IWindow;
-                else if (hasShadowRoot(host))
+                if (hasShadowRoot(host))
                   hostWindow = host.ownerDocument?.defaultView || null;
                 else if (host.nodeName === '#document')
                   hostWindow = (host as Document).defaultView;
@@ -1411,10 +1408,7 @@ export class Replayer {
         const stylesToAdopt = d.styleIds
           .map((styleId) => this.styleMirror.getStyle(styleId))
           .filter((style) => style !== null) as CSSStyleSheet[];
-        if (targetHost.nodeName === 'IFRAME') {
-          const iframeDoc = (targetHost as HTMLIFrameElement).contentDocument;
-          if (iframeDoc) iframeDoc.adoptedStyleSheets = stylesToAdopt;
-        } else if (hasShadowRoot(targetHost))
+        if (hasShadowRoot(targetHost))
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
         else if (targetHost.nodeName === '#document')

@@ -50,7 +50,7 @@ export class IframeManager {
     )
       this.stylesheetManager.adoptStyleSheets(
         iframeEl.contentDocument.adoptedStyleSheets,
-        mirror.getId(iframeEl),
+        mirror.getId(iframeEl.contentDocument),
       );
   }
 }

@@ -601,7 +601,6 @@ function initStyleSheetObserver(
     );
 
     if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      console.log(id, styleId);
       styleSheetRuleCb({
         id,
         styleId,
@@ -707,6 +706,69 @@ function initStyleSheetObserver(
     Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
       type.prototype.insertRule = unmodifiedFunctions[typeKey].insertRule;
       type.prototype.deleteRule = unmodifiedFunctions[typeKey].deleteRule;
+    });
+  };
+}
+
+export function initAdoptedStyleSheetObserver(
+  {
+    mirror,
+    stylesheetManager,
+  }: Pick<observerParam, 'mirror' | 'stylesheetManager'>,
+  host: Document | ShadowRoot,
+): listenerHandler {
+  let hostId: number | null = null;
+  // host of adoptedStyleSheets is outermost document or IFrame's document
+  if (host.nodeName === '#document') hostId = mirror.getId(host);
+  // The host is a ShadowRoot.
+  else hostId = mirror.getId((host as ShadowRoot).host);
+
+  const patchTarget =
+    host.nodeName === '#document'
+      ? (host as Document).defaultView?.Document
+      : host.ownerDocument?.defaultView?.ShadowRoot;
+  const originalPropertyDescriptor = Object.getOwnPropertyDescriptor(
+    patchTarget?.prototype,
+    'adoptedStyleSheets',
+  );
+  if (
+    hostId === null ||
+    hostId === -1 ||
+    !patchTarget ||
+    !originalPropertyDescriptor
+  )
+    return () => {
+      //
+    };
+
+  // Patch adoptedStyleSheets by overriding the original one.
+  Object.defineProperty(host, 'adoptedStyleSheets', {
+    configurable: originalPropertyDescriptor.configurable,
+    enumerable: originalPropertyDescriptor.enumerable,
+    get(): CSSStyleSheet[] {
+      return originalPropertyDescriptor.get?.call(this) as CSSStyleSheet[];
+    },
+    set(sheets: CSSStyleSheet[]) {
+      const result = originalPropertyDescriptor.set?.call(this, sheets);
+      if (hostId !== null && hostId !== -1) {
+        try {
+          stylesheetManager.adoptStyleSheets(sheets, hostId);
+        } catch (e) {
+          // for safety
+        }
+      }
+      return result;
+    },
+  });
+
+  return () => {
+    Object.defineProperty(host, 'adoptedStyleSheets', {
+      configurable: originalPropertyDescriptor.configurable,
+      enumerable: originalPropertyDescriptor.enumerable,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      get: originalPropertyDescriptor.get,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      set: originalPropertyDescriptor.set,
     });
   };
 }
@@ -1016,6 +1078,7 @@ export function initObservers(
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
   const styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
+  const adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
   const styleDeclarationObserver = initStyleDeclarationObserver(o, {
     win: currentWindow,
   });
@@ -1044,6 +1107,7 @@ export function initObservers(
     inputHandler();
     mediaInteractionHandler();
     styleSheetObserver();
+    adoptedStyleSheetObserver();
     styleDeclarationObserver();
     fontObserver();
     selectionObserver();
