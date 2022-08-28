@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import 'construct-style-sheets-polyfill';
 import {
   recordOptions,
   listenerHandler,
@@ -462,15 +463,15 @@ describe('record', function (this: ISuite) {
 
       const sheet = new CSSStyleSheet();
       // Add stylesheet to a document.
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+
       document.adoptedStyleSheets = [sheet];
 
       const iframe = document.querySelector('iframe');
       // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
       const sheet2 = new iframe!.contentWindow!.CSSStyleSheet();
       // Add stylesheet to an IFrame document.
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
-      iframe.contentDocument.adoptedStyleSheets = [sheet2];
+
+      iframe!.contentDocument!.adoptedStyleSheets = [sheet2];
       iframe!.contentDocument!.body.innerHTML = '<h1>h1 in iframe</h1>';
 
       const { record } = ((window as unknown) as IWindow).rrweb;
@@ -643,7 +644,7 @@ describe('record', function (this: ISuite) {
         'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
       );
       // Add stylesheet to a document.
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+
       document.adoptedStyleSheets = [sheet];
 
       // Add stylesheet to a shadow host.
@@ -652,9 +653,9 @@ describe('record', function (this: ISuite) {
       shadow.innerHTML =
         '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
       const sheet2 = new CSSStyleSheet();
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+
       sheet2.replaceSync('span { color: red; }');
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
+
       shadow.adoptedStyleSheets = [sheet, sheet2];
 
       // Add stylesheet to an IFrame document.
@@ -662,10 +663,10 @@ describe('record', function (this: ISuite) {
       // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
       const sheet3 = new iframe!.contentWindow!.CSSStyleSheet();
       sheet3.replaceSync('h1 { color: blue; }');
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
-      iframe.contentDocument.adoptedStyleSheets = [sheet3];
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.adoptedStyleSheets` yet
-      const ele = iframe.contentDocument.createElement('h1');
+
+      iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
+
+      const ele = iframe!.contentDocument!.createElement('h1');
       ele.innerText = 'h1 in iframe';
       iframe!.contentDocument!.body.appendChild(ele);
 

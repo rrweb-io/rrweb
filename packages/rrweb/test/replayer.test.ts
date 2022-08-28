@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import 'construct-style-sheets-polyfill';
 import {
   assertDomSnapshot,
   launchPuppeteer,
@@ -18,6 +19,7 @@ import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
+import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 
 interface ISuite {
   code: string;
@@ -789,5 +791,150 @@ describe('replayer', function () {
     await waitForRAF(page);
     await page.evaluate('replayer.pause(600);');
     await checkCorrectness();
+  });
+
+  it('can replay modification events for adoptedStyleSheet', async () => {
+    await page.evaluate(`
+    events = ${JSON.stringify(adoptedStyleSheetModification)};
+    const { Replayer } = rrweb;
+    var replayer = new Replayer(events,{showDebug:true});
+    replayer.play();
+  `);
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+
+    // At 250ms, the adopted stylesheet is still empty.
+    const check250ms = async () => {
+      await page.waitForTimeout(250);
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules.length === 0,
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 0,
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 300ms, the adopted stylesheet is replaced with new content.
+    const check300ms = async () => {
+      await page.waitForTimeout(50);
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { color: yellow; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h1 { color: blue; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 400ms, check replaceSync API.
+    const check400ms = async () => {
+      await page.waitForTimeout(100);
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { display: inline; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h1 { font-size: large; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 500ms, check CSSStyleDeclaration API.
+    const check500ms = async () => {
+      await page.waitForTimeout(100);
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { color: green; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 2 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h2 { color: red; }' &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[1].cssText ===
+              'h1 { font-size: medium !important; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 600ms, check insertRule and deleteRule API.
+    const check600ms = async () => {
+      await page.waitForTimeout(100);
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 2 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { color: green; }' &&
+            document.adoptedStyleSheets[0].cssRules[1].cssText ===
+              'body { border: 2px solid blue; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h1 { font-size: medium !important; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    await check250ms();
+    await check300ms();
+    await check400ms();
+    await check500ms();
+    await check600ms();
+
+    // To test the correctness of replaying adopted stylesheet mutation events in the fast-forward mode.
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(600);');
+    await check250ms();
+    await check300ms();
+    await check400ms();
+    await check500ms();
+    await check600ms();
   });
 });

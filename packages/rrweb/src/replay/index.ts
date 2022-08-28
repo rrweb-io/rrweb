@@ -1252,8 +1252,7 @@ export class Replayer {
                     ? undefined
                     : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                       Math.min(nestedIndex, styleSheet!.cssRules.length);
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                styleSheet!.insertRule(rule, index);
+                styleSheet?.insertRule(rule, index);
               }
             } catch (e) {
               /**
@@ -1286,6 +1285,20 @@ export class Replayer {
                */
             }
           });
+
+          if (d.replace)
+            try {
+              styleSheet.replace(d.replace);
+            } catch (e) {
+              // for safety
+            }
+
+          if (d.replaceSync)
+            try {
+              styleSheet.replaceSync(d.replaceSync);
+            } catch (e) {
+              // for safety
+            }
         }
         break;
       }

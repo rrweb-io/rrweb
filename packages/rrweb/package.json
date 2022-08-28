@@ -52,6 +52,7 @@
     "@types/offscreencanvas": "^2019.6.4",
     "@types/prettier": "^2.3.2",
     "@types/puppeteer": "^5.4.4",
+    "construct-style-sheets-polyfill": "^3.1.0",
     "cross-env": "^5.2.0",
     "esbuild": "^0.14.38",
     "fast-mhtml": "^1.1.9",
