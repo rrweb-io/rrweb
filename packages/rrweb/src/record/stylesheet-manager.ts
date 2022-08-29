@@ -79,6 +79,11 @@ export class StylesheetManager {
     this.adoptedStyleSheetCb(adoptedStyleSheetData);
   }
 
+  public reset() {
+    this.styleMirror.reset();
+    this.trackedLinkElements = new WeakSet();
+  }
+
   // TODO: take snapshot on stylesheet reload by applying event listener
   private trackStylesheetInLinkElement(linkEl: HTMLLinkElement) {
     // linkEl.addEventListener('load', () => {

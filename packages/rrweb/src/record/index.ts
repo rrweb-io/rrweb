@@ -294,6 +294,9 @@ function record<T = eventWithTime>(
       isCheckout,
     );
 
+    // When we take a full snapshot, old tracked StyleSheets need to be removed.
+    stylesheetManager.reset();
+
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,

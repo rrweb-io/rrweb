@@ -257,6 +257,7 @@ export class Replayer {
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
       this.mirror.reset();
+      this.styleMirror.reset();
     });
 
     const timer = new Timer([], config?.speed || defaultConfig.speed);
@@ -605,6 +606,7 @@ export class Replayer {
           }
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
+          this.styleMirror.reset();
         };
         break;
       case EventType.IncrementalSnapshot:

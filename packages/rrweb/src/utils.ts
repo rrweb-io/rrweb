@@ -482,6 +482,7 @@ export class StyleSheetMirror {
 
   reset(): void {
     this.styleIDMap = new WeakMap();
+    this.idStyleMap = new Map();
     this.id = 1;
   }
 }

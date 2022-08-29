@@ -101,7 +101,12 @@ export class Mirror implements IMirror<Node> {
   }
 
   replace(id: number, n: Node) {
-    this.idNodeMap.set(id, n);
+    const oldNode = this.getNode(id);
+    if (oldNode) {
+      const meta = this.nodeMetaMap.get(oldNode);
+      if (meta) this.nodeMetaMap.set(n, meta);
+      this.idNodeMap.set(id, n);
+    }
   }
 
   reset() {

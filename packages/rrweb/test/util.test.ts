@@ -71,6 +71,8 @@ describe('Utilities for other modules', () => {
       }
       expect(mirror.reset()).toBeUndefined();
       for (let s of styleList) expect(mirror.has(s)).toBeFalsy();
+      for (let i = 0; i < 10; i++) expect(mirror.getStyle(i + 1)).toBeNull();
+      expect(mirror.add(new CSSStyleSheet())).toBe(1);
     });
   });
 });
