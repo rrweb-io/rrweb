@@ -214,8 +214,9 @@ export function isBlocked(
   }
   if (blockSelector) {
     if ((node as HTMLElement).matches(blockSelector)) return true;
+    if (checkAncestors && el.closest(blockSelector) !== null) return true;
   }
-  return isBlocked(node.parentNode, blockClass, blockSelector, checkAncestors);
+  return false;
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {

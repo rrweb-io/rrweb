@@ -276,39 +276,27 @@ export function transformAttribute(
 }
 
 export function _isBlockedElement(
-  node: Node | null,
+  element: HTMLElement,
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
-  if (!node) {
-    return false;
-  }
-  if (node.nodeType === node.ELEMENT_NODE) {
-    let needBlock = false;
-    if (typeof blockClass === 'string') {
-      if ((node as HTMLElement).closest !== undefined) {
-        needBlock = (node as HTMLElement).closest('.' + blockClass) !== null;
-      } else {
-        needBlock = (node as HTMLElement).classList.contains(blockClass);
+  if (typeof blockClass === 'string') {
+    if (element.classList.contains(blockClass)) {
+      return true;
+    }
+  } else {
+    for (let eIndex = element.classList.length; eIndex--; ) {
+      const className = element.classList[eIndex];
+      if (blockClass.test(className)) {
+        return true;
       }
-    } else {
-      (node as HTMLElement).classList.forEach((className) => {
-        if (blockClass.test(className)) {
-          needBlock = true;
-        }
-      });
     }
-    if (blockSelector) {
-      needBlock = needBlock || (node as HTMLElement).matches(blockSelector);
-    }
+  }
+  if (blockSelector) {
+    return element.matches(blockSelector);
+  }
 
-    return needBlock || _isBlockedElement(node.parentNode, blockClass, blockSelector);
-  }
-  if (node.nodeType === node.TEXT_NODE) {
-    // check parent node since text node do not have class name
-    return _isBlockedElement(node.parentNode, blockClass, blockSelector); 
-  }
-  return _isBlockedElement(node.parentNode, blockClass, blockSelector);
+  return false;
 }
 
 export function classMatchesRegex(
