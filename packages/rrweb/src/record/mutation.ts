@@ -273,7 +273,7 @@ export default class MutationBuffer {
         rootShadowHost =
           (rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host ||
           null;
-      // ensure shadowHost is a Node, or doc.contains will throw an error
+      // ensure contains is passed a Node, or it will throw an error
       const notInDoc =
         !this.doc.contains(n) &&
         (!rootShadowHost || !this.doc.contains(rootShadowHost));
@@ -446,7 +446,7 @@ export default class MutationBuffer {
       case 'characterData': {
         const value = m.target.textContent;
         if (
-          !isBlocked(m.target, this.blockClass, false) &&
+          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
         ) {
           this.texts.push({
@@ -478,7 +478,7 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, false) ||
+          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
           value === m.oldValue
         ) {
           return;
@@ -554,7 +554,7 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockClass, true)) return;
+        if (isBlocked(m.target, this.blockClass, this.blockSelector, true)) return;
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
@@ -563,7 +563,7 @@ export default class MutationBuffer {
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, false) ||
+            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
             isIgnored(n, this.mirror) ||
             !isSerialized(n, this.mirror)
           ) {
@@ -635,7 +635,7 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, false))
+    if (!isBlocked(n, this.blockClass, this.blockSelector, false))
       n.childNodes.forEach((childN) => this.genAdds(childN));
   };
 }

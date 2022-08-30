@@ -139,6 +139,7 @@ setInterval(save, 10 * 1000);
 | blockClass           | 'rr-block'         | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见[“隐私”](#隐私)章节                                                                                                               |
 | blockSelector        | null               | 所有 element.matches(blockSelector)为 true 的元素都不会被录制，回放时取而代之的是一个同等宽高的占位元素                                                                               |
 | ignoreClass          | 'rr-ignore'        | 字符串或正则表达式，可用于自定义忽略元素的类名，详见[“隐私”](#隐私)章节                                                                                                               |
+| ignoreCSSAttributes  | null               | 应该被忽略的 CSS 属性数组                                                                                                                                                             |
 | maskTextClass        | 'rr-mask'          | 字符串或正则表达式，可用于自定义忽略元素 text 内容的类名，详见[“隐私”](#隐私)章节                                                                                                     |
 | maskTextSelector     | null               | 所有 element.matches(maskTextSelector)为 true 的元素及其子元素的 text 内容将会被屏蔽                                                                                                  |
 | maskAllInputs        | false              | 将所有输入内容记录为 \*                                                                                                                                                               |

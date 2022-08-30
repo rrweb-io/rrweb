@@ -15,6 +15,7 @@ function patchGLPrototype(
   type: CanvasContext,
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
+  blockSelector: string | null,
   mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
@@ -36,7 +37,7 @@ function patchGLPrototype(
           return function (this: typeof prototype, ...args: Array<unknown>) {
             const result = original.apply(this, args);
             saveWebGLVar(result, win, prototype);
-            if (!isBlocked(this.canvas, blockClass, true)) {
+            if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
               const recordArgs = serializeArgs([...args], win, prototype);
               const mutation: canvasMutationWithType = {
                 type,
@@ -76,6 +77,7 @@ export default function initCanvasWebGLMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
   blockClass: blockClass,
+  blockSelector: string | null,
   mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
@@ -86,6 +88,7 @@ export default function initCanvasWebGLMutationObserver(
       CanvasContext.WebGL,
       cb,
       blockClass,
+      blockSelector,
       mirror,
       win,
     ),
@@ -98,6 +101,7 @@ export default function initCanvasWebGLMutationObserver(
         CanvasContext.WebGL2,
         cb,
         blockClass,
+        blockSelector,
         mirror,
         win,
       ),
