@@ -251,7 +251,7 @@ export type recordOptions<T> = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
-  ignoreCSSAttributes?:Set<string>;
+  ignoreCSSAttributes?: Set<string>;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   packFn?: PackFn;
@@ -301,7 +301,7 @@ export type observerParam = {
   stylesheetManager: StylesheetManager;
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
-  ignoreCSSAttributes:Set<string>;
+  ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
       cb: (...arg: Array<unknown>) => void,
