@@ -72,7 +72,7 @@ import {
   getNestedRule,
   getPositionsAndIndex,
   uniqueTextMutations,
-} from '../utils';       
+} from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';

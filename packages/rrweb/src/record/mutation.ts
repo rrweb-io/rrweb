@@ -554,7 +554,8 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockClass, this.blockSelector, true)) return;
+        if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
+          return;
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {

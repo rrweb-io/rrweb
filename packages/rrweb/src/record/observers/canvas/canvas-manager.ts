@@ -60,11 +60,17 @@ export class CanvasManager {
     mutationCb: canvasMutationCallback;
     win: IWindow;
     blockClass: blockClass;
-    blockSelector: string | null,
+    blockSelector: string | null;
     mirror: Mirror;
     sampling?: 'all' | number;
   }) {
-    const { sampling = 'all', win, blockClass, blockSelector, recordCanvas } = options;
+    const {
+      sampling = 'all',
+      win,
+      blockClass,
+      blockSelector,
+      recordCanvas,
+    } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
@@ -97,7 +103,11 @@ export class CanvasManager {
     blockClass: blockClass,
     blockSelector: string | null,
   ) {
-    const canvasContextReset = initCanvasContextObserver(win, blockClass, blockSelector);
+    const canvasContextReset = initCanvasContextObserver(
+      win,
+      blockClass,
+      blockSelector,
+    );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
     const worker = new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
     worker.onmessage = (e) => {
@@ -142,11 +152,11 @@ export class CanvasManager {
 
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
-      win.document.querySelectorAll('canvas').forEach(canvas => {
+      win.document.querySelectorAll('canvas').forEach((canvas) => {
         if (!isBlocked(canvas, blockClass, blockSelector, true)) {
           matchedCanvas.push(canvas);
         }
-      })
+      });
       return matchedCanvas;
     };
 
@@ -215,7 +225,11 @@ export class CanvasManager {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
 
-    const canvasContextReset = initCanvasContextObserver(win, blockClass, blockSelector);
+    const canvasContextReset = initCanvasContextObserver(
+      win,
+      blockClass,
+      blockSelector,
+    );
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
       win,
