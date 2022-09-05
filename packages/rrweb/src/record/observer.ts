@@ -211,6 +211,7 @@ function initMouseInteractionObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
@@ -228,7 +229,7 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target, blockClass, true)) {
+      if (isBlocked(target, blockClass, blockSelector, true)) {
         return;
       }
       const e = isTouchEvent(event) ? event.changedTouches[0] : event;
@@ -267,14 +268,15 @@ export function initScrollObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   sampling,
 }: Pick<
   observerParam,
-  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'sampling'
+  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'blockSelector' | 'sampling'
 >): listenerHandler {
   const updatePosition = throttle<UIEvent>((evt) => {
     const target = getEventTarget(evt);
-    if (!target || isBlocked(target as Node, blockClass, true)) {
+    if (!target || isBlocked(target as Node, blockClass, blockSelector, true)) {
       return;
     }
     const id = mirror.getId(target as Node);
@@ -332,6 +334,7 @@ function initInputObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   ignoreClass,
   maskInputOptions,
   maskInputFn,
@@ -351,7 +354,7 @@ function initInputObserver({
       !target ||
       !(target as Element).tagName ||
       INPUT_TAGS.indexOf((target as Element).tagName) < 0 ||
-      isBlocked(target as Node, blockClass, true)
+      isBlocked(target as Node, blockClass, blockSelector, true)
     ) {
       return;
     }
@@ -774,7 +777,12 @@ export function initAdoptedStyleSheetObserver(
 }
 
 function initStyleDeclarationObserver(
-  { styleDeclarationCb, mirror, stylesheetManager }: observerParam,
+  {
+    styleDeclarationCb,
+    mirror,
+    ignoreCSSAttributes,
+    stylesheetManager,
+  }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -785,6 +793,10 @@ function initStyleDeclarationObserver(
     value: string,
     priority: string,
   ) {
+    // ignore this mutation if we do not care about this css attribute
+    if (ignoreCSSAttributes.has(property)) {
+      return setProperty.apply(this, [property, value, priority]);
+    }
     const { id, styleId } = getIdOrStyleId(
       this.parentRule?.parentStyleSheet,
       mirror,
@@ -812,6 +824,10 @@ function initStyleDeclarationObserver(
     this: CSSStyleDeclaration,
     property: string,
   ) {
+    // ignore this mutation if we do not care about this css attribute
+    if (ignoreCSSAttributes.has(property)) {
+      return removeProperty.apply(this, [property]);
+    }
     const { id, styleId } = getIdOrStyleId(
       this.parentRule?.parentStyleSheet,
       mirror,
@@ -840,13 +856,17 @@ function initStyleDeclarationObserver(
 function initMediaInteractionObserver({
   mediaInteractionCb,
   blockClass,
+  blockSelector,
   mirror,
   sampling,
 }: observerParam): listenerHandler {
   const handler = (type: MediaInteractions) =>
     throttle((event: Event) => {
       const target = getEventTarget(event);
-      if (!target || isBlocked(target as Node, blockClass, true)) {
+      if (
+        !target ||
+        isBlocked(target as Node, blockClass, blockSelector, true)
+      ) {
         return;
       }
       const { currentTime, volume, muted } = target as HTMLMediaElement;
@@ -928,7 +948,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { doc, mirror, blockClass, selectionCb } = param;
+  const { doc, mirror, blockClass, blockSelector, selectionCb } = param;
   let collapsed = true;
 
   const updateSelection = () => {
@@ -947,8 +967,8 @@ function initSelectionObserver(param: observerParam): listenerHandler {
       const { startContainer, startOffset, endContainer, endOffset } = range;
 
       const blocked =
-        isBlocked(startContainer, blockClass, true) ||
-        isBlocked(endContainer, blockClass, true);
+        isBlocked(startContainer, blockClass, blockSelector, true) ||
+        isBlocked(endContainer, blockClass, blockSelector, true);
 
       if (blocked) continue;
 

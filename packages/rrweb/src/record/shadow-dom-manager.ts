@@ -43,7 +43,7 @@ export class ShadowDomManager {
     const manager = this;
     this.restorePatches.push(
       patch(
-        HTMLElement.prototype,
+        Element.prototype,
         'attachShadow',
         function (original: (init: ShadowRootInit) => ShadowRoot) {
           return function (this: HTMLElement, option: ShadowRootInit) {
