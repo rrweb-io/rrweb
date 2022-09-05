@@ -2,14 +2,7 @@
  * @jest-environment jsdom
  */
 import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
-import {
-  applyVirtualStyleRulesToNode,
-  createOrGetNode,
-  diff,
-  ReplayerHandler,
-  StyleRuleType,
-  VirtualStyleRules,
-} from '../src/diff';
+import { createOrGetNode, diff, ReplayerHandler } from '../src/diff';
 import {
   NodeType as RRNodeType,
   serializedNodeWithId,
@@ -17,11 +10,8 @@ import {
   Mirror,
 } from 'rrweb-snapshot';
 import type { IRRNode } from '../src/document';
-import {
-  canvasMutationData,
-  EventType,
-  IncrementalSource,
-} from 'rrweb/src/types';
+import type { canvasMutationData, styleSheetRuleData } from 'rrweb/src/types';
+import { EventType, IncrementalSource } from 'rrweb/src/types';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -101,6 +91,7 @@ describe('diff algorithm for rrdom', () => {
       applyCanvas: () => {},
       applyInput: () => {},
       applyScroll: () => {},
+      applyStyleSheetMutation: () => {},
     };
   });
 
@@ -162,12 +153,23 @@ describe('diff algorithm for rrdom', () => {
       document.documentElement.appendChild(element);
       const rrDocument = new RRDocument();
       const rrStyle = rrDocument.createElement('style');
-      rrStyle.rules = [
-        { cssText: 'div{color: black;}', type: StyleRuleType.Insert, index: 0 },
-      ];
+      const styleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        adds: [
+          {
+            rule: 'div{color: black;}',
+            index: 0,
+          },
+        ],
+      };
+      rrStyle.rules = [styleData];
+      replayer.applyStyleSheetMutation = jest.fn();
       diff(element, rrStyle, replayer);
-      expect(element.sheet!.cssRules.length).toEqual(1);
-      expect(element.sheet!.cssRules[0].cssText).toEqual('div {color: black;}');
+      expect(replayer.applyStyleSheetMutation).toHaveBeenCalledTimes(1);
+      expect(replayer.applyStyleSheetMutation).toHaveBeenCalledWith(
+        styleData,
+        element.sheet,
+      );
     });
 
     it('should diff a canvas element', () => {
@@ -1260,109 +1262,6 @@ describe('diff algorithm for rrdom', () => {
       expect(result).toEqual(text);
       // To make sure the existed text node is used.
       expect(mirror.getMeta(result)).toEqual(mirror.getMeta(text));
-    });
-  });
-
-  describe('apply virtual style rules to node', () => {
-    it('should insert rule at index 0 in empty sheet', () => {
-      document.write('<style></style>');
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-
-      const virtualStyleRules: VirtualStyleRules = [
-        { cssText, index: 0, type: StyleRuleType.Insert },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
-    });
-
-    it('should insert rule at index 0 and keep exsisting rules', () => {
-      document.write(`
-      <style>
-        a {color: blue}
-        div {color: black}
-      </style>
-    `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-      const virtualStyleRules: VirtualStyleRules = [
-        { cssText, index: 0, type: StyleRuleType.Insert },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      expect(styleEl.sheet?.cssRules?.length).toEqual(3);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
-    });
-
-    it('should delete rule at index 0', () => {
-      document.write(`
-        <style>
-          a {color: blue;}
-          div {color: black;}
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const virtualStyleRules: VirtualStyleRules = [
-        { index: 0, type: StyleRuleType.Remove },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
-    });
-
-    it('should insert rule at index [0,0] and keep existing rules', () => {
-      document.write(`
-        <style>
-          @media {
-            a {color: blue}
-            div {color: black}
-          }
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-      const virtualStyleRules: VirtualStyleRules = [
-        { cssText, index: [0, 0], type: StyleRuleType.Insert },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).toEqual(3);
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).toEqual(cssText);
-    });
-
-    it('should delete rule at index [0,1]', () => {
-      document.write(`
-        <style>
-          @media {
-            a {color: blue;}
-            div {color: black;}
-          }
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const virtualStyleRules: VirtualStyleRules = [
-        { index: [0, 1], type: StyleRuleType.Remove },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
-
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).toEqual(1);
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).toEqual('a {color: blue;}');
     });
   });
 });

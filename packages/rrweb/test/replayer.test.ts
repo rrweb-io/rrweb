@@ -803,9 +803,8 @@ describe('replayer', function () {
     const iframe = await page.$('iframe');
     const contentDocument = await iframe!.contentFrame()!;
 
-    const checkCorrectness = async () => {
-      // At 250ms, the adopted stylesheet is still empty.
-      await page.waitForTimeout(250);
+    // At 250ms, the adopted stylesheet is still empty.
+    const check250ms = async () => {
       expect(
         await contentDocument!.evaluate(
           () =>
@@ -822,9 +821,10 @@ describe('replayer', function () {
               .adoptedStyleSheets[0].cssRules.length === 0,
         ),
       ).toBeTruthy();
+    };
 
-      // At 300ms, the adopted stylesheet is replaced with new content.
-      await page.waitForTimeout(50);
+    // At 300ms, the adopted stylesheet is replaced with new content.
+    const check300ms = async () => {
       expect(
         await contentDocument!.evaluate(
           () =>
@@ -843,9 +843,10 @@ describe('replayer', function () {
               'h1 { color: blue; }',
         ),
       ).toBeTruthy();
+    };
 
-      // At 400ms, check replaceSync API.
-      await page.waitForTimeout(100);
+    // At 400ms, check replaceSync API.
+    const check400ms = async () => {
       expect(
         await contentDocument!.evaluate(
           () =>
@@ -864,9 +865,10 @@ describe('replayer', function () {
               'h1 { font-size: large; }',
         ),
       ).toBeTruthy();
+    };
 
-      // At 500ms, check CSSStyleDeclaration API.
-      await page.waitForTimeout(100);
+    // At 500ms, check CSSStyleDeclaration API.
+    const check500ms = async () => {
       expect(
         await contentDocument!.evaluate(
           () =>
@@ -888,9 +890,10 @@ describe('replayer', function () {
               'h1 { font-size: medium !important; }',
         ),
       ).toBeTruthy();
+    };
 
-      // At 600ms, check insertRule and deleteRule API.
-      await page.waitForTimeout(100);
+    // At 600ms, check insertRule and deleteRule API.
+    const check600ms = async () => {
       expect(
         await contentDocument!.evaluate(
           () =>
@@ -913,12 +916,37 @@ describe('replayer', function () {
       ).toBeTruthy();
     };
 
-    await checkCorrectness();
+    await page.waitForTimeout(250);
+    await check250ms();
+
+    await page.waitForTimeout(50);
+    await check300ms();
+
+    await page.waitForTimeout(100);
+    await check400ms();
+
+    await page.waitForTimeout(100);
+    await check500ms();
+
+    await page.waitForTimeout(100);
+    await check600ms();
 
     // To test the correctness of replaying adopted stylesheet mutation events in the fast-forward mode.
     await page.evaluate('replayer.play(0);');
     await waitForRAF(page);
-    await page.evaluate('replayer.pause(600);');
-    await checkCorrectness();
+    await page.evaluate('replayer.pause(260);');
+    await check250ms();
+
+    await page.evaluate('replayer.pause(310);');
+    await check300ms();
+
+    await page.evaluate('replayer.pause(410);');
+    await check400ms();
+
+    await page.evaluate('replayer.pause(510);');
+    await check500ms();
+
+    await page.evaluate('replayer.pause(610);');
+    await check600ms();
   });
 });
