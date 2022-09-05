@@ -457,7 +457,7 @@ describe('record', function (this: ISuite) {
   it('captures mutations on adopted stylesheets', async () => {
     await ctx.page.evaluate(() => {
       document.body.innerHTML = `
-        <div>div in outermost document</div>        
+        <div>div in outermost document</div>
         <iframe></iframe>
       `;
 
@@ -467,10 +467,10 @@ describe('record', function (this: ISuite) {
       document.adoptedStyleSheets = [sheet];
 
       const iframe = document.querySelector('iframe');
-      // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
-      const sheet2 = new iframe!.contentWindow!.CSSStyleSheet();
-      // Add stylesheet to an IFrame document.
+      const sheet2 = new (iframe!.contentWindow! as Window &
+        typeof globalThis).CSSStyleSheet();
 
+      // Add stylesheet to an IFrame document.
       iframe!.contentDocument!.adoptedStyleSheets = [sheet2];
       iframe!.contentDocument!.body.innerHTML = '<h1>h1 in iframe</h1>';
 
@@ -480,13 +480,11 @@ describe('record', function (this: ISuite) {
       });
 
       setTimeout(() => {
-        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
         sheet.replace('div { color: yellow; }');
         sheet2.replace('h1 { color: blue; }');
       }, 0);
 
       setTimeout(() => {
-        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
         sheet.replaceSync('div { display: inline ; }');
         sheet2.replaceSync('h1 { font-size: large; }');
       }, 5);
@@ -506,6 +504,58 @@ describe('record', function (this: ISuite) {
         sheet.insertRule('body { border: 2px solid blue; }', 1);
         sheet2.deleteRule(0);
       }, 15);
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets in nested shadow doms and iframes', async () => {
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div id="shadow-host-1">entry</div>
+      `;
+
+      let shadowHost = document.querySelector('div')!;
+      shadowHost!.attachShadow({ mode: 'open' });
+      let iframeDocument: Document;
+      const NestedDepth = 4;
+      // construct nested shadow doms and iframe elements
+      for (let i = 1; i <= NestedDepth; i++) {
+        const shadowRoot = shadowHost.shadowRoot!;
+        const iframeElement = document.createElement('iframe');
+        shadowRoot.appendChild(iframeElement);
+        iframeElement.id = `iframe-${i}`;
+        iframeDocument = iframeElement.contentDocument!;
+        shadowHost = iframeDocument.createElement('div');
+        shadowHost.id = `shadow-host-${i + 1}`;
+        iframeDocument.body.append(shadowHost);
+        shadowHost!.attachShadow({ mode: 'open' });
+      }
+
+      const iframeWin = iframeDocument!.defaultView!;
+      const sheet1 = new iframeWin.CSSStyleSheet();
+      sheet1.replaceSync('h1 {color: blue;}');
+      iframeDocument!.adoptedStyleSheets = [sheet1];
+      const sheet2 = new iframeWin.CSSStyleSheet();
+      sheet2.replaceSync('div {font-size: large;}');
+      shadowHost.shadowRoot!.adoptedStyleSheets = [sheet2];
+
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      setTimeout(() => {
+        sheet1.insertRule('div { display: inline ; }', 1);
+        sheet2.replaceSync('h1 { font-size: large; }');
+      }, 20);
+
+      setTimeout(() => {
+        const sheet3 = new iframeWin.CSSStyleSheet();
+        sheet3.replaceSync('span {background-color: red;}');
+        iframeDocument!.adoptedStyleSheets = [sheet3, sheet2];
+        shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
+      }, 25);
     });
     await waitForRAF(ctx.page);
     assertSnapshot(ctx.events);
@@ -639,7 +689,6 @@ describe('record', function (this: ISuite) {
       `;
 
       const sheet = new CSSStyleSheet();
-      // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
       sheet.replaceSync(
         'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
       );
@@ -660,8 +709,8 @@ describe('record', function (this: ISuite) {
 
       // Add stylesheet to an IFrame document.
       const iframe = document.querySelector('iframe');
-      // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
-      const sheet3 = new iframe!.contentWindow!.CSSStyleSheet();
+      const sheet3 = new (iframe!.contentWindow! as IWindow &
+        typeof globalThis).CSSStyleSheet();
       sheet3.replaceSync('h1 { color: blue; }');
 
       iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
@@ -681,15 +730,13 @@ describe('record', function (this: ISuite) {
         shadow.innerHTML =
           '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
         const sheet4 = new CSSStyleSheet();
-        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
         sheet4.replaceSync('span { color: green; }');
-        // @ts-ignore - TS doesn't support `CSSStyleSheet.replaceSync` yet
         shadow.adoptedStyleSheets = [sheet, sheet4];
 
         document.adoptedStyleSheets = [sheet4, sheet, sheet2];
 
-        // @ts-ignore - TS doesn't support `CSSStyleSheet constructor` yet
-        const sheet5 = new iframe!.contentWindow!.CSSStyleSheet();
+        const sheet5 = new (iframe!.contentWindow! as IWindow &
+          typeof globalThis).CSSStyleSheet();
         sheet5.replaceSync('h2 { color: purple; }');
         iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
       }, 10);
