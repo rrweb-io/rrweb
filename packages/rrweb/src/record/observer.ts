@@ -685,7 +685,10 @@ function initMediaInteractionObserver({
   const handler = (type: MediaInteractions) =>
     throttle((event: Event) => {
       const target = getEventTarget(event);
-      if (!target || isBlocked(target as Node, blockClass, blockSelector, true)) {
+      if (
+        !target ||
+        isBlocked(target as Node, blockClass, blockSelector, true)
+      ) {
         return;
       }
       const { currentTime, volume, muted } = target as HTMLMediaElement;
