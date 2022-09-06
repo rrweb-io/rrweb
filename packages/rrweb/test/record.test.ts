@@ -566,7 +566,7 @@ describe('record', function (this: ISuite) {
         shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
       }, 60);
     });
-    await ctx.page.waitForTimeout(60);
+    await ctx.page.waitForTimeout(100);
     assertSnapshot(ctx.events);
   });
 
