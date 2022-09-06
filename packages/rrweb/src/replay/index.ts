@@ -60,7 +60,7 @@ import {
   canvasMutationParam,
   canvasEventWithTime,
   selectionData,
-} from '../types';    
+} from '../types';
 import {
   polyfill,
   queueToResolveTrees,
