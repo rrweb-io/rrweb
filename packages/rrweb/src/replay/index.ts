@@ -1810,7 +1810,7 @@ export class Replayer {
 
     if (data.replace)
       try {
-        styleSheet.replace(data.replace);
+        void styleSheet.replace(data.replace);
       } catch (e) {
         // for safety
       }
