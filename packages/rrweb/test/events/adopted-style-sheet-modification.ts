@@ -95,19 +95,15 @@ const events: eventWithTime[] = [
   {
     type: EventType.IncrementalSnapshot,
     data: {
-      source: IncrementalSource.StyleSheetRule,
-      adds: [],
-      styleId: 1,
-      id: 1,
-    },
-    timestamp: now + 150,
-  },
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 1,
       styleIds: [1],
+      styles: [
+        {
+          styleId: 1,
+          rules: [],
+        },
+      ],
     },
     timestamp: now + 150,
   },
@@ -179,19 +175,15 @@ const events: eventWithTime[] = [
   {
     type: EventType.IncrementalSnapshot,
     data: {
-      source: IncrementalSource.StyleSheetRule,
-      adds: [],
-      styleId: 2,
-      id: 12,
-    },
-    timestamp: now + 250,
-  },
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 12,
       styleIds: [2],
+      styles: [
+        {
+          rules: [],
+          styleId: 2,
+        },
+      ],
     },
     timestamp: now + 250,
   },

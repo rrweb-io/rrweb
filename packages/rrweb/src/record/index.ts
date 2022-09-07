@@ -24,7 +24,6 @@ import {
   mutationCallbackParam,
   scrollCallback,
   canvasMutationParam,
-  styleSheetRuleParam,
   adoptedStyleSheetParam,
 } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -217,17 +216,6 @@ function record<T = eventWithTime>(
       }),
     );
 
-  const wrappedStyleSheetRulesEmit = (r: styleSheetRuleParam) =>
-    wrappedEmit(
-      wrapEvent({
-        type: EventType.IncrementalSnapshot,
-        data: {
-          source: IncrementalSource.StyleSheetRule,
-          ...r,
-        },
-      }),
-    );
-
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit(
       wrapEvent({
@@ -241,7 +229,6 @@ function record<T = eventWithTime>(
 
   const stylesheetManager = new StylesheetManager({
     mutationCb: wrappedMutationEmit,
-    styleRulesCb: wrappedStyleSheetRulesEmit,
     adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
   });
 
@@ -440,7 +427,16 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
-          styleSheetRuleCb: wrappedStyleSheetRulesEmit,
+          styleSheetRuleCb: (r) =>
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.StyleSheetRule,
+                  ...r,
+                },
+              }),
+            ),
           styleDeclarationCb: (r) =>
             wrappedEmit(
               wrapEvent({

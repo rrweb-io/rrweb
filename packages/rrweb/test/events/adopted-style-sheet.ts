@@ -152,30 +152,25 @@ const events: eventWithTime[] = [
     },
     timestamp: now + 100,
   },
-  // Create a unattached stylesheet #1 object at 200ms
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.StyleSheetRule,
-      adds: [
-        {
-          rule: 'div { color: yellow; }',
-        },
-      ],
-      styleId: 1,
-      id: 1,
-    },
-    timestamp: now + 200,
-  },
-  // Adopt the stylesheet #1 on document
+  // Adopt the stylesheet #1 on document at 200ms
   {
     type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 1,
       styleIds: [1],
+      styles: [
+        {
+          rules: [
+            {
+              rule: 'div { color: yellow; }',
+            },
+          ],
+          styleId: 1,
+        },
+      ],
     },
-    timestamp: now + 210,
+    timestamp: now + 200,
   },
   // Add an IFrame element
   {
@@ -243,42 +238,23 @@ const events: eventWithTime[] = [
     },
     timestamp: now + 250,
   },
-  // Create a unattached stylesheet #2 object
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.StyleSheetRule,
-      adds: [
-        {
-          rule: 'span { color: red; }',
-        },
-      ],
-      styleId: 2,
-      id: 10,
-    },
-    timestamp: now + 300,
-  },
-  // Adopt the stylesheet #2 on a shadow root
+  // Adopt the stylesheet #2 on a shadow root at 300ms
   {
     type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 10,
       styleIds: [1, 2],
-    },
-    timestamp: now + 300,
-  },
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.StyleSheetRule,
-      adds: [
+      styles: [
         {
-          rule: 'h1 { color: blue; }',
+          rules: [
+            {
+              rule: 'span { color: red; }',
+            },
+          ],
+          styleId: 2,
         },
       ],
-      styleId: 3,
-      id: 20,
     },
     timestamp: now + 300,
   },
@@ -289,6 +265,16 @@ const events: eventWithTime[] = [
       source: IncrementalSource.AdoptedStyleSheet,
       id: 20,
       styleIds: [3],
+      styles: [
+        {
+          rules: [
+            {
+              rule: 'h1 { color: blue; }',
+            },
+          ],
+          styleId: 3,
+        },
+      ],
     },
     timestamp: now + 300,
   },
@@ -347,16 +333,6 @@ const events: eventWithTime[] = [
     },
     timestamp: now + 500,
   },
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.StyleSheetRule,
-      styleId: 4,
-      id: 16,
-      adds: [{ rule: 'span { color: green; }' }],
-    },
-    timestamp: now + 550,
-  },
   // Adopt the stylesheet #4 on the shadow dom
   {
     type: EventType.IncrementalSnapshot,
@@ -364,6 +340,12 @@ const events: eventWithTime[] = [
       source: IncrementalSource.AdoptedStyleSheet,
       id: 16,
       styleIds: [4],
+      styles: [
+        {
+          rules: [{ rule: 'span { color: green; }' }],
+          styleId: 4,
+        },
+      ],
     },
     timestamp: now + 550,
   },

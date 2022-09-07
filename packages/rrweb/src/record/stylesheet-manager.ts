@@ -2,6 +2,7 @@ import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
 import { getCssRuleString } from 'rrweb-snapshot';
 import type {
   adoptedStyleSheetCallback,
+  adoptedStyleSheetParam,
   mutationCallBack,
   styleSheetRuleCallback,
 } from '../types';
@@ -10,17 +11,14 @@ import { StyleSheetMirror } from '../utils';
 export class StylesheetManager {
   private trackedLinkElements: WeakSet<HTMLLinkElement> = new WeakSet();
   private mutationCb: mutationCallBack;
-  private styleRulesCb: styleSheetRuleCallback;
   private adoptedStyleSheetCb: adoptedStyleSheetCallback;
   public styleMirror = new StyleSheetMirror();
 
   constructor(options: {
     mutationCb: mutationCallBack;
-    styleRulesCb: styleSheetRuleCallback;
     adoptedStyleSheetCb: adoptedStyleSheetCallback;
   }) {
     this.mutationCb = options.mutationCb;
-    this.styleRulesCb = options.styleRulesCb;
     this.adoptedStyleSheetCb = options.adoptedStyleSheetCb;
   }
 
@@ -54,28 +52,29 @@ export class StylesheetManager {
 
   public adoptStyleSheets(sheets: CSSStyleSheet[], hostId: number) {
     if (sheets.length === 0) return;
-    const adoptedStyleSheetData = {
+    const adoptedStyleSheetData: adoptedStyleSheetParam = {
       id: hostId,
       styleIds: [] as number[],
     };
+    const styles: NonNullable<adoptedStyleSheetParam['styles']> = [];
     for (const sheet of sheets) {
       let styleId;
       if (!this.styleMirror.has(sheet)) {
         styleId = this.styleMirror.add(sheet);
         const rules = Array.from(sheet.rules || CSSRule);
-        this.styleRulesCb({
-          adds: rules.map((r, index) => {
+        styles.push({
+          styleId,
+          rules: rules.map((r, index) => {
             return {
               rule: getCssRuleString(r),
               index,
             };
           }),
-          styleId,
-          id: hostId,
         });
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);
     }
+    if (styles.length > 0) adoptedStyleSheetData.styles = styles;
     this.adoptedStyleSheetCb(adoptedStyleSheetData);
   }
 

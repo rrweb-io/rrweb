@@ -567,39 +567,22 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"h1 { color: blue; }\\",
-          \\"index\\": 0
-        }
-      ],
-      \\"styleId\\": 1,
-      \\"id\\": 29
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 15,
       \\"id\\": 29,
       \\"styleIds\\": [
         1
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"div { font-size: large; }\\",
-          \\"index\\": 0
-        }
       ],
-      \\"styleId\\": 2,
-      \\"id\\": 33
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h1 { color: blue; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
     }
   },
   {
@@ -609,6 +592,17 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
       \\"id\\": 33,
       \\"styleIds\\": [
         2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"div { font-size: large; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
       ]
     }
   },
@@ -636,25 +630,22 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"span { background-color: red; }\\",
-          \\"index\\": 0
-        }
-      ],
-      \\"styleId\\": 3,
-      \\"id\\": 29
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 15,
       \\"id\\": 29,
       \\"styleIds\\": [
         3,
         2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 3,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"span { background-color: red; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
       ]
     }
   },
@@ -823,47 +814,30 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"div { color: yellow; }\\",
-          \\"index\\": 0
-        },
-        {
-          \\"rule\\": \\"h2 { color: orange; }\\",
-          \\"index\\": 1
-        },
-        {
-          \\"rule\\": \\"h3 { font-size: larger; }\\",
-          \\"index\\": 2
-        }
-      ],
-      \\"styleId\\": 1,
-      \\"id\\": 1
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 15,
       \\"id\\": 1,
       \\"styleIds\\": [
         1
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"span { color: red; }\\",
-          \\"index\\": 0
-        }
       ],
-      \\"styleId\\": 2,
-      \\"id\\": 10
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"div { color: yellow; }\\",
+              \\"index\\": 0
+            },
+            {
+              \\"rule\\": \\"h2 { color: orange; }\\",
+              \\"index\\": 1
+            },
+            {
+              \\"rule\\": \\"h3 { font-size: larger; }\\",
+              \\"index\\": 2
+            }
+          ]
+        }
+      ]
     }
   },
   {
@@ -874,6 +848,17 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
       \\"styleIds\\": [
         1,
         2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"span { color: red; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
       ]
     }
   },
@@ -944,39 +929,22 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"h1 { color: blue; }\\",
-          \\"index\\": 0
-        }
-      ],
-      \\"styleId\\": 3,
-      \\"id\\": 20
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 15,
       \\"id\\": 20,
       \\"styleIds\\": [
         3
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"span { color: green; }\\",
-          \\"index\\": 0
-        }
       ],
-      \\"styleId\\": 4,
-      \\"id\\": 1
+      \\"styles\\": [
+        {
+          \\"styleId\\": 3,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h1 { color: blue; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
     }
   },
   {
@@ -988,21 +956,18 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
         4,
         1,
         2
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [
-        {
-          \\"rule\\": \\"h2 { color: purple; }\\",
-          \\"index\\": 0
-        }
       ],
-      \\"styleId\\": 5,
-      \\"id\\": 20
+      \\"styles\\": [
+        {
+          \\"styleId\\": 4,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"span { color: green; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
     }
   },
   {
@@ -1013,6 +978,17 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
       \\"styleIds\\": [
         5,
         3
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 5,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h2 { color: purple; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
       ]
     }
   },
@@ -1306,19 +1282,16 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [],
-      \\"styleId\\": 1,
-      \\"id\\": 1
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 15,
       \\"id\\": 1,
       \\"styleIds\\": [
         1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": []
+        }
       ]
     }
   },
@@ -1389,19 +1362,16 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 8,
-      \\"adds\\": [],
-      \\"styleId\\": 2,
-      \\"id\\": 12
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 15,
       \\"id\\": 12,
       \\"styleIds\\": [
         2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": []
+        }
       ]
     }
   },

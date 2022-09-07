@@ -259,17 +259,7 @@ export class Replayer {
         }
 
         this.constructedStyleMutations.forEach((data) => {
-          let styleSheet: CSSStyleSheet | null = null;
-          if (data.styleId) {
-            styleSheet = this.styleMirror.getStyle(data.styleId);
-            if (!styleSheet && data.id)
-              styleSheet = this.constructCSSStyleSheet(data.id, data.styleId);
-          }
-          if (!styleSheet) return;
-          if (data.source === IncrementalSource.StyleSheetRule)
-            this.applyStyleSheetRule(data, styleSheet);
-          else if (data.source === IncrementalSource.StyleDeclaration)
-            this.applyStyleDeclaration(data, styleSheet);
+          this.applyStyleSheetMutation(data);
         });
         this.constructedStyleMutations = [];
 
@@ -1221,44 +1211,15 @@ export class Replayer {
         }
         break;
       }
-      case IncrementalSource.StyleSheetRule: {
+      case IncrementalSource.StyleSheetRule:
+      case IncrementalSource.StyleDeclaration: {
         if (this.usingVirtualDom) {
           if (d.styleId) this.constructedStyleMutations.push(d);
           else if (d.id)
             (this.virtualDom.mirror.getNode(
               d.id,
             ) as RRStyleElement | null)?.rules.push(d);
-        } else {
-          let styleSheet: CSSStyleSheet | null = null;
-          if (d.styleId) {
-            styleSheet = this.styleMirror.getStyle(d.styleId);
-            if (!styleSheet && d.id)
-              styleSheet = this.constructCSSStyleSheet(d.id, d.styleId);
-          } else if (d.id)
-            styleSheet =
-              (this.mirror.getNode(d.id) as HTMLStyleElement)?.sheet || null;
-          if (!styleSheet) return;
-          this.applyStyleSheetRule(d, styleSheet);
-        }
-        break;
-      }
-      case IncrementalSource.StyleDeclaration: {
-        if (this.usingVirtualDom) {
-          if (d.styleId) {
-            this.constructedStyleMutations.push(d);
-          } else if (d.id)
-            (this.virtualDom.mirror.getNode(
-              d.id,
-            ) as RRStyleElement | null)?.rules.push(d);
-        } else {
-          let styleSheet: CSSStyleSheet | null = null;
-          if (d.styleId) styleSheet = this.styleMirror.getStyle(d.styleId);
-          else if (d.id)
-            styleSheet =
-              (this.mirror.getNode(d.id) as HTMLStyleElement)?.sheet || null;
-          if (!styleSheet) return;
-          this.applyStyleDeclaration(d, styleSheet);
-        }
+        } else this.applyStyleSheetMutation(d);
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -1763,6 +1724,21 @@ export class Replayer {
     }
   }
 
+  private applyStyleSheetMutation(
+    data: styleDeclarationData | styleSheetRuleData,
+  ) {
+    let styleSheet: CSSStyleSheet | null = null;
+    if (data.styleId) styleSheet = this.styleMirror.getStyle(data.styleId);
+    else if (data.id)
+      styleSheet =
+        (this.mirror.getNode(data.id) as HTMLStyleElement)?.sheet || null;
+    if (!styleSheet) return;
+    if (data.source === IncrementalSource.StyleSheetRule)
+      this.applyStyleSheetRule(data, styleSheet);
+    else if (data.source === IncrementalSource.StyleDeclaration)
+      this.applyStyleDeclaration(data, styleSheet);
+  }
+
   private applyStyleSheetRule(
     data: styleSheetRuleData,
     styleSheet: CSSStyleSheet,
@@ -1851,6 +1827,31 @@ export class Replayer {
   private applyAdoptedStyleSheet(data: adoptedStyleSheetData) {
     const targetHost = this.mirror.getNode(data.id);
     if (!targetHost) return;
+    // Create StyleSheet objects which will be adopted after.
+    data.styles?.forEach((style) => {
+      let newStyleSheet: CSSStyleSheet | null = null;
+      /**
+       * Constructed StyleSheet can't share across multiple documents.
+       * The replayer has to get the correct host window to recreate a StyleSheetObject.
+       */
+      let hostWindow: IWindow | null = null;
+      if (hasShadowRoot(targetHost))
+        hostWindow = targetHost.ownerDocument?.defaultView || null;
+      else if (targetHost.nodeName === '#document')
+        hostWindow = (targetHost as Document).defaultView;
+
+      if (!hostWindow) return;
+      newStyleSheet = new hostWindow.CSSStyleSheet();
+      this.styleMirror.add(newStyleSheet, style.styleId);
+      // To reuse the code of applying stylesheet rules
+      this.applyStyleSheetRule(
+        {
+          source: IncrementalSource.StyleSheetRule,
+          adds: style.rules,
+        },
+        newStyleSheet,
+      );
+    });
     const stylesToAdopt = data.styleIds
       .map((styleId) => this.styleMirror.getStyle(styleId))
       .filter((style) => style !== null) as CSSStyleSheet[];
@@ -1859,29 +1860,6 @@ export class Replayer {
       (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
     else if (targetHost.nodeName === '#document')
       (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
-  }
-
-  /**
-   * Constructed StyleSheet can't share across multiple documents.
-   * The replayer has to get the correct host window to recreate a StyleSheetObject.
-   */
-  private constructCSSStyleSheet(
-    hostId: number,
-    styleId: number,
-  ): CSSStyleSheet | null {
-    const host = this.mirror.getNode(hostId);
-    if (!host) return null;
-    let newStyleSheet: CSSStyleSheet | null = null;
-    let hostWindow: IWindow | null = null;
-    if (hasShadowRoot(host))
-      hostWindow = host.ownerDocument?.defaultView || null;
-    else if (host.nodeName === '#document')
-      hostWindow = (host as Document).defaultView;
-
-    if (!hostWindow) return null;
-    newStyleSheet = new hostWindow.CSSStyleSheet();
-    this.styleMirror.add(newStyleSheet, styleId);
-    return newStyleSheet;
   }
 
   private legacy_resolveMissingNode(

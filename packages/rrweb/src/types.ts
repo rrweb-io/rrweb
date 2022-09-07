@@ -524,8 +524,14 @@ export type styleSheetRuleParam = {
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
 export type adoptedStyleSheetParam = {
-  // 0 indicates the outermost document, other numbers indicate id of IFrame elements or shadow DOMs' hosts.
+  // id indicates the node id of document or shadow DOMs' host element.
   id: number;
+  // New CSSStyleSheets which have never appeared before.
+  styles?: {
+    styleId: number;
+    rules: styleSheetAddRule[];
+  }[];
+  // StyleSheet ids to be adopted.
   styleIds: number[];
 };
 
