@@ -1852,14 +1852,32 @@ export class Replayer {
         newStyleSheet,
       );
     });
-    const stylesToAdopt = data.styleIds
-      .map((styleId) => this.styleMirror.getStyle(styleId))
-      .filter((style) => style !== null) as CSSStyleSheet[];
-    if (hasShadowRoot(targetHost))
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
-    else if (targetHost.nodeName === '#document')
-      (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
+
+    const MAX_RETRY_TIME = 10;
+    let count = 0;
+    const adoptStyleSheets = (targetHost: Node, styleIds: number[]) => {
+      const stylesToAdopt = styleIds
+        .map((styleId) => this.styleMirror.getStyle(styleId))
+        .filter((style) => style !== null) as CSSStyleSheet[];
+      if (hasShadowRoot(targetHost))
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
+      else if (targetHost.nodeName === '#document')
+        (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
+
+      /**
+       * In the live mode where events are transferred over network without strict order guarantee, some newer events are applied before some old events and adopted stylesheets may haven't been created.
+       * This retry mechanism can help resolve this situation.
+       */
+      if (stylesToAdopt.length !== styleIds.length && count < MAX_RETRY_TIME) {
+        setTimeout(
+          () => adoptStyleSheets(targetHost, styleIds),
+          0 + 100 * count,
+        );
+        count++;
+      }
+    };
+    adoptStyleSheets(targetHost, data.styleIds);
   }
 
   private legacy_resolveMissingNode(
