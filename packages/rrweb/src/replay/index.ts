@@ -1318,7 +1318,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.AdoptedStyleSheet: {
-        if (isSync) this.adoptedStyleSheets.push(d);
+        if (this.usingVirtualDom) this.adoptedStyleSheets.push(d);
         else this.applyAdoptedStyleSheet(d);
         break;
       }
