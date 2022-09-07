@@ -561,6 +561,7 @@ describe('record integration tests', function (this: ISuite) {
 
       const el = document.querySelector('.my-element') as HTMLDivElement;
       const shadowRoot = el.shadowRoot as ShadowRoot;
+      shadowRoot.appendChild(document.createElement('span'));
       shadowRoot.appendChild(document.createElement('p'));
       sleep(1)
         .then(() => {
