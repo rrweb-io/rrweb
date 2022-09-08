@@ -502,7 +502,7 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
  * For StyleSheets in Element, this function retrieves id of its host element.
  * For adopted StyleSheets, this function retrieves its styleId from a styleMirror.
  */
-function getIdOrStyleId(
+function getIdAndStyleId(
   sheet: CSSStyleSheet | undefined | null,
   mirror: Mirror,
   styleMirror: StyleSheetMirror,
@@ -531,7 +531,7 @@ function initStyleSheetObserver(
     rule: string,
     index?: number,
   ) {
-    const { id, styleId } = getIdOrStyleId(
+    const { id, styleId } = getIdAndStyleId(
       this,
       mirror,
       stylesheetManager.styleMirror,
@@ -553,7 +553,7 @@ function initStyleSheetObserver(
     this: CSSStyleSheet,
     index: number,
   ) {
-    const { id, styleId } = getIdOrStyleId(
+    const { id, styleId } = getIdAndStyleId(
       this,
       mirror,
       stylesheetManager.styleMirror,
@@ -575,7 +575,7 @@ function initStyleSheetObserver(
     this: CSSStyleSheet,
     text: string,
   ) {
-    const { id, styleId } = getIdOrStyleId(
+    const { id, styleId } = getIdAndStyleId(
       this,
       mirror,
       stylesheetManager.styleMirror,
@@ -597,7 +597,7 @@ function initStyleSheetObserver(
     this: CSSStyleSheet,
     text: string,
   ) {
-    const { id, styleId } = getIdOrStyleId(
+    const { id, styleId } = getIdAndStyleId(
       this,
       mirror,
       stylesheetManager.styleMirror,
@@ -654,7 +654,7 @@ function initStyleSheetObserver(
       rule: string,
       index?: number,
     ) {
-      const { id, styleId } = getIdOrStyleId(
+      const { id, styleId } = getIdAndStyleId(
         this.parentStyleSheet,
         mirror,
         stylesheetManager.styleMirror,
@@ -682,7 +682,7 @@ function initStyleSheetObserver(
       this: CSSGroupingRule,
       index: number,
     ) {
-      const { id, styleId } = getIdOrStyleId(
+      const { id, styleId } = getIdAndStyleId(
         this.parentStyleSheet,
         mirror,
         stylesheetManager.styleMirror,
@@ -797,7 +797,7 @@ function initStyleDeclarationObserver(
     if (ignoreCSSAttributes.has(property)) {
       return setProperty.apply(this, [property, value, priority]);
     }
-    const { id, styleId } = getIdOrStyleId(
+    const { id, styleId } = getIdAndStyleId(
       this.parentRule?.parentStyleSheet,
       mirror,
       stylesheetManager.styleMirror,
@@ -828,7 +828,7 @@ function initStyleDeclarationObserver(
     if (ignoreCSSAttributes.has(property)) {
       return removeProperty.apply(this, [property]);
     }
-    const { id, styleId } = getIdOrStyleId(
+    const { id, styleId } = getIdAndStyleId(
       this.parentRule?.parentStyleSheet,
       mirror,
       stylesheetManager.styleMirror,
