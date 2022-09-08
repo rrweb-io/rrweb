@@ -6,7 +6,7 @@ import {
   createCache,
   Mirror,
   createMirror,
-} from 'rrweb-snapshot';
+} from 'rrweb-snapshot';  
 import {
   RRDocument,
   StyleRuleType,
