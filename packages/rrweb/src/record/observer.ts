@@ -428,9 +428,8 @@ function initInputObserver({
   const handlers: Array<
     listenerHandler | hookResetter
   > = events.map((eventName) => on(eventName, eventHandler, doc));
-
   const currentWindow = doc.defaultView;
-  if(!currentWindow) {
+  if (!currentWindow) {
     return () => {
       handlers.forEach((h) => h());
     };
