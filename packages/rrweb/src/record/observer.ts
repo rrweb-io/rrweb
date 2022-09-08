@@ -428,18 +428,25 @@ function initInputObserver({
   const handlers: Array<
     listenerHandler | hookResetter
   > = events.map((eventName) => on(eventName, eventHandler, doc));
-  const propertyDescriptor = Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
+
+  const currentWindow = doc.defaultView;
+  if(!currentWindow) {
+    return () => {
+      handlers.forEach((h) => h());
+    };
+  }
+  const propertyDescriptor = currentWindow.Object.getOwnPropertyDescriptor(
+    currentWindow.HTMLInputElement.prototype,
     'value',
   );
   const hookProperties: Array<[HTMLElement, string]> = [
-    [HTMLInputElement.prototype, 'value'],
-    [HTMLInputElement.prototype, 'checked'],
-    [HTMLSelectElement.prototype, 'value'],
-    [HTMLTextAreaElement.prototype, 'value'],
+    [currentWindow.HTMLInputElement.prototype, 'value'],
+    [currentWindow.HTMLInputElement.prototype, 'checked'],
+    [currentWindow.HTMLSelectElement.prototype, 'value'],
+    [currentWindow.HTMLTextAreaElement.prototype, 'value'],
     // Some UI library use selectedIndex to set select value
-    [HTMLSelectElement.prototype, 'selectedIndex'],
-    [HTMLOptionElement.prototype, 'selected'],
+    [currentWindow.HTMLSelectElement.prototype, 'selectedIndex'],
+    [currentWindow.HTMLOptionElement.prototype, 'selected'],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
@@ -449,7 +456,7 @@ function initInputObserver({
             // mock to a normal event
             eventHandler({ target: this as EventTarget } as Event);
           },
-        }),
+        }, false, currentWindow),
       ),
     );
   }
