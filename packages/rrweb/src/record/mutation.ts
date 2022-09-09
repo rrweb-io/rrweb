@@ -257,7 +257,7 @@ export default class MutationBuffer {
     const getNextId = (n: Node): number | null => {
       let ns: Node | null = n;
       let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
-      while (nextId === IGNORED_NODE || nextId === -1) {
+      while (nextId === IGNORED_NODE) {
         ns = ns && ns.nextSibling;
         nextId = ns && this.mirror.getId(ns);
       }
