@@ -478,13 +478,11 @@ function serializeNode(
           type: NodeType.Document,
           childNodes: [],
           compatMode: (n as Document).compatMode, // probably "BackCompat"
-          rootId,
         };
       } else {
         return {
           type: NodeType.Document,
           childNodes: [],
-          rootId,
         };
       }
     case n.DOCUMENT_TYPE_NODE:

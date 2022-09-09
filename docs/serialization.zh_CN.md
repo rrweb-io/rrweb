@@ -98,11 +98,11 @@ $('body').replaceWith(snapshot);
 
 想象一下如果我们在同页面中记录一次点击按钮的操作并回放，我们可以用以下格式记录该操作（也就是我们所说的一次增量快照）：
 
-```javascript
+```typescript
 type clickSnapshot = {
-  source: 'MouseInteraction',
-  type: 'Click',
-  node: HTMLButtonElement,
+  source: 'MouseInteraction';
+  type: 'Click';
+  node: HTMLButtonElement;
 };
 ```
 

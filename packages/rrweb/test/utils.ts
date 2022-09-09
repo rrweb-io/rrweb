@@ -81,7 +81,6 @@ export const startServer = (defaultPort: number = 3030) =>
         resolve(s);
       })
       .on('error', (e) => {
-        console.log('port in use, trying next one');
         s.listen().on('listening', () => {
           resolve(s);
         });
@@ -152,14 +151,6 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
                 coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
               }
             }
-
-            // strip blob:urls as they are different every time
-            console.log(
-              a.attributes.src,
-              'src' in a.attributes &&
-                a.attributes.src &&
-                typeof a.attributes.src === 'string',
-            );
           });
           s.data.adds.forEach((add) => {
             if (add.node.type === NodeType.Element) {

@@ -100,11 +100,11 @@ There are two things to note in this serialization result:
 
 Imagine if we recorded the click of a button on the same page and played it back, we can record the operation in the following format (that is what we call an incremental snapshot):
 
-```javascript
+```typescript
 type clickSnapshot = {
-  source: 'MouseInteraction',
-  type: 'Click',
-  node: HTMLButtonElement,
+  source: 'MouseInteraction';
+  type: 'Click';
+  node: HTMLButtonElement;
 };
 ```
 
