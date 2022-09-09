@@ -205,7 +205,7 @@ export function isBlocked(
       ? (node as HTMLElement)
       : node.parentElement;
   if (!el) return false;
-  
+
   if (typeof blockClass === 'string') {
     if (el.classList.contains(blockClass)) return true;
     if (checkAncestors && el.closest('.' + blockClass) !== null) return true;

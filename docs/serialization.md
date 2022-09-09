@@ -1,4 +1,5 @@
 # Serialization
+
 If you only need to record and replay changes within the browser locally, then we can simply save the current view by deep copying the DOM object. For example, the following code implementation (simplified example with jQuery, saves only the body part):
 
 ```javascript
@@ -18,6 +19,7 @@ We do not use an existing open source solutions such as [parse5](https://github.
 2. This part of the code needs to run on the recorded page, and we want to control the amount of code as much as possible, only retaining the necessary functions.
 
 ## Special handling in serialization
+
 The reason why our serialization method is non-standard is because we still need to do the following parts:
 
 1. Output needs to be descriptive. All JavaScript in the original recorded page should not be executed on replay. In rrweb we do this by replacing `script` tags with placeholder `noscript` tags in snapshots. The content inside the script is no longer important. We instead record any changes to the DOM that scripts cause, and we ​​do not need to fully record large amounts of script content that may be present on the original web page.
@@ -26,6 +28,7 @@ The reason why our serialization method is non-standard is because we still need
 4. We want to record the contents of the CSS style sheet. If the recorded page links to external style sheets, we can get its parsed CSS rules from the browser, generate an inline style sheet containing all these rules. This way stylesheets that are not always accessible (for example, because they are located on an intranet or localhost) are included in the recording and can be replayed correctly.
 
 ## Uniquely identifies
+
 At the same time, our serialization should also include both full and incremental types. Full serialization can transform a DOM tree into a corresponding tree data structure.
 
 For example, the following DOM tree:
@@ -33,8 +36,7 @@ For example, the following DOM tree:
 ```html
 <html>
   <body>
-    <header>
-    </header>
+    <header></header>
   </body>
 </html>
 ```
@@ -100,10 +102,10 @@ Imagine if we recorded the click of a button on the same page and played it back
 
 ```javascript
 type clickSnapshot = {
-  source: 'MouseInteraction';
-  type: 'Click';
-  node: HTMLButtonElement;
-}
+  source: 'MouseInteraction',
+  type: 'Click',
+  node: HTMLButtonElement,
+};
 ```
 
 The operation can be executed again by `snapshot.node.click()`.
@@ -119,5 +121,5 @@ type clickSnapshot = {
   source: 'MouseInteraction';
   type: 'Click';
   id: Number;
-}
+};
 ```
