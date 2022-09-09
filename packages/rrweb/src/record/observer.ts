@@ -450,12 +450,18 @@ function initInputObserver({
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
       ...hookProperties.map((p) =>
-        hookSetter<HTMLElement>(p[0], p[1], {
-          set() {
-            // mock to a normal event
-            eventHandler({ target: this as EventTarget } as Event);
+        hookSetter<HTMLElement>(
+          p[0],
+          p[1],
+          {
+            set() {
+              // mock to a normal event
+              eventHandler({ target: this as EventTarget } as Event);
+            },
           },
-        }, false, currentWindow),
+          false,
+          currentWindow,
+        ),
       ),
     );
   }
@@ -691,7 +697,10 @@ function initMediaInteractionObserver({
   const handler = (type: MediaInteractions) =>
     throttle((event: Event) => {
       const target = getEventTarget(event);
-      if (!target || isBlocked(target as Node, blockClass, blockSelector, true)) {
+      if (
+        !target ||
+        isBlocked(target as Node, blockClass, blockSelector, true)
+      ) {
         return;
       }
       const { currentTime, volume, muted } = target as HTMLMediaElement;
