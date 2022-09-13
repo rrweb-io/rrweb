@@ -35,5 +35,5 @@ replayer.play();
 
 **回放 Canvas 将会关闭沙盒策略，导致一定风险**。
 
-另外，您可以使用 canvas-webrtc 插件通过 WEBRTC 流式 Canvas 元素。
-有关更多信息，请参见[canvas-webrtc 文档](../../packages/rrweb/src/plugins/canvas-webrtc/readme.md)
+另外，您可以使用 canvas-webrtc 插件通过 WEBRTC 流式传输 Canvas 元素。
+有关更多信息，请参考[canvas-webrtc 文档](../../packages/rrweb/src/plugins/canvas-webrtc/readme.md)
