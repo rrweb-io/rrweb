@@ -273,7 +273,7 @@ export default class MutationBuffer {
         rootShadowHost =
           (rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host ||
           null;
-      // ensure shadowHost is a Node, or doc.contains will throw an error
+      // ensure contains is passed a Node, or it will throw an error
       const notInDoc =
         !this.doc.contains(n) &&
         (!rootShadowHost || !this.doc.contains(rootShadowHost));
@@ -370,14 +370,30 @@ export default class MutationBuffer {
       }
       if (!node) {
         for (let index = addList.length - 1; index >= 0; index--) {
-          const _node = addList.get(index)!;
+          const _node = addList.get(index);
           // ensure _node is defined before attempting to find value
           if (_node) {
             const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value);
-            if (parentId !== -1 && nextId !== -1) {
+
+            if (nextId === -1) continue;
+            // nextId !== -1 && parentId !== -1
+            else if (parentId !== -1) {
               node = _node;
               break;
+            }
+            // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
+            else {
+              const nodeInShadowDom = _node.value;
+              // Get the host of the shadow dom and treat it as parent node.
+              const shadowHost: Element | null = nodeInShadowDom.getRootNode
+                ? (nodeInShadowDom.getRootNode() as ShadowRoot)?.host
+                : null;
+              const parentId = this.mirror.getId(shadowHost);
+              if (parentId !== -1) {
+                node = _node;
+                break;
+              }
             }
           }
         }
@@ -446,7 +462,7 @@ export default class MutationBuffer {
       case 'characterData': {
         const value = m.target.textContent;
         if (
-          !isBlocked(m.target, this.blockClass, false) &&
+          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
         ) {
           this.texts.push({
@@ -478,7 +494,7 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, false) ||
+          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
           value === m.oldValue
         ) {
           return;
@@ -554,7 +570,8 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockClass, true)) return;
+        if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
+          return;
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
@@ -563,7 +580,7 @@ export default class MutationBuffer {
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, false) ||
+            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
             isIgnored(n, this.mirror) ||
             !isSerialized(n, this.mirror)
           ) {
@@ -635,7 +652,7 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, false))
+    if (!isBlocked(n, this.blockClass, this.blockSelector, false))
       n.childNodes.forEach((childN) => this.genAdds(childN));
   };
 }

@@ -81,7 +81,6 @@ export const startServer = (defaultPort: number = 3030) =>
         resolve(s);
       })
       .on('error', (e) => {
-        console.log('port in use, trying next one');
         s.listen().on('listening', () => {
           resolve(s);
         });

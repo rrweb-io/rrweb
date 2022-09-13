@@ -581,7 +581,7 @@ exports[`record captures style property changes 1`] = `
       \\"source\\": 13,
       \\"id\\": 9,
       \\"set\\": {
-        \\"property\\": \\"color\\",
+        \\"property\\": \\"border-color\\",
         \\"value\\": \\"green\\"
       },
       \\"index\\": [

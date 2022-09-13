@@ -385,6 +385,7 @@ describe('record', function (this: ISuite) {
 
       record({
         emit: ((window as unknown) as IWindow).emit,
+        ignoreCSSAttributes: new Set(['color']),
       });
 
       const styleElement = document.createElement('style');
@@ -393,10 +394,18 @@ describe('record', function (this: ISuite) {
       const styleSheet = <CSSStyleSheet>styleElement.sheet;
       styleSheet.insertRule('body { background: #000; }');
       setTimeout(() => {
+        // should be ignored
         (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty(
           'color',
           'green',
         );
+
+        // should be captured because we did not block it
+        (styleSheet.cssRules[0] as CSSStyleRule).style.setProperty(
+          'border-color',
+          'green',
+        );
+
         (styleSheet.cssRules[0] as CSSStyleRule).style.removeProperty(
           'background',
         );

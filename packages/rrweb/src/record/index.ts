@@ -71,7 +71,9 @@ function record<T = eventWithTime>(
     inlineImages = false,
     plugins,
     keepIframeSrcFn = () => false,
+    ignoreCSSAttributes = new Set([]),
   } = options;
+
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
@@ -235,6 +237,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
     blockClass,
+    blockSelector,
     mirror,
     sampling: sampling.canvas,
   });
@@ -473,6 +476,7 @@ function record<T = eventWithTime>(
           stylesheetManager,
           shadowDomManager,
           canvasManager,
+          ignoreCSSAttributes,
           plugins:
             plugins
               ?.filter((p) => p.observer)
