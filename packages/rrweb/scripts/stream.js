@@ -18,11 +18,6 @@ const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
 
-function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
-  return fs.readFileSync(bundlePath, 'utf8');
-}
-
 async function startRecording(page, serverURL) {
   try {
     await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
@@ -120,26 +115,10 @@ async function resizeWindow(page, top, left, width, height) {
 }
 
 void (async () => {
-  const code = getCode();
   let server;
   let serverURL;
 
   await start();
-
-  const fakeGoto = async (page, url) => {
-    const intercept = (request) => {
-      void request.respond({
-        status: 200,
-        contentType: 'text/html',
-        body: ' ', // non-empty string or page will load indefinitely
-      });
-    };
-    await page.setRequestInterception(true);
-    page.on('request', intercept);
-    await page.goto(url);
-    await page.setRequestInterception(false);
-    page.off('request', intercept);
-  };
 
   async function start() {
     server = await startServer();
