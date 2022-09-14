@@ -46,7 +46,6 @@ export class RRWebPluginCanvasWebRTCRecord {
     };
     this.peer?.send(JSON.stringify(data));
     this.peer?.addStream(stream);
-    this.peer?.send(JSON.stringify(data));
   }
 
   public setupPeer() {
