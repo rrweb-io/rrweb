@@ -1,5 +1,4 @@
-// import type { SequentialIdOptions } from '../record';
-import type { RRNode } from 'rrdom/es';
+import type { RRNode } from 'rrdom';
 import type { Mirror } from 'rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
 import type { Replayer } from '../../../replay';
