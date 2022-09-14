@@ -103,6 +103,9 @@ async function startReplay(page, serverURL, recordedPage) {
       plugins: [window.plugin.initPlugin()],
     });
     window.replayer.startLive();
+    const style = new CSSStyleSheet();
+    style.replaceSync('body {margin: 0;} iframe {border: none;}');
+    document.adoptedStyleSheets = [style];
   });
 }
 
