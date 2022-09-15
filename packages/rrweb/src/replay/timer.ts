@@ -41,22 +41,21 @@ export class Timer {
   public start() {
     this.timeOffset = 0;
     let lastTimestamp = performance.now();
-    const { actions } = this;
     const check = () => {
       const time = performance.now();
       this.timeOffset += (time - lastTimestamp) * this.speed;
       lastTimestamp = time;
-      while (actions.length) {
-        const action = actions[0];
+      while (this.actions.length) {
+        const action = this.actions[0];
 
         if (this.timeOffset >= action.delay) {
-          actions.shift();
+          this.actions.shift();
           action.doAction();
         } else {
           break;
         }
       }
-      if (actions.length > 0 || this.liveMode) {
+      if (this.actions.length > 0 || this.liveMode) {
         this.raf = requestAnimationFrame(check);
       }
     };
