@@ -90,6 +90,16 @@ const baseConfigs = [
     pathFn: toPluginPath('console', 'record'),
   },
   {
+    input: './src/plugins/canvas-webrtc/record/index.ts',
+    name: 'rrwebCanvasWebRTCRecord',
+    pathFn: toPluginPath('canvas-webrtc', 'record'),
+  },
+  {
+    input: './src/plugins/canvas-webrtc/replay/index.ts',
+    name: 'rrwebCanvasWebRTCReplay',
+    pathFn: toPluginPath('canvas-webrtc', 'replay'),
+  },
+  {
     input: './src/plugins/console/replay/index.ts',
     name: 'rrwebConsoleReplay',
     pathFn: toPluginPath('console', 'replay'),
@@ -121,7 +131,7 @@ function getPlugins(options = {}) {
       minify,
     }),
     postcss({
-      extract: false,
+      extract: true,
       inject: false,
       minimize: minify,
       sourceMap,
@@ -209,33 +219,29 @@ if (process.env.BROWSER_ONLY) {
       name: 'rrwebConsoleRecord',
       pathFn: toPluginPath('console', 'record'),
     },
+    {
+      input: './src/plugins/canvas-webrtc/record/index.ts',
+      name: 'rrwebCanvasWebRTCRecord',
+      pathFn: toPluginPath('canvas-webrtc', 'record'),
+    },
+    {
+      input: './src/plugins/canvas-webrtc/replay/index.ts',
+      name: 'rrwebCanvasWebRTCReplay',
+      pathFn: toPluginPath('canvas-webrtc', 'replay'),
+    },
   ];
 
   configs = [];
 
-  // browser record + replay, unminified (for profiling and performance testing)
-  configs.push({
-    input: './src/index.ts',
-    plugins: getPlugins(),
-    output: [
-      {
-        name: 'rrweb',
-        format: 'iife',
-        file: pkg.unpkg,
-      },
-    ],
-  });
-
   for (const c of browserOnlyBaseConfigs) {
     configs.push({
       input: c.input,
-      plugins: getPlugins({ sourceMap: true, minify: true }),
+      plugins: getPlugins(),
       output: [
         {
           name: c.name,
           format: 'iife',
-          file: toMinPath(c.pathFn(pkg.unpkg)),
-          sourcemap: true,
+          file: c.pathFn(pkg.unpkg),
         },
       ],
     });

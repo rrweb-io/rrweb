@@ -1,1 +1,25 @@
-{}
+{
+  "references": [
+    {
+      "path": "packages/rrdom"
+    },
+    {
+      "path": "packages/rrdom-nodejs"
+    },
+    {
+      "path": "packages/rrweb"
+    },
+    {
+      "path": "packages/rrweb-player"
+    },
+    {
+      "path": "packages/rrweb-snapshot"
+    }
+  ],
+  "files": [],
+  "include": [],
+  "exclude": [],
+  "compilerOptions": {
+    "rootDir": "."
+  }
+}

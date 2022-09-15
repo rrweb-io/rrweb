@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
@@ -16,5 +17,13 @@
   },
   "compileOnSave": true,
   "exclude": ["test"],
-  "include": ["src", "test.d.ts", "../rrweb/src/record/workers/workers.d.ts"]
+  "include": ["src", "test.d.ts", "../rrweb/src/record/workers/workers.d.ts"],
+  "references": [
+    {
+      "path": "../rrdom"
+    },
+    {
+      "path": "../rrweb-snapshot"
+    }
+  ]
 }
