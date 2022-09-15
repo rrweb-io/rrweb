@@ -564,9 +564,9 @@ describe('record', function (this: ISuite) {
         sheet3.replaceSync('span {background-color: red;}');
         iframeDocument!.adoptedStyleSheets = [sheet3, sheet2];
         shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
-      }, 60);
+      }, 100);
     });
-    await ctx.page.waitForTimeout(100);
+    await ctx.page.waitForTimeout(200);
     assertSnapshot(ctx.events);
   });
 

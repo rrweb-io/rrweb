@@ -934,19 +934,19 @@ describe('replayer', function () {
     // To test the correctness of replaying adopted stylesheet mutation events in the fast-forward mode.
     await page.evaluate('replayer.play(0);');
     await waitForRAF(page);
-    await page.evaluate('replayer.pause(260);');
+    await page.evaluate('replayer.pause(280);');
     await check250ms();
 
-    await page.evaluate('replayer.pause(310);');
+    await page.evaluate('replayer.pause(330);');
     await check300ms();
 
-    await page.evaluate('replayer.pause(410);');
+    await page.evaluate('replayer.pause(430);');
     await check400ms();
 
-    await page.evaluate('replayer.pause(510);');
+    await page.evaluate('replayer.pause(530);');
     await check500ms();
 
-    await page.evaluate('replayer.pause(610);');
+    await page.evaluate('replayer.pause(630);');
     await check600ms();
   });
 });
