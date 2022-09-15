@@ -105,10 +105,10 @@ export class CanvasManager {
     fps: number,
     win: IWindow,
     blockClass: blockClass,
+    blockSelector: string | null,
     options: {
       dataURLOptions: DataURLOptions;
     },
-    blockSelector: string | null,
   ) {
     const canvasContextReset = initCanvasContextObserver(
       win,
