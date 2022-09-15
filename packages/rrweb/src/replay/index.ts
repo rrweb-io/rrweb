@@ -1188,6 +1188,9 @@ export class Replayer {
             // unexpeted behavior
             void mediaEl.play();
           }
+          if (d.type === MediaInteractions.RateChange) {
+            mediaEl.playbackRate = d.playbackRate;
+          }
         } catch (error) {
           if (this.config.showWarning) {
             console.warn(

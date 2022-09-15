@@ -611,6 +611,7 @@ export const enum MediaInteractions {
   Pause,
   Seeked,
   VolumeChange,
+  RateChange,
 }
 
 export type mediaInteractionParam = {
@@ -619,6 +620,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  playbackRate?: number;
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;
