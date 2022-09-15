@@ -26,7 +26,7 @@ describe('e2e webgl', () => {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 

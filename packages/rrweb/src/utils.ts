@@ -187,12 +187,14 @@ export function getWindowWidth(): number {
  * Checks if the given element set to be blocked by rrweb
  * @param node - node to check
  * @param blockClass - class name to check
- * @param ignoreParents - whether to search through parent nodes for the block class
+ * @param blockSelector - css selectors to check
+ * @param checkAncestors - whether to search through parent nodes for the block class
  * @returns true/false if the node was blocked or not
  */
 export function isBlocked(
   node: Node | null,
   blockClass: blockClass,
+  blockSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
   if (!node) {
@@ -209,6 +211,10 @@ export function isBlocked(
     if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
   } else {
     if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+  }
+  if (blockSelector) {
+    if ((node as HTMLElement).matches(blockSelector)) return true;
+    if (checkAncestors && el.closest(blockSelector) !== null) return true;
   }
   return false;
 }

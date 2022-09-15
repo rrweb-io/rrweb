@@ -53,6 +53,7 @@ function walk(node, mirror, blankSpace) {
 `;
 
 describe('RRDocument for browser environment', () => {
+  jest.setTimeout(60_000);
   let mirror: Mirror;
   beforeEach(() => {
     mirror = new Mirror();

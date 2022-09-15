@@ -229,6 +229,7 @@ export type RecordPlugin<TOptions = unknown> = {
     options: TOptions,
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
+  getMirror?: (mirror: Mirror) => void;
   options: TOptions;
 };
 
@@ -246,6 +247,7 @@ export type recordOptions<T> = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
+  ignoreCSSAttributes?: Set<string>;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   packFn?: PackFn;
@@ -297,6 +299,7 @@ export type observerParam = {
   stylesheetManager: StylesheetManager;
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
+  ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
       cb: (...arg: Array<unknown>) => void,
@@ -667,11 +670,16 @@ export type listenerHandler = () => void;
 export type hookResetter = () => void;
 
 export type ReplayPlugin = {
-  handler: (
+  handler?: (
     event: eventWithTime,
     isSync: boolean,
     context: { replayer: Replayer },
   ) => void;
+  onBuild?: (
+    node: Node | RRNode,
+    context: { id: number; replayer: Replayer },
+  ) => void;
+  getMirror?: (mirror: Mirror) => void;
 };
 export type playerConfig = {
   speed: number;

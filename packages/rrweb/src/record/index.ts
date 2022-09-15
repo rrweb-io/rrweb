@@ -40,6 +40,7 @@ function wrapEvent(e: event): eventWithTime {
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
+let canvasManager!: CanvasManager;
 
 const mirror = createMirror();
 function record<T = eventWithTime>(
@@ -71,7 +72,9 @@ function record<T = eventWithTime>(
     inlineImages = false,
     plugins,
     keepIframeSrcFn = () => false,
+    ignoreCSSAttributes = new Set([]),
   } = options;
+
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
@@ -132,6 +135,14 @@ function record<T = eventWithTime>(
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
+
+  /**
+   * Exposes mirror to the plugins
+   */
+  for (const plugin of plugins || []) {
+    if (plugin.getMirror) plugin.getMirror(mirror);
+  }
+
   const eventProcessor = (e: eventWithTime): T => {
     for (const plugin of plugins || []) {
       if (plugin.eventProcessor) {
@@ -222,11 +233,12 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
   });
 
-  const canvasManager = new CanvasManager({
+  canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
     blockClass,
+    blockSelector,
     mirror,
     sampling: sampling.canvas,
     dataURLOptions
@@ -469,6 +481,7 @@ function record<T = eventWithTime>(
           stylesheetManager,
           shadowDomManager,
           canvasManager,
+          ignoreCSSAttributes,
           plugins:
             plugins
               ?.filter((p) => p.observer)

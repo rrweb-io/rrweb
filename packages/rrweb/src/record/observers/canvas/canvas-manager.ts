@@ -9,6 +9,7 @@ import type {
   listenerHandler,
   CanvasArg,
 } from '../../../types';
+import { isBlocked } from '../../../utils';
 import { CanvasContext } from '../../../types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
@@ -59,18 +60,26 @@ export class CanvasManager {
     mutationCb: canvasMutationCallback;
     win: IWindow;
     blockClass: blockClass;
+    blockSelector: string | null;
     mirror: Mirror;
     sampling?: 'all' | number;
     dataURLOptions: DataURLOptions
   }) {
-    const { sampling = 'all', win, blockClass, recordCanvas, dataURLOptions } = options;
+    const {
+      sampling = 'all',
+      win,
+      blockClass,
+      blockSelector,
+      recordCanvas,
+      dataURLOptions,
+    } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass);
+      this.initCanvasMutationObserver(win, blockClass, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, {dataURLOptions});
+      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {dataURLOptions});
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -96,9 +105,14 @@ export class CanvasManager {
     blockClass: blockClass,
     options: {
       dataURLOptions: DataURLOptions
-    }
+    },
+    blockSelector: string | null,
   ) {
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const canvasContextReset = initCanvasContextObserver(
+      win,
+      blockClass,
+      blockSelector,
+    );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
     const worker = new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
     worker.onmessage = (e) => {
@@ -141,6 +155,16 @@ export class CanvasManager {
     let lastSnapshotTime = 0;
     let rafId: number;
 
+    const getCanvas = (): HTMLCanvasElement[] => {
+      const matchedCanvas: HTMLCanvasElement[] = [];
+      win.document.querySelectorAll('canvas').forEach((canvas) => {
+        if (!isBlocked(canvas, blockClass, blockSelector, true)) {
+          matchedCanvas.push(canvas);
+        }
+      });
+      return matchedCanvas;
+    };
+
     const takeCanvasSnapshots = (timestamp: DOMHighResTimeStamp) => {
       if (
         lastSnapshotTime &&
@@ -151,8 +175,7 @@ export class CanvasManager {
       }
       lastSnapshotTime = timestamp;
 
-      win.document
-        .querySelectorAll(`canvas:not(.${blockClass as string} *)`)
+      getCanvas()
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
@@ -203,15 +226,21 @@ export class CanvasManager {
   private initCanvasMutationObserver(
     win: IWindow,
     blockClass: blockClass,
+    blockSelector: string | null,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
 
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const canvasContextReset = initCanvasContextObserver(
+      win,
+      blockClass,
+      blockSelector,
+    );
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
       win,
       blockClass,
+      blockSelector,
       this.mirror,
     );
 
@@ -219,6 +248,7 @@ export class CanvasManager {
       this.processMutation.bind(this),
       win,
       blockClass,
+      blockSelector,
       this.mirror,
     );
 
