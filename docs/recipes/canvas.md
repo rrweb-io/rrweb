@@ -23,9 +23,9 @@ rrweb.record({
   },
   // optional image format settings
   dataURLOptions: {
-   type: 'image/webp',
-   quality: 0.6
-  }
+    type: 'image/webp',
+    quality: 0.6,
+  },
 });
 ```
 

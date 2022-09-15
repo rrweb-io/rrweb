@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import type { DataURLOptions } from 'rrweb-snapshot'
+import type { DataURLOptions } from 'rrweb-snapshot';
 import type {
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
@@ -26,7 +26,7 @@ interface ImageBitmapDataURLResponseWorker {
 async function getTransparentBlobFor(
   width: number,
   height: number,
-  dataURLOptions: DataURLOptions
+  dataURLOptions: DataURLOptions,
 ): Promise<string> {
   const id = `${width}-${height}`;
   if (transparentBlobMap.has(id)) return transparentBlobMap.get(id)!;
@@ -49,7 +49,11 @@ worker.onmessage = async function (e) {
 
   const { id, bitmap, width, height, dataURLOptions } = e.data;
 
-  const transparentBase64 = getTransparentBlobFor(width, height, dataURLOptions);
+  const transparentBase64 = getTransparentBlobFor(
+    width,
+    height,
+    dataURLOptions,
+  );
 
   const offscreen = new OffscreenCanvas(width, height);
   const ctx = offscreen.getContext('2d')!;

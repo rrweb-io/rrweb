@@ -241,7 +241,7 @@ function record<T = eventWithTime>(
     blockSelector,
     mirror,
     sampling: sampling.canvas,
-    dataURLOptions
+    dataURLOptions,
   });
 
   const shadowDomManager = new ShadowDomManager({

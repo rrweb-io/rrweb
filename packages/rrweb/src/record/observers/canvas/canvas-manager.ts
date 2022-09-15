@@ -63,7 +63,7 @@ export class CanvasManager {
     blockSelector: string | null;
     mirror: Mirror;
     sampling?: 'all' | number;
-    dataURLOptions: DataURLOptions
+    dataURLOptions: DataURLOptions;
   }) {
     const {
       sampling = 'all',
@@ -79,7 +79,9 @@ export class CanvasManager {
     if (recordCanvas && sampling === 'all')
       this.initCanvasMutationObserver(win, blockClass, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {dataURLOptions});
+      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
+        dataURLOptions,
+      });
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -104,7 +106,7 @@ export class CanvasManager {
     win: IWindow,
     blockClass: blockClass,
     options: {
-      dataURLOptions: DataURLOptions
+      dataURLOptions: DataURLOptions;
     },
     blockSelector: string | null,
   ) {
@@ -207,7 +209,7 @@ export class CanvasManager {
               bitmap,
               width: canvas.width,
               height: canvas.height,
-              dataURLOptions: options.dataURLOptions
+              dataURLOptions: options.dataURLOptions,
             },
             [bitmap],
           );

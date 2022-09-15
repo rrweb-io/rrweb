@@ -151,7 +151,7 @@ setInterval(save, 10 * 1000);
 | hooks                | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                 |
 | packFn               | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | sampling             | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
-| dataURLOptions       | {}                 | Canvas 图像快照的格式和质量,这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小|
+| dataURLOptions       | {}                 | Canvas 图像快照的格式和质量,这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小                                                                    |
 | recordCanvas         | false              | 是否记录 canvas 内容, 可用选项：false, true                                                                                                                                           |
 | inlineImages         | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts         | false              | 是否记录页面中的字体文件                                                                                                                                                              |

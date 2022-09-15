@@ -6,7 +6,7 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-  DataURLOptions
+  DataURLOptions,
 } from 'rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
@@ -567,7 +567,7 @@ export type ImageBitmapDataURLWorkerParams = {
   bitmap: ImageBitmap;
   width: number;
   height: number;
-  dataURLOptions: DataURLOptions
+  dataURLOptions: DataURLOptions;
 };
 
 export type ImageBitmapDataURLWorkerResponse =

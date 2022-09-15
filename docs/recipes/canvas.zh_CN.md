@@ -23,9 +23,9 @@ rrweb.record({
   },
   // 图像的格式
   dataURLOptions: {
-   type: 'image/webp',
-   quality: 0.6
-  }
+    type: 'image/webp',
+    quality: 0.6,
+  },
 });
 ```
 
