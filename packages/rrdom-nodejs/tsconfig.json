@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
@@ -21,5 +22,13 @@
     "test.d.ts",
     "../rrweb/src/record/workers/workers.d.ts",
     "../rrweb/src/record/constructableStyleSheets.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../rrdom"
+    },
+    {
+      "path": "../rrweb-snapshot"
+    }
   ]
 }

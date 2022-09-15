@@ -38,7 +38,7 @@ const setup = function (this: ISuite, content: string): ISuite {
       devtools: true,
     });
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 

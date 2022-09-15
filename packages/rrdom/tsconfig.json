@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
@@ -14,6 +15,11 @@
     "declaration": true,
     "importsNotUsedAsValues": "error"
   },
+  "references": [
+    {
+      "path": "../rrweb-snapshot"
+    }
+  ],
   "compileOnSave": true,
   "exclude": ["test"],
   "include": [

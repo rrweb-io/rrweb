@@ -1,15 +1,19 @@
 /* eslint:disable: no-console */
 
-const fs = require('fs');
-const path = require('path');
-const EventEmitter = require('events');
-const inquirer = require('inquirer');
-const puppeteer = require('puppeteer');
+import * as path from 'path';
+import * as fs from 'fs';
+import { EventEmitter } from 'node:events';
+import inquirer from 'inquirer';
+import puppeteer from 'puppeteer';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
 
 function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+  const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
@@ -165,7 +169,7 @@ void (async () => {
     }
 
     await page.addStyleTag({
-      path: path.resolve(__dirname, '../dist/rrweb.min.css'),
+      path: path.resolve(__dirname, '../dist/rrweb.css'),
     });
     await page.evaluate(`${code}
       const events = ${JSON.stringify(events)};
@@ -196,10 +200,10 @@ void (async () => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Record @${time}</title>
-    <link rel="stylesheet" href="../dist/rrweb.min.css" />
+    <link rel="stylesheet" href="../dist/rrweb.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.min.js"></script>
+    <script src="../dist/rrweb.js"></script>
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(

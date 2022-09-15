@@ -320,7 +320,7 @@ export function buildNodeWithSN(
     mirror: Mirror;
     skipChild?: boolean;
     hackCss: boolean;
-    afterAppend?: (n: Node) => unknown;
+    afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
   },
 ): Node | null {
@@ -396,7 +396,7 @@ export function buildNodeWithSN(
         node.appendChild(childNode);
       }
       if (afterAppend) {
-        afterAppend(childNode);
+        afterAppend(childNode, childN.id);
       }
     }
   }
@@ -447,7 +447,7 @@ function rebuild(
     doc: Document;
     onVisit?: (node: Node) => unknown;
     hackCss?: boolean;
-    afterAppend?: (n: Node) => unknown;
+    afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
     mirror: Mirror;
   },

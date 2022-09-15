@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "noImplicitAny": true,
@@ -11,5 +12,6 @@
     "lib": ["es6", "dom"]
   },
   "exclude": ["test"],
-  "include": ["src"]
+  "include": ["src"],
+  "references": []
 }

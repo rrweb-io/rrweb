@@ -41,6 +41,7 @@ function wrapEvent(e: event): eventWithTime {
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
+let canvasManager!: CanvasManager;
 
 const mirror = createMirror();
 function record<T = eventWithTime>(
@@ -134,6 +135,14 @@ function record<T = eventWithTime>(
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
+
+  /**
+   * Exposes mirror to the plugins
+   */
+  for (const plugin of plugins || []) {
+    if (plugin.getMirror) plugin.getMirror(mirror);
+  }
+
   const eventProcessor = (e: eventWithTime): T => {
     for (const plugin of plugins || []) {
       if (plugin.eventProcessor) {
@@ -237,7 +246,7 @@ function record<T = eventWithTime>(
     stylesheetManager: stylesheetManager,
   });
 
-  const canvasManager = new CanvasManager({
+  canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,

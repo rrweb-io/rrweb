@@ -18,6 +18,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "concurrently": "^7.1.0",
@@ -32,11 +33,12 @@
   },
   "scripts": {
     "lerna": "lerna",
-    "build:all": "yarn turbo run prepublish",
-    "test": "yarn turbo run test",
+    "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
+    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
     "test:watch": "yarn turbo run test:watch",
     "dev": "yarn turbo run dev",
     "repl": "cd packages/rrweb && npm run repl",
+    "live-stream": "cd packages/rrweb && yarn live-stream",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
     "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx"
   }

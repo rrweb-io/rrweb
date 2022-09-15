@@ -52,9 +52,9 @@ describe('record integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
     const pluginsCode = [
-      path.resolve(__dirname, '../dist/plugins/console-record.min.js'),
+      path.resolve(__dirname, '../dist/plugins/console-record.js'),
     ]
       .map((p) => fs.readFileSync(p, 'utf8'))
       .join();
