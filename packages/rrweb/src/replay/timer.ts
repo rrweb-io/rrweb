@@ -25,17 +25,17 @@ export class Timer {
     this.liveMode = config.liveMode;
   }
   /**
-   * Add an action after the timer starts.
+   * Add an action, possibly after the timer starts.
    */
   public addAction(action: actionWithDelay) {
+    if (!this.actions.length || this.actions[this.actions.length - 1].delay <= action.delay) {
+      // 'fast track'
+      this.actions.push(action);
+      return;
+    }
+    // binary search - events can arrive out of order in a realtime context
     const index = this.findActionIndex(action);
     this.actions.splice(index, 0, action);
-  }
-  /**
-   * Add all actions before the timer starts
-   */
-  public addActions(actions: actionWithDelay[]) {
-    this.actions = this.actions.concat(actions);
   }
 
   public start() {
