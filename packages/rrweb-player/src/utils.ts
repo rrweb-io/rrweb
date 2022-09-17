@@ -84,6 +84,7 @@ export function exitFullscreen(): Promise<void> {
 
 export function isFullscreen(): boolean {
   return (
+    // eslint-disable-next-line compat/compat
     document.fullscreen ||
     document.webkitIsFullScreen ||
     document.mozFullScreen ||

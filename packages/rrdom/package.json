@@ -47,5 +47,8 @@
   },
   "dependencies": {
     "rrweb-snapshot": "^2.0.0-alpha.1"
-  }
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
 }

@@ -235,7 +235,6 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
-      this.mirror,
     );
 
     const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(

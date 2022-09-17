@@ -23,6 +23,7 @@
     "@typescript-eslint/parser": "^5.25.0",
     "concurrently": "^7.1.0",
     "eslint": "^8.19.0",
+    "eslint-plugin-compat": "^4.0.2",
     "eslint-plugin-jest": "^26.5.3",
     "eslint-plugin-tsdoc": "^0.2.16",
     "lerna": "^4.0.0",

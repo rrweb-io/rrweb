@@ -4,7 +4,6 @@ import type {
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
   mutationCallBack,
-  styleSheetRuleCallback,
 } from '../types';
 import { StyleSheetMirror } from '../utils';
 

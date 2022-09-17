@@ -28,6 +28,8 @@ async function getTransparentBlobFor(
 ): Promise<string> {
   const id = `${width}-${height}`;
   if (transparentBlobMap.has(id)) return transparentBlobMap.get(id)!;
+  // offScreenCanvas will significantly increase the requirements for browser compatibility so that I disable this rule here.
+  // eslint-disable-next-line compat/compat
   const offscreen = new OffscreenCanvas(width, height);
   offscreen.getContext('2d'); // creates rendering context for `converToBlob`
   const blob = await offscreen.convertToBlob(); // takes a while
@@ -49,6 +51,7 @@ worker.onmessage = async function (e) {
 
   const transparentBase64 = getTransparentBlobFor(width, height);
 
+  // eslint-disable-next-line compat/compat
   const offscreen = new OffscreenCanvas(width, height);
   const ctx = offscreen.getContext('2d')!;
 

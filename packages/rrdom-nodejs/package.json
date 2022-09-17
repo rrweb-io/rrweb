@@ -51,5 +51,8 @@
     "nwsapi": "^2.2.0",
     "rrdom": "^0.1.4",
     "rrweb-snapshot": "^2.0.0-alpha.1"
-  }
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
 }

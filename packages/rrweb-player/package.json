@@ -57,5 +57,8 @@
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme"
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "browserslist": [
+    "supports promises and supports fullscreen"
+  ]
 }
