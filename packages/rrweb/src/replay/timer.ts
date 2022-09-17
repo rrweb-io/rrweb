@@ -13,9 +13,16 @@ export class Timer {
   private raf: number | null = null;
   private liveMode: boolean;
 
-  constructor(actions: actionWithDelay[] = [], speed: number) {
+  constructor(
+    actions: actionWithDelay[] = [],
+    config: {
+      speed: number;
+      liveMode: boolean;
+    },
+  ) {
     this.actions = actions;
-    this.speed = speed;
+    this.speed = config.speed;
+    this.liveMode = config.liveMode;
   }
   /**
    * Add an action after the timer starts.

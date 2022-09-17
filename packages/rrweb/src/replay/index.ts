@@ -262,7 +262,10 @@ export class Replayer {
       this.mirror.reset();
     });
 
-    const timer = new Timer([], config?.speed || defaultConfig.speed);
+    const timer = new Timer([], {
+      speed: this.config.speed,
+      liveMode: this.config.liveMode,
+    });
     this.service = createPlayerService(
       {
         events: events
