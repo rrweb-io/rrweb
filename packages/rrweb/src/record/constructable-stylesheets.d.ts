@@ -5,6 +5,6 @@ declare interface DocumentOrShadowRoot {
 }
 
 declare interface CSSStyleSheet {
-  replace(text: string)?: Promise<CSSStyleSheet>;
-  replaceSync(text: string)?: void;
+  replace?(text: string): Promise<CSSStyleSheet>;
+  replaceSync?(text: string): void;
 }

@@ -79,7 +79,10 @@ export class ShadowDomManager {
     });
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
     setTimeout(() => {
-      if (shadowRoot.adoptedStyleSheets?.length > 0)
+      if (
+        shadowRoot.adoptedStyleSheets &&
+        shadowRoot.adoptedStyleSheets.length > 0
+      )
         this.bypassOptions.stylesheetManager.adoptStyleSheets(
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(shadowRoot.host),

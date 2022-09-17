@@ -581,49 +581,55 @@ function initStyleSheetObserver(
     return deleteRule.apply(this, [index]);
   };
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const replace = win.CSSStyleSheet.prototype.replace;
-  win.CSSStyleSheet.prototype.replace = function (
-    this: CSSStyleSheet,
-    text: string,
-  ) {
-    const { id, styleId } = getIdAndStyleId(
-      this,
-      mirror,
-      stylesheetManager.styleMirror,
-    );
+  let replace: (text: string) => Promise<CSSStyleSheet>;
+  if (win.CSSStyleSheet.prototype.replace) {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    replace = win.CSSStyleSheet.prototype.replace;
+    win.CSSStyleSheet.prototype.replace = function (
+      this: CSSStyleSheet,
+      text: string,
+    ) {
+      const { id, styleId } = getIdAndStyleId(
+        this,
+        mirror,
+        stylesheetManager.styleMirror,
+      );
 
-    if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      styleSheetRuleCb({
-        id,
-        styleId,
-        replace: text,
-      });
-    }
-    return replace.apply(this, [text]);
-  };
+      if ((id && id !== -1) || (styleId && styleId !== -1)) {
+        styleSheetRuleCb({
+          id,
+          styleId,
+          replace: text,
+        });
+      }
+      return replace.apply(this, [text]);
+    };
+  }
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const replaceSync = win.CSSStyleSheet.prototype.replaceSync;
-  win.CSSStyleSheet.prototype.replaceSync = function (
-    this: CSSStyleSheet,
-    text: string,
-  ) {
-    const { id, styleId } = getIdAndStyleId(
-      this,
-      mirror,
-      stylesheetManager.styleMirror,
-    );
+  let replaceSync: (text: string) => void;
+  if (win.CSSStyleSheet.prototype.replaceSync) {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    replaceSync = win.CSSStyleSheet.prototype.replaceSync;
+    win.CSSStyleSheet.prototype.replaceSync = function (
+      this: CSSStyleSheet,
+      text: string,
+    ) {
+      const { id, styleId } = getIdAndStyleId(
+        this,
+        mirror,
+        stylesheetManager.styleMirror,
+      );
 
-    if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      styleSheetRuleCb({
-        id,
-        styleId,
-        replaceSync: text,
-      });
-    }
-    return replaceSync.apply(this, [text]);
-  };
+      if ((id && id !== -1) || (styleId && styleId !== -1)) {
+        styleSheetRuleCb({
+          id,
+          styleId,
+          replaceSync: text,
+        });
+      }
+      return replaceSync.apply(this, [text]);
+    };
+  }
 
   const supportedNestedCSSRuleTypes: {
     [key: string]: GroupingCSSRuleTypes;
@@ -716,8 +722,8 @@ function initStyleSheetObserver(
   return () => {
     win.CSSStyleSheet.prototype.insertRule = insertRule;
     win.CSSStyleSheet.prototype.deleteRule = deleteRule;
-    win.CSSStyleSheet.prototype.replace = replace;
-    win.CSSStyleSheet.prototype.replaceSync = replaceSync;
+    replace && (win.CSSStyleSheet.prototype.replace = replace);
+    replaceSync && (win.CSSStyleSheet.prototype.replaceSync = replaceSync);
     Object.entries(supportedNestedCSSRuleTypes).forEach(([typeKey, type]) => {
       type.prototype.insertRule = unmodifiedFunctions[typeKey].insertRule;
       type.prototype.deleteRule = unmodifiedFunctions[typeKey].deleteRule;

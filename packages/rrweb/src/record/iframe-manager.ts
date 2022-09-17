@@ -46,7 +46,8 @@ export class IframeManager {
 
     if (
       iframeEl.contentDocument &&
-      iframeEl.contentDocument.adoptedStyleSheets?.length > 0
+      iframeEl.contentDocument.adoptedStyleSheets &&
+      iframeEl.contentDocument.adoptedStyleSheets.length > 0
     )
       this.stylesheetManager.adoptStyleSheets(
         iframeEl.contentDocument.adoptedStyleSheets,

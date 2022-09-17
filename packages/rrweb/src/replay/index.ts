@@ -1813,14 +1813,14 @@ export class Replayer {
 
     if (data.replace)
       try {
-        void styleSheet.replace(data.replace);
+        void styleSheet.replace?.(data.replace);
       } catch (e) {
         // for safety
       }
 
     if (data.replaceSync)
       try {
-        styleSheet.replaceSync(data.replaceSync);
+        styleSheet.replaceSync?.(data.replaceSync);
       } catch (e) {
         // for safety
       }
@@ -1868,16 +1868,20 @@ export class Replayer {
         hostWindow = (targetHost as Document).defaultView;
 
       if (!hostWindow) return;
-      newStyleSheet = new hostWindow.CSSStyleSheet();
-      this.styleMirror.add(newStyleSheet, style.styleId);
-      // To reuse the code of applying stylesheet rules
-      this.applyStyleSheetRule(
-        {
-          source: IncrementalSource.StyleSheetRule,
-          adds: style.rules,
-        },
-        newStyleSheet,
-      );
+      try {
+        newStyleSheet = new hostWindow.CSSStyleSheet();
+        this.styleMirror.add(newStyleSheet, style.styleId);
+        // To reuse the code of applying stylesheet rules
+        this.applyStyleSheetRule(
+          {
+            source: IncrementalSource.StyleSheetRule,
+            adds: style.rules,
+          },
+          newStyleSheet,
+        );
+      } catch (e) {
+        // In case some browsers don't support constructing StyleSheet.
+      }
     });
 
     const MAX_RETRY_TIME = 10;
