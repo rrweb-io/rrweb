@@ -531,6 +531,9 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      // reset init fns when stopping record
+      (wrappedEmit as unknown) = undefined;
+      (takeFullSnapshot as unknown) = undefined;
     };
   } catch (error) {
     // TODO: handle internal error
