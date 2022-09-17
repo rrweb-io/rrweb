@@ -489,13 +489,13 @@ describe('record', function (this: ISuite) {
       });
 
       setTimeout(() => {
-        sheet.replace('div { color: yellow; }');
-        sheet2.replace('h1 { color: blue; }');
+        sheet.replace!('div { color: yellow; }');
+        sheet2.replace!('h1 { color: blue; }');
       }, 0);
 
       setTimeout(() => {
-        sheet.replaceSync('div { display: inline ; }');
-        sheet2.replaceSync('h1 { font-size: large; }');
+        sheet.replaceSync!('div { display: inline ; }');
+        sheet2.replaceSync!('h1 { font-size: large; }');
       }, 5);
 
       setTimeout(() => {
@@ -543,10 +543,10 @@ describe('record', function (this: ISuite) {
 
       const iframeWin = iframeDocument!.defaultView!;
       const sheet1 = new iframeWin.CSSStyleSheet();
-      sheet1.replaceSync('h1 {color: blue;}');
+      sheet1.replaceSync!('h1 {color: blue;}');
       iframeDocument!.adoptedStyleSheets = [sheet1];
       const sheet2 = new iframeWin.CSSStyleSheet();
-      sheet2.replaceSync('div {font-size: large;}');
+      sheet2.replaceSync!('div {font-size: large;}');
       shadowHost.shadowRoot!.adoptedStyleSheets = [sheet2];
 
       const { record } = ((window as unknown) as IWindow).rrweb;
@@ -555,13 +555,13 @@ describe('record', function (this: ISuite) {
       });
 
       setTimeout(() => {
-        sheet1.insertRule('div { display: inline ; }', 1);
-        sheet2.replaceSync('h1 { font-size: large; }');
+        sheet1.insertRule!('div { display: inline ; }', 1);
+        sheet2.replaceSync!('h1 { font-size: large; }');
       }, 50);
 
       setTimeout(() => {
         const sheet3 = new iframeWin.CSSStyleSheet();
-        sheet3.replaceSync('span {background-color: red;}');
+        sheet3.replaceSync!('span {background-color: red;}');
         iframeDocument!.adoptedStyleSheets = [sheet3, sheet2];
         shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
       }, 100);
@@ -698,7 +698,7 @@ describe('record', function (this: ISuite) {
       `;
 
       const sheet = new CSSStyleSheet();
-      sheet.replaceSync(
+      sheet.replaceSync!(
         'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
       );
       // Add stylesheet to a document.
@@ -712,7 +712,7 @@ describe('record', function (this: ISuite) {
         '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
       const sheet2 = new CSSStyleSheet();
 
-      sheet2.replaceSync('span { color: red; }');
+      sheet2.replaceSync!('span { color: red; }');
 
       shadow.adoptedStyleSheets = [sheet, sheet2];
 
@@ -720,7 +720,7 @@ describe('record', function (this: ISuite) {
       const iframe = document.querySelector('iframe');
       const sheet3 = new (iframe!.contentWindow! as IWindow &
         typeof globalThis).CSSStyleSheet();
-      sheet3.replaceSync('h1 { color: blue; }');
+      sheet3.replaceSync!('h1 { color: blue; }');
 
       iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
 
@@ -739,14 +739,14 @@ describe('record', function (this: ISuite) {
         shadow.innerHTML =
           '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
         const sheet4 = new CSSStyleSheet();
-        sheet4.replaceSync('span { color: green; }');
+        sheet4.replaceSync!('span { color: green; }');
         shadow.adoptedStyleSheets = [sheet, sheet4];
 
         document.adoptedStyleSheets = [sheet4, sheet, sheet2];
 
         const sheet5 = new (iframe!.contentWindow! as IWindow &
           typeof globalThis).CSSStyleSheet();
-        sheet5.replaceSync('h2 { color: purple; }');
+        sheet5.replaceSync!('h2 { color: purple; }');
         iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
       }, 10);
     });
