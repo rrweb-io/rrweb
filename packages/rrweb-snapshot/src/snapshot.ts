@@ -478,13 +478,11 @@ function serializeNode(
           type: NodeType.Document,
           childNodes: [],
           compatMode: (n as Document).compatMode, // probably "BackCompat"
-          rootId,
         };
       } else {
         return {
           type: NodeType.Document,
           childNodes: [],
-          rootId,
         };
       }
     case n.DOCUMENT_TYPE_NODE:
@@ -1014,13 +1012,14 @@ export function serializeNodeWithId(
   } else {
     id = genId();
   }
+
+  const serializedNode = Object.assign(_serializedNode, { id });
+  // add IGNORED_NODE to mirror to track nextSiblings
+  mirror.add(n, serializedNode);
+
   if (id === IGNORED_NODE) {
     return null; // slimDOM
   }
-
-  const serializedNode = Object.assign(_serializedNode, { id });
-
-  mirror.add(n, serializedNode);
 
   if (onSerialize) {
     onSerialize(n);

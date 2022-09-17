@@ -13,6 +13,7 @@ export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
   blockClass: blockClass,
+  blockSelector: string | null,
   mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
@@ -41,7 +42,7 @@ export default function initCanvas2DMutationObserver(
             this: CanvasRenderingContext2D,
             ...args: Array<unknown>
           ) {
-            if (!isBlocked(this.canvas, blockClass, true)) {
+            if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
               setTimeout(() => {

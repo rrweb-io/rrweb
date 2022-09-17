@@ -40,6 +40,7 @@ function wrapEvent(e: event): eventWithTime {
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
+let canvasManager!: CanvasManager;
 
 const mirror = createMirror();
 function record<T = eventWithTime>(
@@ -63,6 +64,7 @@ function record<T = eventWithTime>(
     hooks,
     packFn,
     sampling = {},
+    dataURLOptions = {},
     mousemoveWait,
     recordCanvas = false,
     userTriggeredOnInput = false,
@@ -70,7 +72,9 @@ function record<T = eventWithTime>(
     inlineImages = false,
     plugins,
     keepIframeSrcFn = () => false,
+    ignoreCSSAttributes = new Set([]),
   } = options;
+
   // runtime checks for user options
   if (!emit) {
     throw new Error('emit function is required');
@@ -131,6 +135,14 @@ function record<T = eventWithTime>(
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
+
+  /**
+   * Exposes mirror to the plugins
+   */
+  for (const plugin of plugins || []) {
+    if (plugin.getMirror) plugin.getMirror(mirror);
+  }
+
   const eventProcessor = (e: eventWithTime): T => {
     for (const plugin of plugins || []) {
       if (plugin.eventProcessor) {
@@ -221,13 +233,15 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
   });
 
-  const canvasManager = new CanvasManager({
+  canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
     blockClass,
+    blockSelector,
     mirror,
     sampling: sampling.canvas,
+    dataURLOptions,
   });
 
   const shadowDomManager = new ShadowDomManager({
@@ -240,6 +254,7 @@ function record<T = eventWithTime>(
       maskTextSelector,
       inlineStylesheet,
       maskInputOptions,
+      dataURLOptions,
       maskTextFn,
       maskInputFn,
       recordCanvas,
@@ -278,6 +293,7 @@ function record<T = eventWithTime>(
       maskAllInputs: maskInputOptions,
       maskTextFn,
       slimDOM: slimDOMOptions,
+      dataURLOptions,
       recordCanvas,
       inlineImages,
       onSerialize: (n) => {
@@ -459,11 +475,13 @@ function record<T = eventWithTime>(
           keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
+          dataURLOptions,
           mirror,
           iframeManager,
           stylesheetManager,
           shadowDomManager,
           canvasManager,
+          ignoreCSSAttributes,
           plugins:
             plugins
               ?.filter((p) => p.observer)
@@ -518,6 +536,9 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      // reset init fns when stopping record
+      (wrappedEmit as unknown) = undefined;
+      (takeFullSnapshot as unknown) = undefined;
     };
   } catch (error) {
     // TODO: handle internal error

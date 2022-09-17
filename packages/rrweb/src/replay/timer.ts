@@ -101,7 +101,9 @@ export function addDelay(event: eventWithTime, baselineTime: number): number {
   // so we need to find the real timestamp by traverse the time offsets.
   if (
     event.type === EventType.IncrementalSnapshot &&
-    event.data.source === IncrementalSource.MouseMove
+    event.data.source === IncrementalSource.MouseMove &&
+    event.data.positions &&
+    event.data.positions.length
   ) {
     const firstOffset = event.data.positions[0].timeOffset;
     // timeOffset is a negative offset to event.timestamp

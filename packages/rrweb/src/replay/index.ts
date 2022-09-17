@@ -179,6 +179,13 @@ export class Replayer {
 
     this.setupDom();
 
+    /**
+     * Exposes mirror to the plugins
+     */
+    for (const plugin of this.config.plugins || []) {
+      if (plugin.getMirror) plugin.getMirror(this.mirror);
+    }
+
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingVirtualDom) {
         const replayerHandler: ReplayerHandler = {
@@ -655,7 +662,7 @@ export class Replayer {
       }
 
       for (const plugin of this.config.plugins || []) {
-        plugin.handler(event, isSync, { replayer: this });
+        if (plugin.handler) plugin.handler(event, isSync, { replayer: this });
       }
 
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
@@ -708,8 +715,15 @@ export class Replayer {
     const collected: AppendedIframe[] = [];
     rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
-      afterAppend: (builtNode) => {
+      afterAppend: (builtNode: Node, id: number) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
+        for (const plugin of this.config.plugins || []) {
+          if (plugin.onBuild)
+            plugin.onBuild(builtNode, {
+              id,
+              replayer: this,
+            });
+        }
       },
       cache: this.cache,
       mirror: this.mirror,
@@ -791,7 +805,7 @@ export class Replayer {
       mirror: mirror as Mirror,
       hackCss: true,
       skipChild: false,
-      afterAppend: (builtNode) => {
+      afterAppend: (builtNode, id: number) => {
         this.collectIframeAndAttachDocument(collected, builtNode);
         const sn = (mirror as TMirror).getMeta((builtNode as unknown) as TNode);
         if (
@@ -803,6 +817,14 @@ export class Replayer {
             documentElement as HTMLElement | RRElement,
             head as HTMLElement | RRElement,
           );
+        }
+
+        for (const plugin of this.config.plugins || []) {
+          if (plugin.onBuild)
+            plugin.onBuild(builtNode, {
+              id,
+              replayer: this,
+            });
         }
       },
       cache: this.cache,
@@ -1166,6 +1188,9 @@ export class Replayer {
             // unexpeted behavior
             void mediaEl.play();
           }
+          if (d.type === MediaInteractions.RateChange) {
+            mediaEl.playbackRate = d.playbackRate;
+          }
         } catch (error) {
           if (this.config.showWarning) {
             console.warn(
@@ -1508,6 +1533,11 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
         cache: this.cache,
+        afterAppend: (node: Node | RRNode, id: number) => {
+          for (const plugin of this.config.plugins || []) {
+            if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
+          }
+        },
       }) as Node | RRNode;
 
       // legacy data, we should not have -1 siblings any more

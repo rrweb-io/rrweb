@@ -6,6 +6,7 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
+  DataURLOptions,
 } from 'rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
@@ -228,6 +229,7 @@ export type RecordPlugin<TOptions = unknown> = {
     options: TOptions,
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
+  getMirror?: (mirror: Mirror) => void;
   options: TOptions;
 };
 
@@ -245,10 +247,12 @@ export type recordOptions<T> = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
+  ignoreCSSAttributes?: Set<string>;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
+  dataURLOptions?: DataURLOptions;
   recordCanvas?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
@@ -288,12 +292,14 @@ export type observerParam = {
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
+  dataURLOptions: DataURLOptions;
   doc: Document;
   mirror: Mirror;
   iframeManager: IframeManager;
   stylesheetManager: StylesheetManager;
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
+  ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
       cb: (...arg: Array<unknown>) => void,
@@ -320,6 +326,7 @@ export type MutationBufferParam = Pick<
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
+  | 'dataURLOptions'
   | 'doc'
   | 'mirror'
   | 'iframeManager'
@@ -560,6 +567,7 @@ export type ImageBitmapDataURLWorkerParams = {
   bitmap: ImageBitmap;
   width: number;
   height: number;
+  dataURLOptions: DataURLOptions;
 };
 
 export type ImageBitmapDataURLWorkerResponse =
@@ -608,6 +616,7 @@ export const enum MediaInteractions {
   Pause,
   Seeked,
   VolumeChange,
+  RateChange,
 }
 
 export type mediaInteractionParam = {
@@ -616,6 +625,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  playbackRate?: number;
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;
@@ -662,11 +672,16 @@ export type listenerHandler = () => void;
 export type hookResetter = () => void;
 
 export type ReplayPlugin = {
-  handler: (
+  handler?: (
     event: eventWithTime,
     isSync: boolean,
     context: { replayer: Replayer },
   ) => void;
+  onBuild?: (
+    node: Node | RRNode,
+    context: { id: number; replayer: Replayer },
+  ) => void;
+  getMirror?: (mirror: Mirror) => void;
 };
 export type playerConfig = {
   speed: number;

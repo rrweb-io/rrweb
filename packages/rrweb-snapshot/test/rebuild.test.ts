@@ -93,7 +93,8 @@ describe('rebuild', function () {
       expect(addHoverClass(cssText, cache)).toEqual(cssText);
     });
 
-    it('benchmark', () => {
+    // this benchmark is unreliable when run in parallel with other tests
+    it.skip('benchmark', () => {
       const cssText = fs.readFileSync(
         path.resolve(__dirname, './css/benchmark.css'),
         'utf8',

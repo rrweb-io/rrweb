@@ -34,7 +34,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 

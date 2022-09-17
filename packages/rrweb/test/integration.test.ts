@@ -52,9 +52,9 @@ describe('record integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
     const pluginsCode = [
-      path.resolve(__dirname, '../dist/plugins/console-record.min.js'),
+      path.resolve(__dirname, '../dist/plugins/console-record.js'),
     ]
       .map((p) => fs.readFileSync(p, 'utf8'))
       .join();
@@ -561,6 +561,7 @@ describe('record integration tests', function (this: ISuite) {
 
       const el = document.querySelector('.my-element') as HTMLDivElement;
       const shadowRoot = el.shadowRoot as ShadowRoot;
+      shadowRoot.appendChild(document.createElement('span'));
       shadowRoot.appendChild(document.createElement('p'));
       sleep(1)
         .then(() => {
@@ -667,7 +668,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });
-  
+
   // https://github.com/webcomponents/polyfills/tree/master/packages/shadydom
   it('should record shadow doms polyfilled by shadydom', async () => {
     const page: puppeteer.Page = await browser.newPage();

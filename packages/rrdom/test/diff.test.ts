@@ -217,6 +217,7 @@ describe('diff algorithm for rrdom', () => {
         expect(element.currentTime).toEqual(0);
         expect(element.muted).toEqual(false);
         expect(element.paused).toEqual(true);
+        expect(element.playbackRate).toEqual(1);
 
         const rrDocument = new RRDocument();
         const rrMedia = rrDocument.createElement(tagName) as RRMediaElement;
@@ -224,12 +225,14 @@ describe('diff algorithm for rrdom', () => {
         rrMedia.currentTime = 100;
         rrMedia.muted = true;
         rrMedia.paused = false;
+        rrMedia.playbackRate = 0.5;
 
         diff(element, rrMedia, replayer);
         expect(element.volume).toEqual(0.5);
         expect(element.currentTime).toEqual(100);
         expect(element.muted).toEqual(true);
         expect(element.paused).toEqual(false);
+        expect(element.playbackRate).toEqual(0.5);
 
         rrMedia.paused = true;
         diff(element, rrMedia, replayer);

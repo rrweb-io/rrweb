@@ -210,6 +210,7 @@ function initMouseInteractionObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
@@ -227,7 +228,7 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target, blockClass, true)) {
+      if (isBlocked(target, blockClass, blockSelector, true)) {
         return;
       }
       const e = isTouchEvent(event) ? event.changedTouches[0] : event;
@@ -266,14 +267,15 @@ export function initScrollObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   sampling,
 }: Pick<
   observerParam,
-  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'sampling'
+  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'blockSelector' | 'sampling'
 >): listenerHandler {
   const updatePosition = throttle<UIEvent>((evt) => {
     const target = getEventTarget(evt);
-    if (!target || isBlocked(target as Node, blockClass, true)) {
+    if (!target || isBlocked(target as Node, blockClass, blockSelector, true)) {
       return;
     }
     const id = mirror.getId(target as Node);
@@ -331,6 +333,7 @@ function initInputObserver({
   doc,
   mirror,
   blockClass,
+  blockSelector,
   ignoreClass,
   maskInputOptions,
   maskInputFn,
@@ -350,7 +353,7 @@ function initInputObserver({
       !target ||
       !(target as Element).tagName ||
       INPUT_TAGS.indexOf((target as Element).tagName) < 0 ||
-      isBlocked(target as Node, blockClass, true)
+      isBlocked(target as Node, blockClass, blockSelector, true)
     ) {
       return;
     }
@@ -425,28 +428,40 @@ function initInputObserver({
   const handlers: Array<
     listenerHandler | hookResetter
   > = events.map((eventName) => on(eventName, eventHandler, doc));
-  const propertyDescriptor = Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
+  const currentWindow = doc.defaultView;
+  if (!currentWindow) {
+    return () => {
+      handlers.forEach((h) => h());
+    };
+  }
+  const propertyDescriptor = currentWindow.Object.getOwnPropertyDescriptor(
+    currentWindow.HTMLInputElement.prototype,
     'value',
   );
   const hookProperties: Array<[HTMLElement, string]> = [
-    [HTMLInputElement.prototype, 'value'],
-    [HTMLInputElement.prototype, 'checked'],
-    [HTMLSelectElement.prototype, 'value'],
-    [HTMLTextAreaElement.prototype, 'value'],
+    [currentWindow.HTMLInputElement.prototype, 'value'],
+    [currentWindow.HTMLInputElement.prototype, 'checked'],
+    [currentWindow.HTMLSelectElement.prototype, 'value'],
+    [currentWindow.HTMLTextAreaElement.prototype, 'value'],
     // Some UI library use selectedIndex to set select value
-    [HTMLSelectElement.prototype, 'selectedIndex'],
-    [HTMLOptionElement.prototype, 'selected'],
+    [currentWindow.HTMLSelectElement.prototype, 'selectedIndex'],
+    [currentWindow.HTMLOptionElement.prototype, 'selected'],
   ];
   if (propertyDescriptor && propertyDescriptor.set) {
     handlers.push(
       ...hookProperties.map((p) =>
-        hookSetter<HTMLElement>(p[0], p[1], {
-          set() {
-            // mock to a normal event
-            eventHandler({ target: this as EventTarget } as Event);
+        hookSetter<HTMLElement>(
+          p[0],
+          p[1],
+          {
+            set() {
+              // mock to a normal event
+              eventHandler({ target: this as EventTarget } as Event);
+            },
           },
-        }),
+          false,
+          currentWindow,
+        ),
       ),
     );
   }
@@ -613,7 +628,7 @@ function initStyleSheetObserver(
 }
 
 function initStyleDeclarationObserver(
-  { styleDeclarationCb, mirror }: observerParam,
+  { styleDeclarationCb, mirror, ignoreCSSAttributes }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -624,6 +639,10 @@ function initStyleDeclarationObserver(
     value: string,
     priority: string,
   ) {
+    // ignore this mutation if we do not care about this css attribute
+    if (ignoreCSSAttributes.has(property)) {
+      return setProperty.apply(this, [property, value, priority]);
+    }
     const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
     if (id !== -1) {
       styleDeclarationCb({
@@ -645,6 +664,10 @@ function initStyleDeclarationObserver(
     this: CSSStyleDeclaration,
     property: string,
   ) {
+    // ignore this mutation if we do not care about this css attribute
+    if (ignoreCSSAttributes.has(property)) {
+      return removeProperty.apply(this, [property]);
+    }
     const id = mirror.getId(this.parentRule?.parentStyleSheet?.ownerNode);
     if (id !== -1) {
       styleDeclarationCb({
@@ -667,22 +690,32 @@ function initStyleDeclarationObserver(
 function initMediaInteractionObserver({
   mediaInteractionCb,
   blockClass,
+  blockSelector,
   mirror,
   sampling,
 }: observerParam): listenerHandler {
   const handler = (type: MediaInteractions) =>
     throttle((event: Event) => {
       const target = getEventTarget(event);
-      if (!target || isBlocked(target as Node, blockClass, true)) {
+      if (
+        !target ||
+        isBlocked(target as Node, blockClass, blockSelector, true)
+      ) {
         return;
       }
-      const { currentTime, volume, muted } = target as HTMLMediaElement;
+      const {
+        currentTime,
+        volume,
+        muted,
+        playbackRate,
+      } = target as HTMLMediaElement;
       mediaInteractionCb({
         type,
         id: mirror.getId(target as Node),
         currentTime,
         volume,
         muted,
+        playbackRate,
       });
     }, sampling.media || 500);
   const handlers = [
@@ -690,6 +723,7 @@ function initMediaInteractionObserver({
     on('pause', handler(MediaInteractions.Pause)),
     on('seeked', handler(MediaInteractions.Seeked)),
     on('volumechange', handler(MediaInteractions.VolumeChange)),
+    on('ratechange', handler(MediaInteractions.RateChange)),
   ];
   return () => {
     handlers.forEach((h) => h());
@@ -755,7 +789,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { doc, mirror, blockClass, selectionCb } = param;
+  const { doc, mirror, blockClass, blockSelector, selectionCb } = param;
   let collapsed = true;
 
   const updateSelection = () => {
@@ -774,8 +808,8 @@ function initSelectionObserver(param: observerParam): listenerHandler {
       const { startContainer, startOffset, endContainer, endOffset } = range;
 
       const blocked =
-        isBlocked(startContainer, blockClass, true) ||
-        isBlocked(endContainer, blockClass, true);
+        isBlocked(startContainer, blockClass, blockSelector, true) ||
+        isBlocked(endContainer, blockClass, blockSelector, true);
 
       if (blocked) continue;
 
