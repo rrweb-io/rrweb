@@ -185,7 +185,7 @@
         end: endTimeOffset,
       };
     } else {
-      loop = undefined;
+      loop = null;
     }
     currentTime = timeOffset;
     pauseAt = endTimeOffset;
