@@ -39,6 +39,13 @@
   let step: HTMLElement;
   let finished: boolean;
 
+  let pauseAt: number | false = false;
+  let onPauseHook: () => unknown | undefined = undefined;
+  let loop: {
+    start: number;
+    end: number;
+  } | null = null;
+
   let meta: playerMetaData;
   $: meta = replayer.getMetaData();
   let percentage: string;
@@ -94,6 +101,18 @@
     function update() {
       currentTime = replayer.getCurrentTime();
 
+      if (pauseAt && currentTime >= pauseAt) {
+        if (loop) {
+          playRange(loop.start, loop.end, true, undefined);
+        } else {
+          replayer.pause();
+          if (onPauseHook) {
+            onPauseHook();
+            onPauseHook = null;
+          }
+        }
+      }
+
       if (currentTime < meta.totalTime) {
         timer = requestAnimationFrame(update);
       }
@@ -139,10 +158,12 @@
       return;
     }
     replayer.pause();
+    pauseAt = false;
   };
 
   export const goto = (timeOffset: number, play?: boolean) => {
     currentTime = timeOffset;
+    pauseAt = false;
     const resumePlaying =
       typeof play === 'boolean' ? play : playerState === 'playing';
     if (resumePlaying) {
@@ -151,6 +172,27 @@
       replayer.pause(timeOffset);
     }
   };
+
+  export const playRange = (
+     timeOffset: number,
+     endTimeOffset: number,
+     startLooping: boolean = false,
+     afterHook: undefined | (() => void) = undefined,
+   ) => {
+    if (startLooping) {
+      loop = {
+        start: timeOffset,
+        end: endTimeOffset,
+      };
+    } else {
+      loop = undefined;
+    }
+    currentTime = timeOffset;
+    pauseAt = endTimeOffset;
+    onPauseHook = afterHook;
+    replayer.play(timeOffset);
+  };
+
 
   const handleProgressClick = (event: MouseEvent) => {
     if (speedState === 'skipping') {
@@ -218,6 +260,10 @@
     );
     replayer.on('finish', () => {
       finished = true;
+      if (onPauseHook) {
+        onPauseHook();
+        onPauseHook = null;
+      }
     });
 
     if (autoPlay) {
