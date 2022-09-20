@@ -14,6 +14,7 @@
 
   export let width = 1024;
   export let height = 576;
+  export let maxScale = 1;
   export let events: eventWithTime[] = [];
   export let skipInactive = true;
   export let autoPlay = true;
@@ -55,8 +56,10 @@
   ) => {
     const widthScale = width / frameDimension.width;
     const heightScale = height / frameDimension.height;
+    const scale = [widthScale, heightScale];
+    if (maxScale) scale.push(maxScale);
     el.style.transform =
-      `scale(${Math.min(widthScale, heightScale, 1)})` +
+      `scale(${Math.min(...scale)})` +
       'translate(-50%, -50%)';
   };
 
