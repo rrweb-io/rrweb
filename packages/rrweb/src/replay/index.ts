@@ -300,7 +300,6 @@ export class Replayer {
 
     const timer = new Timer([], {
       speed: this.config.speed,
-      liveMode: this.config.liveMode,
     });
     this.service = createPlayerService(
       {
