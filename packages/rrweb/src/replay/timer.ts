@@ -28,7 +28,10 @@ export class Timer {
    * Add an action, possibly after the timer starts.
    */
   public addAction(action: actionWithDelay) {
-    if (!this.actions.length || this.actions[this.actions.length - 1].delay <= action.delay) {
+    if (
+      !this.actions.length ||
+      this.actions[this.actions.length - 1].delay <= action.delay
+    ) {
       // 'fast track'
       this.actions.push(action);
       return;
