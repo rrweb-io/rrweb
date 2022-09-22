@@ -1,6 +1,6 @@
 {
   "name": "rrdom-nodejs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "scripts": {
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
@@ -49,8 +49,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "rrdom": "^0.1.4",
-    "rrweb-snapshot": "^2.0.0-alpha.1"
+    "rrdom": "^0.1.5",
+    "rrweb-snapshot": "^2.0.0-alpha.2"
   },
   "browserslist": [
     "supports es6-class"

@@ -21,6 +21,7 @@ type BypassOptions = Omit<
 };
 
 export class ShadowDomManager {
+  private shadowDoms = new WeakSet<ShadowRoot>();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
@@ -59,6 +60,8 @@ export class ShadowDomManager {
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
     if (!isNativeShadowDom(shadowRoot)) return;
+    if (this.shadowDoms.has(shadowRoot)) return;
+    this.shadowDoms.add(shadowRoot);
     initMutationObserver(
       {
         ...this.bypassOptions,
@@ -128,5 +131,6 @@ export class ShadowDomManager {
 
   public reset() {
     this.restorePatches.forEach((restorePatch) => restorePatch());
+    this.shadowDoms = new WeakSet();
   }
 }

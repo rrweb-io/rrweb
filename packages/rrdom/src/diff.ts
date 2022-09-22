@@ -139,6 +139,8 @@ export function diff(
             oldMediaElement.volume = newMediaRRElement.volume;
           if (newMediaRRElement.currentTime !== undefined)
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
+          if (newMediaRRElement.playbackRate !== undefined)
+            oldMediaElement.playbackRate = newMediaRRElement.playbackRate;
           break;
         }
         case 'CANVAS':

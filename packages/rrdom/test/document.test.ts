@@ -894,6 +894,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.volume).toBeUndefined();
       expect(node.paused).toBeUndefined();
       expect(node.muted).toBeUndefined();
+      expect(node.playbackRate).toBeUndefined();
       expect(node.play).toBeDefined();
       expect(node.pause).toBeDefined();
       expect(node.toString()).toEqual('VIDEO ');

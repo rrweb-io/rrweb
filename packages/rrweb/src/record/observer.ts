@@ -887,13 +887,19 @@ function initMediaInteractionObserver({
       ) {
         return;
       }
-      const { currentTime, volume, muted } = target as HTMLMediaElement;
+      const {
+        currentTime,
+        volume,
+        muted,
+        playbackRate,
+      } = target as HTMLMediaElement;
       mediaInteractionCb({
         type,
         id: mirror.getId(target as Node),
         currentTime,
         volume,
         muted,
+        playbackRate,
       });
     }, sampling.media || 500);
   const handlers = [
@@ -901,6 +907,7 @@ function initMediaInteractionObserver({
     on('pause', handler(MediaInteractions.Pause)),
     on('seeked', handler(MediaInteractions.Seeked)),
     on('volumechange', handler(MediaInteractions.VolumeChange)),
+    on('ratechange', handler(MediaInteractions.RateChange)),
   ];
   return () => {
     handlers.forEach((h) => h());

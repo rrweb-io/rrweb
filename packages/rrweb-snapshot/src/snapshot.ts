@@ -988,13 +988,14 @@ export function serializeNodeWithId(
   } else {
     id = genId();
   }
+
+  const serializedNode = Object.assign(_serializedNode, { id });
+  // add IGNORED_NODE to mirror to track nextSiblings
+  mirror.add(n, serializedNode);
+
   if (id === IGNORED_NODE) {
     return null; // slimDOM
   }
-
-  const serializedNode = Object.assign(_serializedNode, { id });
-
-  mirror.add(n, serializedNode);
 
   if (onSerialize) {
     onSerialize(n);

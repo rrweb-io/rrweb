@@ -227,6 +227,9 @@ void (async () => {
         'window.__IS_RECORDING__',
       );
       if (!isRecording) {
+        // When the page navigates, I notice this event is emitted twice so that there are two recording processes running in a single page.
+        // Set recording flag True ASAP to prevent recording twice.
+        await recordedPage.evaluate('window.__IS_RECORDING__ = true');
         await startRecording(recordedPage, serverURL);
       }
     });

@@ -298,7 +298,10 @@ export class Replayer {
       this.styleMirror.reset();
     });
 
-    const timer = new Timer([], config?.speed || defaultConfig.speed);
+    const timer = new Timer([], {
+      speed: this.config.speed,
+      liveMode: this.config.liveMode,
+    });
     this.service = createPlayerService(
       {
         events: events
@@ -1223,6 +1226,9 @@ export class Replayer {
             // 'canplay' event fires even when currentTime attribute changes which may lead to
             // unexpeted behavior
             void mediaEl.play();
+          }
+          if (d.type === MediaInteractions.RateChange) {
+            mediaEl.playbackRate = d.playbackRate;
           }
         } catch (error) {
           if (this.config.showWarning) {

@@ -188,7 +188,6 @@ export function createPlayerService(
           }
 
           const syncEvents = new Array<eventWithTime>();
-          const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
             if (
               lastPlayedTimestamp &&
@@ -202,7 +201,7 @@ export function createPlayerService(
               syncEvents.push(event);
             } else {
               const castFn = getCastFn(event, false);
-              actions.push({
+              timer.addAction({
                 doAction: () => {
                   castFn();
                 },
@@ -212,7 +211,6 @@ export function createPlayerService(
           }
           applyEventsSynchronously(syncEvents);
           emitter.emit(ReplayerEvents.Flush);
-          timer.addActions(actions);
           timer.start();
         },
         pause(ctx) {

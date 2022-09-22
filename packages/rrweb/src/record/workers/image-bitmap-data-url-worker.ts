@@ -1,4 +1,5 @@
 import { encode } from 'base64-arraybuffer';
+import type { DataURLOptions } from 'rrweb-snapshot';
 import type {
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
@@ -25,6 +26,7 @@ interface ImageBitmapDataURLResponseWorker {
 async function getTransparentBlobFor(
   width: number,
   height: number,
+  dataURLOptions: DataURLOptions,
 ): Promise<string> {
   const id = `${width}-${height}`;
   if (transparentBlobMap.has(id)) return transparentBlobMap.get(id)!;
@@ -32,7 +34,7 @@ async function getTransparentBlobFor(
   // eslint-disable-next-line compat/compat
   const offscreen = new OffscreenCanvas(width, height);
   offscreen.getContext('2d'); // creates rendering context for `converToBlob`
-  const blob = await offscreen.convertToBlob(); // takes a while
+  const blob = await offscreen.convertToBlob(dataURLOptions); // takes a while
   const arrayBuffer = await blob.arrayBuffer();
   const base64 = encode(arrayBuffer); // cpu intensive
   transparentBlobMap.set(id, base64);
@@ -47,9 +49,13 @@ worker.onmessage = async function (e) {
   if (!('OffscreenCanvas' in globalThis))
     return worker.postMessage({ id: e.data.id });
 
-  const { id, bitmap, width, height } = e.data;
+  const { id, bitmap, width, height, dataURLOptions } = e.data;
 
-  const transparentBase64 = getTransparentBlobFor(width, height);
+  const transparentBase64 = getTransparentBlobFor(
+    width,
+    height,
+    dataURLOptions,
+  );
 
   // eslint-disable-next-line compat/compat
   const offscreen = new OffscreenCanvas(width, height);
@@ -57,7 +63,7 @@ worker.onmessage = async function (e) {
 
   ctx.drawImage(bitmap, 0, 0);
   bitmap.close();
-  const blob = await offscreen.convertToBlob(); // takes a while
+  const blob = await offscreen.convertToBlob(dataURLOptions); // takes a while
   const type = blob.type;
   const arrayBuffer = await blob.arrayBuffer();
   const base64 = encode(arrayBuffer); // cpu intensive

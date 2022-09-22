@@ -6,6 +6,7 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
+  DataURLOptions,
 } from 'rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
@@ -257,6 +258,7 @@ export type recordOptions<T> = {
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
+  dataURLOptions?: DataURLOptions;
   recordCanvas?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
@@ -296,6 +298,7 @@ export type observerParam = {
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
+  dataURLOptions: DataURLOptions;
   doc: Document;
   mirror: Mirror;
   iframeManager: IframeManager;
@@ -329,6 +332,7 @@ export type MutationBufferParam = Pick<
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
+  | 'dataURLOptions'
   | 'doc'
   | 'mirror'
   | 'iframeManager'
@@ -587,6 +591,7 @@ export type ImageBitmapDataURLWorkerParams = {
   bitmap: ImageBitmap;
   width: number;
   height: number;
+  dataURLOptions: DataURLOptions;
 };
 
 export type ImageBitmapDataURLWorkerResponse =
@@ -635,6 +640,7 @@ export const enum MediaInteractions {
   Pause,
   Seeked,
   VolumeChange,
+  RateChange,
 }
 
 export type mediaInteractionParam = {
@@ -643,6 +649,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  playbackRate?: number;
 };
 
 export type mediaInteractionCallback = (p: mediaInteractionParam) => void;

@@ -65,6 +65,7 @@ function record<T = eventWithTime>(
     hooks,
     packFn,
     sampling = {},
+    dataURLOptions = {},
     mousemoveWait,
     recordCanvas = false,
     userTriggeredOnInput = false,
@@ -254,6 +255,7 @@ function record<T = eventWithTime>(
     blockSelector,
     mirror,
     sampling: sampling.canvas,
+    dataURLOptions,
   });
 
   const shadowDomManager = new ShadowDomManager({
@@ -266,6 +268,7 @@ function record<T = eventWithTime>(
       maskTextSelector,
       inlineStylesheet,
       maskInputOptions,
+      dataURLOptions,
       maskTextFn,
       maskInputFn,
       recordCanvas,
@@ -307,6 +310,7 @@ function record<T = eventWithTime>(
       maskAllInputs: maskInputOptions,
       maskTextFn,
       slimDOM: slimDOMOptions,
+      dataURLOptions,
       recordCanvas,
       inlineImages,
       onSerialize: (n) => {
@@ -499,6 +503,7 @@ function record<T = eventWithTime>(
           keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
+          dataURLOptions,
           mirror,
           iframeManager,
           stylesheetManager,
@@ -559,6 +564,9 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      // reset init fns when stopping record
+      (wrappedEmit as unknown) = undefined;
+      (takeFullSnapshot as unknown) = undefined;
     };
   } catch (error) {
     // TODO: handle internal error
