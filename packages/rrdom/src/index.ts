@@ -393,8 +393,8 @@ export class Mirror implements IMirror<RRNode> {
     if (oldNode) {
       const meta = this.nodeMetaMap.get(oldNode);
       if (meta) this.nodeMetaMap.set(n, meta);
-      this.idNodeMap.set(id, n);
     }
+    this.idNodeMap.set(id, n);
   }
 
   reset() {

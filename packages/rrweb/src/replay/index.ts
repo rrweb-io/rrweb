@@ -1654,7 +1654,10 @@ export class Replayer {
                   const newSn = mirror.getMeta(
                     target as Node & RRNode,
                   ) as serializedElementNodeWithId;
-                  newSn.attributes = mutation.attributes as attributes;
+                  Object.assign(
+                    newSn.attributes,
+                    mutation.attributes as attributes,
+                  );
                   const newNode = buildNodeWithSN(newSn, {
                     doc: target.ownerDocument as Document, // can be Document or RRDocument
                     mirror: mirror as Mirror,
