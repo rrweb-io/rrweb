@@ -28,7 +28,6 @@ const replayer = new rrweb.Replayer(EXISTING_EVENTS, {
 replayer.play(Date.now() - EXISTING_EVENTS[0].timestamp);
 ```
 
-
 When calling the `startLive` API, there is an optional parameter to set the baseline time. By default, this is `Date.now()` so that events are applied as soon as they come in, however this may cause your replay to appear laggy. Because data transportation needs time (such as the delay of the network), And some events have been throttled(such as mouse movements) which has a delay by default.
 
 Here is how you introduce a buffer:
