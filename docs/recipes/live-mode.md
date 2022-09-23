@@ -19,7 +19,7 @@ function onReceive(event) {
 }
 ```
 
-If you have an ongoing recording that already has events, and wish to continue play from the current/most recent position, it's also possible to use the `play` function, supplied with an offset which corresponds to the current time:
+If you have an ongoing recording that already has events, and wish to initiate play from a 'live' time, it's also possible to use the `play` function, supplied with an offset which corresponds to the current time:
 
 ```js
 const replayer = new rrweb.Replayer(EXISTING_EVENTS, {
