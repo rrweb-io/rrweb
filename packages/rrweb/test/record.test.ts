@@ -557,14 +557,14 @@ describe('record', function (this: ISuite) {
       setTimeout(() => {
         sheet1.insertRule!('div { display: inline ; }', 1);
         sheet2.replaceSync!('h1 { font-size: large; }');
-      }, 50);
+      }, 100);
 
       setTimeout(() => {
         const sheet3 = new iframeWin.CSSStyleSheet();
         sheet3.replaceSync!('span {background-color: red;}');
         iframeDocument!.adoptedStyleSheets = [sheet3, sheet2];
         shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
-      }, 100);
+      }, 150);
     });
     await ctx.page.waitForTimeout(200);
     assertSnapshot(ctx.events);
