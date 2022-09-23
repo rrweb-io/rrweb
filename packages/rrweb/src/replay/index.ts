@@ -1661,12 +1661,6 @@ export class Replayer {
                     skipChild: true,
                     hackCss: true,
                     cache: this.cache,
-                    afterAppend: (node: Node | RRNode, id: number) => {
-                      for (const plugin of this.config.plugins || []) {
-                        if (plugin.onBuild)
-                          plugin.onBuild(node, { id, replayer: this });
-                      }
-                    },
                   });
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;

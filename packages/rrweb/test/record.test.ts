@@ -626,8 +626,11 @@ describe('record', function (this: ISuite) {
 
     // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
     await waitForRAF(ctx.page);
-
-    assertSnapshot(ctx.events);
+    // 'blob' URL is different in every execution so we need to remove it from the snapshot.
+    const filteredEvents = JSON.parse(
+      JSON.stringify(ctx.events).replace(/blob\:[\w\d-/]+"/, 'blob:null"'),
+    );
+    assertSnapshot(filteredEvents);
   });
 
   it('captures stylesheets in iframes that are still loading', async () => {
@@ -659,8 +662,10 @@ describe('record', function (this: ISuite) {
 
     // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
     await waitForRAF(ctx.page);
-
-    assertSnapshot(ctx.events);
+    const filteredEvents = JSON.parse(
+      JSON.stringify(ctx.events).replace(/blob\:[\w\d-/]+"/, 'blob:null"'),
+    );
+    assertSnapshot(filteredEvents);
   });
 
   it('captures CORS stylesheets that are still loading', async () => {
