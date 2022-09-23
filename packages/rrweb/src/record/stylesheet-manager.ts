@@ -1,8 +1,9 @@
-import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
+import type { elementNode, serializedNodeWithId } from 'rrweb-snapshot';
 import { getCssRuleString } from 'rrweb-snapshot';
 import type {
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
+  attributeMutation,
   mutationCallBack,
 } from '../types';
 import { StyleSheetMirror } from '../utils';
@@ -24,20 +25,20 @@ export class StylesheetManager {
   public attachLinkElement(
     linkEl: HTMLLinkElement,
     childSn: serializedNodeWithId,
-    mirror: Mirror,
   ) {
-    this.mutationCb({
-      adds: [
-        {
-          parentId: mirror.getId(linkEl),
-          nextId: null,
-          node: childSn,
-        },
-      ],
-      removes: [],
-      texts: [],
-      attributes: [],
-    });
+    if ('_cssText' in (childSn as elementNode).attributes)
+      this.mutationCb({
+        adds: [],
+        removes: [],
+        texts: [],
+        attributes: [
+          {
+            id: childSn.id,
+            attributes: (childSn as elementNode)
+              .attributes as attributeMutation['attributes'],
+          },
+        ],
+      });
 
     this.trackLinkElement(linkEl);
   }

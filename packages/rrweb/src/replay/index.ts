@@ -6,6 +6,8 @@ import {
   createCache,
   Mirror,
   createMirror,
+  attributes,
+  serializedElementNodeWithId,
 } from 'rrweb-snapshot';
 import {
   RRDocument,
@@ -1643,6 +1645,44 @@ export class Replayer {
             (target as Element | RRElement).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
             try {
+              // When building snapshot, some link styles haven't loaded. Then they are loaded, they will be inlined as incremental mutation change of attribute. We need to replace the old elements whose styles aren't inlined.
+              if (
+                attributeName === '_cssText' &&
+                (target.nodeName === 'LINK' || target.nodeName === 'STYLE')
+              ) {
+                try {
+                  const newSn = mirror.getMeta(
+                    target as Node & RRNode,
+                  ) as serializedElementNodeWithId;
+                  newSn.attributes = mutation.attributes as attributes;
+                  const newNode = buildNodeWithSN(newSn, {
+                    doc: target.ownerDocument as Document, // can be Document or RRDocument
+                    mirror: mirror as Mirror,
+                    skipChild: true,
+                    hackCss: true,
+                    cache: this.cache,
+                    afterAppend: (node: Node | RRNode, id: number) => {
+                      for (const plugin of this.config.plugins || []) {
+                        if (plugin.onBuild)
+                          plugin.onBuild(node, { id, replayer: this });
+                      }
+                    },
+                  });
+                  const siblingNode = target.nextSibling;
+                  const parentNode = target.parentNode;
+                  if (newNode && parentNode) {
+                    parentNode.removeChild(target as Node & RRNode);
+                    parentNode.insertBefore(
+                      newNode as Node & RRNode,
+                      siblingNode as (Node & RRNode) | null,
+                    );
+                    mirror.replace(mutation.id, newNode as Node & RRNode);
+                    break;
+                  }
+                } catch (e) {
+                  // for safe
+                }
+              }
               (target as Element | RRElement).setAttribute(
                 attributeName,
                 value,

@@ -1165,7 +1165,6 @@ export function serializeNodeWithId(
       },
       stylesheetLoadTimeout,
     );
-    if (isStylesheetLoaded(n as HTMLLinkElement) === false) return null; // add stylesheet in later mutation
   }
 
   return serializedNode;

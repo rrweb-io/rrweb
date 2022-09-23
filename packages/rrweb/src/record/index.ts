@@ -329,7 +329,7 @@ function record<T = eventWithTime>(
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
-        stylesheetManager.attachLinkElement(linkEl, childSn, mirror);
+        stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
     });
