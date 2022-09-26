@@ -21,6 +21,7 @@
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
+    "browserslist": "^4.21.4",
     "concurrently": "^7.1.0",
     "eslint": "^8.19.0",
     "eslint-plugin-compat": "^4.0.2",
@@ -42,5 +43,9 @@
     "live-stream": "cd packages/rrweb && yarn live-stream",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
     "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not op_mini all"
+  ]
 }

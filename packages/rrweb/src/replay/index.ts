@@ -170,7 +170,6 @@ export class Replayer {
     const defaultConfig: playerConfig = {
       speed: 1,
       maxSpeed: 360,
-      // eslint-disable-next-line compat/compat
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
@@ -1284,7 +1283,6 @@ export class Replayer {
       }
       case IncrementalSource.Font: {
         try {
-          // eslint-disable-next-line compat/compat
           const fontFace = new FontFace(
             d.family,
             d.buffer

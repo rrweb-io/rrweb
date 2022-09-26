@@ -87,8 +87,5 @@
     "mitt": "^3.0.0",
     "rrdom": "^0.1.5",
     "rrweb-snapshot": "^2.0.0-alpha.2"
-  },
-  "browserslist": [
-    "supports mutationobserver and supports es6-class and supports promises"
-  ]
+  }
 }

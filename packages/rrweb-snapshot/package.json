@@ -57,9 +57,5 @@
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "typescript": "^4.7.3"
-  },
-  "browserslist": [
-    "cover 98%",
-    "not ie >= 0 and not ie_mob >= 0"
-  ]
+  }
 }
