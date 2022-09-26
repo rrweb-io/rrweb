@@ -114,6 +114,14 @@
   export const goto = (timeOffset: number, play?: boolean) => {
     controller.goto(timeOffset, play);
   };
+  export const playRange = (
+    timeOffset: number,
+    endTimeOffset: number,
+    startLooping: boolean = false,
+    afterHook: undefined | (() => void) = undefined,
+  ) => {
+    controller.playRange(timeOffset, endTimeOffset, startLooping, afterHook);
+  };  
 
   onMount(() => {
     // runtime type check
