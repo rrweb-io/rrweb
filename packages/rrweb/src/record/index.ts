@@ -348,18 +348,14 @@ function record<T = eventWithTime>(
               window.pageXOffset !== undefined
                 ? window.pageXOffset
                 : document?.documentElement.scrollLeft ||
-                  // eslint-disable-next-line compat/compat
                   document?.body?.parentElement?.scrollLeft ||
-                  // eslint-disable-next-line compat/compat
                   document?.body?.scrollLeft ||
                   0,
             top:
               window.pageYOffset !== undefined
                 ? window.pageYOffset
                 : document?.documentElement.scrollTop ||
-                  // eslint-disable-next-line compat/compat
                   document?.body?.parentElement?.scrollTop ||
-                  // eslint-disable-next-line compat/compat
                   document?.body?.scrollTop ||
                   0,
           },
