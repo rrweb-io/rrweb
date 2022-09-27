@@ -1,6 +1,8 @@
-import type { eventWithTime } from 'rrweb/typings/types';
+import type { eventWithTime, mousePosition } from 'rrweb/typings/types';
+import { IncrementalSource } from 'rrweb';
 import { EventType, SyncReplayer } from 'rrweb';
 import snapshot from './snapshot';
+import { serializedNodeWithId } from 'rrweb-snapshot';
 type CutterConfig = {
   points: number[];
 };
@@ -94,6 +96,132 @@ function cutEvents(
     });
   result.push(...events.filter((event) => event.timestamp <= endTimestamp));
   return result;
+}
+
+export function pruneBranches(
+  events: eventWithTime[],
+  { keep }: { keep: number[] },
+): eventWithTime[] {
+  const result: eventWithTime[] = [];
+  const replayer = new SyncReplayer(events);
+  const treeSet = new Set<number>();
+  replayer.play(({ event }) => {
+    if (
+      [
+        EventType.Meta,
+        EventType.Load,
+        EventType.DomContentLoaded,
+        EventType.Custom,
+        EventType.Plugin,
+      ].includes(event.type)
+    ) {
+      result.push(event);
+    } else if (event.type === EventType.FullSnapshot) {
+      const { node } = event.data;
+      keep.forEach((id) => {
+        const tree = getTreeForId(id, node);
+        tree.forEach((id) => treeSet.add(id));
+      });
+      const prunedNode = reconstructTreeWithIds(node, treeSet);
+      if (prunedNode)
+        result.push({
+          ...event,
+          data: {
+            ...event.data,
+            node: prunedNode,
+          },
+        } as eventWithTime);
+    } else if (event.type === EventType.IncrementalSnapshot) {
+      if ('positions' in event.data) {
+        const { positions } = event.data;
+        const prunedPositions: mousePosition[] = positions.filter((p) =>
+          treeSet.has(p.id),
+        );
+        if (prunedPositions.length > 0)
+          result.push({
+            ...event,
+            data: {
+              ...event.data,
+              positions: prunedPositions,
+            },
+          } as eventWithTime);
+      } else if ('id' in event.data) {
+        if (treeSet.has(event.data.id)) result.push(event);
+      } else if (event.data.source === IncrementalSource.Mutation) {
+        const { removes, adds, texts, attributes } = event.data;
+        const prunedRemoves = removes.filter((remove) =>
+          treeSet.has(remove.id),
+        );
+        const prunedAdds = adds.filter((add) => treeSet.has(add.parentId));
+        const prunedTexts = texts.filter((text) => treeSet.has(text.id));
+        const prunedAttributes = attributes.filter((attr) =>
+          treeSet.has(attr.id),
+        );
+        if (
+          prunedRemoves.length > 0 ||
+          prunedAdds.length > 0 ||
+          prunedTexts.length > 0 ||
+          prunedAttributes.length > 0
+        )
+          result.push({
+            ...event,
+            data: {
+              ...event.data,
+              removes: prunedRemoves,
+              adds: prunedAdds,
+              texts: prunedTexts,
+              attributes: prunedAttributes,
+            },
+          } as eventWithTime);
+      }
+    }
+    return true;
+  });
+  return result;
+}
+
+export function getTreeForId(id: number, node: serializedNodeWithId): number[] {
+  const results: number[] = [];
+  if (node.id === id) {
+    results.push(...getIdsInNode(node));
+  } else if ('childNodes' in node) {
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const child = node.childNodes[i];
+      const childTree = getTreeForId(id, child);
+      if (childTree.length > 0) {
+        results.push(node.id, ...childTree);
+        break;
+      }
+    }
+  }
+  return results;
+}
+
+export function getIdsInNode(node: serializedNodeWithId): Array<number> {
+  const results: number[] = [];
+  results.push(node.id);
+  if ('childNodes' in node) {
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const child = node.childNodes[i];
+      results.push(...getIdsInNode(child));
+    }
+  }
+  return results;
+}
+
+export function reconstructTreeWithIds(
+  node: serializedNodeWithId,
+  ids: Set<number>,
+): serializedNodeWithId | undefined {
+  if (ids.has(node.id)) {
+    if ('childNodes' in node) {
+      node.childNodes = node.childNodes
+        .map((child) => reconstructTreeWithIds(child, ids))
+        .filter(Boolean) as serializedNodeWithId[];
+    }
+    return node;
+  }
+  return undefined;
 }
 
 export function getValidSortedPoints(points: number[], totalTime: number) {
