@@ -14,7 +14,7 @@ import {
 import { EventType, SyncReplayer } from 'rrweb';
 import type { eventWithTime } from 'rrweb/typings/types';
 import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
-import { sessionCut, getValidSortedPoints } from '../src';
+import { sessionCut, getValidSortedPoints, pruneBranches } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
 import { events as inlineStyleEvents } from './events/inline-style.event';
@@ -147,6 +147,78 @@ describe('session cutter', () => {
     expect(
       printRRDom(replayer.virtualDom, replayer.getMirror()),
     ).toMatchSnapshot('screenshot at 1000ms');
+  });
+});
+
+describe('pruneBranches', () => {
+  it("should cut branches that doesn't include id", () => {
+    const events = inlineStyleEvents as eventWithTime[];
+    const result = pruneBranches(events, { keep: [14] });
+    expect(result).toHaveLength(5);
+    const replayer = new SyncReplayer(result);
+    replayer.play();
+
+    expect(
+      printRRDom(replayer.virtualDom, replayer.getMirror()),
+    ).toMatchSnapshot('pruned all but 14');
+  });
+
+  it("should remove mutations that don't include ids", () => {
+    const mutationEvent = {
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: 0,
+        texts: [
+          {
+            id: 15,
+            value: 'Kept',
+          },
+          {
+            id: 1001,
+            value: 'Cut',
+          },
+        ],
+        attributes: [
+          {
+            id: 14,
+            attributes: {
+              'data-attr': 'Kept',
+            },
+          },
+          {
+            id: 1002,
+            attributes: {
+              'data-attr': 'Cut',
+            },
+          },
+        ],
+        removes: [
+          {
+            parentId: 14,
+            id: 15,
+          },
+          {
+            parentId: 1002,
+            id: 1003,
+          },
+        ],
+        adds: [
+          {
+            parentId: 14,
+            nextId: null,
+            node: {},
+          },
+          {
+            parentId: 1001,
+            nextId: null,
+            node: {},
+          },
+        ],
+      },
+    };
+    const events = [...inlineStyleEvents, mutationEvent] as eventWithTime[];
+    const result = pruneBranches(events, { keep: [14] });
+    expect(result[result.length - 1]).toMatchSnapshot();
   });
 });
 
