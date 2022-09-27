@@ -13,43 +13,52 @@ export class Timer {
   private raf: number | null = null;
   private liveMode: boolean;
 
-  constructor(actions: actionWithDelay[] = [], speed: number) {
+  constructor(
+    actions: actionWithDelay[] = [],
+    config: {
+      speed: number;
+      liveMode: boolean;
+    },
+  ) {
     this.actions = actions;
-    this.speed = speed;
+    this.speed = config.speed;
+    this.liveMode = config.liveMode;
   }
   /**
-   * Add an action after the timer starts.
+   * Add an action, possibly after the timer starts.
    */
   public addAction(action: actionWithDelay) {
+    if (
+      !this.actions.length ||
+      this.actions[this.actions.length - 1].delay <= action.delay
+    ) {
+      // 'fast track'
+      this.actions.push(action);
+      return;
+    }
+    // binary search - events can arrive out of order in a realtime context
     const index = this.findActionIndex(action);
     this.actions.splice(index, 0, action);
-  }
-  /**
-   * Add all actions before the timer starts
-   */
-  public addActions(actions: actionWithDelay[]) {
-    this.actions = this.actions.concat(actions);
   }
 
   public start() {
     this.timeOffset = 0;
     let lastTimestamp = performance.now();
-    const { actions } = this;
     const check = () => {
       const time = performance.now();
       this.timeOffset += (time - lastTimestamp) * this.speed;
       lastTimestamp = time;
-      while (actions.length) {
-        const action = actions[0];
+      while (this.actions.length) {
+        const action = this.actions[0];
 
         if (this.timeOffset >= action.delay) {
-          actions.shift();
+          this.actions.shift();
           action.doAction();
         } else {
           break;
         }
       }
-      if (actions.length > 0 || this.liveMode) {
+      if (this.actions.length > 0 || this.liveMode) {
         this.raf = requestAnimationFrame(check);
       }
     };
@@ -101,7 +110,9 @@ export function addDelay(event: eventWithTime, baselineTime: number): number {
   // so we need to find the real timestamp by traverse the time offsets.
   if (
     event.type === EventType.IncrementalSnapshot &&
-    event.data.source === IncrementalSource.MouseMove
+    event.data.source === IncrementalSource.MouseMove &&
+    event.data.positions &&
+    event.data.positions.length
   ) {
     const firstOffset = event.data.positions[0].timeOffset;
     // timeOffset is a negative offset to event.timestamp

@@ -9441,7 +9441,7 @@ exports[`record integration tests should record images inside iframe with blob u
             \\"type\\": 2,
             \\"tagName\\": \\"img\\",
             \\"attributes\\": {
-              \\"src\\": \\"blob:http://localhost:3030/...\\",
+              \\"src\\": \\"blob:http://localhost:xxxx/...\\",
               \\"rr_dataURL\\": \\"data:image/png;base64,...\\"
             },
             \\"childNodes\\": [],
@@ -9909,7 +9909,7 @@ exports[`record integration tests should record images inside iframe with blob u
             \\"type\\": 2,
             \\"tagName\\": \\"img\\",
             \\"attributes\\": {
-              \\"src\\": \\"blob:http://localhost:3030/...\\",
+              \\"src\\": \\"blob:http://localhost:xxxx/...\\",
               \\"rr_dataURL\\": \\"data:image/png;base64,...\\"
             },
             \\"childNodes\\": [],
@@ -10151,7 +10151,7 @@ exports[`record integration tests should record images with blob url 1`] = `
             \\"type\\": 2,
             \\"tagName\\": \\"img\\",
             \\"attributes\\": {
-              \\"src\\": \\"blob:http://localhost:3030/...\\",
+              \\"src\\": \\"blob:http://localhost:xxxx/...\\",
               \\"rr_dataURL\\": \\"data:image/png;base64,...\\"
             },
             \\"childNodes\\": [],
@@ -12053,6 +12053,18 @@ exports[`record integration tests should record shadow DOM 1`] = `
             \\"id\\": 43,
             \\"isShadow\\": true
           }
+        },
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": 43,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 44,
+            \\"isShadow\\": true
+          }
         }
       ]
     }
@@ -12073,7 +12085,7 @@ exports[`record integration tests should record shadow DOM 1`] = `
             \\"tagName\\": \\"p\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 44
+            \\"id\\": 45
           }
         }
       ]
@@ -12104,12 +12116,12 @@ exports[`record integration tests should record shadow DOM 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 44,
+          \\"parentId\\": 45,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"hi\\",
-            \\"id\\": 45
+            \\"id\\": 46
           }
         }
       ]
@@ -12123,18 +12135,18 @@ exports[`record integration tests should record shadow DOM 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 44,
-          \\"id\\": 45
+          \\"parentId\\": 45,
+          \\"id\\": 46
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 44,
+          \\"parentId\\": 45,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"123\\",
-            \\"id\\": 46
+            \\"id\\": 47
           }
         }
       ]
@@ -12149,24 +12161,24 @@ exports[`record integration tests should record shadow DOM 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 44,
+          \\"parentId\\": 45,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 47,
+            \\"id\\": 48,
             \\"isShadow\\": true
           }
         },
         {
-          \\"parentId\\": 47,
+          \\"parentId\\": 48,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"nested shadow dom\\",
-            \\"id\\": 48
+            \\"id\\": 49
           }
         }
       ]

@@ -478,13 +478,11 @@ function serializeNode(
           type: NodeType.Document,
           childNodes: [],
           compatMode: (n as Document).compatMode, // probably "BackCompat"
-          rootId,
         };
       } else {
         return {
           type: NodeType.Document,
           childNodes: [],
-          rootId,
         };
       }
     case n.DOCUMENT_TYPE_NODE:
@@ -678,6 +676,7 @@ function serializeElementNode(
   // form fields
   if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
+    const checked = (n as HTMLInputElement).checked;
     if (
       attributes.type !== 'radio' &&
       attributes.type !== 'checkbox' &&
@@ -692,8 +691,8 @@ function serializeElementNode(
         maskInputOptions,
         maskInputFn,
       });
-    } else if ((n as HTMLInputElement).checked) {
-      attributes.checked = (n as HTMLInputElement).checked;
+    } else if (checked) {
+      attributes.checked = checked;
     }
   }
   if (tagName === 'option') {
@@ -1014,13 +1013,14 @@ export function serializeNodeWithId(
   } else {
     id = genId();
   }
+
+  const serializedNode = Object.assign(_serializedNode, { id });
+  // add IGNORED_NODE to mirror to track nextSiblings
+  mirror.add(n, serializedNode);
+
   if (id === IGNORED_NODE) {
     return null; // slimDOM
   }
-
-  const serializedNode = Object.assign(_serializedNode, { id });
-
-  mirror.add(n, serializedNode);
 
   if (onSerialize) {
     onSerialize(n);

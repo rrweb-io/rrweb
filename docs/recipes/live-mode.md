@@ -8,20 +8,35 @@ When you are using rrweb's Replayer to do a real-time replay, you need to config
 const replayer = new rrweb.Replayer([], {
   liveMode: true,
 });
-
-replayer.startLive(FIRST_EVENT.timestamp - BUFFER);
+replayer.startLive();
 ```
 
-When calling the `startLive` API, there is an optional parameter to set the baseline time. This is quite useful when you live scenario needs a buffer time.
+Later when you receive new events (e.g. over websockets), you can add them using:
 
-For example, you have an event recorded at timestamp 1500. Calling `startLive(1500)` will set the baseline time to 1500 and all the timing calculation will be based on this.
+```
+function onReceive(event) {
+  replayer.addEvent(event);
+}
+```
 
-But this may cause your replay to look laggy. Because data transportation needs time(such as the delay of the network). And some events have been throttled(such as mouse movements) which has a delay by default.
-
-So we can configure a smaller baseline time to the `startLive` API, like `startLive(500)`. This will let the replay always delay 1 second than the source. If the time of data transportation is not longer than 1 second, the user will not feel laggy.
-
-When live mode is on, we can call `addEvent` API to add the latest events into the replayer:
+If you have an ongoing recording that already has events, and wish to initiate play from a 'live' time, it's also possible to use the `play` function, supplied with an offset which corresponds to the current time:
 
 ```js
-replayer.addEvent(NEW_EVENT);
+const replayer = new rrweb.Replayer(EXISTING_EVENTS, {
+  liveMode: true,
+});
+replayer.play(Date.now() - EXISTING_EVENTS[0].timestamp);
 ```
+
+When calling the `startLive` API, there is an optional parameter to set the baseline time. By default, this is `Date.now()` so that events are applied as soon as they come in, however this may cause your replay to appear laggy. Because data transportation needs time (such as the delay of the network), And some events have been throttled(such as mouse movements) which has a delay by default.
+
+Here is how you introduce a buffer:
+
+```js
+const BUFFER_MS = 1000;
+replayer.startLive(Date.now() - BUFFER_MS);
+```
+
+This will let the replay always delay 1 second than the source. If the time of data transportation is not longer than 1 second, the user will not feel laggy.
+
+The same can be done for `play` as follows: `replayer.play((Date.now() - EXISTING_EVENTS[0].timestamp) - BUFFER_MS)`

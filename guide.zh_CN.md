@@ -139,6 +139,7 @@ setInterval(save, 10 * 1000);
 | blockClass           | 'rr-block'         | 字符串或正则表达式，可用于自定义屏蔽元素的类名，详见[“隐私”](#隐私)章节                                                                                                               |
 | blockSelector        | null               | 所有 element.matches(blockSelector)为 true 的元素都不会被录制，回放时取而代之的是一个同等宽高的占位元素                                                                               |
 | ignoreClass          | 'rr-ignore'        | 字符串或正则表达式，可用于自定义忽略元素的类名，详见[“隐私”](#隐私)章节                                                                                                               |
+| ignoreCSSAttributes  | null               | 应该被忽略的 CSS 属性数组                                                                                                                                                             |
 | maskTextClass        | 'rr-mask'          | 字符串或正则表达式，可用于自定义忽略元素 text 内容的类名，详见[“隐私”](#隐私)章节                                                                                                     |
 | maskTextSelector     | null               | 所有 element.matches(maskTextSelector)为 true 的元素及其子元素的 text 内容将会被屏蔽                                                                                                  |
 | maskAllInputs        | false              | 将所有输入内容记录为 \*                                                                                                                                                               |
@@ -150,6 +151,7 @@ setInterval(save, 10 * 1000);
 | hooks                | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                 |
 | packFn               | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | sampling             | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
+| dataURLOptions       | {}                 | Canvas 图像快照的格式和质量,这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小                                                                    |
 | recordCanvas         | false              | 是否记录 canvas 内容, 可用选项：false, true                                                                                                                                           |
 | inlineImages         | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts         | false              | 是否记录页面中的字体文件                                                                                                                                                              |
@@ -276,6 +278,9 @@ replayer.pause();
 
 // 暂停至第 5 秒处
 replayer.pause(5000);
+
+// 销毁播放器 (提示： 这个操作不可逆)
+replayer.destroy();
 ```
 
 #### 配置参数
@@ -384,6 +389,7 @@ replayer.on(EVENT_NAME, (payload) => {
 | mouse-interaction      | 回放鼠标交互事件       | { type, target }  |
 | event-cast             | 回放 event             | event             |
 | custom-event           | 回放自定义事件         | event             |
+| destroy                | 销毁播放器             | -                 |
 
 使用 `rrweb-player` 时，也可以通过 `addEventListener` API 使用相同的事件功能，并且会获得 3 个额外的事件：
 

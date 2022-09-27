@@ -143,6 +143,7 @@ The parameter of `rrweb.record` accepts the following options.
 | blockClass           | 'rr-block'         | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                                                |
 | blockSelector        | null               | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
 | ignoreClass          | 'rr-ignore'        | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                                                |
+| ignoreCSSAttributes  | null               | array of CSS attributes that should be ignored                                                                                                                                                |
 | maskTextClass        | 'rr-mask'          | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter                                                                                 |
 | maskTextSelector     | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter                                                                                           |
 | maskAllInputs        | false              | mask all input content as \*                                                                                                                                                                  |
@@ -150,6 +151,7 @@ The parameter of `rrweb.record` accepts the following options.
 | maskInputFn          | -                  | customize mask input content recording logic                                                                                                                                                  |
 | maskTextFn           | -                  | customize mask text content recording logic                                                                                                                                                   |
 | slimDOMOptions       | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)  |
+| dataURLOptions       | {}                 | Canvas image format and quality ,This parameter will be passed to the OffscreenCanvas.convertToBlob(),Using this parameter effectively reduces the size of the recorded data                  |
 | inlineStylesheet     | true               | whether to inline the stylesheet in the events                                                                                                                                                |
 | hooks                | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                  |
 | packFn               | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
@@ -280,6 +282,9 @@ replayer.pause();
 
 // pause at the fifth seconds
 replayer.pause(5000);
+
+// destroy the replayer (hint: this operation is irreversible)
+replayer.destroy();
 ```
 
 #### Options
@@ -346,16 +351,17 @@ new rrwebPlayer({
 
 ##### Options
 
-| key            | default      | description                                            |
-| -------------- | ------------ | ------------------------------------------------------ |
-| events         | []           | the events for replaying                               |
-| width          | 1024         | the width of the replayer                              |
-| height         | 576          | the height of the replayer                             |
-| autoPlay       | true         | whether to autoplay                                    |
-| speedOption    | [1, 2, 4, 8] | speed options in UI                                    |
-| showController | true         | whether to show the controller UI                      |
-| tags           | {}           | customize the custom events style with a key-value map |
-| ...            | -            | all the rrweb Replayer options will be bypassed        |
+| key            | default      | description                                                          |
+| -------------- | ------------ | -------------------------------------------------------------------- |
+| events         | []           | the events for replaying                                             |
+| width          | 1024         | the width of the replayer                                            |
+| height         | 576          | the height of the replayer                                           |
+| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited |
+| autoPlay       | true         | whether to autoplay                                                  |
+| speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
+| showController | true         | whether to show the controller UI                                    |
+| tags           | {}           | customize the custom events style with a key-value map               |
+| ...            | -            | all the rrweb Replayer options will be bypassed                      |
 
 #### Events
 
@@ -385,6 +391,7 @@ The event list:
 | mouse-interaction      | mouse interaction has been replayed | { type, target }  |
 | event-cast             | event has been replayed             | event             |
 | custom-event           | custom event has been replayed      | event             |
+| destroy                | destroyed the replayer              | -                 |
 
 The rrweb-replayer also re-expose the event listener via a `component.addEventListener` API.
 

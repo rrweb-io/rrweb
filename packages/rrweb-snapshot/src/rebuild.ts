@@ -5,6 +5,8 @@ import {
   tagMap,
   elementNode,
   BuildCache,
+  attributes,
+  legacyAttributes,
 } from './types';
 import { isElement, Mirror } from './utils';
 
@@ -142,137 +144,163 @@ function buildNode(
       } else {
         node = doc.createElement(tagName);
       }
+      /**
+       * Attribute names start with `rr_` are internal attributes added by rrweb.
+       * They often overwrite other attributes on the element.
+       * We need to parse them last so they can overwrite conflicting attributes.
+       */
+      const specialAttributes: attributes = {};
       for (const name in n.attributes) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
         }
         let value = n.attributes[name];
-        if (tagName === 'option' && name === 'selected' && value === false) {
+        if (
+          tagName === 'option' &&
+          name === 'selected' &&
+          (value as legacyAttributes[typeof name]) === false
+        ) {
           // legacy fix (TODO: if `value === false` can be generated for other attrs,
           // should we also omit those other attrs from build ?)
           continue;
         }
-        value =
-          typeof value === 'boolean' || typeof value === 'number' ? '' : value;
-        // attribute names start with rr_ are internal attributes added by rrweb
-        if (!name.startsWith('rr_')) {
-          const isTextarea = tagName === 'textarea' && name === 'value';
-          const isRemoteOrDynamicCss =
-            tagName === 'style' && name === '_cssText';
-          if (isRemoteOrDynamicCss && hackCss) {
-            value = addHoverClass(value, cache);
-          }
-          if (isTextarea || isRemoteOrDynamicCss) {
-            const child = doc.createTextNode(value);
-            // https://github.com/rrweb-io/rrweb/issues/112
-            for (const c of Array.from(node.childNodes)) {
-              if (c.nodeType === node.TEXT_NODE) {
-                node.removeChild(c);
-              }
+
+        /**
+         * Boolean attributes are considered to be true if they're present on the element at all.
+         * We should set value to the empty string ("") or the attribute's name, with no leading or trailing whitespace.
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute#parameters
+         */
+        if (value === true) value = '';
+
+        if (name.startsWith('rr_')) {
+          specialAttributes[name] = value;
+          continue;
+        }
+
+        const isTextarea = tagName === 'textarea' && name === 'value';
+        const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
+        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
+          value = addHoverClass(value, cache);
+        }
+        if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
+          const child = doc.createTextNode(value);
+          // https://github.com/rrweb-io/rrweb/issues/112
+          for (const c of Array.from(node.childNodes)) {
+            if (c.nodeType === node.TEXT_NODE) {
+              node.removeChild(c);
             }
-            node.appendChild(child);
+          }
+          node.appendChild(child);
+          continue;
+        }
+
+        try {
+          if (n.isSVG && name === 'xlink:href') {
+            node.setAttributeNS(
+              'http://www.w3.org/1999/xlink',
+              name,
+              value.toString(),
+            );
+          } else if (
+            name === 'onload' ||
+            name === 'onclick' ||
+            name.substring(0, 7) === 'onmouse'
+          ) {
+            // Rename some of the more common atttributes from https://www.w3schools.com/tags/ref_eventattributes.asp
+            // as setting them triggers a console.error (which shows up despite the try/catch)
+            // Assumption: these attributes are not used to css
+            node.setAttribute('_' + name, value.toString());
+          } else if (
+            tagName === 'meta' &&
+            n.attributes['http-equiv'] === 'Content-Security-Policy' &&
+            name === 'content'
+          ) {
+            // If CSP contains style-src and inline-style is disabled, there will be an error "Refused to apply inline style because it violates the following Content Security Policy directive: style-src '*'".
+            // And the function insertStyleRules in rrweb replayer will throw an error "Uncaught TypeError: Cannot read property 'insertRule' of null".
+            node.setAttribute('csp-content', value.toString());
             continue;
+          } else if (
+            tagName === 'link' &&
+            n.attributes.rel === 'preload' &&
+            n.attributes.as === 'script'
+          ) {
+            // ignore
+          } else if (
+            tagName === 'link' &&
+            n.attributes.rel === 'prefetch' &&
+            typeof n.attributes.href === 'string' &&
+            n.attributes.href.endsWith('.js')
+          ) {
+            // ignore
+          } else if (
+            tagName === 'img' &&
+            n.attributes.srcset &&
+            n.attributes.rr_dataURL
+          ) {
+            // backup original img srcset
+            node.setAttribute(
+              'rrweb-original-srcset',
+              n.attributes.srcset as string,
+            );
+          } else {
+            node.setAttribute(name, value.toString());
           }
+        } catch (error) {
+          // skip invalid attribute
+        }
+      }
 
-          try {
-            if (n.isSVG && name === 'xlink:href') {
-              node.setAttributeNS('http://www.w3.org/1999/xlink', name, value);
-            } else if (
-              name === 'onload' ||
-              name === 'onclick' ||
-              name.substring(0, 7) === 'onmouse'
-            ) {
-              // Rename some of the more common atttributes from https://www.w3schools.com/tags/ref_eventattributes.asp
-              // as setting them triggers a console.error (which shows up despite the try/catch)
-              // Assumption: these attributes are not used to css
-              node.setAttribute('_' + name, value);
-            } else if (
-              tagName === 'meta' &&
-              n.attributes['http-equiv'] === 'Content-Security-Policy' &&
-              name === 'content'
-            ) {
-              // If CSP contains style-src and inline-style is disabled, there will be an error "Refused to apply inline style because it violates the following Content Security Policy directive: style-src '*'".
-              // And the function insertStyleRules in rrweb replayer will throw an error "Uncaught TypeError: Cannot read property 'insertRule' of null".
-              node.setAttribute('csp-content', value);
-              continue;
-            } else if (
-              tagName === 'link' &&
-              n.attributes.rel === 'preload' &&
-              n.attributes.as === 'script'
-            ) {
-              // ignore
-            } else if (
-              tagName === 'link' &&
-              n.attributes.rel === 'prefetch' &&
-              typeof n.attributes.href === 'string' &&
-              n.attributes.href.endsWith('.js')
-            ) {
-              // ignore
-            } else if (
-              tagName === 'img' &&
-              n.attributes.srcset &&
-              n.attributes.rr_dataURL
-            ) {
-              // backup original img srcset
-              node.setAttribute(
-                'rrweb-original-srcset',
-                n.attributes.srcset as string,
-              );
-            } else {
-              node.setAttribute(name, value);
+      for (const name in specialAttributes) {
+        const value = specialAttributes[name];
+        // handle internal attributes
+        if (tagName === 'canvas' && name === 'rr_dataURL') {
+          const image = document.createElement('img');
+          image.onload = () => {
+            const ctx = (node as HTMLCanvasElement).getContext('2d');
+            if (ctx) {
+              ctx.drawImage(image, 0, 0, image.width, image.height);
             }
-          } catch (error) {
-            // skip invalid attribute
+          };
+          image.src = value.toString();
+          type RRCanvasElement = {
+            RRNodeType: NodeType;
+            rr_dataURL: string;
+          };
+          // If the canvas element is created in RRDom runtime (seeking to a time point), the canvas context isn't supported. So the data has to be stored and not handled until diff process. https://github.com/rrweb-io/rrweb/pull/944
+          if (((node as unknown) as RRCanvasElement).RRNodeType)
+            ((node as unknown) as RRCanvasElement).rr_dataURL = value.toString();
+        } else if (tagName === 'img' && name === 'rr_dataURL') {
+          const image = node as HTMLImageElement;
+          if (!image.currentSrc.startsWith('data:')) {
+            // Backup original img src. It may not have been set yet.
+            image.setAttribute(
+              'rrweb-original-src',
+              n.attributes.src as string,
+            );
+            image.src = value.toString();
           }
-        } else {
-          // handle internal attributes
-          if (tagName === 'canvas' && name === 'rr_dataURL') {
-            const image = document.createElement('img');
-            image.onload = () => {
-              const ctx = (node as HTMLCanvasElement).getContext('2d');
-              if (ctx) {
-                ctx.drawImage(image, 0, 0, image.width, image.height);
-              }
-            };
-            image.src = value;
-            type RRCanvasElement = {
-              RRNodeType: NodeType;
-              rr_dataURL: string;
-            };
-            // If the canvas element is created in RRDom runtime (seeking to a time point), the canvas context isn't supported. So the data has to be stored and not handled until diff process. https://github.com/rrweb-io/rrweb/pull/944
-            if (((node as unknown) as RRCanvasElement).RRNodeType)
-              ((node as unknown) as RRCanvasElement).rr_dataURL = value;
-          } else if (tagName === 'img' && name === 'rr_dataURL') {
-            const image = node as HTMLImageElement;
-            if (!image.currentSrc.startsWith('data:')) {
-              // Backup original img src. It may not have been set yet.
-              image.setAttribute(
-                'rrweb-original-src',
-                n.attributes.src as string,
-              );
-              image.src = value;
-            }
-          }
+        }
 
-          if (name === 'rr_width') {
-            (node as HTMLElement).style.width = value;
-          } else if (name === 'rr_height') {
-            (node as HTMLElement).style.height = value;
-          } else if (name === 'rr_mediaCurrentTime') {
-            (node as HTMLMediaElement).currentTime = n.attributes
-              .rr_mediaCurrentTime as number;
-          } else if (name === 'rr_mediaState') {
-            switch (value) {
-              case 'played':
-                (node as HTMLMediaElement)
-                  .play()
-                  .catch((e) => console.warn('media playback error', e));
-                break;
-              case 'paused':
-                (node as HTMLMediaElement).pause();
-                break;
-              default:
-            }
+        if (name === 'rr_width') {
+          (node as HTMLElement).style.width = value.toString();
+        } else if (name === 'rr_height') {
+          (node as HTMLElement).style.height = value.toString();
+        } else if (
+          name === 'rr_mediaCurrentTime' &&
+          typeof value === 'number'
+        ) {
+          (node as HTMLMediaElement).currentTime = value;
+        } else if (name === 'rr_mediaState') {
+          switch (value) {
+            case 'played':
+              (node as HTMLMediaElement)
+                .play()
+                .catch((e) => console.warn('media playback error', e));
+              break;
+            case 'paused':
+              (node as HTMLMediaElement).pause();
+              break;
+            default:
           }
         }
       }
@@ -320,7 +348,7 @@ export function buildNodeWithSN(
     mirror: Mirror;
     skipChild?: boolean;
     hackCss: boolean;
-    afterAppend?: (n: Node) => unknown;
+    afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
   },
 ): Node | null {
@@ -398,7 +426,7 @@ export function buildNodeWithSN(
         node.appendChild(childNode);
       }
       if (afterAppend) {
-        afterAppend(childNode);
+        afterAppend(childNode, childN.id);
       }
     }
   }
@@ -449,7 +477,7 @@ function rebuild(
     doc: Document;
     onVisit?: (node: Node) => unknown;
     hackCss?: boolean;
-    afterAppend?: (n: Node) => unknown;
+    afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
     mirror: Mirror;
   },

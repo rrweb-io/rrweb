@@ -80,7 +80,7 @@ const events: eventWithTime[] = [
         {
           id: 102,
           value: 'Intermediate - incorrect',
-        }
+        },
       ],
       source: IncrementalSource.Mutation,
       removes: [],
@@ -97,7 +97,7 @@ const events: eventWithTime[] = [
         {
           id: 102,
           value: 'Final - correct',
-        }
+        },
       ],
       source: IncrementalSource.Mutation,
       removes: [],

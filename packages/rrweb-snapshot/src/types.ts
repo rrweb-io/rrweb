@@ -21,8 +21,16 @@ export type documentTypeNode = {
 };
 
 export type attributes = {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | true;
 };
+export type legacyAttributes = {
+  /**
+   * @deprecated old bug in rrweb was causing these to always be set
+   * @see https://github.com/rrweb-io/rrweb/pull/651
+   */
+  selected: false;
+};
+
 export type elementNode = {
   type: NodeType.Element;
   tagName: string;

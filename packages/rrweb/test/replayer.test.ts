@@ -34,7 +34,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -195,14 +195,28 @@ describe('replayer', function () {
     await assertDomSnapshot(page);
   });
 
-  it('can restore selection', async () => {
+  it('can fast forward selection events', async () => {
     await page.evaluate(`events = ${JSON.stringify(selectionEvents)}`);
-    const [startOffset, endOffset] = (await page.evaluate(`
+
+    /** check the first selection event */
+    let [startOffset, endOffset] = (await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
-      replayer.pause(1500);
-      const range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+      replayer.pause(360);
+      var range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
+      [range.startOffset, range.endOffset];
+    `)) as [startOffset: number, endOffset: number];
 
+    expect(startOffset).toEqual(5);
+    expect(endOffset).toEqual(15);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    /** check the second selection event */
+    [startOffset, endOffset] = (await page.evaluate(`      
+      replayer.pause(410);
+      var range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
       [range.startOffset, range.endOffset];
     `)) as [startOffset: number, endOffset: number];
 
@@ -686,5 +700,22 @@ describe('replayer', function () {
     await page.waitForTimeout(50);
 
     await assertDomSnapshot(page);
+  });
+
+  it('should destroy the replayer after calling destroy()', async () => {
+    await page.evaluate(`events = ${JSON.stringify(events)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      let replayer = new Replayer(events);
+      replayer.play();      
+    `);
+
+    const replayerWrapperClassName = 'replayer-wrapper';
+    let wrapper = await page.$(`.${replayerWrapperClassName}`);
+    expect(wrapper).not.toBeNull();
+
+    await page.evaluate(`replayer.destroy(); replayer = null;`);
+    wrapper = await page.$(`.${replayerWrapperClassName}`);
+    expect(wrapper).toBeNull();
   });
 });

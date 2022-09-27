@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "src",
+    "composite": true,
     "target": "ES6",
     "module": "commonjs",
     "noImplicitAny": true,
@@ -16,6 +17,11 @@
     "esModuleInterop": true,
     "strictBindCallApply": true
   },
+  "references": [
+    {
+      "path": "../rrweb-snapshot"
+    }
+  ],
   "compileOnSave": true,
   "include": ["src", "../rrweb/src/record/workers/workers.d.ts"]
 }

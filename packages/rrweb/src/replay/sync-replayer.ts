@@ -249,9 +249,10 @@ export class SyncReplayer {
       }
 
       for (const plugin of this.config.plugins || []) {
-        plugin.handler(event, true, {
-          replayer: (this as unknown) as Replayer,
-        });
+        if (plugin.handler)
+          plugin.handler(event, true, {
+            replayer: (this as unknown) as Replayer,
+          });
       }
 
       this.emitter.emit(ReplayerEvents.EventCast, event);
