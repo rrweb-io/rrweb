@@ -284,7 +284,6 @@ describe('pruneBranches', () => {
     const result = pruneBranches(events, { keep: [99] });
     assertSnapshot(result);
   });
-
 });
 
 function getHtml(fileName: string) {
