@@ -716,21 +716,25 @@ export class Replayer {
     }
     this.legacy_missingNodeRetryMap = {};
     const collected: AppendedIframe[] = [];
+    const afterAppend = (builtNode: Node, id: number) => {
+      this.collectIframeAndAttachDocument(collected, builtNode);
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.onBuild)
+          plugin.onBuild(builtNode, {
+            id,
+            replayer: this,
+          });
+      }
+    };
+
     rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
-      afterAppend: (builtNode: Node, id: number) => {
-        this.collectIframeAndAttachDocument(collected, builtNode);
-        for (const plugin of this.config.plugins || []) {
-          if (plugin.onBuild)
-            plugin.onBuild(builtNode, {
-              id,
-              replayer: this,
-            });
-        }
-      },
+      afterAppend,
       cache: this.cache,
       mirror: this.mirror,
     });
+    afterAppend(this.iframe.contentDocument, event.data.node.id);
+
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
@@ -803,35 +807,39 @@ export class Replayer {
     type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
 
     const collected: AppendedIframe[] = [];
+    const afterAppend = (builtNode: Node, id: number) => {
+      this.collectIframeAndAttachDocument(collected, builtNode);
+      const sn = (mirror as TMirror).getMeta((builtNode as unknown) as TNode);
+      if (
+        sn?.type === NodeType.Element &&
+        sn?.tagName.toUpperCase() === 'HTML'
+      ) {
+        const { documentElement, head } = iframeEl.contentDocument!;
+        this.insertStyleRules(
+          documentElement as HTMLElement | RRElement,
+          head as HTMLElement | RRElement,
+        );
+      }
+
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.onBuild)
+          plugin.onBuild(builtNode, {
+            id,
+            replayer: this,
+          });
+      }
+    };
+
     buildNodeWithSN(mutation.node, {
       doc: iframeEl.contentDocument! as Document,
       mirror: mirror as Mirror,
       hackCss: true,
       skipChild: false,
-      afterAppend: (builtNode, id: number) => {
-        this.collectIframeAndAttachDocument(collected, builtNode);
-        const sn = (mirror as TMirror).getMeta((builtNode as unknown) as TNode);
-        if (
-          sn?.type === NodeType.Element &&
-          sn?.tagName.toUpperCase() === 'HTML'
-        ) {
-          const { documentElement, head } = iframeEl.contentDocument!;
-          this.insertStyleRules(
-            documentElement as HTMLElement | RRElement,
-            head as HTMLElement | RRElement,
-          );
-        }
-
-        for (const plugin of this.config.plugins || []) {
-          if (plugin.onBuild)
-            plugin.onBuild(builtNode, {
-              id,
-              replayer: this,
-            });
-        }
-      },
+      afterAppend,
       cache: this.cache,
     });
+    afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
+
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
@@ -1530,17 +1538,23 @@ export class Replayer {
         );
         return;
       }
+      const afterAppend = (node: Node | RRNode, id: number) => {
+        for (const plugin of this.config.plugins || []) {
+          if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
+        }
+      };
+
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document, // can be Document or RRDocument
         mirror: mirror as Mirror, // can be this.mirror or virtualDom.mirror
         skipChild: true,
         hackCss: true,
         cache: this.cache,
-        afterAppend: (node: Node | RRNode, id: number) => {
-          for (const plugin of this.config.plugins || []) {
-            if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
-          }
-        },
+        /**
+         * caveat: `afterAppend` only gets called on child nodes of target
+         * we have to call it again below when this target was added to the DOM
+         */
+        afterAppend,
       }) as Node | RRNode;
 
       // legacy data, we should not have -1 siblings any more
@@ -1600,6 +1614,11 @@ export class Replayer {
 
         (parent as TNode).appendChild(target as TNode);
       }
+      /**
+       * target was added, execute plugin hooks
+       */
+      afterAppend(target, mutation.node.id);
+
       /**
        * https://github.com/rrweb-io/rrweb/pull/887
        * Remove any virtual style rules for stylesheets if a new text node is appended.
