@@ -18,6 +18,7 @@ import { sessionCut, getValidSortedPoints, pruneBranches } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
 import { events as inlineStyleEvents } from './events/inline-style.event';
+import { assertSnapshot } from './utils';
 
 describe('session cutter', () => {
   it('should return the same events if the events length is too short', () => {
@@ -220,6 +221,70 @@ describe('pruneBranches', () => {
     const result = pruneBranches(events, { keep: [14] });
     expect(result[result.length - 1]).toMatchSnapshot();
   });
+
+  it('should remove branches based on nodes that came in after fullsnapshot', () => {
+    const mutationEvent = {
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: 0,
+        texts: [],
+        attributes: [],
+        removes: [],
+        adds: [
+          {
+            parentId: 14,
+            nextId: null,
+            node: {
+              id: 99,
+              type: NodeType.Element,
+              tagName: 'canvas',
+              attributes: {},
+              childNodes: [],
+            },
+          },
+        ],
+      },
+    };
+    const events = [...inlineStyleEvents, mutationEvent] as eventWithTime[];
+    const result = pruneBranches(events, { keep: [99] });
+    assertSnapshot(result);
+  });
+  it('should remove branches based on child nodes that came in after fullsnapshot', () => {
+    const mutationEvent = {
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: 0,
+        texts: [],
+        attributes: [],
+        removes: [],
+        adds: [
+          {
+            parentId: 14,
+            nextId: null,
+            node: {
+              id: 98,
+              type: NodeType.Element,
+              tagName: 'main',
+              attributes: {},
+              childNodes: [
+                {
+                  id: 99,
+                  type: NodeType.Element,
+                  tagName: 'canvas',
+                  attributes: {},
+                  childNodes: [],
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    const events = [...inlineStyleEvents, mutationEvent] as eventWithTime[];
+    const result = pruneBranches(events, { keep: [99] });
+    assertSnapshot(result);
+  });
+
 });
 
 function getHtml(fileName: string) {
