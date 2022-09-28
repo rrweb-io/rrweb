@@ -10,6 +10,180 @@ exports[`pruneBranches should cut branches that doesn't include id: pruned all b
 "
 `;
 
+exports[`pruneBranches should remove branches based on child nodes that came in after fullsnapshot 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1512,
+      \\"height\\": 395
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"root\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 12
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"id\\": 98,
+            \\"type\\": 2,
+            \\"tagName\\": \\"main\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"id\\": 99,
+                \\"type\\": 2,
+                \\"tagName\\": \\"canvas\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": []
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`pruneBranches should remove branches based on nodes that came in after fullsnapshot 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1512,
+      \\"height\\": 395
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"root\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 12
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"id\\": 99,
+            \\"type\\": 2,
+            \\"tagName\\": \\"canvas\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": []
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`pruneBranches should remove mutations that don't include ids 1`] = `
 Object {
   "data": Object {
