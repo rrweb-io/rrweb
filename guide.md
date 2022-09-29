@@ -351,16 +351,17 @@ new rrwebPlayer({
 
 ##### Options
 
-| key            | default      | description                                            |
-| -------------- | ------------ | ------------------------------------------------------ |
-| events         | []           | the events for replaying                               |
-| width          | 1024         | the width of the replayer                              |
-| height         | 576          | the height of the replayer                             |
-| autoPlay       | true         | whether to autoplay                                    |
-| speedOption    | [1, 2, 4, 8] | speed options in UI                                    |
-| showController | true         | whether to show the controller UI                      |
-| tags           | {}           | customize the custom events style with a key-value map |
-| ...            | -            | all the rrweb Replayer options will be bypassed        |
+| key            | default      | description                                                          |
+| -------------- | ------------ | -------------------------------------------------------------------- |
+| events         | []           | the events for replaying                                             |
+| width          | 1024         | the width of the replayer                                            |
+| height         | 576          | the height of the replayer                                           |
+| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited |
+| autoPlay       | true         | whether to autoplay                                                  |
+| speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
+| showController | true         | whether to show the controller UI                                    |
+| tags           | {}           | customize the custom events style with a key-value map               |
+| ...            | -            | all the rrweb Replayer options will be bypassed                      |
 
 #### Events
 

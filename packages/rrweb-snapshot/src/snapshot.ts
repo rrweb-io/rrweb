@@ -652,6 +652,7 @@ function serializeElementNode(
   // form fields
   if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
+    const checked = (n as HTMLInputElement).checked;
     if (
       attributes.type !== 'radio' &&
       attributes.type !== 'checkbox' &&
@@ -666,8 +667,8 @@ function serializeElementNode(
         maskInputOptions,
         maskInputFn,
       });
-    } else if ((n as HTMLInputElement).checked) {
-      attributes.checked = (n as HTMLInputElement).checked;
+    } else if (checked) {
+      attributes.checked = checked;
     }
   }
   if (tagName === 'option') {
