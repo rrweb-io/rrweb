@@ -916,7 +916,7 @@ describe('replayer', function () {
       ).toBeTruthy();
     };
 
-    await page.waitForTimeout(240);
+    await page.waitForTimeout(235);
     await check250ms();
 
     await page.waitForTimeout(50);
