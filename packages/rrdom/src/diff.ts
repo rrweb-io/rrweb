@@ -4,6 +4,8 @@ import type {
   canvasEventWithTime,
   inputData,
   scrollData,
+  styleDeclarationData,
+  styleSheetRuleData,
 } from 'rrweb/src/types';
 import type {
   IRRCDATASection,
@@ -79,6 +81,10 @@ export type ReplayerHandler = {
   ) => void;
   applyInput: (data: inputData) => void;
   applyScroll: (data: scrollData, isSync: boolean) => void;
+  applyStyleSheetMutation: (
+    data: styleDeclarationData | styleSheetRuleData,
+    styleSheet: CSSStyleSheet,
+  ) => void;
 };
 
 export function diff(
@@ -161,20 +167,25 @@ export function diff(
           }
           break;
         case 'STYLE':
-          applyVirtualStyleRulesToNode(
-            oldElement as HTMLStyleElement,
-            (newTree as RRStyleElement).rules,
-          );
+          {
+            const styleSheet = (oldElement as HTMLStyleElement).sheet;
+            styleSheet &&
+              (newTree as RRStyleElement).rules.forEach((data) =>
+                replayer.applyStyleSheetMutation(data, styleSheet),
+              );
+          }
           break;
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const oldChildren = oldElement.shadowRoot!.childNodes;
         const newChildren = newRRElement.shadowRoot.childNodes;
         if (oldChildren.length > 0 || newChildren.length > 0)
           diffChildren(
             Array.from(oldChildren),
             newChildren,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             oldElement.shadowRoot!,
             replayer,
             rrnodeMirror,
@@ -335,6 +346,7 @@ function diffChildren(
       }
       indexInOld = oldIdToIndex[rrnodeMirror.getId(newStartNode)];
       if (indexInOld) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const nodeToMove = oldChildren[indexInOld]!;
         parentNode.insertBefore(nodeToMove, oldStartNode);
         diff(nodeToMove, newStartNode, replayer, rrnodeMirror);
@@ -438,111 +450,4 @@ export function createOrGetNode(
 
   if (sn) domMirror.add(node, { ...sn });
   return node;
-}
-
-export function getNestedRule(
-  rules: CSSRuleList,
-  position: number[],
-): CSSGroupingRule {
-  const rule = rules[position[0]] as CSSGroupingRule;
-  if (position.length === 1) {
-    return rule;
-  } else {
-    return getNestedRule(
-      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
-      position.slice(2),
-    );
-  }
-}
-
-export enum StyleRuleType {
-  Insert,
-  Remove,
-  Snapshot,
-  SetProperty,
-  RemoveProperty,
-}
-type InsertRule = {
-  cssText: string;
-  type: StyleRuleType.Insert;
-  index?: number | number[];
-};
-type RemoveRule = {
-  type: StyleRuleType.Remove;
-  index: number | number[];
-};
-type SetPropertyRule = {
-  type: StyleRuleType.SetProperty;
-  index: number[];
-  property: string;
-  value: string | null;
-  priority: string | undefined;
-};
-type RemovePropertyRule = {
-  type: StyleRuleType.RemoveProperty;
-  index: number[];
-  property: string;
-};
-
-export type VirtualStyleRules = Array<
-  InsertRule | RemoveRule | SetPropertyRule | RemovePropertyRule
->;
-
-export function getPositionsAndIndex(nestedIndex: number[]) {
-  const positions = [...nestedIndex];
-  const index = positions.pop();
-  return { positions, index };
-}
-
-export function applyVirtualStyleRulesToNode(
-  styleNode: HTMLStyleElement,
-  virtualStyleRules: VirtualStyleRules,
-) {
-  const sheet = styleNode.sheet!;
-
-  virtualStyleRules.forEach((rule) => {
-    if (rule.type === StyleRuleType.Insert) {
-      try {
-        if (Array.isArray(rule.index)) {
-          const { positions, index } = getPositionsAndIndex(rule.index);
-          const nestedRule = getNestedRule(sheet.cssRules, positions);
-          nestedRule.insertRule(rule.cssText, index);
-        } else {
-          sheet.insertRule(rule.cssText, rule.index);
-        }
-      } catch (e) {
-        /**
-         * sometimes we may capture rules with browser prefix
-         * insert rule with prefixs in other browsers may cause Error
-         */
-      }
-    } else if (rule.type === StyleRuleType.Remove) {
-      try {
-        if (Array.isArray(rule.index)) {
-          const { positions, index } = getPositionsAndIndex(rule.index);
-          const nestedRule = getNestedRule(sheet.cssRules, positions);
-          nestedRule.deleteRule(index || 0);
-        } else {
-          sheet.deleteRule(rule.index);
-        }
-      } catch (e) {
-        /**
-         * accessing styleSheet rules may cause SecurityError
-         * for specific access control settings
-         */
-      }
-    } else if (rule.type === StyleRuleType.SetProperty) {
-      const nativeRule = (getNestedRule(
-        sheet.cssRules,
-        rule.index,
-      ) as unknown) as CSSStyleRule;
-      nativeRule.style.setProperty(rule.property, rule.value, rule.priority);
-    } else if (rule.type === StyleRuleType.RemoveProperty) {
-      const nativeRule = (getNestedRule(
-        sheet.cssRules,
-        rule.index,
-      ) as unknown) as CSSStyleRule;
-      nativeRule.style.removeProperty(rule.property);
-    }
-  });
 }

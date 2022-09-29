@@ -1,13 +1,19 @@
 import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
 import type { mutationCallBack } from '../types';
+import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
   private mutationCb: mutationCallBack;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
+  private stylesheetManager: StylesheetManager;
 
-  constructor(options: { mutationCb: mutationCallBack }) {
+  constructor(options: {
+    mutationCb: mutationCallBack;
+    stylesheetManager: StylesheetManager;
+  }) {
     this.mutationCb = options.mutationCb;
+    this.stylesheetManager = options.stylesheetManager;
   }
 
   public addIframe(iframeEl: HTMLIFrameElement) {
@@ -37,5 +43,15 @@ export class IframeManager {
       isAttachIframe: true,
     });
     this.loadListener?.(iframeEl);
+
+    if (
+      iframeEl.contentDocument &&
+      iframeEl.contentDocument.adoptedStyleSheets &&
+      iframeEl.contentDocument.adoptedStyleSheets.length > 0
+    )
+      this.stylesheetManager.adoptStyleSheets(
+        iframeEl.contentDocument.adoptedStyleSheets,
+        mirror.getId(iframeEl.contentDocument),
+      );
   }
 }

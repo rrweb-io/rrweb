@@ -2,14 +2,7 @@
  * @jest-environment jsdom
  */
 import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
-import {
-  applyVirtualStyleRulesToNode,
-  createOrGetNode,
-  diff,
-  ReplayerHandler,
-  StyleRuleType,
-  VirtualStyleRules,
-} from '../src/diff';
+import { createOrGetNode, diff, ReplayerHandler } from '../src/diff';
 import {
   NodeType as RRNodeType,
   serializedNodeWithId,
@@ -17,11 +10,14 @@ import {
   Mirror,
 } from 'rrweb-snapshot';
 import type { IRRNode } from '../src/document';
-import {
+import { Replayer } from 'rrweb';
+import type {
   canvasMutationData,
-  EventType,
-  IncrementalSource,
+  styleDeclarationData,
+  styleSheetRuleData,
 } from 'rrweb/src/types';
+import { EventType, IncrementalSource } from 'rrweb/src/types';
+import type { eventWithTime } from 'rrweb/typings/types';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -101,6 +97,7 @@ describe('diff algorithm for rrdom', () => {
       applyCanvas: () => {},
       applyInput: () => {},
       applyScroll: () => {},
+      applyStyleSheetMutation: () => {},
     };
   });
 
@@ -162,12 +159,23 @@ describe('diff algorithm for rrdom', () => {
       document.documentElement.appendChild(element);
       const rrDocument = new RRDocument();
       const rrStyle = rrDocument.createElement('style');
-      rrStyle.rules = [
-        { cssText: 'div{color: black;}', type: StyleRuleType.Insert, index: 0 },
-      ];
+      const styleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        adds: [
+          {
+            rule: 'div{color: black;}',
+            index: 0,
+          },
+        ],
+      };
+      rrStyle.rules = [styleData];
+      replayer.applyStyleSheetMutation = jest.fn();
       diff(element, rrStyle, replayer);
-      expect(element.sheet!.cssRules.length).toEqual(1);
-      expect(element.sheet!.cssRules[0].cssText).toEqual('div {color: black;}');
+      expect(replayer.applyStyleSheetMutation).toHaveBeenCalledTimes(1);
+      expect(replayer.applyStyleSheetMutation).toHaveBeenCalledWith(
+        styleData,
+        element.sheet,
+      );
     });
 
     it('should diff a canvas element', () => {
@@ -1267,16 +1275,50 @@ describe('diff algorithm for rrdom', () => {
   });
 
   describe('apply virtual style rules to node', () => {
+    beforeEach(() => {
+      const dummyReplayer = new Replayer(([
+        {
+          type: EventType.DomContentLoaded,
+          timestamp: 0,
+        },
+        {
+          type: EventType.Meta,
+          data: {
+            with: 1920,
+            height: 1080,
+          },
+          timestamp: 0,
+        },
+      ] as unknown) as eventWithTime[]);
+      replayer.applyStyleSheetMutation = (
+        data: styleDeclarationData | styleSheetRuleData,
+        styleSheet: CSSStyleSheet,
+      ) => {
+        if (data.source === IncrementalSource.StyleSheetRule)
+          // Disable the ts check here because these two functions are private methods.
+          // @ts-ignore
+          dummyReplayer.applyStyleSheetRule(data, styleSheet);
+        else if (data.source === IncrementalSource.StyleDeclaration)
+          // @ts-ignore
+          dummyReplayer.applyStyleDeclaration(data, styleSheet);
+      };
+    });
+
     it('should insert rule at index 0 in empty sheet', () => {
       document.write('<style></style>');
       const styleEl = document.getElementsByTagName('style')[0];
-
       const cssText = '.added-rule {border: 1px solid yellow;}';
 
-      const virtualStyleRules: VirtualStyleRules = [
-        { cssText, index: 0, type: StyleRuleType.Insert },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
+      const styleRuleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        adds: [
+          {
+            rule: cssText,
+            index: 0,
+          },
+        ],
+      };
+      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
       expect(styleEl.sheet?.cssRules?.length).toEqual(1);
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
@@ -1292,10 +1334,16 @@ describe('diff algorithm for rrdom', () => {
       const styleEl = document.getElementsByTagName('style')[0];
 
       const cssText = '.added-rule {border: 1px solid yellow;}';
-      const virtualStyleRules: VirtualStyleRules = [
-        { cssText, index: 0, type: StyleRuleType.Insert },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
+      const styleRuleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        adds: [
+          {
+            rule: cssText,
+            index: 0,
+          },
+        ],
+      };
+      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
       expect(styleEl.sheet?.cssRules?.length).toEqual(3);
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
@@ -1310,10 +1358,15 @@ describe('diff algorithm for rrdom', () => {
       `);
       const styleEl = document.getElementsByTagName('style')[0];
 
-      const virtualStyleRules: VirtualStyleRules = [
-        { index: 0, type: StyleRuleType.Remove },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
+      const styleRuleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        removes: [
+          {
+            index: 0,
+          },
+        ],
+      };
+      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
       expect(styleEl.sheet?.cssRules?.length).toEqual(1);
       expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
@@ -1331,10 +1384,16 @@ describe('diff algorithm for rrdom', () => {
       const styleEl = document.getElementsByTagName('style')[0];
 
       const cssText = '.added-rule {border: 1px solid yellow;}';
-      const virtualStyleRules: VirtualStyleRules = [
-        { cssText, index: [0, 0], type: StyleRuleType.Insert },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
+      const styleRuleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        adds: [
+          {
+            rule: cssText,
+            index: [0, 0],
+          },
+        ],
+      };
+      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
@@ -1354,11 +1413,15 @@ describe('diff algorithm for rrdom', () => {
         </style>
       `);
       const styleEl = document.getElementsByTagName('style')[0];
-
-      const virtualStyleRules: VirtualStyleRules = [
-        { index: [0, 1], type: StyleRuleType.Remove },
-      ];
-      applyVirtualStyleRulesToNode(styleEl, virtualStyleRules);
+      const styleRuleData: styleSheetRuleData = {
+        source: IncrementalSource.StyleSheetRule,
+        removes: [
+          {
+            index: [0, 1],
+          },
+        ],
+      };
+      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,

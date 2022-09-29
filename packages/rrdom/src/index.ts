@@ -12,8 +12,9 @@ import type {
   canvasEventWithTime,
   inputData,
   scrollData,
+  styleSheetRuleData,
+  styleDeclarationData,
 } from 'rrweb/src/types';
-import type { VirtualStyleRules } from './diff';
 import {
   BaseRRNode as RRNode,
   BaseRRCDATASectionImpl,
@@ -164,7 +165,7 @@ export class RRCanvasElement extends RRElement implements IRRElement {
 }
 
 export class RRStyleElement extends RRElement {
-  public rules: VirtualStyleRules = [];
+  public rules: (styleSheetRuleData | styleDeclarationData)[] = [];
 }
 
 export class RRIFrameElement extends RRElement {
@@ -312,7 +313,8 @@ export function buildFromDom(
     }
 
     if (node.nodeName === 'IFRAME') {
-      walk((node as HTMLIFrameElement).contentDocument!, rrNode);
+      const iframeDoc = (node as HTMLIFrameElement).contentDocument;
+      iframeDoc && walk(iframeDoc, rrNode);
     } else if (
       node.nodeType === NodeType.DOCUMENT_NODE ||
       node.nodeType === NodeType.ELEMENT_NODE ||
@@ -323,6 +325,7 @@ export function buildFromDom(
         node.nodeType === NodeType.ELEMENT_NODE &&
         (node as HTMLElement).shadowRoot
       )
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         walk((node as HTMLElement).shadowRoot!, rrNode);
       node.childNodes.forEach((childNode) => walk(childNode, rrNode));
     }
@@ -475,11 +478,5 @@ function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
 
 export { RRNode };
 
-export {
-  diff,
-  createOrGetNode,
-  StyleRuleType,
-  ReplayerHandler,
-  VirtualStyleRules,
-} from './diff';
+export { diff, createOrGetNode, ReplayerHandler } from './diff';
 export * from './document';

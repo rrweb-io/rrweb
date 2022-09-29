@@ -24,6 +24,31 @@ export function isNativeShadowDom(shadowRoot: ShadowRoot) {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
 
+export function getCssRulesString(s: CSSStyleSheet): string | null {
+  try {
+    const rules = s.rules || s.cssRules;
+    return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getCssRuleString(rule: CSSRule): string {
+  let cssStringified = rule.cssText;
+  if (isCSSImportRule(rule)) {
+    try {
+      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
+    } catch {
+      // ignore
+    }
+  }
+  return cssStringified;
+}
+
+export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
+  return 'styleSheet' in rule;
+}
+
 export class Mirror implements IMirror<Node> {
   private idNodeMap: idNodeMap = new Map();
   private nodeMetaMap: nodeMetaMap = new WeakMap();
@@ -76,6 +101,11 @@ export class Mirror implements IMirror<Node> {
   }
 
   replace(id: number, n: Node) {
+    const oldNode = this.getNode(id);
+    if (oldNode) {
+      const meta = this.nodeMetaMap.get(oldNode);
+      if (meta) this.nodeMetaMap.set(n, meta);
+    }
     this.idNodeMap.set(id, n);
   }
 

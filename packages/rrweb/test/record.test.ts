@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import 'construct-style-sheets-polyfill';
 import {
   recordOptions,
   listenerHandler,
@@ -462,6 +463,113 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
+  it('captures mutations on adopted stylesheets', async () => {
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div>div in outermost document</div>
+        <iframe></iframe>
+      `;
+
+      const sheet = new CSSStyleSheet();
+      // Add stylesheet to a document.
+
+      document.adoptedStyleSheets = [sheet];
+
+      const iframe = document.querySelector('iframe');
+      const sheet2 = new (iframe!.contentWindow! as Window &
+        typeof globalThis).CSSStyleSheet();
+
+      // Add stylesheet to an IFrame document.
+      iframe!.contentDocument!.adoptedStyleSheets = [sheet2];
+      iframe!.contentDocument!.body.innerHTML = '<h1>h1 in iframe</h1>';
+
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      setTimeout(() => {
+        sheet.replace!('div { color: yellow; }');
+        sheet2.replace!('h1 { color: blue; }');
+      }, 0);
+
+      setTimeout(() => {
+        sheet.replaceSync!('div { display: inline ; }');
+        sheet2.replaceSync!('h1 { font-size: large; }');
+      }, 5);
+
+      setTimeout(() => {
+        (sheet.cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        (sheet.cssRules[0] as CSSStyleRule).style.removeProperty('display');
+        (sheet2.cssRules[0] as CSSStyleRule).style.setProperty(
+          'font-size',
+          'medium',
+          'important',
+        );
+        sheet2.insertRule('h2 { color: red; }');
+      }, 10);
+
+      setTimeout(() => {
+        sheet.insertRule('body { border: 2px solid blue; }', 1);
+        sheet2.deleteRule(0);
+      }, 15);
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets in nested shadow doms and iframes', async () => {
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div id="shadow-host-1">entry</div>
+      `;
+
+      let shadowHost = document.querySelector('div')!;
+      shadowHost!.attachShadow({ mode: 'open' });
+      let iframeDocument: Document;
+      const NestedDepth = 4;
+      // construct nested shadow doms and iframe elements
+      for (let i = 1; i <= NestedDepth; i++) {
+        const shadowRoot = shadowHost.shadowRoot!;
+        const iframeElement = document.createElement('iframe');
+        shadowRoot.appendChild(iframeElement);
+        iframeElement.id = `iframe-${i}`;
+        iframeDocument = iframeElement.contentDocument!;
+        shadowHost = iframeDocument.createElement('div');
+        shadowHost.id = `shadow-host-${i + 1}`;
+        iframeDocument.body.append(shadowHost);
+        shadowHost!.attachShadow({ mode: 'open' });
+      }
+
+      const iframeWin = iframeDocument!.defaultView!;
+      const sheet1 = new iframeWin.CSSStyleSheet();
+      sheet1.replaceSync!('h1 {color: blue;}');
+      iframeDocument!.adoptedStyleSheets = [sheet1];
+      const sheet2 = new iframeWin.CSSStyleSheet();
+      sheet2.replaceSync!('div {font-size: large;}');
+      shadowHost.shadowRoot!.adoptedStyleSheets = [sheet2];
+
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+      });
+
+      setTimeout(() => {
+        sheet1.insertRule!('div { display: inline ; }', 1);
+        sheet2.replaceSync!('h1 { font-size: large; }');
+      }, 100);
+
+      setTimeout(() => {
+        const sheet3 = new iframeWin.CSSStyleSheet();
+        sheet3.replaceSync!('span {background-color: red;}');
+        iframeDocument!.adoptedStyleSheets = [sheet3, sheet2];
+        shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
+      }, 150);
+    });
+    await ctx.page.waitForTimeout(200);
+    assertSnapshot(ctx.events);
+  });
+
   it('captures stylesheets in iframes with `blob:` url', async () => {
     await ctx.page.evaluate(() => {
       const iframe = document.createElement('iframe');
@@ -576,6 +684,73 @@ describe('record', function (this: ISuite) {
 
     await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
     await waitForRAF(ctx.page); // wait for rrweb to emit events
+
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets in shadow doms and iframe', async () => {
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div>div in outermost document</div>
+        <div id="shadow-host1"></div>
+        <div id="shadow-host2"></div>
+        <iframe></iframe>
+      `;
+
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync!(
+        'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
+      );
+      // Add stylesheet to a document.
+
+      document.adoptedStyleSheets = [sheet];
+
+      // Add stylesheet to a shadow host.
+      const host = document.querySelector('#shadow-host1');
+      const shadow = host!.attachShadow({ mode: 'open' });
+      shadow.innerHTML =
+        '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
+      const sheet2 = new CSSStyleSheet();
+
+      sheet2.replaceSync!('span { color: red; }');
+
+      shadow.adoptedStyleSheets = [sheet, sheet2];
+
+      // Add stylesheet to an IFrame document.
+      const iframe = document.querySelector('iframe');
+      const sheet3 = new (iframe!.contentWindow! as IWindow &
+        typeof globalThis).CSSStyleSheet();
+      sheet3.replaceSync!('h1 { color: blue; }');
+
+      iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
+
+      const ele = iframe!.contentDocument!.createElement('h1');
+      ele.innerText = 'h1 in iframe';
+      iframe!.contentDocument!.body.appendChild(ele);
+
+      ((window as unknown) as IWindow).rrweb.record({
+        emit: ((window.top as unknown) as IWindow).emit,
+      });
+
+      // Make incremental changes to shadow dom.
+      setTimeout(() => {
+        const host = document.querySelector('#shadow-host2');
+        const shadow = host!.attachShadow({ mode: 'open' });
+        shadow.innerHTML =
+          '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
+        const sheet4 = new CSSStyleSheet();
+        sheet4.replaceSync!('span { color: green; }');
+        shadow.adoptedStyleSheets = [sheet, sheet4];
+
+        document.adoptedStyleSheets = [sheet4, sheet, sheet2];
+
+        const sheet5 = new (iframe!.contentWindow! as IWindow &
+          typeof globalThis).CSSStyleSheet();
+        sheet5.replaceSync!('h2 { color: purple; }');
+        iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
+      }, 10);
+    });
+    await waitForRAF(ctx.page); // wait till events get sent
 
     assertSnapshot(ctx.events);
   });

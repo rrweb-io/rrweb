@@ -9,7 +9,6 @@ import {
 } from 'rrweb-snapshot';
 import {
   RRDocument,
-  StyleRuleType,
   createOrGetNode,
   buildFromNode,
   buildFromDom,
@@ -25,7 +24,6 @@ import type {
   RRCanvasElement,
   ReplayerHandler,
   Mirror as RRDOMMirror,
-  VirtualStyleRules,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
@@ -60,6 +58,9 @@ import {
   canvasMutationParam,
   canvasEventWithTime,
   selectionData,
+  styleSheetRuleData,
+  styleDeclarationData,
+  adoptedStyleSheetData,
 } from '../types';
 import {
   polyfill,
@@ -72,6 +73,7 @@ import {
   getNestedRule,
   getPositionsAndIndex,
   uniqueTextMutations,
+  StyleSheetMirror,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -136,6 +138,9 @@ export class Replayer {
 
   private mirror: Mirror = createMirror();
 
+  // Used to track StyleSheetObjects adopted on multiple document hosts.
+  private styleMirror: StyleSheetMirror = new StyleSheetMirror();
+
   private firstFullSnapshot: eventWithTime | true | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
@@ -145,6 +150,15 @@ export class Replayer {
 
   // In the fast-forward mode, only the last selection data needs to be applied.
   private lastSelectionData: selectionData | null = null;
+
+  // In the fast-forward mode using VirtualDom optimization, all stylesheetRule, and styleDeclaration events on constructed StyleSheets will be delayed to get applied until the flush stage.
+  private constructedStyleMutations: (
+    | styleSheetRuleData
+    | styleDeclarationData
+  )[] = [];
+
+  // Similar to the reason for constructedStyleMutations.
+  private adoptedStyleSheets: adoptedStyleSheetData[] = [];
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -206,13 +220,23 @@ export class Replayer {
           },
           applyInput: this.applyInput.bind(this),
           applyScroll: this.applyScroll.bind(this),
+          applyStyleSheetMutation: (
+            data: styleDeclarationData | styleSheetRuleData,
+            styleSheet: CSSStyleSheet,
+          ) => {
+            if (data.source === IncrementalSource.StyleSheetRule)
+              this.applyStyleSheetRule(data, styleSheet);
+            else if (data.source === IncrementalSource.StyleDeclaration)
+              this.applyStyleDeclaration(data, styleSheet);
+          },
         };
-        diff(
-          this.iframe.contentDocument!,
-          this.virtualDom,
-          replayerHandler,
-          this.virtualDom.mirror,
-        );
+        this.iframe.contentDocument &&
+          diff(
+            this.iframe.contentDocument,
+            this.virtualDom,
+            replayerHandler,
+            this.virtualDom.mirror,
+          );
         this.virtualDom.destroyTree();
         this.usingVirtualDom = false;
 
@@ -240,6 +264,16 @@ export class Replayer {
             }
           }
         }
+
+        this.constructedStyleMutations.forEach((data) => {
+          this.applyStyleSheetMutation(data);
+        });
+        this.constructedStyleMutations = [];
+
+        this.adoptedStyleSheets.forEach((data) => {
+          this.applyAdoptedStyleSheet(data);
+        });
+        this.adoptedStyleSheets = [];
       }
 
       if (this.mousePos) {
@@ -260,6 +294,7 @@ export class Replayer {
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
       this.mirror.reset();
+      this.styleMirror.reset();
     });
 
     const timer = new Timer([], {
@@ -611,6 +646,7 @@ export class Replayer {
           }
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
+          this.styleMirror.reset();
         };
         break;
       case EventType.IncrementalSnapshot:
@@ -772,14 +808,13 @@ export class Replayer {
         getDefaultSN(styleEl, this.virtualDom.unserializedId),
       );
       (documentElement as RRElement).insertBefore(styleEl, head as RRElement);
-      for (let idx = 0; idx < injectStylesRules.length; idx++) {
-        // push virtual styles
-        styleEl.rules.push({
-          cssText: injectStylesRules[idx],
-          type: StyleRuleType.Insert,
-          index: idx,
-        });
-      }
+      styleEl.rules.push({
+        source: IncrementalSource.StyleSheetRule,
+        adds: injectStylesRules.map((cssText, index) => ({
+          rule: cssText,
+          index,
+        })),
+      });
     } else {
       const styleEl = document.createElement('style');
       (documentElement as HTMLElement).insertBefore(
@@ -1204,121 +1239,15 @@ export class Replayer {
         }
         break;
       }
-      case IncrementalSource.StyleSheetRule: {
-        if (this.usingVirtualDom) {
-          const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
-          if (!target) {
-            return this.debugNodeNotFound(d, d.id);
-          }
-          const rules: VirtualStyleRules = target.rules;
-          d.adds?.forEach(({ rule, index: nestedIndex }) =>
-            rules?.push({
-              cssText: rule,
-              index: nestedIndex,
-              type: StyleRuleType.Insert,
-            }),
-          );
-          d.removes?.forEach(({ index: nestedIndex }) =>
-            rules?.push({ index: nestedIndex, type: StyleRuleType.Remove }),
-          );
-        } else {
-          const target = this.mirror.getNode(d.id);
-          if (!target) {
-            return this.debugNodeNotFound(d, d.id);
-          }
-          const styleSheet = (target as HTMLStyleElement).sheet!;
-          d.adds?.forEach(({ rule, index: nestedIndex }) => {
-            try {
-              if (Array.isArray(nestedIndex)) {
-                const { positions, index } = getPositionsAndIndex(nestedIndex);
-                const nestedRule = getNestedRule(
-                  styleSheet.cssRules,
-                  positions,
-                );
-                nestedRule.insertRule(rule, index);
-              } else {
-                const index =
-                  nestedIndex === undefined
-                    ? undefined
-                    : Math.min(nestedIndex, styleSheet.cssRules.length);
-                styleSheet.insertRule(rule, index);
-              }
-            } catch (e) {
-              /**
-               * sometimes we may capture rules with browser prefix
-               * insert rule with prefixs in other browsers may cause Error
-               */
-              /**
-               * accessing styleSheet rules may cause SecurityError
-               * for specific access control settings
-               */
-            }
-          });
-
-          d.removes?.forEach(({ index: nestedIndex }) => {
-            try {
-              if (Array.isArray(nestedIndex)) {
-                const { positions, index } = getPositionsAndIndex(nestedIndex);
-                const nestedRule = getNestedRule(
-                  styleSheet.cssRules,
-                  positions,
-                );
-                nestedRule.deleteRule(index || 0);
-              } else {
-                styleSheet?.deleteRule(nestedIndex);
-              }
-            } catch (e) {
-              /**
-               * same as insertRule
-               */
-            }
-          });
-        }
-        break;
-      }
+      case IncrementalSource.StyleSheetRule:
       case IncrementalSource.StyleDeclaration: {
         if (this.usingVirtualDom) {
-          const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
-          if (!target) {
-            return this.debugNodeNotFound(d, d.id);
-          }
-          const rules: VirtualStyleRules = target.rules;
-          d.set &&
-            rules.push({
-              type: StyleRuleType.SetProperty,
-              index: d.index,
-              ...d.set,
-            });
-          d.remove &&
-            rules.push({
-              type: StyleRuleType.RemoveProperty,
-              index: d.index,
-              ...d.remove,
-            });
-        } else {
-          const target = (this.mirror.getNode(
-            d.id,
-          ) as Node) as HTMLStyleElement;
-          if (!target) {
-            return this.debugNodeNotFound(d, d.id);
-          }
-          const styleSheet = target.sheet!;
-          if (d.set) {
-            const rule = (getNestedRule(
-              styleSheet.rules,
-              d.index,
-            ) as unknown) as CSSStyleRule;
-            rule.style.setProperty(d.set.property, d.set.value, d.set.priority);
-          }
-
-          if (d.remove) {
-            const rule = (getNestedRule(
-              styleSheet.rules,
-              d.index,
-            ) as unknown) as CSSStyleRule;
-            rule.style.removeProperty(d.remove.property);
-          }
-        }
+          if (d.styleId) this.constructedStyleMutations.push(d);
+          else if (d.id)
+            (this.virtualDom.mirror.getNode(
+              d.id,
+            ) as RRStyleElement | null)?.rules.push(d);
+        } else this.applyStyleSheetMutation(d);
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -1375,6 +1304,11 @@ export class Replayer {
           break;
         }
         this.applySelection(d);
+        break;
+      }
+      case IncrementalSource.AdoptedStyleSheet: {
+        if (this.usingVirtualDom) this.adoptedStyleSheets.push(d);
+        else this.applyAdoptedStyleSheet(d);
         break;
       }
       default:
@@ -1821,6 +1755,166 @@ export class Replayer {
     } catch (error) {
       // for safe
     }
+  }
+
+  private applyStyleSheetMutation(
+    data: styleDeclarationData | styleSheetRuleData,
+  ) {
+    let styleSheet: CSSStyleSheet | null = null;
+    if (data.styleId) styleSheet = this.styleMirror.getStyle(data.styleId);
+    else if (data.id)
+      styleSheet =
+        (this.mirror.getNode(data.id) as HTMLStyleElement)?.sheet || null;
+    if (!styleSheet) return;
+    if (data.source === IncrementalSource.StyleSheetRule)
+      this.applyStyleSheetRule(data, styleSheet);
+    else if (data.source === IncrementalSource.StyleDeclaration)
+      this.applyStyleDeclaration(data, styleSheet);
+  }
+
+  private applyStyleSheetRule(
+    data: styleSheetRuleData,
+    styleSheet: CSSStyleSheet,
+  ) {
+    data.adds?.forEach(({ rule, index: nestedIndex }) => {
+      try {
+        if (Array.isArray(nestedIndex)) {
+          const { positions, index } = getPositionsAndIndex(nestedIndex);
+          const nestedRule = getNestedRule(styleSheet.cssRules, positions);
+          nestedRule.insertRule(rule, index);
+        } else {
+          const index =
+            nestedIndex === undefined
+              ? undefined
+              : Math.min(nestedIndex, styleSheet.cssRules.length);
+          styleSheet?.insertRule(rule, index);
+        }
+      } catch (e) {
+        /**
+         * sometimes we may capture rules with browser prefix
+         * insert rule with prefixs in other browsers may cause Error
+         */
+        /**
+         * accessing styleSheet rules may cause SecurityError
+         * for specific access control settings
+         */
+      }
+    });
+
+    data.removes?.forEach(({ index: nestedIndex }) => {
+      try {
+        if (Array.isArray(nestedIndex)) {
+          const { positions, index } = getPositionsAndIndex(nestedIndex);
+          const nestedRule = getNestedRule(styleSheet.cssRules, positions);
+          nestedRule.deleteRule(index || 0);
+        } else {
+          styleSheet?.deleteRule(nestedIndex);
+        }
+      } catch (e) {
+        /**
+         * same as insertRule
+         */
+      }
+    });
+
+    if (data.replace)
+      try {
+        void styleSheet.replace?.(data.replace);
+      } catch (e) {
+        // for safety
+      }
+
+    if (data.replaceSync)
+      try {
+        styleSheet.replaceSync?.(data.replaceSync);
+      } catch (e) {
+        // for safety
+      }
+  }
+
+  private applyStyleDeclaration(
+    data: styleDeclarationData,
+    styleSheet: CSSStyleSheet,
+  ) {
+    if (data.set) {
+      const rule = (getNestedRule(
+        styleSheet.rules,
+        data.index,
+      ) as unknown) as CSSStyleRule;
+      rule.style.setProperty(
+        data.set.property,
+        data.set.value,
+        data.set.priority,
+      );
+    }
+
+    if (data.remove) {
+      const rule = (getNestedRule(
+        styleSheet.rules,
+        data.index,
+      ) as unknown) as CSSStyleRule;
+      rule.style.removeProperty(data.remove.property);
+    }
+  }
+
+  private applyAdoptedStyleSheet(data: adoptedStyleSheetData) {
+    const targetHost = this.mirror.getNode(data.id);
+    if (!targetHost) return;
+    // Create StyleSheet objects which will be adopted after.
+    data.styles?.forEach((style) => {
+      let newStyleSheet: CSSStyleSheet | null = null;
+      /**
+       * Constructed StyleSheet can't share across multiple documents.
+       * The replayer has to get the correct host window to recreate a StyleSheetObject.
+       */
+      let hostWindow: IWindow | null = null;
+      if (hasShadowRoot(targetHost))
+        hostWindow = targetHost.ownerDocument?.defaultView || null;
+      else if (targetHost.nodeName === '#document')
+        hostWindow = (targetHost as Document).defaultView;
+
+      if (!hostWindow) return;
+      try {
+        newStyleSheet = new hostWindow.CSSStyleSheet();
+        this.styleMirror.add(newStyleSheet, style.styleId);
+        // To reuse the code of applying stylesheet rules
+        this.applyStyleSheetRule(
+          {
+            source: IncrementalSource.StyleSheetRule,
+            adds: style.rules,
+          },
+          newStyleSheet,
+        );
+      } catch (e) {
+        // In case some browsers don't support constructing StyleSheet.
+      }
+    });
+
+    const MAX_RETRY_TIME = 10;
+    let count = 0;
+    const adoptStyleSheets = (targetHost: Node, styleIds: number[]) => {
+      const stylesToAdopt = styleIds
+        .map((styleId) => this.styleMirror.getStyle(styleId))
+        .filter((style) => style !== null) as CSSStyleSheet[];
+      if (hasShadowRoot(targetHost))
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
+      else if (targetHost.nodeName === '#document')
+        (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
+
+      /**
+       * In the live mode where events are transferred over network without strict order guarantee, some newer events are applied before some old events and adopted stylesheets may haven't been created.
+       * This retry mechanism can help resolve this situation.
+       */
+      if (stylesToAdopt.length !== styleIds.length && count < MAX_RETRY_TIME) {
+        setTimeout(
+          () => adoptStyleSheets(targetHost, styleIds),
+          0 + 100 * count,
+        );
+        count++;
+      }
+    };
+    adoptStyleSheets(targetHost, data.styleIds);
   }
 
   private legacy_resolveMissingNode(

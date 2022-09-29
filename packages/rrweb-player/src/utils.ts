@@ -83,12 +83,18 @@ export function exitFullscreen(): Promise<void> {
 }
 
 export function isFullscreen(): boolean {
-  return (
-    document.fullscreen ||
-    document.webkitIsFullScreen ||
-    document.mozFullScreen ||
-    document.msFullscreenElement
-  );
+  let fullscreen = false;
+  [
+    'fullscreen',
+    'webkitIsFullScreen',
+    'mozFullScreen',
+    'msFullscreenElement',
+  ].forEach((fullScreenAccessor) => {
+    if (fullScreenAccessor in document) {
+      fullscreen = fullscreen || Boolean(document[fullScreenAccessor]);
+    }
+  });
+  return fullscreen;
 }
 
 export function onFullscreenChange(handler: () => unknown): () => void {

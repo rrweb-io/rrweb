@@ -311,7 +311,9 @@ export default class MutationBuffer {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
           if (isSerializedStylesheet(currentN, this.mirror)) {
-            this.stylesheetManager.addStylesheet(currentN as HTMLLinkElement);
+            this.stylesheetManager.trackLinkElement(
+              currentN as HTMLLinkElement,
+            );
           }
           if (hasShadowRoot(n)) {
             this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
@@ -322,7 +324,7 @@ export default class MutationBuffer {
           this.shadowDomManager.observeAttachShadow(iframe);
         },
         onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachStylesheet(link, childSn, this.mirror);
+          this.stylesheetManager.attachLinkElement(link, childSn, this.mirror);
         },
       });
       if (sn) {

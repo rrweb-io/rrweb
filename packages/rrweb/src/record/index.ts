@@ -24,6 +24,7 @@ import {
   mutationCallbackParam,
   scrollCallback,
   canvasMutationParam,
+  adoptedStyleSheetParam,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -225,12 +226,25 @@ function record<T = eventWithTime>(
       }),
     );
 
-  const iframeManager = new IframeManager({
-    mutationCb: wrappedMutationEmit,
-  });
+  const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.AdoptedStyleSheet,
+          ...a,
+        },
+      }),
+    );
 
   const stylesheetManager = new StylesheetManager({
     mutationCb: wrappedMutationEmit,
+    adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
+  });
+
+  const iframeManager = new IframeManager({
+    mutationCb: wrappedMutationEmit,
+    stylesheetManager: stylesheetManager,
   });
 
   canvasManager = new CanvasManager({
@@ -282,6 +296,9 @@ function record<T = eventWithTime>(
       isCheckout,
     );
 
+    // When we take a full snapshot, old tracked StyleSheets need to be removed.
+    stylesheetManager.reset();
+
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
@@ -301,7 +318,7 @@ function record<T = eventWithTime>(
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
         if (isSerializedStylesheet(n, mirror)) {
-          stylesheetManager.addStylesheet(n as HTMLLinkElement);
+          stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
@@ -312,7 +329,7 @@ function record<T = eventWithTime>(
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
-        stylesheetManager.attachStylesheet(linkEl, childSn, mirror);
+        stylesheetManager.attachLinkElement(linkEl, childSn, mirror);
       },
       keepIframeSrcFn,
     });
@@ -332,20 +349,27 @@ function record<T = eventWithTime>(
                 ? window.pageXOffset
                 : document?.documentElement.scrollLeft ||
                   document?.body?.parentElement?.scrollLeft ||
-                  document?.body.scrollLeft ||
+                  document?.body?.scrollLeft ||
                   0,
             top:
               window.pageYOffset !== undefined
                 ? window.pageYOffset
                 : document?.documentElement.scrollTop ||
                   document?.body?.parentElement?.scrollTop ||
-                  document?.body.scrollTop ||
+                  document?.body?.scrollTop ||
                   0,
           },
         },
       }),
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+
+    // Some old browsers don't support adoptedStyleSheets.
+    if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
+      stylesheetManager.adoptStyleSheets(
+        document.adoptedStyleSheets,
+        mirror.getId(document),
+      );
   };
 
   try {

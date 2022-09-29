@@ -454,3 +454,41 @@ export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
 
   return uniqueMutations;
 }
+
+export class StyleSheetMirror {
+  private id = 1;
+  private styleIDMap = new WeakMap<CSSStyleSheet, number>();
+  private idStyleMap = new Map<number, CSSStyleSheet>();
+
+  getId(stylesheet: CSSStyleSheet): number {
+    return this.styleIDMap.get(stylesheet) ?? -1;
+  }
+
+  has(stylesheet: CSSStyleSheet): boolean {
+    return this.styleIDMap.has(stylesheet);
+  }
+
+  /**
+   * @returns If the stylesheet is in the mirror, returns the id of the stylesheet. If not, return the new assigned id.
+   */
+  add(stylesheet: CSSStyleSheet, id?: number): number {
+    if (this.has(stylesheet)) return this.getId(stylesheet);
+    let newId: number;
+    if (id === undefined) {
+      newId = this.id++;
+    } else newId = id;
+    this.styleIDMap.set(stylesheet, newId);
+    this.idStyleMap.set(newId, stylesheet);
+    return newId;
+  }
+
+  getStyle(id: number): CSSStyleSheet | null {
+    return this.idStyleMap.get(id) || null;
+  }
+
+  reset(): void {
+    this.styleIDMap = new WeakMap();
+    this.idStyleMap = new Map();
+    this.id = 1;
+  }
+}

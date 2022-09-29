@@ -93,6 +93,7 @@ export enum IncrementalSource {
   Drag,
   StyleDeclaration,
   Selection,
+  AdoptedStyleSheet,
 }
 
 export type mutationData = {
@@ -148,6 +149,10 @@ export type selectionData = {
   source: IncrementalSource.Selection;
 } & selectionParam;
 
+export type adoptedStyleSheetData = {
+  source: IncrementalSource.AdoptedStyleSheet;
+} & adoptedStyleSheetParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -160,7 +165,8 @@ export type incrementalData =
   | canvasMutationData
   | fontData
   | selectionData
-  | styleDeclarationData;
+  | styleDeclarationData
+  | adoptedStyleSheetData;
 
 export type event =
   | domContentLoadedEvent
@@ -512,15 +518,33 @@ export type styleSheetDeleteRule = {
 };
 
 export type styleSheetRuleParam = {
-  id: number;
+  id?: number;
+  styleId?: number;
   removes?: styleSheetDeleteRule[];
   adds?: styleSheetAddRule[];
+  replace?: string;
+  replaceSync?: string;
 };
 
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
-export type styleDeclarationParam = {
+export type adoptedStyleSheetParam = {
+  // id indicates the node id of document or shadow DOMs' host element.
   id: number;
+  // New CSSStyleSheets which have never appeared before.
+  styles?: {
+    styleId: number;
+    rules: styleSheetAddRule[];
+  }[];
+  // StyleSheet ids to be adopted.
+  styleIds: number[];
+};
+
+export type adoptedStyleSheetCallback = (a: adoptedStyleSheetParam) => void;
+
+export type styleDeclarationParam = {
+  id?: number;
+  styleId?: number;
   index: number[];
   set?: {
     property: string;

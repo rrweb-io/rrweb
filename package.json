@@ -21,8 +21,10 @@
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
+    "browserslist": "^4.21.4",
     "concurrently": "^7.1.0",
     "eslint": "^8.19.0",
+    "eslint-plugin-compat": "^4.0.2",
     "eslint-plugin-jest": "^26.5.3",
     "eslint-plugin-tsdoc": "^0.2.16",
     "lerna": "^4.0.0",
@@ -44,5 +46,9 @@
   },
   "resolutions": {
     "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not op_mini all"
+  ]
 }

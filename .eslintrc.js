@@ -9,6 +9,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:compat/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -17,7 +18,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.eslint.json', './packages/*/tsconfig.json'],
   },
-  plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc', 'jest'],
+  plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc', 'jest', 'compat'],
   rules: {
     'tsdoc/syntax': 'warn',
   },

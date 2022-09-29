@@ -364,11 +364,9 @@ export function buildNodeWithSN(
   if (!node) {
     return null;
   }
-  if (n.rootId) {
-    console.assert(
-      (mirror.getNode(n.rootId) as Document) === doc,
-      'Target document should have the same root id.',
-    );
+  // If the snapshot is created by checkout, the rootId doesn't change but the iframe's document can be changed automatically when a new iframe element is created.
+  if (n.rootId && (mirror.getNode(n.rootId) as Document) !== doc) {
+    mirror.replace(n.rootId, doc);
   }
   // use target document as root document
   if (n.type === NodeType.Document) {
