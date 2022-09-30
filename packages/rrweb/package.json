@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-alpha.3",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -85,7 +85,7 @@
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0",
-    "rrdom": "^0.1.5",
-    "rrweb-snapshot": "^2.0.0-alpha.2"
+    "rrdom": "^0.1.6",
+    "rrweb-snapshot": "^2.0.0-alpha.3"
   }
 }
