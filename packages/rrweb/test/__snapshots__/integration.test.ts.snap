@@ -1,5 +1,419 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`record integration tests can correctly serialize a shader and multiple webgl contexts 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"canvas shader\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 12
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 13
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"canvas\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"myCanvas\\",
+                      \\"width\\": \\"300\\",
+                      \\"height\\": \\"300\\",
+                      \\"style\\": \\"border: 1px solid #000000\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 17
+                      }
+                    ],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 20
+                      }
+                    ],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 23
+                      }
+                    ],
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 24
+                  }
+                ],
+                \\"id\\": 14
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 16,
+      \\"type\\": 1,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"createBuffer\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"bindBuffer\\",
+          \\"args\\": [
+            34962,
+            {
+              \\"rr_type\\": \\"WebGLBuffer\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"bufferData\\",
+          \\"args\\": [
+            34962,
+            {
+              \\"rr_type\\": \\"Float32Array\\",
+              \\"args\\": [
+                [
+                  -0.5,
+                  0.5,
+                  -0.5,
+                  -0.5,
+                  0,
+                  -0.5
+                ]
+              ]
+            },
+            35044
+          ]
+        },
+        {
+          \\"property\\": \\"bindBuffer\\",
+          \\"args\\": [
+            34962,
+            null
+          ]
+        },
+        {
+          \\"property\\": \\"createShader\\",
+          \\"args\\": [
+            35633
+          ]
+        },
+        {
+          \\"property\\": \\"shaderSource\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLShader\\",
+              \\"index\\": 0
+            },
+            \\"attribute vec2 coordinates;void main(void) { gl_Position = vec4(coordinates,0.0, 1.0);}\\"
+          ]
+        },
+        {
+          \\"property\\": \\"compileShader\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLShader\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"createShader\\",
+          \\"args\\": [
+            35632
+          ]
+        },
+        {
+          \\"property\\": \\"shaderSource\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLShader\\",
+              \\"index\\": 1
+            },
+            \\"void main(void) {gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);}\\"
+          ]
+        },
+        {
+          \\"property\\": \\"compileShader\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLShader\\",
+              \\"index\\": 1
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"attachShader\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            },
+            {
+              \\"rr_type\\": \\"WebGLShader\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"attachShader\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            },
+            {
+              \\"rr_type\\": \\"WebGLShader\\",
+              \\"index\\": 1
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"useProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"bindBuffer\\",
+          \\"args\\": [
+            34962,
+            {
+              \\"rr_type\\": \\"WebGLBuffer\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"getAttribLocation\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            },
+            \\"coordinates\\"
+          ]
+        },
+        {
+          \\"property\\": \\"vertexAttribPointer\\",
+          \\"args\\": [
+            0,
+            2,
+            5126,
+            false,
+            0,
+            0
+          ]
+        },
+        {
+          \\"property\\": \\"enableVertexAttribArray\\",
+          \\"args\\": [
+            0
+          ]
+        },
+        {
+          \\"property\\": \\"clearColor\\",
+          \\"args\\": [
+            0.5,
+            0.5,
+            0.5,
+            0.9
+          ]
+        },
+        {
+          \\"property\\": \\"enable\\",
+          \\"args\\": [
+            2929
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        },
+        {
+          \\"property\\": \\"viewport\\",
+          \\"args\\": [
+            0,
+            0,
+            300,
+            300
+          ]
+        },
+        {
+          \\"property\\": \\"drawArrays\\",
+          \\"args\\": [
+            4,
+            0,
+            3
+          ]
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record integration tests can freeze mutations 1`] = `
 "[
   {
