@@ -348,6 +348,10 @@ export function buildNodeWithSN(
     mirror: Mirror;
     skipChild?: boolean;
     hackCss: boolean;
+    /**
+     * This callback will be called for each of this nodes' `.childNodes` after they are appended to _this_ node.
+     * Caveat: This callback _doesn't_ get called when this node is appended to the DOM.
+     */
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
   },
