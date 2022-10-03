@@ -48,8 +48,11 @@
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       }
       setTimeout(() => {
+        // canvas element that never gets appended to the DOM
         const confound = document.createElement('canvas');
-        createTriangle(confound);  // this should not be emitted (but was triggering a bug in the emitted canvas)
+        // These will not be emitted (but was triggering a bug in the emitted canvas)
+        // @see https://github.com/rrweb-io/rrweb/pull/1013
+        createTriangle(confound);
         const c = document.getElementById('myCanvas');
         createTriangle(c);
       }, 10);
