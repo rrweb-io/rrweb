@@ -36,9 +36,9 @@ function patchGLPrototype(
         ) {
           return function (this: typeof prototype, ...args: Array<unknown>) {
             const result = original.apply(this, args);
-            saveWebGLVar(result, win, prototype);
+            saveWebGLVar(result, win, this);
             if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
-              const recordArgs = serializeArgs([...args], win, prototype);
+              const recordArgs = serializeArgs([...args], win, this);
               const mutation: canvasMutationWithType = {
                 type,
                 property: prop,

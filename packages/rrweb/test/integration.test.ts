@@ -401,6 +401,19 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can correctly serialize a shader and multiple webgl contexts', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'canvas-webgl-shader.html', {
+        recordCanvas: true,
+      }),
+    );
+    await waitForRAF(page);
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('will serialize node before record', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
