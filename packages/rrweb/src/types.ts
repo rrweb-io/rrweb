@@ -581,6 +581,8 @@ export type canvasMutationWithType = {
 
 export type canvasMutationCallback = (p: canvasMutationParam) => void;
 
+export type canvasMutationCallbackWithSuccess = (canvas: HTMLCanvasElement, type: CanvasContext, commands: canvasMutationCommand[]) => boolean;
+
 export type canvasManagerMutationCallback = (
   target: HTMLCanvasElement,
   p: canvasMutationWithType,

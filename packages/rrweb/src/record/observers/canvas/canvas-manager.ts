@@ -3,6 +3,8 @@ import type {
   blockClass,
   canvasManagerMutationCallback,
   canvasMutationCallback,
+  canvasMutationParam,
+  canvasMutationCallbackWithSuccess,
   canvasMutationCommand,
   canvasMutationWithType,
   IWindow,
@@ -19,13 +21,8 @@ import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
-type pendingCanvasMutationsMap = Map<
-  HTMLCanvasElement,
-  canvasMutationWithType[]
->;
 
 export class CanvasManager {
-  private pendingCanvasMutations: pendingCanvasMutationsMap = new Map();
   private rafStamps: RafStamps = { latestId: 0, invokeId: null };
   private mirror: Mirror;
 
@@ -35,7 +32,7 @@ export class CanvasManager {
   private locked = false;
 
   public reset() {
-    this.pendingCanvasMutations.clear();
+    pendingCanvasMutations.clear();
     this.resetObservers && this.resetObservers();
   }
 
@@ -76,30 +73,43 @@ export class CanvasManager {
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
+    // already been set up by rrwebInit(), but for another window context, e.g. https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
+    window.addEventListener('message', (m) => {
+      if (m.data.type == 'rrweb_patch_internal_emission') {
+	 var canvases = document.getElementsByTagName('canvas');
+	 if (m.data.data.canvas_i < canvases.length) {
+	  var canvas = Array.from(canvases)[m.data.data.canvas_i];
+	  const id = this.mirror.getId(canvas);
+	  if (id === -1) {
+	    console.log('bad - canvas on page but not processed by MutationObserver yet?')
+	  }
+	  this.flushMutationEvent(canvas, m.data.data.mutationType, m.data.data.commands);
+	} else {
+	  console.log('bad', m.data);
+	}
+      }
+    });
+    window.postMessage({ type: 'rrweb_patch_reception_ready' });
+
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass, blockSelector);
+      this.resetObservers = initCanvasMutationObserver(this.flushMutationEvent.bind(this), win, blockClass, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
       this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
         dataURLOptions,
       });
   }
 
-  private processMutation: canvasManagerMutationCallback = (
-    target,
-    mutation,
-  ) => {
-    const newFrame =
-      this.rafStamps.invokeId &&
-      this.rafStamps.latestId !== this.rafStamps.invokeId;
-    if (newFrame || !this.rafStamps.invokeId)
-      this.rafStamps.invokeId = this.rafStamps.latestId;
-
-    if (!this.pendingCanvasMutations.has(target)) {
-      this.pendingCanvasMutations.set(target, []);
+  private flushMutationEvent(canvas: HTMLCanvasElement, type: CanvasContext, commands: canvasMutationCommand[]) {
+    if (this.frozen || this.locked) {
+      return false;
     }
-
-    this.pendingCanvasMutations.get(target)!.push(mutation);
-  };
+    const id = this.mirror.getId(canvas);
+    if (id === -1) {
+      return false;
+    }
+    this.mutationCb({ id, type, commands });
+    return true;
+  }
 
   private initCanvasFPSObserver(
     fps: number,
@@ -224,80 +234,110 @@ export class CanvasManager {
       cancelAnimationFrame(rafId);
     };
   }
+}
 
-  private initCanvasMutationObserver(
-    win: IWindow,
-    blockClass: blockClass,
-    blockSelector: string | null,
-  ): void {
-    this.startRAFTimestamping();
-    this.startPendingCanvasMutationFlusher();
 
-    const canvasContextReset = initCanvasContextObserver(
-      win,
-      blockClass,
-      blockSelector,
-    );
-    const canvas2DReset = initCanvas2DMutationObserver(
-      this.processMutation.bind(this),
-      win,
-      blockClass,
-      blockSelector,
-    );
+function initCanvasMutationObserver(
+  flushMutationEvent: canvasMutationCallbackWithSuccess,
+  win: IWindow,
+  blockClass: blockClass,
+  blockSelector: string | null,
+) {
+  requestAnimationFrame(flushPendingCanvasMutations);
 
-    const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
-      this.processMutation.bind(this),
-      win,
-      blockClass,
-      blockSelector,
-      this.mirror,
-    );
-
-    this.resetObservers = () => {
-      canvasContextReset();
-      canvas2DReset();
-      canvasWebGL1and2Reset();
-    };
-  }
-
-  private startPendingCanvasMutationFlusher() {
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
-  }
-
-  private startRAFTimestamping() {
-    const setLatestRAFTimestamp = (timestamp: DOMHighResTimeStamp) => {
-      this.rafStamps.latestId = timestamp;
-      requestAnimationFrame(setLatestRAFTimestamp);
-    };
-    requestAnimationFrame(setLatestRAFTimestamp);
-  }
-
-  flushPendingCanvasMutations() {
-    this.pendingCanvasMutations.forEach(
+  function flushPendingCanvasMutations() {
+    pendingCanvasMutations.forEach(
       (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
-        const id = this.mirror.getId(canvas);
-        this.flushPendingCanvasMutationFor(canvas, id);
+	let valuesWithType = pendingCanvasMutations.get(canvas);
+	if (!valuesWithType) { return; }
+	let commands = valuesWithType.map((value) => {
+	  const { type, ...rest } = value;
+	  return rest;
+	});
+	const { type } = valuesWithType[0];
+	if (flushMutationEvent(canvas, type, commands)) {
+	  pendingCanvasMutations.delete(canvas);
+	}
       },
     );
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    requestAnimationFrame(flushPendingCanvasMutations);
   }
 
-  flushPendingCanvasMutationFor(canvas: HTMLCanvasElement, id: number) {
-    if (this.frozen || this.locked) {
-      return;
+  const canvasContextReset = initCanvasContextObserver(
+    win,
+    blockClass,
+    blockSelector,
+  );
+  const canvas2DReset = initCanvas2DMutationObserver(
+    processMutation,
+    win,
+    blockClass,
+    blockSelector,
+  );
+
+  const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
+    processMutation,
+    win,
+    blockClass,
+    blockSelector,
+  );
+
+  return () => {
+    canvasContextReset();
+    canvas2DReset();
+    canvasWebGL1and2Reset();
+  };
+}
+
+const pendingCanvasMutations: pendingCanvasMutationsMap = new Map();
+
+type pendingCanvasMutationsMap = Map<
+  HTMLCanvasElement,
+  canvasMutationWithType[]
+>;
+
+function processMutation(target: HTMLCanvasElement, mutation: canvasMutationWithType) {
+  if (!pendingCanvasMutations.has(target)) {
+    pendingCanvasMutations.set(target, []);
+  }
+  pendingCanvasMutations.get(target)!.push(mutation);
+};
+
+
+export function earlyPatch() { // dist/record/rrweb-init.js
+  const win = window;  // as this code is intended to be injected, we can just use the global window object
+
+  // TODO: refactor blocking so that it happens in the emission callback function
+  const blockClass = 'rr-block';
+  const blockSelector = '';
+
+  let rrweb_patch_reception_ready = false;
+  window.addEventListener('message', (m) => {
+    if (m.data.type == 'rrweb_patch_reception_ready') {
+      rrweb_patch_reception_ready = true;
     }
+  });
 
-    const valuesWithType = this.pendingCanvasMutations.get(canvas);
-    if (!valuesWithType || id === -1) return;
-
-    const values = valuesWithType.map((value) => {
-      const { type, ...rest } = value;
-      return rest;
-    });
-    const { type } = valuesWithType[0];
-
-    this.mutationCb({ id, type, commands: values });
-
-    this.pendingCanvasMutations.delete(canvas);
-  }
+  initCanvasMutationObserver(function(canvas, type, commands) {
+    if (!rrweb_patch_reception_ready) {
+      return false;
+    }
+    // HACK: index the canvases by position; as postMessage is async this could send commands to the wrong canvas
+    var canvases = document.getElementsByTagName('canvas');
+    var canvas_i = Array.from(canvases).indexOf(canvas);
+    if (canvas_i !== -1) {
+      window.postMessage({
+	type: 'rrweb_patch_internal_emission',
+	data: {
+	  mutationType: type,
+	  canvas_i,
+	  commands
+	}
+      });
+      return true;  // tell the manager that we've successfully flushed
+    } else {
+      return false;
+    }
+  },
+			     win, blockClass, blockSelector);
 }
