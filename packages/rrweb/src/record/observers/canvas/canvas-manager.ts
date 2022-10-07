@@ -21,7 +21,6 @@ import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
-
 export class CanvasManager {
   private rafStamps: RafStamps = { latestId: 0, invokeId: null };
   private mirror: Mirror;
@@ -76,30 +75,45 @@ export class CanvasManager {
     // already been set up by rrwebInit(), but for another window context, e.g. https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
     window.addEventListener('message', (m) => {
       if (m.data.type == 'rrweb_patch_internal_emission') {
-	 var canvases = document.getElementsByTagName('canvas');
-	 if (m.data.data.canvas_i < canvases.length) {
-	  var canvas = Array.from(canvases)[m.data.data.canvas_i];
-	  const id = this.mirror.getId(canvas);
-	  if (id === -1) {
-	    console.log('bad - canvas on page but not processed by MutationObserver yet?')
-	  }
-	  this.flushMutationEvent(canvas, m.data.data.mutationType, m.data.data.commands);
-	} else {
-	  console.log('bad', m.data);
-	}
+        var canvases = document.getElementsByTagName('canvas');
+        if (m.data.data.canvas_i < canvases.length) {
+          var canvas = Array.from(canvases)[m.data.data.canvas_i];
+          const id = this.mirror.getId(canvas);
+          if (id === -1) {
+            console.log(
+              'bad - canvas on page but not processed by MutationObserver yet?',
+            );
+          }
+          this.flushMutationEvent(
+            canvas,
+            m.data.data.mutationType,
+            m.data.data.commands,
+          );
+        } else {
+          console.log('bad', m.data);
+        }
       }
     });
     window.postMessage({ type: 'rrweb_patch_reception_ready' });
 
     if (recordCanvas && sampling === 'all')
-      this.resetObservers = initCanvasMutationObserver(this.flushMutationEvent.bind(this), win, blockClass, blockSelector);
+      this.resetObservers = initCanvasMutationObserver(
+        this.flushMutationEvent.bind(this),
+        win,
+        blockClass,
+        blockSelector,
+      );
     if (recordCanvas && typeof sampling === 'number')
       this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
         dataURLOptions,
       });
   }
 
-  private flushMutationEvent(canvas: HTMLCanvasElement, type: CanvasContext, commands: canvasMutationCommand[]) {
+  private flushMutationEvent(
+    canvas: HTMLCanvasElement,
+    type: CanvasContext,
+    commands: canvasMutationCommand[],
+  ) {
     if (this.frozen || this.locked) {
       return false;
     }
@@ -236,7 +250,6 @@ export class CanvasManager {
   }
 }
 
-
 function initCanvasMutationObserver(
   flushMutationEvent: canvasMutationCallbackWithSuccess,
   win: IWindow,
@@ -248,16 +261,18 @@ function initCanvasMutationObserver(
   function flushPendingCanvasMutations() {
     pendingCanvasMutations.forEach(
       (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
-	let valuesWithType = pendingCanvasMutations.get(canvas);
-	if (!valuesWithType) { return; }
-	let commands = valuesWithType.map((value) => {
-	  const { type, ...rest } = value;
-	  return rest;
-	});
-	const { type } = valuesWithType[0];
-	if (flushMutationEvent(canvas, type, commands)) {
-	  pendingCanvasMutations.delete(canvas);
-	}
+        let valuesWithType = pendingCanvasMutations.get(canvas);
+        if (!valuesWithType) {
+          return;
+        }
+        let commands = valuesWithType.map((value) => {
+          const { type, ...rest } = value;
+          return rest;
+        });
+        const { type } = valuesWithType[0];
+        if (flushMutationEvent(canvas, type, commands)) {
+          pendingCanvasMutations.delete(canvas);
+        }
       },
     );
     requestAnimationFrame(flushPendingCanvasMutations);
@@ -296,16 +311,19 @@ type pendingCanvasMutationsMap = Map<
   canvasMutationWithType[]
 >;
 
-function processMutation(target: HTMLCanvasElement, mutation: canvasMutationWithType) {
+function processMutation(
+  target: HTMLCanvasElement,
+  mutation: canvasMutationWithType,
+) {
   if (!pendingCanvasMutations.has(target)) {
     pendingCanvasMutations.set(target, []);
   }
   pendingCanvasMutations.get(target)!.push(mutation);
-};
+}
 
-
-export function earlyPatch() { // dist/record/rrweb-init.js
-  const win = window;  // as this code is intended to be injected, we can just use the global window object
+export function earlyPatch() {
+  // dist/record/rrweb-init.js
+  const win = window; // as this code is intended to be injected, we can just use the global window object
 
   // TODO: refactor blocking so that it happens in the emission callback function
   const blockClass = 'rr-block';
@@ -318,26 +336,30 @@ export function earlyPatch() { // dist/record/rrweb-init.js
     }
   });
 
-  initCanvasMutationObserver(function(canvas, type, commands) {
-    if (!rrweb_patch_reception_ready) {
-      return false;
-    }
-    // HACK: index the canvases by position; as postMessage is async this could send commands to the wrong canvas
-    var canvases = document.getElementsByTagName('canvas');
-    var canvas_i = Array.from(canvases).indexOf(canvas);
-    if (canvas_i !== -1) {
-      window.postMessage({
-	type: 'rrweb_patch_internal_emission',
-	data: {
-	  mutationType: type,
-	  canvas_i,
-	  commands
-	}
-      });
-      return true;  // tell the manager that we've successfully flushed
-    } else {
-      return false;
-    }
-  },
-			     win, blockClass, blockSelector);
+  initCanvasMutationObserver(
+    function (canvas, type, commands) {
+      if (!rrweb_patch_reception_ready) {
+        return false;
+      }
+      // HACK: index the canvases by position; as postMessage is async this could send commands to the wrong canvas
+      var canvases = document.getElementsByTagName('canvas');
+      var canvas_i = Array.from(canvases).indexOf(canvas);
+      if (canvas_i !== -1) {
+        window.postMessage({
+          type: 'rrweb_patch_internal_emission',
+          data: {
+            mutationType: type,
+            canvas_i,
+            commands,
+          },
+        });
+        return true; // tell the manager that we've successfully flushed
+      } else {
+        return false;
+      }
+    },
+    win,
+    blockClass,
+    blockSelector,
+  );
 }
