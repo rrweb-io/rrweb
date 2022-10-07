@@ -26,7 +26,13 @@ function patchGLPrototype(
   for (const prop of props) {
     if (
       //prop.startsWith('get') ||  // e.g. getProgramParameter, but too risky
-      ['isContextLost', 'canvas', 'drawingBufferWidth', 'drawingBufferHeight'].includes(prop)) {
+      [
+        'isContextLost',
+        'canvas',
+        'drawingBufferWidth',
+        'drawingBufferHeight',
+      ].includes(prop)
+    ) {
       // skip read only propery/functions
       continue;
     }
