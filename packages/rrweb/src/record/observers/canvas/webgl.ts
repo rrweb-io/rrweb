@@ -24,6 +24,18 @@ function patchGLPrototype(
   const props = Object.getOwnPropertyNames(prototype);
 
   for (const prop of props) {
+    if (
+      //prop.startsWith('get') ||  // e.g. getProgramParameter, but too risky
+      [
+        'isContextLost',
+        'canvas',
+        'drawingBufferWidth',
+        'drawingBufferHeight',
+      ].includes(prop)
+    ) {
+      // skip read only propery/functions
+      continue;
+    }
     try {
       if (typeof prototype[prop as keyof typeof prototype] !== 'function') {
         continue;
