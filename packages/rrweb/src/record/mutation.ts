@@ -266,15 +266,20 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      const shadowHost: Element | null = n.getRootNode
-        ? (n.getRootNode() as ShadowRoot)?.host
-        : null;
+      let shadowHost: Element | null = null;
+      if (
+        n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+        (n.getRootNode() as ShadowRoot).host
+      )
+        shadowHost = (n.getRootNode() as ShadowRoot).host;
       // If n is in a nested shadow dom.
       let rootShadowHost = shadowHost;
-      while ((rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host)
-        rootShadowHost =
-          (rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host ||
-          null;
+      while (
+        rootShadowHost?.getRootNode?.()?.nodeType ===
+          Node.DOCUMENT_FRAGMENT_NODE &&
+        (rootShadowHost.getRootNode() as ShadowRoot).host
+      )
+        rootShadowHost = (rootShadowHost.getRootNode() as ShadowRoot).host;
       // ensure contains is passed a Node, or it will throw an error
       const notInDoc =
         !this.doc.contains(n) &&
