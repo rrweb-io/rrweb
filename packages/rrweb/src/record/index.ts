@@ -71,6 +71,7 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
+    window: win = window,
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
@@ -91,46 +92,46 @@ function record<T = eventWithTime>(
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
-          color: true,
-          date: true,
-          'datetime-local': true,
-          email: true,
-          month: true,
-          number: true,
-          range: true,
-          search: true,
-          tel: true,
-          text: true,
-          time: true,
-          url: true,
-          week: true,
-          textarea: true,
-          select: true,
-          password: true,
-        }
+        color: true,
+        date: true,
+        'datetime-local': true,
+        email: true,
+        month: true,
+        number: true,
+        range: true,
+        search: true,
+        tel: true,
+        text: true,
+        time: true,
+        url: true,
+        week: true,
+        textarea: true,
+        select: true,
+        password: true,
+      }
       : _maskInputOptions !== undefined
-      ? _maskInputOptions
-      : { password: true };
+        ? _maskInputOptions
+        : { password: true };
 
   const slimDOMOptions: SlimDOMOptions =
     _slimDOMOptions === true || _slimDOMOptions === 'all'
       ? {
-          script: true,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaVerification: true,
-          // the following are off for slimDOMOptions === true,
-          // as they destroy some (hidden) info:
-          headMetaAuthorship: _slimDOMOptions === 'all',
-          headMetaDescKeywords: _slimDOMOptions === 'all',
-        }
+        script: true,
+        comment: true,
+        headFavicon: true,
+        headWhitespace: true,
+        headMetaSocial: true,
+        headMetaRobots: true,
+        headMetaHttpEquiv: true,
+        headMetaVerification: true,
+        // the following are off for slimDOMOptions === true,
+        // as they destroy some (hidden) info:
+        headMetaAuthorship: _slimDOMOptions === 'all',
+        headMetaDescKeywords: _slimDOMOptions === 'all',
+      }
       : _slimDOMOptions
-      ? _slimDOMOptions
-      : {};
+        ? _slimDOMOptions
+        : {};
 
   polyfill();
 
@@ -250,7 +251,7 @@ function record<T = eventWithTime>(
   canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
-    win: window,
+    win: win,
     blockClass,
     blockSelector,
     mirror,
@@ -259,6 +260,7 @@ function record<T = eventWithTime>(
   });
 
   const shadowDomManager = new ShadowDomManager({
+    win,
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
     bypassOptions: {
@@ -288,9 +290,9 @@ function record<T = eventWithTime>(
       wrapEvent({
         type: EventType.Meta,
         data: {
-          href: window.location.href,
-          width: getWindowWidth(),
-          height: getWindowHeight(),
+          href: win.location.href,
+          width: getWindowWidth(win),
+          height: getWindowHeight(win),
         },
       }),
       isCheckout,
@@ -300,7 +302,7 @@ function record<T = eventWithTime>(
     stylesheetManager.reset();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
-    const node = snapshot(document, {
+    const node = snapshot(win.document, {
       mirror,
       blockClass,
       blockSelector,
@@ -321,7 +323,7 @@ function record<T = eventWithTime>(
           stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
-          shadowDomManager.addShadowRoot(n.shadowRoot, document);
+          shadowDomManager.addShadowRoot(n.shadowRoot, win.document);
         }
       },
       onIframeLoad: (iframe, childSn) => {
@@ -345,19 +347,19 @@ function record<T = eventWithTime>(
           node,
           initialOffset: {
             left:
-              window.pageXOffset !== undefined
-                ? window.pageXOffset
-                : document?.documentElement.scrollLeft ||
-                  document?.body?.parentElement?.scrollLeft ||
-                  document?.body?.scrollLeft ||
-                  0,
+              win.pageXOffset !== undefined
+                ? win.pageXOffset
+                : win.document?.documentElement.scrollLeft ||
+                win.document?.body?.parentElement?.scrollLeft ||
+                win.document?.body?.scrollLeft ||
+                0,
             top:
-              window.pageYOffset !== undefined
-                ? window.pageYOffset
-                : document?.documentElement.scrollTop ||
-                  document?.body?.parentElement?.scrollTop ||
-                  document?.body?.scrollTop ||
-                  0,
+              win.pageYOffset !== undefined
+                ? win.pageYOffset
+                : win.document?.documentElement.scrollTop ||
+                win.document?.body?.parentElement?.scrollTop ||
+                win.document?.body?.scrollTop ||
+                0,
           },
         },
       }),
@@ -365,10 +367,10 @@ function record<T = eventWithTime>(
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
-    if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
+    if (win.document.adoptedStyleSheets && win.document.adoptedStyleSheets.length > 0)
       stylesheetManager.adoptStyleSheets(
-        document.adoptedStyleSheets,
-        mirror.getId(document),
+        win.document.adoptedStyleSheets,
+        mirror.getId(win.document),
       );
   };
 
@@ -493,6 +495,7 @@ function record<T = eventWithTime>(
           inlineImages,
           userTriggeredOnInput,
           collectFonts,
+          window: win,
           doc,
           maskInputFn,
           maskTextFn,
@@ -534,11 +537,11 @@ function record<T = eventWithTime>(
 
     const init = () => {
       takeFullSnapshot();
-      handlers.push(observe(document));
+      handlers.push(observe(win.document));
     };
     if (
-      document.readyState === 'interactive' ||
-      document.readyState === 'complete'
+      win.document.readyState === 'interactive' ||
+      win.document.readyState === 'complete'
     ) {
       init();
     } else {
@@ -554,7 +557,7 @@ function record<T = eventWithTime>(
             );
             init();
           },
-          window,
+          win,
         ),
       );
     }

@@ -170,6 +170,7 @@ export default class MutationBuffer {
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
   private dataURLOptions: observerParam['dataURLOptions'];
+  private window: observerParam['window'];
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
   private iframeManager: observerParam['iframeManager'];
@@ -193,6 +194,7 @@ export default class MutationBuffer {
       'inlineImages',
       'slimDOMOptions',
       'dataURLOptions',
+      'window',
       'doc',
       'mirror',
       'iframeManager',
@@ -321,7 +323,7 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
+            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.window.document);
           }
         },
         onIframeLoad: (iframe, childSn) => {

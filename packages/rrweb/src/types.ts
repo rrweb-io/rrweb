@@ -102,9 +102,9 @@ export type mutationData = {
 
 export type mousemoveData = {
   source:
-    | IncrementalSource.MouseMove
-    | IncrementalSource.TouchMove
-    | IncrementalSource.Drag;
+  | IncrementalSource.MouseMove
+  | IncrementalSource.TouchMove
+  | IncrementalSource.Drag;
   positions: mousePosition[];
 };
 
@@ -263,6 +263,7 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
+  window?: IWindow;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -299,6 +300,7 @@ export type observerParam = {
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
   dataURLOptions: DataURLOptions;
+  window: IWindow,
   doc: Document;
   mirror: Mirror;
   iframeManager: IframeManager;
@@ -333,6 +335,7 @@ export type MutationBufferParam = Pick<
   | 'inlineImages'
   | 'slimDOMOptions'
   | 'dataURLOptions'
+  | 'window'
   | 'doc'
   | 'mirror'
   | 'iframeManager'
@@ -462,26 +465,26 @@ export enum CanvasContext {
 
 export type SerializedCanvasArg =
   | {
-      rr_type: 'ArrayBuffer';
-      base64: string; // base64
-    }
+    rr_type: 'ArrayBuffer';
+    base64: string; // base64
+  }
   | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+    rr_type: 'Blob';
+    data: Array<CanvasArg>;
+    type?: string;
+  }
   | {
-      rr_type: string;
-      src: string; // url of image
-    }
+    rr_type: string;
+    src: string; // url of image
+  }
   | {
-      rr_type: string;
-      args: Array<CanvasArg>;
-    }
+    rr_type: string;
+    args: Array<CanvasArg>;
+  }
   | {
-      rr_type: string;
-      index: number;
-    };
+    rr_type: string;
+    index: number;
+  };
 
 export type CanvasArg =
   | SerializedCanvasArg
@@ -566,14 +569,14 @@ export type canvasMutationCommand = {
 
 export type canvasMutationParam =
   | {
-      id: number;
-      type: CanvasContext;
-      commands: canvasMutationCommand[];
-    }
+    id: number;
+    type: CanvasContext;
+    commands: canvasMutationCommand[];
+  }
   | ({
-      id: number;
-      type: CanvasContext;
-    } & canvasMutationCommand);
+    id: number;
+    type: CanvasContext;
+  } & canvasMutationCommand);
 
 export type canvasMutationWithType = {
   type: CanvasContext;
@@ -596,15 +599,15 @@ export type ImageBitmapDataURLWorkerParams = {
 
 export type ImageBitmapDataURLWorkerResponse =
   | {
-      id: number;
-    }
+    id: number;
+  }
   | {
-      id: number;
-      type: string;
-      base64: string;
-      width: number;
-      height: number;
-    };
+    id: number;
+    type: string;
+    base64: string;
+    width: number;
+    height: number;
+  };
 
 export type fontParam = {
   family: string;
@@ -722,13 +725,13 @@ export type playerConfig = {
   UNSAFE_replayCanvas: boolean;
   pauseAnimation?: boolean;
   mouseTail:
-    | boolean
-    | {
-        duration?: number;
-        lineCap?: string;
-        lineWidth?: number;
-        strokeStyle?: string;
-      };
+  | boolean
+  | {
+    duration?: number;
+    lineCap?: string;
+    lineWidth?: number;
+    strokeStyle?: string;
+  };
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
   plugins?: ReplayPlugin[];

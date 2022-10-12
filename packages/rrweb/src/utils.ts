@@ -110,16 +110,16 @@ export function hookSetter<T>(
     isRevoked
       ? d
       : {
-          set(value) {
-            // put hooked setter into event loop to avoid of set latency
-            setTimeout(() => {
-              d.set!.call(this, value);
-            }, 0);
-            if (original && original.set) {
-              original.set.call(this, value);
-            }
-          },
+        set(value) {
+          // put hooked setter into event loop to avoid of set latency
+          setTimeout(() => {
+            d.set!.call(this, value);
+          }, 0);
+          if (original && original.set) {
+            original.set.call(this, value);
+          }
         },
+      },
   );
   return () => hookSetter(target, key, original || {}, true);
 }
@@ -167,19 +167,19 @@ export function patch(
   }
 }
 
-export function getWindowHeight(): number {
+export function getWindowHeight(win: Window): number {
   return (
-    window.innerHeight ||
-    (document.documentElement && document.documentElement.clientHeight) ||
-    (document.body && document.body.clientHeight)
+    win.innerHeight ||
+    (win.document.documentElement && win.document.documentElement.clientHeight) ||
+    (win.document.body && win.document.body.clientHeight)
   );
 }
 
-export function getWindowWidth(): number {
+export function getWindowWidth(win: Window): number {
   return (
-    window.innerWidth ||
-    (document.documentElement && document.documentElement.clientWidth) ||
-    (document.body && document.body.clientWidth)
+    win.innerWidth ||
+    (win.document.documentElement && win.document.documentElement.clientWidth) ||
+    (win.document.body && win.document.body.clientWidth)
   );
 }
 
@@ -371,10 +371,10 @@ export function isSerializedStylesheet<TNode extends Node | RRNode>(
 ): boolean {
   return Boolean(
     n.nodeName === 'LINK' &&
-      n.nodeType === n.ELEMENT_NODE &&
-      (n as HTMLElement).getAttribute &&
-      (n as HTMLElement).getAttribute('rel') === 'stylesheet' &&
-      mirror.getMeta(n),
+    n.nodeType === n.ELEMENT_NODE &&
+    (n as HTMLElement).getAttribute &&
+    (n as HTMLElement).getAttribute('rel') === 'stylesheet' &&
+    mirror.getMeta(n),
   );
 }
 
@@ -444,7 +444,7 @@ export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
   const idSet = new Set<number>();
   const uniqueMutations: textMutation[] = [];
 
-  for (let i = mutations.length; i--; ) {
+  for (let i = mutations.length; i--;) {
     const mutation = mutations[i];
     if (!idSet.has(mutation.id)) {
       uniqueMutations.push(mutation);
