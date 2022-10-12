@@ -14,6 +14,8 @@ import {
   DocumentDimension,
   IWindow,
   DeprecatedMirror,
+  eventWithTime,
+  EventType,
 } from './types';
 import { Mirror, IGNORED_NODE, isShadowRoot } from 'rrweb-snapshot';
 
@@ -586,4 +588,14 @@ export function hasShadowRoot<T extends Node>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
   return Boolean(((n as unknown) as Element)?.shadowRoot);
+}
+
+export function isUserInteraction(event: eventWithTime): boolean {
+  if (event.type !== EventType.IncrementalSnapshot) {
+    return false;
+  }
+  return (
+    event.data.source > IncrementalSource.Mutation &&
+    event.data.source <= IncrementalSource.Input
+  );
 }

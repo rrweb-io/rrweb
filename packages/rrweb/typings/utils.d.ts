@@ -1,4 +1,4 @@
-import { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow, DeprecatedMirror } from './types';
+import { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow, DeprecatedMirror, eventWithTime } from './types';
 import { Mirror } from 'rrweb-snapshot';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
 export declare let _mirror: DeprecatedMirror;
@@ -63,4 +63,5 @@ export declare function getBaseDimension(node: Node, rootIframe: Node): Document
 export declare function hasShadowRoot<T extends Node>(n: T): n is T & {
     shadowRoot: ShadowRoot;
 };
+export declare function isUserInteraction(event: eventWithTime): boolean;
 export {};

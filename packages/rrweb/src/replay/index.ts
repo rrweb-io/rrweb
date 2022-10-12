@@ -52,6 +52,7 @@ import {
   getBaseDimension,
   hasShadowRoot,
   isSerializedIframe,
+  isUserInteraction,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -574,7 +575,7 @@ export class Replayer {
               if (_event.timestamp! <= event.timestamp!) {
                 continue;
               }
-              if (this.isUserInteraction(_event)) {
+              if (isUserInteraction(_event)) {
                 if (
                   _event.delay! - event.delay! >
                   SKIP_TIME_THRESHOLD *
@@ -1843,16 +1844,6 @@ export class Replayer {
       }
       currentEl = currentEl.parentElement;
     }
-  }
-
-  public isUserInteraction(event: eventWithTime): boolean {
-    if (event.type !== EventType.IncrementalSnapshot) {
-      return false;
-    }
-    return (
-      event.data.source > IncrementalSource.Mutation &&
-      event.data.source <= IncrementalSource.Input
-    );
   }
 
   private backToNormal() {

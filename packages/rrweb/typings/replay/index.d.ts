@@ -67,7 +67,6 @@ export declare class Replayer {
     private moveAndHover;
     private drawMouseTail;
     private hoverElements;
-    isUserInteraction(event: eventWithTime): boolean;
     private backToNormal;
     private restoreRealParent;
     private storeState;
