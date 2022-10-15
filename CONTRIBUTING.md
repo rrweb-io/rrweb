@@ -23,6 +23,18 @@ We actively welcome your pull requests.
 We use GitHub issues to track public bugs. Please ensure your description is
 clear and has sufficient instructions to be able to reproduce the issue.
 
+## Run locally
+
+- Install dependencies: `yarn`
+- Run recorder on a website: `yarn repl`
+- Run a cobrowsing/mirroring session locally: `yarn live-stream`
+- Test: `yarn test` or `yarn test:watch`
+- Lint: `yarn lint`
+
+## Coding style
+
+See [documentation](docs/development/coding-style.md)
+
 ## License
 
 rrweb is [MIT licensed](https://github.com/rrweb-io/rrweb/blob/master/LICENSE).
