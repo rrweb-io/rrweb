@@ -25,6 +25,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
+  IWindow,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -71,11 +72,12 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
-    window: win = window,
+    window: _win = window,
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
   } = options;
+  const win = (_win as unknown) as IWindow;
 
   // runtime checks for user options
   if (!emit) {
@@ -251,7 +253,7 @@ function record<T = eventWithTime>(
   canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
-    win: win,
+    win,
     blockClass,
     blockSelector,
     mirror,
@@ -281,6 +283,7 @@ function record<T = eventWithTime>(
       stylesheetManager,
       canvasManager,
       keepIframeSrcFn,
+      window: win,
     },
     mirror,
   });
