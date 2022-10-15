@@ -323,7 +323,10 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.window.document);
+            this.shadowDomManager.addShadowRoot(
+              n.shadowRoot,
+              this.window.document,
+            );
           }
         },
         onIframeLoad: (iframe, childSn) => {

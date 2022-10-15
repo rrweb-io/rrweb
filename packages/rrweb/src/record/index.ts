@@ -94,46 +94,46 @@ function record<T = eventWithTime>(
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
-        color: true,
-        date: true,
-        'datetime-local': true,
-        email: true,
-        month: true,
-        number: true,
-        range: true,
-        search: true,
-        tel: true,
-        text: true,
-        time: true,
-        url: true,
-        week: true,
-        textarea: true,
-        select: true,
-        password: true,
-      }
+          color: true,
+          date: true,
+          'datetime-local': true,
+          email: true,
+          month: true,
+          number: true,
+          range: true,
+          search: true,
+          tel: true,
+          text: true,
+          time: true,
+          url: true,
+          week: true,
+          textarea: true,
+          select: true,
+          password: true,
+        }
       : _maskInputOptions !== undefined
-        ? _maskInputOptions
-        : { password: true };
+      ? _maskInputOptions
+      : { password: true };
 
   const slimDOMOptions: SlimDOMOptions =
     _slimDOMOptions === true || _slimDOMOptions === 'all'
       ? {
-        script: true,
-        comment: true,
-        headFavicon: true,
-        headWhitespace: true,
-        headMetaSocial: true,
-        headMetaRobots: true,
-        headMetaHttpEquiv: true,
-        headMetaVerification: true,
-        // the following are off for slimDOMOptions === true,
-        // as they destroy some (hidden) info:
-        headMetaAuthorship: _slimDOMOptions === 'all',
-        headMetaDescKeywords: _slimDOMOptions === 'all',
-      }
+          script: true,
+          comment: true,
+          headFavicon: true,
+          headWhitespace: true,
+          headMetaSocial: true,
+          headMetaRobots: true,
+          headMetaHttpEquiv: true,
+          headMetaVerification: true,
+          // the following are off for slimDOMOptions === true,
+          // as they destroy some (hidden) info:
+          headMetaAuthorship: _slimDOMOptions === 'all',
+          headMetaDescKeywords: _slimDOMOptions === 'all',
+        }
       : _slimDOMOptions
-        ? _slimDOMOptions
-        : {};
+      ? _slimDOMOptions
+      : {};
 
   polyfill();
 
@@ -353,16 +353,16 @@ function record<T = eventWithTime>(
               win.pageXOffset !== undefined
                 ? win.pageXOffset
                 : win.document?.documentElement.scrollLeft ||
-                win.document?.body?.parentElement?.scrollLeft ||
-                win.document?.body?.scrollLeft ||
-                0,
+                  win.document?.body?.parentElement?.scrollLeft ||
+                  win.document?.body?.scrollLeft ||
+                  0,
             top:
               win.pageYOffset !== undefined
                 ? win.pageYOffset
                 : win.document?.documentElement.scrollTop ||
-                win.document?.body?.parentElement?.scrollTop ||
-                win.document?.body?.scrollTop ||
-                0,
+                  win.document?.body?.parentElement?.scrollTop ||
+                  win.document?.body?.scrollTop ||
+                  0,
           },
         },
       }),
@@ -370,7 +370,10 @@ function record<T = eventWithTime>(
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
-    if (win.document.adoptedStyleSheets && win.document.adoptedStyleSheets.length > 0)
+    if (
+      win.document.adoptedStyleSheets &&
+      win.document.adoptedStyleSheets.length > 0
+    )
       stylesheetManager.adoptStyleSheets(
         win.document.adoptedStyleSheets,
         mirror.getId(win.document),

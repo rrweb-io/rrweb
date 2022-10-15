@@ -103,7 +103,7 @@ export function initMutationObserver(
   if (
     angularZoneSymbol &&
     ((options.window as unknown) as Record<string, typeof MutationObserver>)[
-    angularZoneSymbol
+      angularZoneSymbol
     ]
   ) {
     mutationObserverCtor = ((options.window as unknown) as Record<
@@ -187,8 +187,8 @@ function initMoveObserver({
         typeof DragEvent !== 'undefined' && evt instanceof DragEvent
           ? IncrementalSource.Drag
           : evt instanceof MouseEvent
-            ? IncrementalSource.MouseMove
-            : IncrementalSource.TouchMove,
+          ? IncrementalSource.MouseMove
+          : IncrementalSource.TouchMove,
       );
     },
     threshold,
@@ -221,7 +221,7 @@ function initMouseInteractionObserver({
   }
   const disableMap: Record<string, boolean | undefined> =
     sampling.mouseInteraction === true ||
-      sampling.mouseInteraction === undefined
+    sampling.mouseInteraction === undefined
       ? {}
       : sampling.mouseInteraction;
 
@@ -369,7 +369,7 @@ function initInputObserver({
       isChecked = (target as HTMLInputElement).checked;
     } else if (
       maskInputOptions[
-      (target as Element).tagName.toLowerCase() as keyof MaskInputOptions
+        (target as Element).tagName.toLowerCase() as keyof MaskInputOptions
       ] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
@@ -1131,8 +1131,8 @@ export function initObservers(
   const fontObserver = o.collectFonts
     ? initFontObserver(o)
     : () => {
-      //
-    };
+        //
+      };
   const selectionObserver = initSelectionObserver(o);
 
   // plugins

@@ -156,7 +156,7 @@ setInterval(save, 10 * 1000);
 | inlineImages         | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts         | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
-| window               | window             |                                                                                                                                                                                |
+| window               | window             |                                                                                                                                                                                       |
 | plugins              | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                          |
 
 #### 隐私

@@ -927,14 +927,13 @@ describe('be loaded from an iframe', function (this: ISuite) {
     });
 
     expect(await ctx.page.evaluate('typeof rrweb')).toEqual('undefined');
-    await ctx.page.type('input', 'a');  // ensuring that typing in outer gets recorded by inner rrweb
+    await ctx.page.type('input', 'a'); // ensuring that typing in outer gets recorded by inner rrweb
 
     expect(ctx.events.length).toEqual(5);
 
     expect(
-      ctx.events.filter(
-        (event: eventWithTime) => event.type === EventType.Meta,
-      ).length,
+      ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
+        .length,
     ).toEqual(1);
 
     expect(
