@@ -160,6 +160,7 @@ The parameter of `rrweb.record` accepts the following options.
 | inlineImages         | false              | whether to record the image content                                                                                                                                                           |
 | collectFonts         | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
+| window               | window             | Window object to record. When rrweb is loaded from an iframe, inject here the parent `window` Element.                                                                                        |
 | plugins              | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
 
 #### Privacy
