@@ -69,6 +69,45 @@ const setup = function (this: ISuite, content: string): ISuite {
   return ctx;
 };
 
+const iframeSetup = function (this: ISuite, content: string): ISuite {
+  const ctx = {} as ISuite;
+
+  beforeAll(async () => {
+    ctx.browser = await launchPuppeteer({
+      devtools: true,
+    });
+
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+    ctx.code = fs.readFileSync(bundlePath, 'utf8');
+  });
+
+  beforeEach(async () => {
+    ctx.page = await ctx.browser.newPage();
+    await ctx.page.goto('about:blank?outer');
+    await ctx.page.setContent(content);
+    await ctx.page.frames()[1].evaluate(ctx.code);
+    ctx.events = [];
+    await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
+      if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
+        return;
+      }
+      ctx.events.push(e);
+    });
+
+    ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+  });
+
+  afterEach(async () => {
+    await ctx.page.close();
+  });
+
+  afterAll(async () => {
+    await ctx.browser.close();
+  });
+
+  return ctx;
+};
+
 describe('record', function (this: ISuite) {
   jest.setTimeout(10_000);
 
@@ -858,6 +897,53 @@ describe('record iframes', function (this: ISuite) {
     expect(styleRelatedEvents.length).toEqual(5);
     expect(addRuleCount).toEqual(2);
     expect(removeRuleCount).toEqual(2);
+    assertSnapshot(ctx.events);
+  });
+});
+
+describe('be loaded from an iframe', function (this: ISuite) {
+  jest.setTimeout(10_000);
+
+  const ctx: ISuite = iframeSetup.call(
+    this,
+    `
+      <html>
+        <body>
+          <input type="text" size="40" />
+          <iframe srcdoc="<div>rrweb loaded in here!</div>" />
+        </body>
+      </html>
+    `,
+  );
+
+  it('captures activity in outer frame', async () => {
+    await ctx.page.frames()[1].evaluate(() => {
+      // window here is the iframe window
+      const { record } = ((window as unknown) as IWindow).rrweb;
+      record({
+        emit: ((window as unknown) as IWindow).emit,
+        window: window.top as IWindow,
+      });
+    });
+
+    expect(await ctx.page.evaluate('typeof rrweb')).toEqual('undefined');
+    await ctx.page.type('input', 'a');  // ensuring that typing in outer gets recorded by inner rrweb
+
+    expect(ctx.events.length).toEqual(5);
+
+    expect(
+      ctx.events.filter(
+        (event: eventWithTime) => event.type === EventType.Meta,
+      ).length,
+    ).toEqual(1);
+
+    expect(
+      ctx.events.filter(
+        (event: eventWithTime) => event.type === EventType.FullSnapshot,
+      ).length,
+    ).toEqual(1);
+
+    await waitForRAF(ctx.page); // wait till events get sent
     assertSnapshot(ctx.events);
   });
 });
