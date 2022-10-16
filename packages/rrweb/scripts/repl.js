@@ -21,7 +21,7 @@ void (async () => {
   const code = getCode();
   let events = [];
 
-  await start();
+  await start('https://react-redux.realworld.io');
 
   const fakeGoto = async (page, url) => {
     const intercept = async (request) => {
@@ -38,16 +38,20 @@ void (async () => {
     page.off('request', intercept);
   };
 
-  async function start() {
+  async function start(defaultURL) {
     events = [];
-    const { url } = await inquirer.prompt([
+    let { url } = await inquirer.prompt([
       {
         type: 'input',
         name: 'url',
         message:
-          'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
+          `Enter the url you want to record, e.g [${defaultURL}]: `,
       },
     ]);
+
+    if (url === '') {
+      url = defaultURL;
+    }
 
     console.log(`Going to open ${url}...`);
     await record(url);
@@ -92,7 +96,7 @@ void (async () => {
     ]);
 
     if (shouldRecordAnother) {
-      start();
+      start(url);
     } else {
       process.exit();
     }
@@ -207,9 +211,9 @@ void (async () => {
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(
-        /<\/script>/g,
-        '<\\/script>',
-      )};
+      /<\/script>/g,
+      '<\\/script>',
+    )};
       /*-->*/
       const replayer = new rrweb.Replayer(events, {
         UNSAFE_replayCanvas: true
