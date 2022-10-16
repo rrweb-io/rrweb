@@ -1,0 +1,45 @@
+{
+  "name": "web-extension",
+  "version": "0.2.0",
+  "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
+  "author": "Yanzhen Yu, Yun Feng",
+  "scripts": {
+    "dev:chrome": "cross-env TARGET_BROWSER=chrome vite dev",
+    "dev:firefox": "cross-env TARGET_BROWSER=firefox vite dev",
+    "build:chrome": "cross-env TARGET_BROWSER=chrome vite build",
+    "build:firefox": "cross-env TARGET_BROWSER=firefox vite build",
+    "pack:chrome": "cross-env TARGET_BROWSER=chrome ZIP=true vite build",
+    "pack:firefox": "cross-env TARGET_BROWSER=firefox ZIP=true vite build",
+    "test": "jest",
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run pack:chrome && npm run pack:firefox"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^18.0.6",
+    "@types/webextension-polyfill": "^0.9.1",
+    "@vitejs/plugin-react": "^2.1.0",
+    "cross-env": "^7.0.3",
+    "jest": "^29.0.3",
+    "rrweb": "^2.0.0-alpha.3",
+    "rrweb-player": "^1.0.0-alpha.3",
+    "ts-jest": "^29.0.1",
+    "type-fest": "^2.19.0",
+    "typescript": "^4.8.3",
+    "vite": "^3.1.2",
+    "vite-plugin-web-extension": "^1.4.4",
+    "vite-plugin-zip": "^1.0.1",
+    "webextension-polyfill": "^0.10.0"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.3.4",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "framer-motion": "^7.3.6",
+    "mitt": "^3.0.0",
+    "nanoid": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0",
+    "react-router-dom": "^6.4.1"
+  }
+}

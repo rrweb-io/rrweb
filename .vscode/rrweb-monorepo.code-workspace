@@ -23,6 +23,10 @@
     {
       "name": "rrweb-snapshot (package)",
       "path": "../packages/rrweb-snapshot"
+    },
+    {
+      "name": "web-extension (package)",
+      "path": "../packages/web-extension"
     }
   ],
   "settings": {
