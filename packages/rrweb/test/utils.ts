@@ -260,9 +260,9 @@ export function replaceLast(str: string, find: string, replace: string) {
 
 export async function assertDomSnapshot(page: puppeteer.Page) {
   const cdp = await page.target().createCDPSession();
-  const { data } = await cdp.send('Page.captureSnapshot', {
+  const { data } = (await cdp.send('Page.captureSnapshot', {
     format: 'mhtml',
-  });
+  })) as { data: string };
 
   expect(stringifyDomSnapshot(data)).toMatchSnapshot();
 }

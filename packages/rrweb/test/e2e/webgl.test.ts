@@ -59,7 +59,7 @@ describe('e2e webgl', () => {
   };
 
   const fakeGoto = async (p: puppeteer.Page, url: string) => {
-    const intercept = async (request: puppeteer.HTTPRequest) => {
+    const intercept = async (request: puppeteer.Request) => {
       await request.respond({
         status: 200,
         contentType: 'text/html',
@@ -89,7 +89,9 @@ describe('e2e webgl', () => {
 
     await waitForRAF(page);
 
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
@@ -122,7 +124,9 @@ describe('e2e webgl', () => {
     );
 
     await page.waitForTimeout(100);
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
