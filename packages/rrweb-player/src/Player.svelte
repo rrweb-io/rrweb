@@ -24,7 +24,7 @@
   export let tags: Record<string, string> = {};
 
   let replayer: Replayer;
-  
+
   export const getMirror = () => replayer.getMirror();
 
   const controllerHeight = 80;
@@ -59,8 +59,7 @@
     const scale = [widthScale, heightScale];
     if (maxScale) scale.push(maxScale);
     el.style.transform =
-      `scale(${Math.min(...scale)})` +
-      'translate(-50%, -50%)';
+      `scale(${Math.min(...scale)})` + 'translate(-50%, -50%)';
   };
 
   export const triggerResize = () => {
@@ -124,7 +123,7 @@
     afterHook: undefined | (() => void) = undefined,
   ) => {
     controller.playRange(timeOffset, endTimeOffset, startLooping, afterHook);
-  };  
+  };
 
   onMount(() => {
     // runtime type check
@@ -168,7 +167,8 @@
           _width = width;
           _height = height;
           width = player.offsetWidth;
-          height = player.offsetHeight;
+          height =
+            player.offsetHeight - (showController ? controllerHeight : 0);
           updateScale(replayer.wrapper, {
             width: replayer.iframe.offsetWidth,
             height: replayer.iframe.offsetHeight,
@@ -229,6 +229,7 @@
       {speedOption}
       {skipInactive}
       {tags}
-      on:fullscreen={() => toggleFullscreen()} />
+      on:fullscreen={() => toggleFullscreen()}
+    />
   {/if}
 </div>
