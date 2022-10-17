@@ -9,7 +9,7 @@
 
 **[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
 
-[中文文档](../README.zh_CN.md)
+[中文文档](../../README.zh_CN.md)
 
 > I have joined Github Sponsors and highly appreciate your sponsorship.
 
@@ -17,9 +17,9 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 ## Guide
 
-[**📚 Read the rrweb guide here. 📚**](../guide.md)
+[**📚 Read the rrweb guide here. 📚**](../../guide.md)
 
-[**🍳 Recipes 🍳**](../docs/recipes/index.md)
+[**🍳 Recipes 🍳**](../../docs/recipes/index.md)
 
 ## Project Structure
 
@@ -42,10 +42,10 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 ## Internal Design
 
-- [serialization](../docs/serialization.md)
-- [incremental snapshot](../docs/observer.md)
-- [replay](../docs/replay.md)
-- [sandbox](../docs/sandbox.md)
+- [serialization](../../docs/serialization.md)
+- [incremental snapshot](../../docs/observer.md)
+- [replay](../../docs/replay.md)
+- [sandbox](../../docs/sandbox.md)
 
 ## Contribute Guide
 
@@ -64,7 +64,7 @@ Protip: You can run `yarn test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
-[Using the REPL tool](../guide.md#REPL-tool)
+[Using the REPL tool](../../guide.md#REPL-tool)
 
 ## Core Team Members
 
