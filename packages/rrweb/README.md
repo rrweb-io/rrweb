@@ -6,12 +6,9 @@
 </p>
 
 # rrweb
-
-**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+**(This is a simpler version of the [original rrewb README](../../README.md) within this rrweb subpackage)** 
 
 [中文文档](../../README.zh_CN.md)
-
-> I have joined Github Sponsors and highly appreciate your sponsorship.
 
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
