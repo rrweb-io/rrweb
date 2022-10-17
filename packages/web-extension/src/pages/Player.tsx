@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Browser from 'webextension-polyfill';
 import type rrwebPlayer from 'rrweb-player';
-import { RRwebPlayerOptions } from 'rrweb-player';
+import Replayer from 'rrweb-player';
 import { LocalData } from '../types';
 import {
   Box,
@@ -26,22 +26,12 @@ export default function Player() {
       if (!session) return;
       setSessionName(session.name);
 
-      eval(localData.player_code + 'window.rrwebPlayer = rrwebPlayer;');
-
-      const Player = (
-        window as Window &
-          typeof globalThis & {
-            rrwebPlayer: new (options: RRwebPlayerOptions) => rrwebPlayer;
-          }
-      ).rrwebPlayer;
-      if (!Player) return;
-
       const linkEl = document.createElement('link');
       linkEl.href =
-        'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.1/dist/style.css';
+        'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.3/dist/style.css';
       linkEl.rel = 'stylesheet';
       document.head.appendChild(linkEl);
-      playerRef.current = new Player({
+      playerRef.current = new Replayer({
         target: playerElRef.current as HTMLElement,
         props: {
           events: session.events,

@@ -9,23 +9,16 @@ export type SyncData = {
 };
 
 export type Settings = {
-  recorderURL: string;
-  recorderVersion: string;
-  playerURL: string;
-  playerVersion: string;
+  //
 };
 
 export enum LocalDataKey {
-  recorderCode = 'recorder_code',
-  playerCode = 'player_code',
   sessions = 'sessions',
   recorderStatus = 'recorder_status',
   bufferedEvents = 'buffered_events',
 }
 
 export type LocalData = {
-  [LocalDataKey.recorderCode]: string;
-  [LocalDataKey.playerCode]: string;
   [LocalDataKey.sessions]: Record<string, Session>;
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
@@ -49,7 +42,6 @@ export type Session = {
   createTimestamp: number;
   modifyTimestamp: number;
   recorderVersion: string;
-  recorderURL: string;
 };
 
 export enum ServiceName {
@@ -59,13 +51,27 @@ export enum ServiceName {
   ResumeRecord = 'resume-record',
 }
 
-export type StartRecordResponse = {
-  message: 'start-record-response';
+export enum MessageName {
+  RecordScriptReady = 'rrweb-extension-record-script-ready',
+  StartRecord = 'rrweb-extension-start-record',
+  RecordStarted = 'rrweb-extension-record-started',
+  HeartBeat = 'rrweb-extension-heart-beat',
+  StopRecord = 'rrweb-extension-stop-record',
+  RecordStopped = 'rrweb-extension-record-stopped',
+}
+
+export type RecordStartedMessage = {
+  message: MessageName.RecordStarted;
   startTimestamp: number;
 };
 
-export type StopRecordResponse = {
-  message: 'stop-record-response';
+export type RecordStoppedMessage = {
+  message: MessageName.RecordStopped;
   events: eventWithTime[];
   endTimestamp: number;
+};
+
+export type HeartBreathMessage = {
+  message: MessageName.HeartBeat;
+  events: eventWithTime[];
 };

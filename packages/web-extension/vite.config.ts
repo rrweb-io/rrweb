@@ -23,12 +23,34 @@ export default defineConfig({
       // A function to generate manifest file dynamically.
       manifest: () => {
         const packageJson = readJsonFile('package.json') as PackageJson;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return {
-          ...readJsonFile('./src/manifest.json'),
+        const isProduction = process.env.NODE_ENV === 'production';
+        type ManifestBase = {
+          common: Record<string, unknown>;
+          chrome: Record<string, unknown>;
+          firefox: Record<string, unknown>;
+        };
+        const originalManifest = readJsonFile('./src/manifest.json') as {
+          common: Record<string, unknown>;
+          v2: ManifestBase;
+          v3: ManifestBase;
+        };
+        const ManifestVersion =
+          process.env.TARGET_BROWSER === 'chrome' && isProduction ? 'v3' : 'v2';
+        const BrowserName =
+          process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox';
+        const commonManifest = originalManifest.common;
+        const manifest = {
           version: packageJson.version,
           author: packageJson.author,
+          recorder_version: packageJson.dependencies?.rrweb?.replace('^', ''),
+          ...commonManifest,
         };
+        Object.assign(
+          manifest,
+          originalManifest[ManifestVersion].common,
+          originalManifest[ManifestVersion][BrowserName],
+        );
+        return manifest;
       },
       assets: 'assets',
       browser: process.env.TARGET_BROWSER,
@@ -36,7 +58,7 @@ export default defineConfig({
         startUrl: ['github.com/rrweb-io/rrweb'],
         watchIgnored: ['*.md', '*.log'],
       },
-      additionalInputs: ['pages/index.html'],
+      additionalInputs: ['pages/index.html', 'content/inject.ts'],
     }),
     process.env.ZIP === 'true' &&
       zip({

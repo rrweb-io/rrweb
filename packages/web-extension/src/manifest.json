@@ -1,28 +1,63 @@
 {
-  "manifest_version": 2,
-  "name": "rrweb",
-  "background": {
-    "persistent": false,
-    "scripts": ["background/index.ts"]
-  },
-  "browser_action": {
-    "default_title": "rrweb extension",
-    "default_popup": "popup/popup.html",
-    "browser_style": false
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content/index.ts"],
-      "run_at": "document_idle"
+  "common": {
+    "name": "rrweb",
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content/index.ts"],
+        "run_at": "document_idle"
+      }
+    ],
+    "options_ui": {
+      "page": "options/index.html",
+      "open_in_tab": true,
+      "chrome_style": false
+    },
+    "icons": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
     }
-  ],
-  "options_page": "options/index.html",
-  "icons": {
-    "16": "assets/icon16.png",
-    "48": "assets/icon48.png",
-    "128": "assets/icon128.png"
   },
-  "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
-  "content_security_policy": "script-src-elem 'self' http://localhost:3000 'self'; script-src 'self' http://localhost:3000 'unsafe-eval' object-src 'self'"
+  "v2": {
+    "common": {
+      "manifest_version": 2,
+      "background": {
+        "persistent": false,
+        "scripts": ["background/index.ts"]
+      },
+      "browser_action": {
+        "default_title": "rrweb extension",
+        "default_popup": "popup/popup.html",
+        "browser_style": false
+      },
+      "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
+      "web_accessible_resources": ["**/*.js"]
+    },
+    "chrome": {},
+    "firefox": {}
+  },
+  "v3": {
+    "common": {
+      "manifest_version": 3,
+      "background": {
+        "service_worker": "background/index.ts",
+        "type": "module"
+      },
+      "action": {
+        "default_title": "rrweb extension",
+        "default_popup": "popup/popup.html",
+        "browser_style": false
+      },
+      "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
+      "web_accessible_resources": [
+        {
+          "resources": ["**/*.js"],
+          "matches": ["<all_urls>"]
+        }
+      ]
+    },
+    "chrome": {},
+    "firefox": {}
+  }
 }

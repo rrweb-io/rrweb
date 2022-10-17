@@ -1,7 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import SidebarWithHeader from '../components/SidebarWithHeader';
-import { FiTarget, FiList, FiSettings } from 'react-icons/fi';
-import RRWebVersion from './RRWebVersion';
+import { FiList, FiSettings } from 'react-icons/fi';
 import { Box } from '@chakra-ui/react';
 
 export default function App() {
@@ -20,17 +19,11 @@ export default function App() {
           href: '#',
         },
       ]}
-      sideBarItems={[
-        {
-          label: 'rrweb versions',
-          icon: FiTarget,
-          href: `#`,
-        },
-      ]}
+      sideBarItems={[]}
     >
       <Box p="10">
         <Routes>
-          <Route path="/" element={<RRWebVersion />} />
+          <Route path="/" element={<></>} />
         </Routes>
       </Box>
     </SidebarWithHeader>
