@@ -6,7 +6,7 @@
 </p>
 
 # rrweb
-**(This is a simpler version of the [original rrewb README](../../README.md) within this rrweb subpackage)** 
+**This is a simpler version of the [original rrewb README](../../README.md) within this rrweb subpackage** 
 
 [中文文档](../../README.zh_CN.md)
 
@@ -23,7 +23,7 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 **[rrweb](https://github.com/rrweb-io/rrweb)** mainly includes two funtions:
 
 - **Record**: The record function is used to record all the mutations in the DOM 
-- **Reolay**: The replay function is to replay the recorded mutations one by one according to the corresponding timestamp.
+- **Replay**: The replay function is to replay the recorded mutations one by one according to the corresponding timestamp.
 
 ## Roadmap
 
