@@ -877,6 +877,10 @@ export function serializeNodeWithId(
     return null; // slimDOM
   }
 
+  if (_serializedNode.type === NodeType.Element && _serializedNode.needBlock) {
+    return null;
+  }
+
   const serializedNode = Object.assign(_serializedNode, { id });
 
   mirror.add(n, serializedNode);
