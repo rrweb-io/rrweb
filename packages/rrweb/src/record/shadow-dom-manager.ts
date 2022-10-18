@@ -3,6 +3,7 @@ import type {
   scrollCallback,
   MutationBufferParam,
   SamplingStrategy,
+  IWindow,
 } from '../types';
 import {
   initMutationObserver,
@@ -21,6 +22,7 @@ type BypassOptions = Omit<
 };
 
 export class ShadowDomManager {
+  private win: IWindow;
   private shadowDoms = new WeakSet<ShadowRoot>();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
@@ -29,11 +31,13 @@ export class ShadowDomManager {
   private restorePatches: (() => void)[] = [];
 
   constructor(options: {
+    win: IWindow;
     mutationCb: mutationCallBack;
     scrollCb: scrollCallback;
     bypassOptions: BypassOptions;
     mirror: Mirror;
   }) {
+    this.win = options.win;
     this.mutationCb = options.mutationCb;
     this.scrollCb = options.scrollCb;
     this.bypassOptions = options.bypassOptions;
@@ -65,6 +69,7 @@ export class ShadowDomManager {
     initMutationObserver(
       {
         ...this.bypassOptions,
+        window: this.win,
         doc,
         mutationCb: this.mutationCb,
         mirror: this.mirror,

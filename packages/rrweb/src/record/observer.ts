@@ -87,7 +87,7 @@ export function initMutationObserver(
   // see mutation.ts for details
   mutationBuffer.init(options);
   let mutationObserverCtor =
-    window.MutationObserver ||
+    options.window.MutationObserver ||
     /**
      * Some websites may disable MutationObserver by removing it from the window object.
      * If someone is using rrweb to build a browser extention or things like it, they
@@ -96,17 +96,17 @@ export function initMutationObserver(
      * Then they can do this to store the native MutationObserver:
      * window.__rrMutationObserver = MutationObserver
      */
-    (window as WindowWithStoredMutationObserver).__rrMutationObserver;
-  const angularZoneSymbol = (window as WindowWithAngularZone)?.Zone?.__symbol__?.(
+    (options.window as WindowWithStoredMutationObserver).__rrMutationObserver;
+  const angularZoneSymbol = (options.window as WindowWithAngularZone)?.Zone?.__symbol__?.(
     'MutationObserver',
   );
   if (
     angularZoneSymbol &&
-    ((window as unknown) as Record<string, typeof MutationObserver>)[
+    ((options.window as unknown) as Record<string, typeof MutationObserver>)[
       angularZoneSymbol
     ]
   ) {
-    mutationObserverCtor = ((window as unknown) as Record<
+    mutationObserverCtor = ((options.window as unknown) as Record<
       string,
       typeof MutationObserver
     >)[angularZoneSymbol];
@@ -299,13 +299,14 @@ export function initScrollObserver({
 }
 
 function initViewportResizeObserver({
+  window: win,
   viewportResizeCb,
 }: observerParam): listenerHandler {
   let lastH = -1;
   let lastW = -1;
   const updateDimension = throttle(() => {
-    const height = getWindowHeight();
-    const width = getWindowWidth();
+    const height = getWindowHeight(win);
+    const width = getWindowWidth(win);
     if (lastH !== height || lastW !== width) {
       viewportResizeCb({
         width: Number(width),
@@ -315,7 +316,7 @@ function initViewportResizeObserver({
       lastW = width;
     }
   }, 200);
-  return on('resize', updateDimension, window);
+  return on('resize', updateDimension, win);
 }
 
 function wrapEventWithUserTriggeredFlag(

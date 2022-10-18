@@ -263,6 +263,7 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
+  window?: Window;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -299,6 +300,7 @@ export type observerParam = {
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
   dataURLOptions: DataURLOptions;
+  window: IWindow;
   doc: Document;
   mirror: Mirror;
   iframeManager: IframeManager;
@@ -333,6 +335,7 @@ export type MutationBufferParam = Pick<
   | 'inlineImages'
   | 'slimDOMOptions'
   | 'dataURLOptions'
+  | 'window'
   | 'doc'
   | 'mirror'
   | 'iframeManager'
