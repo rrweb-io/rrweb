@@ -1,4 +1,3 @@
-import type { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
@@ -16,7 +15,6 @@ function patchGLPrototype(
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
   blockSelector: string | null,
-  mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
@@ -90,7 +88,6 @@ export default function initCanvasWebGLMutationObserver(
   win: IWindow,
   blockClass: blockClass,
   blockSelector: string | null,
-  mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
 
@@ -101,7 +98,6 @@ export default function initCanvasWebGLMutationObserver(
       cb,
       blockClass,
       blockSelector,
-      mirror,
       win,
     ),
   );
@@ -114,7 +110,6 @@ export default function initCanvasWebGLMutationObserver(
         cb,
         blockClass,
         blockSelector,
-        mirror,
         win,
       ),
     );

@@ -12,6 +12,12 @@ function toRecordPath(path) {
     .replace('rrweb', 'rrweb-record');
 }
 
+function toRecordInitPath(path) {
+  return path
+    .replace(/^([\w]+)\//, '$1/record/')
+    .replace('rrweb', 'rrweb-init');
+}
+
 function toRecordPackPath(path) {
   return path
     .replace(/^([\w]+)\//, '$1/record/')
@@ -52,6 +58,12 @@ const baseConfigs = [
     name: 'rrweb',
     pathFn: toAllPath,
     esm: true,
+  },
+  // record only, early initialization
+  {
+    input: './src/entries/record-init.ts',
+    name: 'rrwebInit',
+    pathFn: toRecordInitPath,
   },
   // record only
   {
