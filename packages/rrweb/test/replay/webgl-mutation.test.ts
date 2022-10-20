@@ -6,7 +6,7 @@ import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
 import webglMutation from '../../src/replay/canvas/webgl';
-import { CanvasContext } from '../../src/types';
+import { CanvasContext } from '@rrweb/types';
 import { variableListFor } from '../../src/replay/canvas/deserialize-args';
 
 let canvas: HTMLCanvasElement;

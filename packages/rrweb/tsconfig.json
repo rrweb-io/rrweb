@@ -21,6 +21,9 @@
     },
     {
       "path": "../rrweb-snapshot"
+    },
+    {
+      "path": "../types"
     }
   ],
   "exclude": ["test", "scripts"],

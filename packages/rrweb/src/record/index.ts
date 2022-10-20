@@ -14,18 +14,18 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
 } from '../utils';
+import type { recordOptions } from '../types';
 import {
   EventType,
   event,
   eventWithTime,
-  recordOptions,
   IncrementalSource,
   listenerHandler,
   mutationCallbackParam,
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
-} from '../types';
+} from '@rrweb/types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';

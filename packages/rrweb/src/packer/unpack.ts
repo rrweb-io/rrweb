@@ -1,6 +1,6 @@
 import { strFromU8, strToU8, unzlibSync } from 'fflate';
 import { UnpackFn, eventWithTimeAndPacker, MARK } from './base';
-import type { eventWithTime } from '../types';
+import type { eventWithTime } from '@rrweb/types';
 
 export const unpack: UnpackFn = (raw: string) => {
   if (typeof raw !== 'string') {

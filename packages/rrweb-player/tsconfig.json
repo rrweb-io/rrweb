@@ -13,6 +13,9 @@
   "references": [
     {
       "path": "../rrweb"
+    },
+    {
+      "path": "../types"
     }
   ]
 }

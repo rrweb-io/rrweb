@@ -1,13 +1,12 @@
 import { createMachine, interpret, assign, StateMachine } from '@xstate/fsm';
+import type { playerConfig } from '../types';
 import {
-  playerConfig,
   eventWithTime,
-  actionWithDelay,
   ReplayerEvents,
   EventType,
   Emitter,
   IncrementalSource,
-} from '../types';
+} from '@rrweb/types';
 import { Timer, addDelay } from './timer';
 
 export type PlayerContext = {
