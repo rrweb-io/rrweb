@@ -13,8 +13,7 @@
     "lib": ["es6", "dom"],
     "skipLibCheck": true,
     "declaration": true,
-    "importsNotUsedAsValues": "error",
-    "noEmit": true
+    "importsNotUsedAsValues": "error"
   },
   "compileOnSave": true,
   "exclude": ["test"],
