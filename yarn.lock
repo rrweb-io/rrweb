@@ -11864,7 +11864,7 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vite-plugin-dts@^1.0.4:
+vite-plugin-dts@^1.6.6:
   version "1.6.6"
   resolved "https://registry.yarnpkg.com/vite-plugin-dts/-/vite-plugin-dts-1.6.6.tgz#aa572d40cb371f91470b37300ab632cf83734ab7"
   integrity sha512-XEZQlcAN5Bi1PWL0l/E08cI3VpjTCWY5x7C4/bVyC7lpS+/q9CDBCV8gGsqV97/g34N7gNNRNhqs8r0m6JAmIQ==
