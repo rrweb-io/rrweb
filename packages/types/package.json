@@ -24,7 +24,7 @@
   "type": "module",
   "main": "./dist/types.umd.cjs",
   "module": "./dist/types.js",
-  "typings": "build/index.d.ts",
+  "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/types.js",
@@ -37,7 +37,8 @@
   ],
   "devDependencies": {
     "typescript": "^4.7.3",
-    "vite": "^3.2.0-beta.2"
+    "vite": "^3.2.0-beta.2",
+    "vite-plugin-dts": "^1.6.6"
   },
   "dependencies": {
     "rrweb-snapshot": "^2.0.0-alpha.3"
