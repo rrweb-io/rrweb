@@ -24,6 +24,7 @@
   "type": "module",
   "main": "./dist/types.umd.cjs",
   "module": "./dist/types.js",
+  "unpkg": "./dist/types.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -32,7 +33,6 @@
     }
   },
   "files": [
-    "build",
     "dist"
   ],
   "devDependencies": {

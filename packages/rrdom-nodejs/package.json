@@ -2,12 +2,11 @@
   "name": "rrdom-nodejs",
   "version": "0.1.6",
   "scripts": {
-    "dev": "rollup -c -w",
-    "bundle": "rollup --config",
-    "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
+    "dev": "vite",
+    "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "test": "jest",
-    "prepublish": "npm run bundle",
+    "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
@@ -15,18 +14,21 @@
     "rrdom-nodejs"
   ],
   "license": "MIT",
-  "main": "lib/rrdom-nodejs.js",
-  "module": "es/rrdom-nodejs.js",
-  "typings": "es",
+  "type": "module",
+  "main": "./dist/rrdom-nodejs.umd.cjs",
+  "module": "./dist/rrdom-nodejs.js",
+  "unpkg": "./dist/rrdom-nodejs.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/rrdom-nodejs.js",
+      "require": "./dist/rrdom-nodejs.umd.cjs"
+    }
+  },
   "files": [
-    "dist",
-    "lib",
-    "es",
-    "typings"
+    "dist"
   ],
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
     "@types/cssom": "^0.4.1",
     "@types/cssstyle": "^2.2.1",
     "@types/jest": "^27.4.1",
@@ -38,12 +40,10 @@
     "eslint": "^8.15.0",
     "jest": "^27.5.1",
     "puppeteer": "^9.1.1",
-    "rollup": "^2.56.3",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.31.2",
-    "rollup-plugin-web-worker-loader": "^1.6.1",
     "ts-jest": "^27.1.3",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.3",
+    "vite": "^3.2.0-beta.2",
+    "vite-plugin-dts": "^1.6.6"
   },
   "dependencies": {
     "cssom": "^0.5.0",
