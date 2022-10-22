@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/types",
-  "version": "0.0.1",
+  "version": "2.0.0-alpha.3",
   "scripts": {
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
