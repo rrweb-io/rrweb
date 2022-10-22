@@ -15,6 +15,6 @@ export default function (entry: string, name: string) {
 
       sourcemap: true,
     },
-    plugins: [dts()],
+    plugins: [dts({ insertTypesEntry: true })],
   });
 }

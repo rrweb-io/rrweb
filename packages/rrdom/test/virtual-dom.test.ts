@@ -4,9 +4,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import * as rollup from 'rollup';
-import resolve from '@rollup/plugin-node-resolve';
-import * as typescript from 'rollup-plugin-typescript2';
 import { JSDOM } from 'jsdom';
 import {
   cdataNode,
@@ -30,7 +27,6 @@ import {
   BaseRRNode as RRNode,
 } from '../src';
 
-const _typescript = (typescript as unknown) as typeof typescript.default;
 const printRRDomCode = `
 /**
  * Print the RRDom as a string.
@@ -219,22 +215,10 @@ describe('RRDocument for browser environment', () => {
 
     beforeAll(async () => {
       browser = await puppeteer.launch();
-      const bundle = await rollup.rollup({
-        input: path.resolve(__dirname, '../src/index.ts'),
-        plugins: [
-          (resolve() as unknown) as rollup.Plugin,
-          (_typescript({
-            tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
-          }) as unknown) as rollup.Plugin,
-        ],
-      });
-      const {
-        output: [{ code: _code }],
-      } = await bundle.generate({
-        name: 'rrdom',
-        format: 'iife',
-      });
-      code = _code;
+      code = fs.readFileSync(
+        path.resolve(__dirname, '../dist/rrdom.umd.cjs'),
+        'utf8',
+      );
     });
     afterAll(async () => {
       await browser.close();

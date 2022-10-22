@@ -1,5 +1,5 @@
 import { compare } from 'compare-versions';
-import { RRDocument, RRNode } from '../src/document-nodejs';
+import { RRDocument } from '../src/document-nodejs';
 import {
   polyfillPerformance,
   polyfillRAF,
@@ -8,6 +8,7 @@ import {
   polyfillDocument,
 } from '../src/polyfill';
 import { performance as nativePerformance } from 'perf_hooks';
+import { BaseRRNode } from 'rrdom';
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {
@@ -102,7 +103,7 @@ describe('polyfill for nodejs', () => {
     polyfillNode();
     expect(global.Node).toBeDefined();
     expect(Node).toBeDefined();
-    expect(Node).toEqual(RRNode);
+    expect(Node).toEqual(BaseRRNode);
   });
 
   it('should not polyfill Node type if it already exists', () => {

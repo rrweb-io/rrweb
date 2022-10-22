@@ -1748,19 +1748,6 @@
   resolved "https://registry.npmjs.org/@polka/url/-/url-0.5.0.tgz"
   integrity sha512-oZLYFEAzUKyi3SKnXvj32ZCEGH6RDnao7COuCVhDydMS9NrCSVXhM79VaKyP5+Zc33m0QXEd2DN3UkU7OsHcfw==
 
-"@rollup/plugin-commonjs@^20.0.0":
-  version "20.0.0"
-  resolved "https://registry.npmjs.org/@rollup/plugin-commonjs/-/plugin-commonjs-20.0.0.tgz"
-  integrity sha512-5K0g5W2Ol8hAcTHqcTBHiA7M58tfmYi1o9KxeJuuRNpGaTa5iLjcyemBitCBcKXaHamOBBEH2dGom6v6Unmqjg==
-  dependencies:
-    "@rollup/pluginutils" "^3.1.0"
-    commondir "^1.0.1"
-    estree-walker "^2.0.1"
-    glob "^7.1.6"
-    is-reference "^1.2.1"
-    magic-string "^0.25.7"
-    resolve "^1.17.0"
-
 "@rollup/plugin-commonjs@^22.0.0":
   version "22.0.0"
   resolved "https://registry.npmjs.org/@rollup/plugin-commonjs/-/plugin-commonjs-22.0.0.tgz"
@@ -9760,13 +9747,6 @@ rollup-pluginutils@^2.8.2:
   integrity sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==
   dependencies:
     estree-walker "^0.6.1"
-
-rollup@^2.56.3:
-  version "2.60.2"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-2.60.2.tgz"
-  integrity sha512-1Bgjpq61sPjgoZzuiDSGvbI1tD91giZABgjCQBKM5aYLnzjq52GoDuWVwT/cm/MCxCMPU8gqQvkj8doQ5C8Oqw==
-  optionalDependencies:
-    fsevents "~2.3.2"
 
 rollup@^2.68.0:
   version "2.68.0"

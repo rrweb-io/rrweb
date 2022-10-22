@@ -3,14 +3,14 @@ import { NodeType as RRNodeType } from 'rrweb-snapshot';
 import type { NWSAPI } from 'nwsapi';
 import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
 import {
-  BaseRRCDATASectionImpl,
-  BaseRRCommentImpl,
-  BaseRRDocumentImpl,
-  BaseRRDocumentTypeImpl,
-  BaseRRElementImpl,
-  BaseRRMediaElementImpl,
+  BaseRRCDATASection,
+  BaseRRComment,
+  BaseRRDocument,
+  BaseRRDocumentType,
+  BaseRRElement,
+  BaseRRMediaElement,
   BaseRRNode,
-  BaseRRTextImpl,
+  BaseRRText,
   ClassList,
   IRRDocument,
   CSSStyleDeclaration,
@@ -22,8 +22,6 @@ const cssom = require('cssom');
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const cssstyle = require('cssstyle');
 
-export class RRNode extends BaseRRNode {}
-
 export class RRWindow {
   scrollLeft = 0;
   scrollTop = 0;
@@ -34,9 +32,7 @@ export class RRWindow {
   }
 }
 
-export class RRDocument
-  extends BaseRRDocumentImpl(RRNode)
-  implements IRRDocument {
+export class RRDocument extends BaseRRDocument implements IRRDocument {
   readonly nodeName: '#document' = '#document';
   private _nwsapi: NWSAPI;
   get nwsapi() {
@@ -88,16 +84,16 @@ export class RRDocument
     return this.documentElement;
   }
 
-  appendChild(childNode: RRNode) {
+  appendChild(childNode: BaseRRNode) {
     return super.appendChild(childNode);
   }
 
-  insertBefore(newChild: RRNode, refChild: RRNode | null) {
+  insertBefore(newChild: BaseRRNode, refChild: BaseRRNode | null) {
     return super.insertBefore(newChild, refChild);
   }
 
-  querySelectorAll(selectors: string): RRNode[] {
-    return (this.nwsapi.select(selectors) as unknown) as RRNode[];
+  querySelectorAll(selectors: string): BaseRRNode[] {
+    return (this.nwsapi.select(selectors) as unknown) as BaseRRNode[];
   }
 
   getElementsByTagName(tagName: string): RRElement[] {
@@ -198,9 +194,9 @@ export class RRDocument
   }
 }
 
-export class RRDocumentType extends BaseRRDocumentTypeImpl(RRNode) {}
+export class RRDocumentType extends BaseRRDocumentType {}
 
-export class RRElement extends BaseRRElementImpl(RRNode) {
+export class RRElement extends BaseRRElement {
   private _style: CSSStyleDeclarationType;
   constructor(tagName: string) {
     super(tagName);
@@ -227,12 +223,12 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
     return super.attachShadow(_init) as RRElement;
   }
 
-  appendChild(newChild: RRNode): RRNode {
-    return super.appendChild(newChild) as RRNode;
+  appendChild(newChild: BaseRRNode): BaseRRNode {
+    return super.appendChild(newChild) as BaseRRNode;
   }
 
-  insertBefore(newChild: RRNode, refChild: RRNode | null): RRNode {
-    return super.insertBefore(newChild, refChild) as RRNode;
+  insertBefore(newChild: BaseRRNode, refChild: BaseRRNode | null): BaseRRNode {
+    return super.insertBefore(newChild, refChild) as BaseRRNode;
   }
 
   getAttribute(name: string) {
@@ -265,7 +261,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
     return null;
   }
 
-  querySelectorAll(selectors: string): RRNode[] {
+  querySelectorAll(selectors: string): BaseRRNode[] {
     const result: RRElement[] = [];
     if (this.ownerDocument !== null) {
       ((this.ownerDocument as RRDocument).nwsapi.select(
@@ -275,7 +271,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
           if (((element as unknown) as RRElement) !== this)
             result.push((element as unknown) as RRElement);
         },
-      ) as unknown) as RRNode[];
+      ) as unknown) as BaseRRNode[];
     }
     return result;
   }
@@ -329,7 +325,7 @@ export class RRImageElement extends RRElement {
   onload: ((this: GlobalEventHandlers, ev: Event) => unknown) | null;
 }
 
-export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
+export class RRMediaElement extends BaseRRMediaElement {}
 
 export class RRCanvasElement extends RRElement {
   /**
@@ -372,15 +368,15 @@ export class RRIFrameElement extends RRElement {
   }
 }
 
-export class RRText extends BaseRRTextImpl(RRNode) {
+export class RRText extends BaseRRText {
   readonly nodeName: '#text' = '#text';
 }
 
-export class RRComment extends BaseRRCommentImpl(RRNode) {
+export class RRComment extends BaseRRComment {
   readonly nodeName: '#comment' = '#comment';
 }
 
-export class RRCDATASection extends BaseRRCDATASectionImpl(RRNode) {
+export class RRCDATASection extends BaseRRCDATASection {
   readonly nodeName: '#cdata-section' = '#cdata-section';
 }
 
