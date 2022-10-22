@@ -1,6 +1,10 @@
 {
   "name": "@rrweb/types",
   "version": "2.0.0-alpha.3",
+  "keywords": [
+    "rrweb",
+    "@rrweb/types"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
@@ -16,10 +20,6 @@
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
-  "keywords": [
-    "rrweb",
-    "@rrweb/types"
-  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/types.umd.cjs",
