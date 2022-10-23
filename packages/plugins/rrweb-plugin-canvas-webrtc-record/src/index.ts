@@ -1,7 +1,7 @@
 import type { Mirror } from 'rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
 import type { RecordPlugin } from '@rrweb/types';
-import type { WebRTCDataChannel } from '../types';
+import type { WebRTCDataChannel } from './types';
 
 export const PLUGIN_NAME = 'rrweb/canvas-webrtc@1';
 

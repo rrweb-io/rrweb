@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "includes": ["src"],
+  "exclude": ["vite.config.ts"],
+  "compilerOptions": {
+    "rootDir": "src"
+  },
+  "references": [
+    {
+      "path": "../../rrweb"
+    }
+  ]
+}

@@ -1,9 +1,8 @@
 import type { RRNode } from 'rrdom';
 import type { Mirror } from 'rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
-import type { Replayer } from '../../../replay';
-import type { ReplayPlugin } from '../../../types';
-import type { WebRTCDataChannel } from '../types';
+import type { ReplayPlugin, Replayer } from 'rrweb/dist/types';
+import type { WebRTCDataChannel } from './types';
 
 // TODO: restrict callback to real nodes only, or make sure callback gets called when real node gets added to dom as well
 

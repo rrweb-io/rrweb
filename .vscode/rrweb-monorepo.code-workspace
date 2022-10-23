@@ -41,15 +41,24 @@
       "path": "../packages/plugins/rrweb-plugin-sequential-id"
     },
     {
-      "name": "@rrweb/rrweb-plugin-canvas-webrtc",
-      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc"
+      "name": "@rrweb/rrweb-plugin-canvas-webrtc-record",
+      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
+      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-replay"
     }
   ],
   "settings": {
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
       "rrweb-player (package)",
-      "@rrweb/types"
+      "@rrweb/types",
+      "@rrweb/rrweb-plugin-console-record",
+      "@rrweb/rrweb-plugin-console-replay",
+      "@rrweb/rrweb-plugin-sequential-id",
+      "@rrweb/rrweb-plugin-canvas-webrtc-record",
+      "@rrweb/rrweb-plugin-canvas-webrtc-replay"
     ]
   }
 }
