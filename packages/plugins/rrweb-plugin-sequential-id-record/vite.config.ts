@@ -1,3 +1,3 @@
 import config from '../../../vite.config.default';
 
-export default config('src/index.ts', 'rrwebPluginSequentialIDRecord');
+export default config('src/index.ts', 'rrwebPluginSequentialIdRecord');
