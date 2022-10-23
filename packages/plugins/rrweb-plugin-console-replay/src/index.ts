@@ -1,7 +1,11 @@
-import { LogLevel, LogData, PLUGIN_NAME } from '../record';
+import {
+  LogLevel,
+  LogData,
+  PLUGIN_NAME,
+} from '@rrweb/rrweb-plugin-console-record';
 import type { eventWithTime } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
-import type { ReplayPlugin } from '../../../types';
+import type { ReplayPlugin, Replayer } from 'rrweb/dist/types';
 
 /**
  * define an interface to replay log records
@@ -112,7 +116,11 @@ export const getReplayConsolePlugin: (
     options?.replayLogger || new LogReplayPlugin(options).getConsoleLogger();
 
   return {
-    handler(event: eventWithTime, _isSync, context) {
+    handler(
+      event: eventWithTime,
+      _isSync: boolean,
+      context: { replayer: Replayer },
+    ) {
       let logData: LogData | null = null;
       if (
         event.type === EventType.IncrementalSnapshot &&

@@ -27,6 +27,22 @@
     {
       "name": "@rrweb/types",
       "path": "../packages/types"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-console-record",
+      "path": "../packages/plugins/rrweb-plugin-console-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-console-replay",
+      "path": "../packages/plugins/rrweb-plugin-console-replay"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-sequential-id",
+      "path": "../packages/plugins/rrweb-plugin-sequential-id"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-canvas-webrtc",
+      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc"
     }
   ],
   "settings": {

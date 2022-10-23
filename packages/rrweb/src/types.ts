@@ -154,6 +154,7 @@ export type ReplayPlugin = {
   ) => void;
   getMirror?: (mirror: Mirror) => void;
 };
+export type { Replayer } from './replay';
 export type playerConfig = {
   speed: number;
   maxSpeed: number;

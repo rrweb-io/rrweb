@@ -15,7 +15,8 @@
   "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/plugins/*"
   ],
   "devDependencies": {
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",

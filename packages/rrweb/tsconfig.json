@@ -7,9 +7,7 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "rootDir": "src",
-    "outDir": "build",
-    "lib": ["es6", "dom"],
+    "lib": ["es2017", "dom"],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",
     "strictBindCallApply": true,
@@ -17,7 +15,8 @@
     "types": [
       "vite/client",
       "@types/dom-mediacapture-transform",
-      "@types/offscreencanvas"
+      "@types/offscreencanvas",
+      "jest"
     ]
   },
   "references": [
@@ -31,7 +30,7 @@
       "path": "../rrweb-snapshot"
     }
   ],
-  "exclude": ["test", "scripts"],
+  "exclude": ["scripts", "test"],
   "include": [
     "src",
     "node_modules/@types/css-font-loading-module/index.d.ts",

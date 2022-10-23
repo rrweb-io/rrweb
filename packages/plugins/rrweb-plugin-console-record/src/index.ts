@@ -1,5 +1,5 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
-import { patch } from '../../../utils';
+import { utils } from 'rrweb';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
 
@@ -153,7 +153,7 @@ function initLogObserver(
       };
     }
     // replace the logger.{level}. return a restore function
-    return patch(
+    return utils.patch(
       _logger,
       level,
       (original: (...args: Array<unknown>) => void) => {
