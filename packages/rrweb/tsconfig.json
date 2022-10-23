@@ -13,7 +13,12 @@
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",
     "strictBindCallApply": true,
-    "composite": true
+    "composite": true,
+    "types": [
+      "vite/client",
+      "@types/dom-mediacapture-transform",
+      "@types/offscreencanvas"
+    ]
   },
   "references": [
     {

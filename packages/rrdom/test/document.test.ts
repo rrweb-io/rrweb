@@ -3,20 +3,20 @@
  */
 import { NodeType as RRNodeType } from 'rrweb-snapshot';
 import {
-  BaseRRDocumentImpl,
-  BaseRRDocumentTypeImpl,
-  BaseRRElementImpl,
-  BaseRRMediaElementImpl,
+  BaseRRDocument,
+  BaseRRDocumentType,
+  BaseRRMediaElement,
   BaseRRNode,
   IRRDocumentType,
 } from '../src/document';
 
 describe('Basic RRDocument implementation', () => {
-  const RRNode = BaseRRNode;
-  const RRDocument = BaseRRDocumentImpl(RRNode);
-  const RRDocumentType = BaseRRDocumentTypeImpl(RRNode);
-  const RRElement = BaseRRElementImpl(RRNode);
-  class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
+  const RRNode = class extends BaseRRNode {
+    public textContent: string | null;
+  };
+  const RRDocument = BaseRRDocument;
+  const RRDocumentType = BaseRRDocumentType;
+  class RRMediaElement extends BaseRRMediaElement {}
 
   describe('Basic RRNode implementation', () => {
     it('should have basic properties', () => {
@@ -97,30 +97,24 @@ describe('Basic RRDocument implementation', () => {
     it('should not implement appendChild', () => {
       const parentNode = new RRNode();
       const childNode = new RRNode();
-      expect(() =>
-        parentNode.appendChild(childNode),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'appendChild' on 'RRNode': This RRNode type does not support this method."`,
+      expect(() => parentNode.appendChild(childNode)).toThrowError(
+        `RRDomException: Failed to execute 'appendChild' on 'RRNode': This RRNode type does not support this method.`,
       );
     });
 
     it('should not implement insertBefore', () => {
       const parentNode = new RRNode();
       const childNode = new RRNode();
-      expect(() =>
-        parentNode.insertBefore(childNode, null),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': This RRNode type does not support this method."`,
+      expect(() => parentNode.insertBefore(childNode, null)).toThrowError(
+        `RRDomException: Failed to execute 'insertBefore' on 'RRNode': This RRNode type does not support this method.`,
       );
     });
 
     it('should not implement removeChild', () => {
       const parentNode = new RRNode();
       const childNode = new RRNode();
-      expect(() =>
-        parentNode.removeChild(childNode),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'removeChild' on 'RRNode': This RRNode type does not support this method."`,
+      expect(() => parentNode.removeChild(childNode)).toThrowError(
+        `RRDomException: Failed to execute 'removeChild' on 'RRNode': This RRNode type does not support this method.`,
       );
     });
   });
@@ -216,10 +210,8 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes[0]).toEqual(documentType);
       expect(documentType.parentElement).toBeNull();
       expect(documentType.parentNode).toBe(node);
-      expect(() =>
-        node.appendChild(documentType),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one RRDoctype on RRDocument allowed."`,
+      expect(() => node.appendChild(documentType)).toThrowError(
+        `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one RRDoctype on RRDocument allowed.`,
       );
 
       const element = node.createElement('html');
@@ -228,38 +220,30 @@ describe('Basic RRDocument implementation', () => {
       expect(element.parentElement).toBeNull();
       expect(element.parentNode).toBe(node);
       const div = node.createElement('div');
-      expect(() => node.appendChild(div)).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one RRElement on RRDocument allowed."`,
+      expect(() => node.appendChild(div)).toThrowError(
+        `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one RRElement on RRDocument allowed.`,
       );
     });
 
     it('can insert new child before an existing child', () => {
       const node = new RRDocument();
       const docType = node.createDocumentType('', '', '');
-      expect(() =>
-        node.insertBefore(node, docType),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
+      expect(() => node.insertBefore(node, docType)).toThrowError(
+        `Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.`,
       );
       expect(node.insertBefore(docType, null)).toBe(docType);
-      expect(() =>
-        node.insertBefore(docType, null),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRDoctype on RRDocument allowed."`,
+      expect(() => node.insertBefore(docType, null)).toThrowError(
+        `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRDoctype on RRDocument allowed.`,
       );
       node.removeChild(docType);
 
       const documentElement = node.createElement('html');
-      expect(() =>
-        node.insertBefore(documentElement, docType),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
+      expect(() => node.insertBefore(documentElement, docType)).toThrowError(
+        `Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.`,
       );
       expect(node.insertBefore(documentElement, null)).toBe(documentElement);
-      expect(() =>
-        node.insertBefore(documentElement, null),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRElement on RRDocument allowed."`,
+      expect(() => node.insertBefore(documentElement, null)).toThrowError(
+        `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRElement on RRDocument allowed.`,
       );
       expect(node.insertBefore(docType, documentElement)).toBe(docType);
       expect(node.childNodes[0]).toBe(docType);
@@ -279,10 +263,8 @@ describe('Basic RRDocument implementation', () => {
       expect(documentType.parentNode).toBe(node);
       expect(documentElement.parentNode).toBe(node);
 
-      expect(() =>
-        node.removeChild(node.createElement('div')),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'removeChild' on 'RRDocument': The RRNode to be removed is not a child of this RRNode."`,
+      expect(() => node.removeChild(node.createElement('div'))).toThrowError(
+        `Failed to execute 'removeChild' on 'RRDocument': The RRNode to be removed is not a child of this RRNode.`,
       );
       expect(node.removeChild(documentType)).toBe(documentType);
       expect(documentType.parentNode).toBeNull();
@@ -703,10 +685,8 @@ describe('Basic RRDocument implementation', () => {
       const node = document.createElement('div');
       const child1 = document.createElement('h1');
       const child2 = document.createElement('h2');
-      expect(() =>
-        node.insertBefore(node, child1),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
+      expect(() => node.insertBefore(node, child1)).toThrowError(
+        `Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.`,
       );
       expect(node.insertBefore(child1, null)).toBe(child1);
       expect(node.childNodes[0]).toBe(child1);
@@ -735,8 +715,8 @@ describe('Basic RRDocument implementation', () => {
 
       expect(() =>
         node.removeChild(document.createElement('div')),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode."`,
+      ).toThrowError(
+        `Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode.`,
       );
       expect(node.removeChild(child1)).toBe(child1);
       expect(child1.parentNode).toBeNull();
@@ -913,10 +893,8 @@ describe('Basic RRDocument implementation', () => {
 
     it('should not support attachShadow function', () => {
       const node = new RRMediaElement('video');
-      expect(() =>
-        node.attachShadow({ mode: 'open' }),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'attachShadow' on 'RRElement': This RRElement does not support attachShadow"`,
+      expect(() => node.attachShadow({ mode: 'open' })).toThrowError(
+        `RRDomException: Failed to execute 'attachShadow' on 'RRElement': This RRElement does not support attachShadow`,
       );
     });
   });

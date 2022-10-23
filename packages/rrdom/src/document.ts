@@ -608,7 +608,7 @@ export class BaseRRComment extends BaseRRNode implements IRRComment {
   }
   parentElement: IRRNode | null;
   parentNode: IRRNode | null;
-  childNodes: IRRNode[];
+  childNodes: IRRNode[] = [];
   ownerDocument: IRRDocument;
   ELEMENT_NODE: number;
   TEXT_NODE: number;

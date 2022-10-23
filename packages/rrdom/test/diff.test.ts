@@ -228,7 +228,9 @@ describe('diff algorithm for rrdom', () => {
         expect(element.playbackRate).toEqual(1);
 
         const rrDocument = new RRDocument();
-        const rrMedia = rrDocument.createElement(tagName) as RRMediaElement;
+        const rrMedia = (rrDocument.createElement(
+          tagName,
+        ) as unknown) as RRMediaElement;
         rrMedia.volume = 0.5;
         rrMedia.currentTime = 100;
         rrMedia.muted = true;
