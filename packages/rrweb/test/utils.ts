@@ -57,7 +57,7 @@ export const startServer = (defaultPort: number = 3030) =>
         .replace(/^(\.\.[\/\\])+/, '');
 
       let pathname = path.join(__dirname, sanitizePath);
-      if (/^\/rrweb.*\.js.*/.test(sanitizePath)) {
+      if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
         pathname = path.join(__dirname, `../dist`, sanitizePath);
       }
 
