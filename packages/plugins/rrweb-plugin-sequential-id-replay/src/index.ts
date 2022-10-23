@@ -1,5 +1,5 @@
-import type { SequentialIdOptions } from '../record';
-import type { ReplayPlugin } from '../../../types';
+import type { SequentialIdOptions } from '@rrweb/rrweb-plugin-sequential-id-record';
+import type { ReplayPlugin } from 'rrweb/dist/types';
 import type { eventWithTime } from '@rrweb/types';
 
 type Options = SequentialIdOptions & {

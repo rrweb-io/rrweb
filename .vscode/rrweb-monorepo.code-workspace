@@ -37,8 +37,12 @@
       "path": "../packages/plugins/rrweb-plugin-console-replay"
     },
     {
-      "name": "@rrweb/rrweb-plugin-sequential-id",
-      "path": "../packages/plugins/rrweb-plugin-sequential-id"
+      "name": "@rrweb/rrweb-plugin-sequential-id-record",
+      "path": "../packages/plugins/rrweb-plugin-sequential-id-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-sequential-id-replay",
+      "path": "../packages/plugins/rrweb-plugin-sequential-id-replay"
     },
     {
       "name": "@rrweb/rrweb-plugin-canvas-webrtc-record",
