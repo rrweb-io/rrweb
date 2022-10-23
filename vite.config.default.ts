@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import dts from 'vite-plugin-dts';
 import { defineConfig, LibraryOptions } from 'vite';
 import type { ModuleFormat } from 'rollup';
@@ -13,10 +14,9 @@ export default function (
         entry,
         name,
         fileName,
-        // TODO: turn on `umd` when https://github.com/schummar/vite/tree/feature/libMultiEntryUMD gets merged
+        // TODO: turn on `umd` for rrweb when https://github.com/schummar/vite/tree/feature/libMultiEntryUMD gets merged
         // More info: https://github.com/vitejs/vite/pull/7047#issuecomment-1288080855
-        // formats: ['es', 'umd', 'cjs'],
-        formats: ['es', 'cjs'],
+        formats: name !== 'rrweb' ? ['es', 'umd', 'cjs'] : ['es', 'cjs'],
       },
 
       // Leaving this unminified so you can see what exactly gets included in
@@ -24,6 +24,12 @@ export default function (
       minify: false,
 
       sourcemap: true,
+
+      // rollupOptions: {
+      //   output: {
+      //     manualChunks: {},
+      //   },
+      // },
     },
     plugins: [dts({ insertTypesEntry: true })],
   });

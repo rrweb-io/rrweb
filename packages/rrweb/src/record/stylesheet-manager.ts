@@ -50,7 +50,10 @@ export class StylesheetManager {
     this.trackStylesheetInLinkElement(linkEl);
   }
 
-  public adoptStyleSheets(sheets: CSSStyleSheet[], hostId: number) {
+  public adoptStyleSheets(
+    sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
+    hostId: number,
+  ) {
     if (sheets.length === 0) return;
     const adoptedStyleSheetData: adoptedStyleSheetParam = {
       id: hostId,

@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import 'construct-style-sheets-polyfill';
@@ -36,15 +35,14 @@ describe('replayer', function () {
 
   beforeAll(async () => {
     browser = await launchPuppeteer();
-
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
-    code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
     page = await browser.newPage();
     await page.goto('about:blank');
-    await page.evaluate(code);
+    await page.addScriptTag({
+      path: path.resolve(__dirname, '../dist/rrweb.umd.cjs'),
+    });
     await page.evaluate(`let events = ${JSON.stringify(events)}`);
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -526,7 +524,7 @@ describe('replayer', function () {
     expect(iframeTwoDocument).not.toBeNull();
     expect((await iframeTwoDocument!.$$('iframe')).length).toEqual(2);
     expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
-    let iframeThreeDocument = await (
+    const iframeThreeDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[0]!.contentFrame();
     let iframeFourDocument = await (

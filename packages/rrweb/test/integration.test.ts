@@ -48,7 +48,7 @@ describe('record integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
     const pluginsCode = [
       path.resolve(__dirname, '../dist/plugins/console-record.js'),
     ]

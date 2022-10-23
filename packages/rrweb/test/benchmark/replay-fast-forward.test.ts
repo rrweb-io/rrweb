@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { eventWithTime, recordOptions } from '../../src/types';
+import type { recordOptions } from '../../src/types';
+import type { eventWithTime } from '@rrweb/types';
 import { launchPuppeteer, ISuite } from '../utils';
 
 const suites: Array<{
@@ -111,14 +112,14 @@ describe('benchmark: replayer fast-forward performance', () => {
               window.events = ${suite.eventsString};
             </script>
           </html>`);
-          const duration = (await page.evaluate(() => {
+          const duration = await page.evaluate(() => {
             const replayer = new (window as any).rrweb.Replayer(
               (window as any).events,
             );
             const start = Date.now();
             replayer.play(replayer.getMetaData().totalTime + 100);
             return Date.now() - start;
-          })) as number;
+          });
           durations.push(duration);
           await page.close();
         }

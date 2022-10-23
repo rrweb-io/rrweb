@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const emitter = new EventEmitter();
 
 function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+  const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
@@ -44,8 +44,7 @@ void (async () => {
       {
         type: 'input',
         name: 'url',
-        message:
-          `Enter the url you want to record, e.g [${defaultURL}]: `,
+        message: `Enter the url you want to record, e.g [${defaultURL}]: `,
       },
     ]);
 
@@ -207,13 +206,13 @@ void (async () => {
     <link rel="stylesheet" href="../dist/rrweb.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.js"></script>
+    <script src="../dist/rrweb.umd.cjs"></script>
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(
-      /<\/script>/g,
-      '<\\/script>',
-    )};
+        /<\/script>/g,
+        '<\\/script>',
+      )};
       /*-->*/
       const replayer = new rrweb.Replayer(events, {
         UNSAFE_replayCanvas: true

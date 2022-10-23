@@ -14,7 +14,6 @@ import {
 import { assertSnapshot, launchPuppeteer, waitForRAF } from './utils';
 
 interface ISuite {
-  code: string;
   browser: puppeteer.Browser;
   page: puppeteer.Page;
   events: eventWithTime[];
@@ -37,16 +36,16 @@ const setup = function (this: ISuite, content: string): ISuite {
     ctx.browser = await launchPuppeteer({
       devtools: true,
     });
-
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
-    ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
     ctx.page = await ctx.browser.newPage();
     await ctx.page.goto('about:blank');
     await ctx.page.setContent(content);
-    await ctx.page.evaluate(ctx.code);
+    await ctx.page.addScriptTag({
+      path: path.resolve(__dirname, '../dist/rrweb.umd.cjs'),
+    });
+
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
@@ -375,7 +374,9 @@ describe('record', function (this: ISuite) {
         CSSGroupingRule = undefined;
       });
       // load a fresh rrweb recorder without CSSGroupingRule
-      await ctx.page.evaluate(ctx.code);
+      await ctx.page.addScriptTag({
+        path: path.resolve(__dirname, '../dist/rrweb.umd.cjs'),
+      });
     });
     it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
   });

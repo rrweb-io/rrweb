@@ -43,16 +43,15 @@ const setup = function (
 
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
-
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
-    ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
     ctx.page = await ctx.browser.newPage();
     await ctx.page.goto('about:blank');
     await ctx.page.setContent(content);
-    await ctx.page.evaluate(ctx.code);
+    await ctx.page.addScriptTag({
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+    });
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
