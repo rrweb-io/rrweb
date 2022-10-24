@@ -68,6 +68,7 @@ function record<T = eventWithTime>(
     dataURLOptions = {},
     mousemoveWait,
     recordCanvas = false,
+    recordCrossOriginIframes = false,
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
@@ -76,8 +77,12 @@ function record<T = eventWithTime>(
     ignoreCSSAttributes = new Set([]),
   } = options;
 
+  const inEmittingFrame = recordCrossOriginIframes
+    ? location.ancestorOrigins.length === 0
+    : true;
+
   // runtime checks for user options
-  if (!emit) {
+  if (inEmittingFrame && !emit) {
     throw new Error('emit function is required');
   }
   // move departed options to new options
@@ -169,7 +174,18 @@ function record<T = eventWithTime>(
       mutationBuffers.forEach((buf) => buf.unfreeze());
     }
 
-    emit(eventProcessor(e), isCheckout);
+    if (inEmittingFrame) {
+      emit!(eventProcessor(e), isCheckout);
+    } else {
+      window.parent.postMessage(
+        {
+          type: 'rrweb',
+          data: eventProcessor(e),
+        },
+        '*',
+      );
+    }
+
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;

@@ -260,6 +260,7 @@ export type recordOptions<T> = {
   sampling?: SamplingStrategy;
   dataURLOptions?: DataURLOptions;
   recordCanvas?: boolean;
+  recordCrossOriginIframes?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
