@@ -1,4 +1,5 @@
 import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
+import { genId } from 'rrweb-snapshot';
 import {
   CrossOriginIframeMessageEvent,
   EventType,
@@ -13,6 +14,10 @@ export class IframeManager {
   private crossOriginIframeMap: WeakMap<
     MessageEventSource,
     HTMLIFrameElement
+  > = new WeakMap();
+  private iframeIdMap: WeakMap<
+    HTMLIFrameElement,
+    Map<number, number>
   > = new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
@@ -82,12 +87,6 @@ export class IframeManager {
       const iframeSourceWindow = message.source;
       if (!iframeSourceWindow) return;
 
-      console.log(
-        'frameElement',
-        iframeSourceWindow &&
-          this.crossOriginIframeMap.get(iframeSourceWindow)?.outerHTML,
-      );
-
       const iframeEl = this.crossOriginIframeMap.get(message.source);
       if (!iframeEl) return;
 
@@ -106,6 +105,11 @@ export class IframeManager {
     e: eventWithTime,
   ): eventWithTime {
     if (e.type === EventType.FullSnapshot) {
+      this.iframeIdMap.set(iframeEl, new Map());
+      /**
+       * Replaces the original id of the iframe with a new set of unique ids
+       */
+      this.replaceIdOnNode(e.data.node, iframeEl);
       return {
         timestamp: e.timestamp,
         type: EventType.IncrementalSnapshot,
@@ -126,5 +130,29 @@ export class IframeManager {
       };
     }
     return e;
+  }
+
+  private replaceIdOnNode(
+    node: serializedNodeWithId,
+    iframeEl: HTMLIFrameElement,
+  ) {
+    let idMap = this.iframeIdMap.get(iframeEl);
+    if (!idMap) {
+      idMap = new Map();
+      this.iframeIdMap.set(iframeEl, idMap);
+    }
+
+    let newId = idMap.get(node.id);
+    if (newId === undefined) {
+      newId = genId();
+      idMap.set(node.id, newId);
+    }
+
+    node.id = newId;
+    if ('childNodes' in node) {
+      node.childNodes.forEach((child) => {
+        this.replaceIdOnNode(child, iframeEl);
+      });
+    }
   }
 }

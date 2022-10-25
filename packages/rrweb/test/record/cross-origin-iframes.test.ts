@@ -5,6 +5,7 @@ import type {
   recordOptions,
   listenerHandler,
   eventWithTime,
+  mutationData,
 } from '../../src/types';
 import { EventType, IncrementalSource } from '../../src/types';
 import {
@@ -168,5 +169,15 @@ describe('cross origin iframes', function (this: ISuite) {
         ],
       },
     });
+  });
+
+  it('should use unique id for child of iframes', async () => {
+    const events: eventWithTime[] = await ctx.page.evaluate(
+      () => ((window as unknown) as IWindow).snapshots,
+    );
+    await waitForRAF(ctx.page);
+    expect(
+      (events[events.length - 1].data as mutationData).adds[0].node.id,
+    ).not.toBe(1);
   });
 });
