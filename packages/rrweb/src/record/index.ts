@@ -259,6 +259,7 @@ function record<T = eventWithTime>(
   });
 
   const iframeManager = new IframeManager({
+    mirror,
     mutationCb: wrappedMutationEmit,
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
@@ -343,7 +344,7 @@ function record<T = eventWithTime>(
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn, mirror);
+        iframeManager.attachIframe(iframe, childSn);
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {

@@ -104,7 +104,7 @@ const setup = function (this: ISuite, content: string): ISuite {
   return ctx;
 };
 
-describe('record webgl', function (this: ISuite) {
+describe('cross origin iframes', function (this: ISuite) {
   jest.setTimeout(100_000);
 
   const ctx: ISuite = setup.call(
@@ -129,22 +129,7 @@ describe('record webgl', function (this: ISuite) {
       () => ((window as unknown) as IWindow).snapshots,
     );
     expect(events).toMatchObject([]);
-    // await ctx.page.waitForTimeout(25_000);
-    // await ctx.page.waitForTimeout(50);
 
-    // const lastEvent = ctx.events[ctx.events.length - 1];
-    // expect(lastEvent).toMatchObject({
-    //   data: {
-    //     source: IncrementalSource.CanvasMutation,
-    //     type: CanvasContext.WebGL,
-    //     commands: [
-    //       {
-    //         args: [16384],
-    //         property: 'clear',
-    //       },
-    //     ],
-    //   },
-    // });
     // assertSnapshot(ctx.events);
   });
   it('will emit events if it is in the top level iframe', async () => {
@@ -154,12 +139,34 @@ describe('record webgl', function (this: ISuite) {
     expect(events.length).not.toBe(0);
   });
 
-  it.only('should emit contents of iframe', async () => {
+  it('should emit contents of iframe', async () => {
     const events = await ctx.page.evaluate(
       () => ((window as unknown) as IWindow).snapshots,
     );
     await waitForRAF(ctx.page);
     // two events from main frame, and two from iframe
     expect(events.length).toBe(4);
+  });
+
+  it('should emit full snapshot event from iframe as mutation event', async () => {
+    const events = await ctx.page.evaluate(
+      () => ((window as unknown) as IWindow).snapshots,
+    );
+    await waitForRAF(ctx.page);
+    // two events from main frame, and two from iframe
+    expect(events[events.length - 1]).toMatchObject({
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: IncrementalSource.Mutation,
+        adds: [
+          {
+            parentId: expect.any(Number),
+            node: {
+              id: expect.any(Number),
+            },
+          },
+        ],
+      },
+    });
   });
 });

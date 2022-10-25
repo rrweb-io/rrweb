@@ -1,7 +1,9 @@
 import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
-import type {
+import {
   CrossOriginIframeMessageEvent,
+  EventType,
   eventWithTime,
+  IncrementalSource,
   mutationCallBack,
 } from '../types';
 import type { StylesheetManager } from './stylesheet-manager';
@@ -12,6 +14,7 @@ export class IframeManager {
     MessageEventSource,
     HTMLIFrameElement
   > = new WeakMap();
+  private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
@@ -19,6 +22,7 @@ export class IframeManager {
   private recordCrossOriginIframes: boolean;
 
   constructor(options: {
+    mirror: Mirror;
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
@@ -28,6 +32,7 @@ export class IframeManager {
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
+    this.mirror = options.mirror;
     if (this.recordCrossOriginIframes) {
       window.addEventListener('message', this.handleMessage.bind(this));
     }
@@ -46,12 +51,11 @@ export class IframeManager {
   public attachIframe(
     iframeEl: HTMLIFrameElement,
     childSn: serializedNodeWithId,
-    mirror: Mirror,
   ) {
     this.mutationCb({
       adds: [
         {
-          parentId: mirror.getId(iframeEl),
+          parentId: this.mirror.getId(iframeEl),
           nextId: null,
           node: childSn,
         },
@@ -70,12 +74,13 @@ export class IframeManager {
     )
       this.stylesheetManager.adoptStyleSheets(
         iframeEl.contentDocument.adoptedStyleSheets,
-        mirror.getId(iframeEl.contentDocument),
+        this.mirror.getId(iframeEl.contentDocument),
       );
   }
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
     if ((message as CrossOriginIframeMessageEvent).data.type === 'rrweb') {
       const iframeSourceWindow = message.source;
+      if (!iframeSourceWindow) return;
 
       console.log(
         'frameElement',
@@ -83,10 +88,43 @@ export class IframeManager {
           this.crossOriginIframeMap.get(iframeSourceWindow)?.outerHTML,
       );
 
+      const iframeEl = this.crossOriginIframeMap.get(message.source);
+      if (!iframeEl) return;
+
       this.wrappedEmit(
-        (message as CrossOriginIframeMessageEvent).data.event,
+        this.transformCrossOriginEvent(
+          iframeEl,
+          (message as CrossOriginIframeMessageEvent).data.event,
+        ),
         (message as CrossOriginIframeMessageEvent).data.isCheckout,
       );
     }
+  }
+
+  private transformCrossOriginEvent(
+    iframeEl: HTMLIFrameElement,
+    e: eventWithTime,
+  ): eventWithTime {
+    if (e.type === EventType.FullSnapshot) {
+      return {
+        timestamp: e.timestamp,
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.Mutation,
+          adds: [
+            {
+              parentId: this.mirror.getId(iframeEl),
+              nextId: null,
+              node: e.data.node,
+            },
+          ],
+          removes: [],
+          texts: [],
+          attributes: [],
+          isAttachIframe: true,
+        },
+      };
+    }
+    return e;
   }
 }
