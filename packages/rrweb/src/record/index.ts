@@ -25,6 +25,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
+  CrossOriginIframeMessageEventContent,
 } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -177,13 +178,12 @@ function record<T = eventWithTime>(
     if (inEmittingFrame) {
       emit!(eventProcessor(e), isCheckout);
     } else {
-      window.parent.postMessage(
-        {
-          type: 'rrweb',
-          data: eventProcessor(e),
-        },
-        '*',
-      );
+      const message: CrossOriginIframeMessageEventContent<T> = {
+        type: 'rrweb',
+        event: eventProcessor(e),
+        isCheckout,
+      };
+      window.parent.postMessage(message, '*');
     }
 
     if (e.type === EventType.FullSnapshot) {
@@ -261,6 +261,8 @@ function record<T = eventWithTime>(
   const iframeManager = new IframeManager({
     mutationCb: wrappedMutationEmit,
     stylesheetManager: stylesheetManager,
+    recordCrossOriginIframes,
+    wrappedEmit,
   });
 
   canvasManager = new CanvasManager({

@@ -153,4 +153,13 @@ describe('record webgl', function (this: ISuite) {
     );
     expect(events.length).not.toBe(0);
   });
+
+  it.only('should emit contents of iframe', async () => {
+    const events = await ctx.page.evaluate(
+      () => ((window as unknown) as IWindow).snapshots,
+    );
+    await waitForRAF(ctx.page);
+    // two events from main frame, and two from iframe
+    expect(events.length).toBe(4);
+  });
 });

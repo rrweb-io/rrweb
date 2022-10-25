@@ -797,3 +797,10 @@ declare global {
 export type IWindow = Window & typeof globalThis;
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
+  type: 'rrweb';
+  event: T;
+  isCheckout?: boolean;
+};
+export type CrossOriginIframeMessageEvent = MessageEvent<CrossOriginIframeMessageEventContent>;
