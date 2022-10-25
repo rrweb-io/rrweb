@@ -18,13 +18,40 @@ const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
 
-async function startRecording(page, serverURL) {
-  try {
-    await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
-    await page.addScriptTag({
-      url: `${serverURL}/plugins/canvas-webrtc-record.js`,
-    });
-    await page.evaluate((serverURL) => {
+async function injectRecording(page, serverURL) {
+  await page.evaluateOnNewDocument((serverURL) => {
+    (async () => {
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          const s = document.createElement('script');
+          let r = false;
+          s.type = 'text/javascript';
+          s.src = src;
+          s.async = true;
+          s.onerror = function (err) {
+            reject(err, s);
+          };
+          s.onload = s.onreadystatechange = function () {
+            // console.log(this.readyState); // uncomment this line to see which ready states are called.
+            if (!r && (!this.readyState || this.readyState == 'complete')) {
+              r = true;
+              resolve();
+            }
+          };
+          if (document.head) {
+            document.head.append(s);
+          } else {
+            requestAnimationFrame(() => {
+              document.head.append(s);
+            });
+          }
+        });
+      }
+      await Promise.all([
+        loadScript(`${serverURL}/rrweb.js`),
+        loadScript(`${serverURL}/plugins/canvas-webrtc-record.js`),
+      ]);
+
       const win = window;
       win.__IS_RECORDING__ = true;
       win.events = [];
@@ -45,13 +72,12 @@ async function startRecording(page, serverURL) {
         },
         plugins: [window.plugin.initPlugin()],
         recordCanvas: false,
+        recordCrossOriginIframes: true,
         collectFonts: true,
         inlineImages: true,
       });
-    });
-  } catch (error) {
-    console.error(error);
-  }
+    })();
+  }, serverURL);
 }
 
 async function startReplay(page, serverURL, recordedPage) {
@@ -165,6 +191,11 @@ void (async () => {
         '--start-maximized',
         '--ignore-certificate-errors',
         '--no-sandbox',
+        // evaluateOnNewDocument doesn't work on cross-origin iframes without this
+        // more info:
+        // https://github.com/puppeteer/puppeteer/issues/7353
+        // https://stackoverflow.com/questions/60375593/puppeteer-and-dynamically-added-iframe-element
+        '--disable-features=site-per-process',
       ],
     });
 
@@ -209,6 +240,7 @@ void (async () => {
       resizeWindow(replayerPage, 0, 800, 800, 800),
     ]);
 
+    await injectRecording(recordedPage, serverURL);
     await recordedPage.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: 300000,
@@ -220,18 +252,6 @@ void (async () => {
       replayerPage.evaluate((event) => {
         window.replayer.addEvent(event);
       }, event);
-    });
-    await startRecording(recordedPage, serverURL);
-    recordedPage.on('framenavigated', async () => {
-      const isRecording = await recordedPage.evaluate(
-        'window.__IS_RECORDING__',
-      );
-      if (!isRecording) {
-        // When the page navigates, I notice this event is emitted twice so that there are two recording processes running in a single page.
-        // Set recording flag True ASAP to prevent recording twice.
-        await recordedPage.evaluate('window.__IS_RECORDING__ = true');
-        await startRecording(recordedPage, serverURL);
-      }
     });
 
     emitter.once('done', async () => {
