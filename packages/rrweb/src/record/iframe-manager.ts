@@ -180,19 +180,16 @@ export class IframeManager {
           break;
         }
         case IncrementalSource.Font: {
-          // TODO
+          // fine as-is no modification needed
           break;
         }
-        // case IncrementalSource.Log: {
-        //   // TODO
-        //   break;
-        // }
         case IncrementalSource.Drag: {
           // TODO
           break;
         }
         case IncrementalSource.StyleDeclaration: {
           // TODO
+          // setup a map for the stylemirror, it has its own ids that need mapping
           break;
         }
         case IncrementalSource.Selection: {
@@ -210,9 +207,27 @@ export class IframeManager {
         }
       }
       return e;
-    } else if (e.type === EventType.Meta) {
-      // skip meta events
+    } else if (
+      e.type === EventType.Meta ||
+      e.type === EventType.Load ||
+      e.type === EventType.DomContentLoaded
+    ) {
+      // skip meta and load events
       return;
+    } else if (e.type === EventType.Plugin) {
+      return e;
+    } else if (e.type === EventType.Custom) {
+      this.replaceIds(
+        e.data.payload as {
+          id?: unknown;
+          parentId?: unknown;
+          previousId?: unknown;
+          nextId?: unknown;
+        },
+        iframeEl,
+        ['id', 'parentId', 'previousId', 'nextId'],
+      );
+      return e;
     }
     return e;
   }

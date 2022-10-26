@@ -315,6 +315,21 @@ describe('cross origin iframes', function (this: ISuite) {
         document.body.appendChild(canvas);
       });
       await waitForRAF(ctx.page);
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+
+    it('should record custom events', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        ((window as unknown) as IWindow).rrweb.addCustomEvent('test', {
+          id: 1,
+          parentId: 1,
+          nextId: 2,
+        });
+      });
       await waitForRAF(ctx.page);
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
