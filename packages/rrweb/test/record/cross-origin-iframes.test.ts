@@ -202,7 +202,7 @@ describe('cross origin iframes', function (this: ISuite) {
     ).toBeTruthy();
   });
 
-  it.only('should map input events correctly', async () => {
+  it('should map input events correctly', async () => {
     const frame = ctx.page.mainFrame().childFrames()[0];
     await frame.type('input[type="text"]', 'test');
     await frame.click('input[type="radio"]');
