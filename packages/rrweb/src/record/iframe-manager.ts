@@ -128,27 +128,107 @@ export class IframeManager {
           isAttachIframe: true,
         },
       };
+    } else if (e.type === EventType.IncrementalSnapshot) {
+      switch (e.data.source) {
+        case IncrementalSource.Mutation: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.MouseMove: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.MouseInteraction: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.Scroll: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.ViewportResize: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.Input: {
+          this.replaceId(e.data, iframeEl);
+          break;
+        }
+        case IncrementalSource.TouchMove: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.MediaInteraction: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.StyleSheetRule: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.CanvasMutation: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.Font: {
+          // TODO
+          break;
+        }
+        // case IncrementalSource.Log: {
+        //   // TODO
+        //   break;
+        // }
+        case IncrementalSource.Drag: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.StyleDeclaration: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.Selection: {
+          // TODO
+          break;
+        }
+        case IncrementalSource.AdoptedStyleSheet: {
+          // TODO
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      return e;
     }
     return e;
   }
 
-  private replaceIdOnNode(
-    node: serializedNodeWithId,
+  private replaceId<T extends { id: number }>(
+    obj: T,
     iframeEl: HTMLIFrameElement,
-  ) {
+  ): T {
     let idMap = this.iframeIdMap.get(iframeEl);
     if (!idMap) {
       idMap = new Map();
       this.iframeIdMap.set(iframeEl, idMap);
     }
 
-    let newId = idMap.get(node.id);
+    let newId = idMap.get(obj.id);
     if (newId === undefined) {
       newId = genId();
-      idMap.set(node.id, newId);
+      idMap.set(obj.id, newId);
     }
 
-    node.id = newId;
+    obj.id = newId;
+
+    return obj;
+  }
+
+  private replaceIdOnNode(
+    node: serializedNodeWithId,
+    iframeEl: HTMLIFrameElement,
+  ) {
+    this.replaceId(node, iframeEl);
     if ('childNodes' in node) {
       node.childNodes.forEach((child) => {
         this.replaceIdOnNode(child, iframeEl);

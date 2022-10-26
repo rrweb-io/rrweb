@@ -201,6 +201,21 @@ describe('cross origin iframes', function (this: ISuite) {
       (events[events.length - 1].data as mutationData).isAttachIframe,
     ).toBeTruthy();
   });
+
+  it.only('should map input events correctly', async () => {
+    const frame = ctx.page.mainFrame().childFrames()[0];
+    await frame.type('input[type="text"]', 'test');
+    await frame.click('input[type="radio"]');
+    await frame.click('input[type="checkbox"]');
+    await frame.type('input[type="password"]', 'password');
+    await frame.type('textarea', 'textarea test');
+    await frame.select('select', '1');
+
+    const snapshots = (await ctx.page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
 });
 
 describe('same origin iframes', function (this: ISuite) {

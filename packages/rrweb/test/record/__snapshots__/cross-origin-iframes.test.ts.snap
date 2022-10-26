@@ -1,0 +1,957 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`cross origin iframes should map input events correctly 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {
+                      \\"rr_src\\": \\"http://localhost:3030/html/form.html\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 7
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 300,
+      \\"height\\": 150
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 1,
+                \\"name\\": \\"html\\",
+                \\"publicId\\": \\"\\",
+                \\"systemId\\": \\"\\",
+                \\"id\\": 12
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {
+                  \\"lang\\": \\"en\\"
+                },
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 15
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"charset\\": \\"UTF-8\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 16
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 17
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"name\\": \\"viewport\\",
+                          \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 18
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 19
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"http-equiv\\": \\"X-UA-Compatible\\",
+                          \\"content\\": \\"ie=edge\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 20
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 21
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"title\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"form fields\\",
+                            \\"id\\": 23
+                          }
+                        ],
+                        \\"id\\": 22
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"id\\": 24
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"id\\": 26
+                          }
+                        ],
+                        \\"id\\": 25
+                      }
+                    ],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n  \\",
+                    \\"id\\": 27
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 29
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"form\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 31
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"text\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 33
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"input\\",
+                                \\"attributes\\": {
+                                  \\"type\\": \\"text\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"id\\": 34
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 35
+                              }
+                            ],
+                            \\"id\\": 32
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 36
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {},
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 38
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"input\\",
+                                \\"attributes\\": {
+                                  \\"type\\": \\"radio\\",
+                                  \\"name\\": \\"toggle\\",
+                                  \\"value\\": \\"on\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"id\\": 39
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 40
+                              }
+                            ],
+                            \\"id\\": 37
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 41
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {},
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 43
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"input\\",
+                                \\"attributes\\": {
+                                  \\"type\\": \\"radio\\",
+                                  \\"name\\": \\"toggle\\",
+                                  \\"value\\": \\"off\\",
+                                  \\"checked\\": true
+                                },
+                                \\"childNodes\\": [],
+                                \\"id\\": 44
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 45
+                              }
+                            ],
+                            \\"id\\": 42
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 46
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"checkbox\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 48
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"input\\",
+                                \\"attributes\\": {
+                                  \\"type\\": \\"checkbox\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"id\\": 49
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 50
+                              }
+                            ],
+                            \\"id\\": 47
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 51
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"textarea\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 53
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"textarea\\",
+                                \\"attributes\\": {
+                                  \\"name\\": \\"\\",
+                                  \\"id\\": \\"\\",
+                                  \\"cols\\": \\"30\\",
+                                  \\"rows\\": \\"10\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"id\\": 54
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 55
+                              }
+                            ],
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 56
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"select\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 58
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"select\\",
+                                \\"attributes\\": {
+                                  \\"name\\": \\"\\",
+                                  \\"id\\": \\"\\",
+                                  \\"value\\": \\"1\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n          \\",
+                                    \\"id\\": 60
+                                  },
+                                  {
+                                    \\"type\\": 2,
+                                    \\"tagName\\": \\"option\\",
+                                    \\"attributes\\": {
+                                      \\"value\\": \\"1\\",
+                                      \\"selected\\": true
+                                    },
+                                    \\"childNodes\\": [
+                                      {
+                                        \\"type\\": 3,
+                                        \\"textContent\\": \\"1\\",
+                                        \\"id\\": 62
+                                      }
+                                    ],
+                                    \\"id\\": 61
+                                  },
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n          \\",
+                                    \\"id\\": 63
+                                  },
+                                  {
+                                    \\"type\\": 2,
+                                    \\"tagName\\": \\"option\\",
+                                    \\"attributes\\": {
+                                      \\"value\\": \\"2\\"
+                                    },
+                                    \\"childNodes\\": [
+                                      {
+                                        \\"type\\": 3,
+                                        \\"textContent\\": \\"2\\",
+                                        \\"id\\": 65
+                                      }
+                                    ],
+                                    \\"id\\": 64
+                                  },
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n        \\",
+                                    \\"id\\": 66
+                                  }
+                                ],
+                                \\"id\\": 59
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 67
+                              }
+                            ],
+                            \\"id\\": 57
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 68
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"password\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 70
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"input\\",
+                                \\"attributes\\": {
+                                  \\"type\\": \\"password\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"id\\": 71
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 72
+                              }
+                            ],
+                            \\"id\\": 69
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"id\\": 73
+                          }
+                        ],
+                        \\"id\\": 30
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"id\\": 74
+                      }
+                    ],
+                    \\"id\\": 28
+                  }
+                ],
+                \\"id\\": 13
+              }
+            ],
+            \\"id\\": 11
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 24
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"t\\",
+      \\"isChecked\\": false,
+      \\"id\\": 34
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"te\\",
+      \\"isChecked\\": false,
+      \\"id\\": 34
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"tes\\",
+      \\"isChecked\\": false,
+      \\"id\\": 34
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"test\\",
+      \\"isChecked\\": false,
+      \\"id\\": 34
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 29
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 24
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 29
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 29
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 29
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"on\\",
+      \\"isChecked\\": true,
+      \\"id\\": 39
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 44
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 39
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 29
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 39
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 39
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 39
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"on\\",
+      \\"isChecked\\": true,
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 39
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 61
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 3,
+      \\"id\\": 1,
+      \\"x\\": 0,
+      \\"y\\": 70
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 71
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 61
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 44
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"t\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"te\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"tex\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"text\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"texta\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textar\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textare\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea \\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea t\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea te\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea tes\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea test\\",
+      \\"isChecked\\": false,
+      \\"id\\": 54
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 3,
+      \\"id\\": 1,
+      \\"x\\": 0,
+      \\"y\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"1\\",
+      \\"isChecked\\": false,
+      \\"id\\": 59
+    }
+  }
+]"
+`;
