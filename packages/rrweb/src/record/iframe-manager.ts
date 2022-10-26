@@ -202,7 +202,9 @@ export class IframeManager {
           break;
         }
         case IncrementalSource.Selection: {
-          // TODO
+          e.data.ranges.forEach((range) => {
+            this.replaceIds(range, iframeEl, ['start', 'end']);
+          });
           break;
         }
         case IncrementalSource.AdoptedStyleSheet: {
