@@ -89,7 +89,9 @@ describe('e2e webgl', () => {
 
     await waitForRAF(page);
 
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots: eventWithTime[] = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
@@ -122,7 +124,9 @@ describe('e2e webgl', () => {
     );
 
     await page.waitForTimeout(100);
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots: eventWithTime[] = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
