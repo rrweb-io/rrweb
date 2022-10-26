@@ -79,7 +79,7 @@ function record<T = eventWithTime>(
   } = options;
 
   const inEmittingFrame = recordCrossOriginIframes
-    ? location.ancestorOrigins.length === 0
+    ? window.parent === window
     : true;
 
   // runtime checks for user options
