@@ -157,14 +157,12 @@ export class IframeManager {
           // TODO
           break;
         }
-        case IncrementalSource.Scroll: {
-          this.replaceIds(e.data, iframeEl, ['id']);
-          break;
-        }
         case IncrementalSource.ViewportResize: {
           // can safely ignore these events
           return;
         }
+        case IncrementalSource.Scroll:
+        case IncrementalSource.CanvasMutation:
         case IncrementalSource.Input: {
           this.replaceIds(e.data, iframeEl, ['id']);
           break;
@@ -178,10 +176,6 @@ export class IframeManager {
           break;
         }
         case IncrementalSource.StyleSheetRule: {
-          // TODO
-          break;
-        }
-        case IncrementalSource.CanvasMutation: {
           // TODO
           break;
         }

@@ -47,6 +47,7 @@ async function injectRecordScript(frame: puppeteer.Frame) {
     const { record } = ((window as unknown) as IWindow).rrweb;
     record({
       recordCrossOriginIframes: true,
+      recordCanvas: true,
       emit(event) {
         ((window as unknown) as IWindow).snapshots.push(event);
         ((window as unknown) as IWindow).emit(event);
@@ -297,6 +298,24 @@ describe('cross origin iframes', function (this: ISuite) {
         const b = document.querySelector('b')!;
         b.childNodes[0].textContent = 'replaced text';
       });
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+
+    it('should record canvas elements', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        var canvas = document.createElement('canvas');
+        var gl = canvas.getContext('webgl')!;
+        var program = gl.createProgram()!;
+        gl.linkProgram(program);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        document.body.appendChild(canvas);
+      });
+      await waitForRAF(ctx.page);
+      await waitForRAF(ctx.page);
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
