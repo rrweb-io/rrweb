@@ -38,6 +38,27 @@ interface IWindow extends Window {
   snapshots: eventWithTime[];
 }
 
+async function injectRecordScript(frame: puppeteer.Frame) {
+  await frame.addScriptTag({
+    path: path.resolve(__dirname, '../../dist/rrweb.js'),
+  });
+  await frame.evaluate(() => {
+    ((window as unknown) as IWindow).snapshots = [];
+    const { record } = ((window as unknown) as IWindow).rrweb;
+    record({
+      recordCrossOriginIframes: true,
+      emit(event) {
+        ((window as unknown) as IWindow).snapshots.push(event);
+        ((window as unknown) as IWindow).emit(event);
+      },
+    });
+  });
+
+  for (const child of frame.childFrames()) {
+    await injectRecordScript(child);
+  }
+}
+
 const setup = function (this: ISuite, content: string): ISuite {
   const ctx = {} as ISuite;
 
@@ -69,27 +90,6 @@ const setup = function (this: ISuite, content: string): ISuite {
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
     await injectRecordScript(ctx.page.mainFrame());
-
-    async function injectRecordScript(frame: puppeteer.Frame) {
-      await frame.addScriptTag({
-        path: path.resolve(__dirname, '../../dist/rrweb.js'),
-      });
-      await frame.evaluate(() => {
-        ((window as unknown) as IWindow).snapshots = [];
-        const { record } = ((window as unknown) as IWindow).rrweb;
-        record({
-          recordCrossOriginIframes: true,
-          emit(event) {
-            ((window as unknown) as IWindow).snapshots.push(event);
-            ((window as unknown) as IWindow).emit(event);
-          },
-        });
-      });
-
-      for (const child of frame.childFrames()) {
-        await injectRecordScript(child);
-      }
-    }
   });
 
   afterEach(async () => {
@@ -133,6 +133,7 @@ describe('cross origin iframes', function (this: ISuite) {
 
     // assertSnapshot(ctx.events);
   });
+
   it('will emit events if it is in the top level iframe', async () => {
     const events = await ctx.page.evaluate(
       () => ((window as unknown) as IWindow).snapshots,
@@ -179,5 +180,50 @@ describe('cross origin iframes', function (this: ISuite) {
     expect(
       (events[events.length - 1].data as mutationData).adds[0].node.id,
     ).not.toBe(1);
+  });
+
+  it('should replace the existing DOM nodes on iframe navigation with `isAttachIframe`', async () => {
+    await ctx.page.evaluate((url) => {
+      const iframe = document.querySelector('iframe') as HTMLIFrameElement;
+      iframe.src = `${url}/html/form.html?2`;
+    }, ctx.serverURL);
+    await waitForRAF(ctx.page); // loads iframe
+
+    await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
+
+    const events: eventWithTime[] = await ctx.page.evaluate(
+      () => ((window as unknown) as IWindow).snapshots,
+    );
+    expect(
+      (events[events.length - 1].data as mutationData).removes,
+    ).toMatchObject([]);
+    expect(
+      (events[events.length - 1].data as mutationData).isAttachIframe,
+    ).toBeTruthy();
+  });
+});
+
+describe('same origin iframes', function (this: ISuite) {
+  jest.setTimeout(100_000);
+
+  const ctx: ISuite = setup.call(
+    this,
+    `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <iframe src="about:blank"></iframe>
+        </body>
+      </html>
+    `,
+  );
+
+  it('should emit contents of iframe once', async () => {
+    const events = await ctx.page.evaluate(
+      () => ((window as unknown) as IWindow).snapshots,
+    );
+    await waitForRAF(ctx.page);
+    // two events from main frame, and two from iframe
+    expect(events.length).toBe(4);
   });
 });

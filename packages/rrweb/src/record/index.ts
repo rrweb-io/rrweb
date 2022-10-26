@@ -82,6 +82,16 @@ function record<T = eventWithTime>(
     ? window.parent === window
     : true;
 
+  let passEmitsToParent = false;
+  if (!inEmittingFrame) {
+    try {
+      window.parent.document; // throws if parent is cross-origin
+      passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+    } catch (e) {
+      passEmitsToParent = true;
+    }
+  }
+
   // runtime checks for user options
   if (inEmittingFrame && !emit) {
     throw new Error('emit function is required');
@@ -177,7 +187,7 @@ function record<T = eventWithTime>(
 
     if (inEmittingFrame) {
       emit!(eventProcessor(e), isCheckout);
-    } else {
+    } else if (passEmitsToParent) {
       const message: CrossOriginIframeMessageEventContent<T> = {
         type: 'rrweb',
         event: eventProcessor(e),
