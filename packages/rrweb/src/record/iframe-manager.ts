@@ -90,20 +90,23 @@ export class IframeManager {
       const iframeEl = this.crossOriginIframeMap.get(message.source);
       if (!iframeEl) return;
 
-      this.wrappedEmit(
-        this.transformCrossOriginEvent(
-          iframeEl,
-          (message as CrossOriginIframeMessageEvent).data.event,
-        ),
-        (message as CrossOriginIframeMessageEvent).data.isCheckout,
+      const transformedEvent = this.transformCrossOriginEvent(
+        iframeEl,
+        (message as CrossOriginIframeMessageEvent).data.event,
       );
+
+      if (transformedEvent)
+        this.wrappedEmit(
+          transformedEvent,
+          (message as CrossOriginIframeMessageEvent).data.isCheckout,
+        );
     }
   }
 
   private transformCrossOriginEvent(
     iframeEl: HTMLIFrameElement,
     e: eventWithTime,
-  ): eventWithTime {
+  ): eventWithTime | void {
     if (e.type === EventType.FullSnapshot) {
       this.iframeIdMap.set(iframeEl, new Map());
       /**
@@ -143,12 +146,12 @@ export class IframeManager {
           break;
         }
         case IncrementalSource.Scroll: {
-          // TODO
+          this.replaceId(e.data, iframeEl);
           break;
         }
         case IncrementalSource.ViewportResize: {
-          // TODO
-          break;
+          // can safely ignore these events
+          return;
         }
         case IncrementalSource.Input: {
           this.replaceId(e.data, iframeEl);

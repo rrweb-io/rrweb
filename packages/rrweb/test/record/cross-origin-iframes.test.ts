@@ -114,7 +114,7 @@ describe('cross origin iframes', function (this: ISuite) {
       <!DOCTYPE html>
       <html>
         <body>
-          <iframe src="{SERVER_URL}/html/form.html"></iframe>
+          <iframe src="{SERVER_URL}/html/form.html" style="width: 400px; height: 400px;"></iframe>
         </body>
       </html>
     `,
@@ -210,6 +210,29 @@ describe('cross origin iframes', function (this: ISuite) {
     await frame.type('input[type="password"]', 'password');
     await frame.type('textarea', 'textarea test');
     await frame.select('select', '1');
+
+    const snapshots = (await ctx.page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should map scroll events correctly', async () => {
+    // force scrollbars in iframe
+    ctx.page.evaluate(() => {
+      const iframe = document.querySelector('iframe') as HTMLIFrameElement;
+      iframe.style.width = '50px';
+      iframe.style.height = '50px';
+    });
+
+    await waitForRAF(ctx.page);
+    const frame = ctx.page.mainFrame().childFrames()[0];
+
+    // scroll a little
+    frame.evaluate(() => {
+      window.scrollTo(0, 10);
+    });
+    await waitForRAF(ctx.page);
 
     const snapshots = (await ctx.page.evaluate(
       'window.snapshots',
