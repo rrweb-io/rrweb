@@ -727,7 +727,7 @@ exports[`cross origin iframes should map input events correctly 1`] = `
       \\"source\\": 3,
       \\"id\\": 1,
       \\"x\\": 0,
-      \\"y\\": 70
+      \\"y\\": 69
     }
   },
   {
@@ -933,15 +933,6 @@ exports[`cross origin iframes should map input events correctly 1`] = `
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
       \\"id\\": 54
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 3,
-      \\"id\\": 1,
-      \\"x\\": 0,
-      \\"y\\": 0
     }
   },
   {
