@@ -2986,6 +2986,35 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
         }
       ]
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 33,
+      \\"type\\": 1,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"createProgram\\",
+          \\"args\\": []
+        },
+        {
+          \\"property\\": \\"linkProgram\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"WebGLProgram\\",
+              \\"index\\": 0
+            }
+          ]
+        },
+        {
+          \\"property\\": \\"clear\\",
+          \\"args\\": [
+            16384
+          ]
+        }
+      ]
+    }
   }
 ]"
 `;
