@@ -134,7 +134,19 @@ export class IframeManager {
     } else if (e.type === EventType.IncrementalSnapshot) {
       switch (e.data.source) {
         case IncrementalSource.Mutation: {
-          // TODO
+          e.data.adds.forEach((n) => {
+            this.replaceIds(n, iframeEl, ['parentId', 'nextId', 'previousId']);
+            this.replaceIdOnNode(n.node, iframeEl);
+          });
+          e.data.removes.forEach((n) => {
+            this.replaceIds(n, iframeEl, ['parentId', 'id']);
+          });
+          e.data.attributes.forEach((n) => {
+            this.replaceIds(n, iframeEl, ['id']);
+          });
+          e.data.texts.forEach((n) => {
+            this.replaceIds(n, iframeEl, ['id']);
+          });
           break;
         }
         case IncrementalSource.MouseMove: {
@@ -146,7 +158,7 @@ export class IframeManager {
           break;
         }
         case IncrementalSource.Scroll: {
-          this.replaceId(e.data, iframeEl);
+          this.replaceIds(e.data, iframeEl, ['id']);
           break;
         }
         case IncrementalSource.ViewportResize: {
@@ -154,7 +166,7 @@ export class IframeManager {
           return;
         }
         case IncrementalSource.Input: {
-          this.replaceId(e.data, iframeEl);
+          this.replaceIds(e.data, iframeEl, ['id']);
           break;
         }
         case IncrementalSource.TouchMove: {
@@ -206,9 +218,10 @@ export class IframeManager {
     return e;
   }
 
-  private replaceId<T extends { id: number }>(
+  private replaceIds<T extends Record<string, unknown>>(
     obj: T,
     iframeEl: HTMLIFrameElement,
+    keys: Array<keyof T>,
   ): T {
     let idMap = this.iframeIdMap.get(iframeEl);
     if (!idMap) {
@@ -216,13 +229,16 @@ export class IframeManager {
       this.iframeIdMap.set(iframeEl, idMap);
     }
 
-    let newId = idMap.get(obj.id);
-    if (newId === undefined) {
-      newId = genId();
-      idMap.set(obj.id, newId);
+    for (const key of keys) {
+      if (typeof obj[key] !== 'number') continue;
+      const originalId = obj[key] as number;
+      let newId = idMap.get(originalId);
+      if (!newId) {
+        newId = genId();
+        idMap.set(originalId, newId);
+      }
+      (obj[key] as number) = newId;
     }
-
-    obj.id = newId;
 
     return obj;
   }
@@ -231,7 +247,7 @@ export class IframeManager {
     node: serializedNodeWithId,
     iframeEl: HTMLIFrameElement,
   ) {
-    this.replaceId(node, iframeEl);
+    this.replaceIds(node, iframeEl, ['id']);
     if ('childNodes' in node) {
       node.childNodes.forEach((child) => {
         this.replaceIdOnNode(child, iframeEl);
