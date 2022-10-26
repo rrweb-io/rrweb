@@ -146,8 +146,8 @@ describe('cross origin iframes', function (this: ISuite) {
         () => ((window as unknown) as IWindow).snapshots,
       );
       await waitForRAF(ctx.page);
-      // two events from main frame, and two from iframe
-      expect(events.length).toBe(4);
+      // two events (full snapshot + meta) from main frame, and one full snapshot from iframe
+      expect(events.length).toBe(3);
     });
 
     it('should emit full snapshot event from iframe as mutation event', async () => {
@@ -344,7 +344,9 @@ describe('same origin iframes', function (this: ISuite) {
       () => ((window as unknown) as IWindow).snapshots,
     );
     await waitForRAF(ctx.page);
-    // two events from main frame, and two from iframe
+    // two events (full snapshot + meta) from main frame,
+    // and two (full snapshot + mutation) from iframe
     expect(events.length).toBe(4);
+    assertSnapshot(events);
   });
 });

@@ -210,6 +210,9 @@ export class IframeManager {
         }
       }
       return e;
+    } else if (e.type === EventType.Meta) {
+      // skip meta events
+      return;
     }
     return e;
   }
