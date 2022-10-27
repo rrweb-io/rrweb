@@ -533,6 +533,7 @@ describe('record integration tests', function (this: ISuite) {
       document.body.appendChild(iframe);
     });
 
+    await waitForRAF(page);
     await page.frames()[1].evaluate(() => {
       console.log('from iframe');
     });
