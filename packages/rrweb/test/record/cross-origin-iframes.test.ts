@@ -400,6 +400,60 @@ describe('cross origin iframes', function (this: ISuite) {
       )) as eventWithTime[];
       assertSnapshot(snapshots);
     });
+
+    it('captures mutations on stylesheets', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await ctx.page.evaluate(() => {
+        // Add stylesheet to a document.
+        const style = document.createElement('style');
+        document.head.appendChild(style);
+      });
+      await frame.evaluate(() => {
+        // Add stylesheet to a document.
+        const style = document.createElement('style');
+        document.head.appendChild(style);
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        document.styleSheets[0].insertRule('div { color: yellow; }');
+      });
+      await frame.evaluate(() => {
+        document.styleSheets[0].insertRule('h1 { color: blue; }');
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        (document.styleSheets[0].cssRules[0] as CSSStyleRule).style.setProperty(
+          'color',
+          'green',
+        );
+        (document.styleSheets[0]
+          .cssRules[0] as CSSStyleRule).style.removeProperty('display');
+      });
+      await frame.evaluate(() => {
+        (document.styleSheets[0].cssRules[0] as CSSStyleRule).style.setProperty(
+          'font-size',
+          'medium',
+          'important',
+        );
+        document.styleSheets[0].insertRule('h2 { color: red; }');
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        document.styleSheets[0].insertRule(
+          'body { border: 2px solid blue; }',
+          1,
+        );
+      });
+      await frame.evaluate(() => {
+        document.styleSheets[0].deleteRule(0);
+      });
+      await waitForRAF(ctx.page);
+
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
   });
 
   describe('audio.html', function (this: ISuite) {

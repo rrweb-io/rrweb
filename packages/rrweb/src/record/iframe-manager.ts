@@ -175,6 +175,7 @@ export class IframeManager {
         }
         case IncrementalSource.StyleSheetRule:
         case IncrementalSource.StyleDeclaration: {
+          this.replaceIds(e.data, iframeEl, ['id']);
           this.replaceStyleIds(e.data, iframeEl, ['styleId']);
           break;
         }
