@@ -149,26 +149,23 @@ export class IframeManager {
           });
           break;
         }
+        case IncrementalSource.Drag:
+        case IncrementalSource.TouchMove:
         case IncrementalSource.MouseMove: {
-          // TODO
-          break;
-        }
-        case IncrementalSource.MouseInteraction: {
-          // TODO
+          e.data.positions.forEach((p) => {
+            this.replaceIds(p, iframeEl, ['id']);
+          });
           break;
         }
         case IncrementalSource.ViewportResize: {
           // can safely ignore these events
           return;
         }
+        case IncrementalSource.MouseInteraction:
         case IncrementalSource.Scroll:
         case IncrementalSource.CanvasMutation:
         case IncrementalSource.Input: {
           this.replaceIds(e.data, iframeEl, ['id']);
-          break;
-        }
-        case IncrementalSource.TouchMove: {
-          // TODO
           break;
         }
         case IncrementalSource.MediaInteraction: {
@@ -181,10 +178,6 @@ export class IframeManager {
         }
         case IncrementalSource.Font: {
           // fine as-is no modification needed
-          break;
-        }
-        case IncrementalSource.Drag: {
-          // TODO
           break;
         }
         case IncrementalSource.StyleDeclaration: {
