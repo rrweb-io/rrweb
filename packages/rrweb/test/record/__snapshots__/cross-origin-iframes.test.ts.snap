@@ -552,7 +552,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 24
+      \\"id\\": 34
     }
   },
   {
@@ -596,7 +596,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 29
+      \\"id\\": 39
     }
   },
   {
@@ -604,7 +604,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 24
+      \\"id\\": 34
     }
   },
   {
@@ -612,7 +612,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 29
+      \\"id\\": 39
     }
   },
   {
@@ -620,7 +620,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 29
+      \\"id\\": 39
     }
   },
   {
@@ -628,7 +628,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 29
+      \\"id\\": 39
     }
   },
   {
@@ -654,47 +654,6 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 39
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 29
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 39
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 39
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 39
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"on\\",
-      \\"isChecked\\": true,
       \\"id\\": 49
     }
   },
@@ -711,7 +670,48 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 61
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"on\\",
+      \\"isChecked\\": true,
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 71
     }
   },
   {
@@ -791,7 +791,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 61
+      \\"id\\": 71
     }
   },
   {
@@ -799,7 +799,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 44
+      \\"id\\": 54
     }
   },
   {
