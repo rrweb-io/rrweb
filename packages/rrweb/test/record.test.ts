@@ -645,7 +645,6 @@ describe('record', function (this: ISuite) {
   it('captures stylesheets in iframes that are still loading', async () => {
     await ctx.page.evaluate(() => {
       const iframe = document.createElement('iframe');
-      iframe.setAttribute('src', 'about:blank');
       document.body.appendChild(iframe);
       const iframeDoc = iframe.contentDocument!;
 
@@ -670,8 +669,11 @@ describe('record', function (this: ISuite) {
     });
 
     // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
+    // the following is a bit overkill but this test is super flaky on CI
     await waitForRAF(ctx.page);
+    await ctx.page.waitForTimeout(50);
     await waitForRAF(ctx.page);
+
     const filteredEvents = JSON.parse(
       JSON.stringify(ctx.events).replace(/blob\:[\w\d-/]+"/, 'blob:null"'),
     );
