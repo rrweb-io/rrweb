@@ -337,6 +337,35 @@ describe('cross origin iframes', function (this: ISuite) {
       assertSnapshot(snapshots);
     });
   });
+
+  describe('audio.html', function (this: ISuite) {
+    jest.setTimeout(100_000);
+
+    const ctx: ISuite = setup.call(
+      this,
+      `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <iframe src="{SERVER_URL}/html/audio.html"></iframe>
+        </body>
+      </html>
+    `,
+    );
+
+    it('should emit contents of iframe once', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        const el = document.querySelector('audio')!;
+        el.play();
+      });
+      await waitForRAF(ctx.page);
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+  });
 });
 
 describe('same origin iframes', function (this: ISuite) {

@@ -161,15 +161,12 @@ export class IframeManager {
           // can safely ignore these events
           return;
         }
+        case IncrementalSource.MediaInteraction:
         case IncrementalSource.MouseInteraction:
         case IncrementalSource.Scroll:
         case IncrementalSource.CanvasMutation:
         case IncrementalSource.Input: {
           this.replaceIds(e.data, iframeEl, ['id']);
-          break;
-        }
-        case IncrementalSource.MediaInteraction: {
-          // TODO
           break;
         }
         case IncrementalSource.StyleSheetRule: {
