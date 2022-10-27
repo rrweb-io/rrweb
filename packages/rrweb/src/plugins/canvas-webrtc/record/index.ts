@@ -83,6 +83,7 @@ export class RRWebPluginCanvasWebRTCRecord {
     if (stream) return stream;
 
     const el = this.mirror.getNode(id) as HTMLCanvasElement | null;
+    // TODO: no node found, might be in a child iframe
     if (!el || !('captureStream' in el)) return false;
 
     stream = el.captureStream();
