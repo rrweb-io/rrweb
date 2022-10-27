@@ -671,6 +671,7 @@ describe('record', function (this: ISuite) {
 
     // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
     await waitForRAF(ctx.page);
+    await waitForRAF(ctx.page);
     const filteredEvents = JSON.parse(
       JSON.stringify(ctx.events).replace(/blob\:[\w\d-/]+"/, 'blob:null"'),
     );
@@ -704,65 +705,71 @@ describe('record', function (this: ISuite) {
 
   it('captures adopted stylesheets in shadow doms and iframe', async () => {
     await ctx.page.evaluate(() => {
-      document.body.innerHTML = `
+      return new Promise((resolve) => {
+        document.body.innerHTML = `
         <div>div in outermost document</div>
         <div id="shadow-host1"></div>
         <div id="shadow-host2"></div>
         <iframe></iframe>
       `;
 
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync!(
-        'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
-      );
-      // Add stylesheet to a document.
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!(
+          'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
+        );
+        // Add stylesheet to a document.
 
-      document.adoptedStyleSheets = [sheet];
+        document.adoptedStyleSheets = [sheet];
 
-      // Add stylesheet to a shadow host.
-      const host = document.querySelector('#shadow-host1');
-      const shadow = host!.attachShadow({ mode: 'open' });
-      shadow.innerHTML =
-        '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
-      const sheet2 = new CSSStyleSheet();
-
-      sheet2.replaceSync!('span { color: red; }');
-
-      shadow.adoptedStyleSheets = [sheet, sheet2];
-
-      // Add stylesheet to an IFrame document.
-      const iframe = document.querySelector('iframe');
-      const sheet3 = new (iframe!.contentWindow! as IWindow &
-        typeof globalThis).CSSStyleSheet();
-      sheet3.replaceSync!('h1 { color: blue; }');
-
-      iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
-
-      const ele = iframe!.contentDocument!.createElement('h1');
-      ele.innerText = 'h1 in iframe';
-      iframe!.contentDocument!.body.appendChild(ele);
-
-      ((window as unknown) as IWindow).rrweb.record({
-        emit: ((window.top as unknown) as IWindow).emit,
-      });
-
-      // Make incremental changes to shadow dom.
-      setTimeout(() => {
-        const host = document.querySelector('#shadow-host2');
+        // Add stylesheet to a shadow host.
+        const host = document.querySelector('#shadow-host1');
         const shadow = host!.attachShadow({ mode: 'open' });
         shadow.innerHTML =
-          '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
-        const sheet4 = new CSSStyleSheet();
-        sheet4.replaceSync!('span { color: green; }');
-        shadow.adoptedStyleSheets = [sheet, sheet4];
+          '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
+        const sheet2 = new CSSStyleSheet();
 
-        document.adoptedStyleSheets = [sheet4, sheet, sheet2];
+        sheet2.replaceSync!('span { color: red; }');
 
-        const sheet5 = new (iframe!.contentWindow! as IWindow &
+        shadow.adoptedStyleSheets = [sheet, sheet2];
+
+        // Add stylesheet to an IFrame document.
+        const iframe = document.querySelector('iframe');
+        const sheet3 = new (iframe!.contentWindow! as IWindow &
           typeof globalThis).CSSStyleSheet();
-        sheet5.replaceSync!('h2 { color: purple; }');
-        iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
-      }, 10);
+        sheet3.replaceSync!('h1 { color: blue; }');
+
+        iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
+
+        const ele = iframe!.contentDocument!.createElement('h1');
+        ele.innerText = 'h1 in iframe';
+        iframe!.contentDocument!.body.appendChild(ele);
+
+        ((window as unknown) as IWindow).rrweb.record({
+          emit: ((window.top as unknown) as IWindow).emit,
+        });
+
+        // Make incremental changes to shadow dom.
+        setTimeout(() => {
+          const host = document.querySelector('#shadow-host2');
+          const shadow = host!.attachShadow({ mode: 'open' });
+          shadow.innerHTML =
+            '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
+          const sheet4 = new CSSStyleSheet();
+          sheet4.replaceSync!('span { color: green; }');
+          shadow.adoptedStyleSheets = [sheet, sheet4];
+
+          document.adoptedStyleSheets = [sheet4, sheet, sheet2];
+
+          const sheet5 = new (iframe!.contentWindow! as IWindow &
+            typeof globalThis).CSSStyleSheet();
+          sheet5.replaceSync!('h2 { color: purple; }');
+          iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
+        }, 10);
+
+        setTimeout(() => {
+          resolve(null);
+        }, 20);
+      });
     });
     await waitForRAF(ctx.page); // wait till events get sent
 
