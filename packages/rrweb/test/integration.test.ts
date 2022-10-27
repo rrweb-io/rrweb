@@ -536,6 +536,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.frames()[1].evaluate(() => {
       console.log('from iframe');
     });
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
