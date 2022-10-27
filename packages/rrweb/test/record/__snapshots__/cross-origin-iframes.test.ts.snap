@@ -1817,6 +1817,399 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
 ]"
 `;
 
+exports[`cross origin iframes move-node.html captures mutations on adopted stylesheets 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n            \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {
+                      \\"rr_src\\": \\"http://localhost:3030/html/move-node.html\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\\\n        \\\\n      \\",
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 7
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 1,
+                \\"name\\": \\"html\\",
+                \\"publicId\\": \\"\\",
+                \\"systemId\\": \\"\\",
+                \\"id\\": 12
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"id\\": 16
+                          }
+                        ],
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 18
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 20
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"p\\",
+                            \\"attributes\\": {},
+                            \\"childNodes\\": [],
+                            \\"id\\": 21
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"id\\": 22
+                          }
+                        ],
+                        \\"id\\": 19
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 23
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"span\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 25
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"i\\",
+                            \\"attributes\\": {},
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 27
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"b\\",
+                                \\"attributes\\": {},
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"1\\",
+                                    \\"id\\": 29
+                                  }
+                                ],
+                                \\"id\\": 28
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"id\\": 30
+                              }
+                            ],
+                            \\"id\\": 26
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"id\\": 31
+                          }
+                        ],
+                        \\"id\\": 24
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"id\\": 32
+                      }
+                    ],
+                    \\"id\\": 17
+                  }
+                ],
+                \\"id\\": 13
+              }
+            ],
+            \\"id\\": 11
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 1,
+      \\"styleIds\\": [
+        1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": []
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 11,
+      \\"styleIds\\": [
+        2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": []
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"replace\\": \\"div { color: yellow; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replace\\": \\"h1 { color: blue; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"replaceSync\\": \\"div { display: inline ; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replaceSync\\": \\"h1 { font-size: large; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 1,
+      \\"set\\": {
+        \\"property\\": \\"color\\",
+        \\"value\\": \\"green\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 1,
+      \\"remove\\": {
+        \\"property\\": \\"display\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 2,
+      \\"set\\": {
+        \\"property\\": \\"font-size\\",
+        \\"value\\": \\"medium\\",
+        \\"priority\\": \\"important\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"h2 { color: red; }\\"
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { border: 2px solid blue; }\\",
+          \\"index\\": 1
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"removes\\": [
+        {
+          \\"index\\": 0
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`cross origin iframes move-node.html should record DOM attribute changes 1`] = `
 "[
   {

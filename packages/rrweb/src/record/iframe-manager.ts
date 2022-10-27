@@ -19,6 +19,10 @@ export class IframeManager {
     HTMLIFrameElement,
     Map<number, number>
   > = new WeakMap();
+  private iframeStyleIdMap: WeakMap<
+    HTMLIFrameElement,
+    Map<number, number>
+  > = new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
@@ -169,17 +173,13 @@ export class IframeManager {
           this.replaceIds(e.data, iframeEl, ['id']);
           break;
         }
-        case IncrementalSource.StyleSheetRule: {
-          // TODO
+        case IncrementalSource.StyleSheetRule:
+        case IncrementalSource.StyleDeclaration: {
+          this.replaceStyleIds(e.data, iframeEl, ['styleId']);
           break;
         }
         case IncrementalSource.Font: {
           // fine as-is no modification needed
-          break;
-        }
-        case IncrementalSource.StyleDeclaration: {
-          // TODO
-          // setup a map for the stylemirror, it has its own ids that need mapping
           break;
         }
         case IncrementalSource.Selection: {
@@ -189,7 +189,11 @@ export class IframeManager {
           break;
         }
         case IncrementalSource.AdoptedStyleSheet: {
-          // TODO
+          this.replaceIds(e.data, iframeEl, ['id']);
+          this.replaceStyleIds(e.data, iframeEl, ['styleIds']);
+          e.data.styles?.forEach((style) => {
+            this.replaceStyleIds(style, iframeEl, ['styleId']);
+          });
           break;
         }
         default: {
@@ -222,29 +226,65 @@ export class IframeManager {
     return e;
   }
 
+  private replace<T extends Record<string, unknown>>(
+    map: WeakMap<HTMLIFrameElement, Map<number, number>>,
+    generateIdFn: () => number,
+    obj: T,
+    iframeEl: HTMLIFrameElement,
+    keys: Array<keyof T>,
+  ): T {
+    let idMap = map.get(iframeEl);
+    if (!idMap) {
+      idMap = new Map();
+      map.set(iframeEl, idMap);
+    }
+
+    for (const key of keys) {
+      if (!Array.isArray(obj[key]) && typeof obj[key] !== 'number') continue;
+      if (Array.isArray(obj[key])) {
+        obj[key] = (obj[key] as unknown[]).map((id) => {
+          if (typeof id !== 'number') return id;
+          if (idMap!.has(id)) return idMap!.get(id);
+          const newId = generateIdFn();
+          idMap!.set(id, newId);
+          return newId;
+        }) as T[keyof T];
+      } else {
+        const originalId = obj[key] as number;
+        let newId = idMap.get(originalId);
+        if (!newId) {
+          newId = generateIdFn();
+          idMap.set(originalId, newId);
+        }
+        (obj[key] as number) = newId;
+      }
+    }
+
+    return obj;
+  }
+
   private replaceIds<T extends Record<string, unknown>>(
     obj: T,
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
   ): T {
-    let idMap = this.iframeIdMap.get(iframeEl);
-    if (!idMap) {
-      idMap = new Map();
-      this.iframeIdMap.set(iframeEl, idMap);
-    }
+    return this.replace(this.iframeIdMap, genId, obj, iframeEl, keys);
+  }
 
-    for (const key of keys) {
-      if (typeof obj[key] !== 'number') continue;
-      const originalId = obj[key] as number;
-      let newId = idMap.get(originalId);
-      if (!newId) {
-        newId = genId();
-        idMap.set(originalId, newId);
-      }
-      (obj[key] as number) = newId;
-    }
-
-    return obj;
+  private replaceStyleIds<T extends Record<string, unknown>>(
+    obj: T,
+    iframeEl: HTMLIFrameElement,
+    keys: Array<keyof T>,
+  ): T {
+    return this.replace(
+      this.iframeStyleIdMap,
+      this.stylesheetManager.styleMirror.generateId.bind(
+        this.stylesheetManager.styleMirror,
+      ),
+      obj,
+      iframeEl,
+      keys,
+    );
   }
 
   private replaceIdOnNode(

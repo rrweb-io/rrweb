@@ -336,6 +336,70 @@ describe('cross origin iframes', function (this: ISuite) {
       )) as eventWithTime[];
       assertSnapshot(snapshots);
     });
+
+    it('captures mutations on adopted stylesheets', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await ctx.page.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        // Add stylesheet to a document.
+        document.adoptedStyleSheets = [sheet];
+      });
+      await frame.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        // Add stylesheet to a document.
+        document.adoptedStyleSheets = [sheet];
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        document.adoptedStyleSheets![0].replace!('div { color: yellow; }');
+      });
+      await frame.evaluate(() => {
+        document.adoptedStyleSheets![0].replace!('h1 { color: blue; }');
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        document.adoptedStyleSheets![0].replaceSync!(
+          'div { display: inline ; }',
+        );
+      });
+      await frame.evaluate(() => {
+        document.adoptedStyleSheets![0].replaceSync!(
+          'h1 { font-size: large; }',
+        );
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        (document.adoptedStyleSheets![0]
+          .cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
+        (document.adoptedStyleSheets![0]
+          .cssRules[0] as CSSStyleRule).style.removeProperty('display');
+      });
+      await frame.evaluate(() => {
+        (document.adoptedStyleSheets![0]
+          .cssRules[0] as CSSStyleRule).style.setProperty(
+          'font-size',
+          'medium',
+          'important',
+        );
+        document.adoptedStyleSheets![0].insertRule('h2 { color: red; }');
+      });
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        document.adoptedStyleSheets![0].insertRule(
+          'body { border: 2px solid blue; }',
+          1,
+        );
+      });
+      await frame.evaluate(() => {
+        document.adoptedStyleSheets![0].deleteRule(0);
+      });
+      await waitForRAF(ctx.page);
+
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
   });
 
   describe('audio.html', function (this: ISuite) {

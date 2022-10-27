@@ -491,4 +491,8 @@ export class StyleSheetMirror {
     this.idStyleMap = new Map();
     this.id = 1;
   }
+
+  generateId(): number {
+    return this.id++;
+  }
 }
