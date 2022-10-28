@@ -321,7 +321,7 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
+            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {
