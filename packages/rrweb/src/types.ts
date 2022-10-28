@@ -798,6 +798,19 @@ export type IWindow = Window & typeof globalThis;
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
+export type GetTypedKeys<Obj extends object, ValueType> = TakeTypeHelper<
+  Obj,
+  ValueType
+>[keyof TakeTypeHelper<Obj, ValueType>];
+export type TakeTypeHelper<Obj extends object, ValueType> = {
+  [K in keyof Obj]: Obj[K] extends ValueType ? K : never;
+};
+
+export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
+  Obj,
+  TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
+>;
+
 export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
   type: 'rrweb';
   event: T;
