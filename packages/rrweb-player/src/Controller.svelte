@@ -389,6 +389,10 @@
           class="rr-progress__step"
           bind:this={step}
           style="width: {percentage}" />
+        <div
+          title="inactive period"
+          style="width: 5%;height: 4px;position: absolute;background: rgb(255 0 0);left: 5%"
+        />
         {#each customEvents as event}
           <div
             title={event.name}
