@@ -54,6 +54,14 @@
     percentage = `${100 * percent}%`;
     dispatch('ui-update-progress', { payload: percent });
   }
+
+  function position(startTime: number, endTime: number, tagTime: number) {
+    const sessionDuration = endTime - startTime;
+    const eventDuration = endTime - tagTime;
+    const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
+    return eventPosition.toFixed(2);
+  }
+
   type CustomEvent = {
     name: string;
     background: string;
@@ -66,15 +74,6 @@
     const start = context.events[0].timestamp;
     const end = context.events[totalEvents - 1].timestamp;
     const customEvents: CustomEvent[] = [];
-
-    // calculate tag position.
-    const position = (startTime: number, endTime: number, tagTime: number) => {
-      const sessionDuration = endTime - startTime;
-      const eventDuration = endTime - tagTime;
-      const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
-
-      return eventPosition.toFixed(2);
-    };
 
     // loop through all the events and find out custom event.
     context.events.forEach((event) => {
@@ -107,14 +106,6 @@
     const start = context.events[0].timestamp;
     const end = context.events[totalEvents - 1].timestamp;
     const periods = getInactivePeriods(context.events);
-    // calculate tag position.
-    const position = (startTime: number, endTime: number, tagTime: number) => {
-      const sessionDuration = endTime - startTime;
-      const eventDuration = endTime - tagTime;
-      const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
-
-      return eventPosition.toFixed(2);
-    };
     const getWidth = (
       startTime: number,
       endTime: number,
@@ -130,7 +121,7 @@
       name: 'inactive',
       background: 'rgb(212 212 212)',
       position: `${position(start, end, period[0])}%`,
-      width: getWidth(start, end, period[0], period[1]),
+      width: `${getWidth(start, end, period[0], period[1])}%`,
     }));
   })();
 
@@ -428,10 +419,13 @@
           class="rr-progress__step"
           bind:this={step}
           style="width: {percentage}" />
-        <div
-          title="inactive period"
-          style="width: 5%;height: 4px;position: absolute;background: rgb(255 0 0);left: 5%"
-        />
+        {#each inactivePeriods as period}
+          <div
+            title={period.name}
+            style="width: {period.width};height: 4px;position: absolute;background: {period.background};left:
+            {period.position};"
+          />
+        {/each}
         {#each customEvents as event}
           <div
             title={event.name}
