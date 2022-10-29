@@ -12,7 +12,7 @@
     createEventDispatcher,
     afterUpdate,
   } from 'svelte';
-  import { formatTime } from './utils';
+  import { formatTime, getInactivePeriods } from './utils';
   import Switch from './components/Switch.svelte';
 
   const dispatch = createEventDispatcher();
@@ -93,6 +93,31 @@
     });
 
     return customEvents;
+  })();
+
+  type InactivePeriod = {
+    name: string;
+    background: string;
+    position: string;
+  };
+  let inactivePeriods: InactivePeriod[];
+  $: inactivePeriods = (() => {
+    const { context } = replayer.service.state;
+    const totalEvents = context.events.length;
+    const start = context.events[0].timestamp;
+    const end = context.events[totalEvents - 1].timestamp;
+    const periods = getInactivePeriods(context.events);
+
+    // calculate tag position.
+    const position = (startTime: number, endTime: number, tagTime: number) => {
+      const sessionDuration = endTime - startTime;
+      const eventDuration = endTime - tagTime;
+      const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
+
+      return eventPosition.toFixed(2);
+    };
+
+    return periods;
   })();
 
   const loopTimer = () => {
