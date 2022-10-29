@@ -95,19 +95,18 @@
     return customEvents;
   })();
 
-  type InactivePeriod = {
+  let inactivePeriods: {
     name: string;
     background: string;
     position: string;
-  };
-  let inactivePeriods: InactivePeriod[];
+    width: string;
+  }[];
   $: inactivePeriods = (() => {
     const { context } = replayer.service.state;
     const totalEvents = context.events.length;
     const start = context.events[0].timestamp;
     const end = context.events[totalEvents - 1].timestamp;
     const periods = getInactivePeriods(context.events);
-
     // calculate tag position.
     const position = (startTime: number, endTime: number, tagTime: number) => {
       const sessionDuration = endTime - startTime;
@@ -116,8 +115,23 @@
 
       return eventPosition.toFixed(2);
     };
-
-    return periods;
+    const getWidth = (
+      startTime: number,
+      endTime: number,
+      tagStart: number,
+      tagEnd: number,
+    ) => {
+      const sessionDuration = endTime - startTime;
+      const eventDuration = tagEnd - tagStart;
+      const width = (eventDuration / sessionDuration) * 100;
+      return width.toFixed(2);
+    };
+    return periods.map((period) => ({
+      name: 'inactive',
+      background: 'rgb(212 212 212)',
+      position: `${position(start, end, period[0])}%`,
+      width: getWidth(start, end, period[0], period[1]),
+    }));
   })();
 
   const loopTimer = () => {
