@@ -16,8 +16,8 @@ export class IframeManager {
     MessageEventSource,
     HTMLIFrameElement
   > = new WeakMap();
-  private crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
-  private crossOriginIframeStyleMirror: CrossOriginIframeMirror;
+  public crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
+  public crossOriginIframeStyleMirror: CrossOriginIframeMirror;
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;

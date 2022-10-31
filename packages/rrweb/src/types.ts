@@ -15,6 +15,7 @@ import type { Replayer } from './replay';
 import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
+import type CrossOriginIframeMirror from './record/cross-origin-iframe-mirror';
 
 export enum EventType {
   DomContentLoaded,
@@ -235,7 +236,11 @@ export type RecordPlugin<TOptions = unknown> = {
     options: TOptions,
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
-  getMirror?: (mirror: Mirror) => void;
+  getMirror?: (mirrors: {
+    nodeMirror: Mirror;
+    crossOriginIframeMirror: CrossOriginIframeMirror;
+    crossOriginIframeStyleMirror: CrossOriginIframeMirror;
+  }) => void;
   options: TOptions;
 };
 
@@ -706,7 +711,7 @@ export type ReplayPlugin = {
     node: Node | RRNode,
     context: { id: number; replayer: Replayer },
   ) => void;
-  getMirror?: (mirror: Mirror) => void;
+  getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
 };
 export type playerConfig = {
   speed: number;
