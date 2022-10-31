@@ -105,9 +105,7 @@ async function saveEvents(events: eventWithTime[]) {
     events,
     createTimestamp: Date.now(),
     modifyTimestamp: Date.now(),
-    recorderVersion: ((Browser.runtime.getManifest() as unknown) as {
-      recorder_version: string;
-    }).recorder_version,
+    recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
   };
   const data = (await Browser.storage.local.get(
     LocalDataKey.sessions,

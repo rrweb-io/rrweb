@@ -42,7 +42,7 @@ export default defineConfig({
         const manifest = {
           version: packageJson.version,
           author: packageJson.author,
-          recorder_version: packageJson.dependencies?.rrweb?.replace('^', ''),
+          version_name: packageJson.dependencies?.rrweb?.replace('^', ''),
           ...commonManifest,
         };
         Object.assign(
