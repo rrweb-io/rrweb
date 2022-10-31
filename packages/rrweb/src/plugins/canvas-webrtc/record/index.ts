@@ -60,7 +60,12 @@ export class RRWebPluginCanvasWebRTCRecord {
       this.peer?.signal(signal);
     }
     if (this.crossOriginStreamMap.size) {
-      [...this.crossOriginStreamMap.values()].forEach((iframe) => {
+      [...this.crossOriginStreamMap.entries()].forEach(([id, iframe]) => {
+        if (this.crossOriginIframeMirror.getRemoteId(iframe, id) === -1) {
+          this.crossOriginStreamMap.delete(id);
+          return;
+        }
+
         iframe.contentWindow?.postMessage(
           {
             type: 'rrweb-canvas-webrtc',
