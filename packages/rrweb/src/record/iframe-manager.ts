@@ -7,7 +7,7 @@ import {
   IncrementalSource,
   mutationCallBack,
 } from '../types';
-import IframeMirror from './iframe-mirror';
+import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
@@ -16,8 +16,8 @@ export class IframeManager {
     MessageEventSource,
     HTMLIFrameElement
   > = new WeakMap();
-  private crossOriginIframeIdMap = new IframeMirror(genId);
-  private crossOriginIframeStyleIdMap: IframeMirror;
+  private crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
+  private crossOriginIframeStyleMirror: CrossOriginIframeMirror;
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
@@ -36,7 +36,7 @@ export class IframeManager {
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
-    this.crossOriginIframeStyleIdMap = new IframeMirror(
+    this.crossOriginIframeStyleMirror = new CrossOriginIframeMirror(
       this.stylesheetManager.styleMirror.generateId.bind(
         this.stylesheetManager.styleMirror,
       ),
@@ -112,7 +112,7 @@ export class IframeManager {
     e: eventWithTime,
   ): eventWithTime | void {
     if (e.type === EventType.FullSnapshot) {
-      this.crossOriginIframeIdMap.reset(iframeEl);
+      this.crossOriginIframeMirror.reset(iframeEl);
       /**
        * Replaces the original id of the iframe with a new set of unique ids
        */
@@ -228,7 +228,7 @@ export class IframeManager {
   }
 
   private replace<T extends Record<string, unknown>>(
-    iframeMirror: IframeMirror,
+    iframeMirror: CrossOriginIframeMirror,
     obj: T,
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
@@ -256,7 +256,7 @@ export class IframeManager {
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
   ): T {
-    return this.replace(this.crossOriginIframeIdMap, obj, iframeEl, keys);
+    return this.replace(this.crossOriginIframeMirror, obj, iframeEl, keys);
   }
 
   private replaceStyleIds<T extends Record<string, unknown>>(
@@ -264,7 +264,7 @@ export class IframeManager {
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
   ): T {
-    return this.replace(this.crossOriginIframeStyleIdMap, obj, iframeEl, keys);
+    return this.replace(this.crossOriginIframeStyleMirror, obj, iframeEl, keys);
   }
 
   private replaceIdOnNode(

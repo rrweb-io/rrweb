@@ -1,4 +1,4 @@
-export default class IframeMirror {
+export default class CrossOriginIframeMirror {
   private iframeParentIdToRemoteIdMap: WeakMap<
     HTMLIFrameElement,
     Map<number, number>
