@@ -7,6 +7,7 @@ import {
   IncrementalSource,
   mutationCallBack,
 } from '../types';
+import IframeMirror from './iframe-mirror';
 import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
@@ -15,14 +16,8 @@ export class IframeManager {
     MessageEventSource,
     HTMLIFrameElement
   > = new WeakMap();
-  private iframeIdMap: WeakMap<
-    HTMLIFrameElement,
-    Map<number, number>
-  > = new WeakMap();
-  private iframeStyleIdMap: WeakMap<
-    HTMLIFrameElement,
-    Map<number, number>
-  > = new WeakMap();
+  private crossOriginIframeIdMap = new IframeMirror(genId);
+  private crossOriginIframeStyleIdMap: IframeMirror;
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
@@ -41,6 +36,11 @@ export class IframeManager {
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
+    this.crossOriginIframeStyleIdMap = new IframeMirror(
+      this.stylesheetManager.styleMirror.generateId.bind(
+        this.stylesheetManager.styleMirror,
+      ),
+    );
     this.mirror = options.mirror;
     if (this.recordCrossOriginIframes) {
       window.addEventListener('message', this.handleMessage.bind(this));
@@ -112,7 +112,7 @@ export class IframeManager {
     e: eventWithTime,
   ): eventWithTime | void {
     if (e.type === EventType.FullSnapshot) {
-      this.iframeIdMap.set(iframeEl, new Map());
+      this.crossOriginIframeIdMap.reset(iframeEl);
       /**
        * Replaces the original id of the iframe with a new set of unique ids
        */
@@ -228,36 +228,23 @@ export class IframeManager {
   }
 
   private replace<T extends Record<string, unknown>>(
-    map: WeakMap<HTMLIFrameElement, Map<number, number>>,
-    generateIdFn: () => number,
+    iframeMirror: IframeMirror,
     obj: T,
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
   ): T {
-    let idMap = map.get(iframeEl);
-    if (!idMap) {
-      idMap = new Map();
-      map.set(iframeEl, idMap);
-    }
-
     for (const key of keys) {
       if (!Array.isArray(obj[key]) && typeof obj[key] !== 'number') continue;
       if (Array.isArray(obj[key])) {
-        obj[key] = (obj[key] as unknown[]).map((id) => {
-          if (typeof id !== 'number') return id;
-          if (idMap!.has(id)) return idMap!.get(id);
-          const newId = generateIdFn();
-          idMap!.set(id, newId);
-          return newId;
-        }) as T[keyof T];
+        obj[key] = iframeMirror.getParentIds(
+          iframeEl,
+          obj[key] as number[],
+        ) as T[keyof T];
       } else {
-        const originalId = obj[key] as number;
-        let newId = idMap.get(originalId);
-        if (!newId) {
-          newId = generateIdFn();
-          idMap.set(originalId, newId);
-        }
-        (obj[key] as number) = newId;
+        (obj[key] as number) = iframeMirror.getParentId(
+          iframeEl,
+          obj[key] as number,
+        );
       }
     }
 
@@ -269,7 +256,7 @@ export class IframeManager {
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
   ): T {
-    return this.replace(this.iframeIdMap, genId, obj, iframeEl, keys);
+    return this.replace(this.crossOriginIframeIdMap, obj, iframeEl, keys);
   }
 
   private replaceStyleIds<T extends Record<string, unknown>>(
@@ -277,15 +264,7 @@ export class IframeManager {
     iframeEl: HTMLIFrameElement,
     keys: Array<keyof T>,
   ): T {
-    return this.replace(
-      this.iframeStyleIdMap,
-      this.stylesheetManager.styleMirror.generateId.bind(
-        this.stylesheetManager.styleMirror,
-      ),
-      obj,
-      iframeEl,
-      keys,
-    );
+    return this.replace(this.crossOriginIframeStyleIdMap, obj, iframeEl, keys);
   }
 
   private replaceIdOnNode(
