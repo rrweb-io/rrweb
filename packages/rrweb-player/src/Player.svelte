@@ -22,6 +22,8 @@
   export let speed = 1;
   export let showController = true;
   export let tags: Record<string, string> = {};
+  // color of inactive periods indicator
+  export let inactiveColor = '#D4D4D4';
 
   let replayer: Replayer;
 
@@ -229,6 +231,7 @@
       {speedOption}
       {skipInactive}
       {tags}
+      {inactiveColor}
       on:fullscreen={() => toggleFullscreen()}
     />
   {/if}
