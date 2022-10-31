@@ -24,6 +24,7 @@
   export let speedOption: number[];
   export let speed = speedOption.length ? speedOption[0] : 1;
   export let tags: Record<string, string> = {};
+  export let inactiveColor: string;
 
   let currentTime = 0;
   $: {
@@ -128,7 +129,7 @@
       };
       return periods.map((period) => ({
         name: 'inactive period',
-        background: 'rgb(212 212 212)',
+        background: inactiveColor,
         position: `${position(start, end, period[0])}%`,
         width: `${getWidth(start, end, period[0], period[1])}%`,
       }));
