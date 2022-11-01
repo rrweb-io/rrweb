@@ -113,6 +113,7 @@ export class IframeManager {
   ): eventWithTime | void {
     if (e.type === EventType.FullSnapshot) {
       this.crossOriginIframeMirror.reset(iframeEl);
+      this.crossOriginIframeStyleMirror.reset(iframeEl);
       /**
        * Replaces the original id of the iframe with a new set of unique ids
        */
