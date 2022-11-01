@@ -8,11 +8,6 @@
         "run_at": "document_idle"
       }
     ],
-    "options_ui": {
-      "page": "options/index.html",
-      "open_in_tab": true,
-      "chrome_style": false
-    },
     "icons": {
       "16": "assets/icon16.png",
       "48": "assets/icon48.png",
@@ -31,6 +26,11 @@
         "default_popup": "popup/popup.html",
         "browser_style": false
       },
+      "options_ui": {
+        "page": "options/index.html",
+        "open_in_tab": true,
+        "chrome_style": false
+      },
       "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
       "web_accessible_resources": ["**/*.js"]
     },
@@ -48,6 +48,10 @@
         "default_title": "rrweb extension",
         "default_popup": "popup/popup.html",
         "browser_style": false
+      },
+      "options_ui": {
+        "page": "options/index.html",
+        "open_in_tab": true
       },
       "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
       "web_accessible_resources": [
