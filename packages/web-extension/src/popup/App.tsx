@@ -7,7 +7,7 @@ import {
   LocalDataKey,
   RecorderStatus,
   ServiceName,
-  StartRecordResponse,
+  RecordStartedMessage,
 } from '../types';
 import Browser from 'webextension-polyfill';
 import { CircleButton } from '../components/CircleButton';
@@ -79,10 +79,12 @@ export function App() {
                   .then(async (res) => {
                     if (res) {
                       setRecording(false);
+                      const status: LocalData[LocalDataKey.recorderStatus] = {
+                        status: RecorderStatus.IDLE,
+                        activeTabId: tabId,
+                      };
                       await Browser.storage.local.set({
-                        [LocalDataKey.recorderStatus]: {
-                          status: RecorderStatus.IDLE,
-                        },
+                        [LocalDataKey.recorderStatus]: status,
                       });
                     }
                   })
@@ -96,15 +98,17 @@ export function App() {
                 if (tabId === -1) return;
                 void channel
                   .requestToTab(tabId, ServiceName.StartRecord, {})
-                  .then(async (res: StartRecordResponse | undefined) => {
+                  .then(async (res: RecordStartedMessage | undefined) => {
                     if (res) {
                       setRecording(true);
                       setStartTime(res.startTimestamp);
+                      const status: LocalData[LocalDataKey.recorderStatus] = {
+                        status: RecorderStatus.RECORDING,
+                        activeTabId: tabId,
+                        startTimestamp: res.startTimestamp,
+                      };
                       await Browser.storage.local.set({
-                        [LocalDataKey.recorderStatus]: {
-                          status: RecorderStatus.RECORDING,
-                          startTimestamp: res.startTimestamp,
-                        },
+                        [LocalDataKey.recorderStatus]: status,
                       });
                     }
                   })

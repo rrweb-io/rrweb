@@ -22,6 +22,7 @@ export type LocalData = {
   [LocalDataKey.sessions]: Record<string, Session>;
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
+    activeTabId: number;
     startTimestamp?: number;
     duration?: number;
   };
@@ -32,6 +33,8 @@ export enum RecorderStatus {
   IDLE = 'IDLE',
   RECORDING = 'RECORDING',
   PAUSED = 'PAUSED',
+  // when user change the tab, the recorder will be paused during the tab change
+  PausedSwitch = 'PAUSED_SWITCH',
 }
 
 export type Session = {

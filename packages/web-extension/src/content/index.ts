@@ -31,6 +31,15 @@ void (async () => {
       };
     });
   });
+  channel.provide(ServiceName.ResumeRecord, async (params) => {
+    storedEvents = (params as { events: eventWithTime[] }).events;
+    clearRecorderCb = startRecord();
+    return new Promise((resolve) => {
+      startResponseCb = (response) => {
+        resolve(response);
+      };
+    });
+  });
   let stopResponseCb:
     | ((response: RecordStoppedMessage) => void)
     | undefined = undefined;
@@ -38,6 +47,18 @@ void (async () => {
     window.postMessage({ message: MessageName.StopRecord });
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {
+        stopResponseCb = undefined;
+        void saveEvents(response.events);
+        storedEvents = [];
+        resolve(response);
+      };
+    });
+  });
+  channel.provide(ServiceName.PauseRecord, () => {
+    window.postMessage({ message: MessageName.StopRecord });
+    return new Promise((resolve) => {
+      stopResponseCb = (response: RecordStoppedMessage) => {
+        stopResponseCb = undefined;
         resolve(response);
       };
     });
@@ -66,11 +87,10 @@ void (async () => {
         stopResponseCb
       ) {
         const data = event.data as RecordStoppedMessage;
-        stopResponseCb(data);
-        void saveEvents(storedEvents.concat(data.events));
+        data.events = storedEvents.concat(data.events);
         clearRecorderCb?.();
         clearRecorderCb = undefined;
-        storedEvents = [];
+        stopResponseCb(data);
       } else if (event.data.message === MessageName.HeartBeat) {
         void Browser.storage.local.set({
           [LocalDataKey.bufferedEvents]: storedEvents.concat(
