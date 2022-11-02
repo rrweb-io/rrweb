@@ -179,7 +179,7 @@ function record<T = eventWithTime>(
     }
 
     if (inEmittingFrame) {
-      emit!(eventProcessor(e), isCheckout);
+      emit?.(eventProcessor(e), isCheckout);
     } else if (passEmitsToParent) {
       const message: CrossOriginIframeMessageEventContent<T> = {
         type: 'rrweb',
