@@ -124,6 +124,7 @@ describe('e2e webgl', () => {
       getHtml.call(this, 'canvas-webgl-image.html', { recordCanvas: true }),
     );
 
+    await waitForRAF(page);
     await page.waitForTimeout(100);
     const snapshots: eventWithTime[] = (await page.evaluate(
       'window.snapshots',
