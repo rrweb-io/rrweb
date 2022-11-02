@@ -10,13 +10,17 @@ export type CrossOriginIframeMessageEventContent = {
   type: 'rrweb-canvas-webrtc';
   data:
     | {
-        type: 'setup-stream';
-        id: number;
-        rootId: number;
-      }
-    | {
         type: 'signal';
         signal: RTCSessionDescriptionInit;
+      }
+    | {
+        type: 'who-has-canvas';
+        rootId: number;
+        id: number;
+      }
+    | {
+        type: 'i-have-canvas';
+        rootId: number;
       };
 };
 
@@ -25,7 +29,12 @@ export class RRWebPluginCanvasWebRTCRecord {
   private mirror: Mirror;
   private crossOriginIframeMirror: CrossOriginIframeMirror;
   private streamMap: Map<number, MediaStream> = new Map();
-  private crossOriginStreamMap: Map<number, HTMLIFrameElement> = new Map();
+  private incomingStreams = new Set<MediaStream>();
+  private outgoingStreams = new Set<MediaStream>();
+  private streamNodeMap = new Map<string, number>();
+  private canvasWindowMap = new Map<number, WindowProxy>();
+  private windowPeerMap = new WeakMap<WindowProxy, SimplePeer.Instance>();
+  private peerWindowMap = new WeakMap<SimplePeer.Instance, WindowProxy>();
   private signalSendCallback: (msg: RTCSessionDescriptionInit) => void;
 
   constructor({
@@ -55,75 +64,136 @@ export class RRWebPluginCanvasWebRTCRecord {
   }
 
   public signalReceive(signal: RTCSessionDescriptionInit) {
-    if (this.streamMap.size) {
-      if (!this.peer) this.setupPeer();
-      this.peer?.signal(signal);
-    }
-    if (this.crossOriginStreamMap.size) {
-      [...this.crossOriginStreamMap.entries()].forEach(([id, iframe]) => {
-        if (this.crossOriginIframeMirror.getRemoteId(iframe, id) === -1) {
-          this.crossOriginStreamMap.delete(id);
-          return;
-        }
+    if (!this.peer) this.setupPeer();
+    this.peer?.signal(signal);
+  }
 
-        iframe.contentWindow?.postMessage(
-          {
-            type: 'rrweb-canvas-webrtc',
-            data: {
-              type: 'signal',
-              signal: signal,
-            },
-          } as CrossOriginIframeMessageEventContent,
-          '*',
-        );
-      });
-    }
+  public signalReceiveFromCrossOriginIframe(
+    signal: RTCSessionDescriptionInit,
+    source: WindowProxy,
+  ) {
+    const peer = this.setupPeer(source);
+    peer.signal(signal);
   }
 
   private startStream(id: number, stream: MediaStream) {
-    if (!this.peer) return this.setupPeer();
+    if (!this.peer) this.setupPeer();
 
     const data: WebRTCDataChannel = {
       nodeId: id,
       streamId: stream.id,
     };
     this.peer?.send(JSON.stringify(data));
-    this.peer?.addStream(stream);
+    if (!this.outgoingStreams.has(stream)) this.peer?.addStream(stream);
+    this.outgoingStreams.add(stream);
   }
 
-  public setupPeer() {
-    if (!this.peer) {
-      this.peer = new SimplePeer({
+  public setupPeer(source?: WindowProxy): SimplePeer.Instance {
+    let peer: SimplePeer.Instance;
+
+    if (!source) {
+      if (this.peer) return this.peer;
+
+      peer = this.peer = new SimplePeer({
         initiator: true,
         // trickle: false, // only create one WebRTC offer per session
       });
+    } else {
+      const peerFromMap = this.windowPeerMap.get(source);
 
-      this.peer.on('error', (err: Error) => {
-        this.peer = null;
-        console.log('error', err);
-      });
+      if (peerFromMap) return peerFromMap;
 
-      this.peer.on('close', () => {
-        this.peer = null;
-        console.log('closing');
+      peer = new SimplePeer({
+        initiator: false,
+        // trickle: false, // only create one WebRTC offer per session
       });
-
-      this.peer.on('signal', (data: RTCSessionDescriptionInit) => {
-        this.signalSendCallback(data);
-      });
-
-      this.peer.on('connect', () => {
-        for (const [id, stream] of this.streamMap) {
-          this.startStream(id, stream);
-        }
-      });
+      this.windowPeerMap.set(source, peer);
+      this.peerWindowMap.set(peer, source);
     }
+
+    const resetPeer = (source?: WindowProxy) => {
+      if (!source) return (this.peer = null);
+
+      this.windowPeerMap.delete(source);
+      this.peerWindowMap.delete(peer);
+    };
+
+    peer.on('error', (err: Error) => {
+      resetPeer(source);
+      console.log('error', err);
+    });
+
+    peer.on('close', () => {
+      resetPeer(source);
+      console.log('closing');
+    });
+
+    peer.on('signal', (data: RTCSessionDescriptionInit) => {
+      if (this.inRootFrame()) {
+        if (peer === this.peer) {
+          // connected to replayer
+          this.signalSendCallback(data);
+        } else {
+          // connected to cross-origin iframe
+          this.peerWindowMap.get(peer)?.postMessage(
+            {
+              type: 'rrweb-canvas-webrtc',
+              data: {
+                type: 'signal',
+                signal: data,
+              },
+            } as CrossOriginIframeMessageEventContent,
+            '*',
+          );
+        }
+      } else {
+        // connected to root frame
+        window.top?.postMessage(
+          {
+            type: 'rrweb-canvas-webrtc',
+            data: {
+              type: 'signal',
+              signal: data,
+            },
+          } as CrossOriginIframeMessageEventContent,
+          '*',
+        );
+      }
+    });
+
+    peer.on('connect', () => {
+      // connected to cross-origin iframe, no need to do anything
+      if (this.inRootFrame() && peer !== this.peer) return;
+
+      // cross origin frame connected to root frame
+      // or root frame connected to replayer
+      // send all streams to peer
+      for (const [id, stream] of this.streamMap) {
+        this.startStream(id, stream);
+      }
+    });
+
+    if (!this.inRootFrame()) return peer;
+
+    peer.on('data', (data: SimplePeer.SimplePeerData) => {
+      try {
+        const json = JSON.parse(data as string) as WebRTCDataChannel;
+        this.streamNodeMap.set(json.streamId, json.nodeId);
+      } catch (error) {
+        console.error('Could not parse data', error);
+      }
+      this.flushStreams();
+    });
+
+    peer.on('stream', (stream: MediaStream) => {
+      this.incomingStreams.add(stream);
+      this.flushStreams();
+    });
+
+    return peer;
   }
 
-  public setupStream(
-    id: number,
-    rootId?: number,
-  ): false | MediaStream | number {
+  public setupStream(id: number, rootId?: number): boolean | MediaStream {
     if (id === -1) return false;
     let stream: MediaStream | undefined = this.streamMap.get(rootId || id);
     if (stream) return stream;
@@ -131,7 +201,21 @@ export class RRWebPluginCanvasWebRTCRecord {
     const el = this.mirror.getNode(id) as HTMLCanvasElement | null;
 
     if (!el || !('captureStream' in el))
+      // we don't have it, lets check our iframes
       return this.setupStreamInCrossOriginIframe(id, rootId || id);
+
+    if (!this.inRootFrame()) {
+      window.top?.postMessage(
+        {
+          type: 'rrweb-canvas-webrtc',
+          data: {
+            type: 'i-have-canvas',
+            rootId: rootId || id,
+          },
+        } as CrossOriginIframeMessageEventContent,
+        '*',
+      );
+    }
 
     stream = el.captureStream();
     this.streamMap.set(rootId || id, stream);
@@ -140,33 +224,42 @@ export class RRWebPluginCanvasWebRTCRecord {
     return stream;
   }
 
-  public setupStreamInCrossOriginIframe(
-    id: number,
-    rootId: number,
-  ): false | MediaStream | number {
-    let stream: MediaStream | undefined | false | number = this.streamMap.get(
-      id,
-    );
-    // TODO: no need to loop through everything if we set a master id/iframe map
+  private flushStreams() {
+    this.incomingStreams.forEach((stream) => {
+      const nodeId = this.streamNodeMap.get(stream.id);
+      if (!nodeId) return;
+      // got remote video stream, now let's send it to the replayer
+      this.startStream(nodeId, stream);
+    });
+  }
+
+  private inRootFrame(): boolean {
+    return Boolean(window.top && window.top === window);
+  }
+
+  public setupStreamInCrossOriginIframe(id: number, rootId: number): boolean {
+    let found = false;
+
     document.querySelectorAll('iframe').forEach((iframe) => {
+      if (found) return;
+
       const remoteId = this.crossOriginIframeMirror.getRemoteId(iframe, id);
       if (remoteId === -1) return;
-      this.crossOriginStreamMap.set(id, iframe);
+
+      found = true;
       iframe.contentWindow?.postMessage(
         {
           type: 'rrweb-canvas-webrtc',
           data: {
-            type: 'setup-stream',
+            type: 'who-has-canvas',
             id: remoteId,
             rootId,
           },
         } as CrossOriginIframeMessageEventContent,
         '*',
       );
-      stream = remoteId;
     });
-
-    return stream || false;
+    return found;
   }
 
   private isCrossOriginIframeMessageEventContent(
@@ -181,20 +274,33 @@ export class RRWebPluginCanvasWebRTCRecord {
     );
   }
 
-  private windowPostMessageHandler(event: MessageEvent) {
+  /**
+   * All messages being sent to the (root or sub) frame are received through `windowPostMessageHandler`.
+   * @param event - The message event
+   */
+  private windowPostMessageHandler(
+    event: MessageEvent<CrossOriginIframeMessageEventContent> | MessageEvent,
+  ) {
     if (!this.isCrossOriginIframeMessageEventContent(event)) return;
 
     const { type } = event.data.data;
-    if (type === 'setup-stream') {
+    if (type === 'who-has-canvas') {
       const { id, rootId } = event.data.data;
-      const stream = this.setupStream(id, rootId);
-      if (stream === false) return;
+      this.setupStream(id, rootId);
     } else if (type === 'signal') {
       const { signal } = event.data.data;
-
-      this.signalReceive(signal);
-    } else {
-      console.warn('MESSAGE', event.data);
+      const { source } = event;
+      if (!source || !('self' in source)) return;
+      if (this.inRootFrame()) {
+        this.signalReceiveFromCrossOriginIframe(signal, source);
+      } else {
+        this.signalReceive(signal);
+      }
+    } else if (type === 'i-have-canvas') {
+      const { rootId } = event.data.data;
+      const { source } = event;
+      if (!source || !('self' in source)) return;
+      this.canvasWindowMap.set(rootId, source);
     }
   }
 }
