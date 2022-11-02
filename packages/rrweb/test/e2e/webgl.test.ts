@@ -110,8 +110,9 @@ describe('e2e webgl', () => {
     await waitForRAF(page);
 
     const element = await page.$('iframe');
+    await waitForRAF(page);
     const frameImage = await element!.screenshot();
-
+    await waitForRAF(page);
     expect(frameImage).toMatchImageSnapshot();
   });
 
@@ -147,7 +148,9 @@ describe('e2e webgl', () => {
     await waitForRAF(page);
 
     const element = await page.$('iframe');
+    await waitForRAF(page);
     const frameImage = await element!.screenshot();
+    await waitForRAF(page);
 
     expect(frameImage).toMatchImageSnapshot();
   });
