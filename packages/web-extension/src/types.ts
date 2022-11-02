@@ -24,7 +24,8 @@ export type LocalData = {
     status: RecorderStatus;
     activeTabId: number;
     startTimestamp?: number;
-    duration?: number;
+    // the timestamp when the recording is paused
+    pausedTimestamp?: number;
   };
   [LocalDataKey.bufferedEvents]: eventWithTime[];
 };

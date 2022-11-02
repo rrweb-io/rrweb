@@ -24,8 +24,8 @@ export function App() {
   useEffect(() => {
     void Browser.storage.local.get(LocalDataKey.recorderStatus).then((data) => {
       const localData = data as LocalData;
-      if (!localData || !localData.recorder_status) return;
-      const { status, startTimestamp } = localData.recorder_status;
+      if (!localData || !localData[LocalDataKey.recorderStatus]) return;
+      const { status, startTimestamp } = localData[LocalDataKey.recorderStatus];
       if (status === RecorderStatus.RECORDING) {
         setRecording(true);
         setStartTime(startTimestamp || 0);

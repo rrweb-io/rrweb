@@ -34,20 +34,25 @@ void (async () => {
   const resumeRecording = async (
     newTabId: number,
     events: eventWithTime[],
-    duration: number | undefined,
+    startTimestamp: number,
+    pausedTimestamp: number | undefined,
   ) => {
     const startResponse = (await channel.requestToTab(
       newTabId,
       ServiceName.ResumeRecord,
-      { events },
+      { events, pausedTimestamp },
     )) as RecordStartedMessage;
     if (!startResponse) return;
+    const pausedTime = pausedTimestamp
+      ? startResponse.startTimestamp - pausedTimestamp
+      : 0;
+    const statusData: LocalData[LocalDataKey.recorderStatus] = {
+      status: RecorderStatus.RECORDING,
+      activeTabId: newTabId,
+      startTimestamp: startTimestamp + pausedTime,
+    };
     await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: {
-        status: RecorderStatus.RECORDING,
-        activeTabId: newTabId,
-        startTimestamp: startResponse.startTimestamp - (duration || 0),
-      },
+      [LocalDataKey.recorderStatus]: statusData,
     });
   };
 
@@ -56,34 +61,47 @@ void (async () => {
       .get(LocalDataKey.recorderStatus)
       .then(async (data) => {
         const localData = data as LocalData;
-        if (!localData || !localData.recorder_status) return;
-        const {
-          status,
-          startTimestamp,
-          activeTabId,
-        } = localData.recorder_status;
-        if (
-          status !== RecorderStatus.RECORDING ||
-          activeTabId === activeInfo.tabId
-        )
-          return;
+        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
+        let { status, pausedTimestamp } = localData[
+          LocalDataKey.recorderStatus
+        ];
+        const { startTimestamp, activeTabId } = localData[
+          LocalDataKey.recorderStatus
+        ];
+        let bufferedEvents: eventWithTime[] | undefined;
 
-        const stopResponse = (await channel.requestToTab(
-          activeTabId,
-          ServiceName.PauseRecord,
-          {},
-        )) as RecordStoppedMessage;
-        if (!stopResponse) return;
-        const duration = startTimestamp
-          ? stopResponse.endTimestamp - startTimestamp
-          : undefined;
-        await Browser.storage.local.set({
-          [LocalDataKey.recorderStatus]: {
+        if (status === RecorderStatus.RECORDING) {
+          const stopResponse = (await channel.requestToTab(
+            activeTabId,
+            ServiceName.PauseRecord,
+            {},
+          )) as RecordStoppedMessage;
+          if (!stopResponse) return;
+          const statusData: LocalData[LocalDataKey.recorderStatus] = {
             status: RecorderStatus.PausedSwitch,
-            duration,
-          },
-        });
-        await resumeRecording(activeInfo.tabId, stopResponse.events, duration);
+            activeTabId: activeInfo.tabId,
+            startTimestamp,
+            pausedTimestamp: stopResponse.endTimestamp,
+          };
+          await Browser.storage.local.set({
+            [LocalDataKey.recorderStatus]: statusData,
+          });
+          status = RecorderStatus.PausedSwitch;
+          pausedTimestamp = stopResponse.endTimestamp;
+          bufferedEvents = stopResponse.events;
+        }
+        if (status === RecorderStatus.PausedSwitch) {
+          if (!bufferedEvents)
+            bufferedEvents = ((await Browser.storage.local.get(
+              LocalDataKey.bufferedEvents,
+            )) as LocalData)[LocalDataKey.bufferedEvents];
+          await resumeRecording(
+            activeInfo.tabId,
+            bufferedEvents,
+            startTimestamp || bufferedEvents[0].timestamp,
+            pausedTimestamp,
+          );
+        }
       })
       .catch(() => {
         // the extension can't access to the tab
@@ -93,14 +111,27 @@ void (async () => {
   Browser.tabs.onUpdated.addListener(function (tabId, info) {
     if (info.status !== 'complete') return;
     void Browser.storage.local
-      .get()
-      .then((data) => {
+      .get(LocalDataKey.recorderStatus)
+      .then(async (data) => {
         const localData = data as LocalData;
-        if (!localData || !localData.recorder_status) return;
-        const { status, activeTabId, duration } = localData.recorder_status;
+        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
+        const {
+          status,
+          activeTabId,
+          startTimestamp,
+          pausedTimestamp,
+        } = localData[LocalDataKey.recorderStatus];
         if (status !== RecorderStatus.PausedSwitch || activeTabId === tabId)
           return;
-        return resumeRecording(tabId, localData.buffered_events, duration);
+        const bufferedEvents = ((await Browser.storage.local.get(
+          LocalDataKey.bufferedEvents,
+        )) as LocalData)[LocalDataKey.bufferedEvents];
+        await resumeRecording(
+          tabId,
+          bufferedEvents,
+          startTimestamp || bufferedEvents[0].timestamp,
+          pausedTimestamp,
+        );
       })
       .catch(() => {
         // the extension can't access to the tab

@@ -32,10 +32,19 @@ void (async () => {
     });
   });
   channel.provide(ServiceName.ResumeRecord, async (params) => {
-    storedEvents = (params as { events: eventWithTime[] }).events;
+    const { events, pausedTimestamp } = params as {
+      events: eventWithTime[];
+      pausedTimestamp: number;
+    };
+    storedEvents = events;
     clearRecorderCb = startRecord();
     return new Promise((resolve) => {
       startResponseCb = (response) => {
+        const pausedTime = response.startTimestamp - pausedTimestamp;
+        // Decrease the time spent in the pause state and make them look like a continuous recording.
+        storedEvents.forEach((event) => {
+          event.timestamp += pausedTime;
+        });
         resolve(response);
       };
     });
@@ -102,9 +111,12 @@ void (async () => {
   );
 
   const localData = (await Browser.storage.local.get()) as LocalData;
-  if (localData?.recorder_status?.status === RecorderStatus.RECORDING) {
+  if (
+    localData?.[LocalDataKey.recorderStatus]?.status ===
+    RecorderStatus.RECORDING
+  ) {
     clearRecorderCb = startRecord();
-    storedEvents = localData.buffered_events || [];
+    storedEvents = localData[LocalDataKey.bufferedEvents] || [];
   }
 })();
 
