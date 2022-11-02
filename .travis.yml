@@ -11,6 +11,6 @@ install:
   - yarn
 
 script:
-  - yarn build:all
+  - NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
   - yarn turbo run check-types
   - xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
