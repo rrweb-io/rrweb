@@ -110,122 +110,124 @@ export class IframeManager {
   private transformCrossOriginEvent(
     iframeEl: HTMLIFrameElement,
     e: eventWithTime,
-  ): eventWithTime | void {
-    if (e.type === EventType.FullSnapshot) {
-      this.crossOriginIframeMirror.reset(iframeEl);
-      this.crossOriginIframeStyleMirror.reset(iframeEl);
-      /**
-       * Replaces the original id of the iframe with a new set of unique ids
-       */
-      this.replaceIdOnNode(e.data.node, iframeEl);
-      return {
-        timestamp: e.timestamp,
-        type: EventType.IncrementalSnapshot,
-        data: {
-          source: IncrementalSource.Mutation,
-          adds: [
-            {
-              parentId: this.mirror.getId(iframeEl),
-              nextId: null,
-              node: e.data.node,
-            },
-          ],
-          removes: [],
-          texts: [],
-          attributes: [],
-          isAttachIframe: true,
-        },
-      };
-    } else if (e.type === EventType.IncrementalSnapshot) {
-      switch (e.data.source) {
-        case IncrementalSource.Mutation: {
-          e.data.adds.forEach((n) => {
-            this.replaceIds(n, iframeEl, ['parentId', 'nextId', 'previousId']);
-            this.replaceIdOnNode(n.node, iframeEl);
-          });
-          e.data.removes.forEach((n) => {
-            this.replaceIds(n, iframeEl, ['parentId', 'id']);
-          });
-          e.data.attributes.forEach((n) => {
-            this.replaceIds(n, iframeEl, ['id']);
-          });
-          e.data.texts.forEach((n) => {
-            this.replaceIds(n, iframeEl, ['id']);
-          });
-          break;
-        }
-        case IncrementalSource.Drag:
-        case IncrementalSource.TouchMove:
-        case IncrementalSource.MouseMove: {
-          e.data.positions.forEach((p) => {
-            this.replaceIds(p, iframeEl, ['id']);
-          });
-          break;
-        }
-        case IncrementalSource.ViewportResize: {
-          // can safely ignore these events
-          return;
-        }
-        case IncrementalSource.MediaInteraction:
-        case IncrementalSource.MouseInteraction:
-        case IncrementalSource.Scroll:
-        case IncrementalSource.CanvasMutation:
-        case IncrementalSource.Input: {
-          this.replaceIds(e.data, iframeEl, ['id']);
-          break;
-        }
-        case IncrementalSource.StyleSheetRule:
-        case IncrementalSource.StyleDeclaration: {
-          this.replaceIds(e.data, iframeEl, ['id']);
-          this.replaceStyleIds(e.data, iframeEl, ['styleId']);
-          break;
-        }
-        case IncrementalSource.Font: {
-          // fine as-is no modification needed
-          break;
-        }
-        case IncrementalSource.Selection: {
-          e.data.ranges.forEach((range) => {
-            this.replaceIds(range, iframeEl, ['start', 'end']);
-          });
-          break;
-        }
-        case IncrementalSource.AdoptedStyleSheet: {
-          this.replaceIds(e.data, iframeEl, ['id']);
-          this.replaceStyleIds(e.data, iframeEl, ['styleIds']);
-          e.data.styles?.forEach((style) => {
-            this.replaceStyleIds(style, iframeEl, ['styleId']);
-          });
-          break;
-        }
-        default: {
-          break;
+  ): eventWithTime | false {
+    switch (e.type) {
+      case EventType.FullSnapshot: {
+        this.crossOriginIframeMirror.reset(iframeEl);
+        this.crossOriginIframeStyleMirror.reset(iframeEl);
+        /**
+         * Replaces the original id of the iframe with a new set of unique ids
+         */
+        this.replaceIdOnNode(e.data.node, iframeEl);
+        return {
+          timestamp: e.timestamp,
+          type: EventType.IncrementalSnapshot,
+          data: {
+            source: IncrementalSource.Mutation,
+            adds: [
+              {
+                parentId: this.mirror.getId(iframeEl),
+                nextId: null,
+                node: e.data.node,
+              },
+            ],
+            removes: [],
+            texts: [],
+            attributes: [],
+            isAttachIframe: true,
+          },
+        };
+      }
+      case EventType.Meta:
+      case EventType.Load:
+      case EventType.DomContentLoaded: {
+        return false;
+      }
+      case EventType.Plugin: {
+        return e;
+      }
+      case EventType.Custom: {
+        this.replaceIds(
+          e.data.payload as {
+            id?: unknown;
+            parentId?: unknown;
+            previousId?: unknown;
+            nextId?: unknown;
+          },
+          iframeEl,
+          ['id', 'parentId', 'previousId', 'nextId'],
+        );
+        return e;
+      }
+      case EventType.IncrementalSnapshot: {
+        switch (e.data.source) {
+          case IncrementalSource.Mutation: {
+            e.data.adds.forEach((n) => {
+              this.replaceIds(n, iframeEl, [
+                'parentId',
+                'nextId',
+                'previousId',
+              ]);
+              this.replaceIdOnNode(n.node, iframeEl);
+            });
+            e.data.removes.forEach((n) => {
+              this.replaceIds(n, iframeEl, ['parentId', 'id']);
+            });
+            e.data.attributes.forEach((n) => {
+              this.replaceIds(n, iframeEl, ['id']);
+            });
+            e.data.texts.forEach((n) => {
+              this.replaceIds(n, iframeEl, ['id']);
+            });
+            return e;
+          }
+          case IncrementalSource.Drag:
+          case IncrementalSource.TouchMove:
+          case IncrementalSource.MouseMove: {
+            e.data.positions.forEach((p) => {
+              this.replaceIds(p, iframeEl, ['id']);
+            });
+            return e;
+          }
+          case IncrementalSource.ViewportResize: {
+            // can safely ignore these events
+            return false;
+          }
+          case IncrementalSource.MediaInteraction:
+          case IncrementalSource.MouseInteraction:
+          case IncrementalSource.Scroll:
+          case IncrementalSource.CanvasMutation:
+          case IncrementalSource.Input: {
+            this.replaceIds(e.data, iframeEl, ['id']);
+            return e;
+          }
+          case IncrementalSource.StyleSheetRule:
+          case IncrementalSource.StyleDeclaration: {
+            this.replaceIds(e.data, iframeEl, ['id']);
+            this.replaceStyleIds(e.data, iframeEl, ['styleId']);
+            return e;
+          }
+          case IncrementalSource.Font: {
+            // fine as-is no modification needed
+            return e;
+          }
+          case IncrementalSource.Selection: {
+            e.data.ranges.forEach((range) => {
+              this.replaceIds(range, iframeEl, ['start', 'end']);
+            });
+            return e;
+          }
+          case IncrementalSource.AdoptedStyleSheet: {
+            this.replaceIds(e.data, iframeEl, ['id']);
+            this.replaceStyleIds(e.data, iframeEl, ['styleIds']);
+            e.data.styles?.forEach((style) => {
+              this.replaceStyleIds(style, iframeEl, ['styleId']);
+            });
+            return e;
+          }
         }
       }
-      return e;
-    } else if (
-      e.type === EventType.Meta ||
-      e.type === EventType.Load ||
-      e.type === EventType.DomContentLoaded
-    ) {
-      // skip meta and load events
-      return;
-    } else if (e.type === EventType.Plugin) {
-      return e;
-    } else if (e.type === EventType.Custom) {
-      this.replaceIds(
-        e.data.payload as {
-          id?: unknown;
-          parentId?: unknown;
-          previousId?: unknown;
-          nextId?: unknown;
-        },
-        iframeEl,
-        ['id', 'parentId', 'previousId', 'nextId'],
-      );
-      return e;
     }
-    return e;
   }
 
   private replace<T extends Record<string, unknown>>(
