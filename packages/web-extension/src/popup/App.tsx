@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Box, Flex, IconButton, Spacer, Stack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  IconButton,
+  Link,
+  Spacer,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
 import { FiSettings, FiList, FiPause, FiPlay } from 'react-icons/fi';
 import Channel from '../utils/channel';
 import {
@@ -8,6 +16,8 @@ import {
   RecorderStatus,
   ServiceName,
   RecordStartedMessage,
+  RecordStoppedMessage,
+  Session,
 } from '../types';
 import Browser from 'webextension-polyfill';
 import { CircleButton } from '../components/CircleButton';
@@ -21,6 +31,7 @@ export function App() {
   const [status, setStatus] = useState<RecorderStatus>(RecorderStatus.IDLE);
   const [errorMessage, setErrorMessage] = useState('');
   const [startTime, setStartTime] = useState(0);
+  const [newSession, setNewSession] = useState<Session | null>(null);
 
   useEffect(() => {
     void Browser.storage.local.get(LocalDataKey.recorderStatus).then((data) => {
@@ -55,7 +66,7 @@ export function App() {
           ></IconButton>
           <IconButton
             onClick={() => {
-              void Browser.tabs.create({ url: '/options/index.html' });
+              void Browser.runtime.openOptionsPage();
             }}
             size="xs"
             icon={<FiSettings />}
@@ -87,16 +98,19 @@ export function App() {
                   if (tabId === -1) return;
                   void channel
                     .requestToTab(tabId, ServiceName.StopRecord, {})
-                    .then(async (res) => {
-                      if (res) {
-                        setStatus(RecorderStatus.IDLE);
-                        const status: LocalData[LocalDataKey.recorderStatus] = {
-                          status: RecorderStatus.IDLE,
-                          activeTabId: tabId,
-                        };
-                        await Browser.storage.local.set({
-                          [LocalDataKey.recorderStatus]: status,
-                        });
+                    .then(async (res: RecordStoppedMessage) => {
+                      if (!res) return;
+
+                      setStatus(RecorderStatus.IDLE);
+                      const status: LocalData[LocalDataKey.recorderStatus] = {
+                        status: RecorderStatus.IDLE,
+                        activeTabId: tabId,
+                      };
+                      await Browser.storage.local.set({
+                        [LocalDataKey.recorderStatus]: status,
+                      });
+                      if (res.session) {
+                        setNewSession(res.session);
                       }
                     })
                     .catch((error: Error) => {
@@ -202,6 +216,19 @@ export function App() {
           </CircleButton>
         )}
       </Flex>
+      {newSession && (
+        <Text>
+          <Text as="b">New Session: </Text>
+          <Link
+            href={Browser.runtime.getURL(
+              `pages/index.html#/session/${newSession.id}`,
+            )}
+            isExternal
+          >
+            {newSession.name}
+          </Link>
+        </Text>
+      )}
       {errorMessage !== '' && (
         <Text color="red.500" fontSize="md">
           {errorMessage}

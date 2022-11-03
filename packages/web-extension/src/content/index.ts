@@ -57,7 +57,9 @@ void (async () => {
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {
         stopResponseCb = undefined;
-        void saveEvents(response.events);
+        const session = saveEvents(response.events);
+        session.events = [];
+        response.session = session;
         storedEvents = [];
         resolve(response);
       };
@@ -131,7 +133,7 @@ function startRecord() {
   };
 }
 
-async function saveEvents(events: eventWithTime[]) {
+function saveEvents(events: eventWithTime[]) {
   const newSession: Session = {
     id: nanoid(),
     name: document.title,
@@ -141,10 +143,14 @@ async function saveEvents(events: eventWithTime[]) {
     modifyTimestamp: Date.now(),
     recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
   };
-  const data = (await Browser.storage.local.get(
-    LocalDataKey.sessions,
-  )) as LocalData;
-  if (!data.sessions) data.sessions = {};
-  data.sessions[newSession.id] = newSession;
-  await Browser.storage.local.set(data);
+  void Browser.storage.local.get(LocalDataKey.sessions).then((res) => {
+    const data = res as LocalData;
+    if (!data.sessions) data.sessions = {};
+    data.sessions[newSession.id] = newSession;
+    void Browser.storage.local.set(data);
+  });
+
+  return {
+    ...newSession,
+  };
 }

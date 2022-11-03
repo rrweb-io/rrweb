@@ -73,6 +73,7 @@ export type RecordStoppedMessage = {
   message: MessageName.RecordStopped;
   events: eventWithTime[];
   endTimestamp: number;
+  session?: Session;
 };
 
 export type HeartBreathMessage = {
