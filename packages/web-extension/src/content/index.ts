@@ -100,13 +100,15 @@ void (async () => {
         clearRecorderCb?.();
         clearRecorderCb = undefined;
         stopResponseCb(data);
-      } else if (event.data.message === MessageName.HeartBeat) {
+        void Browser.storage.local.set({
+          [LocalDataKey.bufferedEvents]: storedEvents.concat(data.events),
+        });
+      } else if (event.data.message === MessageName.HeartBeat)
         void Browser.storage.local.set({
           [LocalDataKey.bufferedEvents]: storedEvents.concat(
             (event.data as HeartBreathMessage).events,
           ),
         });
-      }
     },
   );
 

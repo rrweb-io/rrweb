@@ -24,7 +24,7 @@ function startRecord(config: recordOptions<eventWithTime>) {
       message: MessageName.HeartBeat,
       events,
     });
-  }, 50) as unknown) as number;
+  }, 500) as unknown) as number;
 }
 
 window.addEventListener(

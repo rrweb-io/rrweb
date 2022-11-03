@@ -9,7 +9,7 @@ export function Timer({
   startTime: number;
   ticking: boolean;
 }) {
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(Date.now() - startTime);
   useEffect(() => {
     if (!ticking) return;
     const interval = setInterval(() => {
