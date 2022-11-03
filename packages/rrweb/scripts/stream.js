@@ -33,7 +33,6 @@ async function injectRecording(frame) {
       (async () => {
         function loadScript(code) {
           const s = document.createElement('script');
-          let r = false;
           s.type = 'text/javascript';
           s.innerHTML = code;
           if (document.head) {
