@@ -765,6 +765,7 @@ export class Replayer {
       }
     };
 
+    this.mirror.reset();
     rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
       afterAppend,
