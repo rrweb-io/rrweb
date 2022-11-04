@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import type { recordOptions } from '../../src/types';
 import {
-  recordOptions,
   listenerHandler,
   eventWithTime,
   EventType,
   IncrementalSource,
   CanvasContext,
-} from '../../src/types';
+} from '@rrweb/types';
 import {
   assertSnapshot,
   launchPuppeteer,
