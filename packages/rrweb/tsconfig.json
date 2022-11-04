@@ -17,6 +17,9 @@
   },
   "references": [
     {
+      "path": "../types"
+    },
+    {
       "path": "../rrdom"
     },
     {

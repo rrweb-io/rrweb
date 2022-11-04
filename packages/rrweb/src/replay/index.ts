@@ -31,16 +31,15 @@ import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
+import type { playerConfig, missingNodeMap } from '../types';
 import {
   EventType,
   IncrementalSource,
   fullSnapshotEvent,
   eventWithTime,
   MouseInteractions,
-  playerConfig,
   playerMetaData,
   viewportResizeDimension,
-  missingNodeMap,
   addedNodeMutation,
   incrementalSnapshotEvent,
   incrementalData,
@@ -63,7 +62,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
-} from '../types';
+} from '@rrweb/types';
 import {
   polyfill,
   queueToResolveTrees,

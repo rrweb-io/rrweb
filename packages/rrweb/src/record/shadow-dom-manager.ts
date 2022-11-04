@@ -1,9 +1,9 @@
+import type { MutationBufferParam } from '../types';
 import type {
   mutationCallBack,
   scrollCallback,
-  MutationBufferParam,
   SamplingStrategy,
-} from '../types';
+} from '@rrweb/types';
 import {
   initMutationObserver,
   initScrollObserver,

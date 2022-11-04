@@ -1,13 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import type { recordOptions } from '../../src/types';
 import type {
-  recordOptions,
   listenerHandler,
   eventWithTime,
   mutationData,
-} from '../../src/types';
-import { EventType, IncrementalSource } from '../../src/types';
+} from '@rrweb/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,
