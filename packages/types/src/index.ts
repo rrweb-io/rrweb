@@ -217,13 +217,13 @@ export type SamplingStrategy = Partial<{
 }>;
 
 export interface ICrossOriginIframeMirror {
-  getParentId(
+  getId(
     iframe: HTMLIFrameElement,
     remoteId: number,
     parentToRemoteMap?: Map<number, number>,
     remoteToParentMap?: Map<number, number>,
   ): number;
-  getParentIds(iframe: HTMLIFrameElement, remoteId: number[]): number[];
+  getIds(iframe: HTMLIFrameElement, remoteId: number[]): number[];
   getRemoteId(
     iframe: HTMLIFrameElement,
     parentId: number,

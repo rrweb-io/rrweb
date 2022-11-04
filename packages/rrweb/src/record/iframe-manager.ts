@@ -235,15 +235,12 @@ export class IframeManager {
     for (const key of keys) {
       if (!Array.isArray(obj[key]) && typeof obj[key] !== 'number') continue;
       if (Array.isArray(obj[key])) {
-        obj[key] = iframeMirror.getParentIds(
+        obj[key] = iframeMirror.getIds(
           iframeEl,
           obj[key] as number[],
         ) as T[keyof T];
       } else {
-        (obj[key] as number) = iframeMirror.getParentId(
-          iframeEl,
-          obj[key] as number,
-        );
+        (obj[key] as number) = iframeMirror.getId(iframeEl, obj[key] as number);
       }
     }
 
