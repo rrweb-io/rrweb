@@ -2,15 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import 'construct-style-sheets-polyfill';
+import type { recordOptions } from '../src/types';
 import {
-  recordOptions,
   listenerHandler,
   eventWithTime,
   EventType,
   IncrementalSource,
   styleSheetRuleData,
   selectionData,
-} from '../src/types';
+} from '@rrweb/types';
 import { assertSnapshot, launchPuppeteer, waitForRAF } from './utils';
 
 interface ISuite {

@@ -8,6 +8,7 @@ import {
   Mirror,
   isNativeShadowDom,
 } from 'rrweb-snapshot';
+import type { observerParam, MutationBufferParam } from '../types';
 import type {
   mutationRecord,
   textCursor,
@@ -15,10 +16,8 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   styleAttributeValue,
-  observerParam,
-  MutationBufferParam,
   Optional,
-} from '../types';
+} from '@rrweb/types';
 import {
   isBlocked,
   isAncestorRemoved,

@@ -11,9 +11,9 @@ import {
   patch,
   StyleSheetMirror,
 } from '../utils';
+import type { observerParam, MutationBufferParam } from '../types';
 import {
   mutationCallBack,
-  observerParam,
   mousemoveCallBack,
   mousePosition,
   mouseInteractionCallBack,
@@ -35,10 +35,9 @@ import {
   fontParam,
   styleDeclarationCallback,
   IWindow,
-  MutationBufferParam,
   SelectionRange,
   selectionCallback,
-} from '../types';
+} from '@rrweb/types';
 import MutationBuffer from './mutation';
 
 type WindowWithStoredMutationObserver = IWindow & {

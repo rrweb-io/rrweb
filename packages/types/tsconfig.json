@@ -15,19 +15,12 @@
     "declaration": true,
     "importsNotUsedAsValues": "error"
   },
+  "compileOnSave": true,
+  "exclude": ["test"],
+  "include": ["src"],
   "references": [
     {
       "path": "../rrweb-snapshot"
-    },
-    {
-      "path": "../types"
     }
-  ],
-  "compileOnSave": true,
-  "exclude": ["test"],
-  "include": [
-    "src",
-    "../rrweb/src/record/workers/workers.d.ts",
-    "../rrweb/src/record/constructable-stylesheets.d.ts"
   ]
 }

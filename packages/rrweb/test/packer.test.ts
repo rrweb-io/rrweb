@@ -1,5 +1,5 @@
 import { pack, unpack } from '../src/packer';
-import { eventWithTime, EventType } from '../src/types';
+import { eventWithTime, EventType } from '@rrweb/types';
 import { MARK } from '../src/packer/base';
 
 const event: eventWithTime = {

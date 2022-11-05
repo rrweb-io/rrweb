@@ -14,7 +14,7 @@ import type {
   scrollData,
   styleSheetRuleData,
   styleDeclarationData,
-} from 'rrweb/src/types';
+} from '@rrweb/types';
 import {
   BaseRRNode as RRNode,
   BaseRRCDATASectionImpl,

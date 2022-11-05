@@ -6,7 +6,7 @@ import type {
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
-} from 'rrweb/src/types';
+} from '@rrweb/types';
 import type {
   IRRCDATASection,
   IRRComment,
