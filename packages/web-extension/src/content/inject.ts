@@ -27,32 +27,32 @@ function startRecord(config: recordOptions<eventWithTime>) {
   }, 500) as unknown) as number;
 }
 
-window.addEventListener(
-  'message',
-  (event: {
-    data: {
-      message: MessageName;
-      config?: recordOptions<eventWithTime>;
-    };
-  }) => {
-    const data = event.data;
-    const eventHandler = {
-      [MessageName.StartRecord]: () => {
-        startRecord(data.config || {});
-      },
-      [MessageName.StopRecord]: () => {
-        if (stopFn) stopFn();
-        if (setIntervalId) clearInterval(setIntervalId);
-        window.postMessage({
-          message: MessageName.RecordStopped,
-          events,
-          endTimestamp: Date.now(),
-        });
-      },
-    } as Record<MessageName, () => void>;
-    if (eventHandler[data.message]) eventHandler[data.message]();
-  },
-);
+const messageHandler = (event: {
+  data: {
+    message: MessageName;
+    config?: recordOptions<eventWithTime>;
+  };
+}) => {
+  const data = event.data;
+  const eventHandler = {
+    [MessageName.StartRecord]: () => {
+      startRecord(data.config || {});
+    },
+    [MessageName.StopRecord]: () => {
+      if (stopFn) stopFn();
+      if (setIntervalId) clearInterval(setIntervalId);
+      window.postMessage({
+        message: MessageName.RecordStopped,
+        events,
+        endTimestamp: Date.now(),
+      });
+      window.removeEventListener('message', messageHandler);
+    },
+  } as Record<MessageName, () => void>;
+  if (eventHandler[data.message]) eventHandler[data.message]();
+};
+
+window.addEventListener('message', messageHandler);
 
 window.postMessage({
   message: MessageName.RecordScriptReady,
