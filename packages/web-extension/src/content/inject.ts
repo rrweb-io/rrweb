@@ -1,5 +1,6 @@
 import { record } from 'rrweb';
-import { eventWithTime, recordOptions } from 'rrweb/typings/types';
+import type { recordOptions } from 'rrweb/typings/types';
+import type { eventWithTime } from '@rrweb/types';
 import { MessageName, RecordStartedMessage } from '../types';
 
 const events: eventWithTime[] = [];

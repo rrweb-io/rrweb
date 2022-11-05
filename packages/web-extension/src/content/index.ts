@@ -1,6 +1,6 @@
 import Browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
-import type { eventWithTime } from 'rrweb/typings/types';
+import type { eventWithTime } from '@rrweb/types';
 import {
   LocalData,
   LocalDataKey,

@@ -1,5 +1,5 @@
 import Browser from 'webextension-polyfill';
-import type { eventWithTime } from 'rrweb/typings/types';
+import type { eventWithTime } from '@rrweb/types';
 import { openDB } from 'idb';
 import {
   LocalData,
