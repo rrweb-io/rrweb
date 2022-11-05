@@ -163,7 +163,8 @@ export async function getSession(id: string) {
 
 export async function getAllSessions() {
   const store = await getSessionStore();
-  return store.getAll(SessionStoreName) as Promise<Session[]>;
+  const sessions = (await store.getAll(SessionStoreName)) as Session[];
+  return sessions.sort((a, b) => b.createTimestamp - a.createTimestamp);
 }
 
 export async function deleteSession(id: string) {

@@ -7,11 +7,16 @@ import {
   Tr,
   Th,
   Td,
+  Text,
   TableContainer,
   Flex,
   Checkbox,
   Button,
   Spacer,
+  IconButton,
+  Select,
+  Input,
+  Divider,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -20,12 +25,19 @@ import {
   getCoreRowModel,
   SortingState,
   getSortedRowModel,
+  PaginationState,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { useNavigate } from 'react-router-dom';
 import { Session, EventName } from '../types';
 import Channel from '../utils/channel';
 import { deleteSessions, getAllSessions } from '../utils';
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiChevronsLeft,
+  FiChevronsRight,
+} from 'react-icons/fi';
 
 const columnHelper = createColumnHelper<Session>();
 const channel = new Channel();
@@ -40,6 +52,33 @@ export function SessionList() {
     },
   ]);
   const [rowSelection, setRowSelection] = useState({});
+
+  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const fetchDataOptions = {
+    pageIndex,
+    pageSize,
+  };
+
+  const fetchData = (options: { pageIndex: number; pageSize: number }) => {
+    return {
+      rows: sessions.slice(
+        options.pageIndex * options.pageSize,
+        (options.pageIndex + 1) * options.pageSize,
+      ),
+      pageCount: Math.ceil(sessions.length / options.pageSize),
+    };
+  };
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize],
+  );
 
   const columns = useMemo(
     () => [
@@ -79,15 +118,19 @@ export function SessionList() {
   );
   const table = useReactTable<Session>({
     columns,
-    data: sessions,
+    data: fetchData(fetchDataOptions).rows,
     getCoreRowModel: getCoreRowModel(),
+    onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     state: {
+      pagination,
       sorting,
       rowSelection,
     },
+    manualPagination: true,
+    pageCount: fetchData(fetchDataOptions).pageCount,
   });
 
   const updateSessions = async () => {
@@ -176,27 +219,99 @@ export function SessionList() {
         </Table>
       </TableContainer>
       <Flex mt={4}>
+        <Flex gap={16} align="center" ml={4}>
+          <Flex gap={1}>
+            <IconButton
+              aria-label={'Goto 1st Page'}
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <FiChevronsLeft />
+            </IconButton>
+            <IconButton
+              aria-label={'Goto Previous Page'}
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <FiChevronLeft />
+            </IconButton>
+          </Flex>
+          <Flex gap={1} fontSize="md">
+            <Text>Page</Text>
+            <Text as="b" w={12}>
+              {`${
+                table.getState().pagination.pageIndex + 1
+              } of ${table.getPageCount()}`}
+            </Text>
+          </Flex>
+          <Divider orientation="vertical" />
+          <Flex gap={1} justify="center" align="center" fontSize="md">
+            <Text w={28}>Go to page:</Text>
+            <Input
+              w={20}
+              size="md"
+              type="number"
+              defaultValue={table.getState().pagination.pageIndex + 1}
+              onChange={(e) => {
+                const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                table.setPageIndex(page);
+              }}
+            />
+          </Flex>
+          <Flex gap={1}>
+            <IconButton
+              aria-label={'Goto Next Page'}
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <FiChevronRight />
+            </IconButton>
+            <IconButton
+              aria-label={'Goto last Page'}
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+            >
+              <FiChevronsRight />
+            </IconButton>
+          </Flex>
+        </Flex>
         <Spacer />
-        {Object.keys(rowSelection).length > 0 && (
-          <Button
-            mr={4}
-            size="sm"
-            colorScheme="red"
-            onClick={() => {
-              if (table.getSelectedRowModel().flatRows.length === 0) return;
-              const ids = table
-                .getSelectedRowModel()
-                .flatRows.map((row) => row.original.id);
-              void deleteSessions(ids).then(() => {
-                setRowSelection({});
-                void updateSessions();
-                channel.emit(EventName.SessionUpdated, {});
-              });
+        <Flex gap={8} align="center" mr={4}>
+          <Select
+            variant="outline"
+            size="md"
+            value={table.getState().pagination.pageSize}
+            onChange={(e) => {
+              table.setPageSize(Number(e.target.value));
             }}
           >
-            Delete
-          </Button>
-        )}
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <option key={pageSize} value={pageSize}>
+                Show {pageSize} items
+              </option>
+            ))}
+          </Select>
+          {Object.keys(rowSelection).length > 0 && (
+            <Button
+              mr={4}
+              size="md"
+              colorScheme="red"
+              onClick={() => {
+                if (table.getSelectedRowModel().flatRows.length === 0) return;
+                const ids = table
+                  .getSelectedRowModel()
+                  .flatRows.map((row) => row.original.id);
+                void deleteSessions(ids).then(() => {
+                  setRowSelection({});
+                  void updateSessions();
+                  channel.emit(EventName.SessionUpdated, {});
+                });
+              }}
+            >
+              Delete
+            </Button>
+          )}
+        </Flex>
       </Flex>
     </>
   );
