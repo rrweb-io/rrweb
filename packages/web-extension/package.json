@@ -31,6 +31,7 @@
     "@chakra-ui/react": "^2.3.4",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
+    "@tanstack/react-table": "^8.5.22",
     "framer-motion": "^7.3.6",
     "mitt": "^3.0.0",
     "nanoid": "^4.0.0",
