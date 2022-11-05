@@ -18,11 +18,12 @@ import {
   RecordStartedMessage,
   RecordStoppedMessage,
   Session,
+  EventName,
 } from '../types';
 import Browser from 'webextension-polyfill';
 import { CircleButton } from '../components/CircleButton';
 import { Timer } from './Timer';
-import { pauseRecording, resumeRecording } from '../utils';
+import { pauseRecording, resumeRecording, saveSession } from '../utils';
 const RECORD_BUTTON_SIZE = 3;
 
 const channel = new Channel();
@@ -111,6 +112,12 @@ export function App() {
                       });
                       if (res.session) {
                         setNewSession(res.session);
+                        await saveSession(res.session, res.events).catch(
+                          (e) => {
+                            setErrorMessage((e as { message: string }).message);
+                          },
+                        );
+                        channel.emit(EventName.SessionUpdated, {});
                       }
                     })
                     .catch((error: Error) => {

@@ -143,8 +143,8 @@ class Channel {
    * @param event - event name
    * @param detail - event detail
    */
-  public emit(eventName: string, detail: unknown) {
-    const message = JSON.stringify({ type: 'event', eventName, detail });
+  public emit(event: string, detail: unknown) {
+    const message = JSON.stringify({ type: 'event', event, detail });
     void Browser.runtime.sendMessage(message);
   }
 
@@ -155,11 +155,7 @@ class Channel {
    * @param event - event name
    * @param detail - event detail
    */
-  public emitToTabs(
-    tabIds: number | number[],
-    eventName: string,
-    detail: unknown,
-  ) {
+  public emitToTabs(tabIds: number | number[], event: string, detail: unknown) {
     if (!Browser.tabs || !Browser.tabs.sendMessage)
       return Promise.reject('Can not send message to tabs in current context!');
 
@@ -168,7 +164,7 @@ class Channel {
       tabIds = [tabIds];
     }
 
-    const message = JSON.stringify({ type: 'event', eventName, detail });
+    const message = JSON.stringify({ type: 'event', event, detail });
     tabIds.forEach((tabId) => void Browser.tabs.sendMessage(tabId, message));
   }
 

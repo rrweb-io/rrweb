@@ -1,9 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Browser from 'webextension-polyfill';
-import type rrwebPlayer from 'rrweb-player';
+import rrwebPlayer from 'rrweb-player';
 import Replayer from 'rrweb-player';
-import { LocalData } from '../types';
 import {
   Box,
   Breadcrumb,
@@ -11,6 +9,7 @@ import {
   BreadcrumbLink,
   Center,
 } from '@chakra-ui/react';
+import { getEvents, getSession } from '../utils';
 
 export default function Player() {
   const playerElRef = useRef<HTMLDivElement>(null);
@@ -19,27 +18,38 @@ export default function Player() {
   const [sessionName, setSessionName] = useState('');
 
   useEffect(() => {
-    void Browser.storage.local.get().then((data) => {
-      if (!playerElRef.current || !sessionId) return;
-      const localData = data as LocalData;
-      const session = localData.sessions[sessionId];
-      if (!session) return;
-      setSessionName(session.name);
-
-      const linkEl = document.createElement('link');
-      linkEl.href =
-        'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.3/dist/style.css';
-      linkEl.rel = 'stylesheet';
-      document.head.appendChild(linkEl);
-      playerRef.current = new Replayer({
-        target: playerElRef.current as HTMLElement,
-        props: {
-          events: session.events,
-          autoPlay: true,
-        },
+    if (!sessionId) return;
+    getSession(sessionId)
+      .then((session) => {
+        setSessionName(session.name);
+      })
+      .catch((err) => {
+        console.error(err);
       });
-    });
-  }, []);
+    getEvents(sessionId)
+      .then((events) => {
+        if (!playerElRef.current || !sessionId) return;
+
+        const linkEl = document.createElement('link');
+        linkEl.href =
+          'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.3/dist/style.css';
+        linkEl.rel = 'stylesheet';
+        document.head.appendChild(linkEl);
+        playerRef.current = new Replayer({
+          target: playerElRef.current as HTMLElement,
+          props: {
+            events,
+            autoPlay: true,
+          },
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    return () => {
+      playerRef.current?.pause();
+    };
+  }, [sessionId]);
 
   return (
     <>

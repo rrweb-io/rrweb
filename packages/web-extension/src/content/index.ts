@@ -57,9 +57,8 @@ void (async () => {
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {
         stopResponseCb = undefined;
-        const session = saveEvents(response.events);
-        session.events = [];
-        response.session = session;
+        const newSession = generateSession();
+        response.session = newSession;
         storedEvents = [];
         resolve(response);
       };
@@ -133,24 +132,14 @@ function startRecord() {
   };
 }
 
-function saveEvents(events: eventWithTime[]) {
+function generateSession() {
   const newSession: Session = {
     id: nanoid(),
     name: document.title,
     tags: [],
-    events,
     createTimestamp: Date.now(),
     modifyTimestamp: Date.now(),
     recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
   };
-  void Browser.storage.local.get(LocalDataKey.sessions).then((res) => {
-    const data = res as LocalData;
-    if (!data.sessions) data.sessions = {};
-    data.sessions[newSession.id] = newSession;
-    void Browser.storage.local.set(data);
-  });
-
-  return {
-    ...newSession,
-  };
+  return newSession;
 }

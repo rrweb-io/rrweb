@@ -33,6 +33,7 @@
     "@emotion/styled": "^11.10.4",
     "@tanstack/react-table": "^8.5.22",
     "framer-motion": "^7.3.6",
+    "idb": "^7.1.1",
     "mitt": "^3.0.0",
     "nanoid": "^4.0.0",
     "react": "^18.2.0",

@@ -22,11 +22,13 @@ import {
   getSortedRowModel,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
-import { LocalData, LocalDataKey, Session } from '../types';
-import Browser from 'webextension-polyfill';
 import { useNavigate } from 'react-router-dom';
+import { Session, EventName } from '../types';
+import Channel from '../utils/channel';
+import { deleteSessions, getAllSessions } from '../utils';
 
 const columnHelper = createColumnHelper<Session>();
+const channel = new Channel();
 
 export function SessionList() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -88,19 +90,15 @@ export function SessionList() {
     },
   });
 
+  const updateSessions = async () => {
+    const sessions = await getAllSessions();
+    setSessions(sessions);
+  };
+
   useEffect(() => {
-    const getSessions = (sessions?: LocalData['sessions']) => {
-      if (!sessions) return;
-      const sessionArray = [];
-      for (const id in sessions) sessionArray.push(sessions[id]);
-      setSessions(sessionArray);
-    };
-    void Browser.storage.local
-      .get(LocalDataKey.sessions)
-      .then((data) => getSessions((data as LocalData).sessions));
-    Browser.storage.onChanged.addListener((changes, area) => {
-      if (area === 'local' && changes.sessions)
-        getSessions(changes.sessions.newValue as LocalData['sessions']);
+    void updateSessions();
+    channel.on(EventName.SessionUpdated, () => {
+      void updateSessions();
     });
   }, []);
 
@@ -179,27 +177,26 @@ export function SessionList() {
       </TableContainer>
       <Flex mt={4}>
         <Spacer />
-        <Button
-          mr={4}
-          colorScheme="red"
-          onClick={() => {
-            if (table.getSelectedRowModel().flatRows.length === 0) return;
-            void Browser.storage.local
-              .get(LocalDataKey.sessions)
-              .then((data) => {
-                const sessions = (data as LocalData).sessions;
-                if (!sessions) return;
-                for (const row of table.getSelectedRowModel().flatRows)
-                  delete sessions[row.original.id];
-                return Browser.storage.local.set({ sessions });
-              })
-              .then(() => {
+        {Object.keys(rowSelection).length > 0 && (
+          <Button
+            mr={4}
+            size="sm"
+            colorScheme="red"
+            onClick={() => {
+              if (table.getSelectedRowModel().flatRows.length === 0) return;
+              const ids = table
+                .getSelectedRowModel()
+                .flatRows.map((row) => row.original.id);
+              void deleteSessions(ids).then(() => {
                 setRowSelection({});
+                void updateSessions();
+                channel.emit(EventName.SessionUpdated, {});
               });
-          }}
-        >
-          Delete
-        </Button>
+            }}
+          >
+            Delete
+          </Button>
+        )}
       </Flex>
     </>
   );

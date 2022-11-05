@@ -13,13 +13,11 @@ export type Settings = {
 };
 
 export enum LocalDataKey {
-  sessions = 'sessions',
   recorderStatus = 'recorder_status',
   bufferedEvents = 'buffered_events',
 }
 
 export type LocalData = {
-  [LocalDataKey.sessions]: Record<string, Session>;
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
     activeTabId: number;
@@ -42,7 +40,6 @@ export type Session = {
   id: string;
   name: string;
   tags: string[];
-  events: eventWithTime[];
   createTimestamp: number;
   modifyTimestamp: number;
   recorderVersion: string;
@@ -53,6 +50,10 @@ export enum ServiceName {
   StopRecord = 'stop-record',
   PauseRecord = 'pause-record',
   ResumeRecord = 'resume-record',
+}
+
+export enum EventName {
+  SessionUpdated = 'session-updated',
 }
 
 export enum MessageName {
