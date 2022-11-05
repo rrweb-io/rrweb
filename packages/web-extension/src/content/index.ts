@@ -97,12 +97,16 @@ void (async () => {
         stopResponseCb
       ) {
         const data = event.data as RecordStoppedMessage;
-        data.events = storedEvents.concat(data.events);
+        // On firefox, the event.data is immutable, so we need to clone it to avoid errors.
+        const newData = {
+          ...data,
+        };
+        newData.events = storedEvents.concat(data.events);
         clearRecorderCb?.();
         clearRecorderCb = undefined;
-        stopResponseCb(data);
+        stopResponseCb(newData);
         void Browser.storage.local.set({
-          [LocalDataKey.bufferedEvents]: storedEvents.concat(data.events),
+          [LocalDataKey.bufferedEvents]: newData.events,
         });
       } else if (event.data.message === MessageName.HeartBeat)
         void Browser.storage.local.set({
