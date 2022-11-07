@@ -9,7 +9,10 @@
     "preserveConstEnums": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": ["es6", "dom"],
+    "lib": [
+      "es6",
+      "dom"
+    ],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",
     "strictBindCallApply": true,
@@ -17,16 +20,19 @@
   },
   "references": [
     {
+      "path": "../types"
+    },
+    {
       "path": "../rrdom"
     },
     {
       "path": "../rrweb-snapshot"
-    },
-    {
-      "path": "../types"
     }
   ],
-  "exclude": ["test", "scripts"],
+  "exclude": [
+    "test",
+    "scripts"
+  ],
   "include": [
     "src",
     "node_modules/@types/css-font-loading-module/index.d.ts",
