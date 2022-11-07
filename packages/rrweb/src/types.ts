@@ -15,6 +15,7 @@ import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   addedNodeMutation,
+  attributeMutation,
   blockClass,
   canvasMutationCallback,
   eventWithTime,
@@ -141,6 +142,13 @@ export type MutationBufferParam = Pick<
   | 'canvasManager'
 >;
 
+export type onAttributeMutation = (
+  target: Node | RRNode,
+  context: {
+    mutation: attributeMutation;
+  },
+) => attributeMutation;
+
 export type ReplayPlugin = {
   handler?: (
     event: eventWithTime,
@@ -151,6 +159,7 @@ export type ReplayPlugin = {
     node: Node | RRNode,
     context: { id: number; replayer: Replayer },
   ) => void;
+  onAttributeMutation?: onAttributeMutation;
   getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
 };
 export type playerConfig = {
