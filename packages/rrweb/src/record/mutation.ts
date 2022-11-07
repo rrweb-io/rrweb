@@ -393,15 +393,20 @@ export default class MutationBuffer {
             }
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
-              const nodeInShadowDom = _node.value;
-              // Get the host of the shadow dom and treat it as parent node.
-              const shadowHost: Element | null = nodeInShadowDom.getRootNode
-                ? (nodeInShadowDom.getRootNode() as ShadowRoot)?.host
-                : null;
-              const parentId = this.mirror.getId(shadowHost);
-              if (parentId !== -1) {
-                node = _node;
-                break;
+              const unhandledNode = _node.value;
+              // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
+              if (
+                unhandledNode.parentNode &&
+                unhandledNode.parentNode.nodeType ===
+                  Node.DOCUMENT_FRAGMENT_NODE
+              ) {
+                const shadowHost = (unhandledNode.parentNode as ShadowRoot)
+                  .host;
+                const parentId = this.mirror.getId(shadowHost);
+                if (parentId !== -1) {
+                  node = _node;
+                  break;
+                }
               }
             }
           }
