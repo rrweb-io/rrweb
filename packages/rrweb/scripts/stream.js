@@ -127,7 +127,6 @@ async function startReplay(page, serverURL, recordedPage) {
 
 async function resizeWindow(page, top, left, width, height) {
   const session = await page.target().createCDPSession();
-  await page.setViewport({ height, width });
   const { windowId } = await session.send('Browser.getWindowForTarget');
   await session.send('Browser.setWindowBounds', {
     bounds: { top, left, height, width },
@@ -178,15 +177,8 @@ void (async () => {
     const replayingBrowser = await puppeteer.launch({
       headless: false,
       devtools,
-      defaultViewport: {
-        width: 1600,
-        height: 900,
-      },
-      args: [
-        '--start-maximized',
-        '--ignore-certificate-errors',
-        '--no-sandbox',
-      ],
+      defaultViewport: null,
+      args: ['--ignore-certificate-errors', '--no-sandbox'],
     });
 
     const replayerPage = (await replayingBrowser.pages())[0];
@@ -199,15 +191,8 @@ void (async () => {
     const recordingBrowser = await puppeteer.launch({
       headless: false,
       devtools,
-      defaultViewport: {
-        width: 1600,
-        height: 900,
-      },
-      args: [
-        '--start-maximized',
-        '--ignore-certificate-errors',
-        '--no-sandbox',
-      ],
+      defaultViewport: null,
+      args: ['--ignore-certificate-errors', '--no-sandbox'],
     });
 
     const recordedPage = (await recordingBrowser.pages())[0];
