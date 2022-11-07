@@ -81,6 +81,7 @@
     "typescript": "^4.7.3"
   },
   "dependencies": {
+    "@rrweb/types": "^2.0.0-alpha.3",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",

@@ -1,4 +1,5 @@
-import { eventWithTime, playerConfig } from 'rrweb/typings/types';
+import { playerConfig } from 'rrweb/typings/types';
+import type { eventWithTime } from '@rrweb/types';
 import { Replayer, mirror } from 'rrweb';
 import { SvelteComponent } from 'svelte';
 
@@ -50,6 +51,11 @@ export type RRwebPlayerOptions = {
      * @defaultValue `{}`
      */
     tags?: Record<string, string>;
+    /**
+     * Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.
+     * @defaultValue `#D4D4D4`
+     */
+    inactiveColor?: string;
   } & Partial<playerConfig>;
 };
 

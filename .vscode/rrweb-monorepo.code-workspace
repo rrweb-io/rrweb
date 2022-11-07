@@ -23,12 +23,17 @@
     {
       "name": "rrweb-snapshot (package)",
       "path": "../packages/rrweb-snapshot"
+    },
+    {
+      "name": "@rrweb/types",
+      "path": "../packages/types"
     }
   ],
   "settings": {
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
-      "rrweb-player (package)"
+      "rrweb-player (package)",
+      "@rrweb/types"
     ]
   }
 }

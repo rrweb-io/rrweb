@@ -12,12 +12,12 @@ import {
 import type { IRRNode } from '../src/document';
 import { Replayer } from 'rrweb';
 import type {
+  eventWithTime,
   canvasMutationData,
   styleDeclarationData,
   styleSheetRuleData,
-} from 'rrweb/src/types';
-import { EventType, IncrementalSource } from 'rrweb/src/types';
-import type { eventWithTime } from 'rrweb/typings/types';
+} from '@rrweb/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
 
 const elementSn = {
   type: RRNodeType.Element,

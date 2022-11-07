@@ -44,6 +44,7 @@
     "rollup-plugin-typescript2": "^0.31.2",
     "rollup-plugin-web-worker-loader": "^1.6.1",
     "ts-jest": "^28.0.0",
+    "@rrweb/types": "^2.0.0-alpha.3",
     "typescript": "^4.7.3"
   },
   "dependencies": {
