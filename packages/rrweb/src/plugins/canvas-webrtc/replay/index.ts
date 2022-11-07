@@ -26,13 +26,25 @@ export class RRWebPluginCanvasWebRTCReplay {
     this.signalSendCallback = signalSendCallback;
   }
 
-  public initPlugin(): ReplayPlugin {
+  public initPlugin(
+    config: {
+      recordCanvas?: boolean;
+      recordVideo?: boolean;
+    } = {},
+  ): ReplayPlugin {
+    const { recordCanvas = true, recordVideo = true } = config;
     return {
       onBuild: (
         node: Node | RRNode,
         context: { id: number; replayer: Replayer },
       ) => {
-        if (node.nodeName === 'CANVAS') {
+        if (recordVideo && node.nodeName === 'VIDEO') {
+          (node as HTMLVideoElement).removeAttribute('src');
+        }
+        if (
+          (recordCanvas && node.nodeName === 'CANVAS') ||
+          (recordVideo && node.nodeName === 'VIDEO')
+        ) {
           this.canvasFoundCallback(node, context);
         }
       },
