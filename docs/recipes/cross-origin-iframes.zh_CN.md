@@ -1,7 +1,6 @@
-# Cross origin iframes
+# 跨域 IFrame 录制
 
-默认情况下，浏览器很难访问托管在不同域上的 iframe 的内容。 这是一项安全功能，可防止恶意站点访问其他站点上的敏感信息。 可以解决此安全功能。
-但不建议这样做，除非您非常严格 https://stackoverflow.com/a/21629575 只允许您信任的网站将您的网站嵌入 iframe 中。
+默认情况下，浏览器很难访问托管在不同域上的 iframe 的内容。 这是一项安全功能，可防止恶意站点访问其他站点上的敏感信息。 rrweb 提供了一个解决方案，但如果您对网站的安全有严格的要求https://stackoverflow.com/a/21629575， 只允许您信任的网站将您的网站嵌入 iframe 中，那我们不建议使用我们的解决方案。
 因为如果您允许记录跨源 iframe，任何恶意网站都可以嵌入您的网站，并且只要它们运行 rrweb，它们就可以记录您网站的所有内容。
 
 ## 如何记录跨源 iframe
@@ -26,14 +25,11 @@ rrweb.record({
 
 ## 注意事项
 
-当跨源 iframe 录制打开时，rrweb 将检查它是否正在顶级窗口中运行。
-如果不是，它将通过 `postMessage` 将事件发送到父窗口。
+当跨源 iframe 录制开启时，rrweb 将检查它是否正在顶级窗口中运行。 如果不是，它将通过 `postMessage` 将事件发送到父窗口。
 
 如果您没有在顶层窗口中运行 rrweb，则打开 `recordCrossOriginIframes` 时事件将丢失。
 
-如果顶层窗口是一个恶意网站，它可以监听事件并将它们发送到它选择的服务器。
-
-或者，如果您的页面上正在运行恶意脚本，他们可以监听“postMessage”，并且子窗口和父窗口之间的通信未加密。 他们可以看到事件。
+如果顶层窗口是一个恶意网站，它可以监听事件并将它们发送到它选择的服务器。或者如果您的页面上正在运行恶意脚本，则它们可以监听“postMessage”，又因为子窗口和父窗口之间的通信未加密，所以他们可以获取到所有事件。
 
 ## 将 rrweb 注入跨源 iframe 的选项
 
@@ -43,7 +39,7 @@ rrweb.record({
 
 ### 2. 浏览器扩展
 
-See https://developer.chrome.com/docs/extensions/mv3/content_scripts/#functionality
+请查看 https://developer.chrome.com/docs/extensions/mv3/content_scripts/#functionality
 
 ### 3. Puppeteer script
 
@@ -83,7 +79,7 @@ async function injectRecording(frame) {
 const browser = await puppeteer.launch();
 const page = (await browser.pages())[0];
 
-const events = []; // 包含来自所有帧的所有事件
+const events = []; // 包含来自所有Frame的所有事件
 
 await page.exposeFunction('_captureEvent', (event) => {
   events.push(event);
@@ -95,7 +91,7 @@ page.on('framenavigated', async (frame) => {
 
 await page.goto('https://example.com');
 
-// 您的事件在事件数组中
+// 您的事件将在事件数组中
 ```
 
 ### 4. Electron
@@ -113,5 +109,5 @@ const win = new BrowserWindow({
 });
 ```
 
-See https://www.electronjs.org/docs/latest/tutorial/tutorial-preload
-And https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+请查看 https://www.electronjs.org/docs/latest/tutorial/tutorial-preload
+和 https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
