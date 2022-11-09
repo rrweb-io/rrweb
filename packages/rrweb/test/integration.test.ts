@@ -603,7 +603,97 @@ describe('record integration tests', function (this: ISuite) {
     });
     await page.waitForTimeout(50);
 
-    const snapshots = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record shadow DOM 2', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    // page.on('console', (msg) => console.log(msg.text()));
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    await page.evaluate(() => {
+      return new Promise((resolve) => {
+        /*
+      el = document.createElement('div');
+      el.attachShadow({ mode: 'open' });
+      el.shadowRoot.append(document.createElement('input'));
+      setTimeout(()=>{
+        document.body.append(el);
+      }, 500);
+      */
+
+        const el = document.createElement('div') as HTMLDivElement;
+        el.attachShadow({ mode: 'open' });
+        (el.shadowRoot as ShadowRoot).appendChild(
+          document.createElement('input'),
+        );
+        setTimeout(() => {
+          document.body.append(el);
+          resolve(null);
+        }, 1000);
+      });
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record shadow DOM 3', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    // page.on('console', (msg) => console.log(msg.text()));
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    await page.evaluate(() => {
+      const el = document.createElement('div') as HTMLDivElement;
+      el.attachShadow({ mode: 'open' });
+      (el.shadowRoot as ShadowRoot).appendChild(
+        document.createElement('input'),
+      );
+      document.body.append(el);
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record moved shadow DOM', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    // page.on('console', (msg) => console.log(msg.text()));
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    await page.evaluate(() => {
+      return new Promise((resolve) => {
+        const el = document.createElement('div') as HTMLDivElement;
+        el.attachShadow({ mode: 'open' });
+        (el.shadowRoot as ShadowRoot).appendChild(
+          document.createElement('input'),
+        );
+        document.body.append(el);
+        setTimeout(() => {
+          const newEl = document.createElement('div') as HTMLDivElement;
+          document.body.append(newEl);
+          newEl.append(el);
+          resolve(null);
+        }, 50);
+      });
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
 
