@@ -7,7 +7,9 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "lib": ["es2017", "dom"],
+    "rootDir": "src",
+    "outDir": "build",
+    "lib": ["es6", "dom"],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",
     "strictBindCallApply": true,
@@ -30,7 +32,7 @@
       "path": "../rrweb-snapshot"
     }
   ],
-  "exclude": ["scripts", "test"],
+  "exclude": ["test", "scripts"],
   "include": [
     "src",
     "node_modules/@types/css-font-loading-module/index.d.ts",
