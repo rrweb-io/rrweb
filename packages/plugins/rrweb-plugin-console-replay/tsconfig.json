@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "includes": ["src"],
+  "exclude": ["vite.config.ts", "dist", "tsconfig.json"],
+  "compilerOptions": {
+    "rootDir": "."
+  },
+  "references": [
+    {
+      "path": "../rrweb-plugin-console-record"
+    },
+    {
+      "path": "../../rrweb"
+    }
+  ]
+}

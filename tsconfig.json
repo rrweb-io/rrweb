@@ -17,6 +17,12 @@
     },
     {
       "path": "packages/types"
+    },
+    {
+      "path": "packages/plugins/rrweb-plugin-console-replay"
+    },
+    {
+      "path": "packages/plugins/rrweb-plugin-console-record"
     }
   ],
   "files": [],

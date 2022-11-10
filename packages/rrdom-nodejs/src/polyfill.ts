@@ -1,4 +1,5 @@
-import { RRDocument, RRNode } from './document-nodejs';
+import { BaseRRNode } from 'rrdom';
+import { RRDocument } from './document-nodejs';
 
 /**
  * Polyfill the performance for nodejs.
@@ -70,11 +71,11 @@ export function polyfillEvent() {
 }
 
 /**
- * Polyfill Node type with RRNode for nodejs.
+ * Polyfill Node type with BaseRRNode for nodejs.
  */
 export function polyfillNode() {
   if (typeof Node !== 'undefined') return;
-  (global.Node as unknown) = RRNode;
+  (global.Node as unknown) = BaseRRNode;
 }
 
 /**

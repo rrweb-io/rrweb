@@ -20,7 +20,7 @@ const emitter = new EventEmitter();
 
 async function startRecording(page, serverURL) {
   try {
-    await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
+    await page.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
     await page.addScriptTag({
       url: `${serverURL}/plugins/canvas-webrtc-record.js`,
     });
@@ -75,7 +75,7 @@ async function startReplay(page, serverURL, recordedPage) {
     }, id);
   });
 
-  await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
+  await page.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
   await page.addScriptTag({
     url: `${serverURL}/plugins/canvas-webrtc-replay.js`,
   });

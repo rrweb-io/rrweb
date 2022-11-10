@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "ES6",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "build",
+    "lib": ["es6", "dom"],
+    "skipLibCheck": true,
+    "declaration": true,
+    "importsNotUsedAsValues": "error",
+    "types": [
+      "node",
+      "jest",
+      "vite/client",
+      "@types/dom-mediacapture-transform",
+      "@types/offscreencanvas"
+    ]
+  },
+  "compileOnSave": true
+}

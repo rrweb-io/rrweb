@@ -4,14 +4,12 @@
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
-    "prepack": "npm run bundle && npm run typings",
+    "prepack": "npm run build",
     "test": "jest",
     "test:watch": "jest --watch",
-    "bundle": "rollup --config",
-    "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
-    "dev": "yarn bundle:es-only --watch",
-    "typings": "tsc -d --declarationDir typings",
-    "prepublish": "npm run typings && npm run bundle",
+    "dev": "vite",
+    "build": "tsc -noEmit && vite build",
+    "prepublish": "npm run build",
     "lint": "yarn eslint src"
   },
   "repository": {
@@ -23,18 +21,22 @@
     "snapshot",
     "DOM"
   ],
-  "main": "lib/rrweb-snapshot.js",
-  "module": "es/rrweb-snapshot.js",
-  "unpkg": "dist/rrweb-snapshot.js",
-  "typings": "typings/index.d.ts",
+  "main": "./dist/rrweb-snapshot.umd.cjs",
+  "module": "./dist/rrweb-snapshot.js",
+  "unpkg": "./dist/rrweb-snapshot.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/rrweb-snapshot.js",
+      "require": "./dist/rrweb-snapshot.umd.cjs"
+    }
+  },
   "files": [
-    "dist",
-    "lib",
-    "es",
-    "typings"
+    "dist"
   ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
@@ -50,12 +52,11 @@
     "jest-snapshot": "^23.6.0",
     "jsdom": "^16.4.0",
     "puppeteer": "^1.15.0",
-    "rollup": "^2.45.2",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.31.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.3",
+    "vite": "^3.2.0-beta.2",
+    "vite-plugin-dts": "^1.6.6"
   }
 }

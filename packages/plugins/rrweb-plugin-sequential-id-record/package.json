@@ -1,0 +1,47 @@
+{
+  "name": "@rrweb/rrweb-plugin-sequential-id-record",
+  "version": "2.0.0-alpha.3",
+  "description": "",
+  "type": "module",
+  "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
+  "module": "./dist/rrweb-plugin-sequential-id-record.js",
+  "unpkg": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/rrweb-plugin-sequential-id-record.js",
+      "require": "./dist/rrweb-plugin-sequential-id-record.umd.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -noEmit && vite build",
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "rrweb": "^2.0.0-alpha.3",
+    "typescript": "^4.7.3",
+    "vite": "^3.2.0-beta.2",
+    "vite-plugin-dts": "^1.6.6"
+  },
+  "peerDependencies": {
+    "rrweb": "^2.0.0-alpha.3"
+  }
+}
