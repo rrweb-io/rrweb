@@ -6,6 +6,7 @@
     "dev": "vite build --watch",
     "bundle": "vite build && tsc --emitDeclarationOnly",
     "test": "jest",
+    "prune-events": "npx vite-node scripts/prune.ts --",
     "prepublish": "npm run bundle",
     "lint": "yarn eslint src/**/*.ts"
   },
