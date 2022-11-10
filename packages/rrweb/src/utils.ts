@@ -514,3 +514,8 @@ export function shadowHostInDom(n: Node): boolean {
   return Boolean(shadowHost && doc.contains(shadowHost));
 }
 
+export function inDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  return doc.contains(n) || shadowHostInDom(n);
+}

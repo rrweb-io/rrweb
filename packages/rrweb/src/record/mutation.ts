@@ -26,6 +26,7 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
+  inDom,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -271,19 +272,8 @@ export default class MutationBuffer {
         (n.getRootNode() as ShadowRoot).host
       )
         shadowHost = (n.getRootNode() as ShadowRoot).host;
-      // If n is in a nested shadow dom.
-      let rootShadowHost = shadowHost;
-      while (
-        rootShadowHost?.getRootNode?.()?.nodeType ===
-          Node.DOCUMENT_FRAGMENT_NODE &&
-        (rootShadowHost.getRootNode() as ShadowRoot).host
-      )
-        rootShadowHost = (rootShadowHost.getRootNode() as ShadowRoot).host;
-      // ensure contains is passed a Node, or it will throw an error
-      const notInDoc =
-        !this.doc.contains(n) &&
-        (!rootShadowHost || !this.doc.contains(rootShadowHost));
-      if (!n.parentNode || notInDoc) {
+
+      if (!n.parentNode || !inDom(n)) {
         return;
       }
       const parentId = isShadowRoot(n.parentNode)
