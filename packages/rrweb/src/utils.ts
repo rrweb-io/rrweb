@@ -513,4 +513,3 @@ export function shadowHostInDom(n: Node): boolean {
   const shadowHost = getRootShadowHost(n);
   return Boolean(shadowHost && doc.contains(shadowHost));
 }
-
