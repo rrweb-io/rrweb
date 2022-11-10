@@ -112,31 +112,23 @@ export function pruneBranches(
   replayer.reversePlay(({ event }) => {
     if (event.type === EventType.FullSnapshot) {
       const { node } = event.data;
-      treeSet.forEach((id) => {
-        const tree = getTreeForId(id, node, keep.includes(id));
-        tree.forEach((id) => treeSet.add(id));
-      });
+      const tree = getTreeForId(treeSet, node, keep);
+      tree.forEach((id) => treeSet.add(id));
     } else if (event.type === EventType.IncrementalSnapshot) {
       if (event.data.source === IncrementalSource.Mutation) {
         const { adds } = event.data;
         adds.forEach((add) => {
-          if (treeSet.has(add.node.id)) {
-            const tree = getTreeForId(
-              add.node.id,
-              add.node,
-              keep.includes(add.node.id),
-            );
+          const tree = getTreeForId(treeSet, add.node, keep);
+          if (tree.length) {
             treeSet.add(add.parentId);
             tree.forEach((id) => treeSet.add(id));
           } else if (
             'childNodes' in add.node &&
             add.node.childNodes.length > 0
           ) {
-            treeSet.forEach((id) => {
-              const tree = getTreeForId(id, add.node, keep.includes(id));
-              if (tree.length) treeSet.add(add.parentId);
-              tree.forEach((id) => treeSet.add(id));
-            });
+            const tree = getTreeForId(treeSet, add.node, keep);
+            if (tree.length) treeSet.add(add.parentId);
+            tree.forEach((id) => treeSet.add(id));
           }
         });
       }
@@ -221,17 +213,17 @@ export function pruneBranches(
 }
 
 export function getTreeForId(
-  id: number,
+  treeSet: Set<number>,
   node: serializedNodeWithId,
-  includeChildren: boolean,
+  keepIds: number[],
 ): number[] {
   const results: number[] = [];
-  if (node.id === id) {
-    results.push(...getIdsInNode(node, includeChildren));
+  if (treeSet.has(node.id)) {
+    results.push(...getIdsInNode(node, keepIds));
   } else if ('childNodes' in node) {
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i];
-      const childTree = getTreeForId(id, child, includeChildren);
+      const childTree = getTreeForId(treeSet, child, keepIds);
       if (childTree.length > 0) {
         results.push(node.id, ...childTree);
         break;
@@ -243,14 +235,14 @@ export function getTreeForId(
 
 export function getIdsInNode(
   node: serializedNodeWithId,
-  includeChildren: boolean,
+  keepIds: number[],
 ): Array<number> {
   const results: number[] = [];
   results.push(node.id);
-  if (includeChildren && 'childNodes' in node) {
+  if (keepIds.includes(node.id) && 'childNodes' in node) {
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i];
-      results.push(...getIdsInNode(child, includeChildren));
+      results.push(...getIdsInNode(child, keepIds));
     }
   }
   return results;
