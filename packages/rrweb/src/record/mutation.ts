@@ -300,7 +300,7 @@ export default class MutationBuffer {
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
-        skipChild: true,
+        skipChild: !hasShadowRoot(n),
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
@@ -320,7 +320,7 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
+            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {

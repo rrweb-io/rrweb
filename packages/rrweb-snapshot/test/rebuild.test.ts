@@ -47,6 +47,37 @@ describe('rebuild', function () {
     });
   });
 
+  describe('shadowDom', function () {
+    it('should rebuild shadowRoot with siblings', function () {
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'div',
+          type: NodeType.Element,
+          attributes: {},
+          childNodes: [
+            {
+              id: 2,
+              tagName: 'div',
+              type: NodeType.Element,
+              attributes: {},
+              childNodes: [],
+              isShadow: true,
+            },
+          ],
+          isShadowHost: true,
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLDivElement;
+      expect(node.shadowRoot?.childNodes.length).toBe(1);
+    });
+  });
+
   describe('add hover class to hover selector related rules', function () {
     it('will do nothing to css text without :hover', () => {
       const cssText = 'body { color: white }';
