@@ -1485,7 +1485,7 @@ export class Replayer {
         /**
          * shadowHosts contain a snapshot of shadow dom nodes which must also be added.
          */
-        skipChild: !mutation.node.isShadowHost,
+        skipChild: true,
         hackCss: true,
         cache: this.cache,
         /**

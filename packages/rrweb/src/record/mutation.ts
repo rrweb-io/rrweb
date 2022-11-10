@@ -176,6 +176,7 @@ export default class MutationBuffer {
   private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
+  private processedNodeManager: observerParam['processedNodeManager'];
 
   public init(options: MutationBufferParam) {
     ([
@@ -199,6 +200,7 @@ export default class MutationBuffer {
       'stylesheetManager',
       'shadowDomManager',
       'canvasManager',
+      'processedNodeManager',
     ] as const).forEach((key) => {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
@@ -290,7 +292,7 @@ export default class MutationBuffer {
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
-        skipChild: !hasShadowRoot(n),
+        skipChild: true,
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
@@ -637,6 +639,9 @@ export default class MutationBuffer {
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
   private genAdds = (n: Node, target?: Node) => {
+    // this node was already recorded, ignore it
+    if (this.processedNodeManager.has(n)) return;
+
     if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
         return;
@@ -656,8 +661,14 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false))
+    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
       n.childNodes.forEach((childN) => this.genAdds(childN));
+      if (hasShadowRoot(n)) {
+        n.shadowRoot.childNodes.forEach((childN) => this.genAdds(childN, n));
+      }
+    }
+
+    this.processedNodeManager.add(n);
   };
 }
 
