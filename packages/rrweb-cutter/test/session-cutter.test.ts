@@ -17,7 +17,7 @@ import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
 import { sessionCut, getValidSortedPoints, pruneBranches } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
-import { events as inlineStyleEvents } from './events/inline-style.event';
+import { eventsFn as inlineStyleEvents } from './events/inline-style.event';
 import { assertSnapshot } from './utils';
 
 describe('session cutter', () => {
@@ -129,7 +129,7 @@ describe('session cutter', () => {
   });
 
   it('should cut events with inline styles', () => {
-    const events = inlineStyleEvents as eventWithTime[];
+    const events = inlineStyleEvents() as eventWithTime[];
     const result = sessionCut(events, { points: [1000] });
     expect(result).toHaveLength(2);
     // all events before 1000ms
@@ -153,7 +153,7 @@ describe('session cutter', () => {
 
 describe('pruneBranches', () => {
   it("should cut branches that doesn't include id", () => {
-    const events = inlineStyleEvents as eventWithTime[];
+    const events = inlineStyleEvents() as eventWithTime[];
     const result = pruneBranches(events, { keep: [14] });
     expect(result).toHaveLength(5);
     const replayer = new SyncReplayer(result);
@@ -217,7 +217,7 @@ describe('pruneBranches', () => {
         ],
       },
     };
-    const events = [...inlineStyleEvents, mutationEvent] as eventWithTime[];
+    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
     const result = pruneBranches(events, { keep: [14] });
     expect(result[result.length - 1]).toMatchSnapshot();
   });
@@ -245,7 +245,7 @@ describe('pruneBranches', () => {
         ],
       },
     };
-    const events = [...inlineStyleEvents, mutationEvent] as eventWithTime[];
+    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
     const result = pruneBranches(events, { keep: [99] });
     assertSnapshot(result);
   });
@@ -280,7 +280,7 @@ describe('pruneBranches', () => {
         ],
       },
     };
-    const events = [...inlineStyleEvents, mutationEvent] as eventWithTime[];
+    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
     const result = pruneBranches(events, { keep: [99] });
     assertSnapshot(result);
   });
