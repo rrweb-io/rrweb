@@ -284,6 +284,33 @@ describe('pruneBranches', () => {
     const result = pruneBranches(events, { keep: [99] });
     assertSnapshot(result);
   });
+
+  it('should keep branches where target child nodes was, and gets moved to', () => {
+    const mutationEvent = {
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: 0,
+        texts: [],
+        attributes: [],
+        removes: [
+          {
+            parentId: 14,
+            id: 15,
+          },
+        ],
+        adds: [
+          {
+            parentId: 5,
+            nextId: null,
+            node: { type: 3, textContent: '      \n    ', id: 15 },
+          },
+        ],
+      },
+    };
+    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
+    const result = pruneBranches(events, { keep: [15] });
+    assertSnapshot(result);
+  });
 });
 
 function getHtml(fileName: string) {

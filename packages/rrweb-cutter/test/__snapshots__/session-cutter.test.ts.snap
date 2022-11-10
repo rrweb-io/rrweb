@@ -10,6 +10,123 @@ exports[`pruneBranches should cut branches that doesn't include id: pruned all b
 "
 `;
 
+exports[`pruneBranches should keep branches where target child nodes was, and gets moved to 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1512,
+      \\"height\\": 395
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"utf-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"root\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"      \\\\n    \\",
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 12
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 14,
+          \\"id\\": 15
+        }
+      ],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 5,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"      \\\\n    \\",
+            \\"id\\": 15
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`pruneBranches should remove branches based on child nodes that came in after fullsnapshot 1`] = `
 "[
   {
