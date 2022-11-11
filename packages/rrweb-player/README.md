@@ -46,28 +46,30 @@ new rrwebPlayer({
 
 ## Options
 
-| key            | default      | description                                                          |
-| -------------- | ------------ | -------------------------------------------------------------------- |
-| events         | []           | the events for replaying                                             |
-| width          | 1024         | the width of the replayer                                            |
-| height         | 576          | the height of the replayer                                           |
-| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited |
-| autoPlay       | true         | whether to autoplay                                                  |
-| speed | 1 | The default speed to play at |
-| speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
-| showController | true         | whether to show the controller UI                                    |
-| tags           | {}           | customize the custom events style with a key-value map               |
-| inactiveColor | #D4D4D4           | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.|
-| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed                      |
+| key            | default      | description                                                                                                         |
+| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| events         | []           | the events for replaying                                                                                            |
+| width          | 1024         | the width of the replayer                                                                                           |
+| height         | 576          | the height of the replayer                                                                                          |
+| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                                |
+| autoPlay       | true         | whether to autoplay                                                                                                 |
+| speed          | 1            | The default speed to play at                                                                                        |
+| speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                                 |
+| showController | true         | whether to show the controller UI                                                                                   |
+| tags           | {}           | customize the custom events style with a key-value map                                                              |
+| inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
+| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed |
 
 ## methods on the rrwebPlayer component
 
 ```ts
 addEventListener(event: string, handler: (params: any) => unknown): void;
 ```
+
 ```ts
 addEvent(event: eventWithTime): void;
 ```
+
 ```ts
 getMetaData() => {
     startTime: number;
@@ -75,41 +77,59 @@ getMetaData() => {
     totalTime: number;
 }
 ```
+
 ```ts
 getReplayer() => Replayer;
 ```
+
 ```ts
 getMirror() => Mirror;
 ```
+
 Toggles between play/pause
+
 ```ts
-toggle()
+toggle();
 ```
+
 Sets speed of player
+
 ```ts
 setSpeed(speed: number)
 ```
+
 Turns on/off skip inactive
+
 ```ts
-toggleSkipInactive()
+toggleSkipInactive();
 ```
+
 Triggers resize, do this whenever you change width/height
+
 ```ts
-triggerResize()
+triggerResize();
 ```
+
 Plays replay
+
 ```ts
-play()
+play();
 ```
+
 Pauses replay
+
 ```ts
-pause()
+pause();
 ```
+
 Go to a point in time and pause or play from then
+
 ```ts
 goto(timeOffset: number, play?: boolean)
 ```
+
 Plays from a time to a time and (optionally) loop
+
 ```ts
 playRange(
     timeOffset: number,
