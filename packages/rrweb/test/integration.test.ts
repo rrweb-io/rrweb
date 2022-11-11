@@ -675,7 +675,7 @@ describe('record integration tests', function (this: ISuite) {
         setTimeout(() => {
           document.body.append(el);
           resolve(null);
-        }, 1000);
+        }, 10);
       });
     });
     await waitForRAF(page);

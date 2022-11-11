@@ -1482,9 +1482,6 @@ export class Replayer {
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document, // can be Document or RRDocument
         mirror: mirror as Mirror, // can be this.mirror or virtualDom.mirror
-        /**
-         * shadowHosts contain a snapshot of shadow dom nodes which must also be added.
-         */
         skipChild: true,
         hackCss: true,
         cache: this.cache,
