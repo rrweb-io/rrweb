@@ -15,49 +15,47 @@ export default class CrossOriginIframeMirror
   getId(
     iframe: HTMLIFrameElement,
     remoteId: number,
-    parentToRemoteMap?: Map<number, number>,
-    remoteToParentMap?: Map<number, number>,
+    idToRemoteMap?: Map<number, number>,
+    remoteToIdMap?: Map<number, number>,
   ): number {
-    const parentIdToRemoteIdMap =
-      parentToRemoteMap || this.getIdToRemoteIdMap(iframe);
-    const remoteIdToIdMap =
-      remoteToParentMap || this.getRemoteIdToIdMap(iframe);
+    const idToRemoteIdMap = idToRemoteMap || this.getIdToRemoteIdMap(iframe);
+    const remoteIdToIdMap = remoteToIdMap || this.getRemoteIdToIdMap(iframe);
 
-    let parentId = parentIdToRemoteIdMap.get(remoteId);
-    if (!parentId) {
-      parentId = this.generateIdFn();
-      parentIdToRemoteIdMap.set(remoteId, parentId);
-      remoteIdToIdMap.set(parentId, remoteId);
+    let id = idToRemoteIdMap.get(remoteId);
+    if (!id) {
+      id = this.generateIdFn();
+      idToRemoteIdMap.set(remoteId, id);
+      remoteIdToIdMap.set(id, remoteId);
     }
-    return parentId;
+    return id;
   }
 
   getIds(iframe: HTMLIFrameElement, remoteId: number[]): number[] {
-    const parentIdToRemoteIdMap = this.getIdToRemoteIdMap(iframe);
+    const idToRemoteIdMap = this.getIdToRemoteIdMap(iframe);
     const remoteIdToIdMap = this.getRemoteIdToIdMap(iframe);
     return remoteId.map((id) =>
-      this.getId(iframe, id, parentIdToRemoteIdMap, remoteIdToIdMap),
+      this.getId(iframe, id, idToRemoteIdMap, remoteIdToIdMap),
     );
   }
 
   getRemoteId(
     iframe: HTMLIFrameElement,
-    parentId: number,
+    id: number,
     map?: Map<number, number>,
   ): number {
     const remoteIdToIdMap = map || this.getRemoteIdToIdMap(iframe);
 
-    if (typeof parentId !== 'number') return parentId;
+    if (typeof id !== 'number') return id;
 
-    const remoteId = remoteIdToIdMap.get(parentId);
+    const remoteId = remoteIdToIdMap.get(id);
     if (!remoteId) return -1;
     return remoteId;
   }
 
-  getRemoteIds(iframe: HTMLIFrameElement, parentId: number[]): number[] {
+  getRemoteIds(iframe: HTMLIFrameElement, ids: number[]): number[] {
     const remoteIdToIdMap = this.getRemoteIdToIdMap(iframe);
 
-    return parentId.map((id) => this.getRemoteId(iframe, id, remoteIdToIdMap));
+    return ids.map((id) => this.getRemoteId(iframe, id, remoteIdToIdMap));
   }
 
   reset(iframe?: HTMLIFrameElement) {
@@ -71,12 +69,12 @@ export default class CrossOriginIframeMirror
   }
 
   private getIdToRemoteIdMap(iframe: HTMLIFrameElement) {
-    let parentToRemoteMap = this.iframeIdToRemoteIdMap.get(iframe);
-    if (!parentToRemoteMap) {
-      parentToRemoteMap = new Map();
-      this.iframeIdToRemoteIdMap.set(iframe, parentToRemoteMap);
+    let idToRemoteIdMap = this.iframeIdToRemoteIdMap.get(iframe);
+    if (!idToRemoteIdMap) {
+      idToRemoteIdMap = new Map();
+      this.iframeIdToRemoteIdMap.set(iframe, idToRemoteIdMap);
     }
-    return parentToRemoteMap;
+    return idToRemoteIdMap;
   }
 
   private getRemoteIdToIdMap(iframe: HTMLIFrameElement) {
