@@ -77,14 +77,17 @@ export class RRWebPluginCanvasWebRTCRecord {
 
   private startStream(id: number, stream: MediaStream) {
     if (!this.peer) this.setupPeer();
+    if (!this.peer?.connected) return;
 
     const data: WebRTCDataChannel = {
       nodeId: id,
       streamId: stream.id,
     };
     this.peer?.send(JSON.stringify(data));
-    if (!this.outgoingStreams.has(stream)) this.peer?.addStream(stream);
-    this.outgoingStreams.add(stream);
+    if (!this.outgoingStreams.has(stream)) {
+      this.peer?.addStream(stream);
+      this.outgoingStreams.add(stream);
+    }
   }
 
   public setupPeer(source?: WindowProxy): SimplePeer.Instance {
@@ -168,8 +171,11 @@ export class RRWebPluginCanvasWebRTCRecord {
       // or root frame connected to replayer
       // send all streams to peer
       for (const [id, stream] of this.streamMap) {
+        // sends same origin streams
         this.startStream(id, stream);
       }
+      // sends cross origin streams
+      this.flushStreams();
     });
 
     if (!this.inRootFrame()) return peer;
@@ -265,7 +271,8 @@ export class RRWebPluginCanvasWebRTCRecord {
     event: MessageEvent,
   ): event is MessageEvent<CrossOriginIframeMessageEventContent> {
     return Boolean(
-      'type' in event.data &&
+      typeof event.data === 'object' &&
+        'type' in event.data &&
         'data' in event.data &&
         (event.data as CrossOriginIframeMessageEventContent).type ===
           'rrweb-canvas-webrtc' &&

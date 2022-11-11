@@ -31,7 +31,11 @@ import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
-import type { playerConfig, missingNodeMap } from '../types';
+import type {
+  playerConfig,
+  missingNodeMap,
+  onAttributeMutation,
+} from '../types';
 import {
   EventType,
   IncrementalSource,
@@ -62,6 +66,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  attributeMutation,
 } from '@rrweb/types';
 import {
   polyfill,
@@ -116,6 +121,7 @@ export class Replayer {
   }
 
   public config: playerConfig;
+  public attributeMutationHooks: Array<onAttributeMutation> = [];
 
   // In the fast-forward process, if the virtual-dom optimization is used, this flag value is true.
   public usingVirtualDom = false;
@@ -200,6 +206,14 @@ export class Replayer {
     for (const plugin of this.config.plugins || []) {
       if (plugin.getMirror) plugin.getMirror({ nodeMirror: this.mirror });
     }
+
+    /**
+     * Collect attribute mutation hooks
+     */
+    (this.config.plugins || []).forEach((plugin) => {
+      if (plugin.onAttributeMutation)
+        this.attributeMutationHooks.push(plugin.onAttributeMutation);
+    });
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingVirtualDom) {
@@ -1647,15 +1661,19 @@ export class Replayer {
         if (parent?.rules?.length > 0) parent.rules = [];
       }
     });
-    d.attributes.forEach((mutation) => {
-      const target = mirror.getNode(mutation.id);
+    d.attributes.forEach((unProcessedMutation) => {
+      const target = mirror.getNode(unProcessedMutation.id);
       if (!target) {
-        if (d.removes.find((r) => r.id === mutation.id)) {
+        if (d.removes.find((r) => r.id === unProcessedMutation.id)) {
           // no need to warn, element was already removed
           return;
         }
-        return this.warnNodeNotFound(d, mutation.id);
+        return this.warnNodeNotFound(d, unProcessedMutation.id);
       }
+      const mutation = this.processAttributeMutation(
+        target,
+        unProcessedMutation,
+      );
       for (const attributeName in mutation.attributes) {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
@@ -1728,6 +1746,21 @@ export class Replayer {
         }
       }
     });
+  }
+
+  private processAttributeMutation(
+    target: Node | RRNode,
+    mutation: attributeMutation,
+  ): attributeMutation {
+    if (!this.attributeMutationHooks.length) return mutation;
+
+    let processedMutation = mutation;
+    for (const hook of this.attributeMutationHooks) {
+      processedMutation = hook(target, {
+        mutation: processedMutation,
+      });
+    }
+    return processedMutation;
   }
 
   /**

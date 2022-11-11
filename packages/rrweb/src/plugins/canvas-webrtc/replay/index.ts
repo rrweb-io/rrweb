@@ -10,7 +10,7 @@ import type { WebRTCDataChannel } from '../types';
 export class RRWebPluginCanvasWebRTCReplay {
   private canvasFoundCallback: (
     node: Node | RRNode,
-    context: { id: number; replayer: Replayer },
+    context: { id: number },
   ) => void;
   private signalSendCallback: (signal: RTCSessionDescriptionInit) => void;
   private mirror: Mirror;
@@ -26,15 +26,47 @@ export class RRWebPluginCanvasWebRTCReplay {
     this.signalSendCallback = signalSendCallback;
   }
 
-  public initPlugin(): ReplayPlugin {
+  public initPlugin(
+    config: {
+      recordCanvas?: boolean;
+      recordVideo?: boolean;
+    } = {},
+  ): ReplayPlugin {
+    const { recordCanvas = true, recordVideo = true } = config;
     return {
       onBuild: (
         node: Node | RRNode,
         context: { id: number; replayer: Replayer },
       ) => {
-        if (node.nodeName === 'CANVAS') {
+        if (recordVideo && node.nodeName === 'VIDEO') {
+          const el = node as HTMLVideoElement;
+          if (!el.src || el.src.startsWith('blob:')) {
+            (node as HTMLVideoElement).removeAttribute('src');
+            this.canvasFoundCallback(node, context);
+          }
+        }
+        if (recordCanvas && node.nodeName === 'CANVAS') {
           this.canvasFoundCallback(node, context);
         }
+      },
+      onAttributeMutation: (node: Node | RRNode, { mutation }) => {
+        if (
+          (recordVideo && node.nodeName === 'VIDEO',
+          'src' in mutation.attributes)
+        ) {
+          const srcValue = mutation.attributes.src;
+          if (
+            srcValue === '' ||
+            (typeof srcValue === 'string' && srcValue.startsWith('blob:'))
+          ) {
+            this.canvasFoundCallback(node, { id: mutation.id });
+            return {
+              ...mutation,
+              attributes: { ...mutation.attributes, src: null },
+            };
+          }
+        }
+        return mutation;
       },
       getMirror: (options) => {
         this.mirror = options.nodeMirror;
