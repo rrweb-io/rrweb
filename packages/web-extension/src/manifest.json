@@ -41,7 +41,14 @@
       "web_accessible_resources": ["**/*.js"]
     },
     "chrome": {},
-    "firefox": {}
+    "firefox": {
+      "browser_specific_settings": {
+        "gecko": {
+          "id": "rrweb@rrweb.io",
+          "strict_min_version": "42.0"
+        }
+      }
+    }
   },
   "v3": {
     "common": {
