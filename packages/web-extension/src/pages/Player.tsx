@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import rrwebPlayer from 'rrweb-player';
 import Replayer from 'rrweb-player';
 import {
   Box,
@@ -13,7 +12,7 @@ import { getEvents, getSession } from '../utils';
 
 export default function Player() {
   const playerElRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<rrwebPlayer | null>(null);
+  const playerRef = useRef<Replayer | null>(null);
   const { sessionId } = useParams();
   const [sessionName, setSessionName] = useState('');
 

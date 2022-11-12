@@ -50,6 +50,7 @@ export enum ServiceName {
   StopRecord = 'stop-record',
   PauseRecord = 'pause-record',
   ResumeRecord = 'resume-record',
+  CacheEvents = 'cache-events',
 }
 
 export enum EventName {
@@ -75,9 +76,4 @@ export type RecordStoppedMessage = {
   events: eventWithTime[];
   endTimestamp: number;
   session?: Session;
-};
-
-export type HeartBeatMessage = {
-  message: MessageName.HeartBeat;
-  events: eventWithTime[];
 };

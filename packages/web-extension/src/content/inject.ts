@@ -5,7 +5,6 @@ import { MessageName, RecordStartedMessage } from '../types';
 
 const events: eventWithTime[] = [];
 let stopFn: (() => void) | null = null;
-let setIntervalId: number | null = null;
 
 function startRecord(config: recordOptions<eventWithTime>) {
   events.length = 0;
@@ -20,12 +19,6 @@ function startRecord(config: recordOptions<eventWithTime>) {
     message: MessageName.RecordStarted,
     startTimestamp: Date.now(),
   } as RecordStartedMessage);
-  setIntervalId = (setInterval(() => {
-    window.postMessage({
-      message: MessageName.HeartBeat,
-      events,
-    });
-  }, 500) as unknown) as number;
 }
 
 const messageHandler = (event: {
@@ -41,7 +34,6 @@ const messageHandler = (event: {
     },
     [MessageName.StopRecord]: () => {
       if (stopFn) stopFn();
-      if (setIntervalId) clearInterval(setIntervalId);
       window.postMessage({
         message: MessageName.RecordStopped,
         events,

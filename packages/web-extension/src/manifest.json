@@ -31,7 +31,13 @@
         "open_in_tab": true,
         "chrome_style": false
       },
-      "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
+      "permissions": [
+        "activeTab",
+        "tabs",
+        "storage",
+        "unlimitedStorage",
+        "webNavigation"
+      ],
       "web_accessible_resources": ["**/*.js"]
     },
     "chrome": {},
@@ -53,7 +59,13 @@
         "page": "options/index.html",
         "open_in_tab": true
       },
-      "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"],
+      "permissions": [
+        "activeTab",
+        "tabs",
+        "storage",
+        "unlimitedStorage",
+        "webNavigation"
+      ],
       "web_accessible_resources": [
         {
           "resources": ["**/*.js"],

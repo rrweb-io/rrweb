@@ -9,7 +9,6 @@ import {
   Session,
   RecordStartedMessage,
   RecordStoppedMessage,
-  HeartBeatMessage,
   MessageName,
 } from '../types';
 import Channel from '../utils/channel';
@@ -61,6 +60,10 @@ void (async () => {
         response.session = newSession;
         storedEvents = [];
         resolve(response);
+        // clear cache
+        void Browser.storage.local.set({
+          [LocalDataKey.bufferedEvents]: [],
+        });
       };
     });
   });
@@ -70,6 +73,21 @@ void (async () => {
       stopResponseCb = (response: RecordStoppedMessage) => {
         stopResponseCb = undefined;
         resolve(response);
+        void Browser.storage.local.set({
+          [LocalDataKey.bufferedEvents]: response.events,
+        });
+      };
+    });
+  });
+  channel.provide(ServiceName.CacheEvents, () => {
+    window.postMessage({ message: MessageName.StopRecord });
+    return new Promise((resolve) => {
+      stopResponseCb = (response: RecordStoppedMessage) => {
+        stopResponseCb = undefined;
+        resolve(response);
+        void Browser.storage.local.set({
+          [LocalDataKey.bufferedEvents]: response.events,
+        });
       };
     });
   });
@@ -80,7 +98,6 @@ void (async () => {
       data:
         | RecordStartedMessage
         | RecordStoppedMessage
-        | HeartBeatMessage
         | {
             message: MessageName;
           };
@@ -105,15 +122,7 @@ void (async () => {
         clearRecorderCb?.();
         clearRecorderCb = undefined;
         stopResponseCb(newData);
-        void Browser.storage.local.set({
-          [LocalDataKey.bufferedEvents]: newData.events,
-        });
-      } else if (event.data.message === MessageName.HeartBeat)
-        void Browser.storage.local.set({
-          [LocalDataKey.bufferedEvents]: storedEvents.concat(
-            (event.data as HeartBeatMessage).events,
-          ),
-        });
+      }
     },
   );
 

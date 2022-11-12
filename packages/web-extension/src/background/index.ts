@@ -5,6 +5,7 @@ import {
   LocalData,
   LocalDataKey,
   RecorderStatus,
+  ServiceName,
   Settings,
   SyncData,
   SyncDataKey,
@@ -30,7 +31,7 @@ void (async () => {
 
   // When tab is changed during the recording process, pause recording in the old tab and start a new one in the new tab.
   Browser.tabs.onActivated.addListener((activeInfo) => {
-    void Browser.storage.local
+    Browser.storage.local
       .get(LocalDataKey.recorderStatus)
       .then(async (data) => {
         const localData = data as LocalData;
@@ -66,7 +67,7 @@ void (async () => {
   // If the recording can't start on an invalid tab, resume it when the tab content is updated.
   Browser.tabs.onUpdated.addListener(function (tabId, info) {
     if (info.status !== 'complete') return;
-    void Browser.storage.local
+    Browser.storage.local
       .get(LocalDataKey.recorderStatus)
       .then(async (data) => {
         const localData = data as LocalData;
@@ -82,6 +83,57 @@ void (async () => {
       })
       .catch(() => {
         // the extension can't access to the tab
+      });
+  });
+
+  // When page in the current tab is reloaded (navigated), inform the content script in the tab to store events into LocalStorage temporarily.
+  Browser.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.parentFrameId !== -1) return;
+    const { tabId } = details;
+    Browser.storage.local
+      .get(LocalDataKey.recorderStatus)
+      .then(async (data) => {
+        const localData = data as LocalData;
+        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
+        const { status, activeTabId } = localData[LocalDataKey.recorderStatus];
+        if (status !== RecorderStatus.RECORDING || activeTabId !== tabId)
+          return;
+        await channel.requestToTab(tabId, ServiceName.CacheEvents, {});
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+
+  /**
+   * When the current tab is closed, the recording events will be lost because this event is fired after it is closed.
+   * This event listener is just used to make sure the recording status is updated.
+   */
+  Browser.tabs.onRemoved.addListener((tabId) => {
+    Browser.storage.local
+      .get(LocalDataKey.recorderStatus)
+      .then(async (data) => {
+        const localData = data as LocalData;
+        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
+        const { status, activeTabId, startTimestamp } = localData[
+          LocalDataKey.recorderStatus
+        ];
+        if (activeTabId !== tabId || status !== RecorderStatus.RECORDING)
+          return;
+
+        // Update the recording status to make it resumable after users switch to other tabs.
+        const statusData: LocalData[LocalDataKey.recorderStatus] = {
+          status: RecorderStatus.PausedSwitch,
+          activeTabId,
+          startTimestamp,
+          pausedTimestamp: Date.now(),
+        };
+        await Browser.storage.local.set({
+          [LocalDataKey.recorderStatus]: statusData,
+        });
+      })
+      .catch((err) => {
+        console.error(err);
       });
   });
 })();
