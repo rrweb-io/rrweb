@@ -1757,8 +1757,11 @@ export class Replayer {
       });
     } else {
       try {
-        (target as Element).scrollTop = d.y;
-        (target as Element).scrollLeft = d.x;
+        (target as Element).scrollTo({
+          top: d.y,
+          left: d.x,
+          behavior: isSync ? 'auto' : 'smooth',
+        });
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before
