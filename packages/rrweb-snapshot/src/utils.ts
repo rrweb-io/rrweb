@@ -24,10 +24,38 @@ export function isNativeShadowDom(shadowRoot: ShadowRoot) {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
 
+/**
+ * Browsers sometimes destructively modify the css rules they receive.
+ * This function tries to rectify the modifications the browser made to make it more cross platform compatible.
+ * @param cssText - output of `CSSStyleRule.cssText`
+ * @returns `cssText` with browser inconsistencies fixed.
+ */
+function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
+  /**
+   * Chrome outputs `-webkit-background-clip` as `background-clip` in `CSSStyleRule.cssText`.
+   * But then Chrome ignores `background-clip` as css input.
+   * Re-introduce `-webkit-background-clip` to fix this issue.
+   */
+  if (
+    cssText.includes(' background-clip: text;') &&
+    !cssText.includes(' -webkit-background-clip: text;')
+  ) {
+    cssText = cssText.replace(
+      ' background-clip: text;',
+      ' -webkit-background-clip: text; background-clip: text;',
+    );
+  }
+  return cssText;
+}
+
 export function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
+    return rules
+      ? fixBrowserCompatibilityIssuesInCSS(
+          Array.from(rules).map(getCssRuleString).join(''),
+        )
+      : null;
   } catch (error) {
     return null;
   }

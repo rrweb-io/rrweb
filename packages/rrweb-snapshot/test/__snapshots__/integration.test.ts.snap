@@ -149,6 +149,20 @@ exports[`integration tests [html file]: about-mozilla.html 1`] = `
   </p></body></html>"
 `;
 
+exports[`integration tests [html file]: background-clip-text.html 1`] = `
+"<!DOCTYPE html><html lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <title>Document</title>
+    <style id=\\"dynamic-style\\">p { border-width: 0.8em; border-color: darkviolet; border-image: initial; border-style: dotted double; margin: 1em 0px; padding: 1.4em; background: linear-gradient(60deg, red, yellow, red, yellow, red); font: 900 1.2em sans-serif; text-decoration: underline; }.text { -webkit-background-clip: text; background-clip: text; color: rgba(0, 0, 0, 0.2); }</style>
+  </head>
+  <body>
+    <p class=\\"text\\">The background is clipped to the foreground text.</p>
+    <noscript>SCRIPT_PLACEHOLDER</noscript>
+  </body></html>"
+`;
+
 exports[`integration tests [html file]: basic.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
@@ -327,6 +341,25 @@ exports[`integration tests [html file]: picture.html 1`] = `
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
     </picture>
     <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" />
+  </body></html>"
+`;
+
+exports[`integration tests [html file]: picture-blob.html 1`] = `
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD XHTML 1.0 Transitional//EN\\"><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <img src=\\"\\" alt=\\"This is a robot\\" />
+  
+  <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
+`;
+
+exports[`integration tests [html file]: picture-blob-in-frame.html 1`] = `
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD XHTML 1.0 Transitional//EN\\"><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <iframe></iframe>
+  </body></html>"
+`;
+
+exports[`integration tests [html file]: picture-in-frame.html 1`] = `
+"<!DOCTYPE html PUBLIC \\"-//W3C//DTD XHTML 1.0 Transitional//EN\\"><html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <iframe></iframe>
   </body></html>"
 `;
 
