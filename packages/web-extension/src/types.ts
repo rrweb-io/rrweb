@@ -77,7 +77,7 @@ export type RecordStoppedMessage = {
   session?: Session;
 };
 
-export type HeartBreathMessage = {
+export type HeartBeatMessage = {
   message: MessageName.HeartBeat;
   events: eventWithTime[];
 };

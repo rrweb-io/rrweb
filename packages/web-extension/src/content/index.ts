@@ -9,7 +9,7 @@ import {
   Session,
   RecordStartedMessage,
   RecordStoppedMessage,
-  HeartBreathMessage,
+  HeartBeatMessage,
   MessageName,
 } from '../types';
 import Channel from '../utils/channel';
@@ -80,7 +80,7 @@ void (async () => {
       data:
         | RecordStartedMessage
         | RecordStoppedMessage
-        | HeartBreathMessage
+        | HeartBeatMessage
         | {
             message: MessageName;
           };
@@ -111,7 +111,7 @@ void (async () => {
       } else if (event.data.message === MessageName.HeartBeat)
         void Browser.storage.local.set({
           [LocalDataKey.bufferedEvents]: storedEvents.concat(
-            (event.data as HeartBreathMessage).events,
+            (event.data as HeartBeatMessage).events,
           ),
         });
     },

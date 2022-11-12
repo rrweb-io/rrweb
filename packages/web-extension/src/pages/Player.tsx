@@ -32,7 +32,7 @@ export default function Player() {
 
         const linkEl = document.createElement('link');
         linkEl.href =
-          'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.3/dist/style.css';
+          'https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css';
         linkEl.rel = 'stylesheet';
         document.head.appendChild(linkEl);
         playerRef.current = new Replayer({
