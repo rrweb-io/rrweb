@@ -10,6 +10,7 @@ import {
   RecordStartedMessage,
   RecordStoppedMessage,
   MessageName,
+  CacheEventsMessage,
 } from '../types';
 import Channel from '../utils/channel';
 
@@ -98,6 +99,7 @@ void (async () => {
       data:
         | RecordStartedMessage
         | RecordStoppedMessage
+        | CacheEventsMessage
         | {
             message: MessageName;
           };
@@ -122,6 +124,12 @@ void (async () => {
         clearRecorderCb?.();
         clearRecorderCb = undefined;
         stopResponseCb(newData);
+      } else if (event.data.message === MessageName.CacheEvents) {
+        void Browser.storage.local.set({
+          [LocalDataKey.bufferedEvents]: storedEvents.concat(
+            (event.data as CacheEventsMessage).events,
+          ),
+        });
       }
     },
   );

@@ -45,6 +45,7 @@ export type Session = {
   recorderVersion: string;
 };
 
+// all service names for channel
 export enum ServiceName {
   StartRecord = 'start-record',
   StopRecord = 'stop-record',
@@ -53,17 +54,19 @@ export enum ServiceName {
   CacheEvents = 'cache-events',
 }
 
+// all event names for channel
 export enum EventName {
   SessionUpdated = 'session-updated',
 }
 
+// all message names for postMessage API
 export enum MessageName {
   RecordScriptReady = 'rrweb-extension-record-script-ready',
   StartRecord = 'rrweb-extension-start-record',
   RecordStarted = 'rrweb-extension-record-started',
-  HeartBeat = 'rrweb-extension-heart-beat',
   StopRecord = 'rrweb-extension-stop-record',
   RecordStopped = 'rrweb-extension-record-stopped',
+  CacheEvents = 'rrweb-extension-cache-event',
 }
 
 export type RecordStartedMessage = {
@@ -76,4 +79,9 @@ export type RecordStoppedMessage = {
   events: eventWithTime[];
   endTimestamp: number;
   session?: Session;
+};
+
+export type CacheEventsMessage = {
+  message: MessageName.CacheEvents;
+  events: eventWithTime[];
 };
