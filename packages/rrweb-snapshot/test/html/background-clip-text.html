@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style id="dynamic-style"></style>
+  </head>
+  <body>
+    <p class="text">The background is clipped to the foreground text.</p>
+    <script>
+      const style = document.getElementById('dynamic-style');
+      style.sheet.insertRule(`p {
+        border: 0.8em darkviolet;
+        border-style: dotted double;
+        margin: 1em 0;
+        padding: 1.4em;
+        background: linear-gradient(60deg, red, yellow, red, yellow, red);
+        font: 900 1.2em sans-serif;
+        text-decoration: underline;
+      }`);
+      style.sheet.insertRule(
+        `.text {
+          background-clip: text;
+          -webkit-background-clip: text;
+          color: rgba(0, 0, 0, 0.2);
+        }`,
+        1,
+      );
+    </script>
+  </body>
+</html>
