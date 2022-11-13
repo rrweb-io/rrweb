@@ -27,7 +27,7 @@ function startRecord(config: recordOptions<eventWithTime>) {
     message: MessageName.RecordStarted,
     startTimestamp: Date.now(),
   } as RecordStartedMessage);
-  document.addEventListener('mouseleave', mouseLeaveHandler);
+  document.documentElement.addEventListener('mouseleave', mouseLeaveHandler);
 }
 
 const messageHandler = (event: {
@@ -49,7 +49,10 @@ const messageHandler = (event: {
         endTimestamp: Date.now(),
       });
       window.removeEventListener('message', messageHandler);
-      document.removeEventListener('mouseleave', mouseLeaveHandler);
+      document.documentElement.removeEventListener(
+        'mouseleave',
+        mouseLeaveHandler,
+      );
     },
   } as Record<MessageName, () => void>;
   if (eventHandler[data.message]) eventHandler[data.message]();

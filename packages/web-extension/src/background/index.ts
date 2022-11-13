@@ -45,7 +45,20 @@ void (async () => {
             channel,
             RecorderStatus.PausedSwitch,
             statusData,
-          );
+          ).catch(async () => {
+            /**
+             * This error happen when the old tab is closed.
+             * In this case, the recording process would be stopped through Browser.tabs.onRemoved API.
+             * So we just read the new status here.
+             */
+            const localData = (await Browser.storage.local.get(
+              LocalDataKey.recorderStatus,
+            )) as LocalData;
+            return {
+              status: localData[LocalDataKey.recorderStatus],
+              bufferedEvents,
+            };
+          });
           if (!result) return;
           statusData = result.status;
           status = statusData.status;
