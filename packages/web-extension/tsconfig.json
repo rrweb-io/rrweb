@@ -33,6 +33,9 @@
     },
     {
       "path": "../rrweb-player"
+    },
+    {
+      "path": "../types"
     }
   ]
 }
