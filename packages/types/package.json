@@ -1,6 +1,9 @@
 {
   "name": "@rrweb/types",
   "version": "2.0.0-alpha.4",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "rrweb",
     "@rrweb/types"
