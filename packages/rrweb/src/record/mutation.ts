@@ -157,6 +157,7 @@ export default class MutationBuffer {
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
   private blockSelector: observerParam['blockSelector'];
+  private deleteSelector: observerParam['deleteSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
@@ -177,6 +178,7 @@ export default class MutationBuffer {
       'mutationCb',
       'blockClass',
       'blockSelector',
+      'deleteSelector',
       'maskTextClass',
       'maskTextSelector',
       'inlineStylesheet',
@@ -286,6 +288,7 @@ export default class MutationBuffer {
         mirror: this.mirror,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
+        deleteSelector: this.deleteSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
         skipChild: true,

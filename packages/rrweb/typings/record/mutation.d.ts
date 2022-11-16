@@ -13,6 +13,7 @@ export default class MutationBuffer {
     private mutationCb;
     private blockClass;
     private blockSelector;
+    private deleteSelector;
     private maskTextClass;
     private maskTextSelector;
     private inlineStylesheet;

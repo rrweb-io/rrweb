@@ -283,6 +283,17 @@ export function _isBlockedElement(
   return false;
 }
 
+export function _isDeletedElement(
+  element: HTMLElement,
+  deleteSelector: string | null,
+): boolean {
+  if (deleteSelector) {
+    return element.matches(deleteSelector);
+  }
+
+  return false;
+}
+
 export function needMaskingText(
   node: Node | null,
   maskTextClass: string | RegExp,
@@ -379,6 +390,7 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    deleteSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     inlineStylesheet: boolean;
@@ -396,6 +408,7 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     maskTextClass,
     maskTextSelector,
     inlineStylesheet,
@@ -438,6 +451,8 @@ function serializeNode(
         rootId,
       };
     case n.ELEMENT_NODE:
+      const needDelete = _isDeletedElement(n as HTMLElement, deleteSelector);
+
       const needBlock = _isBlockedElement(
         n as HTMLElement,
         blockClass,
@@ -620,6 +635,7 @@ function serializeNode(
         childNodes: [],
         isSVG: isSVGElement(n as Element) || undefined,
         needBlock,
+        needDelete,
         rootId,
       };
     case n.TEXT_NODE:
@@ -793,6 +809,7 @@ export function serializeNodeWithId(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    deleteSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     skipChild: boolean;
@@ -819,6 +836,7 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     maskTextClass,
     maskTextSelector,
     skipChild = false,
@@ -841,6 +859,7 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     maskTextClass,
     maskTextSelector,
     inlineStylesheet,
@@ -877,7 +896,7 @@ export function serializeNodeWithId(
     return null; // slimDOM
   }
 
-  if (_serializedNode.type === NodeType.Element && _serializedNode.needBlock) {
+  if (_serializedNode.type === NodeType.Element && _serializedNode.needDelete) {
     return null;
   }
 
@@ -913,6 +932,7 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
+      deleteSelector,
       maskTextClass,
       maskTextSelector,
       skipChild,
@@ -966,6 +986,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            deleteSelector,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
@@ -1002,6 +1023,7 @@ function snapshot(
     mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
+    deleteSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
     inlineStylesheet?: boolean;
@@ -1026,6 +1048,7 @@ function snapshot(
     mirror = new Mirror(),
     blockClass = 'rr-block',
     blockSelector = null,
+    deleteSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
@@ -1090,6 +1113,7 @@ function snapshot(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     maskTextClass,
     maskTextSelector,
     skipChild: false,

@@ -5,12 +5,14 @@ export declare function absoluteToStylesheet(cssText: string | null, href: strin
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
 export declare function transformAttribute(doc: Document, tagName: string, name: string, value: string): string;
 export declare function _isBlockedElement(element: HTMLElement, blockClass: string | RegExp, blockSelector: string | null): boolean;
+export declare function _isDeletedElement(element: HTMLElement, deleteSelector: string | null): boolean;
 export declare function needMaskingText(node: Node | null, maskTextClass: string | RegExp, maskTextSelector: string | null): boolean;
 export declare function serializeNodeWithId(n: Node, options: {
     doc: Document;
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    deleteSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     skipChild: boolean;
@@ -32,6 +34,7 @@ declare function snapshot(n: Document, options?: {
     mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
+    deleteSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
     inlineStylesheet?: boolean;

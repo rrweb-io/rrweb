@@ -222,6 +222,7 @@ export type recordOptions<T> = {
   checkoutEveryNms?: number;
   blockClass?: blockClass;
   blockSelector?: string;
+  deleteSelector?: string;
   ignoreClass?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
@@ -254,6 +255,7 @@ export type observerParam = {
   mediaInteractionCb: mediaInteractionCallback;
   blockClass: blockClass;
   blockSelector: string | null;
+  deleteSelector: string | null;
   ignoreClass: string;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
@@ -288,6 +290,7 @@ export type MutationBufferParam = Pick<
   | 'mutationCb'
   | 'blockClass'
   | 'blockSelector'
+  | 'deleteSelector'
   | 'maskTextClass'
   | 'maskTextSelector'
   | 'inlineStylesheet'

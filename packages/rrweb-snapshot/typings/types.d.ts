@@ -27,6 +27,7 @@ export declare type elementNode = {
     childNodes: serializedNodeWithId[];
     isSVG?: true;
     needBlock?: boolean;
+    needDelete?: boolean;
 };
 export declare type textNode = {
     type: NodeType.Text;
