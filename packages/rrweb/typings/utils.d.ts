@@ -1,5 +1,5 @@
-import { throttleOptions, listenerHandler, hookResetter, blockClass, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow, DeprecatedMirror, eventWithTime } from './types';
-import { Mirror } from 'rrweb-snapshot';
+import { throttleOptions, listenerHandler, hookResetter, addedNodeMutation, removedNodeMutation, textMutation, attributeMutation, mutationData, scrollData, inputData, DocumentDimension, IWindow, DeprecatedMirror, eventWithTime } from './types';
+import { Mirror } from '@fullview/rrweb-snapshot';
 export declare function on(type: string, fn: EventListenerOrEventListenerObject, target?: Document | IWindow): listenerHandler;
 export declare let _mirror: DeprecatedMirror;
 export declare function throttle<T>(func: (arg: T) => void, wait: number, options?: throttleOptions): (arg: T) => void;
@@ -9,7 +9,7 @@ export declare function patch(source: {
 }, name: string, replacement: (...args: any[]) => any): () => void;
 export declare function getWindowHeight(): number;
 export declare function getWindowWidth(): number;
-export declare function isBlocked(node: Node | null, blockClass: blockClass): boolean;
+export declare function isBlocked(node: Node | null, blockSelector?: string): boolean;
 export declare function isSerialized(n: Node, mirror: Mirror): boolean;
 export declare function isIgnored(n: Node, mirror: Mirror): boolean;
 export declare function isAncestorRemoved(target: Node, mirror: Mirror): boolean;

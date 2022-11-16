@@ -1,6 +1,5 @@
-import { ICanvas, Mirror } from 'rrweb-snapshot';
+import { ICanvas, Mirror } from '@fullview/rrweb-snapshot';
 import {
-  blockClass,
   CanvasContext,
   canvasManagerMutationCallback,
   canvasMutationCallback,
@@ -15,6 +14,7 @@ import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
+import { isBlocked } from '../../../utils';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -58,18 +58,18 @@ export class CanvasManager {
     recordCanvas: boolean;
     mutationCb: canvasMutationCallback;
     win: IWindow;
-    blockClass: blockClass;
+    blockSelector?: string;
     mirror: Mirror;
     sampling?: 'all' | number;
   }) {
-    const { sampling = 'all', win, blockClass, recordCanvas } = options;
+    const { sampling = 'all', win, blockSelector, recordCanvas } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass);
+      this.initCanvasMutationObserver(win, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass);
+      this.initCanvasFPSObserver(sampling, win, blockSelector);
   }
 
   private processMutation: canvasManagerMutationCallback = function (
@@ -92,9 +92,9 @@ export class CanvasManager {
   private initCanvasFPSObserver(
     fps: number,
     win: IWindow,
-    blockClass: blockClass,
+    blockSelector?: string,
   ) {
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const canvasContextReset = initCanvasContextObserver(win, blockSelector);
     const snapshotInProgressMap: Map<number, boolean> = new Map();
     const worker = new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
     worker.onmessage = (e) => {
@@ -147,8 +147,8 @@ export class CanvasManager {
       }
       lastSnapshotTime = timestamp;
 
-      win.document
-        .querySelectorAll(`canvas:not(.${blockClass} *)`)
+      Array.from(win.document.querySelectorAll('canvas'))
+        .filter((canvas) => !isBlocked(canvas, blockSelector))
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
           if (snapshotInProgressMap.get(id)) return;
@@ -196,23 +196,22 @@ export class CanvasManager {
 
   private initCanvasMutationObserver(
     win: IWindow,
-    blockClass: blockClass,
+    blockSelector?: string,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
 
-    const canvasContextReset = initCanvasContextObserver(win, blockClass);
+    const canvasContextReset = initCanvasContextObserver(win, blockSelector);
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
       win,
-      blockClass,
-      this.mirror,
+      blockSelector,
     );
 
     const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
       this.processMutation.bind(this),
       win,
-      blockClass,
+      blockSelector,
       this.mirror,
     );
 

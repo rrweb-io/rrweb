@@ -3,7 +3,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
-} from 'rrweb-snapshot';
+} from '@fullview/rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,
@@ -48,8 +48,7 @@ function record<T = eventWithTime>(
     emit,
     checkoutEveryNms,
     checkoutEveryNth,
-    blockClass = 'rr-block',
-    blockSelector = null,
+    blockSelector,
     deleteSelector = null,
     ignoreClass = 'rr-ignore',
     maskTextClass = 'rr-mask',
@@ -221,7 +220,7 @@ function record<T = eventWithTime>(
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
-    blockClass,
+    blockSelector,
     mirror,
     sampling: sampling.canvas,
   });
@@ -230,7 +229,6 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
     bypassOptions: {
-      blockClass,
       blockSelector,
       deleteSelector,
       maskTextClass,
@@ -265,7 +263,6 @@ function record<T = eventWithTime>(
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
-      blockClass,
       blockSelector,
       deleteSelector,
       maskTextClass,
@@ -421,7 +418,6 @@ function record<T = eventWithTime>(
                 },
               }),
             ),
-          blockClass,
           ignoreClass,
           maskTextClass,
           maskTextSelector,

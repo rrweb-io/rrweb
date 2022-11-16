@@ -11,7 +11,6 @@ export default class MutationBuffer {
     private movedSet;
     private droppedSet;
     private mutationCb;
-    private blockClass;
     private blockSelector;
     private deleteSelector;
     private maskTextClass;

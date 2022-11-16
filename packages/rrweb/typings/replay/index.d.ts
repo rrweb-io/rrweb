@@ -1,4 +1,4 @@
-import { Mirror } from 'rrweb-snapshot';
+import { Mirror } from '@fullview/rrweb-snapshot';
 import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import { eventWithTime, playerConfig, playerMetaData, Handler } from '../types';

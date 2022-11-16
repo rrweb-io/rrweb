@@ -6,7 +6,7 @@ import {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-} from 'rrweb-snapshot';
+} from '@fullview/rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
@@ -169,8 +169,6 @@ export type eventWithTime = event & {
   delay?: number;
 };
 
-export type blockClass = string | RegExp;
-
 export type maskTextClass = string | RegExp;
 
 export type SamplingStrategy = Partial<{
@@ -220,7 +218,6 @@ export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
-  blockClass?: blockClass;
   blockSelector?: string;
   deleteSelector?: string;
   ignoreClass?: string;
@@ -253,8 +250,7 @@ export type observerParam = {
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
-  blockClass: blockClass;
-  blockSelector: string | null;
+  blockSelector?: string;
   deleteSelector: string | null;
   ignoreClass: string;
   maskTextClass: maskTextClass;
@@ -288,7 +284,6 @@ export type observerParam = {
 export type MutationBufferParam = Pick<
   observerParam,
   | 'mutationCb'
-  | 'blockClass'
   | 'blockSelector'
   | 'deleteSelector'
   | 'maskTextClass'
@@ -641,7 +636,6 @@ export type playerConfig = {
   skipInactive: boolean;
   showWarning: boolean;
   showDebug: boolean;
-  blockClass: string;
   liveMode: boolean;
   insertStyleRules: string[];
   triggerFocus: boolean;

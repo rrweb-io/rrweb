@@ -1,6 +1,4 @@
-import { Mirror } from 'rrweb-snapshot';
 import {
-  blockClass,
   CanvasContext,
   canvasManagerMutationCallback,
   IWindow,
@@ -12,8 +10,7 @@ import { serializeArgs } from './serialize-args';
 export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
-  blockClass: blockClass,
-  mirror: Mirror,
+  blockSelector?: string,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const props2D = Object.getOwnPropertyNames(
@@ -36,7 +33,7 @@ export default function initCanvas2DMutationObserver(
             this: CanvasRenderingContext2D,
             ...args: Array<unknown>
           ) {
-            if (!isBlocked(this.canvas, blockClass)) {
+            if (!isBlocked(this.canvas, blockSelector)) {
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
               setTimeout(() => {

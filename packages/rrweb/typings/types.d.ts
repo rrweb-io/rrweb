@@ -1,4 +1,4 @@
-import { serializedNodeWithId, Mirror, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from 'rrweb-snapshot';
+import { serializedNodeWithId, Mirror, INode, MaskInputOptions, SlimDOMOptions, MaskInputFn, MaskTextFn } from '@fullview/rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
@@ -115,7 +115,6 @@ export declare type eventWithTime = event & {
     timestamp: number;
     delay?: number;
 };
-export declare type blockClass = string | RegExp;
 export declare type maskTextClass = string | RegExp;
 export declare type SamplingStrategy = Partial<{
     mousemove: boolean | number;
@@ -136,7 +135,6 @@ export declare type recordOptions<T> = {
     emit?: (e: T, isCheckout?: boolean) => void;
     checkoutEveryNth?: number;
     checkoutEveryNms?: number;
-    blockClass?: blockClass;
     blockSelector?: string;
     deleteSelector?: string;
     ignoreClass?: string;
@@ -167,8 +165,7 @@ export declare type observerParam = {
     viewportResizeCb: viewportResizeCallback;
     inputCb: inputCallback;
     mediaInteractionCb: mediaInteractionCallback;
-    blockClass: blockClass;
-    blockSelector: string | null;
+    blockSelector?: string;
     deleteSelector: string | null;
     ignoreClass: string;
     maskTextClass: maskTextClass;
@@ -198,7 +195,7 @@ export declare type observerParam = {
         options: unknown;
     }>;
 };
-export declare type MutationBufferParam = Pick<observerParam, 'mutationCb' | 'blockClass' | 'blockSelector' | 'deleteSelector' | 'maskTextClass' | 'maskTextSelector' | 'inlineStylesheet' | 'maskInputOptions' | 'maskTextFn' | 'maskInputFn' | 'recordCanvas' | 'inlineImages' | 'slimDOMOptions' | 'doc' | 'mirror' | 'iframeManager' | 'shadowDomManager' | 'canvasManager'>;
+export declare type MutationBufferParam = Pick<observerParam, 'mutationCb' | 'blockSelector' | 'deleteSelector' | 'maskTextClass' | 'maskTextSelector' | 'inlineStylesheet' | 'maskInputOptions' | 'maskTextFn' | 'maskInputFn' | 'recordCanvas' | 'inlineImages' | 'slimDOMOptions' | 'doc' | 'mirror' | 'iframeManager' | 'shadowDomManager' | 'canvasManager'>;
 export declare type hooksParam = {
     mutation?: mutationCallBack;
     mousemove?: mousemoveCallBack;
@@ -453,7 +450,6 @@ export declare type playerConfig = {
     skipInactive: boolean;
     showWarning: boolean;
     showDebug: boolean;
-    blockClass: string;
     liveMode: boolean;
     insertStyleRules: string[];
     triggerFocus: boolean;

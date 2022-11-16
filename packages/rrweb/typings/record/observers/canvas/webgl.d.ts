@@ -1,3 +1,3 @@
-import { Mirror } from 'rrweb-snapshot';
-import { blockClass, canvasManagerMutationCallback, IWindow, listenerHandler } from '../../../types';
-export default function initCanvasWebGLMutationObserver(cb: canvasManagerMutationCallback, win: IWindow, blockClass: blockClass, mirror: Mirror): listenerHandler;
+import { Mirror } from '@fullview/rrweb-snapshot';
+import { canvasManagerMutationCallback, IWindow, listenerHandler } from '../../../types';
+export default function initCanvasWebGLMutationObserver(cb: canvasManagerMutationCallback, win: IWindow, blockSelector: string | undefined, mirror: Mirror): listenerHandler;

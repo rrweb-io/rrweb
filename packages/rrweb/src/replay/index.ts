@@ -6,7 +6,7 @@ import {
   createCache,
   Mirror,
   createMirror,
-} from 'rrweb-snapshot';
+} from '@fullview/rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -152,7 +152,6 @@ export class Replayer {
       skipInactive: false,
       showWarning: true,
       showDebug: false,
-      blockClass: 'rr-block',
       liveMode: false,
       insertStyleRules: [],
       triggerFocus: true,
@@ -696,9 +695,9 @@ export class Replayer {
   ) {
     const styleEl = document.createElement('style');
     documentElement!.insertBefore(styleEl, head);
-    const injectStylesRules = getInjectStyleRules(
-      this.config.blockClass,
-    ).concat(this.config.insertStyleRules);
+    const injectStylesRules = getInjectStyleRules().concat(
+      this.config.insertStyleRules,
+    );
     if (this.config.pauseAnimation) {
       injectStylesRules.push(
         'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',

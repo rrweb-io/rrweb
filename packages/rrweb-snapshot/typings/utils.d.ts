@@ -1,5 +1,6 @@
 import { MaskInputFn, MaskInputOptions, serializedNodeWithId } from './types';
 export declare function isElement(n: Node): n is Element;
+export declare function isBlocked(node: Node | null, blockSelector?: string): boolean;
 export declare function isShadowRoot(n: Node): n is ShadowRoot;
 export declare class Mirror {
     private idNodeMap;

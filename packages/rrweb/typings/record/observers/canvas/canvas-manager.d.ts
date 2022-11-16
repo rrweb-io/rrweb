@@ -1,5 +1,5 @@
-import { Mirror } from 'rrweb-snapshot';
-import { blockClass, canvasMutationCallback, IWindow } from '../../../types';
+import { Mirror } from '@fullview/rrweb-snapshot';
+import { canvasMutationCallback, IWindow } from '../../../types';
 export declare type RafStamps = {
     latestId: number;
     invokeId: number | null;
@@ -21,7 +21,7 @@ export declare class CanvasManager {
         recordCanvas: boolean;
         mutationCb: canvasMutationCallback;
         win: IWindow;
-        blockClass: blockClass;
+        blockSelector?: string;
         mirror: Mirror;
         sampling?: 'all' | number;
     });

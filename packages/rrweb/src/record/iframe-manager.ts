@@ -1,4 +1,4 @@
-import { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
+import { Mirror, serializedNodeWithId } from '@fullview/rrweb-snapshot';
 import { mutationCallBack } from '../types';
 
 export class IframeManager {

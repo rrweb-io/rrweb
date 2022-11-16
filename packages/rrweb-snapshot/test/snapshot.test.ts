@@ -2,13 +2,9 @@
  * @jest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import {
-  absoluteToStylesheet,
-  serializeNodeWithId,
-  _isBlockedElement,
-} from '../src/snapshot';
+import { absoluteToStylesheet, serializeNodeWithId } from '../src/snapshot';
 import { serializedNodeWithId } from '../src/types';
-import { Mirror } from '../src/utils';
+import { isBlocked, Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
@@ -112,7 +108,7 @@ describe('absolute url to stylesheet', () => {
 
 describe('isBlockedElement()', () => {
   const subject = (html: string, opt: any = {}) =>
-    _isBlockedElement(render(html), 'rr-block', opt.blockSelector);
+    isBlocked(render(html), opt.blockSelector);
 
   const render = (html: string): HTMLElement =>
     JSDOM.fragment(html).querySelector('div')!;
@@ -141,8 +137,8 @@ describe('style elements', () => {
     return serializeNodeWithId(node, {
       doc: document,
       mirror: new Mirror(),
-      blockClass: 'blockblock',
       blockSelector: null,
+      deleteSelector: null,
       maskTextClass: 'maskmask',
       maskTextSelector: null,
       skipChild: false,

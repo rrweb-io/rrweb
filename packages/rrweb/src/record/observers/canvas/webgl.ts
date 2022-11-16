@@ -1,6 +1,5 @@
-import { Mirror } from 'rrweb-snapshot';
+import { Mirror } from '@fullview/rrweb-snapshot';
 import {
-  blockClass,
   CanvasContext,
   canvasManagerMutationCallback,
   canvasMutationWithType,
@@ -14,7 +13,7 @@ function patchGLPrototype(
   prototype: WebGLRenderingContext | WebGL2RenderingContext,
   type: CanvasContext,
   cb: canvasManagerMutationCallback,
-  blockClass: blockClass,
+  blockSelector: string | undefined,
   mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
@@ -31,7 +30,7 @@ function patchGLPrototype(
         return function (this: typeof prototype, ...args: Array<unknown>) {
           const result = original.apply(this, args);
           saveWebGLVar(result, win, prototype);
-          if (!isBlocked(this.canvas, blockClass)) {
+          if (!isBlocked(this.canvas, blockSelector)) {
             const id = mirror.getId(this.canvas);
 
             const recordArgs = serializeArgs([...args], win, prototype);
@@ -70,7 +69,7 @@ function patchGLPrototype(
 export default function initCanvasWebGLMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
-  blockClass: blockClass,
+  blockSelector: string | undefined,
   mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
@@ -80,7 +79,7 @@ export default function initCanvasWebGLMutationObserver(
       win.WebGLRenderingContext.prototype,
       CanvasContext.WebGL,
       cb,
-      blockClass,
+      blockSelector,
       mirror,
       win,
     ),
@@ -92,7 +91,7 @@ export default function initCanvasWebGLMutationObserver(
         win.WebGL2RenderingContext.prototype,
         CanvasContext.WebGL2,
         cb,
-        blockClass,
+        blockSelector,
         mirror,
         win,
       ),

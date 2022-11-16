@@ -5,6 +5,6 @@ declare namespace record {
     var freezePage: () => void;
     var takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     var takeScrollSnapshot: (target: HTMLElement) => void;
-    var mirror: import("rrweb-snapshot").Mirror;
+    var mirror: import("@fullview/rrweb-snapshot").Mirror;
 }
 export default record;

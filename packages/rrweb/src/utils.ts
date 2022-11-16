@@ -2,7 +2,6 @@ import {
   throttleOptions,
   listenerHandler,
   hookResetter,
-  blockClass,
   IncrementalSource,
   addedNodeMutation,
   removedNodeMutation,
@@ -17,7 +16,7 @@ import {
   eventWithTime,
   EventType,
 } from './types';
-import { Mirror, IGNORED_NODE, isShadowRoot } from 'rrweb-snapshot';
+import { Mirror, IGNORED_NODE, isShadowRoot } from '@fullview/rrweb-snapshot';
 
 export function on(
   type: string,
@@ -187,32 +186,26 @@ export function getWindowWidth(): number {
   );
 }
 
-export function isBlocked(node: Node | null, blockClass: blockClass): boolean {
-  if (!node) {
-    return false;
-  }
+export function isBlocked(node: Node | null, blockSelector?: string): boolean {
+  if (!node) return false;
+
   if (node.nodeType === node.ELEMENT_NODE) {
+    const element = node as HTMLElement;
     let needBlock = false;
-    if (typeof blockClass === 'string') {
-      if ((node as HTMLElement).closest !== undefined) {
-        return (node as HTMLElement).closest('.' + blockClass) !== null;
-      } else {
-        needBlock = (node as HTMLElement).classList.contains(blockClass);
-      }
-    } else {
-      (node as HTMLElement).classList.forEach((className) => {
-        if (blockClass.test(className)) {
-          needBlock = true;
-        }
-      });
-    }
-    return needBlock || isBlocked(node.parentNode, blockClass);
+
+    if (blockSelector) needBlock = element.matches(blockSelector);
+
+    return needBlock || isBlocked(node.parentNode, blockSelector);
   }
+
   if (node.nodeType === node.TEXT_NODE) {
-    // check parent node since text node do not have class name
-    return isBlocked(node.parentNode, blockClass);
+    /**
+     * Check parent node since text node do not have class name
+     */
+    return isBlocked(node.parentNode, blockSelector);
   }
-  return isBlocked(node.parentNode, blockClass);
+
+  return isBlocked(node.parentNode, blockSelector);
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {

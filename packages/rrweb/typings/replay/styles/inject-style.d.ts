@@ -1,2 +1,2 @@
-declare const rules: (blockClass: string) => string[];
+declare const rules: () => string[];
 export default rules;
