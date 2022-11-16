@@ -262,10 +262,12 @@ export class RRWebPluginCanvasWebRTCRecord {
   }
 
   private isCrossOriginIframeMessageEventContent(
-    event: MessageEvent,
+    event: MessageEvent<unknown>,
   ): event is MessageEvent<CrossOriginIframeMessageEventContent> {
     return Boolean(
-      'type' in event.data &&
+      event.data &&
+        typeof event.data === 'object' &&
+        'type' in event.data &&
         'data' in event.data &&
         (event.data as CrossOriginIframeMessageEventContent).type ===
           'rrweb-canvas-webrtc' &&
