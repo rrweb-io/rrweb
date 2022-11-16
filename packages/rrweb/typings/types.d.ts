@@ -148,7 +148,7 @@ export declare type recordOptions<T> = {
     slimDOMOptions?: SlimDOMOptions | 'all' | true;
     inlineStylesheet?: boolean;
     hooks?: hooksParam;
-    packFn?: PackFn;
+    packFn?: PackFn<eventWithTime>;
     sampling?: SamplingStrategy;
     recordCanvas?: boolean;
     userTriggeredOnInput?: boolean;
@@ -463,7 +463,7 @@ export declare type playerConfig = {
         lineWidth?: number;
         strokeStyle?: string;
     };
-    unpackFn?: UnpackFn;
+    unpackFn?: UnpackFn<eventWithTime>;
     plugins?: ReplayPlugin[];
 };
 export declare type playerMetaData = {

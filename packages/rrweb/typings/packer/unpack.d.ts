@@ -1,2 +1,3 @@
-import { UnpackFn } from './base';
-export declare const unpack: UnpackFn;
+export declare function unpack<T extends {
+    timestamp: number;
+}>(raw: string): T;

@@ -1,13 +1,12 @@
 import { strFromU8, strToU8, unzlibSync } from 'fflate';
-import { UnpackFn, eventWithTimeAndPacker, MARK } from './base';
-import { eventWithTime } from '../types';
+import { eventWithTimeAndPacker, MARK } from './base';
 
-export const unpack: UnpackFn = (raw: string) => {
+export function unpack<T extends { timestamp: number }>(raw: string) {
   if (typeof raw !== 'string') {
     return raw;
   }
   try {
-    const e: eventWithTime = JSON.parse(raw);
+    const e: T = JSON.parse(raw);
     if (e.timestamp) {
       return e;
     }
@@ -15,8 +14,8 @@ export const unpack: UnpackFn = (raw: string) => {
     // ignore and continue
   }
   try {
-    const e: eventWithTimeAndPacker = JSON.parse(
-      strFromU8(unzlibSync(strToU8(raw, true)))
+    const e: eventWithTimeAndPacker<T> = JSON.parse(
+      strFromU8(unzlibSync(strToU8(raw, true))),
     );
     if (e.v === MARK) {
       return e;
@@ -28,4 +27,4 @@ export const unpack: UnpackFn = (raw: string) => {
     console.error(error);
     throw new Error('Unknown data format.');
   }
-};
+}

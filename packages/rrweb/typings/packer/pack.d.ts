@@ -1,2 +1,3 @@
-import { PackFn } from './base';
-export declare const pack: PackFn;
+export declare function pack<T extends {
+    timestamp: number;
+}>(event: T): string;
