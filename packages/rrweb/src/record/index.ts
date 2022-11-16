@@ -26,6 +26,7 @@ import {
   canvasMutationParam,
   adoptedStyleSheetParam,
 } from '@rrweb/types';
+import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
@@ -69,6 +70,7 @@ function record<T = eventWithTime>(
     dataURLOptions = {},
     mousemoveWait,
     recordCanvas = false,
+    recordCrossOriginIframes = false,
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
@@ -77,8 +79,22 @@ function record<T = eventWithTime>(
     ignoreCSSAttributes = new Set([]),
   } = options;
 
+  const inEmittingFrame = recordCrossOriginIframes
+    ? window.parent === window
+    : true;
+
+  let passEmitsToParent = false;
+  if (!inEmittingFrame) {
+    try {
+      window.parent.document; // throws if parent is cross-origin
+      passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+    } catch (e) {
+      passEmitsToParent = true;
+    }
+  }
+
   // runtime checks for user options
-  if (!emit) {
+  if (inEmittingFrame && !emit) {
     throw new Error('emit function is required');
   }
   // move departed options to new options
@@ -138,13 +154,6 @@ function record<T = eventWithTime>(
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
 
-  /**
-   * Exposes mirror to the plugins
-   */
-  for (const plugin of plugins || []) {
-    if (plugin.getMirror) plugin.getMirror(mirror);
-  }
-
   const eventProcessor = (e: eventWithTime): T => {
     for (const plugin of plugins || []) {
       if (plugin.eventProcessor) {
@@ -170,7 +179,17 @@ function record<T = eventWithTime>(
       mutationBuffers.forEach((buf) => buf.unfreeze());
     }
 
-    emit(eventProcessor(e), isCheckout);
+    if (inEmittingFrame) {
+      emit?.(eventProcessor(e), isCheckout);
+    } else if (passEmitsToParent) {
+      const message: CrossOriginIframeMessageEventContent<T> = {
+        type: 'rrweb',
+        event: eventProcessor(e),
+        isCheckout,
+      };
+      window.parent.postMessage(message, '*');
+    }
+
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
@@ -244,9 +263,25 @@ function record<T = eventWithTime>(
   });
 
   const iframeManager = new IframeManager({
+    mirror,
     mutationCb: wrappedMutationEmit,
     stylesheetManager: stylesheetManager,
+    recordCrossOriginIframes,
+    wrappedEmit,
   });
+
+  /**
+   * Exposes mirror to the plugins
+   */
+  for (const plugin of plugins || []) {
+    if (plugin.getMirror)
+      plugin.getMirror({
+        nodeMirror: mirror,
+        crossOriginIframeMirror: iframeManager.crossOriginIframeMirror,
+        crossOriginIframeStyleMirror:
+          iframeManager.crossOriginIframeStyleMirror,
+      });
+  }
 
   canvasManager = new CanvasManager({
     recordCanvas,
@@ -326,7 +361,7 @@ function record<T = eventWithTime>(
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn, mirror);
+        iframeManager.attachIframe(iframe, childSn);
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {

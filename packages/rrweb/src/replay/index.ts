@@ -198,7 +198,7 @@ export class Replayer {
      * Exposes mirror to the plugins
      */
     for (const plugin of this.config.plugins || []) {
-      if (plugin.getMirror) plugin.getMirror(this.mirror);
+      if (plugin.getMirror) plugin.getMirror({ nodeMirror: this.mirror });
     }
 
     this.emitter.on(ReplayerEvents.Flush, () => {

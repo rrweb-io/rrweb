@@ -27,7 +27,7 @@ const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
 export const IGNORED_NODE = -2;
 
-function genId(): number {
+export function genId(): number {
   return _id++;
 }
 

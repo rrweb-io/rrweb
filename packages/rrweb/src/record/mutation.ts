@@ -324,7 +324,7 @@ export default class MutationBuffer {
           }
         },
         onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn, this.mirror);
+          this.iframeManager.attachIframe(iframe, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
         onStylesheetLoad: (link, childSn) => {
