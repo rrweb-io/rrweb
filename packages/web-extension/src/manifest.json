@@ -12,7 +12,8 @@
       "16": "assets/icon16.png",
       "48": "assets/icon48.png",
       "128": "assets/icon128.png"
-    }
+    },
+    "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"]
   },
   "v2": {
     "common": {
@@ -31,13 +32,6 @@
         "open_in_tab": true,
         "chrome_style": false
       },
-      "permissions": [
-        "activeTab",
-        "tabs",
-        "storage",
-        "unlimitedStorage",
-        "webNavigation"
-      ],
       "web_accessible_resources": ["**/*.js"]
     },
     "chrome": {},
@@ -66,13 +60,6 @@
         "page": "options/index.html",
         "open_in_tab": true
       },
-      "permissions": [
-        "activeTab",
-        "tabs",
-        "storage",
-        "unlimitedStorage",
-        "webNavigation"
-      ],
       "web_accessible_resources": [
         {
           "resources": ["**/*.js"],

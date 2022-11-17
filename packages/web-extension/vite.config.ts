@@ -1,23 +1,31 @@
-import { defineConfig, LibraryOptions, PluginOption } from 'vite';
+import {
+  defineConfig,
+  LibraryFormats,
+  LibraryOptions,
+  PluginOption,
+} from 'vite';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 import zip from 'vite-plugin-zip';
 import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
 
-function useEsmFormat(entriesToUseEsm: string[]): PluginOption {
+function useSpecialFormat(
+  entriesToUse: string[],
+  format: LibraryFormats,
+): PluginOption {
   return {
-    name: 'use-esm-format',
+    name: 'use-special-format',
     config(config) {
-      const shouldUseEsm = entriesToUseEsm.includes(
+      const shouldUse = entriesToUse.includes(
         (config.build?.lib as LibraryOptions)?.entry,
       );
-      if (shouldUseEsm) {
+      if (shouldUse) {
         config.build ??= {};
         // @ts-expect-error: lib needs to be an object, forcing it.
         config.build.lib ||= {};
         // @ts-expect-error: lib is an object
-        config.build.lib.formats = ['es'];
+        config.build.lib.formats = [format];
       }
     },
   };
@@ -79,8 +87,11 @@ export default defineConfig({
       additionalInputs: ['pages/index.html', 'content/inject.ts'],
     }),
     // https://github.com/aklinker1/vite-plugin-web-extension/issues/50#issuecomment-1317922947
-    // transfer inject.ts to esm format to avoid error
-    useEsmFormat([path.resolve(__dirname, 'src/content/inject.ts')]),
+    // transfer inject.ts to iife format to avoid error
+    useSpecialFormat(
+      [path.resolve(__dirname, 'src/content/inject.ts')],
+      'iife',
+    ),
     process.env.ZIP === 'true' &&
       zip({
         dir: 'dist',

@@ -6,20 +6,16 @@ import { MessageName, RecordStartedMessage } from '~/types';
 const events: eventWithTime[] = [];
 let stopFn: (() => void) | null = null;
 
-// When mouse leaves the page, cache the stored events in case the tab is closed or changed. This is a backup mechanism in case the events are not cached before page unloaded.
-const mouseLeaveHandler = () => {
-  window.postMessage({
-    message: MessageName.CacheEvents,
-    events,
-  });
-};
-
 function startRecord(config: recordOptions<eventWithTime>) {
   events.length = 0;
   stopFn =
     record({
       emit: (event) => {
         events.push(event);
+        window.postMessage({
+          message: MessageName.EmitEvent,
+          event,
+        });
       },
       ...config,
     }) || null;
@@ -27,7 +23,6 @@ function startRecord(config: recordOptions<eventWithTime>) {
     message: MessageName.RecordStarted,
     startTimestamp: Date.now(),
   } as RecordStartedMessage);
-  document.documentElement.addEventListener('mouseleave', mouseLeaveHandler);
 }
 
 const messageHandler = (event: {
@@ -49,10 +44,6 @@ const messageHandler = (event: {
         endTimestamp: Date.now(),
       });
       window.removeEventListener('message', messageHandler);
-      document.documentElement.removeEventListener(
-        'mouseleave',
-        mouseLeaveHandler,
-      );
     },
   } as Record<MessageName, () => void>;
   if (eventHandler[data.message]) eventHandler[data.message]();

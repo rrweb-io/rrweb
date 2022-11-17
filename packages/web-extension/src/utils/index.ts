@@ -12,6 +12,10 @@ import {
 } from '~/types';
 import type Channel from './channel';
 
+export function isFirefox(): boolean {
+  return window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+}
+
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
@@ -90,6 +94,8 @@ export async function resumeRecording(
       LocalDataKey.bufferedEvents,
     )) as LocalData)[LocalDataKey.bufferedEvents];
   const { startTimestamp, pausedTimestamp } = status;
+  // On Firefox, the new tab is not communicable immediately after it is created.
+  if (isFirefox()) await new Promise((r) => setTimeout(r, 50));
   const startResponse = (await channel.requestToTab(
     newTabId,
     ServiceName.ResumeRecord,

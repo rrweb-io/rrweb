@@ -5,7 +5,6 @@ import {
   LocalData,
   LocalDataKey,
   RecorderStatus,
-  ServiceName,
   Settings,
   SyncData,
   SyncDataKey,
@@ -96,25 +95,6 @@ void (async () => {
       })
       .catch(() => {
         // the extension can't access to the tab
-      });
-  });
-
-  // When page in the current tab is reloaded (navigated), inform the content script in the tab to store events into LocalStorage temporarily.
-  Browser.webNavigation.onBeforeNavigate.addListener((details) => {
-    if (details.parentFrameId !== -1) return;
-    const { tabId } = details;
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
-        const localData = data as LocalData;
-        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-        const { status, activeTabId } = localData[LocalDataKey.recorderStatus];
-        if (status !== RecorderStatus.RECORDING || activeTabId !== tabId)
-          return;
-        await channel.requestToTab(tabId, ServiceName.CacheEvents, {});
-      })
-      .catch((err) => {
-        console.error(err);
       });
   });
 

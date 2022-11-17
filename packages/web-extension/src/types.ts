@@ -51,7 +51,6 @@ export enum ServiceName {
   StopRecord = 'stop-record',
   PauseRecord = 'pause-record',
   ResumeRecord = 'resume-record',
-  CacheEvents = 'cache-events',
 }
 
 // all event names for channel
@@ -66,7 +65,7 @@ export enum MessageName {
   RecordStarted = 'rrweb-extension-record-started',
   StopRecord = 'rrweb-extension-stop-record',
   RecordStopped = 'rrweb-extension-record-stopped',
-  CacheEvents = 'rrweb-extension-cache-event',
+  EmitEvent = 'rrweb-extension-emit-event',
 }
 
 export type RecordStartedMessage = {
@@ -81,7 +80,7 @@ export type RecordStoppedMessage = {
   session?: Session;
 };
 
-export type CacheEventsMessage = {
-  message: MessageName.CacheEvents;
-  events: eventWithTime[];
+export type EmitEventMessage = {
+  message: MessageName.EmitEvent;
+  event: eventWithTime;
 };

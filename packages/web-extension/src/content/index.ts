@@ -10,14 +10,15 @@ import {
   RecordStartedMessage,
   RecordStoppedMessage,
   MessageName,
-  CacheEventsMessage,
+  EmitEventMessage,
 } from '~/types';
 import Channel from '~/utils/channel';
 
 const channel = new Channel();
 
 void (async () => {
-  let storedEvents: eventWithTime[] = [];
+  let bufferedEvents: eventWithTime[] = [];
+  let newEvents: eventWithTime[] = [];
   let startResponseCb:
     | ((response: RecordStartedMessage) => void)
     | undefined = undefined;
@@ -36,13 +37,13 @@ void (async () => {
       events: eventWithTime[];
       pausedTimestamp: number;
     };
-    storedEvents = events;
+    bufferedEvents = events;
     clearRecorderCb = startRecord();
     return new Promise((resolve) => {
       startResponseCb = (response) => {
         const pausedTime = response.startTimestamp - pausedTimestamp;
         // Decrease the time spent in the pause state and make them look like a continuous recording.
-        storedEvents.forEach((event) => {
+        bufferedEvents.forEach((event) => {
           event.timestamp += pausedTime;
         });
         resolve(response);
@@ -59,7 +60,8 @@ void (async () => {
         stopResponseCb = undefined;
         const newSession = generateSession();
         response.session = newSession;
-        storedEvents = [];
+        bufferedEvents = [];
+        newEvents = [];
         resolve(response);
         // clear cache
         void Browser.storage.local.set({
@@ -73,18 +75,8 @@ void (async () => {
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {
         stopResponseCb = undefined;
-        resolve(response);
-        void Browser.storage.local.set({
-          [LocalDataKey.bufferedEvents]: response.events,
-        });
-      };
-    });
-  });
-  channel.provide(ServiceName.CacheEvents, () => {
-    window.postMessage({ message: MessageName.StopRecord });
-    return new Promise((resolve) => {
-      stopResponseCb = (response: RecordStoppedMessage) => {
-        stopResponseCb = undefined;
+        bufferedEvents = [];
+        newEvents = [];
         resolve(response);
         void Browser.storage.local.set({
           [LocalDataKey.bufferedEvents]: response.events,
@@ -99,7 +91,7 @@ void (async () => {
       data:
         | RecordStartedMessage
         | RecordStoppedMessage
-        | CacheEventsMessage
+        | EmitEventMessage
         | {
             message: MessageName;
           };
@@ -120,17 +112,12 @@ void (async () => {
         const newData = {
           ...data,
         };
-        newData.events = storedEvents.concat(data.events);
+        newData.events = bufferedEvents.concat(data.events);
         clearRecorderCb?.();
         clearRecorderCb = undefined;
         stopResponseCb(newData);
-      } else if (event.data.message === MessageName.CacheEvents) {
-        void Browser.storage.local.set({
-          [LocalDataKey.bufferedEvents]: storedEvents.concat(
-            (event.data as CacheEventsMessage).events,
-          ),
-        });
-      }
+      } else if (event.data.message === MessageName.EmitEvent)
+        newEvents.push((event.data as EmitEventMessage).event);
     },
   );
 
@@ -140,14 +127,20 @@ void (async () => {
     RecorderStatus.RECORDING
   ) {
     clearRecorderCb = startRecord();
-    storedEvents = localData[LocalDataKey.bufferedEvents] || [];
+    bufferedEvents = localData[LocalDataKey.bufferedEvents] || [];
   }
+
+  // Before unload pages, cache the new events in the local storage.
+  window.addEventListener('beforeunload', () => {
+    void Browser.storage.local.set({
+      [LocalDataKey.bufferedEvents]: bufferedEvents.concat(newEvents),
+    });
+  });
 })();
 
 function startRecord() {
   const scriptEl = document.createElement('script');
   scriptEl.src = Browser.runtime.getURL('content/inject.js');
-  scriptEl.type = 'module';
   document.documentElement.appendChild(scriptEl);
   return () => {
     document.documentElement.removeChild(scriptEl);

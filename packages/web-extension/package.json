@@ -2,7 +2,7 @@
   "name": "web-extension",
   "version": "2.0.0",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
-  "author": "Yanzhen Yu, Yun Feng",
+  "author": "rrweb-io",
   "license": "MIT",
   "private": true,
   "scripts": {
