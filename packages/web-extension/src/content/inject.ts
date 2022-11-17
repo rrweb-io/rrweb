@@ -1,7 +1,7 @@
 import { record } from 'rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
 import type { eventWithTime } from '@rrweb/types';
-import { MessageName, RecordStartedMessage } from '../types';
+import { MessageName, RecordStartedMessage } from '~/types';
 
 const events: eventWithTime[] = [];
 let stopFn: (() => void) | null = null;

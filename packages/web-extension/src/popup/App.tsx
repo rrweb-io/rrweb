@@ -9,7 +9,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { FiSettings, FiList, FiPause, FiPlay } from 'react-icons/fi';
-import Channel from '../utils/channel';
+import Channel from '~/utils/channel';
 import {
   LocalData,
   LocalDataKey,
@@ -19,11 +19,11 @@ import {
   RecordStoppedMessage,
   Session,
   EventName,
-} from '../types';
+} from '~/types';
 import Browser from 'webextension-polyfill';
-import { CircleButton } from '../components/CircleButton';
+import { CircleButton } from '~/components/CircleButton';
 import { Timer } from './Timer';
-import { pauseRecording, resumeRecording, saveSession } from '../utils';
+import { pauseRecording, resumeRecording, saveSession } from '~/utils';
 const RECORD_BUTTON_SIZE = 3;
 
 const channel = new Channel();

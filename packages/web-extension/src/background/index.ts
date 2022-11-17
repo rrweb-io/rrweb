@@ -1,6 +1,6 @@
 import Browser from 'webextension-polyfill';
 import type { eventWithTime } from '@rrweb/types';
-import Channel from '../utils/channel';
+import Channel from '~/utils/channel';
 import {
   LocalData,
   LocalDataKey,
@@ -9,8 +9,8 @@ import {
   Settings,
   SyncData,
   SyncDataKey,
-} from '../types';
-import { pauseRecording, resumeRecording } from '../utils';
+} from '~/types';
+import { pauseRecording, resumeRecording } from '~/utils';
 
 const channel = new Channel();
 

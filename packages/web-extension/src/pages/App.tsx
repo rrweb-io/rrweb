@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import SidebarWithHeader from '../components/SidebarWithHeader';
+import SidebarWithHeader from '~/components/SidebarWithHeader';
 import { SessionList } from './SessionList';
 import { FiList, FiSettings } from 'react-icons/fi';
 import Player from './Player';

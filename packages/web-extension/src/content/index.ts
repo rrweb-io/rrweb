@@ -11,8 +11,8 @@ import {
   RecordStoppedMessage,
   MessageName,
   CacheEventsMessage,
-} from '../types';
-import Channel from '../utils/channel';
+} from '~/types';
+import Channel from '~/utils/channel';
 
 const channel = new Channel();
 

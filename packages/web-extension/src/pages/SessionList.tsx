@@ -29,9 +29,9 @@ import {
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { useNavigate } from 'react-router-dom';
-import { Session, EventName } from '../types';
-import Channel from '../utils/channel';
-import { deleteSessions, getAllSessions } from '../utils';
+import { Session, EventName } from '~/types';
+import Channel from '~/utils/channel';
+import { deleteSessions, getAllSessions } from '~/utils';
 import {
   FiChevronLeft,
   FiChevronRight,

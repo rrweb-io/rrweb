@@ -87,4 +87,9 @@ export default defineConfig({
         outputName: process.env.TARGET_BROWSER,
       }),
   ],
+  resolve: {
+    alias: {
+      '~': path.resolve(__dirname, './src'),
+    },
+  },
 });

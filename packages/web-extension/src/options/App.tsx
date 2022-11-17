@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import SidebarWithHeader from '../components/SidebarWithHeader';
+import SidebarWithHeader from '~/components/SidebarWithHeader';
 import { FiList, FiSettings } from 'react-icons/fi';
 import { Box } from '@chakra-ui/react';
 

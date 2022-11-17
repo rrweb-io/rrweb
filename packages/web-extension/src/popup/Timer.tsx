@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Stat, StatNumber } from '@chakra-ui/react';
-import { formatTime } from '../utils';
+import { formatTime } from '~/utils';
 
 export function Timer({
   startTime,

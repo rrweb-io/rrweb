@@ -9,7 +9,7 @@ import {
   RecordStoppedMessage,
   ServiceName,
   Session,
-} from '../types';
+} from '~/types';
 import type Channel from './channel';
 
 const SECOND = 1000;
