@@ -14814,10 +14814,10 @@ vite-plugin-dts@^1.6.6:
     kolorist "^1.6.0"
     ts-morph "^16.0.0"
 
-vite-plugin-web-extension@^1.4.4:
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/vite-plugin-web-extension/-/vite-plugin-web-extension-1.4.4.tgz#942c6605623c312cd20b86d9b640a192bff892a0"
-  integrity sha512-X1MGWdYI45Gcp8W+Yc2aq+k/nHWBQ6bMDgGbGn05JVIREsxtpZa7Bh4KKAEV32d9zTnz6aiaSXyAi8usexbyyg==
+vite-plugin-web-extension@^1.4.5:
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/vite-plugin-web-extension/-/vite-plugin-web-extension-1.4.5.tgz#ed52701557c2c54c347a7ae0b85d804bf9c042d8"
+  integrity sha512-P8+x4XbkFjEfW0fa0HhY6UjU43K6QoEw9PyIXh5yeSsEotj8I1zXw+cWtQoPIsTy03mDswcHaigHOQAQgPGsoA==
   dependencies:
     ajv "^8.8.1"
     md5 "^2.3.0"

@@ -1,9 +1,27 @@
-import { defineConfig } from 'vite';
+import { defineConfig, LibraryOptions, PluginOption } from 'vite';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 import zip from 'vite-plugin-zip';
 import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
+
+function useEsmFormat(entriesToUseEsm: string[]): PluginOption {
+  return {
+    name: 'use-esm-format',
+    config(config) {
+      const shouldUseEsm = entriesToUseEsm.includes(
+        (config.build?.lib as LibraryOptions)?.entry,
+      );
+      if (shouldUseEsm) {
+        config.build ??= {};
+        // @ts-expect-error: lib needs to be an object, forcing it.
+        config.build.lib ||= {};
+        // @ts-expect-error: lib is an object
+        config.build.lib.formats = ['es'];
+      }
+    },
+  };
+}
 
 export default defineConfig({
   root: 'src',
@@ -60,6 +78,9 @@ export default defineConfig({
       },
       additionalInputs: ['pages/index.html', 'content/inject.ts'],
     }),
+    // https://github.com/aklinker1/vite-plugin-web-extension/issues/50#issuecomment-1317922947
+    // transfer inject.ts to esm format to avoid error
+    useEsmFormat([path.resolve(__dirname, 'src/content/inject.ts')]),
     process.env.ZIP === 'true' &&
       zip({
         dir: 'dist',

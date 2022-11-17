@@ -147,6 +147,7 @@ void (async () => {
 function startRecord() {
   const scriptEl = document.createElement('script');
   scriptEl.src = Browser.runtime.getURL('content/inject.js');
+  scriptEl.type = 'module';
   document.documentElement.appendChild(scriptEl);
   return () => {
     document.documentElement.removeChild(scriptEl);
