@@ -1,7 +1,5 @@
 import type {
-  serializedNodeWithId,
   Mirror,
-  INode,
   MaskInputOptions,
   SlimDOMOptions,
   MaskInputFn,
@@ -61,6 +59,7 @@ export type recordOptions<T> = {
   sampling?: SamplingStrategy;
   dataURLOptions?: DataURLOptions;
   recordCanvas?: boolean;
+  recordCrossOriginIframes?: boolean;
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
@@ -152,7 +151,7 @@ export type ReplayPlugin = {
     node: Node | RRNode,
     context: { id: number; replayer: Replayer },
   ) => void;
-  getMirror?: (mirror: Mirror) => void;
+  getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
 };
 export type playerConfig = {
   speed: number;
@@ -194,3 +193,10 @@ declare global {
     FontFace: typeof FontFace;
   }
 }
+
+export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
+  type: 'rrweb';
+  event: T;
+  isCheckout?: boolean;
+};
+export type CrossOriginIframeMessageEvent = MessageEvent<CrossOriginIframeMessageEventContent>;
