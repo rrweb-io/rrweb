@@ -411,6 +411,14 @@ export class Replayer {
     );
   }
 
+  public removeEvents(start: number, end: number) {
+    this.service.send({ type: 'REMOVE_EVENTS', payload: { start, end } });
+  }
+
+  public getAllEvents() {
+    return this.service.state.context.events;
+  }
+
   public enableInteract() {
     this.iframe.setAttribute('scrolling', 'auto');
     this.iframe.style.pointerEvents = 'auto';

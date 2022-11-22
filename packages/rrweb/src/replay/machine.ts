@@ -39,6 +39,13 @@ export type PlayerEvent =
       };
     }
   | {
+      type: 'REMOVE_EVENTS';
+      payload: {
+        start: number;
+        end: number;
+      };
+    }
+  | {
       type: 'END';
     };
 export type PlayerState =
@@ -107,6 +114,10 @@ export function createPlayerService(
               target: 'playing',
               actions: ['addEvent'],
             },
+            REMOVE_EVENTS: {
+              target: 'playing',
+              actions: ['removeEvents'],
+            },
           },
         },
         paused: {
@@ -127,6 +138,10 @@ export function createPlayerService(
               target: 'paused',
               actions: ['addEvent'],
             },
+            REMOVE_EVENTS: {
+              target: 'paused',
+              actions: ['removeEvents'],
+            },
           },
         },
         live: {
@@ -134,6 +149,10 @@ export function createPlayerService(
             ADD_EVENT: {
               target: 'live',
               actions: ['addEvent'],
+            },
+            REMOVE_EVENTS: {
+              target: 'live',
+              actions: ['removeEvents'],
             },
             CAST_EVENT: {
               target: 'live',
@@ -273,6 +292,17 @@ export function createPlayerService(
                 delay: event.delay!,
               });
             }
+          }
+          return { ...ctx, events };
+        }),
+        removeEvents: assign((ctx, machineEvent) => {
+          let { events } = ctx;
+          if (machineEvent.type === 'REMOVE_EVENTS') {
+            events = events.filter(
+              (e) =>
+                e.timestamp < machineEvent.payload.start ||
+                e.timestamp >= machineEvent.payload.end,
+            );
           }
           return { ...ctx, events };
         }),

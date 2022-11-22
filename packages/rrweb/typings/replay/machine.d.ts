@@ -31,6 +31,12 @@ export declare type PlayerEvent = {
         event: eventWithTime;
     };
 } | {
+    type: 'REMOVE_EVENTS';
+    payload: {
+        start: number;
+        end: number;
+    };
+} | {
     type: 'END';
 };
 export declare type PlayerState = {

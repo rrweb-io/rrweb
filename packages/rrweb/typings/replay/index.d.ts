@@ -41,6 +41,8 @@ export declare class Replayer {
     resume(timeOffset?: number): void;
     startLive(baselineTime?: number): void;
     addEvent(rawEvent: eventWithTime | string): void;
+    removeEvents(start: number, end: number): void;
+    getAllEvents(): eventWithTime[];
     enableInteract(): void;
     disableInteract(): void;
     resetCache(): void;
