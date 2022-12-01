@@ -9,7 +9,7 @@ import {
   SyncData,
   SyncDataKey,
 } from '~/types';
-import { pauseRecording, resumeRecording } from '~/utils';
+import { pauseRecording, resumeRecording } from '~/utils/recording';
 
 const channel = new Channel();
 

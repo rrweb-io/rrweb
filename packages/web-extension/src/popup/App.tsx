@@ -23,7 +23,8 @@ import {
 import Browser from 'webextension-polyfill';
 import { CircleButton } from '~/components/CircleButton';
 import { Timer } from './Timer';
-import { pauseRecording, resumeRecording, saveSession } from '~/utils';
+import { pauseRecording, resumeRecording } from '~/utils/recording';
+import { saveSession } from '~/utils/storage';
 const RECORD_BUTTON_SIZE = 3;
 
 const channel = new Channel();

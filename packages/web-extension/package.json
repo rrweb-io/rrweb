@@ -16,7 +16,7 @@
     "prepublish": "npm run pack:chrome && npm run pack:firefox"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.3",
+    "@rrweb/types": "^2.0.0-alpha.4",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "@vitejs/plugin-react": "^2.1.0",
@@ -41,7 +41,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.3",
-    "rrweb-player": "^1.0.0-alpha.3"
+    "rrweb": "^2.0.0-alpha.4",
+    "rrweb-player": "^1.0.0-alpha.4"
   }
 }

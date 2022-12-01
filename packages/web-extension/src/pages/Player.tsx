@@ -8,7 +8,7 @@ import {
   BreadcrumbLink,
   Center,
 } from '@chakra-ui/react';
-import { getEvents, getSession } from '~/utils';
+import { getEvents, getSession } from '~/utils/storage';
 
 export default function Player() {
   const playerElRef = useRef<HTMLDivElement>(null);
