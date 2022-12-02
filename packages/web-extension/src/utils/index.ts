@@ -2,8 +2,15 @@ export function isFirefox(): boolean {
   return window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 }
 
-export function isInIFrame(): boolean {
-  return window.parent !== window;
+export function isInCrossOriginIFrame(): boolean {
+  if (window.parent !== window) {
+    try {
+      void window.parent.location.origin;
+    } catch (error) {
+      return true;
+    }
+  }
+  return false;
 }
 
 const SECOND = 1000;

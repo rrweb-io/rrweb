@@ -2,6 +2,11 @@ import { record } from 'rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
 import type { eventWithTime } from '@rrweb/types';
 import { MessageName, RecordStartedMessage } from '~/types';
+import { isInCrossOriginIFrame } from '~/utils';
+
+/**
+ * This script is injected into both main page and cross-origin IFrames through <script> tags.
+ */
 
 const events: eventWithTime[] = [];
 let stopFn: (() => void) | null = null;
@@ -12,25 +17,26 @@ function startRecord(config: recordOptions<eventWithTime>) {
     record({
       emit: (event) => {
         events.push(event);
-        window.postMessage({
+        postMessage({
           message: MessageName.EmitEvent,
           event,
         });
       },
       ...config,
     }) || null;
-  window.postMessage({
+  postMessage({
     message: MessageName.RecordStarted,
     startTimestamp: Date.now(),
   } as RecordStartedMessage);
 }
 
-const messageHandler = (event: {
-  data: {
+const messageHandler = (
+  event: MessageEvent<{
     message: MessageName;
     config?: recordOptions<eventWithTime>;
-  };
-}) => {
+  }>,
+) => {
+  if (event.source !== window) return;
   const data = event.data;
   const eventHandler = {
     [MessageName.StartRecord]: () => {
@@ -38,7 +44,7 @@ const messageHandler = (event: {
     },
     [MessageName.StopRecord]: () => {
       if (stopFn) stopFn();
-      window.postMessage({
+      postMessage({
         message: MessageName.RecordStopped,
         events,
         endTimestamp: Date.now(),
@@ -49,8 +55,18 @@ const messageHandler = (event: {
   if (eventHandler[data.message]) eventHandler[data.message]();
 };
 
+/**
+ * Only post message in the main page.
+ */
+function postMessage(message: unknown) {
+  if (!isInCrossOriginIFrame()) window.postMessage(message, location.origin);
+}
+
 window.addEventListener('message', messageHandler);
 
-window.postMessage({
-  message: MessageName.RecordScriptReady,
-});
+window.postMessage(
+  {
+    message: MessageName.RecordScriptReady,
+  },
+  location.origin,
+);

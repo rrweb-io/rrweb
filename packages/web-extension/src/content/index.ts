@@ -1,4 +1,4 @@
-import Browser from 'webextension-polyfill';
+import Browser, { Storage } from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
 import type { eventWithTime } from '@rrweb/types';
 import {
@@ -13,19 +13,46 @@ import {
   EmitEventMessage,
 } from '~/types';
 import Channel from '~/utils/channel';
+import { isInCrossOriginIFrame } from '~/utils';
 
 const channel = new Channel();
 
-void (async () => {
+void (() => {
+  window.addEventListener(
+    'message',
+    (
+      event: MessageEvent<{
+        message: MessageName;
+      }>,
+    ) => {
+      if (event.source !== window) return;
+      if (event.data.message === MessageName.RecordScriptReady)
+        window.postMessage(
+          {
+            message: MessageName.StartRecord,
+            config: {
+              recordCrossOriginIframes: true,
+            },
+          },
+          location.origin,
+        );
+    },
+  );
+  if (isInCrossOriginIFrame()) {
+    void initCrossOriginIframe();
+  } else {
+    void initMainPage();
+  }
+})();
+
+async function initMainPage() {
   let bufferedEvents: eventWithTime[] = [];
   let newEvents: eventWithTime[] = [];
   let startResponseCb:
     | ((response: RecordStartedMessage) => void)
     | undefined = undefined;
-  // The callback function to remove the recorder from the page.
-  let clearRecorderCb: (() => void) | undefined = undefined;
   channel.provide(ServiceName.StartRecord, async () => {
-    clearRecorderCb = startRecord();
+    startRecord();
     return new Promise((resolve) => {
       startResponseCb = (response) => {
         resolve(response);
@@ -38,7 +65,7 @@ void (async () => {
       pausedTimestamp: number;
     };
     bufferedEvents = events;
-    clearRecorderCb = startRecord();
+    startRecord();
     return new Promise((resolve) => {
       startResponseCb = (response) => {
         const pausedTime = response.startTimestamp - pausedTimestamp;
@@ -87,17 +114,17 @@ void (async () => {
 
   window.addEventListener(
     'message',
-    (event: {
-      data:
+    (
+      event: MessageEvent<
         | RecordStartedMessage
         | RecordStoppedMessage
         | EmitEventMessage
         | {
             message: MessageName;
-          };
-    }) => {
-      if (event.data.message === MessageName.RecordScriptReady)
-        window.postMessage({ message: MessageName.StartRecord });
+          }
+      >,
+    ) => {
+      if (event.source !== window) return;
       else if (
         event.data.message === MessageName.RecordStarted &&
         startResponseCb
@@ -113,8 +140,6 @@ void (async () => {
           ...data,
         };
         newData.events = bufferedEvents.concat(data.events);
-        clearRecorderCb?.();
-        clearRecorderCb = undefined;
         stopResponseCb(newData);
       } else if (event.data.message === MessageName.EmitEvent)
         newEvents.push((event.data as EmitEventMessage).event);
@@ -126,7 +151,7 @@ void (async () => {
     localData?.[LocalDataKey.recorderStatus]?.status ===
     RecorderStatus.RECORDING
   ) {
-    clearRecorderCb = startRecord();
+    startRecord();
     bufferedEvents = localData[LocalDataKey.bufferedEvents] || [];
   }
 
@@ -136,13 +161,36 @@ void (async () => {
       [LocalDataKey.bufferedEvents]: bufferedEvents.concat(newEvents),
     });
   });
-})();
+}
+
+async function initCrossOriginIframe() {
+  Browser.storage.local.onChanged.addListener((change) => {
+    if (change[LocalDataKey.recorderStatus]) {
+      const statusChange = change[
+        LocalDataKey.recorderStatus
+      ] as Storage.StorageChange;
+      const newStatus = statusChange.newValue as LocalData[LocalDataKey.recorderStatus];
+      if (newStatus.status === RecorderStatus.RECORDING) startRecord();
+      else
+        window.postMessage(
+          { message: MessageName.StopRecord },
+          location.origin,
+        );
+    }
+  });
+  const localData = (await Browser.storage.local.get()) as LocalData;
+  if (
+    localData?.[LocalDataKey.recorderStatus]?.status ===
+    RecorderStatus.RECORDING
+  )
+    startRecord();
+}
 
 function startRecord() {
   const scriptEl = document.createElement('script');
   scriptEl.src = Browser.runtime.getURL('content/inject.js');
   document.documentElement.appendChild(scriptEl);
-  return () => {
+  scriptEl.onload = () => {
     document.documentElement.removeChild(scriptEl);
   };
 }
