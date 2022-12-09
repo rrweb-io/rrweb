@@ -58,7 +58,7 @@ export class CanvasManager {
     recordCanvas: boolean;
     mutationCb: canvasMutationCallback;
     win: IWindow;
-    blockSelector?: string;
+    blockSelector: string | null;
     mirror: Mirror;
     sampling?: 'all' | number;
   }) {
@@ -92,7 +92,7 @@ export class CanvasManager {
   private initCanvasFPSObserver(
     fps: number,
     win: IWindow,
-    blockSelector?: string,
+    blockSelector: string | null,
   ) {
     const canvasContextReset = initCanvasContextObserver(win, blockSelector);
     const snapshotInProgressMap: Map<number, boolean> = new Map();
@@ -196,7 +196,7 @@ export class CanvasManager {
 
   private initCanvasMutationObserver(
     win: IWindow,
-    blockSelector?: string,
+    blockSelector: string | null,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();

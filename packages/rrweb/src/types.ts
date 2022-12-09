@@ -250,7 +250,7 @@ export type observerParam = {
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
-  blockSelector?: string;
+  blockSelector: string | null;
   deleteSelector: string | null;
   ignoreClass: string;
   maskTextClass: maskTextClass;

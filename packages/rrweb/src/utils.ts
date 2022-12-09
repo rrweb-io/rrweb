@@ -186,7 +186,7 @@ export function getWindowWidth(): number {
   );
 }
 
-export function isBlocked(node: Node | null, blockSelector?: string): boolean {
+export function isBlocked(node: Node | null, blockSelector: string | null): boolean {
   if (!node) return false;
 
   if (node.nodeType === node.ELEMENT_NODE) {

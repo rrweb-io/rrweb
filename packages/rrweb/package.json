@@ -1,6 +1,6 @@
 {
   "name": "@fullview/rrweb",
-  "version": "1.1.43",
+  "version": "1.1.44",
   "publishConfig": {
     "access": "restricted"
   },
@@ -84,6 +84,6 @@
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
     "mitt": "^1.1.3",
-    "@fullview/rrweb-snapshot": "^1.1.15"
+    "@fullview/rrweb-snapshot": "^2.0.0-alpha.4"
   }
 }

@@ -13,7 +13,7 @@ function patchGLPrototype(
   prototype: WebGLRenderingContext | WebGL2RenderingContext,
   type: CanvasContext,
   cb: canvasManagerMutationCallback,
-  blockSelector: string | undefined,
+  blockSelector: string | null,
   mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
@@ -30,8 +30,8 @@ function patchGLPrototype(
         return function (this: typeof prototype, ...args: Array<unknown>) {
           const result = original.apply(this, args);
           saveWebGLVar(result, win, prototype);
-          if (!isBlocked(this.canvas, blockSelector)) {
-            const id = mirror.getId(this.canvas);
+          if (!isBlocked(this.canvas as Node, blockSelector)) {
+            const id = mirror.getId(this.canvas as Node);
 
             const recordArgs = serializeArgs([...args], win, prototype);
             const mutation: canvasMutationWithType = {
@@ -69,7 +69,7 @@ function patchGLPrototype(
 export default function initCanvasWebGLMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
-  blockSelector: string | undefined,
+  blockSelector: string | null,
   mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];

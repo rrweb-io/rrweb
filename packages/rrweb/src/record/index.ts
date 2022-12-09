@@ -48,7 +48,7 @@ function record<T = eventWithTime>(
     emit,
     checkoutEveryNms,
     checkoutEveryNth,
-    blockSelector,
+    blockSelector = null,
     deleteSelector = null,
     ignoreClass = 'rr-ignore',
     maskTextClass = 'rr-mask',

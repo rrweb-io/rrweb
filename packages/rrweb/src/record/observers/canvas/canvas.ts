@@ -4,7 +4,7 @@ import { isBlocked, patch } from '../../../utils';
 
 export default function initCanvasContextObserver(
   win: IWindow,
-  blockSelector?: string,
+  blockSelector: string | null,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   try {

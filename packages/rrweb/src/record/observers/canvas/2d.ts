@@ -10,7 +10,7 @@ import { serializeArgs } from './serialize-args';
 export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
-  blockSelector?: string,
+  blockSelector: string | null,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const props2D = Object.getOwnPropertyNames(
