@@ -1,70 +1,140 @@
-_Psst — looking for a shareable component template? Go here --> [sveltejs/component-template](https://github.com/sveltejs/component-template)_
-
 _Looking for a Vue.js version? Go here --> [@preflight-hq/rrweb-player-vue](https://github.com/Preflight-HQ/rrweb-player-vue)_
 
 ---
 
-# svelte app
+# rrweb-player
 
-This is a project template for [Svelte](https://svelte.technology) apps. It lives at https://github.com/sveltejs/template.
+Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
 
-To create a new project based on this template using [degit](https://github.com/Rich-Harris/degit):
+## How is this different from `rrweb.Replayer`?
 
-```bash
-npm install -g degit # you only need to do this once
+rrweb-player uses rrweb's Replayer under the hood, but as Replayer doesn't include any UI for controls, rrweb-player adds those.
 
-degit sveltejs/template svelte-app
-cd svelte-app
+## Installation
+
+rrweb-player can also be included with `<script>`：
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
 ```
 
-_Note that you will need to have [Node.js](https://nodejs.org) installed._
+Or installed by using NPM：
 
-## Get started
-
-Install the dependencies...
-
-```bash
-cd svelte-app
-npm install
+```shell
+npm install --save rrweb-player
 ```
 
-...then start [Rollup](https://rollupjs.org):
-
-```bash
-npm run dev
+```js
+import rrwebPlayer from 'rrweb-player';
+import 'rrweb-player/dist/style.css';
 ```
 
-Navigate to [localhost:5000](http://localhost:5000). You should see your app running. Edit a component file in `src`, save it, and reload the page to see your changes.
+## Usage
 
-## Deploying to the web
-
-### With [now](https://zeit.co/now)
-
-Install `now` if you haven't already:
-
-```bash
-npm install -g now
+```js
+new rrwebPlayer({
+  target: document.body, // customizable root element
+  props: {
+    events,
+  },
+});
 ```
 
-Then, from within your project folder:
+## Options
 
-```bash
-now
+| key            | default      | description                                                                                                         |
+| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| events         | []           | the events for replaying                                                                                            |
+| width          | 1024         | the width of the replayer                                                                                           |
+| height         | 576          | the height of the replayer                                                                                          |
+| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                                |
+| autoPlay       | true         | whether to autoplay                                                                                                 |
+| speed          | 1            | The default speed to play at                                                                                        |
+| speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                                 |
+| showController | true         | whether to show the controller UI                                                                                   |
+| tags           | {}           | customize the custom events style with a key-value map                                                              |
+| inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
+| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed |
+
+## methods on the rrwebPlayer component
+
+```ts
+addEventListener(event: string, handler: (params: any) => unknown): void;
 ```
 
-As an alternative, use the [Now desktop client](https://zeit.co/download) and simply drag the unzipped project folder to the taskbar icon.
-
-### With [surge](https://surge.sh/)
-
-Install `surge` if you haven't already:
-
-```bash
-npm install -g surge
+```ts
+addEvent(event: eventWithTime): void;
 ```
 
-Then, from within your project folder:
+```ts
+getMetaData() => {
+    startTime: number;
+    endTime: number;
+    totalTime: number;
+}
+```
 
-```bash
-npm run build
-surge public
+```ts
+getReplayer() => Replayer;
+```
+
+```ts
+getMirror() => Mirror;
+```
+
+Toggles between play/pause
+
+```ts
+toggle();
+```
+
+Sets speed of player
+
+```ts
+setSpeed(speed: number)
+```
+
+Turns on/off skip inactive
+
+```ts
+toggleSkipInactive();
+```
+
+Triggers resize, do this whenever you change width/height
+
+```ts
+triggerResize();
+```
+
+Plays replay
+
+```ts
+play();
+```
+
+Pauses replay
+
+```ts
+pause();
+```
+
+Go to a point in time and pause or play from then
+
+```ts
+goto(timeOffset: number, play?: boolean)
+```
+
+Plays from a time to a time and (optionally) loop
+
+```ts
+playRange(
+    timeOffset: number,
+    endTimeOffset: number,
+    startLooping: boolean = false,
+    afterHook: undefined | (() => void) = undefined,
+  )
 ```

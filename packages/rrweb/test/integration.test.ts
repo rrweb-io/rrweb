@@ -336,11 +336,15 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about: blank');
     await page.setContent(getHtml.call(this, 'blocked-unblocked.html'));
 
-    const elements1 = await page.$x('/html/body/div[1]/button');
-    await (elements1[0] as puppeteer.ElementHandle<Element>).click();
+    const elements1 = (await page.$x(
+      '/html/body/div[1]/button',
+    )) as puppeteer.ElementHandle<HTMLButtonElement>[];
+    await elements1[0].click();
 
-    const elements2 = await page.$x('/html/body/div[2]/button');
-    await (elements2[0] as puppeteer.ElementHandle<Element>).click();
+    const elements2 = (await page.$x(
+      '/html/body/div[2]/button',
+    )) as puppeteer.ElementHandle<HTMLButtonElement>[];
+    await elements2[0].click();
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -525,9 +529,11 @@ describe('record integration tests', function (this: ISuite) {
       document.body.appendChild(iframe);
     });
 
+    await waitForRAF(page);
     await page.frames()[1].evaluate(() => {
       console.log('from iframe');
     });
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',

@@ -216,6 +216,23 @@ export type SamplingStrategy = Partial<{
   canvas: 'all' | number;
 }>;
 
+export interface ICrossOriginIframeMirror {
+  getId(
+    iframe: HTMLIFrameElement,
+    remoteId: number,
+    parentToRemoteMap?: Map<number, number>,
+    remoteToParentMap?: Map<number, number>,
+  ): number;
+  getIds(iframe: HTMLIFrameElement, remoteId: number[]): number[];
+  getRemoteId(
+    iframe: HTMLIFrameElement,
+    parentId: number,
+    map?: Map<number, number>,
+  ): number;
+  getRemoteIds(iframe: HTMLIFrameElement, parentId: number[]): number[];
+  reset(iframe?: HTMLIFrameElement): void;
+}
+
 export type RecordPlugin<TOptions = unknown> = {
   name: string;
   observer?: (
@@ -224,7 +241,11 @@ export type RecordPlugin<TOptions = unknown> = {
     options: TOptions,
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
-  getMirror?: (mirror: Mirror) => void;
+  getMirror?: (mirrors: {
+    nodeMirror: Mirror;
+    crossOriginIframeMirror: ICrossOriginIframeMirror;
+    crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
+  }) => void;
   options: TOptions;
 };
 
@@ -636,3 +657,16 @@ declare global {
 export type IWindow = Window & typeof globalThis;
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export type GetTypedKeys<Obj extends object, ValueType> = TakeTypeHelper<
+  Obj,
+  ValueType
+>[keyof TakeTypeHelper<Obj, ValueType>];
+export type TakeTypeHelper<Obj extends object, ValueType> = {
+  [K in keyof Obj]: Obj[K] extends ValueType ? K : never;
+};
+
+export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
+  Obj,
+  TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
+>;

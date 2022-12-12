@@ -11,7 +11,14 @@ import {
   styleSheetRuleData,
   selectionData,
 } from '@rrweb/types';
-import { assertSnapshot, launchPuppeteer, waitForRAF } from './utils';
+import {
+  assertSnapshot,
+  getServerURL,
+  launchPuppeteer,
+  startServer,
+  waitForRAF,
+} from './utils';
+import type { Server } from 'http';
 
 interface ISuite {
   code: string;
@@ -519,7 +526,7 @@ describe('record', function (this: ISuite) {
         }, 15);
 
         setTimeout(() => {
-          resolve(null);
+          resolve(undefined);
         }, 20);
       });
     });
@@ -611,70 +618,91 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
-  it('captures stylesheets that are still loading', async () => {
-    await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+  describe('loading stylesheets', () => {
+    let server: Server;
+    let serverURL: string;
 
-      record({
-        inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-
-      const link1 = document.createElement('link');
-      link1.setAttribute('rel', 'stylesheet');
-      link1.setAttribute(
-        'href',
-        URL.createObjectURL(
-          new Blob(['body { color: pink; }'], {
-            type: 'text/css',
-          }),
-        ),
-      );
-      document.head.appendChild(link1);
+    beforeAll(async () => {
+      server = await startServer();
+      serverURL = getServerURL(server);
     });
 
-    // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
-    await waitForRAF(ctx.page);
-    // 'blob' URL is different in every execution so we need to remove it from the snapshot.
-    const filteredEvents = JSON.parse(
-      JSON.stringify(ctx.events).replace(/blob\:[\w\d-/]+"/, 'blob:null"'),
-    );
-    assertSnapshot(filteredEvents);
-  });
-
-  it('captures stylesheets in iframes that are still loading', async () => {
-    await ctx.page.evaluate(() => {
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('src', 'about:blank');
-      document.body.appendChild(iframe);
-      const iframeDoc = iframe.contentDocument!;
-
-      const { record } = ((window as unknown) as IWindow).rrweb;
-
-      record({
-        inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
+    beforeEach(async () => {
+      ctx.page = await ctx.browser.newPage();
+      await ctx.page.goto(`${serverURL}/html/hello-world.html`);
+      await ctx.page.evaluate(ctx.code);
+      ctx.events = [];
+      await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
+        if (
+          e.type === EventType.DomContentLoaded ||
+          e.type === EventType.Load
+        ) {
+          return;
+        }
+        ctx.events.push(e);
       });
 
-      const linkEl = document.createElement('link');
-      linkEl.setAttribute('rel', 'stylesheet');
-      linkEl.setAttribute(
-        'href',
-        URL.createObjectURL(
-          new Blob(['body { color: pink; }'], {
-            type: 'text/css',
-          }),
-        ),
-      );
-      iframeDoc.head.appendChild(linkEl);
+      ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
     });
 
-    // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
-    await waitForRAF(ctx.page);
-    const filteredEvents = JSON.parse(
-      JSON.stringify(ctx.events).replace(/blob\:[\w\d-/]+"/, 'blob:null"'),
-    );
-    assertSnapshot(filteredEvents);
+    afterAll(async () => {
+      await server.close();
+    });
+
+    it('captures stylesheets that are still loading', async () => {
+      ctx.page.evaluate((serverURL) => {
+        const { record } = ((window as unknown) as IWindow).rrweb;
+
+        record({
+          inlineStylesheet: true,
+          emit: ((window as unknown) as IWindow).emit,
+        });
+
+        const link1 = document.createElement('link');
+        link1.setAttribute('rel', 'stylesheet');
+        link1.setAttribute('href', `${serverURL}/html/assets/style.css`);
+        document.head.appendChild(link1);
+      }, serverURL);
+
+      await ctx.page.waitForResponse(`${serverURL}/html/assets/style.css`);
+      await waitForRAF(ctx.page);
+
+      assertSnapshot(ctx.events);
+    });
+
+    it('captures stylesheets in iframes that are still loading', async () => {
+      ctx.page.evaluate(() => {
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('src', `/html/hello-world.html?2`);
+        document.body.appendChild(iframe);
+
+        const { record } = ((window as unknown) as IWindow).rrweb;
+
+        record({
+          inlineStylesheet: true,
+          emit: ((window as unknown) as IWindow).emit,
+        });
+      });
+
+      await ctx.page.waitForResponse(`${serverURL}/html/hello-world.html?2`);
+
+      await waitForRAF(ctx.page);
+
+      ctx.page.evaluate(() => {
+        const iframe = document.querySelector('iframe')!;
+        const iframeDoc = iframe.contentDocument!;
+        const linkEl = document.createElement('link');
+        linkEl.setAttribute('rel', 'stylesheet');
+        linkEl.setAttribute('href', `/html/assets/style.css`);
+        iframeDoc.head.appendChild(linkEl);
+      });
+
+      await ctx.page.waitForResponse(`${serverURL}/html/assets/style.css`);
+
+      await waitForRAF(ctx.page);
+
+      assertSnapshot(ctx.events);
+    });
   });
 
   it('captures CORS stylesheets that are still loading', async () => {
@@ -763,9 +791,11 @@ describe('record', function (this: ISuite) {
             typeof globalThis).CSSStyleSheet();
           sheet5.replaceSync!('h2 { color: purple; }');
           iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
-
-          resolve(null);
         }, 10);
+
+        setTimeout(() => {
+          resolve(null);
+        }, 20);
       });
     });
     await waitForRAF(ctx.page); // wait till events get sent

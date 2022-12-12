@@ -198,7 +198,7 @@ export class Replayer {
      * Exposes mirror to the plugins
      */
     for (const plugin of this.config.plugins || []) {
-      if (plugin.getMirror) plugin.getMirror(this.mirror);
+      if (plugin.getMirror) plugin.getMirror({ nodeMirror: this.mirror });
     }
 
     this.emitter.on(ReplayerEvents.Flush, () => {
@@ -1757,8 +1757,11 @@ export class Replayer {
       });
     } else {
       try {
-        (target as Element).scrollTop = d.y;
-        (target as Element).scrollLeft = d.x;
+        (target as Element).scrollTo({
+          top: d.y,
+          left: d.x,
+          behavior: isSync ? 'auto' : 'smooth',
+        });
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before

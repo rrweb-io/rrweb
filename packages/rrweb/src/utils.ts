@@ -491,6 +491,10 @@ export class StyleSheetMirror {
     this.idStyleMap = new Map();
     this.id = 1;
   }
+
+  generateId(): number {
+    return this.id++;
+  }
 }
 
 export function getRootShadowHost(n: Node): Node | null {

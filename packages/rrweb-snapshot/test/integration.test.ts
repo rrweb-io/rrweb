@@ -276,6 +276,23 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
   });
+
+  it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`http://localhost:3030/html/background-clip-text.html`, {
+      waitUntil: 'load',
+    });
+    await waitForRAF(page); // wait for page to render
+    await page.evaluate(`${code}
+        window.snapshot = rrweb.snapshot(document, {
+        inlineStylesheet: true,
+    })`);
+    await page.waitFor(100);
+    const snapshot = (await page.evaluate(
+      'JSON.stringify(window.snapshot, null, 2);',
+    )) as string;
+    assert(snapshot.includes('-webkit-background-clip: text;'));
+  });
 });
 
 describe('iframe integration tests', function (this: ISuite) {

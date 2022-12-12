@@ -4014,8 +4014,27 @@ exports[`record integration tests mutations should work when blocked class is un
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n\\\\n\\",
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 9
+                      }
+                    ],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\",
+                    \\"id\\": 10
                   }
                 ],
                 \\"id\\": 3
@@ -4023,7 +4042,7 @@ exports[`record integration tests mutations should work when blocked class is un
               {
                 \\"type\\": 3,
                 \\"textContent\\": \\"\\\\n\\\\n\\",
-                \\"id\\": 8
+                \\"id\\": 11
               },
               {
                 \\"type\\": 2,
@@ -4033,7 +4052,7 @@ exports[`record integration tests mutations should work when blocked class is un
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 10
+                    \\"id\\": 13
                   },
                   {
                     \\"type\\": 2,
@@ -4043,40 +4062,22 @@ exports[`record integration tests mutations should work when blocked class is un
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 12
+                        \\"id\\": 15
                       }
                     ],
-                    \\"id\\": 11
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 13
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"br\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"id\\": 14
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 15
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"h1\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n      Verify that block class bugs are fixed\\\\n  \\",
-                        \\"id\\": 17
-                      }
-                    ],
-                    \\"id\\": 16
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
@@ -4085,15 +4086,33 @@ exports[`record integration tests mutations should work when blocked class is un
                   },
                   {
                     \\"type\\": 2,
-                    \\"tagName\\": \\"br\\",
+                    \\"tagName\\": \\"h1\\",
                     \\"attributes\\": {},
-                    \\"childNodes\\": [],
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Verify that block class bugs are fixed\\",
+                        \\"id\\": 20
+                      }
+                    ],
                     \\"id\\": 19
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 20
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"br\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 23
                   },
                   {
                     \\"type\\": 2,
@@ -4105,7 +4124,7 @@ exports[`record integration tests mutations should work when blocked class is un
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 22
+                        \\"id\\": 25
                       },
                       {
                         \\"type\\": 2,
@@ -4117,7 +4136,7 @@ exports[`record integration tests mutations should work when blocked class is un
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 24
+                            \\"id\\": 27
                           },
                           {
                             \\"type\\": 2,
@@ -4127,91 +4146,91 @@ exports[`record integration tests mutations should work when blocked class is un
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"VISIBLE\\",
-                                \\"id\\": 26
+                                \\"id\\": 29
                               }
                             ],
-                            \\"id\\": 25
+                            \\"id\\": 28
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 27
+                            \\"id\\": 30
                           }
                         ],
-                        \\"id\\": 23
+                        \\"id\\": 26
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 28
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
-                        \\"id\\": 29
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
-                        \\"id\\": 30
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
                         \\"id\\": 31
                       },
                       {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 32
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 33
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 34
+                      },
+                      {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 32
+                        \\"id\\": 35
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"div\\",
                         \\"attributes\\": {
                           \\"class\\": \\"rr-block\\",
-                          \\"rr_width\\": \\"1904px\\",
-                          \\"rr_height\\": \\"21px\\"
+                          \\"rr_width\\": \\"200px\\",
+                          \\"rr_height\\": \\"33px\\"
                         },
-                        \\"childNodes\\": [],
-                        \\"id\\": 33
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 34
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
-                        \\"id\\": 35
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
                         \\"childNodes\\": [],
                         \\"id\\": 36
                       },
                       {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 37
+                      },
+                      {
                         \\"type\\": 2,
                         \\"tagName\\": \\"br\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 37
+                        \\"id\\": 38
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 39
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 40
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 38
+                        \\"id\\": 41
                       },
                       {
                         \\"type\\": 2,
@@ -4223,49 +4242,49 @@ exports[`record integration tests mutations should work when blocked class is un
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"MUTATE\\",
-                            \\"id\\": 40
+                            \\"id\\": 43
                           }
                         ],
-                        \\"id\\": 39
+                        \\"id\\": 42
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 41
+                        \\"id\\": 44
                       }
                     ],
-                    \\"id\\": 21
+                    \\"id\\": 24
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 42
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"br\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"id\\": 43
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"br\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"id\\": 44
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"br\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
                     \\"id\\": 45
                   },
                   {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"br\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 46
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"br\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 47
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"br\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 48
+                  },
+                  {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 46
+                    \\"id\\": 49
                   },
                   {
                     \\"type\\": 2,
@@ -4277,7 +4296,7 @@ exports[`record integration tests mutations should work when blocked class is un
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 48
+                        \\"id\\": 51
                       },
                       {
                         \\"type\\": 2,
@@ -4289,7 +4308,7 @@ exports[`record integration tests mutations should work when blocked class is un
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 50
+                            \\"id\\": 53
                           },
                           {
                             \\"type\\": 2,
@@ -4299,91 +4318,91 @@ exports[`record integration tests mutations should work when blocked class is un
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"VISIBLE\\",
-                                \\"id\\": 52
+                                \\"id\\": 55
                               }
                             ],
-                            \\"id\\": 51
+                            \\"id\\": 54
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
-                            \\"id\\": 53
+                            \\"id\\": 56
                           }
                         ],
-                        \\"id\\": 49
+                        \\"id\\": 52
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 54
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
-                        \\"id\\": 55
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
-                        \\"id\\": 56
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
                         \\"id\\": 57
                       },
                       {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 58
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 59
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 60
+                      },
+                      {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 58
+                        \\"id\\": 61
                       },
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"div\\",
                         \\"attributes\\": {
                           \\"class\\": \\"rr-block\\",
-                          \\"rr_width\\": \\"1904px\\",
-                          \\"rr_height\\": \\"21px\\"
+                          \\"rr_width\\": \\"200px\\",
+                          \\"rr_height\\": \\"33px\\"
                         },
-                        \\"childNodes\\": [],
-                        \\"id\\": 59
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 60
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [],
-                        \\"id\\": 61
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"br\\",
-                        \\"attributes\\": {},
                         \\"childNodes\\": [],
                         \\"id\\": 62
                       },
                       {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 63
+                      },
+                      {
                         \\"type\\": 2,
                         \\"tagName\\": \\"br\\",
                         \\"attributes\\": {},
                         \\"childNodes\\": [],
-                        \\"id\\": 63
+                        \\"id\\": 64
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 65
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"br\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [],
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 64
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 2,
@@ -4395,23 +4414,23 @@ exports[`record integration tests mutations should work when blocked class is un
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"MUTATE\\",
-                            \\"id\\": 66
+                            \\"id\\": 69
                           }
                         ],
-                        \\"id\\": 65
+                        \\"id\\": 68
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
-                        \\"id\\": 67
+                        \\"id\\": 70
                       }
                     ],
-                    \\"id\\": 47
+                    \\"id\\": 50
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n    \\",
-                    \\"id\\": 68
+                    \\"id\\": 71
                   },
                   {
                     \\"type\\": 2,
@@ -4421,18 +4440,18 @@ exports[`record integration tests mutations should work when blocked class is un
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 70
+                        \\"id\\": 73
                       }
                     ],
-                    \\"id\\": 69
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\",
-                    \\"id\\": 71
+                    \\"id\\": 74
                   }
                 ],
-                \\"id\\": 9
+                \\"id\\": 12
               }
             ],
             \\"id\\": 2
@@ -4452,7 +4471,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 39
+      \\"id\\": 42
     }
   },
   {
@@ -4460,7 +4479,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 39
+      \\"id\\": 42
     }
   },
   {
@@ -4468,7 +4487,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 39
+      \\"id\\": 42
     }
   },
   {
@@ -4476,7 +4495,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 39
+      \\"id\\": 42
     }
   },
   {
@@ -4486,7 +4505,7 @@ exports[`record integration tests mutations should work when blocked class is un
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 33,
+          \\"id\\": 36,
           \\"attributes\\": {
             \\"class\\": \\"notB\\"
           }
@@ -4495,50 +4514,19 @@ exports[`record integration tests mutations should work when blocked class is un
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 23,
+          \\"parentId\\": 26,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 72
-          }
-        },
-        {
-          \\"parentId\\": 72,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 73
-          }
-        },
-        {
-          \\"parentId\\": 73,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"button\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 74
-          }
-        },
-        {
-          \\"parentId\\": 74,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"I1I2 VISIBLE\\",
             \\"id\\": 75
           }
         },
         {
-          \\"parentId\\": 72,
-          \\"nextId\\": 73,
+          \\"parentId\\": 75,
+          \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
@@ -4563,71 +4551,13 @@ exports[`record integration tests mutations should work when blocked class is un
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"I1I1 VISIBLE\\",
+            \\"textContent\\": \\"I1I2 VISIBLE\\",
             \\"id\\": 78
           }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 1,
-      \\"id\\": 65
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 39
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 65
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 65
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 65
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
+        },
         {
-          \\"id\\": 59,
-          \\"attributes\\": {
-            \\"class\\": \\"notB\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 49,
-          \\"nextId\\": null,
+          \\"parentId\\": 75,
+          \\"nextId\\": 76,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
@@ -4641,7 +4571,7 @@ exports[`record integration tests mutations should work when blocked class is un
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
+            \\"tagName\\": \\"button\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 80
@@ -4651,25 +4581,83 @@ exports[`record integration tests mutations should work when blocked class is un
           \\"parentId\\": 80,
           \\"nextId\\": null,
           \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"button\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
+            \\"type\\": 3,
+            \\"textContent\\": \\"I1I1 VISIBLE\\",
             \\"id\\": 81
           }
-        },
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 68
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 68
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 68
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 68
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
         {
-          \\"parentId\\": 81,
+          \\"id\\": 62,
+          \\"attributes\\": {
+            \\"class\\": \\"notB\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 52,
           \\"nextId\\": null,
           \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"I1I2 VISIBLE\\",
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
             \\"id\\": 82
           }
         },
         {
-          \\"parentId\\": 79,
-          \\"nextId\\": 80,
+          \\"parentId\\": 82,
+          \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
@@ -4694,8 +4682,39 @@ exports[`record integration tests mutations should work when blocked class is un
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"I1I1 VISIBLE\\",
+            \\"textContent\\": \\"I1I2 VISIBLE\\",
             \\"id\\": 85
+          }
+        },
+        {
+          \\"parentId\\": 82,
+          \\"nextId\\": 83,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 86
+          }
+        },
+        {
+          \\"parentId\\": 86,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"button\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 87
+          }
+        },
+        {
+          \\"parentId\\": 87,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"I1I1 VISIBLE\\",
+            \\"id\\": 88
           }
         }
       ]
