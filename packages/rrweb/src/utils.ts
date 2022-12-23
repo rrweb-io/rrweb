@@ -17,8 +17,13 @@ export function on(
   type: string,
   fn: EventListenerOrEventListenerObject,
   target: Document | IWindow = document,
+  isPassive?: boolean,
 ): listenerHandler {
-  const options = { capture: true };
+  const options: AddEventListenerOptions = {
+    capture: true,
+    passive: isPassive ?? true,
+  };
+
   target.addEventListener(type, fn, options);
   return () => target.removeEventListener(type, fn, options);
 }

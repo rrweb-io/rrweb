@@ -196,9 +196,9 @@ function initMoveObserver({
     },
   );
   const handlers = [
-    on('mousemove', updatePosition, doc),
-    on('touchmove', updatePosition, doc),
-    on('drag', updatePosition, doc),
+    on('mousemove', updatePosition, doc, false),
+    on('touchmove', updatePosition, doc, false),
+    on('drag', updatePosition, doc, false),
   ];
   return () => {
     handlers.forEach((h) => h());
