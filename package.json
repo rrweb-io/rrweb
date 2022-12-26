@@ -1,4 +1,5 @@
 {
+  "name": "mdrrweb",
   "description": "record and replay the web",
   "repository": {
     "type": "git",
