@@ -167,9 +167,11 @@ export function patch(
   }
 }
 
-export function getWindowScroll(win: (Window & typeof globalThis) | null): {
-  left: number,
-  top: number
+export function getWindowScroll(
+  win: (Window & typeof globalThis) | null,
+): {
+  left: number;
+  top: number;
 } {
   const doc = win?.document;
   return {
