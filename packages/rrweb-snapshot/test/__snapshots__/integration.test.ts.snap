@@ -346,7 +346,7 @@ exports[`integration tests [html file]: picture.html 1`] = `
 
 exports[`integration tests [html file]: picture-blob.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
-    <img src=\\"\\" alt=\\"This is a robot\\" />
+    <img src=\\"blob:http://localhost:xxxx/...\\" alt=\\"This is a robot\\" />
   
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
