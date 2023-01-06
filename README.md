@@ -120,7 +120,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
   </tr>
 </table>
 
-## Who's using rrweb
+## Who's using rrweb?
 
 <table>
   <tr>
