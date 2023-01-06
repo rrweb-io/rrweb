@@ -6,6 +6,7 @@ import {
   absoluteToStylesheet,
   serializeNodeWithId,
   _isBlockedElement,
+  needMaskingText,
 } from '../src/snapshot';
 import { serializedNodeWithId } from '../src/types';
 import { Mirror } from '../src/utils';
@@ -143,8 +144,11 @@ describe('style elements', () => {
       mirror: new Mirror(),
       blockClass: 'blockblock',
       blockSelector: null,
+      maskAllText: false,
       maskTextClass: 'maskmask',
+      unmaskTextClass: 'unmaskmask',
       maskTextSelector: null,
+      unmaskTextSelector: null,
       skipChild: false,
       inlineStylesheet: true,
       maskTextFn: undefined,
@@ -188,8 +192,11 @@ describe('scrollTop/scrollLeft', () => {
       mirror: new Mirror(),
       blockClass: 'blockblock',
       blockSelector: null,
+      maskAllText: false,
       maskTextClass: 'maskmask',
+      unmaskTextClass: 'unmaskmask',
       maskTextSelector: null,
+      unmaskTextSelector: null,
       skipChild: false,
       inlineStylesheet: true,
       maskTextFn: undefined,
@@ -216,5 +223,88 @@ describe('scrollTop/scrollLeft', () => {
         rr_scrollLeft: 20,
       },
     });
+  });
+});
+
+describe('needMaskingText', () => {
+  const render = (html: string): HTMLDivElement => {
+    document.write(html);
+    return document.querySelector('div')!;
+  };
+
+  it('should not mask by default', () => {
+    const el = render(`<div class='foo'>Lorem ipsum</div>`);
+    expect(needMaskingText(el, 'maskmask', null, 'unmaskmask', null, false)).toEqual(false);
+  });
+
+  it('should mask if the masking class is matched', () => {
+    const el = render(`<div class='foo maskmask'>Lorem ipsum</div>`);
+    expect(needMaskingText(el, 'maskmask', null, 'unmaskmask', null, false)).toEqual(true);
+    expect(needMaskingText(el, /^maskmask$/, null, /^unmaskmask$/, null, false)).toEqual(true);
+  });
+
+  it('should mask if the masking class is matched on an ancestor', () => {
+    const el = render(`<div class='foo maskmask'><span>Lorem ipsum</span></div>`);
+    expect(needMaskingText(el.children[0], 'maskmask', null, 'unmaskmask', null, false)).toEqual(true);
+    expect(needMaskingText(el.children[0], /^maskmask$/, null, /^unmaskmask$/, null, false)).toEqual(true);
+  });
+
+  it('should mask if the masking selector is matched', () => {
+    const el = render(`<div class='foo'>Lorem ipsum</div>`);
+    expect(needMaskingText(el, 'maskmask', '.foo', 'unmaskmask', null, false)).toEqual(true);
+  });
+
+  it('should mask if the masking selector is matched on an ancestor', () => {
+    const el = render(`<div class='foo'><span>Lorem ipsum</span></div>`);
+    expect(needMaskingText(el.children[0], 'maskmask', '.foo', 'unmaskmask', null, false)).toEqual(true);
+  });
+
+  it('should mask by default', () => {
+    const el = render(`<div class='foo'>Lorem ipsum</div>`);
+    expect(needMaskingText(el, 'maskmask', null, 'unmaskmask', null, true)).toEqual(true);
+  });
+
+  it('should not mask if the un-masking class is matched', () => {
+    const el = render(`<div class='foo unmaskmask'>Lorem ipsum</div>`);
+    expect(needMaskingText(el, 'maskmask', null, 'unmaskmask', null, true)).toEqual(false);
+    expect(needMaskingText(el, /^maskmask$/, null, /^unmaskmask$/, null, true)).toEqual(false);
+  });
+
+  it('should not mask if the un-masking class is matched on an ancestor', () => {
+    const el = render(`<div class='foo unmaskmask'><span>Lorem ipsum</span></div>`);
+    expect(needMaskingText(el.children[0], 'maskmask', null, 'unmaskmask', null, true)).toEqual(false);
+    expect(needMaskingText(el.children[0], /^maskmask$/, null, /^unmaskmask$/, null, true)).toEqual(false);
+  });
+
+  it('should mask if the masking class is more specific than the unmasking class', () => {
+    const el = render(`<div class='unmaskmask'><div class='maskmask'><span>Lorem ipsum</span><div></div>`);
+    expect(needMaskingText(el.children[0].children[0], 'maskmask', null, 'unmaskmask', null, true)).toEqual(true);
+    expect(needMaskingText(el.children[0].children[0], /^maskmask$/, null, /^unmaskmask$/, null, true)).toEqual(true);
+  });
+
+  it('should not mask if the unmasking class is more specific than the masking class', () => {
+    const el = render(`<div class='maskmask'><div class='unmaskmask'><span>Lorem ipsum</span><div></div>`);
+    expect(needMaskingText(el.children[0].children[0], 'maskmask', null, 'unmaskmask', null, true)).toEqual(false);
+    expect(needMaskingText(el.children[0].children[0], /^maskmask$/, null, /^unmaskmask$/, null, true)).toEqual(false);
+  });
+
+  it('should not mask if the unmasking selector is matched', () => {
+    const el = render(`<div class='foo'>Lorem ipsum</div>`);
+    expect(needMaskingText(el, 'maskmask', null, 'unmaskmask', '.foo', true)).toEqual(false);
+  });
+
+  it('should not mask if the unmasking selector is matched on an ancestor', () => {
+    const el = render(`<div class='foo'><span>Lorem ipsum</span></div>`);
+    expect(needMaskingText(el.children[0], 'maskmask', null, 'unmaskmask', '.foo', true)).toEqual(false);
+  });
+
+  it('should mask if the masking selector is more specific than the unmasking selector', () => {
+    const el = render(`<div class='foo'><div class='bar'><span>Lorem ipsum</span><div></div>`);
+    expect(needMaskingText(el.children[0].children[0], 'maskmask', '.bar', 'unmaskmask', '.foo', true)).toEqual(true);
+  });
+
+  it('should not mask if the unmasking selector is more specific than the masking selector', () => {
+    const el = render(`<div class='bar'><div class='foo'><span>Lorem ipsum</span><div></div>`);
+    expect(needMaskingText(el.children[0].children[0], 'maskmask', '.bar', 'unmaskmask', '.foo', true)).toEqual(false);
   });
 });

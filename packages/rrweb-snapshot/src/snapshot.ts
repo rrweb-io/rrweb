@@ -279,27 +279,53 @@ export function classMatchesRegex(
   node: Node | null,
   regex: RegExp,
   checkAncestors: boolean,
-): boolean {
-  if (!node) return false;
+  distance: number = -1,
+): number {
+  if (!node) return -1;
   if (node.nodeType !== node.ELEMENT_NODE) {
-    if (!checkAncestors) return false;
+    if (!checkAncestors) return -1;
     return classMatchesRegex(node.parentNode, regex, checkAncestors);
   }
 
   for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
     const className = (node as HTMLElement).classList[eIndex];
     if (regex.test(className)) {
-      return true;
+      return Math.max(distance, 0);
     }
   }
-  if (!checkAncestors) return false;
-  return classMatchesRegex(node.parentNode, regex, checkAncestors);
+  if (!checkAncestors) return -1;
+  return classMatchesRegex(node.parentNode, regex, checkAncestors, distance + 1);
+}
+
+export function closestMatch(
+  el: HTMLElement,
+  selector: string,
+): number {
+  if (!el) return -1;
+  if (el.matches(selector)) return 0;
+  const closestParent = el.closest(selector);
+  if (closestParent) {
+    let current = el;
+    let distance = 0;
+    while (current && current !== closestParent) {
+      current = current.parentNode as HTMLElement;
+      if (!current) {
+        return -1;
+      }
+      distance++;
+    }
+    return distance;
+  }
+  return -1;
 }
 
 export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  unmaskTextClass: string | RegExp,
+  unmaskTextSelector: string | null,
+  maskAllText: boolean,
 ): boolean {
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
@@ -307,18 +333,48 @@ export function needMaskingText(
       : node.parentElement;
   if (el === null) return false;
 
-  if (typeof maskTextClass === 'string') {
-    if (el.classList.contains(maskTextClass)) return true;
-    if (el.closest(`.${maskTextClass}`)) return true;
-  } else {
-    if (classMatchesRegex(el, maskTextClass, true)) return true;
+  let mask = !!maskAllText;
+  let maskDistance = -1;
+  let unmaskDistance = -1;
+
+  if (mask) {
+    if (typeof unmaskTextClass === 'string') {
+      unmaskDistance = closestMatch(el, `.${unmaskTextClass}`);
+      if (unmaskDistance >= 0) {
+        mask = false;
+      }
+    } else {
+      unmaskDistance = classMatchesRegex(el, unmaskTextClass, true);
+      if (unmaskDistance >= 0) mask = false;
+    }
   }
 
-  if (maskTextSelector) {
-    if (el.matches(maskTextSelector)) return true;
-    if (el.closest(maskTextSelector)) return true;
+  if (mask && unmaskTextSelector) {
+    unmaskDistance = closestMatch(el, unmaskTextSelector);
+    if (unmaskDistance >= 0) {
+      mask = false;
+    }
   }
-  return false;
+
+  if (!mask) {
+    if (typeof maskTextClass === 'string') {
+      maskDistance = closestMatch(el, `.${maskTextClass}`);
+      if (maskDistance >= 0 && (unmaskDistance < 0 || maskDistance < unmaskDistance)) {
+        mask = true;
+      }
+    } else {
+      maskDistance = classMatchesRegex(el, maskTextClass, true);
+      if (maskDistance >= 0 && (unmaskDistance < 0 || maskDistance < unmaskDistance)) mask = true;
+    }
+  }
+
+  if (!mask && maskTextSelector) {
+    maskDistance = closestMatch(el, maskTextSelector);
+    if (maskDistance >= 0 && (unmaskDistance < 0 || maskDistance < unmaskDistance)) {
+      mask = true;
+    }
+  }
+  return mask;
 }
 
 // https://stackoverflow.com/a/36155560
@@ -412,8 +468,11 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    maskAllText: boolean;
     maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -433,8 +492,11 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
@@ -486,8 +548,11 @@ function serializeNode(
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
+        maskAllText,
         maskTextClass,
+        unmaskTextClass,
         maskTextSelector,
+        unmaskTextSelector,
         maskTextFn,
         rootId,
       });
@@ -517,13 +582,16 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
+    maskAllText: boolean;
     maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const { maskAllText, maskTextClass, unmaskTextClass, maskTextSelector, unmaskTextSelector, maskTextFn, rootId } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -558,7 +626,7 @@ function serializeTextNode(
     !isStyle &&
     !isScript &&
     textContent &&
-    needMaskingText(n, maskTextClass, maskTextSelector)
+    needMaskingText(n, maskTextClass, maskTextSelector, unmaskTextClass, unmaskTextSelector, maskAllText)
   ) {
     textContent = maskTextFn
       ? maskTextFn(textContent)
@@ -900,11 +968,14 @@ export function serializeNodeWithId(
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
+    maskAllText: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
@@ -931,8 +1002,11 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     skipChild = false,
     inlineStylesheet = true,
     maskInputOptions = {},
@@ -956,8 +1030,11 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
@@ -1028,8 +1105,11 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
+      maskAllText,
       maskTextClass,
+      unmaskTextClass,
       maskTextSelector,
+      unmaskTextSelector,
       skipChild,
       inlineStylesheet,
       maskInputOptions,
@@ -1088,8 +1168,11 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            maskAllText,
             maskTextClass,
+            unmaskTextClass,
             maskTextSelector,
+            unmaskTextSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1135,8 +1218,11 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            maskAllText,
             maskTextClass,
+            unmaskTextClass,
             maskTextSelector,
+            unmaskTextSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1176,8 +1262,11 @@ function snapshot(
     mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
+    maskAllText?: boolean;
     maskTextClass?: string | RegExp;
+    unmaskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
+    unmaskTextSelector?: string | null;
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
@@ -1205,8 +1294,11 @@ function snapshot(
     mirror = new Mirror(),
     blockClass = 'rr-block',
     blockSelector = null,
+    maskAllText = false,
     maskTextClass = 'rr-mask',
+    unmaskTextClass = 'rr-unmask',
     maskTextSelector = null,
+    unmaskTextSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,
@@ -1271,8 +1363,11 @@ function snapshot(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,
