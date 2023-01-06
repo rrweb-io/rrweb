@@ -207,7 +207,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await page.waitForTimeout(100);
+    await waitForRAF(page);
     const snapshot = (await page.evaluate(
       'JSON.stringify(snapshot, null, 2);',
     )) as string;
@@ -227,7 +227,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await page.waitForTimeout(100);
+    await waitForRAF(page);
     const snapshot = (await page.evaluate(
       'JSON.stringify(snapshot, null, 2);',
     )) as string;
@@ -252,7 +252,7 @@ iframe.contentDocument.querySelector('center').clientHeight
           window.snapshot = sn;
         }
     })`);
-    await page.waitForTimeout(100);
+    await waitForRAF(page);
     const snapshot = (await page.evaluate(
       'JSON.stringify(window.snapshot, null, 2);',
     )) as string;
@@ -277,7 +277,7 @@ iframe.contentDocument.querySelector('center').clientHeight
           window.snapshot = sn;
         }
     })`);
-    await page.waitForTimeout(100);
+    await waitForRAF(page);
     const snapshot = (await page.evaluate(
       'JSON.stringify(window.snapshot, null, 2);',
     )) as string;
@@ -295,7 +295,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         window.snapshot = rrweb.snapshot(document, {
         inlineStylesheet: true,
     })`);
-    await page.waitForTimeout(100);
+    await waitForRAF(page);
     const snapshot = (await page.evaluate(
       'JSON.stringify(window.snapshot, null, 2);',
     )) as string;
