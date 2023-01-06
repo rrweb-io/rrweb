@@ -11,8 +11,8 @@
   <script>
     const iframe5 = document.createElement('iframe');
     iframe5.id = 'five';
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       document.body.appendChild(iframe5);
-    }, 10);
+    });
   </script>
 </html>
