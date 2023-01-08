@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>absolute image url</title>
+  <script src="../../../rrweb-snapshot/dist/rrweb-snapshot.js"></script>
+</head>
+<body>
+<div id='div1' style='height: 200px; background-image: url("static.png")'></div>
+<div id='div2' style='height: 200px;'></div>
+<button onclick='addDynamicBackgroundImage()'>add dynamic background image</button>
+<script>
+  function addDynamicBackgroundImage() {
+    document.querySelector('#div2').style.setProperty('background-image', 'url(dynamic.png)')
+  }
+</script>
+</body>
+</html>

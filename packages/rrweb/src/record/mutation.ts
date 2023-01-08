@@ -550,12 +550,18 @@ export default class MutationBuffer {
           }
           const styleObj = item.attributes.style as styleAttributeValue;
           for (const pname of Array.from(target.style)) {
-            const newValue = target.style.getPropertyValue(pname);
+            let newValue = target.style.getPropertyValue(pname);
             const newPriority = target.style.getPropertyPriority(pname);
             if (
               newValue !== old.style.getPropertyValue(pname) ||
               newPriority !== old.style.getPropertyPriority(pname)
             ) {
+              newValue = transformAttribute(
+                this.doc,
+                (m.target as HTMLElement).tagName,
+                m.attributeName,
+                newValue,
+              );
               if (newPriority === '') {
                 styleObj[pname] = newValue;
               } else {
