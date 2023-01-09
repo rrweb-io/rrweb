@@ -129,7 +129,7 @@ export class ShadowDomManager {
     }
   }
 
-  public clearCache(){
+  public clearCache() {
     this.shadowDoms = new WeakSet();
   }
 
