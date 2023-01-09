@@ -591,27 +591,30 @@ describe('record', function (this: ISuite) {
 
   it('captures adopted stylesheets of shadow doms in checkout full snapshot', async () => {
     await ctx.page.evaluate(() => {
-      document.body.innerHTML = `
-        <div id="shadow-host-1">entry</div>
-      `;
+      return new Promise((resolve) => {
+        document.body.innerHTML = `
+            <div id="shadow-host-1">entry</div>
+          `;
 
-      let shadowHost = document.querySelector('div')!;
-      shadowHost!.attachShadow({ mode: 'open' });
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync!('h1 {color: blue;}');
-      shadowHost.shadowRoot!.adoptedStyleSheets = [sheet];
+        let shadowHost = document.querySelector('div')!;
+        shadowHost!.attachShadow({ mode: 'open' });
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!('h1 {color: blue;}');
+        shadowHost.shadowRoot!.adoptedStyleSheets = [sheet];
 
-      const { rrweb, emit } = (window as unknown) as IWindow;
-      rrweb.record({
-        emit,
+        const { rrweb, emit } = (window as unknown) as IWindow;
+        rrweb.record({
+          emit,
+        });
+
+        setTimeout(() => {
+          // When a full snapshot is checked out manually, all adoptedStylesheets should also be captured.
+          rrweb.record.takeFullSnapshot(true);
+          resolve(undefined);
+        }, 10);
       });
-
-      setTimeout(() => {
-        // When a full snapshot is checked out manually, all adoptedStylesheets should also be captured.
-        rrweb.record.takeFullSnapshot(true);
-      }, 10);
     });
-    await ctx.page.waitForTimeout(200);
+    await waitForRAF(page);
     assertSnapshot(ctx.events);
   });
 
