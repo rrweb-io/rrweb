@@ -48,7 +48,7 @@ describe('rebuild', function () {
   });
 
   describe('shadowDom', function () {
-    it('should rebuild shadowRoot with siblings', function () {
+    it('rebuild shadowRoot without siblings', function () {
       const node = buildNodeWithSN(
         {
           id: 1,
