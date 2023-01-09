@@ -280,7 +280,7 @@ export function initScrollObserver({
       return;
     }
     const id = mirror.getId(target as Node);
-    if (target === doc) {
+    if (target === doc && doc.defaultView) {
       const scrollLeftTop = getWindowScroll(doc.defaultView);
       scrollCb({
         id,
