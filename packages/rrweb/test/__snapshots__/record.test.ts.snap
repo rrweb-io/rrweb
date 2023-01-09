@@ -1101,7 +1101,7 @@ exports[`record captures adopted stylesheets of shadow doms in checkout full sna
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"textContent\\": \\"\\\\n            \\",
                     \\"id\\": 6
                   },
                   {
@@ -1122,7 +1122,7 @@ exports[`record captures adopted stylesheets of shadow doms in checkout full sna
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n      \\",
+                    \\"textContent\\": \\"\\\\n          \\",
                     \\"id\\": 9
                   }
                 ],
@@ -1201,7 +1201,7 @@ exports[`record captures adopted stylesheets of shadow doms in checkout full sna
                 \\"childNodes\\": [
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"textContent\\": \\"\\\\n            \\",
                     \\"id\\": 6
                   },
                   {
@@ -1222,7 +1222,7 @@ exports[`record captures adopted stylesheets of shadow doms in checkout full sna
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n      \\",
+                    \\"textContent\\": \\"\\\\n          \\",
                     \\"id\\": 9
                   }
                 ],
