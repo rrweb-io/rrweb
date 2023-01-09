@@ -614,7 +614,7 @@ describe('record', function (this: ISuite) {
         }, 10);
       });
     });
-    await waitForRAF(page);
+    await waitForRAF(ctx.page);
     assertSnapshot(ctx.events);
   });
 
