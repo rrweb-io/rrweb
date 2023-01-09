@@ -167,7 +167,7 @@ export function patch(
   }
 }
 
-export function getWindowScroll(win): number {
+export function getWindowScroll(win: Window) {
   const doc = win.document;
   return {
     left: doc.scrollingElement
