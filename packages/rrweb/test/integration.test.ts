@@ -672,7 +672,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'frame2.html'));
 
-    await page.waitForTimeout(10); // wait till frame was added to dom
+    await page.waitForSelector('iframe'); // wait for iframe to get added
     await waitForRAF(page); // wait till browser loaded contents of frame
 
     await page.evaluate(() => {
