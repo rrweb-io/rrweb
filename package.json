@@ -29,6 +29,11 @@
     "test": "yarn lerna run test",
     "test:watch": "yarn lerna run test:watch --parallel",
     "dev": "yarn lerna run dev --parallel",
-    "repl": "cd packages/rrweb && npm run repl"
+    "repl": "cd packages/rrweb && npm run repl",
+    "postinstall": "node node_modules/puppeteer/install.js"
+  },
+  "volta": {
+    "node": "12.22.12",
+    "yarn": "1.22.19"
   }
 }

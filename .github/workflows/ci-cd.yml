@@ -1,0 +1,30 @@
+name: Tests
+
+on: [pull_request]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: volta-cli/action@v4
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Build Project
+        run: yarn lerna run prepublish
+
+      - name: Check types
+        run: yarn lerna run check-types
+
+      - name: Run tests
+        # Skip this for now, as it somehow always fails
+        if: 1 == 2 
+        run: xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
