@@ -2,14 +2,19 @@
  * @jest-environment jsdom
  */
 import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
-import { createOrGetNode, diff, ReplayerHandler } from '../src/diff';
+import {
+  createOrGetNode,
+  diff,
+  ReplayerHandler,
+  sameNodeType,
+} from '../src/diff';
 import {
   NodeType as RRNodeType,
   serializedNodeWithId,
   createMirror,
   Mirror,
 } from 'rrweb-snapshot';
-import type { IRRNode } from '../src/document';
+import type { IRRElement, IRRNode } from '../src/document';
 import { Replayer } from 'rrweb';
 import type {
   eventWithTime,
@@ -246,6 +251,29 @@ describe('diff algorithm for rrdom', () => {
         diff(element, rrMedia, replayer);
         expect(element.paused).toEqual(true);
       }
+    });
+
+    it('should diff a node with different node type', () => {
+      // When the diff target has a different node type.
+      let parentNode: Node = document.createElement('div');
+      let unreliableNode: Node = document.createTextNode('');
+      parentNode.appendChild(unreliableNode);
+      const rrNode = new RRDocument().createElement('li');
+      diff(unreliableNode, rrNode, replayer);
+      expect(parentNode.childNodes.length).toEqual(1);
+      expect(parentNode.childNodes[0]).toBeInstanceOf(HTMLElement);
+      expect((parentNode.childNodes[0] as HTMLElement).tagName).toEqual('LI');
+
+      // When the diff target has the same node type but with different tagName.
+      parentNode = document.createElement('div');
+      unreliableNode = document.createElement('span');
+      parentNode.appendChild(unreliableNode);
+      diff(unreliableNode, rrNode, replayer);
+      expect((parentNode.childNodes[0] as HTMLElement).tagName).toEqual('LI');
+
+      // When the diff target is a node without parentNode.
+      unreliableNode = document.createComment('');
+      diff(unreliableNode, rrNode, replayer);
     });
   });
 
@@ -1001,6 +1029,59 @@ describe('diff algorithm for rrdom', () => {
         newElementsIds,
       );
     });
+
+    it('should diff children with unreliable Mirror', () => {
+      const parentNode = createTree(
+        {
+          tagName: 'div',
+          id: 0,
+          children: [],
+        },
+        undefined,
+        mirror,
+      ) as Node;
+      // Construct unreliable Mirror data.
+      const unreliableChild = document.createTextNode('');
+      const unreliableSN = {
+        id: 1,
+        textContent: '',
+        type: RRNodeType.Text,
+      } as serializedNodeWithId;
+      mirror.add(unreliableChild, unreliableSN);
+      parentNode.appendChild(unreliableChild);
+      mirror.add(document.createElement('div'), { ...unreliableSN, id: 2 });
+
+      const rrParentNode = createTree(
+        {
+          tagName: 'div',
+          id: 0,
+          children: [1].map((c) => ({
+            tagName: 'span',
+            id: c,
+            children: [2].map((c1) => ({
+              tagName: 'li',
+              id: c1,
+            })),
+          })),
+        },
+        new RRDocument(),
+      ) as RRNode;
+      const id = 'correctElement';
+      (rrParentNode.childNodes[0] as IRRElement).setAttribute('id', id);
+      diff(parentNode, rrParentNode, replayer);
+
+      expect(parentNode.childNodes.length).toEqual(1);
+      expect(parentNode.childNodes[0]).toBeInstanceOf(HTMLElement);
+
+      const spanChild = parentNode.childNodes[0] as HTMLElement;
+      expect(spanChild.tagName).toEqual('SPAN');
+      expect(spanChild.id).toEqual(id);
+      expect(spanChild.childNodes.length).toEqual(1);
+      expect(spanChild.childNodes[0]).toBeInstanceOf(HTMLElement);
+
+      const liChild = spanChild.childNodes[0] as HTMLElement;
+      expect(liChild.tagName).toEqual('LI');
+    });
   });
 
   describe('diff shadow dom', () => {
@@ -1429,6 +1510,57 @@ describe('diff algorithm for rrdom', () => {
       expect(
         (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
       ).toEqual('a {color: blue;}');
+    });
+  });
+
+  describe('test sameNodeType function', () => {
+    const rrdom = new RRDocument();
+    it('should return true when two elements have same tagNames', () => {
+      const div1 = document.createElement('div');
+      const div2 = rrdom.createElement('div');
+      expect(sameNodeType(div1, div2)).toBeTruthy();
+    });
+
+    it('should return false when two elements have different tagNames', () => {
+      const div1 = document.createElement('div');
+      const div2 = rrdom.createElement('span');
+      expect(sameNodeType(div1, div2)).toBeFalsy();
+    });
+
+    it('should return false when two nodes have the same node type', () => {
+      let node1: Node = new Document();
+      let node2: IRRNode = new RRDocument();
+      expect(sameNodeType(node1, node2)).toBeTruthy();
+
+      node1 = document.implementation.createDocumentType('html', '', '');
+      node2 = rrdom.createDocumentType('', '', '');
+      expect(sameNodeType(node1, node2)).toBeTruthy();
+
+      node1 = document.createTextNode('node1');
+      node2 = rrdom.createTextNode('node2');
+      expect(sameNodeType(node1, node2)).toBeTruthy();
+
+      node1 = document.createComment('node1');
+      node2 = rrdom.createComment('node2');
+      expect(sameNodeType(node1, node2)).toBeTruthy();
+    });
+
+    it('should return false when two nodes have different node types', () => {
+      let node1: Node = new Document();
+      let node2: IRRNode = rrdom.createDocumentType('', '', '');
+      expect(sameNodeType(node1, node2)).toBeFalsy();
+
+      node1 = document.implementation.createDocumentType('html', '', '');
+      node2 = new RRDocument();
+      expect(sameNodeType(node1, node2)).toBeFalsy();
+
+      node1 = document.createTextNode('node1');
+      node2 = rrdom.createComment('node2');
+      expect(sameNodeType(node1, node2)).toBeFalsy();
+
+      node1 = document.createComment('node1');
+      node2 = rrdom.createTextNode('node2');
+      expect(sameNodeType(node1, node2)).toBeFalsy();
     });
   });
 });

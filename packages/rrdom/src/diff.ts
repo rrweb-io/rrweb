@@ -93,12 +93,22 @@ export function diff(
   replayer: ReplayerHandler,
   rrnodeMirror?: Mirror,
 ) {
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
   rrnodeMirror =
     rrnodeMirror ||
     (newTree as RRDocument).mirror ||
     (newTree.ownerDocument as RRDocument).mirror;
+  // If the Mirror data has some flaws, the diff function may throw errors. We check the node consistency here to make it robust.
+  if (!sameNodeType(oldTree, newTree)) {
+    const calibratedOldTree = createOrGetNode(
+      newTree,
+      replayer.mirror,
+      rrnodeMirror,
+    );
+    oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
+    oldTree = calibratedOldTree;
+  }
+  const oldChildren = oldTree.childNodes;
+  const newChildren = newTree.childNodes;
 
   if (oldChildren.length > 0 || newChildren.length > 0) {
     diffChildren(
@@ -417,7 +427,7 @@ export function createOrGetNode(
   let node: Node | null = null;
   // negative ids shouldn't be compared accross mirrors
   if (nodeId > -1) node = domMirror.getNode(nodeId);
-  if (node !== null) return node;
+  if (node !== null && sameNodeType(node, rrNode)) return node;
   switch (rrNode.RRNodeType) {
     case RRNodeType.Document:
       node = new Document();
@@ -450,4 +460,15 @@ export function createOrGetNode(
 
   if (sn) domMirror.add(node, { ...sn });
   return node;
+}
+
+/**
+ * To check whether two nodes are the same type of node. If they are both Elements, check wether their tagNames are same or not.
+ */
+export function sameNodeType(node1: Node, node2: IRRNode) {
+  if (node1.nodeType !== node2.nodeType) return false;
+  return (
+    node1.nodeType !== node1.ELEMENT_NODE ||
+    (node1 as HTMLElement).tagName === (node2 as IRRElement).tagName
+  );
 }
