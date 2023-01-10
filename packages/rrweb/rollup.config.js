@@ -186,7 +186,7 @@ for (const c of baseConfigs) {
     output: [
       {
         format: 'cjs',
-        file: c.pathFn('lib/rrweb.js'),
+        file: c.pathFn('lib/rrweb.cjs'),
       },
     ],
   });

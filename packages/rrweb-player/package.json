@@ -37,7 +37,7 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",
-  "main": "lib/index.js",
+  "main": "lib/index.cjs",
   "module": "dist/index.mjs",
   "unpkg": "dist/index.js",
   "files": [
@@ -46,6 +46,7 @@
     "typings"
   ],
   "typings": "typings/index.d.ts",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"

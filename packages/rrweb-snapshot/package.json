@@ -14,6 +14,7 @@
     "prepublish": "npm run typings && npm run bundle",
     "lint": "yarn eslint src"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"
@@ -23,7 +24,7 @@
     "snapshot",
     "DOM"
   ],
-  "main": "lib/rrweb-snapshot.js",
+  "main": "lib/rrweb-snapshot.cjs",
   "module": "es/rrweb-snapshot.js",
   "unpkg": "dist/rrweb-snapshot.js",
   "typings": "typings/index.d.ts",
