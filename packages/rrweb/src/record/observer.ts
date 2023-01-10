@@ -492,6 +492,11 @@ function initStyleSheetObserver(
   { styleSheetRuleCb, mirror }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
+  if (!win.CSSStyleSheet || !win.CSSStyleSheet.prototype) {
+    // If, for whatever reason, CSSStyleSheet is not available, we skip the observation of stylesheets.
+    return () => {};
+  }
+
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = function (
     rule: string,
