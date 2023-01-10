@@ -9,7 +9,7 @@ import {
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { patch } from '../utils';
+import { patch, inDom } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
 
@@ -49,7 +49,11 @@ export class ShadowDomManager {
         function (original: (init: ShadowRootInit) => ShadowRoot) {
           return function (this: HTMLElement, option: ShadowRootInit) {
             const shadowRoot = original.call(this, option);
-            if (this.shadowRoot)
+
+            // For the shadow dom elements in the document, monitor their dom mutations.
+            // For shadow dom elements that aren't in the document yet,
+            // we start monitoring them once their shadow dom host is appended to the document.
+            if (this.shadowRoot && inDom(this))
               manager.addShadowRoot(this.shadowRoot, this.ownerDocument);
             return shadowRoot;
           };

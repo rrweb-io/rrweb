@@ -518,3 +518,30 @@ export class StyleSheetMirror {
     return this.id++;
   }
 }
+
+export function getRootShadowHost(n: Node): Node | null {
+  const shadowHost = (n.getRootNode() as ShadowRoot).host;
+  // If n is in a nested shadow dom.
+  let rootShadowHost = shadowHost;
+
+  while (
+    rootShadowHost?.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    (rootShadowHost.getRootNode() as ShadowRoot).host
+  )
+    rootShadowHost = (rootShadowHost.getRootNode() as ShadowRoot).host;
+
+  return rootShadowHost;
+}
+
+export function shadowHostInDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  const shadowHost = getRootShadowHost(n);
+  return Boolean(shadowHost && doc.contains(shadowHost));
+}
+
+export function inDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  return doc.contains(n) || shadowHostInDom(n);
+}

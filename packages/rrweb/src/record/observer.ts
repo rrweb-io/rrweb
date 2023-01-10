@@ -40,6 +40,7 @@ import {
   selectionCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
+import ProcessedNodeManager from './processed-node-manager';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -51,6 +52,7 @@ type WindowWithAngularZone = IWindow & {
 };
 
 export const mutationBuffers: MutationBuffer[] = [];
+export const processedNodeManager = new ProcessedNodeManager();
 
 const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== 'undefined';
 const isCSSMediaRuleSupported = typeof CSSMediaRule !== 'undefined';
