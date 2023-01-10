@@ -235,7 +235,7 @@ export function isBlocked(
     if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
   }
   if (blockSelector) {
-    if ((node as HTMLElement).matches(blockSelector)) return true;
+    if (el.matches(blockSelector)) return true;
     if (checkAncestors && el.closest(blockSelector) !== null) return true;
   }
   return false;
