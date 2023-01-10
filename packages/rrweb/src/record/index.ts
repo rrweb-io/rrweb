@@ -335,6 +335,8 @@ function record<T = eventWithTime>(
 
     // When we take a full snapshot, old tracked StyleSheets need to be removed.
     stylesheetManager.reset();
+    // Old shadow doms cache need to be cleared.
+    shadowDomManager.clearCache();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {

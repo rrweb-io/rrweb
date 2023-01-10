@@ -129,8 +129,12 @@ export class ShadowDomManager {
     }
   }
 
+  public clearCache() {
+    this.shadowDoms = new WeakSet();
+  }
+
   public reset() {
     this.restorePatches.forEach((restorePatch) => restorePatch());
-    this.shadowDoms = new WeakSet();
+    this.clearCache();
   }
 }
