@@ -326,6 +326,8 @@ function initInputObserver({
   mirror,
   blockClass,
   ignoreClass,
+  maskInputSelector,
+  unmaskInputSelector,
   maskInputOptions,
   maskInputFn,
   sampling,
@@ -363,7 +365,10 @@ function initInputObserver({
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
       text = maskInputValue({
+        input: (target as HTMLElement),
         maskInputOptions,
+        maskInputSelector,
+        unmaskInputSelector,
         tagName: (target as HTMLElement).tagName,
         type,
         value: text,

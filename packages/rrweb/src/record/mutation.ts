@@ -161,6 +161,9 @@ export default class MutationBuffer {
   private blockSelector: observerParam['blockSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
+  private unmaskTextSelector: observerParam['unmaskTextSelector'];
+  private maskInputSelector: observerParam['maskInputSelector'];
+  private unmaskInputSelector: observerParam['unmaskInputSelector'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
@@ -181,6 +184,9 @@ export default class MutationBuffer {
       'blockSelector',
       'maskTextClass',
       'maskTextSelector',
+      'unmaskTextSelector',
+      'maskInputSelector',
+      'unmaskInputSelector',
       'inlineStylesheet',
       'maskInputOptions',
       'maskTextFn',
@@ -290,6 +296,9 @@ export default class MutationBuffer {
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
+        unmaskTextSelector: this.unmaskTextSelector,
+        maskInputSelector: this.maskInputSelector,
+        unmaskInputSelector: this.unmaskInputSelector,
         skipChild: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
@@ -447,6 +456,7 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
+                this.unmaskTextSelector
               ) && value
                 ? this.maskTextFn
                   ? this.maskTextFn(value)
@@ -462,6 +472,9 @@ export default class MutationBuffer {
         let value = (m.target as HTMLElement).getAttribute(m.attributeName!);
         if (m.attributeName === 'value') {
           value = maskInputValue({
+            input: target,
+            maskInputSelector: this.maskInputSelector,
+            unmaskInputSelector: this.unmaskInputSelector,
             maskInputOptions: this.maskInputOptions,
             tagName: (m.target as HTMLElement).tagName,
             type: (m.target as HTMLElement).getAttribute('type'),

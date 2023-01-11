@@ -10,12 +10,18 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
 }
 
 export function maskInputValue({
+  input,
+  maskInputSelector,
+  unmaskInputSelector,
   maskInputOptions,
   tagName,
   type,
   value,
   maskInputFn,
 }: {
+  input: HTMLElement;
+  maskInputSelector: string|null;
+  unmaskInputSelector: string|null;
   maskInputOptions: MaskInputOptions;
   tagName: string;
   type: string | number | boolean | null;
@@ -23,9 +29,15 @@ export function maskInputValue({
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
+
+  if (unmaskInputSelector && input.matches(unmaskInputSelector)) {
+    return text;
+  }
+
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    maskInputOptions[type as keyof MaskInputOptions]
+    maskInputOptions[type as keyof MaskInputOptions] ||
+    (maskInputSelector && input.matches(maskInputSelector))
   ) {
     if (maskInputFn) {
       text = maskInputFn(text);

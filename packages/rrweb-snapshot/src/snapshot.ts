@@ -288,11 +288,18 @@ export function needMaskingText(
   node: Node | null,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  unmaskTextSelector: string | null,
 ): boolean {
   if (!node) {
     return false;
   }
   if (node.nodeType === node.ELEMENT_NODE) {
+    if (unmaskTextSelector) {
+      if ((node as HTMLElement).matches(unmaskTextSelector) || (node as HTMLElement).closest(unmaskTextSelector)) {
+        return false;
+      }
+    }
+
     if (typeof maskTextClass === 'string') {
       if ((node as HTMLElement).classList.contains(maskTextClass)) {
         return true;
@@ -315,13 +322,14 @@ export function needMaskingText(
         return true;
       }
     }
-    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector);
+    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector, unmaskTextSelector);
   }
+
   if (node.nodeType === node.TEXT_NODE) {
     // check parent node since text node do not have class name
-    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector);
+    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector, unmaskTextSelector);
   }
-  return needMaskingText(node.parentNode, maskTextClass, maskTextSelector);
+  return needMaskingText(node.parentNode, maskTextClass, maskTextSelector, unmaskTextSelector);
 }
 
 // https://stackoverflow.com/a/36155560
@@ -381,6 +389,9 @@ function serializeNode(
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
+    maskInputSelector: string | null;
+    unmaskInputSelector: string | null;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -397,7 +408,10 @@ function serializeNode(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     inlineStylesheet,
+    maskInputSelector,
+    unmaskInputSelector,
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
@@ -498,9 +512,12 @@ function serializeNode(
           value
         ) {
           attributes.value = maskInputValue({
+            input: n as HTMLElement,
             type: attributes.type,
             tagName,
             value,
+            maskInputSelector,
+            unmaskInputSelector,
             maskInputOptions,
             maskInputFn,
           });
@@ -656,7 +673,7 @@ function serializeNode(
       if (
         !isStyle &&
         !isScript &&
-        needMaskingText(n, maskTextClass, maskTextSelector) &&
+        needMaskingText(n, maskTextClass, maskTextSelector, unmaskTextSelector) &&
         textContent
       ) {
         textContent = maskTextFn
@@ -794,8 +811,11 @@ export function serializeNodeWithId(
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
+    maskInputSelector: string | null;
+    unmaskInputSelector: string | null;
     maskInputOptions?: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
@@ -817,8 +837,11 @@ export function serializeNodeWithId(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     skipChild = false,
     inlineStylesheet = true,
+    maskInputSelector,
+    unmaskInputSelector,
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
@@ -838,7 +861,10 @@ export function serializeNodeWithId(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     inlineStylesheet,
+    maskInputSelector,
+    unmaskInputSelector,
     maskInputOptions,
     maskTextFn,
     maskInputFn,
@@ -904,8 +930,11 @@ export function serializeNodeWithId(
       blockSelector,
       maskTextClass,
       maskTextSelector,
+      unmaskTextSelector,
       skipChild,
       inlineStylesheet,
+      maskInputSelector,
+      unmaskInputSelector,
       maskInputOptions,
       maskTextFn,
       maskInputFn,
@@ -957,8 +986,11 @@ export function serializeNodeWithId(
             blockSelector,
             maskTextClass,
             maskTextSelector,
+            unmaskTextSelector,
             skipChild: false,
             inlineStylesheet,
+            maskInputSelector,
+            unmaskInputSelector,
             maskInputOptions,
             maskTextFn,
             maskInputFn,
@@ -992,6 +1024,9 @@ function snapshot(
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
+    unmaskTextSelector?: string | null;
+    maskInputSelector?: string | null;
+    unmaskInputSelector?: string | null;
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
@@ -1012,9 +1047,12 @@ function snapshot(
     blockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
+    unmaskTextSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,
+    maskInputSelector = null,
+    unmaskInputSelector = null,
     maskAllInputs = false,
     maskTextFn,
     maskInputFn,
@@ -1078,8 +1116,11 @@ function snapshot(
       blockSelector,
       maskTextClass,
       maskTextSelector,
+      unmaskTextSelector,
       skipChild: false,
       inlineStylesheet,
+      maskInputSelector,
+      unmaskInputSelector,
       maskInputOptions,
       maskTextFn,
       maskInputFn,

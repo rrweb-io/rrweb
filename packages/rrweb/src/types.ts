@@ -220,9 +220,12 @@ export type recordOptions<T> = {
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
   maskAllInputs?: boolean;
+  maskInputSelector?: string;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
+  unmaskTextSelector?: string;
+  unmaskInputSelector?: string;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
@@ -251,6 +254,9 @@ export type observerParam = {
   ignoreClass: string;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
+  unmaskTextSelector: string | null;
+  maskInputSelector: string | null;
+  unmaskInputSelector: string | null;
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
@@ -284,7 +290,10 @@ export type MutationBufferParam = Pick<
   | 'blockSelector'
   | 'maskTextClass'
   | 'maskTextSelector'
+  | 'unmaskTextSelector'
   | 'inlineStylesheet'
+  | 'maskInputSelector'
+  | 'unmaskInputSelector'
   | 'maskInputOptions'
   | 'maskTextFn'
   | 'maskInputFn'
