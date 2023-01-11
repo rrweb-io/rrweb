@@ -263,7 +263,12 @@ export function _isBlockedElement(
   element: HTMLElement,
   blockClass: string | RegExp,
   blockSelector: string | null,
+  unblockSelector: string | null,
 ): boolean {
+  if (unblockSelector && element.matches(unblockSelector)) {
+    return false;
+  }
+
   if (typeof blockClass === 'string') {
     if (element.classList.contains(blockClass)) {
       return true;
@@ -387,6 +392,7 @@ function serializeNode(
     doc: Document;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    unblockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     unmaskTextSelector: string | null;
@@ -406,6 +412,7 @@ function serializeNode(
     doc,
     blockClass,
     blockSelector,
+    unblockSelector,
     maskTextClass,
     maskTextSelector,
     unmaskTextSelector,
@@ -455,6 +462,7 @@ function serializeNode(
         n as HTMLElement,
         blockClass,
         blockSelector,
+        unblockSelector
       );
       const tagName = getValidTagName(n as HTMLElement);
       let attributes: attributes = {};
@@ -809,6 +817,7 @@ export function serializeNodeWithId(
     map: idNodeMap;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    unblockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     unmaskTextSelector: string | null;
@@ -835,6 +844,7 @@ export function serializeNodeWithId(
     map,
     blockClass,
     blockSelector,
+    unblockSelector,
     maskTextClass,
     maskTextSelector,
     unmaskTextSelector,
@@ -859,6 +869,7 @@ export function serializeNodeWithId(
     doc,
     blockClass,
     blockSelector,
+    unblockSelector,
     maskTextClass,
     maskTextSelector,
     unmaskTextSelector,
@@ -928,6 +939,7 @@ export function serializeNodeWithId(
       map,
       blockClass,
       blockSelector,
+      unblockSelector,
       maskTextClass,
       maskTextSelector,
       unmaskTextSelector,
@@ -984,6 +996,7 @@ export function serializeNodeWithId(
             map,
             blockClass,
             blockSelector,
+            unblockSelector,
             maskTextClass,
             maskTextSelector,
             unmaskTextSelector,
@@ -1022,6 +1035,7 @@ function snapshot(
   options?: {
     blockClass?: string | RegExp;
     blockSelector?: string | null;
+    unblockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
     unmaskTextSelector?: string | null;
@@ -1045,6 +1059,7 @@ function snapshot(
   const {
     blockClass = 'rr-block',
     blockSelector = null,
+    unblockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     unmaskTextSelector = null,
@@ -1114,6 +1129,7 @@ function snapshot(
       map: idNodeMap,
       blockClass,
       blockSelector,
+      unblockSelector,
       maskTextClass,
       maskTextSelector,
       unmaskTextSelector,

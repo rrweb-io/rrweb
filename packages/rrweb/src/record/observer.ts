@@ -326,6 +326,7 @@ function initInputObserver({
   mirror,
   blockClass,
   ignoreClass,
+  ignoreSelector,
   maskInputSelector,
   unmaskInputSelector,
   maskInputOptions,
@@ -351,7 +352,7 @@ function initInputObserver({
       return;
     }
     const type: string | undefined = (target as HTMLInputElement).type;
-    if ((target as HTMLElement).classList.contains(ignoreClass)) {
+    if ((target as HTMLElement).classList.contains(ignoreClass) || (ignoreSelector && (target as HTMLElement).matches(ignoreSelector))) {
       return;
     }
     let text = (target as HTMLInputElement).value;

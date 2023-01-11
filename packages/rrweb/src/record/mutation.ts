@@ -159,6 +159,7 @@ export default class MutationBuffer {
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
   private blockSelector: observerParam['blockSelector'];
+  private unblockSelector: observerParam['unblockSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
   private unmaskTextSelector: observerParam['unmaskTextSelector'];
@@ -182,6 +183,7 @@ export default class MutationBuffer {
       'mutationCb',
       'blockClass',
       'blockSelector',
+      'unblockSelector',
       'maskTextClass',
       'maskTextSelector',
       'unmaskTextSelector',
@@ -294,6 +296,7 @@ export default class MutationBuffer {
         map: this.mirror.map,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
+        unblockSelector: this.unblockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
         unmaskTextSelector: this.unmaskTextSelector,

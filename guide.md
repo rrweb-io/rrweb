@@ -142,11 +142,16 @@ The parameter of `rrweb.record` accepts the following options.
 | checkoutEveryNms     | -                  | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter |
 | blockClass           | 'rr-block'         | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter |
 | blockSelector        | null               | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter |
+| unblockSelector      | null               | Use a string to configure which selector should be unblocked, refer to the [privacy](#privacy) chapter |
 | ignoreClass          | 'rr-ignore'        | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter |
+| ignoreClass          | null               | Use a string to configure which selector should be ignored, refer to the [privacy](#privacy) chapter |
 | maskTextClass        | 'rr-mask'          | Use a string or RegExp to configure which elements should be masked, refer to the [privacy](#privacy) chapter |
 | maskTextSelector     | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter |
+| unmaskTextSelector   | null               | Use a string to configure which selector should be unmasked, refer to the [privacy](#privacy) chapter |
 | maskAllInputs        | false              | mask all input content as \*                                 |
 | maskInputOptions     | { password: true } | mask some kinds of input \*<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L77-L95) |
+| maskInputSelector    | null               | Use a string to configure which selector should be masked, refer to the [privacy](#privacy) chapter |
+| unmaskInputSelector  | null               | Use a string to configure which selector should be unmasked, refer to the [privacy](#privacy) chapter |
 | maskInputFn          | -                  | customize mask input content recording logic                 |
 | maskTextFn           | -                  | customize mask text content recording logic                  |
 | slimDOMOptions       | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108) |
