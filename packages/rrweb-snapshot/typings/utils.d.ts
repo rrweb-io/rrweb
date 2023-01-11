@@ -1,7 +1,10 @@
 import { INode, MaskInputFn, MaskInputOptions } from './types';
 export declare function isElement(n: Node | INode): n is Element;
 export declare function isShadowRoot(n: Node): n is ShadowRoot;
-export declare function maskInputValue({ maskInputOptions, tagName, type, value, maskInputFn, }: {
+export declare function maskInputValue({ input, maskInputSelector, unmaskInputSelector, maskInputOptions, tagName, type, value, maskInputFn, }: {
+    input: HTMLElement;
+    maskInputSelector: string | null;
+    unmaskInputSelector: string | null;
     maskInputOptions: MaskInputOptions;
     tagName: string;
     type: string | number | boolean | null;

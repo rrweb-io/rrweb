@@ -4,7 +4,7 @@ export declare function absoluteToStylesheet(cssText: string | null, href: strin
 export declare function absoluteToDoc(doc: Document, attributeValue: string): string;
 export declare function transformAttribute(doc: Document, tagName: string, name: string, value: string): string;
 export declare function _isBlockedElement(element: HTMLElement, blockClass: string | RegExp, blockSelector: string | null): boolean;
-export declare function needMaskingText(node: Node | null, maskTextClass: string | RegExp, maskTextSelector: string | null): boolean;
+export declare function needMaskingText(node: Node | null, maskTextClass: string | RegExp, maskTextSelector: string | null, unmaskTextSelector: string | null): boolean;
 export declare function serializeNodeWithId(n: Node | INode, options: {
     doc: Document;
     map: idNodeMap;
@@ -12,8 +12,11 @@ export declare function serializeNodeWithId(n: Node | INode, options: {
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
+    maskInputSelector: string | null;
+    unmaskInputSelector: string | null;
     maskInputOptions?: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
@@ -32,6 +35,9 @@ declare function snapshot(n: Document, options?: {
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
+    unmaskTextSelector?: string | null;
+    maskInputSelector?: string | null;
+    unmaskInputSelector?: string | null;
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;

@@ -15,6 +15,9 @@ export default class MutationBuffer {
     private blockSelector;
     private maskTextClass;
     private maskTextSelector;
+    private unmaskTextSelector;
+    private maskInputSelector;
+    private unmaskInputSelector;
     private inlineStylesheet;
     private maskInputOptions;
     private maskTextFn;
