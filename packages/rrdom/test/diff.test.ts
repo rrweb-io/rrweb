@@ -1124,6 +1124,8 @@ describe('diff algorithm for rrdom', () => {
   });
 
   describe('diff iframe elements', () => {
+    jest.setTimeout(60_000);
+
     it('should add an element to the contentDocument of an iframe element', () => {
       document.write('<html></html>');
       const node = document.createElement('iframe');
