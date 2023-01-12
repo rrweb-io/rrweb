@@ -1283,7 +1283,7 @@ describe('diff algorithm for rrdom', () => {
        * If the selector match is case insensitive, it will cause some CSS style problems in the replayer.
        * This test result executed in JSDom is different from that in real browser so we use puppeteer as test environment.
        */
-      let browser = await puppeteer.launch();
+      const browser = await puppeteer.launch();
       const page = await browser.newPage();
       await page.goto('about:blank');
 
