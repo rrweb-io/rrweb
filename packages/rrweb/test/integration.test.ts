@@ -425,6 +425,29 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can use maskTextSelector to configure which inputs should be masked', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'form.html', {
+        maskTextSelector: 'input[type="text"],textarea',
+        maskInputFn: () => '*'.repeat(10),
+      }),
+    );
+
+    await page.type('input[type="text"]', 'test');
+    await page.click('input[type="radio"]');
+    await page.click('input[type="checkbox"]');
+    await page.type('textarea', 'textarea test');
+    await page.type('input[type="password"]', 'password');
+    await page.select('select', '1');
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should mask password value attribute with maskInputOptions', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');

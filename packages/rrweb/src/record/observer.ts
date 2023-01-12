@@ -6,6 +6,7 @@ import {
   toLowerCase,
   getNative,
   nativeSetTimeout,
+  needMaskingText,
 } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
@@ -404,6 +405,8 @@ function initInputObserver({
   maskInputFn,
   sampling,
   userTriggeredOnInput,
+  maskTextClass,
+  maskTextSelector,
 }: observerParam): listenerHandler {
   function eventHandler(event: Event) {
     let target = getEventTarget(event) as HTMLElement | null;
@@ -436,11 +439,19 @@ function initInputObserver({
     let isChecked = false;
     const type: Lowercase<string> = getInputType(target) || '';
 
+    const needsMask = needMaskingText(
+      target as Node,
+      maskTextClass,
+      maskTextSelector,
+      true,
+    );
+
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
     } else if (
       maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-      maskInputOptions[type as keyof MaskInputOptions]
+      maskInputOptions[type as keyof MaskInputOptions] ||
+      needsMask
     ) {
       text = maskInputValue({
         element: target,
@@ -449,6 +460,7 @@ function initInputObserver({
         type,
         value: text,
         maskInputFn,
+        needsMask,
       });
     }
     cbWithDedup(
