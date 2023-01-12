@@ -97,6 +97,7 @@ export function diff(
     rrnodeMirror ||
     (newTree as RRDocument).mirror ||
     (newTree.ownerDocument as RRDocument).mirror;
+
   // If the Mirror data has some flaws, the diff function may throw errors. We check the node consistency here to make it robust.
   if (!sameNodeType(oldTree, newTree)) {
     const calibratedOldTree = createOrGetNode(
@@ -107,6 +108,20 @@ export function diff(
     oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
     oldTree = calibratedOldTree;
   }
+
+  // If the oldTree is an iframe element and its document content is automatically mounted by browsers, we need to remove them to avoid unexpected behaviors. e.g. Selector matches may be case insensitive.
+  if (oldTree.nodeName === 'IFRAME') {
+    const iframeDoc = (oldTree as HTMLIFrameElement).contentDocument;
+    if (
+      iframeDoc &&
+      iframeDoc.documentElement &&
+      replayer.mirror.getId(iframeDoc.documentElement) < 0
+    ) {
+      iframeDoc.close();
+      iframeDoc.open();
+    }
+  }
+
   const oldChildren = oldTree.childNodes;
   const newChildren = newTree.childNodes;
 
@@ -330,7 +345,11 @@ function diffChildren(
       // is the first old element the same as the last new element?
       oldStartId === newEndId
     ) {
-      parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
+      try {
+        parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
+      } catch (e) {
+        console.warn(e);
+      }
       diff(oldStartNode, newEndNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
@@ -339,7 +358,11 @@ function diffChildren(
       // is the last old element the same as the first new element?
       oldEndId === newStartId
     ) {
-      parentNode.insertBefore(oldEndNode, oldStartNode);
+      try {
+        parentNode.insertBefore(oldEndNode, oldStartNode);
+      } catch (e) {
+        console.warn(e);
+      }
       diff(oldEndNode, newStartNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
@@ -358,7 +381,11 @@ function diffChildren(
       if (indexInOld) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const nodeToMove = oldChildren[indexInOld]!;
-        parentNode.insertBefore(nodeToMove, oldStartNode);
+        try {
+          parentNode.insertBefore(nodeToMove, oldStartNode);
+        } catch (e) {
+          console.warn(e);
+        }
         diff(nodeToMove, newStartNode, replayer, rrnodeMirror);
         oldChildren[indexInOld] = undefined;
       } else {
@@ -381,7 +408,11 @@ function diffChildren(
           oldChildren[oldStartIndex] = undefined;
           oldStartNode = undefined;
         }
-        parentNode.insertBefore(newNode, oldStartNode || null);
+        try {
+          parentNode.insertBefore(newNode, oldStartNode || null);
+        } catch (e) {
+          console.warn(e);
+        }
         diff(newNode, newStartNode, replayer, rrnodeMirror);
       }
       newStartNode = newChildren[++newStartIndex];
@@ -403,14 +434,22 @@ function diffChildren(
         replayer.mirror,
         rrnodeMirror,
       );
-      parentNode.insertBefore(newNode, referenceNode);
+      try {
+        parentNode.insertBefore(newNode, referenceNode);
+      } catch (e) {
+        console.warn(e);
+      }
       diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
     }
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
       if (node) {
-        parentNode.removeChild(node);
+        try {
+          parentNode.removeChild(node);
+        } catch (e) {
+          console.warn(e);
+        }
         replayer.mirror.removeNodeFromMap(node);
       }
     }
@@ -469,6 +508,7 @@ export function sameNodeType(node1: Node, node2: IRRNode) {
   if (node1.nodeType !== node2.nodeType) return false;
   return (
     node1.nodeType !== node1.ELEMENT_NODE ||
-    (node1 as HTMLElement).tagName === (node2 as IRRElement).tagName
+    (node1 as HTMLElement).tagName.toUpperCase() ===
+      (node2 as IRRElement).tagName
   );
 }

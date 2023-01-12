@@ -1,6 +1,8 @@
 /**
  * @jest-environment jsdom
  */
+import * as path from 'path';
+import * as puppeteer from 'puppeteer';
 import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
 import {
   createOrGetNode,
@@ -23,6 +25,7 @@ import type {
   styleSheetRuleData,
 } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
+import { compileTSCode } from './utils';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -1271,6 +1274,94 @@ describe('diff algorithm for rrdom', () => {
       const element = iframeInDom.contentDocument!.childNodes[0] as HTMLElement;
       expect(element.nodeType).toBe(element.DOCUMENT_TYPE_NODE);
       expect(mirror.getId(element)).toEqual(-1);
+    });
+
+    it('selectors should be case-sensitive for matching in iframe dom', async () => {
+      /**
+       * If the selector match is case insensitive, it will cause some CSS style problems in the replayer.
+       * This test result executed in JSDom is different from that in real browser so we use puppeteer as test environment.
+       */
+      let browser = await puppeteer.launch();
+      const page = await browser.newPage();
+      await page.goto('about:blank');
+
+      try {
+        const code = await compileTSCode(
+          path.resolve(__dirname, '../src/index.ts'),
+        );
+        await page.evaluate(code);
+
+        const className = 'case-sensitive';
+        // To show the selector match pattern (case sensitive) in normal dom.
+        const caseInsensitiveInNormalDom = await page.evaluate((className) => {
+          document.write(
+            '<!DOCTYPE html><html><body><iframe></iframe></body></html>',
+          );
+          const htmlEl = document.documentElement;
+          htmlEl.className = className.toLowerCase();
+          return htmlEl.matches(`.${className.toUpperCase()}`);
+        }, className);
+        expect(caseInsensitiveInNormalDom).toBeFalsy();
+
+        // To show the selector match pattern (case insensitive) in auto mounted iframe dom.
+        const caseInsensitiveInDefaultIFrameDom = await page.evaluate(
+          (className) => {
+            const iframeEl = document.querySelector('iframe');
+            const htmlEl = iframeEl?.contentDocument?.documentElement;
+            if (htmlEl) {
+              htmlEl.className = className.toLowerCase();
+              return htmlEl.matches(`.${className.toUpperCase()}`);
+            }
+          },
+          className,
+        );
+        expect(caseInsensitiveInDefaultIFrameDom).toBeTruthy();
+
+        const iframeElId = 3,
+          iframeDomId = 4,
+          htmlElId = 5;
+        const result = await page.evaluate(`
+          const iframeEl = document.querySelector('iframe');
+
+          // Construct a virtual dom tree.
+          const rrDocument = new rrdom.RRDocument();
+          const rrIframeEl = rrDocument.createElement('iframe');
+          rrDocument.mirror.add(rrIframeEl, rrdom.getDefaultSN(rrIframeEl, ${iframeElId}));
+          rrDocument.appendChild(rrIframeEl);
+          rrDocument.mirror.add(
+            rrIframeEl.contentDocument,
+            rrdom.getDefaultSN(rrIframeEl.contentDocument, ${iframeDomId}),
+          );
+          const rrDocType = rrDocument.createDocumentType('html', '', '');
+          rrIframeEl.contentDocument.appendChild(rrDocType);
+          const rrHtmlEl = rrDocument.createElement('html');
+          rrDocument.mirror.add(rrHtmlEl, rrdom.getDefaultSN(rrHtmlEl, ${htmlElId}));
+          rrIframeEl.contentDocument.appendChild(rrHtmlEl);
+          
+          const replayer = {
+            mirror: rrdom.createMirror(),
+            applyCanvas: () => {},
+            applyInput: () => {},
+            applyScroll: () => {},
+            applyStyleSheetMutation: () => {},
+          };
+          rrdom.diff(iframeEl, rrIframeEl, replayer);
+          
+          iframeEl.contentDocument.documentElement.className =
+            '${className.toLowerCase()}';
+          iframeEl.contentDocument.childNodes.length === 2 &&
+            replayer.mirror.getId(iframeEl.contentDocument.documentElement) === ${htmlElId} &&
+            // To test whether the selector match of the updated iframe document is case sensitive or not.
+            !iframeEl.contentDocument.documentElement.matches(
+              '.${className.toUpperCase()}',
+            );
+        `);
+        // IFrame document has two children, mirror id of documentElement is ${htmlElId}, and selectors should be case-sensitive for matching in iframe dom (consistent with the normal dom).
+        expect(result).toBeTruthy();
+      } finally {
+        await page.close();
+        await browser.close();
+      }
     });
   });
 

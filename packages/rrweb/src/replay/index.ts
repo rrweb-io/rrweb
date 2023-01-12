@@ -231,13 +231,18 @@ export class Replayer {
               this.applyStyleDeclaration(data, styleSheet);
           },
         };
-        this.iframe.contentDocument &&
-          diff(
-            this.iframe.contentDocument,
-            this.virtualDom,
-            replayerHandler,
-            this.virtualDom.mirror,
-          );
+        if (this.iframe.contentDocument)
+          try {
+            diff(
+              this.iframe.contentDocument,
+              this.virtualDom,
+              replayerHandler,
+              this.virtualDom.mirror,
+            );
+          } catch (e) {
+            console.warn(e);
+          }
+
         this.virtualDom.destroyTree();
         this.usingVirtualDom = false;
 
