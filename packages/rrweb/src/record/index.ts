@@ -375,6 +375,7 @@ function record<T = eventWithTime>(
       maskTextSelector,
       inlineStylesheet,
       maskAllInputs: maskInputOptions,
+      maskInputFn,
       maskTextFn,
       slimDOM: slimDOMOptions,
       dataURLOptions,
