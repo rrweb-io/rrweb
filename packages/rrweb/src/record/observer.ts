@@ -4,6 +4,7 @@ import {
   throttle,
   on,
   hookSetter,
+  getWindowScroll,
   getWindowHeight,
   getWindowWidth,
   isBlocked,
@@ -39,6 +40,7 @@ import {
   selectionCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
+import ProcessedNodeManager from './processed-node-manager';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -50,6 +52,7 @@ type WindowWithAngularZone = IWindow & {
 };
 
 export const mutationBuffers: MutationBuffer[] = [];
+export const processedNodeManager = new ProcessedNodeManager();
 
 const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== 'undefined';
 const isCSSMediaRuleSupported = typeof CSSMediaRule !== 'undefined';
@@ -279,12 +282,12 @@ export function initScrollObserver({
       return;
     }
     const id = mirror.getId(target as Node);
-    if (target === doc) {
-      const scrollEl = (doc.scrollingElement || doc.documentElement)!;
+    if (target === doc && doc.defaultView) {
+      const scrollLeftTop = getWindowScroll(doc.defaultView);
       scrollCb({
         id,
-        x: scrollEl.scrollLeft,
-        y: scrollEl.scrollTop,
+        x: scrollLeftTop.left,
+        y: scrollLeftTop.top,
       });
     } else {
       scrollCb({
@@ -535,6 +538,13 @@ function initStyleSheetObserver(
   { styleSheetRuleCb, mirror, stylesheetManager }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
+  if (!win.CSSStyleSheet || !win.CSSStyleSheet.prototype) {
+    // If, for whatever reason, CSSStyleSheet is not available, we skip the observation of stylesheets.
+    return () => {
+      // Do nothing
+    };
+  }
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = function (

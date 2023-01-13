@@ -667,12 +667,125 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should record shadow DOM 2', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'));
+    await page.evaluate(() => {
+      return new Promise((resolve) => {
+        const el = document.createElement('div') as HTMLDivElement;
+        el.attachShadow({ mode: 'open' });
+        (el.shadowRoot as ShadowRoot).appendChild(
+          document.createElement('input'),
+        );
+        setTimeout(() => {
+          document.body.append(el);
+          resolve(null);
+        }, 10);
+      });
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record shadow DOM 3', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    await page.evaluate(() => {
+      const el = document.createElement('div') as HTMLDivElement;
+      el.attachShadow({ mode: 'open' });
+      (el.shadowRoot as ShadowRoot).appendChild(
+        document.createElement('input'),
+      );
+      document.body.append(el);
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record moved shadow DOM', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    await page.evaluate(() => {
+      return new Promise((resolve) => {
+        const el = document.createElement('div') as HTMLDivElement;
+        el.attachShadow({ mode: 'open' });
+        (el.shadowRoot as ShadowRoot).appendChild(
+          document.createElement('input'),
+        );
+        document.body.append(el);
+        setTimeout(() => {
+          const newEl = document.createElement('div') as HTMLDivElement;
+          document.body.append(newEl);
+          newEl.append(el);
+          resolve(null);
+        }, 50);
+      });
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record moved shadow DOM 2', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    await page.evaluate(() => {
+      const el = document.createElement('div') as HTMLDivElement;
+      el.id = 'el';
+      el.attachShadow({ mode: 'open' });
+      (el.shadowRoot as ShadowRoot).appendChild(
+        document.createElement('input'),
+      );
+      document.body.append(el);
+      (el.shadowRoot as ShadowRoot).appendChild(document.createElement('span'));
+      (el.shadowRoot as ShadowRoot).appendChild(document.createElement('p'));
+      const newEl = document.createElement('div') as HTMLDivElement;
+      newEl.id = 'newEl';
+      document.body.append(newEl);
+      newEl.append(el);
+      const input = el.shadowRoot?.children[0] as HTMLInputElement;
+      const span = el.shadowRoot?.children[1] as HTMLSpanElement;
+      const p = el.shadowRoot?.children[2] as HTMLParagraphElement;
+      input.remove();
+      span.append(input);
+      p.append(input);
+      span.append(input);
+      setTimeout(() => {
+        p.append(input);
+      }, 0);
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should record nested iframes and shadow doms', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'frame2.html'));
 
-    await page.waitForTimeout(10); // wait till frame was added to dom
+    await page.waitForSelector('iframe'); // wait for iframe to get added
     await waitForRAF(page); // wait till browser loaded contents of frame
 
     await page.evaluate(() => {

@@ -4,11 +4,16 @@ import {
   SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  processedNodeManager,
+} from './observer';
 import {
   on,
   getWindowWidth,
   getWindowHeight,
+  getWindowScroll,
   polyfill,
   hasShadowRoot,
   isSerializedIframe,
@@ -315,6 +320,7 @@ function record<T = eventWithTime>(
       stylesheetManager,
       canvasManager,
       keepIframeSrcFn,
+      processedNodeManager,
     },
     mirror,
   });
@@ -334,6 +340,8 @@ function record<T = eventWithTime>(
 
     // When we take a full snapshot, old tracked StyleSheets need to be removed.
     stylesheetManager.reset();
+    // Old shadow doms cache need to be cleared.
+    shadowDomManager.clearCache();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
@@ -379,22 +387,7 @@ function record<T = eventWithTime>(
         type: EventType.FullSnapshot,
         data: {
           node,
-          initialOffset: {
-            left:
-              window.pageXOffset !== undefined
-                ? window.pageXOffset
-                : document?.documentElement.scrollLeft ||
-                  document?.body?.parentElement?.scrollLeft ||
-                  document?.body?.scrollLeft ||
-                  0,
-            top:
-              window.pageYOffset !== undefined
-                ? window.pageYOffset
-                : document?.documentElement.scrollTop ||
-                  document?.body?.parentElement?.scrollTop ||
-                  document?.body?.scrollTop ||
-                  0,
-          },
+          initialOffset: getWindowScroll(window),
         },
       }),
     );
@@ -540,6 +533,7 @@ function record<T = eventWithTime>(
           iframeManager,
           stylesheetManager,
           shadowDomManager,
+          processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
           plugins:
@@ -565,7 +559,12 @@ function record<T = eventWithTime>(
     };
 
     iframeManager.addLoadListener((iframeEl) => {
-      handlers.push(observe(iframeEl.contentDocument!));
+      try {
+        handlers.push(observe(iframeEl.contentDocument!));
+      } catch (error) {
+        // TODO: handle internal error
+        console.warn(error);
+      }
     });
 
     const init = () => {

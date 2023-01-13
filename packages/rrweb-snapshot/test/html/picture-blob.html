@@ -9,7 +9,7 @@
       const robotBlobUrl = URL.createObjectURL(robotBlob);
       const images = document.querySelectorAll('img');
       images.forEach((img) => {
-        img.src = robotBlobUrl;
+        img.setAttribute('src', robotBlobUrl);
       });
     }, 0);
   </script>

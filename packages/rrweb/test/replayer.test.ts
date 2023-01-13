@@ -798,8 +798,23 @@ describe('replayer', function () {
     events = ${JSON.stringify(adoptedStyleSheetModification)};
     const { Replayer } = rrweb;
     var replayer = new Replayer(events,{showDebug:true});
-    replayer.play();
-  `);
+    replayer.pause(0);
+
+    async function playTill(offsetTime) {
+      replayer.play();
+      return new Promise((resolve) => {
+        const checkTime = () => {
+          if (replayer.getCurrentTime() >= offsetTime) {
+            replayer.pause();
+            resolve(undefined);
+          } else {
+            requestAnimationFrame(checkTime);
+          }
+        };
+        checkTime();
+      });
+    }`);
+
     const iframe = await page.$('iframe');
     const contentDocument = await iframe!.contentFrame()!;
 
@@ -916,19 +931,19 @@ describe('replayer', function () {
       ).toBeTruthy();
     };
 
-    await page.waitForTimeout(235);
+    await page.evaluate(`playTill(250)`);
     await check250ms();
 
-    await page.waitForTimeout(50);
+    await page.evaluate(`playTill(300)`);
     await check300ms();
 
-    await page.waitForTimeout(100);
+    await page.evaluate(`playTill(400)`);
     await check400ms();
 
-    await page.waitForTimeout(100);
+    await page.evaluate(`playTill(500)`);
     await check500ms();
 
-    await page.waitForTimeout(100);
+    await page.evaluate(`playTill(600)`);
     await check600ms();
 
     // To test the correctness of replaying adopted stylesheet mutation events in the fast-forward mode.
