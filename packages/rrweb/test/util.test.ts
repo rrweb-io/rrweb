@@ -6,6 +6,7 @@ import {
   StyleSheetMirror,
   inDom,
   shadowHostInDom,
+  getShadowHost,
 } from '../src/utils';
 
 describe('Utilities for other modules', () => {
@@ -91,12 +92,14 @@ describe('Utilities for other modules', () => {
       shadowRoot.appendChild(shadowHost2);
       shadowRoot2.appendChild(div);
       // Not in Dom yet.
+      expect(getShadowHost(div)).toBe(shadowHost2);
       expect(getRootShadowHost(div)).toBe(shadowHost);
       expect(shadowHostInDom(div)).toBeFalsy();
       expect(inDom(div)).toBeFalsy();
 
       // Added to the Dom.
       document.body.appendChild(shadowHost);
+      expect(getShadowHost(div)).toBe(shadowHost2);
       expect(getRootShadowHost(div)).toBe(shadowHost);
       expect(shadowHostInDom(div)).toBeTruthy();
       expect(inDom(div)).toBeTruthy();
@@ -105,12 +108,14 @@ describe('Utilities for other modules', () => {
     it('should get correct result given a normal node', () => {
       const div = document.createElement('div');
       // Not in Dom yet.
+      expect(getShadowHost(div)).toBeNull();
       expect(getRootShadowHost(div)).toBe(div);
       expect(shadowHostInDom(div)).toBeFalsy();
       expect(inDom(div)).toBeFalsy();
 
       // Added to the Dom.
       document.body.appendChild(div);
+      expect(getShadowHost(div)).toBeNull();
       expect(getRootShadowHost(div)).toBe(div);
       expect(shadowHostInDom(div)).toBeTruthy();
       expect(inDom(div)).toBeTruthy();
@@ -125,12 +130,14 @@ describe('Utilities for other modules', () => {
       a.href = 'example.com';
       a.textContent = 'something';
       // Not in Dom yet.
+      expect(getShadowHost(a.childNodes[0])).toBeNull();
       expect(getRootShadowHost(a.childNodes[0])).toBe(a.childNodes[0]);
       expect(shadowHostInDom(a.childNodes[0])).toBeFalsy();
       expect(inDom(a.childNodes[0])).toBeFalsy();
 
       // Added to the Dom.
       document.body.appendChild(a);
+      expect(getShadowHost(a.childNodes[0])).toBeNull();
       expect(getRootShadowHost(a.childNodes[0])).toBe(a.childNodes[0]);
       expect(shadowHostInDom(a.childNodes[0])).toBeTruthy();
       expect(inDom(a.childNodes[0])).toBeTruthy();

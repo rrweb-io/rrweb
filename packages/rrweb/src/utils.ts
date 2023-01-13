@@ -519,15 +519,29 @@ export class StyleSheetMirror {
   }
 }
 
+/**
+ * Get the direct shadow host of a node in shadow dom. Returns null if it is not in a shadow dom.
+ */
+export function getShadowHost(n: Node): Element | null {
+  let shadowHost: Element | null = null;
+  if (
+    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    (n.getRootNode() as ShadowRoot).host
+  )
+    shadowHost = (n.getRootNode() as ShadowRoot).host;
+  return shadowHost;
+}
+
+/**
+ * Get the root shadow host of a node in nested shadow doms. Returns the node itself if it is not in a shadow dom.
+ */
 export function getRootShadowHost(n: Node): Node {
   let rootShadowHost: Node = n;
 
+  let shadowHost: Element | null;
   // If n is in a nested shadow dom.
-  while (
-    rootShadowHost.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    (rootShadowHost.getRootNode() as ShadowRoot).host
-  )
-    rootShadowHost = (rootShadowHost.getRootNode() as ShadowRoot).host;
+  while ((shadowHost = getShadowHost(rootShadowHost)))
+    rootShadowHost = shadowHost;
 
   return rootShadowHost;
 }

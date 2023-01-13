@@ -27,6 +27,7 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
   inDom,
+  getShadowHost,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -268,18 +269,11 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      let shadowHost: Element | null = null;
-      if (
-        n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-        (n.getRootNode() as ShadowRoot).host
-      )
-        shadowHost = (n.getRootNode() as ShadowRoot).host;
-
       if (!n.parentNode || !inDom(n)) {
         return;
       }
       const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(shadowHost)
+        ? this.mirror.getId(getShadowHost(n))
         : this.mirror.getId(n.parentNode);
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
