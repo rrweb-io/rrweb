@@ -1,7 +1,12 @@
 /**
  * @jest-environment jsdom
  */
-import { StyleSheetMirror } from '../src/utils';
+import {
+  getRootShadowHost,
+  StyleSheetMirror,
+  inDom,
+  shadowHostInDom,
+} from '../src/utils';
 
 describe('Utilities for other modules', () => {
   describe('StyleSheetMirror', () => {
@@ -73,6 +78,62 @@ describe('Utilities for other modules', () => {
       for (let s of styleList) expect(mirror.has(s)).toBeFalsy();
       for (let i = 0; i < 10; i++) expect(mirror.getStyle(i + 1)).toBeNull();
       expect(mirror.add(new CSSStyleSheet())).toBe(1);
+    });
+  });
+
+  describe('inDom()', () => {
+    it('should get correct result given nested shadow doms', () => {
+      const shadowHost = document.createElement('div');
+      const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      const shadowHost2 = document.createElement('div');
+      const shadowRoot2 = shadowHost2.attachShadow({ mode: 'open' });
+      const div = document.createElement('div');
+      shadowRoot.appendChild(shadowHost2);
+      shadowRoot2.appendChild(div);
+      // Not in Dom yet.
+      expect(getRootShadowHost(div)).toBe(shadowHost);
+      expect(shadowHostInDom(div)).toBeFalsy();
+      expect(inDom(div)).toBeFalsy();
+
+      // Added to the Dom.
+      document.body.appendChild(shadowHost);
+      expect(getRootShadowHost(div)).toBe(shadowHost);
+      expect(shadowHostInDom(div)).toBeTruthy();
+      expect(inDom(div)).toBeTruthy();
+    });
+
+    it('should get correct result given a normal node', () => {
+      const div = document.createElement('div');
+      // Not in Dom yet.
+      expect(getRootShadowHost(div)).toBe(div);
+      expect(shadowHostInDom(div)).toBeFalsy();
+      expect(inDom(div)).toBeFalsy();
+
+      // Added to the Dom.
+      document.body.appendChild(div);
+      expect(getRootShadowHost(div)).toBe(div);
+      expect(shadowHostInDom(div)).toBeTruthy();
+      expect(inDom(div)).toBeTruthy();
+    });
+
+    /**
+     * Given the textNode of a detached HTMLAnchorElement, getRootNode() will return the anchor element itself and its host property is a string.
+     * This corner case may cause an error in getRootShadowHost().
+     */
+    it('should get correct result given the textNode of a detached HTMLAnchorElement', () => {
+      const a = document.createElement('a');
+      a.href = 'example.com';
+      a.textContent = 'something';
+      // Not in Dom yet.
+      expect(getRootShadowHost(a.childNodes[0])).toBe(a.childNodes[0]);
+      expect(shadowHostInDom(a.childNodes[0])).toBeFalsy();
+      expect(inDom(a.childNodes[0])).toBeFalsy();
+
+      // Added to the Dom.
+      document.body.appendChild(a);
+      expect(getRootShadowHost(a.childNodes[0])).toBe(a.childNodes[0]);
+      expect(shadowHostInDom(a.childNodes[0])).toBeTruthy();
+      expect(inDom(a.childNodes[0])).toBeTruthy();
     });
   });
 });
