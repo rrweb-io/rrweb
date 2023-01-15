@@ -190,6 +190,7 @@ function record<T = eventWithTime>(
       const message: CrossOriginIframeMessageEventContent<T> = {
         type: 'rrweb',
         event: eventProcessor(e),
+        origin: window.location.origin,
         isCheckout,
       };
       window.parent.postMessage(message, '*');
