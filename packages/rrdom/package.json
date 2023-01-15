@@ -3,7 +3,7 @@
   "version": "0.1.7",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
-  "main": "lib/rrdom.js",
+  "main": "lib/rrdom.cjs",
   "module": "es/rrdom.js",
   "typings": "es",
   "unpkg": "dist/rrdom.js",
@@ -13,6 +13,7 @@
     "es",
     "typings"
   ],
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"
@@ -38,7 +39,7 @@
     "@typescript-eslint/parser": "^5.23.0",
     "eslint": "^8.15.0",
     "jest": "^27.5.1",
-    "puppeteer": "^9.1.1",
+    "puppeteer": "^17.1.3",
     "rollup": "^2.56.3",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",

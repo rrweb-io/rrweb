@@ -1217,13 +1217,13 @@ export class Replayer {
         }
         const mediaEl = target as HTMLMediaElement | RRMediaElement;
         try {
-          if (d.currentTime) {
+          if (d.currentTime !== undefined) {
             mediaEl.currentTime = d.currentTime;
           }
-          if (d.volume) {
+          if (d.volume !== undefined) {
             mediaEl.volume = d.volume;
           }
-          if (d.muted) {
+          if (d.muted !== undefined) {
             mediaEl.muted = d.muted;
           }
           if (d.type === MediaInteractions.Pause) {

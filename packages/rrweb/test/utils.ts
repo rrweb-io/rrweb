@@ -185,6 +185,14 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
               }
             }
           });
+        } else if (
+          s.type === EventType.IncrementalSnapshot &&
+          s.data.source === IncrementalSource.MediaInteraction
+        ) {
+          // round the currentTime to 1 decimal place
+          if (s.data.currentTime) {
+            s.data.currentTime = Math.round(s.data.currentTime * 10) / 10;
+          }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
         return s as event;
