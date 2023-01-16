@@ -576,8 +576,10 @@ export const polyfillWebGLGlobals = () => {
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
 
-export async function waitForRAF(page: puppeteer.Page) {
-  return await page.evaluate(() => {
+export async function waitForRAF(
+  pageOrFrame: puppeteer.Page | puppeteer.Frame,
+) {
+  return await pageOrFrame.evaluate(() => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(resolve);
