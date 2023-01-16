@@ -165,7 +165,11 @@ function record<T = eventWithTime>(
         e = plugin.eventProcessor(e);
       }
     }
-    if (packFn) {
+    if (
+      packFn &&
+      // Disable packing events which will be emitted to parent frames.
+      !passEmitsToParent
+    ) {
       e = (packFn(e) as unknown) as eventWithTime;
     }
     return (e as unknown) as T;

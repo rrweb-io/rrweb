@@ -15,6 +15,7 @@ import {
   startServer,
   waitForRAF,
 } from '../utils';
+import { unpack } from '../../src/packer/unpack';
 import type * as http from 'http';
 
 interface ISuite {
@@ -32,34 +33,50 @@ interface IWindow extends Window {
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
+    pack: (e: eventWithTime) => string;
   };
   emit: (e: eventWithTime) => undefined;
   snapshots: eventWithTime[];
 }
+type ExtraOptions = {
+  usePackFn?: boolean;
+};
 
-async function injectRecordScript(frame: puppeteer.Frame) {
+async function injectRecordScript(
+  frame: puppeteer.Frame,
+  options?: ExtraOptions,
+) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../../dist/rrweb.js'),
+    path: path.resolve(__dirname, '../../dist/rrweb-all.js'),
   });
-  await frame.evaluate(() => {
+  options = options || {};
+  await frame.evaluate((options) => {
     ((window as unknown) as IWindow).snapshots = [];
-    const { record } = ((window as unknown) as IWindow).rrweb;
-    record({
+    const { record, pack } = ((window as unknown) as IWindow).rrweb;
+    const config: recordOptions<eventWithTime> = {
       recordCrossOriginIframes: true,
       recordCanvas: true,
       emit(event) {
         ((window as unknown) as IWindow).snapshots.push(event);
         ((window as unknown) as IWindow).emit(event);
       },
-    });
-  });
+    };
+    if (options.usePackFn) {
+      config.packFn = pack;
+    }
+    record(config);
+  }, options);
 
   for (const child of frame.childFrames()) {
-    await injectRecordScript(child);
+    await injectRecordScript(child, options);
   }
 }
 
-const setup = function (this: ISuite, content: string): ISuite {
+const setup = function (
+  this: ISuite,
+  content: string,
+  options?: ExtraOptions,
+): ISuite {
   const ctx = {} as ISuite & {
     serverB: http.Server;
     serverBURL: string;
@@ -92,7 +109,7 @@ const setup = function (this: ISuite, content: string): ISuite {
     });
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
-    await injectRecordScript(ctx.page.mainFrame());
+    await injectRecordScript(ctx.page.mainFrame(), options);
   });
 
   afterEach(async () => {
@@ -488,17 +505,15 @@ describe('cross origin iframes', function (this: ISuite) {
   });
 
   describe('blank.html', function (this: ISuite) {
-    const ctx = setup.call(
-      this,
-      `
-      <!DOCTYPE html>
-      <html>
-        <body>
-          <iframe src="{SERVER_URL}/html/blank.html"></iframe>
-        </body>
-      </html>
-    `,
-    ) as ISuite & {
+    const content = `
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <iframe src="{SERVER_URL}/html/blank.html"></iframe>
+      </body>
+    </html>
+  `;
+    const ctx = setup.call(this, content) as ISuite & {
       serverBURL: string;
     };
 
@@ -526,6 +541,21 @@ describe('cross origin iframes', function (this: ISuite) {
         'window.snapshots',
       )) as eventWithTime[];
       assertSnapshot(snapshots);
+    });
+
+    describe('should support packFn option in record()', () => {
+      const ctx = setup.call(this, content, { usePackFn: true });
+      it('', async () => {
+        const frame = ctx.page.mainFrame().childFrames()[0];
+        await waitForRAF(frame);
+        const packedSnapshots = (await ctx.page.evaluate(
+          'window.snapshots',
+        )) as string[];
+        const unpackedSnapshots = packedSnapshots.map((packed) =>
+          unpack(packed),
+        ) as eventWithTime[];
+        assertSnapshot(unpackedSnapshots);
+      });
     });
   });
 });
