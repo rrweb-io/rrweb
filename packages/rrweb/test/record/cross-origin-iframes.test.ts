@@ -13,7 +13,6 @@ import {
   getServerURL,
   launchPuppeteer,
   startServer,
-  stripBase64,
   waitForRAF,
 } from '../utils';
 import type * as http from 'http';
@@ -61,14 +60,17 @@ async function injectRecordScript(frame: puppeteer.Frame) {
 }
 
 const setup = function (this: ISuite, content: string): ISuite {
-  const ctx = {} as ISuite;
+  const ctx = {} as ISuite & {
+    serverB: http.Server;
+    serverBURL: string;
+  };
 
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
     ctx.server = await startServer();
     ctx.serverURL = getServerURL(ctx.server);
-    // ctx.serverB = await startServer();
-    // ctx.serverBURL = getServerURL(ctx.serverB);
+    ctx.serverB = await startServer();
+    ctx.serverBURL = getServerURL(ctx.serverB);
 
     const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
@@ -100,7 +102,7 @@ const setup = function (this: ISuite, content: string): ISuite {
   afterAll(async () => {
     await ctx.browser.close();
     ctx.server.close();
-    // ctx.serverB.close();
+    ctx.serverB.close();
   });
 
   return ctx;
@@ -478,6 +480,48 @@ describe('cross origin iframes', function (this: ISuite) {
         el.play();
       });
       await waitForRAF(ctx.page);
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+  });
+
+  describe('blank.html', function (this: ISuite) {
+    const ctx = setup.call(
+      this,
+      `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <iframe src="{SERVER_URL}/html/blank.html"></iframe>
+        </body>
+      </html>
+    `,
+    ) as ISuite & {
+      serverBURL: string;
+    };
+
+    it('should filter out forwarded cross origin rrweb messages', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      const iframe2URL = `${ctx.serverBURL}/html/blank.html`;
+      await frame.evaluate((iframe2URL) => {
+        // Add a message proxy to forward messages from child frames to its parent frame.
+        window.addEventListener('message', (event) => {
+          if (event.source !== window)
+            window.parent.postMessage(event.data, '*');
+        });
+        const iframe2 = document.createElement('iframe');
+        iframe2.src = iframe2URL;
+        document.body.appendChild(iframe2);
+      }, iframe2URL);
+
+      // Wait for iframe2 to load
+      await ctx.page.waitForFrame(iframe2URL);
+      // Record iframe2
+      await injectRecordScript(frame.childFrames()[0]);
+
+      await waitForRAF(frame.childFrames()[0]);
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
