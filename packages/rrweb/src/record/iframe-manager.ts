@@ -83,24 +83,30 @@ export class IframeManager {
       );
   }
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
-    if ((message as CrossOriginIframeMessageEvent).data.type === 'rrweb') {
-      const iframeSourceWindow = message.source;
-      if (!iframeSourceWindow) return;
+    const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
+    if (
+      crossOriginMessageEvent.data.type !== 'rrweb' ||
+      // To filter out the rrweb messages which are forwarded by some sites.
+      crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin
+    )
+      return;
 
-      const iframeEl = this.crossOriginIframeMap.get(message.source);
-      if (!iframeEl) return;
+    const iframeSourceWindow = message.source;
+    if (!iframeSourceWindow) return;
 
-      const transformedEvent = this.transformCrossOriginEvent(
-        iframeEl,
-        (message as CrossOriginIframeMessageEvent).data.event,
+    const iframeEl = this.crossOriginIframeMap.get(message.source);
+    if (!iframeEl) return;
+
+    const transformedEvent = this.transformCrossOriginEvent(
+      iframeEl,
+      crossOriginMessageEvent.data.event,
+    );
+
+    if (transformedEvent)
+      this.wrappedEmit(
+        transformedEvent,
+        crossOriginMessageEvent.data.isCheckout,
       );
-
-      if (transformedEvent)
-        this.wrappedEmit(
-          transformedEvent,
-          (message as CrossOriginIframeMessageEvent).data.isCheckout,
-        );
-    }
   }
 
   private transformCrossOriginEvent(
