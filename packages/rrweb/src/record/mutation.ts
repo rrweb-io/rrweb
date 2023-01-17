@@ -542,12 +542,12 @@ export default class MutationBuffer {
             item.attributes.style = {};
           }
           const styleObj = item.attributes.style as styleAttributeValue;
-          for (const pname of Array.from(target.style)) {
-            const newValue = target.style.getPropertyValue(pname);
-            const newPriority = target.style.getPropertyPriority(pname);
+          for (const pname of Array.from(target?.style || [])) {
+            const newValue = target.style?.getPropertyValue(pname);
+            const newPriority = target.style?.getPropertyPriority(pname);
             if (
-              newValue !== old.style.getPropertyValue(pname) ||
-              newPriority !== old.style.getPropertyPriority(pname)
+              newValue !== old.style?.getPropertyValue(pname) ||
+              newPriority !== old.style?.getPropertyPriority(pname)
             ) {
               if (newPriority === '') {
                 styleObj[pname] = newValue;
@@ -556,8 +556,8 @@ export default class MutationBuffer {
               }
             }
           }
-          for (const pname of Array.from(old.style)) {
-            if (target.style.getPropertyValue(pname) === '') {
+          for (const pname of Array.from(old?.style || [])) {
+            if (target.style?.getPropertyValue(pname) === '') {
               // "if not set, returns the empty string"
               styleObj[pname] = false; // delete
             }
