@@ -66,7 +66,7 @@ export class Timer {
     if (this.actions.length > 0) {
       this.raf = requestAnimationFrame(this.rafCheck.bind(this));
     } else {
-      this.raf = true;  // was active
+      this.raf = true; // was active
     }
   }
 
