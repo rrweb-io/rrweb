@@ -72,7 +72,9 @@ export class Timer {
 
   public clear() {
     if (this.raf) {
-      cancelAnimationFrame(this.raf);
+      if (this.raf !== true) {
+        cancelAnimationFrame(this.raf);
+      }
       this.raf = null;
     }
     this.actions.length = 0;
