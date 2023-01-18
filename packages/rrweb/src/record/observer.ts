@@ -866,12 +866,8 @@ export function initObservers(
     viewportResizeHandler();
     inputHandler();
     mediaInteractionHandler();
-    try {
-      styleSheetObserver();
-      styleDeclarationObserver();
-    } catch(e) {
-      // ignore errors in style observers
-    }
+    styleSheetObserver();
+    styleDeclarationObserver();
     fontObserver();
     pluginHandlers.forEach((h) => h());
   };
