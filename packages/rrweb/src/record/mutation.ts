@@ -239,7 +239,7 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-    mutations.forEach(this.processMutation); // adds mutations to the buffer
+    (mutations || []).forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
   };
 
@@ -336,7 +336,7 @@ export default class MutationBuffer {
       this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
     }
 
-    for (const n of Array.from(this.movedSet.values())) {
+    for (const n of Array.from(this.movedSet?.values() || [])) {
       if (
         isParentRemoved(this.removes, n, this.mirror) &&
         !this.movedSet.has(n.parentNode!)
@@ -346,7 +346,7 @@ export default class MutationBuffer {
       pushAdd(n);
     }
 
-    for (const n of Array.from(this.addedSet.values())) {
+    for (const n of Array.from(this.addedSet?.values() || [])) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
         !isParentRemoved(this.removes, n, this.mirror)
@@ -580,8 +580,8 @@ export default class MutationBuffer {
         if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
           return;
 
-        m.addedNodes.forEach((n) => this.genAdds(n, m.target));
-        m.removedNodes.forEach((n) => {
+        (m.addedNodes || []).forEach((n) => this.genAdds(n, m.target));
+        (m.removedNodes || []).forEach((n) => {
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(m.target.host)
@@ -663,9 +663,9 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
+      (n.childNodes || []).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
+        (n.shadowRoot.childNodes || []).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });
@@ -682,7 +682,7 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
+  (n.childNodes || []).forEach((childN) => deepDelete(addsSet, childN));
 }
 
 function isParentRemoved(
