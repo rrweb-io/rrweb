@@ -718,14 +718,14 @@ export class Replayer {
           this.service.send('END');
           this.emitter.emit(ReplayerEvents.Finish);
         };
-        let finish_buffer = 50;  // allow for checking whether new events aren't just about to be loaded in
+        let finish_buffer = 50; // allow for checking whether new events aren't just about to be loaded in
         if (
           event.type === EventType.IncrementalSnapshot &&
           event.data.source === IncrementalSource.MouseMove &&
           event.data.positions.length
         ) {
           // extend finish event if the last event is a mouse move so that the timer isn't stopped by the service before checking the last event
-          finish_buffer += Math.max(0, -event.data.positions[0].timeOffset)
+          finish_buffer += Math.max(0, -event.data.positions[0].timeOffset);
         }
         setTimeout(finish, finish_buffer);
       }
