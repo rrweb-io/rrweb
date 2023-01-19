@@ -215,7 +215,10 @@ function buildNode(
               n.attributes.rr_dataURL
             ) {
               // backup original img srcset
-              node.setAttribute('rrweb-original-srcset', n.attributes.srcset as string);
+              node.setAttribute(
+                'rrweb-original-srcset',
+                n.attributes.srcset as string,
+              );
             } else {
               node.setAttribute(name, value);
             }

@@ -300,7 +300,10 @@ export function needMaskingText(
   }
   if (node.nodeType === node.ELEMENT_NODE) {
     if (unmaskTextSelector) {
-      if ((node as HTMLElement).matches(unmaskTextSelector) || (node as HTMLElement).closest(unmaskTextSelector)) {
+      if (
+        (node as HTMLElement).matches(unmaskTextSelector) ||
+        (node as HTMLElement).closest(unmaskTextSelector)
+      ) {
         return false;
       }
     }
@@ -327,14 +330,29 @@ export function needMaskingText(
         return true;
       }
     }
-    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector, unmaskTextSelector);
+    return needMaskingText(
+      node.parentNode,
+      maskTextClass,
+      maskTextSelector,
+      unmaskTextSelector,
+    );
   }
 
   if (node.nodeType === node.TEXT_NODE) {
     // check parent node since text node do not have class name
-    return needMaskingText(node.parentNode, maskTextClass, maskTextSelector, unmaskTextSelector);
+    return needMaskingText(
+      node.parentNode,
+      maskTextClass,
+      maskTextSelector,
+      unmaskTextSelector,
+    );
   }
-  return needMaskingText(node.parentNode, maskTextClass, maskTextSelector, unmaskTextSelector);
+  return needMaskingText(
+    node.parentNode,
+    maskTextClass,
+    maskTextSelector,
+    unmaskTextSelector,
+  );
 }
 
 // https://stackoverflow.com/a/36155560
@@ -462,7 +480,7 @@ function serializeNode(
         n as HTMLElement,
         blockClass,
         blockSelector,
-        unblockSelector
+        unblockSelector,
       );
       const tagName = getValidTagName(n as HTMLElement);
       let attributes: attributes = {};
@@ -681,7 +699,12 @@ function serializeNode(
       if (
         !isStyle &&
         !isScript &&
-        needMaskingText(n, maskTextClass, maskTextSelector, unmaskTextSelector) &&
+        needMaskingText(
+          n,
+          maskTextClass,
+          maskTextSelector,
+          unmaskTextSelector,
+        ) &&
         textContent
       ) {
         textContent = maskTextFn

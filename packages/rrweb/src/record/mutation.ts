@@ -459,7 +459,7 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
-                this.unmaskTextSelector
+                this.unmaskTextSelector,
               ) && value
                 ? this.maskTextFn
                   ? this.maskTextFn(value)

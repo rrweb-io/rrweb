@@ -5,6 +5,12 @@
   export let label: string;
 </script>
 
+<div class="switch" class:disabled>
+  <input type="checkbox" {id} bind:checked {disabled} />
+  <label for={id} />
+  <span class="label">{label}</span>
+</div>
+
 <style>
   .switch {
     height: 1em;
@@ -71,9 +77,3 @@
     left: 1.1em;
   }
 </style>
-
-<div class="switch" class:disabled>
-  <input type="checkbox" {id} bind:checked {disabled} />
-  <label for={id} />
-  <span class="label">{label}</span>
-</div>

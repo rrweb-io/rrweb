@@ -20,8 +20,8 @@ export function maskInputValue({
   maskInputFn,
 }: {
   input: HTMLElement;
-  maskInputSelector: string|null;
-  unmaskInputSelector: string|null;
+  maskInputSelector: string | null;
+  unmaskInputSelector: string | null;
   maskInputOptions: MaskInputOptions;
   tagName: string;
   type: string | number | boolean | null;
