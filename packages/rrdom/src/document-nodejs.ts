@@ -1,4 +1,8 @@
-import { INode, NodeType, serializedNodeWithId } from 'rrweb-snapshot';
+import {
+  INode,
+  NodeType,
+  serializedNodeWithId,
+} from '@sentry-internal/rrweb-snapshot';
 import { NWSAPI } from 'nwsapi';
 import { parseCSSText, camelize, toCSSText } from './style';
 const nwsapi = require('nwsapi');

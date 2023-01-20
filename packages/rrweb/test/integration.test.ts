@@ -11,7 +11,7 @@ import {
   replaceLast,
 } from './utils';
 import { recordOptions, eventWithTime, EventType } from '../src/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { visitSnapshot, NodeType } from '@sentry-internal/rrweb-snapshot';
 
 interface ISuite {
   server: http.Server;

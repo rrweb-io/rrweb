@@ -6,7 +6,7 @@ import {
   isShadowRoot,
   needMaskingText,
   maskInputValue,
-} from 'rrweb-snapshot';
+} from '@sentry-internal/rrweb-snapshot';
 import {
   mutationRecord,
   textCursor,

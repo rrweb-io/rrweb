@@ -12,7 +12,7 @@ import {
   CanvasContext,
 } from '../../src/types';
 import { assertSnapshot, launchPuppeteer, waitForRAF } from '../utils';
-import { ICanvas } from 'rrweb-snapshot';
+import { ICanvas } from '@sentry-internal/rrweb-snapshot';
 
 interface ISuite {
   code: string;

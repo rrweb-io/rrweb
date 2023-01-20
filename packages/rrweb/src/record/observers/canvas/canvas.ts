@@ -1,4 +1,4 @@
-import { INode, ICanvas } from 'rrweb-snapshot';
+import { INode, ICanvas } from '@sentry-internal/rrweb-snapshot';
 import { blockClass, IWindow, listenerHandler } from '../../../types';
 import { isBlocked, patch } from '../../../utils';
 

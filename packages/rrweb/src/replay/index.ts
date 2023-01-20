@@ -5,7 +5,7 @@ import {
   NodeType,
   BuildCache,
   createCache,
-} from 'rrweb-snapshot';
+} from '@sentry-internal/rrweb-snapshot';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';

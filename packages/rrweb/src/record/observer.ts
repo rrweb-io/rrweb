@@ -1,4 +1,8 @@
-import { INode, MaskInputOptions, maskInputValue } from 'rrweb-snapshot';
+import {
+  INode,
+  MaskInputOptions,
+  maskInputValue,
+} from '@sentry-internal/rrweb-snapshot';
 import { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,

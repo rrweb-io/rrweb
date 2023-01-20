@@ -1,4 +1,8 @@
-import { snapshot, MaskInputOptions, SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  snapshot,
+  MaskInputOptions,
+  SlimDOMOptions,
+} from '@sentry-internal/rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,

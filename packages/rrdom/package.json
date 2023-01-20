@@ -1,5 +1,5 @@
 {
-  "name": "rrdom",
+  "name": "@sentry-internal/rrdom",
   "version": "0.1.2",
   "scripts": {
     "dev": "rollup -c -w",
@@ -33,7 +33,7 @@
     "rollup": "^2.56.3",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.30.0",
-    "rrweb-snapshot": "^1.1.14",
+    "@sentry-internal/rrweb-snapshot": "^1.1.14",
     "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",
     "typescript": "^3.9.5"

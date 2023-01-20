@@ -6,7 +6,7 @@ import {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-} from 'rrweb-snapshot';
+} from '@sentry-internal/rrweb-snapshot';
 import { PackFn, UnpackFn } from './packer/base';
 import { IframeManager } from './record/iframe-manager';
 import { ShadowDomManager } from './record/shadow-dom-manager';
