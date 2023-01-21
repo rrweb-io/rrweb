@@ -26,8 +26,7 @@ export class ShadowDomManager {
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
-  private observerHandlers: (() => void)[] = [];
-  private restorePatches: (() => void)[] = [];
+  private restoreHandlers: (() => void)[] = [];
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -40,27 +39,13 @@ export class ShadowDomManager {
     this.bypassOptions = options.bypassOptions;
     this.mirror = options.mirror;
 
-    // Patch 'attachShadow' to observe newly added shadow doms.
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const manager = this;
-    this.restorePatches.push(
-      patch(
-        Element.prototype,
-        'attachShadow',
-        function (original: (init: ShadowRootInit) => ShadowRoot) {
-          return function (this: HTMLElement, option: ShadowRootInit) {
-            const shadowRoot = original.call(this, option);
+    this.init();
+  }
 
-            // For the shadow dom elements in the document, monitor their dom mutations.
-            // For shadow dom elements that aren't in the document yet,
-            // we start monitoring them once their shadow dom host is appended to the document.
-            if (this.shadowRoot && inDom(this))
-              manager.addShadowRoot(this.shadowRoot, this.ownerDocument);
-            return shadowRoot;
-          };
-        },
-      ),
-    );
+  public init() {
+    this.reset();
+    // Patch 'attachShadow' to observe newly added shadow doms.
+    this.patchAttachShadow(Element, document);
   }
 
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
@@ -77,8 +62,8 @@ export class ShadowDomManager {
       },
       shadowRoot,
     );
-    this.observerHandlers.push(() => observer.disconnect());
-    this.observerHandlers.push(
+    this.restoreHandlers.push(() => observer.disconnect());
+    this.restoreHandlers.push(
       initScrollObserver({
         ...this.bypassOptions,
         scrollCb: this.scrollCb,
@@ -98,7 +83,7 @@ export class ShadowDomManager {
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(shadowRoot.host),
         );
-      this.observerHandlers.push(
+      this.restoreHandlers.push(
         initAdoptedStyleSheetObserver(
           {
             mirror: this.mirror,
@@ -114,45 +99,55 @@ export class ShadowDomManager {
    * Monkey patch 'attachShadow' of an IFrameElement to observe newly added shadow doms.
    */
   public observeAttachShadow(iframeElement: HTMLIFrameElement) {
-    if (iframeElement.contentWindow) {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const manager = this;
-      this.restorePatches.push(
-        patch(
-          (iframeElement.contentWindow as Window & {
-            HTMLElement: { prototype: HTMLElement };
-          }).HTMLElement.prototype,
-          'attachShadow',
-          function (original: (init: ShadowRootInit) => ShadowRoot) {
-            return function (this: HTMLElement, option: ShadowRootInit) {
-              const shadowRoot = original.call(this, option);
-              if (this.shadowRoot)
-                manager.addShadowRoot(
-                  this.shadowRoot,
-                  iframeElement.contentDocument as Document,
-                );
-              return shadowRoot;
-            };
-          },
-        ),
-      );
-    }
+    if (!iframeElement.contentWindow || !iframeElement.contentDocument) return;
+
+    this.patchAttachShadow(
+      (iframeElement.contentWindow as Window & {
+        Element: { prototype: Element };
+      }).Element,
+      iframeElement.contentDocument,
+    );
   }
 
-  public clearCache() {
-    this.shadowDoms = new WeakSet();
-    this.observerHandlers.forEach((handler) => {
+  /**
+   * Patch 'attachShadow' to observe newly added shadow doms.
+   */
+  private patchAttachShadow(
+    element: {
+      prototype: Element;
+    },
+    doc: Document,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const manager = this;
+    this.restoreHandlers.push(
+      patch(
+        element.prototype,
+        'attachShadow',
+        function (original: (init: ShadowRootInit) => ShadowRoot) {
+          return function (this: Element, option: ShadowRootInit) {
+            const shadowRoot = original.call(this, option);
+            // For the shadow dom elements in the document, monitor their dom mutations.
+            // For shadow dom elements that aren't in the document yet,
+            // we start monitoring them once their shadow dom host is appended to the document.
+            if (this.shadowRoot && inDom(this))
+              manager.addShadowRoot(this.shadowRoot, doc);
+            return shadowRoot;
+          };
+        },
+      ),
+    );
+  }
+
+  public reset() {
+    this.restoreHandlers.forEach((handler) => {
       try {
         handler();
       } catch (e) {
         //
       }
     });
-    this.observerHandlers = [];
-  }
-
-  public reset() {
-    this.restorePatches.forEach((restorePatch) => restorePatch());
-    this.clearCache();
+    this.restoreHandlers = [];
+    this.shadowDoms = new WeakSet();
   }
 }
