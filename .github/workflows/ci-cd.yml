@@ -5,7 +5,7 @@ on: [pull_request]
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
+  job_test:
     name: Tests
     runs-on: ubuntu-latest
     steps:
@@ -26,5 +26,31 @@ jobs:
 
       - name: Run tests
         # Skip this for now, as it somehow always fails
-        if: 1 == 2 
+        if: 1 == 2
         run: xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+
+  job_artifacts:
+    needs: job_test
+    name: Upload Artifacts
+    runs-on: ubuntu-latest
+    # Build artifacts are only needed for releasing workflow.
+    if: startsWith(github.ref, 'refs/heads/release/')
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: volta-cli/action@v3
+
+      - name: Install Dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build Tarballs
+        run: yarn build:tarball
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.sha }}
+          path: |
+            ${{ github.workspace }}/packages/**/*.tgz
