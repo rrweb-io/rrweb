@@ -11,10 +11,14 @@ export default class ProcessedNodeManager {
   }
 
   private periodicallyClear() {
-    requestAnimationFrame(() => {
-      this.clear();
-      this.periodicallyClear();
-    });
+    try {
+      requestAnimationFrame(() => {
+        this.clear();
+        this.periodicallyClear();
+      });
+    } catch (e) {
+      // do nothing
+    }
   }
 
   public inOtherBuffer(node: Node, thisBuffer: MutationBuffer) {

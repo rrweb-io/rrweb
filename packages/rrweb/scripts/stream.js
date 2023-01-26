@@ -67,6 +67,10 @@ async function injectRecording(frame) {
           recordCrossOriginIframes: true,
           collectFonts: true,
           inlineImages: true,
+          sampling: {
+            mousemove: 1,
+            scroll: 1
+          }
         });
       })();
     },
@@ -226,8 +230,8 @@ void (async () => {
     await startReplay(replayerPage, serverURL, recordedPage);
 
     await Promise.all([
-      resizeWindow(recordedPage, 0, 0, 800, 800),
-      resizeWindow(replayerPage, 0, 800, 800, 800),
+      resizeWindow(recordedPage, 0, 0, 1600, 900),
+      resizeWindow(replayerPage, 0, 100, 1600, 900),
     ]);
 
     await recordedPage.exposeFunction('_captureEvent', (event) => {
