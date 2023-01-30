@@ -29,9 +29,12 @@ interface ISuite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: (
+    record: ((
       options: recordOptions<eventWithTime>,
-    ) => listenerHandler | undefined;
+    ) => listenerHandler | undefined) & {
+      takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
+    };
+
     addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
@@ -491,9 +494,9 @@ describe('record', function (this: ISuite) {
         iframe!.contentDocument!.adoptedStyleSheets = [sheet2];
         iframe!.contentDocument!.body.innerHTML = '<h1>h1 in iframe</h1>';
 
-        const { record } = ((window as unknown) as IWindow).rrweb;
-        record({
-          emit: ((window as unknown) as IWindow).emit,
+        const { rrweb, emit } = (window as unknown) as IWindow;
+        rrweb.record({
+          emit,
         });
 
         setTimeout(() => {
@@ -565,9 +568,9 @@ describe('record', function (this: ISuite) {
       sheet2.replaceSync!('div {font-size: large;}');
       shadowHost.shadowRoot!.adoptedStyleSheets = [sheet2];
 
-      const { record } = ((window as unknown) as IWindow).rrweb;
-      record({
-        emit: ((window as unknown) as IWindow).emit,
+      const { rrweb, emit } = (window as unknown) as IWindow;
+      rrweb.record({
+        emit,
       });
 
       setTimeout(() => {
@@ -583,6 +586,35 @@ describe('record', function (this: ISuite) {
       }, 150);
     });
     await ctx.page.waitForTimeout(200);
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets of shadow doms in checkout full snapshot', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        document.body.innerHTML = `
+            <div id="shadow-host-1">entry</div>
+          `;
+
+        let shadowHost = document.querySelector('div')!;
+        shadowHost!.attachShadow({ mode: 'open' });
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!('h1 {color: blue;}');
+        shadowHost.shadowRoot!.adoptedStyleSheets = [sheet];
+
+        const { rrweb, emit } = (window as unknown) as IWindow;
+        rrweb.record({
+          emit,
+        });
+
+        setTimeout(() => {
+          // When a full snapshot is checked out manually, all adoptedStylesheets should also be captured.
+          rrweb.record.takeFullSnapshot(true);
+          resolve(undefined);
+        }, 10);
+      });
+    });
+    await waitForRAF(ctx.page);
     assertSnapshot(ctx.events);
   });
 

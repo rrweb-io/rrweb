@@ -4,7 +4,11 @@ import {
   SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  processedNodeManager,
+} from './observer';
 import {
   on,
   getWindowWidth,
@@ -161,7 +165,11 @@ function record<T = eventWithTime>(
         e = plugin.eventProcessor(e);
       }
     }
-    if (packFn) {
+    if (
+      packFn &&
+      // Disable packing events which will be emitted to parent frames.
+      !passEmitsToParent
+    ) {
       e = (packFn(e) as unknown) as eventWithTime;
     }
     return (e as unknown) as T;
@@ -186,6 +194,7 @@ function record<T = eventWithTime>(
       const message: CrossOriginIframeMessageEventContent<T> = {
         type: 'rrweb',
         event: eventProcessor(e),
+        origin: window.location.origin,
         isCheckout,
       };
       window.parent.postMessage(message, '*');
@@ -316,6 +325,7 @@ function record<T = eventWithTime>(
       stylesheetManager,
       canvasManager,
       keepIframeSrcFn,
+      processedNodeManager,
     },
     mirror,
   });
@@ -335,6 +345,8 @@ function record<T = eventWithTime>(
 
     // When we take a full snapshot, old tracked StyleSheets need to be removed.
     stylesheetManager.reset();
+    // Old shadow doms cache need to be cleared.
+    shadowDomManager.clearCache();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
@@ -526,6 +538,7 @@ function record<T = eventWithTime>(
           iframeManager,
           stylesheetManager,
           shadowDomManager,
+          processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
           plugins:

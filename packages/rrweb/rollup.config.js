@@ -186,7 +186,7 @@ for (const c of baseConfigs) {
     output: [
       {
         format: 'cjs',
-        file: c.pathFn('lib/rrweb.js'),
+        file: c.pathFn('lib/rrweb.cjs'),
       },
     ],
   });
@@ -213,6 +213,11 @@ if (process.env.BROWSER_ONLY) {
       input: './src/index.ts',
       name: 'rrweb',
       pathFn: (p) => p,
+    },
+    {
+      input: './src/entries/all.ts',
+      name: 'rrweb',
+      pathFn: toAllPath,
     },
     {
       input: './src/plugins/console/record/index.ts',

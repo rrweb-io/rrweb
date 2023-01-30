@@ -3,7 +3,7 @@
   "version": "0.1.7",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
-  "main": "lib/rrdom.js",
+  "main": "lib/rrdom.cjs",
   "module": "es/rrdom.js",
   "typings": "es",
   "unpkg": "dist/rrdom.js",
@@ -13,6 +13,7 @@
     "es",
     "typings"
   ],
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"

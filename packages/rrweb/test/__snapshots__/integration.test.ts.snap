@@ -11514,6 +11514,358 @@ exports[`record integration tests should record input userTriggered values if us
 ]"
 `;
 
+exports[`record integration tests should record moved shadow DOM 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 9,
+            \\"isShadowHost\\": true
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 10,
+            \\"isShadow\\": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 4,
+          \\"id\\": 9
+        }
+      ],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 10,
+            \\"isShadow\\": true
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 11
+          }
+        },
+        {
+          \\"parentId\\": 11,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 9,
+            \\"isShadowHost\\": true
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record integration tests should record moved shadow DOM 2 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {
+              \\"id\\": \\"newEl\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 9
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {
+              \\"id\\": \\"el\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 10,
+            \\"isShadowHost\\": true
+          }
+        },
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"p\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 11,
+            \\"isShadow\\": true
+          }
+        },
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": 11,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 12,
+            \\"isShadow\\": true
+          }
+        },
+        {
+          \\"parentId\\": 12,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 13
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 12,
+          \\"id\\": 13
+        }
+      ],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 11,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 13
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record integration tests should record mutations in iframes accross pages 1`] = `
 "[
   {
@@ -12620,6 +12972,242 @@ exports[`record integration tests should record shadow DOM 1`] = `
 ]"
 `;
 
+exports[`record integration tests should record shadow DOM 2 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 9,
+            \\"isShadowHost\\": true
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 10,
+            \\"isShadow\\": true
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record integration tests should record shadow DOM 3 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 9,
+            \\"isShadowHost\\": true
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 10,
+            \\"isShadow\\": true
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
 exports[`record integration tests should record shadow doms polyfilled by shadydom 1`] = `
 "[
   {
@@ -13121,18 +13709,7 @@ exports[`record integration tests should record shadow doms polyfilled by synthe
             \\"id\\": 31,
             \\"isShadowHost\\": true
           }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"removes\\": [],
-      \\"adds\\": [
+        },
         {
           \\"parentId\\": 31,
           \\"nextId\\": null,

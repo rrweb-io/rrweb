@@ -15,7 +15,7 @@
     "rrdom-nodejs"
   ],
   "license": "MIT",
-  "main": "lib/rrdom-nodejs.js",
+  "main": "lib/rrdom-nodejs.cjs",
   "module": "es/rrdom-nodejs.js",
   "typings": "es",
   "files": [
