@@ -87,17 +87,20 @@ export type ReplayerHandler = {
   ) => void;
 };
 
+/**
+ * Make the old tree to have the same structure and properties as the new tree with the diff algorithm.
+ * @param oldTree - The old tree to be modified.
+ * @param newTree - The new tree which the old tree will be modified to.
+ * @param replayer - A slimmed replayer instance including the mirror of the old tree.
+ * @param rrnodeMirror - The mirror of the new tree.
+ */
 export function diff(
   oldTree: Node,
   newTree: IRRNode,
   replayer: ReplayerHandler,
-  rrnodeMirror?: Mirror,
+  rrnodeMirror: Mirror = (newTree as RRDocument).mirror ||
+    (newTree.ownerDocument as RRDocument).mirror,
 ) {
-  rrnodeMirror =
-    rrnodeMirror ||
-    (newTree as RRDocument).mirror ||
-    (newTree.ownerDocument as RRDocument).mirror;
-
   // If the Mirror data has some flaws, the diff function may throw errors. We check the node consistency here to make it robust.
   if (!sameNodeType(oldTree, newTree)) {
     const calibratedOldTree = createOrGetNode(
@@ -107,6 +110,17 @@ export function diff(
     );
     oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
     oldTree = calibratedOldTree;
+  }
+  // If the oldTree is a document node and the newTree has a different serialized Id, we need to update the nodeMirror.
+  else if (
+    oldTree.nodeName === '#document' &&
+    !nodeMatching(oldTree, newTree, replayer.mirror, rrnodeMirror)
+  ) {
+    const newMeta = rrnodeMirror.getMeta(newTree);
+    if (newMeta) {
+      replayer.mirror.removeNodeFromMap(oldTree);
+      replayer.mirror.add(oldTree, newMeta);
+    }
   }
 
   // If the oldTree is an iframe element and its document content is automatically mounted by browsers, we need to remove them to avoid unexpected behaviors. e.g. Selector matches may be case insensitive.
@@ -310,40 +324,27 @@ function diffChildren(
   let oldIdToIndex: Record<number, number> | undefined = undefined,
     indexInOld;
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
-    const oldStartId = replayer.mirror.getId(oldStartNode);
-    const oldEndId = replayer.mirror.getId(oldEndNode);
-    const newStartId = rrnodeMirror.getId(newStartNode);
-    const newEndId = rrnodeMirror.getId(newEndNode);
-
-    // rrdom contains elements with negative ids, we don't want to accidentally match those to a mirror mismatch (-1) id.
-    // Negative oldStartId happen when nodes are not in the mirror, but are in the DOM.
-    // eg.iframes come with a document, html, head and body nodes.
-    // thats why below we always check if an id is negative.
-
     if (oldStartNode === undefined) {
       oldStartNode = oldChildren[++oldStartIndex];
     } else if (oldEndNode === undefined) {
       oldEndNode = oldChildren[--oldEndIndex];
     } else if (
-      oldStartId !== -1 &&
-      // same first element?
-      oldStartId === newStartId
+      // same first node?
+      nodeMatching(oldStartNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
       diff(oldStartNode, newStartNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (
-      oldEndId !== -1 &&
-      // same last element?
-      oldEndId === newEndId
+      // same last node?
+      nodeMatching(oldEndNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
       diff(oldEndNode, newEndNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
-      oldStartId !== -1 &&
-      // is the first old element the same as the last new element?
-      oldStartId === newEndId
+      // is the first old node the same as the last new node?
+      nodeMatching(oldStartNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
         parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
@@ -354,9 +355,8 @@ function diffChildren(
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
-      oldEndId !== -1 &&
-      // is the last old element the same as the first new element?
-      oldEndId === newStartId
+      // is the last old node the same as the first new node?
+      nodeMatching(oldEndNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
         parentNode.insertBefore(oldEndNode, oldStartNode);
@@ -395,19 +395,27 @@ function diffChildren(
           rrnodeMirror,
         );
 
-        /**
-         * A mounted iframe element has an automatically created HTML element.
-         * We should delete it before insert a serialized one. Otherwise, an error 'Only one element on document allowed' will be thrown.
-         */
         if (
           parentNode.nodeName === '#document' &&
-          replayer.mirror.getMeta(newNode)?.type === RRNodeType.Element &&
-          (parentNode as Document).documentElement
+          oldStartNode &&
+          /**
+           * Special case 1: one document isn't allowed to have two doctype nodes at the same time, so we need to remove the old one first before inserting the new one.
+           * How this case happens: A parent document in the old tree already has a doctype node with an id e.g. #1. A new full snapshot rebuilds the replayer with a new doctype node with another id #2. According to the algorithm, the new doctype node will be inserted before the old one, which is not allowed by the Document standard.
+           */
+          ((newNode.nodeType === newNode.DOCUMENT_TYPE_NODE &&
+            oldStartNode.nodeType === oldStartNode.DOCUMENT_TYPE_NODE) ||
+            /**
+             * Special case 2: one document isn't allowed to have two HTMLElements at the same time, so we need to remove the old one first before inserting the new one.
+             * How this case happens: A mounted iframe element has an automatically created HTML element. We should delete it before inserting a serialized one. Otherwise, an error 'Only one element on document allowed' will be thrown.
+             */
+            (newNode.nodeType === newNode.ELEMENT_NODE &&
+              oldStartNode.nodeType === oldStartNode.ELEMENT_NODE))
         ) {
-          parentNode.removeChild((parentNode as Document).documentElement);
-          oldChildren[oldStartIndex] = undefined;
-          oldStartNode = undefined;
+          parentNode.removeChild(oldStartNode);
+          replayer.mirror.removeNodeFromMap(oldStartNode);
+          oldStartNode = oldChildren[++oldStartIndex];
         }
+
         try {
           parentNode.insertBefore(newNode, oldStartNode || null);
         } catch (e) {
@@ -420,14 +428,11 @@ function diffChildren(
   }
   if (oldStartIndex > oldEndIndex) {
     const referenceRRNode = newChildren[newEndIndex + 1];
-    let referenceNode = null;
+    let referenceNode: Node | null = null;
     if (referenceRRNode)
-      parentNode.childNodes.forEach((child) => {
-        if (
-          replayer.mirror.getId(child) === rrnodeMirror.getId(referenceRRNode)
-        )
-          referenceNode = child;
-      });
+      referenceNode = replayer.mirror.getNode(
+        rrnodeMirror.getId(referenceRRNode),
+      );
     for (; newStartIndex <= newEndIndex; ++newStartIndex) {
       const newNode = createOrGetNode(
         newChildren[newStartIndex],
@@ -444,13 +449,12 @@ function diffChildren(
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
-      if (node) {
-        try {
-          parentNode.removeChild(node);
-        } catch (e) {
-          console.warn(e);
-        }
+      if (!node || !parentNode.contains(node)) continue;
+      try {
+        parentNode.removeChild(node);
         replayer.mirror.removeNodeFromMap(node);
+      } catch (e) {
+        console.warn(e);
       }
     }
   }
@@ -511,4 +515,23 @@ export function sameNodeType(node1: Node, node2: IRRNode) {
     (node1 as HTMLElement).tagName.toUpperCase() ===
       (node2 as IRRElement).tagName
   );
+}
+
+/**
+ * To check whether two nodes are matching. If so, they are supposed to have the same serialized Id and node type. If they are both Elements, their tagNames should be the same as well. Otherwise, they are not matching.
+ */
+export function nodeMatching(
+  node1: Node,
+  node2: IRRNode,
+  domMirror: NodeMirror,
+  rrdomMirror: Mirror,
+): boolean {
+  const node1Id = domMirror.getId(node1);
+  const node2Id = rrdomMirror.getId(node2);
+  // rrdom contains elements with negative ids, we don't want to accidentally match those to a mirror mismatch (-1) id.
+  // Negative oldStartId happen when nodes are not in the mirror, but are in the DOM.
+  // eg.iframes come with a document, html, head and body nodes.
+  // thats why below we always check if an id is negative.
+  if (node1Id === -1 || node1Id !== node2Id) return false;
+  return sameNodeType(node1, node2);
 }

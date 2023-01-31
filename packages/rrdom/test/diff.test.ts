@@ -3,19 +3,26 @@
  */
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { getDefaultSN, RRDocument, RRMediaElement } from '../src';
-import {
-  createOrGetNode,
-  diff,
-  ReplayerHandler,
-  sameNodeType,
-} from '../src/diff';
 import {
   NodeType as RRNodeType,
   serializedNodeWithId,
   createMirror,
-  Mirror,
+  Mirror as NodeMirror,
 } from 'rrweb-snapshot';
+import {
+  buildFromDom,
+  getDefaultSN,
+  Mirror as RRNodeMirror,
+  RRDocument,
+  RRMediaElement,
+} from '../src';
+import {
+  createOrGetNode,
+  diff,
+  ReplayerHandler,
+  nodeMatching,
+  sameNodeType,
+} from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
 import { Replayer } from 'rrweb';
 import type {
@@ -26,6 +33,7 @@ import type {
 } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
 import { compileTSCode } from './utils';
+import { printRRDom } from '../src/index';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -53,7 +61,7 @@ type RRNode = IRRNode;
 function createTree(
   treeNode: ElementType,
   rrDocument?: RRDocument,
-  mirror: Mirror = createMirror(),
+  mirror: NodeMirror = createMirror(),
 ): Node | RRNode {
   type TNode = typeof rrDocument extends RRDocument ? RRNode : Node;
   let root: TNode;
@@ -95,7 +103,7 @@ function shuffle(list: number[]) {
 }
 
 describe('diff algorithm for rrdom', () => {
-  let mirror: Mirror;
+  let mirror: NodeMirror;
   let replayer: ReplayerHandler;
 
   beforeEach(() => {
@@ -1278,6 +1286,65 @@ describe('diff algorithm for rrdom', () => {
       expect(mirror.getId(element)).toEqual(-1);
     });
 
+    it('should remove children from document before adding new nodes 4', () => {
+      /**
+       * This case aims to test whether the diff function can remove all the old doctype  and html element from the document before adding new doctype and html element.
+       * If not, the diff function will throw errors or warnings.
+       */
+      // Mock the original console.warn function to make the test fail once console.warn is called.
+      const warn = jest.spyOn(global.console, 'warn');
+
+      document.write('<!DOCTYPE html><html><body></body></html>');
+      const rrdom = new RRDocument();
+      /**
+       * Make the structure of document and RRDom look like this:
+       * -2 Document
+       *  -3 DocumentType
+       *  -4 HTML
+       *    -5 HEAD
+       *    -6 BODY
+       */
+      buildFromDom(document, mirror, rrdom);
+      expect(mirror.getId(document)).toBe(-2);
+      expect(mirror.getId(document.body)).toBe(-6);
+      expect(rrdom.mirror.getId(rrdom)).toBe(-2);
+      expect(rrdom.mirror.getId(rrdom.body)).toBe(-6);
+
+      rrdom.childNodes = [];
+      /**
+       * Rebuild the rrdom and make it looks like this:
+       * -7 RRDocument
+       *  -8 RRDocumentType
+       *  -9 HTML
+       *    -10 HEAD
+       *    -11 BODY
+       */
+      buildFromDom(document, undefined, rrdom);
+      // Keep the ids of real document unchanged.
+      expect(mirror.getId(document)).toBe(-2);
+      expect(mirror.getId(document.body)).toBe(-6);
+
+      expect(rrdom.mirror.getId(rrdom)).toBe(-7);
+      expect(rrdom.mirror.getId(rrdom.body)).toBe(-11);
+
+      // Diff the document with the new rrdom.
+      diff(document, rrdom, replayer);
+      // Check that warn was not called (fail on warning)
+      expect(warn).not.toHaveBeenCalled();
+
+      // Check that the old nodes are removed from the NodeMirror.
+      [-2, -3, -4, -5, -6].forEach((id) =>
+        expect(mirror.getNode(id)).toBeNull(),
+      );
+      expect(mirror.getId(document)).toBe(-7);
+      expect(mirror.getId(document.doctype)).toBe(-8);
+      expect(mirror.getId(document.documentElement)).toBe(-9);
+      expect(mirror.getId(document.head)).toBe(-10);
+      expect(mirror.getId(document.body)).toBe(-11);
+
+      warn.mockRestore();
+    });
+
     it('selectors should be case-sensitive for matching in iframe dom', async () => {
       /**
        * If the selector match is case insensitive, it will cause some CSS style problems in the replayer.
@@ -1654,6 +1721,67 @@ describe('diff algorithm for rrdom', () => {
       node1 = document.createComment('node1');
       node2 = rrdom.createTextNode('node2');
       expect(sameNodeType(node1, node2)).toBeFalsy();
+    });
+  });
+
+  describe('test nodeMatching function', () => {
+    const rrdom = new RRDocument();
+    const NodeMirror = createMirror();
+    const rrdomMirror = new RRNodeMirror();
+    beforeEach(() => {
+      NodeMirror.reset();
+      rrdomMirror.reset();
+    });
+
+    it('should return false when two nodes have different Ids', () => {
+      const node1 = document.createElement('div');
+      const node2 = rrdom.createElement('div');
+      NodeMirror.add(node1, getDefaultSN(node2, 1));
+      rrdomMirror.add(node2, getDefaultSN(node2, 2));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+    });
+
+    it('should return false when two nodes have same Ids but different node types', () => {
+      // Compare an element with a comment node
+      let node1: Node = document.createElement('div');
+      NodeMirror.add(node1, getDefaultSN(rrdom.createElement('div'), 1));
+      let node2: IRRNode = rrdom.createComment('test');
+      rrdomMirror.add(node2, getDefaultSN(node2, 1));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+
+      // Compare an element node with a text node
+      node2 = rrdom.createTextNode('');
+      rrdomMirror.add(node2, getDefaultSN(node2, 1));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+
+      // Compare a document with a text node
+      node1 = new Document();
+      NodeMirror.add(node1, getDefaultSN(rrdom, 1));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+
+      // Compare a document with a document type node
+      node2 = rrdom.createDocumentType('', '', '');
+      rrdomMirror.add(node2, getDefaultSN(node2, 1));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+    });
+
+    it('should compare two elements', () => {
+      // Compare two elements with different tagNames
+      let node1 = document.createElement('div');
+      let node2 = rrdom.createElement('span');
+      NodeMirror.add(node1, getDefaultSN(rrdom.createElement('div'), 1));
+      rrdomMirror.add(node2, getDefaultSN(node2, 1));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+
+      // Compare two elements with same tagNames but different attributes
+      node2 = rrdom.createElement('div');
+      node2.setAttribute('class', 'test');
+      rrdomMirror.add(node2, getDefaultSN(node2, 1));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeTruthy();
+
+      // Should return false when two elements have same tagNames and attributes but different children
+      rrdomMirror.add(node2, getDefaultSN(node2, 2));
+      expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
     });
   });
 });
