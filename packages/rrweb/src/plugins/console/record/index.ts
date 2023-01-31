@@ -132,6 +132,26 @@ function initLogObserver(
       cancelHandlers.push(() => {
         if (window) window.removeEventListener('error', errorHandler);
       });
+      const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
+        const error = event.reason as Error;
+        const trace: string[] = ErrorStackParser.parse(
+          error,
+        ).map((stackFrame: StackFrame) => stackFrame.toString());
+        const payload = [stringify(error.message, logOptions.stringifyOptions)];
+        cb({
+          level: 'error',
+          trace,
+          payload,
+        });
+      };
+      window.addEventListener('unhandledrejection', unhandledrejectionHandler);
+      cancelHandlers.push(() => {
+        if (window)
+          window.removeEventListener(
+            'unhandledrejection',
+            unhandledrejectionHandler,
+          );
+      });
     }
   }
   for (const levelType of logOptions.level) {
