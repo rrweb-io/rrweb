@@ -170,29 +170,29 @@ function initFetchObserver(
       //
     };
   }
+  const recordRequestHeaders =
+    !!options.recordHeaders &&
+    (typeof options.recordHeaders === 'boolean' ||
+      !('request' in options.recordHeaders) ||
+      options.recordHeaders.request);
+  const recordRequestBody =
+    !!options.recordBody &&
+    (typeof options.recordBody === 'boolean' ||
+      !('request' in options.recordBody) ||
+      options.recordBody.request);
+  const recordResponseHeaders =
+    !!options.recordHeaders &&
+    (typeof options.recordHeaders === 'boolean' ||
+      !('response' in options.recordHeaders) ||
+      options.recordHeaders.response);
+  const recordResponseBody =
+    !!options.recordBody &&
+    (typeof options.recordBody === 'boolean' ||
+      !('response' in options.recordBody) ||
+      options.recordBody.response);
+
   const originalFetch = win.fetch;
   const wrappedFetch: typeof fetch = async function (url, init) {
-    const recordRequestHeaders =
-      !!options.recordHeaders &&
-      (typeof options.recordHeaders === 'boolean' ||
-        !('request' in options.recordHeaders) ||
-        options.recordHeaders.request);
-    const recordRequestBody =
-      !!options.recordBody &&
-      (typeof options.recordBody === 'boolean' ||
-        !('request' in options.recordBody) ||
-        options.recordBody.request);
-    const recordResponseHeaders =
-      !!options.recordHeaders &&
-      (typeof options.recordHeaders === 'boolean' ||
-        !('response' in options.recordHeaders) ||
-        options.recordHeaders.response);
-    const recordResponseBody =
-      !!options.recordBody &&
-      (typeof options.recordBody === 'boolean' ||
-        !('response' in options.recordBody) ||
-        options.recordBody.response);
-
     let performanceEntry: PerformanceResourceTiming | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
     try {
