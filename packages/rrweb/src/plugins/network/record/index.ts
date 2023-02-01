@@ -85,14 +85,16 @@ type Body =
   | null
   | undefined;
 
+type NetworkRequest = {
+  resourceTiming: PerformanceResourceTiming;
+  requestHeaders?: Headers;
+  requestBody?: Body;
+  responseHeaders?: Headers;
+  responseBody?: Body;
+};
+
 export type NetworkData = {
-  requests: {
-    resourceTiming: PerformanceResourceTiming;
-    requestHeaders?: Headers;
-    requestBody?: Body;
-    responseHeaders?: Headers;
-    responseBody?: Body;
-  }[];
+  requests: NetworkRequest[];
   isInitial?: boolean;
 };
 
