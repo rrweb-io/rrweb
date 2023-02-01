@@ -86,7 +86,7 @@ type Body =
   | undefined;
 
 type NetworkRequest = {
-  resourceTiming: PerformanceResourceTiming;
+  performanceEntry: PerformanceEntry;
   requestHeaders?: Headers;
   requestBody?: Body;
   responseHeaders?: Headers;
@@ -113,38 +113,42 @@ function initPerformanceObserver(
       //
     };
   }
+  const isNavigationTiming = (
+    entry: PerformanceEntry,
+  ): entry is PerformanceNavigationTiming => entry.entryType === 'navigation';
   const isResourceTiming = (
     entry: PerformanceEntry,
-  ): entry is PerformanceResourceTiming => {
-    return entry.entryType === 'resource';
-  };
-  const getResourceTimings = (entries: PerformanceEntryList) => {
-    return entries.filter((entry): entry is PerformanceResourceTiming => {
+  ): entry is PerformanceResourceTiming => entry.entryType === 'resource';
+  const getPerformanceEntries = (entries: PerformanceEntryList) => {
+    return entries.filter((entry) => {
       return (
-        isResourceTiming(entry) &&
-        entry.initiatorType !== 'xmlhttprequest' &&
-        entry.initiatorType !== 'fetch'
+        isNavigationTiming(entry) ||
+        (isResourceTiming(entry) &&
+          entry.initiatorType !== 'xmlhttprequest' &&
+          entry.initiatorType !== 'fetch')
       );
     });
   };
   if (options.captureInitialEvents) {
-    const initialResourceTimings = getResourceTimings(
-      win.performance.getEntriesByType('resource'),
+    const initialPerformanceEntries = getPerformanceEntries(
+      win.performance.getEntries(),
     );
     cb({
-      requests: initialResourceTimings.map((resourceTiming) => ({
-        resourceTiming,
+      requests: initialPerformanceEntries.map((performanceEntry) => ({
+        performanceEntry,
       })),
       isInitial: true,
     });
   }
   const observer = new win.PerformanceObserver((entries) => {
-    const resourceTimings = getResourceTimings(entries.getEntries());
+    const performanceEntries = getPerformanceEntries(entries.getEntries());
     cb({
-      requests: resourceTimings.map((resourceTiming) => ({ resourceTiming })),
+      requests: performanceEntries.map((performanceEntry) => ({
+        performanceEntry,
+      })),
     });
   });
-  observer.observe({ type: 'resource' });
+  observer.observe({ entryTypes: ['navigation', 'resource'] });
   return () => {
     observer.disconnect();
   };
