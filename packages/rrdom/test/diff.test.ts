@@ -33,7 +33,6 @@ import type {
 } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
 import { compileTSCode } from './utils';
-import { printRRDom } from '../src/index';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -114,7 +113,9 @@ describe('diff algorithm for rrdom', () => {
       applyInput: () => {},
       applyScroll: () => {},
       applyStyleSheetMutation: () => {},
+      afterAppend: () => {},
     };
+    document.write('<!DOCTYPE html><html><head></head><body></body></html>');
   });
 
   describe('diff single node', () => {
@@ -133,7 +134,7 @@ describe('diff algorithm for rrdom', () => {
         x: 0,
         y: 0,
       };
-      replayer.applyScroll = jest.fn();
+      const applyScrollFn = jest.spyOn(replayer, 'applyScroll');
       diff(document, rrNode, replayer);
       expect(document.childNodes.length).toEqual(1);
       expect(document.childNodes[0]).toBeInstanceOf(DocumentType);
@@ -142,7 +143,24 @@ describe('diff algorithm for rrdom', () => {
         '-//W3C//DTD XHTML 1.0 Transitional//EN',
       );
       expect(document.doctype?.systemId).toEqual('');
-      expect(replayer.applyScroll).toBeCalledTimes(1);
+      expect(applyScrollFn).toHaveBeenCalledTimes(1);
+      applyScrollFn.mockRestore();
+    });
+
+    it('should apply scroll data on an element', () => {
+      const element = document.createElement('div');
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement('div');
+      rrNode.scrollData = {
+        source: IncrementalSource.Scroll,
+        id: 0,
+        x: 0,
+        y: 0,
+      };
+      const applyScrollFn = jest.spyOn(replayer, 'applyScroll');
+      diff(element, rrNode, replayer);
+      expect(applyScrollFn).toHaveBeenCalledTimes(1);
+      applyScrollFn.mockRestore();
     });
 
     it('should apply input data on an input element', () => {
@@ -1439,6 +1457,159 @@ describe('diff algorithm for rrdom', () => {
         await page.close();
         await browser.close();
       }
+    });
+  });
+
+  describe('afterAppend callback', () => {
+    it('should call afterAppend callback', () => {
+      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const node = createTree(
+        {
+          tagName: 'div',
+          id: 1,
+        },
+        undefined,
+        mirror,
+      ) as Node;
+
+      const rrdom = new RRDocument();
+      const rrNode = createTree(
+        {
+          tagName: 'div',
+          id: 1,
+          children: [
+            {
+              tagName: 'span',
+              id: 2,
+            },
+          ],
+        },
+        rrdom,
+      ) as RRNode;
+      diff(node, rrNode, replayer);
+      expect(afterAppendFn).toHaveBeenCalledTimes(1);
+      expect(afterAppendFn).toHaveBeenCalledWith(node.childNodes[0], 2);
+      afterAppendFn.mockRestore();
+    });
+
+    it('should diff without afterAppend callback', () => {
+      replayer.afterAppend = undefined;
+      const rrdom = buildFromDom(document);
+      document.open();
+      diff(document, rrdom, replayer);
+      replayer.afterAppend = () => {};
+    });
+
+    it('should call afterAppend callback in the post traversal order', () => {
+      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      document.open();
+
+      const rrdom = new RRDocument();
+      rrdom.mirror.add(rrdom, getDefaultSN(rrdom, 1));
+      const rrNode = createTree(
+        {
+          tagName: 'html',
+          id: 1,
+          children: [
+            {
+              tagName: 'head',
+              id: 2,
+            },
+            {
+              tagName: 'body',
+              id: 3,
+              children: [
+                {
+                  tagName: 'span',
+                  id: 4,
+                  children: [
+                    {
+                      tagName: 'li',
+                      id: 5,
+                    },
+                    {
+                      tagName: 'li',
+                      id: 6,
+                    },
+                  ],
+                },
+                {
+                  tagName: 'p',
+                  id: 7,
+                },
+                {
+                  tagName: 'p',
+                  id: 8,
+                  children: [
+                    {
+                      tagName: 'li',
+                      id: 9,
+                    },
+                    {
+                      tagName: 'li',
+                      id: 10,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        rrdom,
+      ) as RRNode;
+      diff(document, rrNode, replayer);
+
+      expect(afterAppendFn).toHaveBeenCalledTimes(10);
+      // the correct traversal order
+      [2, 5, 6, 4, 7, 9, 10, 8, 3, 1].forEach((id, index) => {
+        expect((mirror.getNode(id) as HTMLElement).tagName).toEqual(
+          (rrdom.mirror.getNode(id) as IRRElement).tagName,
+        );
+        expect(afterAppendFn).toHaveBeenNthCalledWith(
+          index + 1,
+          mirror.getNode(id),
+          id,
+        );
+      });
+    });
+
+    it('should only call afterAppend for newly created nodes', () => {
+      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const rrdom = buildFromDom(document, replayer.mirror) as RRDocument;
+
+      // Append 3 nodes to rrdom.
+      const rrNode = createTree(
+        {
+          tagName: 'span',
+          id: 1,
+          children: [
+            {
+              tagName: 'li',
+              id: 2,
+            },
+            {
+              tagName: 'li',
+              id: 3,
+            },
+          ],
+        },
+        rrdom,
+      ) as RRNode;
+      rrdom.body?.appendChild(rrNode);
+      diff(document, rrdom, replayer);
+      expect(afterAppendFn).toHaveBeenCalledTimes(3);
+      // Should only call afterAppend for 3 newly appended nodes.
+      [2, 3, 1].forEach((id, index) => {
+        expect((mirror.getNode(id) as HTMLElement).tagName).toEqual(
+          (rrdom.mirror.getNode(id) as IRRElement).tagName,
+        );
+        expect(afterAppendFn).toHaveBeenNthCalledWith(
+          index + 1,
+          mirror.getNode(id),
+          id,
+        );
+      });
+      afterAppendFn.mockClear();
     });
   });
 

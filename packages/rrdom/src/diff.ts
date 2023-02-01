@@ -1,4 +1,8 @@
-import { NodeType as RRNodeType, Mirror as NodeMirror } from 'rrweb-snapshot';
+import {
+  NodeType as RRNodeType,
+  Mirror as NodeMirror,
+  elementNode,
+} from 'rrweb-snapshot';
 import type {
   canvasMutationData,
   canvasEventWithTime,
@@ -88,6 +92,9 @@ export type ReplayerHandler = {
   afterAppend?(node: Node, id: number): void;
 };
 
+// A set contains newly appended nodes. It's used to make sure the afterAppend callback can iterate newly appended nodes in the same traversal order as that in the `rrweb-snapshot` package.
+let createdNodeSet: WeakSet<Node> | null = null;
+
 /**
  * Make the old tree to have the same structure and properties as the new tree with the diff algorithm.
  * @param oldTree - The old tree to be modified.
@@ -102,19 +109,12 @@ export function diff(
   rrnodeMirror: Mirror = (newTree as RRDocument).mirror ||
     (newTree.ownerDocument as RRDocument).mirror,
 ) {
-  // If the Mirror data has some flaws, the diff function may throw errors. We check the node consistency here to make it robust.
-  if (!sameNodeType(oldTree, newTree)) {
-    const calibratedOldTree = createOrGetNode(
-      newTree,
-      replayer.mirror,
-      rrnodeMirror,
-    );
-    oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
-    oldTree = calibratedOldTree;
-    replayer.afterAppend?.(oldTree, replayer.mirror.getId(oldTree));
-  }
-
-  diffBeforeUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+  oldTree = diffBeforeUpdatingChildren(
+    oldTree,
+    newTree,
+    replayer,
+    rrnodeMirror,
+  );
 
   const oldChildren = oldTree.childNodes;
   const newChildren = newTree.childNodes;
@@ -140,6 +140,22 @@ function diffBeforeUpdatingChildren(
   replayer: ReplayerHandler,
   rrnodeMirror: Mirror,
 ) {
+  if (replayer.afterAppend && !createdNodeSet) {
+    createdNodeSet = new WeakSet();
+    setTimeout(() => {
+      createdNodeSet = null;
+    }, 0);
+  }
+  // If the Mirror data has some flaws, the diff function may throw errors. We check the node consistency here to make it robust.
+  if (!sameNodeType(oldTree, newTree)) {
+    const calibratedOldTree = createOrGetNode(
+      newTree,
+      replayer.mirror,
+      rrnodeMirror,
+    );
+    oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
+    oldTree = calibratedOldTree;
+  }
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
       /**
@@ -154,7 +170,7 @@ function diffBeforeUpdatingChildren(
           (oldTree as Document).close();
           (oldTree as Document).open();
           replayer.mirror.add(oldTree, newMeta);
-          replayer.afterAppend?.(oldTree, replayer.mirror.getId(oldTree));
+          createdNodeSet?.add(oldTree);
         }
       }
       break;
@@ -196,6 +212,7 @@ function diffBeforeUpdatingChildren(
       break;
     }
   }
+  return oldTree;
 }
 
 /**
@@ -291,6 +308,10 @@ function diffAfterUpdatingChildren(
       break;
     }
   }
+  if (createdNodeSet?.has(oldTree)) {
+    createdNodeSet.delete(oldTree);
+    replayer.afterAppend?.(oldTree, replayer.mirror.getId(oldTree));
+  }
 }
 
 function diffProps(
@@ -303,8 +324,8 @@ function diffProps(
 
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
-    const sn = rrnodeMirror.getMeta(newTree);
-    if (sn && 'isSVG' in sn && sn.isSVG && NAMESPACES[name])
+    const sn = rrnodeMirror.getMeta(newTree) as elementNode | null;
+    if (sn?.isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
     else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
       const image = document.createElement('img');
@@ -441,7 +462,6 @@ function diffChildren(
         try {
           parentNode.insertBefore(newNode, oldStartNode || null);
           diff(newNode, newStartNode, replayer, rrnodeMirror);
-          replayer.afterAppend?.(newNode, replayer.mirror.getId(newNode));
         } catch (e) {
           console.warn(e);
         }
@@ -465,7 +485,6 @@ function diffChildren(
       try {
         parentNode.insertBefore(newNode, referenceNode);
         diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
-        replayer.afterAppend?.(newNode, replayer.mirror.getId(newNode));
       } catch (e) {
         console.warn(e);
       }
@@ -526,6 +545,11 @@ export function createOrGetNode(
   }
 
   if (sn) domMirror.add(node, { ...sn });
+  try {
+    createdNodeSet?.add(node);
+  } catch (e) {
+    // Just for safety concern.
+  }
   return node;
 }
 
