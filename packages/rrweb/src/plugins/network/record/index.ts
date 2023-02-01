@@ -26,7 +26,7 @@ export type InitiatorType =
   | 'xmlhttprequest';
 
 type NetworkRecordOptions = {
-  initiatorType?: InitiatorType[];
+  initiatorTypes?: InitiatorType[];
   ignoreRequestFn?: (data: NetworkRequest) => boolean;
   recordHeaders?:
     | boolean
@@ -46,7 +46,7 @@ type NetworkRecordOptions = {
 };
 
 const defaultNetworkOptions: NetworkRecordOptions = {
-  initiatorType: [
+  initiatorTypes: [
     'audio',
     'beacon',
     'body',
@@ -151,7 +151,7 @@ function initXhrObserver(
   win: IWindow,
   options: Required<NetworkRecordOptions>,
 ): listenerHandler {
-  if (!options.initiatorType.includes('xmlhttprequest')) {
+  if (!options.initiatorTypes.includes('xmlhttprequest')) {
     return () => {
       //
     };
@@ -166,7 +166,7 @@ function initFetchObserver(
   win: IWindow,
   options: Required<NetworkRecordOptions>,
 ): listenerHandler {
-  if (!options.initiatorType.includes('fetch')) {
+  if (!options.initiatorTypes.includes('fetch')) {
     return () => {
       //
     };
