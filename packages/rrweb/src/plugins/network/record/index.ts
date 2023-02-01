@@ -55,7 +55,51 @@ const defaultNetworkOptions: NetworkRecordOptions = {
   captureInitialEvents: false,
 };
 
-type networkCallback = (p: PerformanceResourceTiming) => void;
+export type NetworkData = {
+  resourceTimings: PerformanceResourceTiming[];
+  isInitial?: boolean;
+};
+
+type networkCallback = (data: NetworkData) => void;
+
+function initPerformanceObserver(
+  cb: networkCallback,
+  win: IWindow,
+  options: {
+    initiatorType: InitiatorType[];
+    captureInitialEvents: boolean;
+  },
+) {
+  if (!('performance' in win)) {
+    return () => {
+      //
+    };
+  }
+  const isResourceTiming = (
+    entry: PerformanceEntry,
+  ): entry is PerformanceResourceTiming => {
+    return entry.entryType === 'resource';
+  };
+  const getResourceTimings = (entries: PerformanceEntryList) => {
+    return entries.filter((entry): entry is PerformanceResourceTiming => {
+      return isResourceTiming(entry);
+    });
+  };
+  if (options.captureInitialEvents) {
+    const initialResourceTimings = getResourceTimings(
+      win.performance.getEntriesByType('resource'),
+    );
+    cb({ resourceTimings: initialResourceTimings, isInitial: true });
+  }
+  const observer = new win.PerformanceObserver((entries) => {
+    const resourceTimings = getResourceTimings(entries.getEntries());
+    cb({ resourceTimings });
+  });
+  observer.observe({ type: 'resource' });
+  return () => {
+    observer.disconnect();
+  };
+}
 
 function initNetworkObserver(
   cb: networkCallback,
@@ -68,36 +112,11 @@ function initNetworkObserver(
     initiatorType: InitiatorType[];
     captureInitialEvents: boolean;
   };
-  if (!('performance' in win)) {
-    return () => {
-      //
-    };
-  }
-  if (networkOptions.captureInitialEvents) {
-    const initialResources = win.performance.getEntriesByType(
-      'resource',
-    ) as PerformanceResourceTiming[];
-    initialResources
-      .filter((resource) =>
-        networkOptions.initiatorType.includes(
-          resource.initiatorType as InitiatorType,
-        ),
-      )
-      .forEach((resource) => cb(resource));
-  }
-  const observer = new win.PerformanceObserver((entries) => {
-    const resources = entries.getEntries() as PerformanceResourceTiming[];
-    resources
-      .filter((resource) =>
-        networkOptions.initiatorType.includes(
-          resource.initiatorType as InitiatorType,
-        ),
-      )
-      .forEach((resource) => cb(resource));
-  });
-  observer.observe({ type: 'resource' });
+
+  const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
+
   return () => {
-    observer.disconnect();
+    performanceObserver();
   };
 }
 

@@ -1,9 +1,9 @@
-import { InitiatorType, NETWORK_PLUGIN_NAME } from '../record';
+import { InitiatorType, NetworkData, NETWORK_PLUGIN_NAME } from '../record';
 import type { eventWithTime } from '@rrweb/types';
 import { EventType } from '@rrweb/types';
 import type { ReplayPlugin } from '../../../types';
 
-export type NetworkReplayLogger = (data: PerformanceResourceTiming) => void;
+export type NetworkReplayLogger = (data: NetworkData) => void;
 
 export type NetworkReplayOptions = {
   initiatorType?: InitiatorType[];
@@ -49,14 +49,14 @@ export const getReplayNetworkPlugin: (
         event.type === EventType.Plugin &&
         event.data.plugin === NETWORK_PLUGIN_NAME
       ) {
-        const networkData = event.data.payload as PerformanceResourceTiming;
-        if (
-          networkOptions.initiatorType.includes(
-            networkData.initiatorType as InitiatorType,
-          )
-        ) {
-          networkOptions.replayLogger(networkData);
-        }
+        const networkData = event.data.payload as NetworkData;
+        networkData.resourceTimings = networkData.resourceTimings.filter(
+          (resourceTiming) =>
+            networkOptions.initiatorType.includes(
+              resourceTiming.initiatorType as InitiatorType,
+            ),
+        );
+        networkOptions.replayLogger(networkData);
       }
     },
   };
