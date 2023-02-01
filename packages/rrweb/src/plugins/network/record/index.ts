@@ -77,6 +77,7 @@ type Headers = Record<string, string>;
 
 type NetworkRequest = {
   performanceEntry: PerformanceEntry;
+  requestMethod: string;
   requestHeaders?: Headers;
   requestBody?: string | null;
   responseHeaders?: Headers;
@@ -127,6 +128,7 @@ function initPerformanceObserver(
     cb({
       requests: initialPerformanceEntries.map((performanceEntry) => ({
         performanceEntry,
+        requestMethod: 'GET',
       })),
       isInitial: true,
     });
@@ -136,6 +138,7 @@ function initPerformanceObserver(
     cb({
       requests: performanceEntries.map((performanceEntry) => ({
         performanceEntry,
+        requestMethod: 'GET',
       })),
     });
   });
@@ -195,8 +198,8 @@ function initFetchObserver(
   const wrappedFetch: typeof fetch = async function (url, init) {
     let performanceEntry: PerformanceResourceTiming | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
+    const req = new Request(url, init);
     try {
-      const req = new Request(url, init);
       if (recordRequestHeaders) {
         networkRequest.requestHeaders = {};
         req.headers.forEach((value, key) => {
@@ -254,7 +257,15 @@ function initFetchObserver(
       throw cause;
     } finally {
       if (performanceEntry) {
-        cb({ requests: [{ performanceEntry, ...networkRequest }] });
+        cb({
+          requests: [
+            {
+              performanceEntry,
+              requestMethod: req.method,
+              ...networkRequest,
+            },
+          ],
+        });
       }
     }
   };
