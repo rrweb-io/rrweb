@@ -99,36 +99,22 @@ const isNavigationTiming = (
 const isResourceTiming = (
   entry: PerformanceEntry,
 ): entry is PerformanceResourceTiming => entry.entryType === 'resource';
-const getPerformanceEntries = (entries: PerformanceEntryList) => {
-  return entries.filter((entry) => {
-    return (
-      isNavigationTiming(entry) ||
-      (isResourceTiming(entry) &&
-        entry.initiatorType !== 'xmlhttprequest' &&
-        entry.initiatorType !== 'fetch')
-    );
-  });
-};
-const getLastPerformanceEntry = (
-  win: IWindow,
-  initiatorType: string,
-  url: string,
-) => {
-  const performanceEntries = win.performance.getEntriesByType('resource');
-  return findLast(
-    performanceEntries,
-    (performanceEntry) =>
-      isResourceTiming(performanceEntry) &&
-      performanceEntry.initiatorType === initiatorType &&
-      performanceEntry.name === url,
-  );
-};
 
 function initPerformanceObserver(
   cb: networkCallback,
   win: IWindow,
   options: Required<NetworkRecordOptions>,
 ) {
+  const getPerformanceEntries = (entries: PerformanceEntryList) => {
+    return entries.filter((entry) => {
+      return (
+        isNavigationTiming(entry) ||
+        (isResourceTiming(entry) &&
+          entry.initiatorType !== 'xmlhttprequest' && // ignore xhr
+          entry.initiatorType !== 'fetch') // ignore fetch
+      );
+    });
+  };
   if (options.recordInitialRequests) {
     const initialPerformanceEntries = getPerformanceEntries(
       win.performance.getEntries(),
@@ -155,6 +141,21 @@ function initPerformanceObserver(
     observer.disconnect();
   };
 }
+
+const getPerformanceEntry = (
+  win: IWindow,
+  initiatorType: string,
+  url: string,
+) => {
+  const performanceEntries = win.performance.getEntriesByType('resource');
+  return findLast(
+    performanceEntries,
+    (performanceEntry) =>
+      isResourceTiming(performanceEntry) &&
+      performanceEntry.initiatorType === initiatorType &&
+      performanceEntry.name === url,
+  );
+};
 
 function initXhrObserver(
   cb: networkCallback,
@@ -198,10 +199,10 @@ function initXhrObserver(
         username?: string | null,
         password?: string | null,
       ) {
-        let performanceEntry: PerformanceEntry | undefined;
-        const networkRequest: Partial<NetworkRequest> = {};
         const xhr = this as XMLHttpRequest;
         const requestUrl = typeof url === 'string' ? url : url.toString();
+        let performanceEntry: PerformanceEntry | undefined;
+        const networkRequest: Partial<NetworkRequest> = {};
         try {
           if (recordRequestHeaders) {
             networkRequest.requestHeaders = {};
@@ -214,7 +215,7 @@ function initXhrObserver(
           if (recordRequestBody) {
             const originalSend = xhr.send.bind(xhr);
             xhr.send = (body) => {
-              if (!body) {
+              if (body === undefined || body === null) {
                 networkRequest.requestBody = null;
               } else {
                 networkRequest.requestBody = stringify(
@@ -227,66 +228,54 @@ function initXhrObserver(
               return originalSend(body);
             };
           }
-          await new Promise<void>((resolve, reject) => {
-            try {
-              if (recordResponseBody) {
-                xhr.addEventListener('load', () => {
-                  try {
-                    if (!xhr.response) {
-                      networkRequest.responseBody = null;
-                    } else {
-                      try {
-                        const objBody = JSON.parse(
-                          xhr.response as string,
-                        ) as object;
-                        networkRequest.responseBody = stringify(
-                          objBody,
-                          typeof recordResponseBody === 'object'
-                            ? recordResponseBody
-                            : undefined,
-                        );
-                      } catch {
-                        networkRequest.responseBody = xhr.response as string;
-                      }
-                    }
-                  } catch (cause) {
-                    reject(cause);
+          await new Promise<void>((resolve) => {
+            xhr.responseType = 'text';
+            xhr.addEventListener('readystatechange', () => {
+              if (xhr.readyState !== xhr.DONE) return;
+              performanceEntry = getPerformanceEntry(
+                win,
+                'xmlhttprequest',
+                requestUrl,
+              );
+              if (recordResponseHeaders) {
+                networkRequest.responseHeaders = {};
+                const rawHeaders = xhr.getAllResponseHeaders();
+                const headers = rawHeaders.trim().split(/[\r\n]+/);
+                headers.forEach((line) => {
+                  const parts = line.split(': ');
+                  const header = parts.shift();
+                  const value = parts.join(': ');
+                  if (header) {
+                    networkRequest.responseHeaders![header] = value;
                   }
                 });
               }
-              xhr.addEventListener('loadend', () => {
-                try {
-                  performanceEntry = getLastPerformanceEntry(
-                    win,
-                    'xmlhttprequest',
-                    requestUrl,
-                  );
-                  if (recordResponseHeaders) {
-                    networkRequest.responseHeaders = {};
-                    const rawHeaders = xhr.getAllResponseHeaders();
-                    const headers = rawHeaders.trim().split(/[\r\n]+/);
-                    headers.forEach((line) => {
-                      const parts = line.split(': ');
-                      const header = parts.shift();
-                      const value = parts.join(': ');
-                      if (header) {
-                        networkRequest.responseHeaders![header] = value;
-                      }
-                    });
+              if (recordResponseBody) {
+                if (!xhr.response) {
+                  networkRequest.responseBody = null;
+                } else {
+                  try {
+                    const objBody = JSON.parse(
+                      xhr.response as string,
+                    ) as object;
+                    networkRequest.responseBody = stringify(
+                      objBody,
+                      typeof recordResponseBody === 'object'
+                        ? recordResponseBody
+                        : undefined,
+                    );
+                  } catch {
+                    networkRequest.responseBody = xhr.response as string;
                   }
-                  resolve();
-                } catch (cause) {
-                  reject(cause);
                 }
-              });
-              originalOpen(method, url, async, username, password);
-            } catch (cause) {
-              reject(cause);
-            }
+              }
+              resolve();
+            });
+            originalOpen(method, url, async, username, password);
           });
         } catch (cause) {
           if (!performanceEntry) {
-            performanceEntry = getLastPerformanceEntry(
+            performanceEntry = getPerformanceEntry(
               win,
               'xmlhttprequest',
               requestUrl,
@@ -347,9 +336,9 @@ function initFetchObserver(
 
   const originalFetch = win.fetch;
   const wrappedFetch: typeof fetch = async (url, init) => {
+    const req = new Request(url, init);
     let performanceEntry: PerformanceEntry | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
-    const req = new Request(url, init);
     try {
       if (recordRequestHeaders) {
         networkRequest.requestHeaders = {};
@@ -358,7 +347,7 @@ function initFetchObserver(
         });
       }
       if (recordRequestBody) {
-        if (!req.body) {
+        if (req.body === undefined || req.body === null) {
           networkRequest.requestBody = null;
         } else {
           networkRequest.requestBody = stringify(
@@ -370,7 +359,7 @@ function initFetchObserver(
         }
       }
       const res = await originalFetch(req);
-      performanceEntry = getLastPerformanceEntry(win, 'fetch', req.url);
+      performanceEntry = getPerformanceEntry(win, 'fetch', req.url);
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
         res.headers.forEach((value, header) => {
@@ -398,7 +387,7 @@ function initFetchObserver(
       return res;
     } catch (cause) {
       if (!performanceEntry) {
-        performanceEntry = getLastPerformanceEntry(win, 'fetch', req.url);
+        performanceEntry = getPerformanceEntry(win, 'fetch', req.url);
       }
       throw cause;
     } finally {
