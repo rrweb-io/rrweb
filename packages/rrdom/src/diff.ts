@@ -10,7 +10,6 @@ import type {
 import type {
   IRRCDATASection,
   IRRComment,
-  IRRDocument,
   IRRDocumentType,
   IRRElement,
   IRRNode,
@@ -111,50 +110,26 @@ export function diff(
     oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
     oldTree = calibratedOldTree;
   }
-  // If the oldTree is a document node and the newTree has a different serialized Id, we need to update the nodeMirror.
-  else if (
-    oldTree.nodeName === '#document' &&
-    !nodeMatching(oldTree, newTree, replayer.mirror, rrnodeMirror)
-  ) {
-    const newMeta = rrnodeMirror.getMeta(newTree);
-    if (newMeta) {
-      replayer.mirror.removeNodeFromMap(oldTree);
-      replayer.mirror.add(oldTree, newMeta);
-    }
-  }
-
-  // If the oldTree is an iframe element and its document content is automatically mounted by browsers, we need to remove them to avoid unexpected behaviors. e.g. Selector matches may be case insensitive.
-  if (oldTree.nodeName === 'IFRAME') {
-    const iframeDoc = (oldTree as HTMLIFrameElement).contentDocument;
-    if (
-      iframeDoc &&
-      iframeDoc.documentElement &&
-      replayer.mirror.getId(iframeDoc.documentElement) < 0
-    ) {
-      iframeDoc.close();
-      iframeDoc.open();
-    }
-  }
-
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
-
-  if (oldChildren.length > 0 || newChildren.length > 0) {
-    diffChildren(
-      Array.from(oldChildren),
-      newChildren,
-      oldTree,
-      replayer,
-      rrnodeMirror,
-    );
-  }
 
   let inputDataToApply = null,
     scrollDataToApply = null;
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
-      const newRRDocument = newTree as IRRDocument;
-      scrollDataToApply = (newRRDocument as RRDocument).scrollData;
+      scrollDataToApply = (newTree as RRDocument).scrollData;
+      /**
+       * Special cases for updating the document node:
+       * Case 1: If the oldTree is the content document of an iframe element and its content (HTML, HEAD, and BODY) is automatically mounted by browsers, we need to remove them to avoid unexpected behaviors. e.g. Selector matches may be case insensitive.
+       * Case 2: The newTree has a different serialized Id (a different document object), we need to reopen it and update the nodeMirror.
+       */
+      if (!nodeMatching(oldTree, newTree, replayer.mirror, rrnodeMirror)) {
+        const newMeta = rrnodeMirror.getMeta(newTree);
+        if (newMeta) {
+          replayer.mirror.removeNodeFromMap(oldTree);
+          (oldTree as Document).close();
+          (oldTree as Document).open();
+          replayer.mirror.add(oldTree, newMeta);
+        }
+      }
       break;
     }
     case RRNodeType.Element: {
@@ -182,38 +157,50 @@ export function diff(
             oldMediaElement.playbackRate = newMediaRRElement.playbackRate;
           break;
         }
-        case 'CANVAS':
-          {
-            const rrCanvasElement = newTree as RRCanvasElement;
-            // This canvas element is created with initial data in an iframe element. https://github.com/rrweb-io/rrweb/pull/944
-            if (rrCanvasElement.rr_dataURL !== null) {
-              const image = document.createElement('img');
-              image.onload = () => {
-                const ctx = (oldElement as HTMLCanvasElement).getContext('2d');
-                if (ctx) {
-                  ctx.drawImage(image, 0, 0, image.width, image.height);
-                }
-              };
-              image.src = rrCanvasElement.rr_dataURL;
-            }
-            rrCanvasElement.canvasMutations.forEach((canvasMutation) =>
-              replayer.applyCanvas(
-                canvasMutation.event,
-                canvasMutation.mutation,
-                oldTree as HTMLCanvasElement,
-              ),
+        case 'CANVAS': {
+          const rrCanvasElement = newTree as RRCanvasElement;
+          // This canvas element is created with initial data in an iframe element. https://github.com/rrweb-io/rrweb/pull/944
+          if (rrCanvasElement.rr_dataURL !== null) {
+            const image = document.createElement('img');
+            image.onload = () => {
+              const ctx = (oldElement as HTMLCanvasElement).getContext('2d');
+              if (ctx) {
+                ctx.drawImage(image, 0, 0, image.width, image.height);
+              }
+            };
+            image.src = rrCanvasElement.rr_dataURL;
+          }
+          rrCanvasElement.canvasMutations.forEach((canvasMutation) =>
+            replayer.applyCanvas(
+              canvasMutation.event,
+              canvasMutation.mutation,
+              oldTree as HTMLCanvasElement,
+            ),
+          );
+          break;
+        }
+        case 'STYLE': {
+          const styleSheet = (oldElement as HTMLStyleElement).sheet;
+          styleSheet &&
+            (newTree as RRStyleElement).rules.forEach((data) =>
+              replayer.applyStyleSheetMutation(data, styleSheet),
             );
-          }
           break;
-        case 'STYLE':
-          {
-            const styleSheet = (oldElement as HTMLStyleElement).sheet;
-            styleSheet &&
-              (newTree as RRStyleElement).rules.forEach((data) =>
-                replayer.applyStyleSheetMutation(data, styleSheet),
-              );
-          }
+        }
+        case 'IFRAME': {
+          const oldContentDocument = (oldTree as HTMLIFrameElement)
+            .contentDocument;
+          // If the iframe is cross-origin, the contentDocument will be null.
+          if (!oldContentDocument) break;
+          // IFrame element doesn't have child nodes, so here we update its content document separately.
+          diff(
+            oldContentDocument,
+            (newTree as RRIFrameElement).contentDocument,
+            replayer,
+            rrnodeMirror,
+          );
           break;
+        }
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
@@ -247,31 +234,25 @@ export function diff(
     default:
   }
 
+  const oldChildren = oldTree.childNodes;
+  const newChildren = newTree.childNodes;
+
+  if (oldChildren.length > 0 || newChildren.length > 0) {
+    diffChildren(
+      Array.from(oldChildren),
+      newChildren,
+      oldTree,
+      replayer,
+      rrnodeMirror,
+    );
+  }
+
   scrollDataToApply && replayer.applyScroll(scrollDataToApply, true);
   /**
    * Input data need to get applied after all children of this node are updated.
    * Otherwise when we set a value for a select element whose options are empty, the value won't actually update.
    */
   inputDataToApply && replayer.applyInput(inputDataToApply);
-
-  // IFrame element doesn't have child nodes.
-  if (newTree.nodeName === 'IFRAME') {
-    const oldContentDocument = (oldTree as HTMLIFrameElement).contentDocument;
-    const newIFrameElement = newTree as RRIFrameElement;
-    // If the iframe is cross-origin, the contentDocument will be null.
-    if (oldContentDocument) {
-      const sn = rrnodeMirror.getMeta(newIFrameElement.contentDocument);
-      if (sn) {
-        replayer.mirror.add(oldContentDocument, { ...sn });
-      }
-      diff(
-        oldContentDocument,
-        newIFrameElement.contentDocument,
-        replayer,
-        rrnodeMirror,
-      );
-    }
-  }
 }
 
 function diffProps(
