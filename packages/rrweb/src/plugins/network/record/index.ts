@@ -98,11 +98,6 @@ function initPerformanceObserver(
   win: IWindow,
   options: Required<NetworkRecordOptions>,
 ) {
-  if (!('performance' in win)) {
-    return () => {
-      //
-    };
-  }
   const isNavigationTiming = (
     entry: PerformanceEntry,
   ): entry is PerformanceNavigationTiming => entry.entryType === 'navigation';
@@ -285,6 +280,12 @@ function initNetworkObserver(
   win: IWindow, // top window or in an iframe
   options: NetworkRecordOptions,
 ): listenerHandler {
+  if (!('performance' in win)) {
+    return () => {
+      //
+    };
+  }
+
   const networkOptions = (options
     ? Object.assign({}, defaultNetworkOptions, options)
     : defaultNetworkOptions) as Required<NetworkRecordOptions>;
