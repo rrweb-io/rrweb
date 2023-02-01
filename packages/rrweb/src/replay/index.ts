@@ -230,6 +230,11 @@ export class Replayer {
             else if (data.source === IncrementalSource.StyleDeclaration)
               this.applyStyleDeclaration(data, styleSheet);
           },
+          afterAppend: (node: Node, id: number) => {
+            for (const plugin of this.config.plugins || []) {
+              if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
+            }
+          },
         };
         if (this.iframe.contentDocument)
           try {
@@ -863,6 +868,8 @@ export class Replayer {
         );
       }
 
+      // Skip the plugin onBuild callback in the virtual dom mode
+      if (this.usingVirtualDom) return;
       for (const plugin of this.config.plugins || []) {
         if (plugin.onBuild)
           plugin.onBuild(builtNode, {
@@ -1480,6 +1487,8 @@ export class Replayer {
         return;
       }
       const afterAppend = (node: Node | RRNode, id: number) => {
+        // Skip the plugin onBuild callback for virtual dom
+        if (this.usingVirtualDom) return;
         for (const plugin of this.config.plugins || []) {
           if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
         }

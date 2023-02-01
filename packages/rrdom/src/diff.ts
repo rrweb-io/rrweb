@@ -84,6 +84,8 @@ export type ReplayerHandler = {
     data: styleDeclarationData | styleSheetRuleData,
     styleSheet: CSSStyleSheet,
   ) => void;
+  // Similar to the `afterAppend` callback in the `rrweb-snapshot` package. It's a postorder traversal of the newly appended nodes.
+  afterAppend?(node: Node, id: number): void;
 };
 
 /**
@@ -109,6 +111,7 @@ export function diff(
     );
     oldTree.parentNode?.replaceChild(calibratedOldTree, oldTree);
     oldTree = calibratedOldTree;
+    replayer.afterAppend?.(oldTree, replayer.mirror.getId(oldTree));
   }
 
   let inputDataToApply = null,
@@ -128,6 +131,7 @@ export function diff(
           (oldTree as Document).close();
           (oldTree as Document).open();
           replayer.mirror.add(oldTree, newMeta);
+          replayer.afterAppend?.(oldTree, replayer.mirror.getId(oldTree));
         }
       }
       break;
@@ -303,7 +307,7 @@ function diffChildren(
     newStartNode = newChildren[newStartIndex],
     newEndNode = newChildren[newEndIndex];
   let oldIdToIndex: Record<number, number> | undefined = undefined,
-    indexInOld;
+    indexInOld: number | undefined = undefined;
   while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
     if (oldStartNode === undefined) {
       oldStartNode = oldChildren[++oldStartIndex];
@@ -359,9 +363,12 @@ function diffChildren(
         }
       }
       indexInOld = oldIdToIndex[rrnodeMirror.getId(newStartNode)];
-      if (indexInOld) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const nodeToMove = oldChildren[indexInOld]!;
+      const nodeToMove = oldChildren[indexInOld];
+      if (
+        indexInOld !== undefined &&
+        nodeToMove &&
+        nodeMatching(nodeToMove, newStartNode, replayer.mirror, rrnodeMirror)
+      ) {
         try {
           parentNode.insertBefore(nodeToMove, oldStartNode);
         } catch (e) {
@@ -399,10 +406,11 @@ function diffChildren(
 
         try {
           parentNode.insertBefore(newNode, oldStartNode || null);
+          diff(newNode, newStartNode, replayer, rrnodeMirror);
+          replayer.afterAppend?.(newNode, replayer.mirror.getId(newNode));
         } catch (e) {
           console.warn(e);
         }
-        diff(newNode, newStartNode, replayer, rrnodeMirror);
       }
       newStartNode = newChildren[++newStartIndex];
     }
@@ -422,10 +430,11 @@ function diffChildren(
       );
       try {
         parentNode.insertBefore(newNode, referenceNode);
+        diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
+        replayer.afterAppend?.(newNode, replayer.mirror.getId(newNode));
       } catch (e) {
         console.warn(e);
       }
-      diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
     }
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {

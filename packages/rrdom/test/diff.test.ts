@@ -1060,7 +1060,15 @@ describe('diff algorithm for rrdom', () => {
       } as serializedNodeWithId;
       mirror.add(unreliableChild, unreliableSN);
       parentNode.appendChild(unreliableChild);
-      mirror.add(document.createElement('div'), { ...unreliableSN, id: 2 });
+      createTree(
+        {
+          tagName: 'div',
+          id: 2,
+          children: [],
+        },
+        undefined,
+        mirror,
+      );
 
       const rrParentNode = createTree(
         {
