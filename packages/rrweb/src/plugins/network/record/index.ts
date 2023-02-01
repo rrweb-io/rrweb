@@ -26,21 +26,21 @@ export type InitiatorType =
 
 type NetworkRecordOptions = {
   initiatorType?: InitiatorType[];
-  captureHeaders?:
+  recordHeaders?:
     | boolean
     | StringifyOptions
     | {
         request: boolean | StringifyOptions;
         response: boolean | StringifyOptions;
       };
-  captureBody?:
+  recordBody?:
     | boolean
     | StringifyOptions
     | {
         request: boolean | StringifyOptions;
         response: boolean | StringifyOptions;
       };
-  captureInitialEvents?: boolean;
+  recordInitialEvents?: boolean;
 };
 
 const defaultNetworkOptions: NetworkRecordOptions = {
@@ -67,9 +67,9 @@ const defaultNetworkOptions: NetworkRecordOptions = {
     'video',
     'xmlhttprequest',
   ],
-  captureHeaders: false,
-  captureBody: false,
-  captureInitialEvents: false,
+  recordHeaders: false,
+  recordBody: false,
+  recordInitialEvents: false,
 };
 
 type Headers = Record<string, string>;
@@ -105,7 +105,7 @@ function initPerformanceObserver(
   win: IWindow,
   options: {
     initiatorType: InitiatorType[];
-    captureInitialEvents: boolean;
+    recordInitialEvents: boolean;
   },
 ) {
   if (!('performance' in win)) {
@@ -129,7 +129,7 @@ function initPerformanceObserver(
       );
     });
   };
-  if (options.captureInitialEvents) {
+  if (options.recordInitialEvents) {
     const initialPerformanceEntries = getPerformanceEntries(
       win.performance.getEntries(),
     );
@@ -183,7 +183,7 @@ function initNetworkObserver(
     ? Object.assign({}, defaultNetworkOptions, options)
     : defaultNetworkOptions) as {
     initiatorType: InitiatorType[];
-    captureInitialEvents: boolean;
+    recordInitialEvents: boolean;
   };
 
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
