@@ -1,7 +1,6 @@
-/* eslint-disable no-useless-catch */
 import type { IWindow, listenerHandler, RecordPlugin } from '@rrweb/types';
 import { findLast } from '../../../utils';
-import type { StringifyOptions } from '../../utils/stringify';
+import { stringify, StringifyOptions } from '../../utils/stringify';
 
 export type InitiatorType =
   | 'audio'
@@ -194,22 +193,28 @@ function initFetchObserver(
         !('response' in options.recordBody) ||
         options.recordBody.response);
 
-    const req = new Request(url, init);
     let performanceEntry: PerformanceResourceTiming | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
-    if (recordRequestHeaders) {
-      networkRequest.requestHeaders = {};
-      req.headers.forEach((value, key) => {
-        networkRequest.requestHeaders![key] = value;
-      });
-    }
-    if (recordRequestBody) {
-      networkRequest.requestBody = init?.body?.toString();
-      if (networkRequest.requestBody === undefined) {
-        networkRequest.requestBody = null;
-      }
-    }
     try {
+      const req = new Request(url, init);
+      if (recordRequestHeaders) {
+        networkRequest.requestHeaders = {};
+        req.headers.forEach((value, key) => {
+          networkRequest.requestHeaders![key] = value;
+        });
+      }
+      if (recordRequestBody) {
+        if (!req.body) {
+          networkRequest.requestBody = null;
+        } else {
+          networkRequest.requestBody = stringify(
+            req.body,
+            typeof recordRequestBody === 'object'
+              ? recordRequestBody
+              : undefined,
+          );
+        }
+      }
       const res = await originalFetch(req);
       const performanceEntries = win.performance.getEntriesByType(
         'resource',
@@ -225,10 +230,27 @@ function initFetchObserver(
         });
       }
       if (recordResponseBody) {
-        networkRequest.responseBody = await res.clone().text();
+        const reqBody = await res.clone().text();
+        if (!reqBody) {
+          networkRequest.responseBody = null;
+        } else {
+          try {
+            const objBody = JSON.parse(reqBody) as object;
+            networkRequest.responseBody = stringify(
+              objBody,
+              typeof recordResponseBody === 'object'
+                ? recordResponseBody
+                : undefined,
+            );
+          } catch {
+            networkRequest.responseBody = reqBody;
+          }
+        }
       }
       return res;
+      // eslint-disable-next-line no-useless-catch
     } catch (cause) {
+      // failed to fetch
       throw cause;
     } finally {
       if (performanceEntry) {
