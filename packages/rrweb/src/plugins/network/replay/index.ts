@@ -50,11 +50,10 @@ export const getReplayNetworkPlugin: (
         event.data.plugin === NETWORK_PLUGIN_NAME
       ) {
         const networkData = event.data.payload as NetworkData;
-        networkData.resourceTimings = networkData.resourceTimings.filter(
-          (resourceTiming) =>
-            networkOptions.initiatorType.includes(
-              resourceTiming.initiatorType as InitiatorType,
-            ),
+        networkData.requests = networkData.requests.filter((request) =>
+          networkOptions.initiatorType.includes(
+            request.resourceTiming.initiatorType as InitiatorType,
+          ),
         );
         networkOptions.replayLogger(networkData);
       }

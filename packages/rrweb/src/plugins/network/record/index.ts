@@ -1,4 +1,5 @@
 import type { IWindow, listenerHandler, RecordPlugin } from '@rrweb/types';
+import type { StringifyOptions } from '../../utils/stringify';
 
 export type InitiatorType =
   | 'audio'
@@ -25,6 +26,20 @@ export type InitiatorType =
 
 type NetworkRecordOptions = {
   initiatorType?: InitiatorType[];
+  captureHeaders?:
+    | boolean
+    | StringifyOptions
+    | {
+        request: boolean | StringifyOptions;
+        response: boolean | StringifyOptions;
+      };
+  captureBody?:
+    | boolean
+    | StringifyOptions
+    | {
+        request: boolean | StringifyOptions;
+        response: boolean | StringifyOptions;
+      };
   captureInitialEvents?: boolean;
 };
 
@@ -52,11 +67,32 @@ const defaultNetworkOptions: NetworkRecordOptions = {
     'video',
     'xmlhttprequest',
   ],
+  captureHeaders: false,
+  captureBody: false,
   captureInitialEvents: false,
 };
 
+type Headers = Record<string, string>;
+type Body =
+  | string
+  | Document
+  | Blob
+  | ArrayBufferView
+  | ArrayBuffer
+  | FormData
+  | URLSearchParams
+  | ReadableStream<Uint8Array>
+  | null
+  | undefined;
+
 export type NetworkData = {
-  resourceTimings: PerformanceResourceTiming[];
+  requests: {
+    resourceTiming: PerformanceResourceTiming;
+    requestHeaders?: Headers;
+    requestBody?: Body;
+    responseHeaders?: Headers;
+    responseBody?: Body;
+  }[];
   isInitial?: boolean;
 };
 
@@ -93,11 +129,18 @@ function initPerformanceObserver(
     const initialResourceTimings = getResourceTimings(
       win.performance.getEntriesByType('resource'),
     );
-    cb({ resourceTimings: initialResourceTimings, isInitial: true });
+    cb({
+      requests: initialResourceTimings.map((resourceTiming) => ({
+        resourceTiming,
+      })),
+      isInitial: true,
+    });
   }
   const observer = new win.PerformanceObserver((entries) => {
     const resourceTimings = getResourceTimings(entries.getEntries());
-    cb({ resourceTimings });
+    cb({
+      requests: resourceTimings.map((resourceTiming) => ({ resourceTiming })),
+    });
   });
   observer.observe({ type: 'resource' });
   return () => {

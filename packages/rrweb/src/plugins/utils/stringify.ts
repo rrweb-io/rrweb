@@ -2,8 +2,20 @@
  * this file is used to serialize log message to string
  *
  */
-
-import type { StringifyOptions } from './index';
+export type StringifyOptions = {
+  // limit of string length
+  stringLengthLimit?: number;
+  /**
+   * limit of number of keys in an object
+   * if an object contains more keys than this limit, we would call its toString function directly
+   */
+  numOfKeysLimit: number;
+  /**
+   * limit number of depth in an object
+   * if an object is too deep, toString process may cause browser OOM
+   */
+  depthOfLimit: number;
+};
 
 /**
  * transfer the node path in Event to string
