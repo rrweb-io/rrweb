@@ -1,4 +1,6 @@
+/* eslint-disable no-useless-catch */
 import type { IWindow, listenerHandler, RecordPlugin } from '@rrweb/types';
+import { findLast } from '../../../utils';
 import type { StringifyOptions } from '../../utils/stringify';
 
 export type InitiatorType =
@@ -73,24 +75,13 @@ const defaultNetworkOptions: NetworkRecordOptions = {
 };
 
 type Headers = Record<string, string>;
-type Body =
-  | string
-  | Document
-  | Blob
-  | ArrayBufferView
-  | ArrayBuffer
-  | FormData
-  | URLSearchParams
-  | ReadableStream<Uint8Array>
-  | null
-  | undefined;
 
 type NetworkRequest = {
   performanceEntry: PerformanceEntry;
   requestHeaders?: Headers;
-  requestBody?: Body;
+  requestBody?: string | null;
   responseHeaders?: Headers;
-  responseBody?: Body;
+  responseBody?: string | null;
 };
 
 export type NetworkData = {
@@ -100,13 +91,14 @@ export type NetworkData = {
 
 type networkCallback = (data: NetworkData) => void;
 
+type NetworkObserverOptions = NetworkRecordOptions & {
+  initiatorType: InitiatorType[];
+};
+
 function initPerformanceObserver(
   cb: networkCallback,
   win: IWindow,
-  options: {
-    initiatorType: InitiatorType[];
-    recordInitialEvents: boolean;
-  },
+  options: NetworkObserverOptions,
 ) {
   if (!('performance' in win)) {
     return () => {
@@ -157,8 +149,13 @@ function initPerformanceObserver(
 function initXhrObserver(
   cb: networkCallback,
   win: IWindow,
-  options: NetworkRecordOptions,
+  options: NetworkObserverOptions,
 ): listenerHandler {
+  if (!options.initiatorType.includes('xmlhttprequest')) {
+    return () => {
+      //
+    };
+  }
   return () => {
     // TODO:
   };
@@ -167,10 +164,88 @@ function initXhrObserver(
 function initFetchObserver(
   cb: networkCallback,
   win: IWindow,
-  options: NetworkRecordOptions,
+  options: NetworkObserverOptions,
 ): listenerHandler {
+  if (!options.initiatorType.includes('fetch')) {
+    return () => {
+      //
+    };
+  }
+  const originalFetch = win.fetch;
+  const wrappedFetch: typeof fetch = async function (url, init) {
+    const recordRequestHeaders =
+      !!options.recordHeaders &&
+      (typeof options.recordHeaders === 'boolean' ||
+        !('request' in options.recordHeaders) ||
+        options.recordHeaders.request);
+    const recordRequestBody =
+      !!options.recordBody &&
+      (typeof options.recordBody === 'boolean' ||
+        !('request' in options.recordBody) ||
+        options.recordBody.request);
+    const recordResponseHeaders =
+      !!options.recordHeaders &&
+      (typeof options.recordHeaders === 'boolean' ||
+        !('response' in options.recordHeaders) ||
+        options.recordHeaders.response);
+    const recordResponseBody =
+      !!options.recordBody &&
+      (typeof options.recordBody === 'boolean' ||
+        !('response' in options.recordBody) ||
+        options.recordBody.response);
+
+    const req = new Request(url, init);
+    let performanceEntry: PerformanceResourceTiming | undefined;
+    const networkRequest: Partial<NetworkRequest> = {};
+    if (recordRequestHeaders) {
+      networkRequest.requestHeaders = {};
+      req.headers.forEach((value, key) => {
+        networkRequest.requestHeaders![key] = value;
+      });
+    }
+    if (recordRequestBody) {
+      networkRequest.requestBody = init?.body?.toString();
+      if (networkRequest.requestBody === undefined) {
+        networkRequest.requestBody = null;
+      }
+    }
+    try {
+      const res = await originalFetch(req);
+      const performanceEntries = win.performance.getEntriesByType(
+        'resource',
+      ) as PerformanceResourceTiming[];
+      performanceEntry = findLast(
+        performanceEntries,
+        (p) => p.initiatorType === 'fetch' && p.name === req.url,
+      );
+      if (recordResponseHeaders) {
+        networkRequest.responseHeaders = {};
+        res.headers.forEach((value, key) => {
+          networkRequest.responseHeaders![key] = value;
+        });
+      }
+      if (recordResponseBody) {
+        networkRequest.responseBody = await res.clone().text();
+      }
+      return res;
+    } catch (cause) {
+      throw cause;
+    } finally {
+      if (performanceEntry) {
+        cb({ requests: [{ performanceEntry, ...networkRequest }] });
+      }
+    }
+  };
+  wrappedFetch.prototype = {};
+  Object.defineProperties(wrappedFetch, {
+    __rrweb_original__: {
+      enumerable: false,
+      value: originalFetch,
+    },
+  });
+  win.fetch = wrappedFetch;
   return () => {
-    // TODO:
+    win.fetch = originalFetch;
   };
 }
 
@@ -187,19 +262,13 @@ function initNetworkObserver(
   };
 
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
-  let xhrObserver: listenerHandler | undefined;
-  if (networkOptions.initiatorType.includes('xmlhttprequest')) {
-    xhrObserver = initXhrObserver(cb, win, networkOptions);
-  }
-  let fetchObserver: listenerHandler | undefined;
-  if (networkOptions.initiatorType.includes('fetch')) {
-    fetchObserver = initFetchObserver(cb, win, networkOptions);
-  }
+  const xhrObserver = initXhrObserver(cb, win, networkOptions);
+  const fetchObserver = initFetchObserver(cb, win, networkOptions);
 
   return () => {
     performanceObserver();
-    xhrObserver?.();
-    fetchObserver?.();
+    xhrObserver();
+    fetchObserver();
   };
 }
 
