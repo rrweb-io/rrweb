@@ -27,6 +27,7 @@ export type InitiatorType =
 
 type NetworkRecordOptions = {
   initiatorType?: InitiatorType[];
+  ignoreRequestFn?: (data: NetworkRequest) => boolean;
   recordHeaders?:
     | boolean
     | StringifyOptions
@@ -68,6 +69,7 @@ const defaultNetworkOptions: NetworkRecordOptions = {
     'video',
     'xmlhttprequest',
   ],
+  ignoreEventFn: () => false,
   recordHeaders: false,
   recordBody: false,
   recordInitialEvents: false,
@@ -91,14 +93,10 @@ export type NetworkData = {
 
 type networkCallback = (data: NetworkData) => void;
 
-type NetworkObserverOptions = NetworkRecordOptions & {
-  initiatorType: InitiatorType[];
-};
-
 function initPerformanceObserver(
   cb: networkCallback,
   win: IWindow,
-  options: NetworkObserverOptions,
+  options: Required<NetworkRecordOptions>,
 ) {
   if (!('performance' in win)) {
     return () => {
@@ -151,7 +149,7 @@ function initPerformanceObserver(
 function initXhrObserver(
   cb: networkCallback,
   win: IWindow,
-  options: NetworkObserverOptions,
+  options: Required<NetworkRecordOptions>,
 ): listenerHandler {
   if (!options.initiatorType.includes('xmlhttprequest')) {
     return () => {
@@ -166,7 +164,7 @@ function initXhrObserver(
 function initFetchObserver(
   cb: networkCallback,
   win: IWindow,
-  options: NetworkObserverOptions,
+  options: Required<NetworkRecordOptions>,
 ): listenerHandler {
   if (!options.initiatorType.includes('fetch')) {
     return () => {
@@ -283,15 +281,19 @@ function initFetchObserver(
 }
 
 function initNetworkObserver(
-  cb: networkCallback,
+  callback: networkCallback,
   win: IWindow, // top window or in an iframe
   options: NetworkRecordOptions,
 ): listenerHandler {
   const networkOptions = (options
     ? Object.assign({}, defaultNetworkOptions, options)
-    : defaultNetworkOptions) as {
-    initiatorType: InitiatorType[];
-    recordInitialEvents: boolean;
+    : defaultNetworkOptions) as Required<NetworkRecordOptions>;
+
+  const cb: networkCallback = (data) => {
+    const requests = data.requests.filter((request) =>
+      networkOptions.ignoreRequestFn(request),
+    );
+    callback({ ...data, requests });
   };
 
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
