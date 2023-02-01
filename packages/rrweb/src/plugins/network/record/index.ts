@@ -428,7 +428,6 @@ function initNetworkObserver(
       //
     };
   }
-
   const networkOptions = (options
     ? Object.assign({}, defaultNetworkOptions, options)
     : defaultNetworkOptions) as Required<NetworkRecordOptions>;
@@ -441,11 +440,9 @@ function initNetworkObserver(
       callback({ ...data, requests });
     }
   };
-
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
   const xhrObserver = initXhrObserver(cb, win, networkOptions);
   const fetchObserver = initFetchObserver(cb, win, networkOptions);
-
   return () => {
     performanceObserver();
     xhrObserver();
