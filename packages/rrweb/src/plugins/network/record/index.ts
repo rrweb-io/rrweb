@@ -93,27 +93,42 @@ export type NetworkData = {
 
 type networkCallback = (data: NetworkData) => void;
 
+const isNavigationTiming = (
+  entry: PerformanceEntry,
+): entry is PerformanceNavigationTiming => entry.entryType === 'navigation';
+const isResourceTiming = (
+  entry: PerformanceEntry,
+): entry is PerformanceResourceTiming => entry.entryType === 'resource';
+const getPerformanceEntries = (entries: PerformanceEntryList) => {
+  return entries.filter((entry) => {
+    return (
+      isNavigationTiming(entry) ||
+      (isResourceTiming(entry) &&
+        entry.initiatorType !== 'xmlhttprequest' &&
+        entry.initiatorType !== 'fetch')
+    );
+  });
+};
+const getLastPerformanceEntry = (
+  win: IWindow,
+  initiatorType: string,
+  url: string,
+) => {
+  const performanceEntries = win.performance.getEntriesByType('resource');
+  return findLast(
+    performanceEntries,
+    (performanceEntry) =>
+      isResourceTiming(performanceEntry) &&
+      performanceEntry.initiatorType === initiatorType &&
+      performanceEntry.name === url,
+  );
+};
+
 function initPerformanceObserver(
   cb: networkCallback,
   win: IWindow,
   options: Required<NetworkRecordOptions>,
 ) {
-  const isNavigationTiming = (
-    entry: PerformanceEntry,
-  ): entry is PerformanceNavigationTiming => entry.entryType === 'navigation';
-  const isResourceTiming = (
-    entry: PerformanceEntry,
-  ): entry is PerformanceResourceTiming => entry.entryType === 'resource';
-  const getPerformanceEntries = (entries: PerformanceEntryList) => {
-    return entries.filter((entry) => {
-      return (
-        isNavigationTiming(entry) ||
-        (isResourceTiming(entry) &&
-          entry.initiatorType !== 'xmlhttprequest' &&
-          entry.initiatorType !== 'fetch')
-      );
-    });
-  };
   if (options.recordInitialRequests) {
     const initialPerformanceEntries = getPerformanceEntries(
       win.performance.getEntries(),
@@ -188,8 +203,8 @@ function initFetchObserver(
       options.recordBody.response);
 
   const originalFetch = win.fetch;
-  const wrappedFetch: typeof fetch = async function (url, init) {
-    let performanceEntry: PerformanceResourceTiming | undefined;
+  const wrappedFetch: typeof fetch = async (url, init) => {
+    let performanceEntry: PerformanceEntry | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
     const req = new Request(url, init);
     try {
@@ -212,13 +227,7 @@ function initFetchObserver(
         }
       }
       const res = await originalFetch(req);
-      const performanceEntries = win.performance.getEntriesByType(
-        'resource',
-      ) as PerformanceResourceTiming[];
-      performanceEntry = findLast(
-        performanceEntries,
-        (p) => p.initiatorType === 'fetch' && p.name === req.url,
-      );
+      performanceEntry = getLastPerformanceEntry(win, 'fetch', req.url);
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
         res.headers.forEach((value, key) => {
@@ -244,9 +253,10 @@ function initFetchObserver(
         }
       }
       return res;
-      // eslint-disable-next-line no-useless-catch
     } catch (cause) {
-      // failed to fetch
+      if (!performanceEntry) {
+        performanceEntry = getLastPerformanceEntry(win, 'fetch', req.url);
+      }
       throw cause;
     } finally {
       if (performanceEntry) {
