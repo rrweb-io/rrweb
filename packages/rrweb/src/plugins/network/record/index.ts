@@ -82,7 +82,11 @@ function initPerformanceObserver(
   };
   const getResourceTimings = (entries: PerformanceEntryList) => {
     return entries.filter((entry): entry is PerformanceResourceTiming => {
-      return isResourceTiming(entry);
+      return (
+        isResourceTiming(entry) &&
+        entry.initiatorType !== 'xmlhttprequest' &&
+        entry.initiatorType !== 'fetch'
+      );
     });
   };
   if (options.captureInitialEvents) {
@@ -101,6 +105,26 @@ function initPerformanceObserver(
   };
 }
 
+function initXhrObserver(
+  cb: networkCallback,
+  win: IWindow,
+  options: NetworkRecordOptions,
+): listenerHandler {
+  return () => {
+    // TODO:
+  };
+}
+
+function initFetchObserver(
+  cb: networkCallback,
+  win: IWindow,
+  options: NetworkRecordOptions,
+): listenerHandler {
+  return () => {
+    // TODO:
+  };
+}
+
 function initNetworkObserver(
   cb: networkCallback,
   win: IWindow, // top window or in an iframe
@@ -114,9 +138,19 @@ function initNetworkObserver(
   };
 
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
+  let xhrObserver: listenerHandler | undefined;
+  if (networkOptions.initiatorType.includes('xmlhttprequest')) {
+    xhrObserver = initXhrObserver(cb, win, networkOptions);
+  }
+  let fetchObserver: listenerHandler | undefined;
+  if (networkOptions.initiatorType.includes('fetch')) {
+    fetchObserver = initFetchObserver(cb, win, networkOptions);
+  }
 
   return () => {
     performanceObserver();
+    xhrObserver?.();
+    fetchObserver?.();
   };
 }
 
