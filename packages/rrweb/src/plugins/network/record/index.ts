@@ -148,6 +148,11 @@ const getPerformanceEntry = (
   url: string,
 ) => {
   const performanceEntries = win.performance.getEntriesByType('resource');
+  console.log('getPerformanceEntry', {
+    performanceEntries,
+    initiatorType,
+    url,
+  });
   return findLast(
     performanceEntries,
     (performanceEntry) =>
@@ -436,7 +441,9 @@ function initNetworkObserver(
     const requests = data.requests.filter(
       (request) => !networkOptions.ignoreRequestFn(request),
     );
-    callback({ ...data, requests });
+    if (requests.length > 0 || data.isInitial) {
+      callback({ ...data, requests });
+    }
   };
 
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
