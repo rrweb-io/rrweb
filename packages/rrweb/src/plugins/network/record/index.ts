@@ -1,5 +1,5 @@
 import type { IWindow, listenerHandler, RecordPlugin } from '@rrweb/types';
-import { findLast } from '../../../utils';
+import { findLast, patch } from '../../../utils';
 import { stringify, StringifyOptions } from '../../utils/stringify';
 
 export type InitiatorType =
@@ -166,8 +166,151 @@ function initXhrObserver(
       //
     };
   }
+  const recordRequestHeaders =
+    !!options.recordHeaders &&
+    (typeof options.recordHeaders === 'boolean' ||
+      !('request' in options.recordHeaders) ||
+      options.recordHeaders.request);
+  const recordRequestBody =
+    !!options.recordBody &&
+    (typeof options.recordBody === 'boolean' ||
+      !('request' in options.recordBody) ||
+      options.recordBody.request);
+  const recordResponseHeaders =
+    !!options.recordHeaders &&
+    (typeof options.recordHeaders === 'boolean' ||
+      !('response' in options.recordHeaders) ||
+      options.recordHeaders.response);
+  const recordResponseBody =
+    !!options.recordBody &&
+    (typeof options.recordBody === 'boolean' ||
+      !('response' in options.recordBody) ||
+      options.recordBody.response);
+
+  const restorePatch = patch(
+    XMLHttpRequest.prototype,
+    'open',
+    (originalOpen: typeof XMLHttpRequest.prototype.open) => {
+      return async function (
+        method: string,
+        url: string | URL,
+        async = true,
+        username?: string | null,
+        password?: string | null,
+      ) {
+        let performanceEntry: PerformanceEntry | undefined;
+        const networkRequest: Partial<NetworkRequest> = {};
+        const xhr = this as XMLHttpRequest;
+        const requestUrl = typeof url === 'string' ? url : url.toString();
+        try {
+          if (recordRequestHeaders) {
+            networkRequest.requestHeaders = {};
+            const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
+            xhr.setRequestHeader = (header: string, value: string) => {
+              networkRequest.requestHeaders![header] = value;
+              return originalSetRequestHeader(header, value);
+            };
+          }
+          if (recordRequestBody) {
+            const originalSend = xhr.send.bind(xhr);
+            xhr.send = (body) => {
+              if (!body) {
+                networkRequest.requestBody = null;
+              } else {
+                networkRequest.requestBody = stringify(
+                  body,
+                  typeof recordRequestBody === 'object'
+                    ? recordRequestBody
+                    : undefined,
+                );
+              }
+              return originalSend(body);
+            };
+          }
+          await new Promise<void>((resolve, reject) => {
+            try {
+              if (recordResponseBody) {
+                xhr.addEventListener('load', () => {
+                  try {
+                    if (!xhr.response) {
+                      networkRequest.responseBody = null;
+                    } else {
+                      try {
+                        const objBody = JSON.parse(
+                          xhr.response as string,
+                        ) as object;
+                        networkRequest.responseBody = stringify(
+                          objBody,
+                          typeof recordResponseBody === 'object'
+                            ? recordResponseBody
+                            : undefined,
+                        );
+                      } catch {
+                        networkRequest.responseBody = xhr.response as string;
+                      }
+                    }
+                  } catch (cause) {
+                    reject(cause);
+                  }
+                });
+              }
+              xhr.addEventListener('loadend', () => {
+                try {
+                  performanceEntry = getLastPerformanceEntry(
+                    win,
+                    'xmlhttprequest',
+                    requestUrl,
+                  );
+                  if (recordResponseHeaders) {
+                    networkRequest.responseHeaders = {};
+                    const rawHeaders = xhr.getAllResponseHeaders();
+                    const headers = rawHeaders.trim().split(/[\r\n]+/);
+                    headers.forEach((line) => {
+                      const parts = line.split(': ');
+                      const header = parts.shift();
+                      const value = parts.join(': ');
+                      if (header) {
+                        networkRequest.responseHeaders![header] = value;
+                      }
+                    });
+                  }
+                  resolve();
+                } catch (cause) {
+                  reject(cause);
+                }
+              });
+              originalOpen(method, url, async, username, password);
+            } catch (cause) {
+              reject(cause);
+            }
+          });
+        } catch (cause) {
+          if (!performanceEntry) {
+            performanceEntry = getLastPerformanceEntry(
+              win,
+              'xmlhttprequest',
+              requestUrl,
+            );
+          }
+          throw cause;
+        } finally {
+          if (performanceEntry) {
+            cb({
+              requests: [
+                {
+                  performanceEntry,
+                  requestMethod: method,
+                  ...networkRequest,
+                },
+              ],
+            });
+          }
+        }
+      };
+    },
+  );
   return () => {
-    // TODO:
+    restorePatch();
   };
 }
 
@@ -210,8 +353,8 @@ function initFetchObserver(
     try {
       if (recordRequestHeaders) {
         networkRequest.requestHeaders = {};
-        req.headers.forEach((value, key) => {
-          networkRequest.requestHeaders![key] = value;
+        req.headers.forEach((value, header) => {
+          networkRequest.requestHeaders![header] = value;
         });
       }
       if (recordRequestBody) {
@@ -230,8 +373,8 @@ function initFetchObserver(
       performanceEntry = getLastPerformanceEntry(win, 'fetch', req.url);
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
-        res.headers.forEach((value, key) => {
-          networkRequest.responseHeaders![key] = value;
+        res.headers.forEach((value, header) => {
+          networkRequest.responseHeaders![header] = value;
         });
       }
       if (recordResponseBody) {
