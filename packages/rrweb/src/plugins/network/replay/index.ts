@@ -1,12 +1,12 @@
-import { InitiatorType, NetworkData, NETWORK_PLUGIN_NAME } from '../record';
+import { NetworkData, NETWORK_PLUGIN_NAME } from '../record';
 import type { eventWithTime } from '@rrweb/types';
 import { EventType } from '@rrweb/types';
 import type { ReplayPlugin } from '../../../types';
 
-export type NetworkReplayer = (data: NetworkData) => void;
+export type OnNetworkData = (data: NetworkData) => void;
 
 export type NetworkReplayOptions = {
-  replayer: NetworkReplayer;
+  onNetworkData: OnNetworkData;
 };
 
 export const getReplayNetworkPlugin: (
@@ -19,7 +19,7 @@ export const getReplayNetworkPlugin: (
         event.data.plugin === NETWORK_PLUGIN_NAME
       ) {
         const networkData = event.data.payload as NetworkData;
-        options.replayer(networkData);
+        options.onNetworkData(networkData);
       }
     },
   };
