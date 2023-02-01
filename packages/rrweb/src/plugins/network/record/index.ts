@@ -142,23 +142,17 @@ function initPerformanceObserver(
   };
 }
 
-const getPerformanceEntry = (
+const getPerformanceEntryByUrl = (
   win: IWindow,
   initiatorType: string,
   url: string,
 ) => {
-  const performanceEntries = win.performance.getEntriesByType('resource');
-  console.log('getPerformanceEntry', {
-    performanceEntries,
-    initiatorType,
-    url,
-  });
+  const urlPerformanceEntries = win.performance.getEntriesByName(url);
   return findLast(
-    performanceEntries,
+    urlPerformanceEntries,
     (performanceEntry) =>
       isResourceTiming(performanceEntry) &&
-      performanceEntry.initiatorType === initiatorType &&
-      performanceEntry.name === url,
+      performanceEntry.initiatorType === initiatorType,
   );
 };
 
@@ -236,8 +230,10 @@ function initXhrObserver(
           await new Promise<void>((resolve) => {
             xhr.responseType = 'text';
             xhr.addEventListener('readystatechange', () => {
-              if (xhr.readyState !== xhr.DONE) return;
-              performanceEntry = getPerformanceEntry(
+              if (xhr.readyState !== xhr.DONE) {
+                return;
+              }
+              performanceEntry = getPerformanceEntryByUrl(
                 win,
                 'xmlhttprequest',
                 requestUrl,
@@ -280,7 +276,7 @@ function initXhrObserver(
           });
         } catch (cause) {
           if (!performanceEntry) {
-            performanceEntry = getPerformanceEntry(
+            performanceEntry = getPerformanceEntryByUrl(
               win,
               'xmlhttprequest',
               requestUrl,
@@ -364,7 +360,7 @@ function initFetchObserver(
         }
       }
       const res = await originalFetch(req);
-      performanceEntry = getPerformanceEntry(win, 'fetch', req.url);
+      performanceEntry = getPerformanceEntryByUrl(win, 'fetch', req.url);
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
         res.headers.forEach((value, header) => {
@@ -392,7 +388,7 @@ function initFetchObserver(
       return res;
     } catch (cause) {
       if (!performanceEntry) {
-        performanceEntry = getPerformanceEntry(win, 'fetch', req.url);
+        performanceEntry = getPerformanceEntryByUrl(win, 'fetch', req.url);
       }
       throw cause;
     } finally {
