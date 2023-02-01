@@ -42,7 +42,7 @@ type NetworkRecordOptions = {
         request: boolean | StringifyOptions;
         response: boolean | StringifyOptions;
       };
-  recordInitialEvents?: boolean;
+  recordInitialRequests?: boolean;
 };
 
 const defaultNetworkOptions: NetworkRecordOptions = {
@@ -69,10 +69,10 @@ const defaultNetworkOptions: NetworkRecordOptions = {
     'video',
     'xmlhttprequest',
   ],
-  ignoreEventFn: () => false,
+  ignoreRequestFn: () => false,
   recordHeaders: false,
   recordBody: false,
-  recordInitialEvents: false,
+  recordInitialRequests: false,
 };
 
 type Headers = Record<string, string>;
@@ -119,7 +119,7 @@ function initPerformanceObserver(
       );
     });
   };
-  if (options.recordInitialEvents) {
+  if (options.recordInitialRequests) {
     const initialPerformanceEntries = getPerformanceEntries(
       win.performance.getEntries(),
     );
