@@ -114,11 +114,34 @@ export function diff(
     replayer.afterAppend?.(oldTree, replayer.mirror.getId(oldTree));
   }
 
-  let inputDataToApply = null,
-    scrollDataToApply = null;
+  diffBeforeUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+
+  const oldChildren = oldTree.childNodes;
+  const newChildren = newTree.childNodes;
+  if (oldChildren.length > 0 || newChildren.length > 0) {
+    diffChildren(
+      Array.from(oldChildren),
+      newChildren,
+      oldTree,
+      replayer,
+      rrnodeMirror,
+    );
+  }
+
+  diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+}
+
+/**
+ * Do some preparation work before updating the children of the old tree.
+ */
+function diffBeforeUpdatingChildren(
+  oldTree: Node,
+  newTree: IRRNode,
+  replayer: ReplayerHandler,
+  rrnodeMirror: Mirror,
+) {
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
-      scrollDataToApply = (newTree as RRDocument).scrollData;
       /**
        * Special cases for updating the document node:
        * Case 1: If the oldTree is the content document of an iframe element and its content (HTML, HEAD, and BODY) is automatically mounted by browsers, we need to remove them to avoid unexpected behaviors. e.g. Selector matches may be case insensitive.
@@ -139,9 +162,68 @@ export function diff(
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as IRRElement;
+      switch (newRRElement.tagName) {
+        case 'IFRAME': {
+          const oldContentDocument = (oldTree as HTMLIFrameElement)
+            .contentDocument;
+          // If the iframe is cross-origin, the contentDocument will be null.
+          if (!oldContentDocument) break;
+          // IFrame element doesn't have child nodes, so here we update its content document separately.
+          diff(
+            oldContentDocument,
+            (newTree as RRIFrameElement).contentDocument,
+            replayer,
+            rrnodeMirror,
+          );
+          break;
+        }
+      }
+      if (newRRElement.shadowRoot) {
+        if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const oldChildren = oldElement.shadowRoot!.childNodes;
+        const newChildren = newRRElement.shadowRoot.childNodes;
+        if (oldChildren.length > 0 || newChildren.length > 0)
+          diffChildren(
+            Array.from(oldChildren),
+            newChildren,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            oldElement.shadowRoot!,
+            replayer,
+            rrnodeMirror,
+          );
+      }
+      break;
+    }
+  }
+}
+
+/**
+ * Finish the diff work after updating the children of the old tree.
+ */
+function diffAfterUpdatingChildren(
+  oldTree: Node,
+  newTree: IRRNode,
+  replayer: ReplayerHandler,
+  rrnodeMirror: Mirror,
+) {
+  switch (newTree.RRNodeType) {
+    case RRNodeType.Document: {
+      const scrollData = (newTree as RRDocument).scrollData;
+      scrollData && replayer.applyScroll(scrollData, true);
+      break;
+    }
+    case RRNodeType.Element: {
+      const oldElement = oldTree as HTMLElement;
+      const newRRElement = newTree as RRElement;
       diffProps(oldElement, newRRElement, rrnodeMirror);
-      scrollDataToApply = (newRRElement as RRElement).scrollData;
-      inputDataToApply = (newRRElement as RRElement).inputData;
+      newRRElement.scrollData &&
+        replayer.applyScroll(newRRElement.scrollData, true);
+      /**
+       * Input data need to get applied after all children of this node are updated.
+       * Otherwise when we set a value for a select element whose options are empty, the value won't actually update.
+       */
+      newRRElement.inputData && replayer.applyInput(newRRElement.inputData);
       switch (newRRElement.tagName) {
         case 'AUDIO':
         case 'VIDEO': {
@@ -183,6 +265,7 @@ export function diff(
           );
           break;
         }
+        // Props of style elements have to be updated after all children are updated. Otherwise the props can be overwritten by textContent.
         case 'STYLE': {
           const styleSheet = (oldElement as HTMLStyleElement).sheet;
           styleSheet &&
@@ -191,41 +274,12 @@ export function diff(
             );
           break;
         }
-        case 'IFRAME': {
-          const oldContentDocument = (oldTree as HTMLIFrameElement)
-            .contentDocument;
-          // If the iframe is cross-origin, the contentDocument will be null.
-          if (!oldContentDocument) break;
-          // IFrame element doesn't have child nodes, so here we update its content document separately.
-          diff(
-            oldContentDocument,
-            (newTree as RRIFrameElement).contentDocument,
-            replayer,
-            rrnodeMirror,
-          );
-          break;
-        }
-      }
-      if (newRRElement.shadowRoot) {
-        if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const oldChildren = oldElement.shadowRoot!.childNodes;
-        const newChildren = newRRElement.shadowRoot.childNodes;
-        if (oldChildren.length > 0 || newChildren.length > 0)
-          diffChildren(
-            Array.from(oldChildren),
-            newChildren,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            oldElement.shadowRoot!,
-            replayer,
-            rrnodeMirror,
-          );
       }
       break;
     }
     case RRNodeType.Text:
     case RRNodeType.Comment:
-    case RRNodeType.CDATA:
+    case RRNodeType.CDATA: {
       if (
         oldTree.textContent !==
         (newTree as IRRText | IRRComment | IRRCDATASection).data
@@ -235,28 +289,8 @@ export function diff(
           | IRRComment
           | IRRCDATASection).data;
       break;
-    default:
+    }
   }
-
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
-
-  if (oldChildren.length > 0 || newChildren.length > 0) {
-    diffChildren(
-      Array.from(oldChildren),
-      newChildren,
-      oldTree,
-      replayer,
-      rrnodeMirror,
-    );
-  }
-
-  scrollDataToApply && replayer.applyScroll(scrollDataToApply, true);
-  /**
-   * Input data need to get applied after all children of this node are updated.
-   * Otherwise when we set a value for a select element whose options are empty, the value won't actually update.
-   */
-  inputDataToApply && replayer.applyInput(inputDataToApply);
 }
 
 function diffProps(
