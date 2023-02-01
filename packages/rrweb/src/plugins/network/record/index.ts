@@ -290,8 +290,8 @@ function initNetworkObserver(
     : defaultNetworkOptions) as Required<NetworkRecordOptions>;
 
   const cb: networkCallback = (data) => {
-    const requests = data.requests.filter((request) =>
-      networkOptions.ignoreRequestFn(request),
+    const requests = data.requests.filter(
+      (request) => !networkOptions.ignoreRequestFn(request),
     );
     callback({ ...data, requests });
   };
