@@ -199,102 +199,87 @@ function initXhrObserver(
         password?: string | null,
       ) {
         const xhr = this as XMLHttpRequest;
-        const requestUrl = typeof url === 'string' ? url : url.toString();
+        const req = new Request(url);
         let performanceEntry: PerformanceEntry | undefined;
         const networkRequest: Partial<NetworkRequest> = {};
-        try {
-          if (recordRequestHeaders) {
-            networkRequest.requestHeaders = {};
-            const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
-            xhr.setRequestHeader = (header: string, value: string) => {
-              networkRequest.requestHeaders![header] = value;
-              return originalSetRequestHeader(header, value);
-            };
-          }
-          if (recordRequestBody) {
-            const originalSend = xhr.send.bind(xhr);
-            xhr.send = (body) => {
-              if (body === undefined || body === null) {
-                networkRequest.requestBody = null;
-              } else {
-                networkRequest.requestBody = stringify(
-                  body,
-                  typeof recordRequestBody === 'object'
-                    ? recordRequestBody
-                    : undefined,
-                );
-              }
-              return originalSend(body);
-            };
-          }
-          await new Promise<void>((resolve) => {
-            xhr.responseType = 'text';
-            xhr.addEventListener('readystatechange', () => {
-              if (xhr.readyState !== xhr.DONE) {
-                return;
-              }
-              performanceEntry = getPerformanceEntryByUrl(
-                win,
-                'xmlhttprequest',
-                requestUrl,
+        if (recordRequestHeaders) {
+          networkRequest.requestHeaders = {};
+          const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
+          xhr.setRequestHeader = (header: string, value: string) => {
+            networkRequest.requestHeaders![header] = value;
+            return originalSetRequestHeader(header, value);
+          };
+        }
+        if (recordRequestBody) {
+          const originalSend = xhr.send.bind(xhr);
+          xhr.send = (body) => {
+            if (body === undefined || body === null) {
+              networkRequest.requestBody = null;
+            } else {
+              networkRequest.requestBody = stringify(
+                body,
+                typeof recordRequestBody === 'object'
+                  ? recordRequestBody
+                  : undefined,
               );
-              if (recordResponseHeaders) {
-                networkRequest.responseHeaders = {};
-                const rawHeaders = xhr.getAllResponseHeaders();
-                const headers = rawHeaders.trim().split(/[\r\n]+/);
-                headers.forEach((line) => {
-                  const parts = line.split(': ');
-                  const header = parts.shift();
-                  const value = parts.join(': ');
-                  if (header) {
-                    networkRequest.responseHeaders![header] = value;
-                  }
-                });
-              }
-              if (recordResponseBody) {
-                if (!xhr.response) {
-                  networkRequest.responseBody = null;
-                } else {
-                  try {
-                    const objBody = JSON.parse(
-                      xhr.response as string,
-                    ) as object;
-                    networkRequest.responseBody = stringify(
-                      objBody,
-                      typeof recordResponseBody === 'object'
-                        ? recordResponseBody
-                        : undefined,
-                    );
-                  } catch {
-                    networkRequest.responseBody = xhr.response as string;
-                  }
-                }
-              }
-              resolve();
-            });
-            originalOpen(method, url, async, username, password);
-          });
-        } catch (cause) {
-          if (!performanceEntry) {
+            }
+            return originalSend(body);
+          };
+        }
+        await new Promise<void>((resolve) => {
+          xhr.addEventListener('readystatechange', () => {
+            if (xhr.readyState !== xhr.DONE) {
+              return;
+            }
             performanceEntry = getPerformanceEntryByUrl(
               win,
               'xmlhttprequest',
-              requestUrl,
+              req.url,
             );
-          }
-          throw cause;
-        } finally {
-          if (performanceEntry) {
-            cb({
-              requests: [
-                {
-                  performanceEntry,
-                  requestMethod: method,
-                  ...networkRequest,
-                },
-              ],
-            });
-          }
+            if (recordResponseHeaders) {
+              networkRequest.responseHeaders = {};
+              const rawHeaders = xhr.getAllResponseHeaders();
+              const headers = rawHeaders.trim().split(/[\r\n]+/);
+              headers.forEach((line) => {
+                const parts = line.split(': ');
+                const header = parts.shift();
+                const value = parts.join(': ');
+                if (header) {
+                  networkRequest.responseHeaders![header] = value;
+                }
+              });
+            }
+            if (recordResponseBody) {
+              if (!xhr.response) {
+                networkRequest.responseBody = null;
+              } else {
+                try {
+                  const objBody = JSON.parse(xhr.response as string) as object;
+                  networkRequest.responseBody = stringify(
+                    objBody,
+                    typeof recordResponseBody === 'object'
+                      ? recordResponseBody
+                      : undefined,
+                  );
+                } catch {
+                  networkRequest.responseBody = xhr.response as string;
+                }
+              }
+            }
+            resolve();
+          });
+          originalOpen(method, url, async, username, password);
+        });
+        if (performanceEntry) {
+          cb({
+            requests: [
+              {
+                performanceEntry,
+                requestMethod: req.method,
+                ...networkRequest,
+              },
+            ],
+          });
         }
       };
     },
