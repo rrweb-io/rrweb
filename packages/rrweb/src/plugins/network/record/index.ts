@@ -82,6 +82,7 @@ type NetworkRequest = {
   requestMethod: string;
   requestHeaders?: Headers;
   requestBody?: string | null;
+  responseStatus?: number;
   responseHeaders?: Headers;
   responseBody?: string | null;
 };
@@ -302,6 +303,7 @@ function initXhrObserver(
               const request: NetworkRequest = {
                 performanceEntry,
                 requestMethod: req.method,
+                responseStatus: xhr.status,
                 ...networkRequest,
               };
               cb({ requests: [request] });
@@ -378,6 +380,7 @@ function initFetchObserver(
       after = win.performance.now();
       const res = await originalFetch(req);
       before = win.performance.now();
+      networkRequest.responseStatus = res.status;
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
         res.headers.forEach((value, header) => {
