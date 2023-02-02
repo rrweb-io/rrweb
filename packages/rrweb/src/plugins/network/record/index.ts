@@ -310,7 +310,7 @@ function initXhrObserver(
               //
             });
         });
-        originalOpen(method, url, async, username, password);
+        originalOpen.call(xhr, method, url, async, username, password);
       };
     },
   );
