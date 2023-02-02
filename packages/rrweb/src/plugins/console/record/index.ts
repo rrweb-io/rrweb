@@ -132,14 +132,26 @@ function initLogObserver(
       win.removeEventListener('error', errorHandler);
     });
     const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
-      const error =
-        event.reason instanceof Error
-          ? event.reason
-          : new Error(`Uncaught (in promise) ${event.reason as string}`);
+      let error: Error;
+      let payload: string[];
+      if (event.reason instanceof Error) {
+        error = event.reason;
+        payload = [
+          stringify(
+            `Uncaught (in promise) ${error.name}: ${error.message}`,
+            logOptions.stringifyOptions,
+          ),
+        ];
+      } else {
+        error = new Error();
+        payload = [
+          stringify('Uncaught (in promise)', logOptions.stringifyOptions),
+          stringify(event.reason, logOptions.stringifyOptions),
+        ];
+      }
       const trace: string[] = ErrorStackParser.parse(
         error,
       ).map((stackFrame: StackFrame) => stackFrame.toString());
-      const payload = [stringify(error.message, logOptions.stringifyOptions)];
       cb({
         level: 'error',
         trace,
