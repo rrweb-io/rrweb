@@ -133,7 +133,10 @@ function initLogObserver(
         if (window) window.removeEventListener('error', errorHandler);
       });
       const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
-        const error = event.reason as Error;
+        const error =
+          event.reason instanceof Error
+            ? event.reason
+            : new Error(`Uncaught (in promise) ${event.reason as string}`);
         const trace: string[] = ErrorStackParser.parse(
           error,
         ).map((stackFrame: StackFrame) => stackFrame.toString());
