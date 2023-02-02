@@ -105,20 +105,17 @@ function initPerformanceObserver(
   win: IWindow,
   options: Required<NetworkRecordOptions>,
 ) {
-  const getPerformanceEntries = (entries: PerformanceEntryList) => {
-    return entries.filter((entry) => {
-      return (
-        isNavigationTiming(entry) ||
-        (isResourceTiming(entry) &&
-          entry.initiatorType !== 'xmlhttprequest' && // ignore xhr
-          entry.initiatorType !== 'fetch') // ignore fetch
-      );
-    });
-  };
   if (options.recordInitialRequests) {
-    const initialPerformanceEntries = getPerformanceEntries(
-      win.performance.getEntries(),
-    );
+    const initialPerformanceEntries = win.performance
+      .getEntries()
+      .filter(
+        (entry) =>
+          isNavigationTiming(entry) ||
+          (isResourceTiming(entry) &&
+            options.initiatorTypes.includes(
+              entry.initiatorType as InitiatorType,
+            )),
+      );
     cb({
       requests: initialPerformanceEntries.map((performanceEntry) => ({
         performanceEntry,
@@ -128,7 +125,18 @@ function initPerformanceObserver(
     });
   }
   const observer = new win.PerformanceObserver((entries) => {
-    const performanceEntries = getPerformanceEntries(entries.getEntries());
+    const performanceEntries = entries
+      .getEntries()
+      .filter(
+        (entry) =>
+          isNavigationTiming(entry) ||
+          (isResourceTiming(entry) &&
+            options.initiatorTypes.includes(
+              entry.initiatorType as InitiatorType,
+            ) &&
+            entry.initiatorType !== 'xmlhttprequest' &&
+            entry.initiatorType !== 'fetch'),
+      );
     cb({
       requests: performanceEntries.map((performanceEntry) => ({
         performanceEntry,
