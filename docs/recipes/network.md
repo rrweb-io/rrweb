@@ -56,11 +56,11 @@ rrweb.record({
 All options are described below:
 | key | default | description |
 | ---------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| initiatorTypes | ['fetch','xmlhttprequest','img',...] | Default value contains names of all [initiator types](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/initiatorType). You can override it by setting the types you need. |
-| ignoreRequestFn | () => false | Block recording events for specific requests |
-| recordHeaders | false | Record the request & response headers for `fetch` and `xmlhttprequest` requests |
-| recordBody | false | Record the request & response bodies for `fetch` and `xmlhttprequest` requests |
-| recordInitialRequests | false | Record an event for all requests prior to rrweb.record() being called |
+| initiatorTypes | `['fetch','xmlhttprequest','img',...]` | Default value contains names of all [initiator types](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/initiatorType). You can override it by setting the types you need. |
+| ignoreRequestFn | `() => false` | Block recording events for specific requests |
+| recordHeaders | `false` | Record the request & response headers for `fetch` and `xmlhttprequest` requests |
+| recordBody | `false` | Record the request & response bodies for `fetch` and `xmlhttprequest` requests |
+| recordInitialRequests | `false` | Record an event for all requests prior to rrweb.record() being called |
 
 ## replay network
 
@@ -86,9 +86,9 @@ replayer.play();
 
 Description of replay option is as follows:
 
-| key           | default   | description                                                                                |
-| ------------- | --------- | ------------------------------------------------------------------------------------------ |
-| onNetworkData | undefined | You could use this interface to replay the network requests in a simulated browser console |
+| key           | default     | description                                                                                |
+| ------------- | ----------- | ------------------------------------------------------------------------------------------ |
+| onNetworkData | `undefined` | You could use this interface to replay the network requests in a simulated browser console |
 
 ## technical implementation
 
