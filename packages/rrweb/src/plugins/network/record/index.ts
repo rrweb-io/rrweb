@@ -142,18 +142,38 @@ function initPerformanceObserver(
   };
 }
 
-const getPerformanceEntryByUrl = (
+const getRequestPerformanceEntry = async (
   win: IWindow,
   initiatorType: string,
   url: string,
-) => {
+  after?: number,
+  before?: number,
+  attempt = 0,
+): Promise<PerformanceEntry> => {
+  if (attempt > 10) {
+    throw new Error('Cannot find performance entry');
+  }
   const urlPerformanceEntries = win.performance.getEntriesByName(url);
-  return findLast(
+  const performanceEntry = findLast(
     urlPerformanceEntries,
     (performanceEntry) =>
       isResourceTiming(performanceEntry) &&
-      performanceEntry.initiatorType === initiatorType,
+      performanceEntry.initiatorType === initiatorType &&
+      (!after || performanceEntry.startTime >= after) &&
+      (!before || performanceEntry.startTime <= before),
   );
+  if (!performanceEntry) {
+    await new Promise((resolve) => setTimeout(resolve, 50 * attempt));
+    return getRequestPerformanceEntry(
+      win,
+      initiatorType,
+      url,
+      after,
+      before,
+      attempt + 1,
+    );
+  }
+  return performanceEntry;
 };
 
 function initXhrObserver(
@@ -191,7 +211,7 @@ function initXhrObserver(
     XMLHttpRequest.prototype,
     'open',
     (originalOpen: typeof XMLHttpRequest.prototype.open) => {
-      return async function (
+      return function (
         method: string,
         url: string | URL,
         async = true,
@@ -200,8 +220,9 @@ function initXhrObserver(
       ) {
         const xhr = this as XMLHttpRequest;
         const req = new Request(url);
-        let performanceEntry: PerformanceEntry | undefined;
         const networkRequest: Partial<NetworkRequest> = {};
+        let after: number | undefined;
+        let before: number | undefined;
         if (recordRequestHeaders) {
           networkRequest.requestHeaders = {};
           const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
@@ -210,9 +231,9 @@ function initXhrObserver(
             return originalSetRequestHeader(header, value);
           };
         }
-        if (recordRequestBody) {
-          const originalSend = xhr.send.bind(xhr);
-          xhr.send = (body) => {
+        const originalSend = xhr.send.bind(xhr);
+        xhr.send = (body) => {
+          if (recordRequestBody) {
             if (body === undefined || body === null) {
               networkRequest.requestBody = null;
             } else {
@@ -223,64 +244,65 @@ function initXhrObserver(
                   : undefined,
               );
             }
-            return originalSend(body);
-          };
-        }
-        await new Promise<void>((resolve) => {
-          xhr.addEventListener('readystatechange', () => {
-            if (xhr.readyState !== xhr.DONE) {
-              return;
-            }
-            performanceEntry = getPerformanceEntryByUrl(
-              win,
-              'xmlhttprequest',
-              req.url,
-            );
-            if (recordResponseHeaders) {
-              networkRequest.responseHeaders = {};
-              const rawHeaders = xhr.getAllResponseHeaders();
-              const headers = rawHeaders.trim().split(/[\r\n]+/);
-              headers.forEach((line) => {
-                const parts = line.split(': ');
-                const header = parts.shift();
-                const value = parts.join(': ');
-                if (header) {
-                  networkRequest.responseHeaders![header] = value;
-                }
-              });
-            }
-            if (recordResponseBody) {
-              if (!xhr.response) {
-                networkRequest.responseBody = null;
-              } else {
-                try {
-                  const objBody = JSON.parse(xhr.response as string) as object;
-                  networkRequest.responseBody = stringify(
-                    objBody,
-                    typeof recordResponseBody === 'object'
-                      ? recordResponseBody
-                      : undefined,
-                  );
-                } catch {
-                  networkRequest.responseBody = xhr.response as string;
-                }
+          }
+          after = win.performance.now();
+          return originalSend(body);
+        };
+        xhr.addEventListener('readystatechange', () => {
+          if (xhr.readyState !== xhr.DONE) {
+            return;
+          }
+          before = win.performance.now();
+          if (recordResponseHeaders) {
+            networkRequest.responseHeaders = {};
+            const rawHeaders = xhr.getAllResponseHeaders();
+            const headers = rawHeaders.trim().split(/[\r\n]+/);
+            headers.forEach((line) => {
+              const parts = line.split(': ');
+              const header = parts.shift();
+              const value = parts.join(': ');
+              if (header) {
+                networkRequest.responseHeaders![header] = value;
+              }
+            });
+          }
+          if (recordResponseBody) {
+            if (!xhr.response) {
+              networkRequest.responseBody = null;
+            } else {
+              try {
+                const objBody = JSON.parse(xhr.response as string) as object;
+                networkRequest.responseBody = stringify(
+                  objBody,
+                  typeof recordResponseBody === 'object'
+                    ? recordResponseBody
+                    : undefined,
+                );
+              } catch {
+                networkRequest.responseBody = xhr.response as string;
               }
             }
-            resolve();
-          });
-          originalOpen(method, url, async, username, password);
-        });
-        if (performanceEntry) {
-          cb({
-            requests: [
-              {
+          }
+          getRequestPerformanceEntry(
+            win,
+            'xmlhttprequest',
+            req.url,
+            after,
+            before,
+          )
+            .then((performanceEntry) => {
+              const request: NetworkRequest = {
                 performanceEntry,
                 requestMethod: req.method,
                 ...networkRequest,
-              },
-            ],
-          });
-        }
+              };
+              cb({ requests: [request] });
+            })
+            .catch(() => {
+              //
+            });
+        });
+        originalOpen(method, url, async, username, password);
       };
     },
   );
@@ -323,8 +345,9 @@ function initFetchObserver(
   const originalFetch = win.fetch;
   const wrappedFetch: typeof fetch = async (url, init) => {
     const req = new Request(url, init);
-    let performanceEntry: PerformanceEntry | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
+    let after: number | undefined;
+    let before: number | undefined;
     try {
       if (recordRequestHeaders) {
         networkRequest.requestHeaders = {};
@@ -344,8 +367,9 @@ function initFetchObserver(
           );
         }
       }
+      after = win.performance.now();
       const res = await originalFetch(req);
-      performanceEntry = getPerformanceEntryByUrl(win, 'fetch', req.url);
+      before = win.performance.now();
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
         res.headers.forEach((value, header) => {
@@ -371,23 +395,19 @@ function initFetchObserver(
         }
       }
       return res;
-    } catch (cause) {
-      if (!performanceEntry) {
-        performanceEntry = getPerformanceEntryByUrl(win, 'fetch', req.url);
-      }
-      throw cause;
     } finally {
-      if (performanceEntry) {
-        cb({
-          requests: [
-            {
-              performanceEntry,
-              requestMethod: req.method,
-              ...networkRequest,
-            },
-          ],
+      getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
+        .then((performanceEntry) => {
+          const request: NetworkRequest = {
+            performanceEntry,
+            requestMethod: req.method,
+            ...networkRequest,
+          };
+          cb({ requests: [request] });
+        })
+        .catch(() => {
+          //
         });
-      }
     }
   };
   wrappedFetch.prototype = {};
