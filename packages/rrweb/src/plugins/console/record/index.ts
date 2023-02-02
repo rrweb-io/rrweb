@@ -114,48 +114,54 @@ function initLogObserver(
   const cancelHandlers: listenerHandler[] = [];
   // add listener to thrown errors
   if (logOptions.level.includes('error')) {
-    if (window) {
-      const errorHandler = (event: ErrorEvent) => {
-        const message = event.message,
-          error = event.error as Error;
-        const trace: string[] = ErrorStackParser.parse(
-          error,
-        ).map((stackFrame: StackFrame) => stackFrame.toString());
-        const payload = [stringify(message, logOptions.stringifyOptions)];
-        cb({
-          level: 'error',
-          trace,
-          payload,
-        });
-      };
-      window.addEventListener('error', errorHandler);
-      cancelHandlers.push(() => {
-        if (window) window.removeEventListener('error', errorHandler);
+    const errorHandler = (event: ErrorEvent) => {
+      const message = event.message,
+        error = event.error as Error;
+      const trace: string[] = ErrorStackParser.parse(
+        error,
+      ).map((stackFrame: StackFrame) => stackFrame.toString());
+      const payload = [stringify(message, logOptions.stringifyOptions)];
+      cb({
+        level: 'error',
+        trace,
+        payload,
       });
-      const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
-        const error =
-          event.reason instanceof Error
-            ? event.reason
-            : new Error(`Uncaught (in promise) ${event.reason as string}`);
-        const trace: string[] = ErrorStackParser.parse(
-          error,
-        ).map((stackFrame: StackFrame) => stackFrame.toString());
-        const payload = [stringify(error.message, logOptions.stringifyOptions)];
-        cb({
-          level: 'error',
-          trace,
-          payload,
-        });
-      };
-      window.addEventListener('unhandledrejection', unhandledrejectionHandler);
-      cancelHandlers.push(() => {
-        if (window)
-          window.removeEventListener(
-            'unhandledrejection',
-            unhandledrejectionHandler,
-          );
+    };
+    win.addEventListener('error', errorHandler);
+    cancelHandlers.push(() => {
+      win.removeEventListener('error', errorHandler);
+    });
+    const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
+      let error: Error;
+      let payload: string[];
+      if (event.reason instanceof Error) {
+        error = event.reason;
+        payload = [
+          stringify(
+            `Uncaught (in promise) ${error.name}: ${error.message}`,
+            logOptions.stringifyOptions,
+          ),
+        ];
+      } else {
+        error = new Error();
+        payload = [
+          stringify('Uncaught (in promise)', logOptions.stringifyOptions),
+          stringify(event.reason, logOptions.stringifyOptions),
+        ];
+      }
+      const trace: string[] = ErrorStackParser.parse(
+        error,
+      ).map((stackFrame: StackFrame) => stackFrame.toString());
+      cb({
+        level: 'error',
+        trace,
+        payload,
       });
-    }
+    };
+    win.addEventListener('unhandledrejection', unhandledrejectionHandler);
+    cancelHandlers.push(() => {
+      win.removeEventListener('unhandledrejection', unhandledrejectionHandler);
+    });
   }
   for (const levelType of logOptions.level) {
     cancelHandlers.push(replace(logger, levelType));
