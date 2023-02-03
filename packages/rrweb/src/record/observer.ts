@@ -68,7 +68,7 @@ function isCSSStyleSheetMonkeyPatchable(
       window[prop].prototype &&
       // @ts-ignore ensure it is actually set
       window[prop].prototype.insertRule &&
-      window[prop].prototype.deleteRule
+      window[prop].prototype.deleteRule,
   );
 }
 
