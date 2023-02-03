@@ -54,10 +54,34 @@ type WindowWithAngularZone = IWindow & {
 export const mutationBuffers: MutationBuffer[] = [];
 export const processedNodeManager = new ProcessedNodeManager();
 
-const isCSSGroupingRuleSupported = typeof CSSGroupingRule !== 'undefined';
-const isCSSMediaRuleSupported = typeof CSSMediaRule !== 'undefined';
-const isCSSSupportsRuleSupported = typeof CSSSupportsRule !== 'undefined';
-const isCSSConditionRuleSupported = typeof CSSConditionRule !== 'undefined';
+function isCSSStyleSheetMonkeyPatchable(
+  prop:
+    | 'CSSGroupingRule'
+    | 'CSSMediaRule'
+    | 'CSSSupportsRule'
+    | 'CSSConditionRule',
+): boolean {
+  return Boolean(
+    typeof window[prop] !== 'undefined' &&
+      // Note: Generally, this check _shouldn't_ be necessary
+      // However, in some scenarios (e.g. jsdom) this can sometimes fail, so we check for it here
+      window[prop].prototype &&
+      // @ts-ignore ensure it is actually set
+      window[prop].prototype.insertRule &&
+      window[prop].prototype.deleteRule
+  );
+}
+
+const isCSSGroupingRuleSupported = isCSSStyleSheetMonkeyPatchable(
+  'CSSGroupingRule',
+);
+const isCSSMediaRuleSupported = isCSSStyleSheetMonkeyPatchable('CSSMediaRule');
+const isCSSSupportsRuleSupported = isCSSStyleSheetMonkeyPatchable(
+  'CSSSupportsRule',
+);
+const isCSSConditionRuleSupported = isCSSStyleSheetMonkeyPatchable(
+  'CSSConditionRule',
+);
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
