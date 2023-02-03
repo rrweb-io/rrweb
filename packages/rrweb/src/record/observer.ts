@@ -61,6 +61,7 @@ function isCSSStyleSheetMonkeyPatchable(
     | 'CSSSupportsRule'
     | 'CSSConditionRule',
 ): boolean {
+  /* eslint-disable @typescript-eslint/ban-ts-comment,@typescript-eslint/unbound-method */
   return Boolean(
     typeof window[prop] !== 'undefined' &&
       // Note: Generally, this check _shouldn't_ be necessary
@@ -70,6 +71,7 @@ function isCSSStyleSheetMonkeyPatchable(
       window[prop].prototype.insertRule &&
       window[prop].prototype.deleteRule,
   );
+  /* eslint-enable @typescript-eslint/ban-ts-comment,@typescript-eslint/unbound-method */
 }
 
 const isCSSGroupingRuleSupported = isCSSStyleSheetMonkeyPatchable(
