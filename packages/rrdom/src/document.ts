@@ -161,9 +161,13 @@ export class BaseRRNode implements IRRNode {
   }
 
   public contains(node: IRRNode) {
-    if (node === this) return true;
-    for (const child of this.childNodes) {
-      if (child.contains(node)) return true;
+    if (!(node instanceof BaseRRNode)) return false;
+    else if (node.ownerDocument !== this.ownerDocument) return false;
+    else if (node === this) return true;
+
+    while (node.parentNode) {
+      if (node.parentNode === this) return true;
+      node = node.parentNode;
     }
     return false;
   }

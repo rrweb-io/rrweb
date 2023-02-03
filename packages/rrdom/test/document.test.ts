@@ -88,9 +88,11 @@ describe('Basic RRDocument implementation', () => {
       const childNode1 = new RRNode();
       const childNode2 = new RRNode();
       parentNode.childNodes = [childNode1];
+      childNode1.parentNode = parentNode;
       expect(parentNode.contains(childNode1)).toBeTruthy();
       expect(parentNode.contains(childNode2)).toBeFalsy();
-      childNode1.childNodes = [childNode2];
+      childNode1.childNodes = [childNode1, childNode2];
+      childNode2.parentNode = childNode1;
       expect(parentNode.contains(childNode2)).toBeTruthy();
     });
 
