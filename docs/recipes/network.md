@@ -72,7 +72,7 @@ const replayer = new rrweb.Replayer(events, {
     rrweb.getReplayNetworkPlugin({
       onNetworkData: ({ requests }) => {
         for (const request of requests) {
-          const url = request.performanceEntry.name;
+          const url = request.requestUrl;
           const method = request.responseMethod;
           const status = request.responseStatus;
           console.log(`${method} ${url} ${status}`);
