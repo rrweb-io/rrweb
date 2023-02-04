@@ -78,11 +78,13 @@ const defaultNetworkOptions: NetworkRecordOptions = {
 type Headers = Record<string, string>;
 
 type NetworkRequest = {
-  performanceEntry: PerformanceEntry;
+  requestUrl: string;
   requestMethod: string;
+  requestInitiator: InitiatorType;
   requestHeaders?: Headers;
   requestBody?: string | null;
   responseStatus?: number;
+  responseDuration: number;
   responseHeaders?: Headers;
   responseBody?: string | null;
 };
@@ -101,6 +103,13 @@ const isResourceTiming = (
   entry: PerformanceEntry,
 ): entry is PerformanceResourceTiming => entry.entryType === 'resource';
 
+type ObservedPerformanceEntry = (
+  | PerformanceNavigationTiming
+  | PerformanceResourceTiming
+) & {
+  responseStatus?: number;
+};
+
 function initPerformanceObserver(
   cb: networkCallback,
   win: IWindow,
@@ -110,7 +119,7 @@ function initPerformanceObserver(
     const initialPerformanceEntries = win.performance
       .getEntries()
       .filter(
-        (entry) =>
+        (entry): entry is ObservedPerformanceEntry =>
           isNavigationTiming(entry) ||
           (isResourceTiming(entry) &&
             options.initiatorTypes.includes(
@@ -119,8 +128,14 @@ function initPerformanceObserver(
       );
     cb({
       requests: initialPerformanceEntries.map((performanceEntry) => ({
-        performanceEntry,
+        requestUrl: performanceEntry.name,
         requestMethod: 'GET',
+        requestInitiator: performanceEntry.initiatorType as InitiatorType,
+        responseStatus:
+          'responseStatus' in performanceEntry
+            ? performanceEntry.responseStatus
+            : undefined,
+        responseDuration: Math.round(performanceEntry.duration),
       })),
       isInitial: true,
     });
@@ -129,7 +144,7 @@ function initPerformanceObserver(
     const performanceEntries = entries
       .getEntries()
       .filter(
-        (entry) =>
+        (entry): entry is ObservedPerformanceEntry =>
           isNavigationTiming(entry) ||
           (isResourceTiming(entry) &&
             options.initiatorTypes.includes(
@@ -140,8 +155,14 @@ function initPerformanceObserver(
       );
     cb({
       requests: performanceEntries.map((performanceEntry) => ({
-        performanceEntry,
+        requestUrl: performanceEntry.name,
         requestMethod: 'GET',
+        requestInitiator: performanceEntry.initiatorType as InitiatorType,
+        responseStatus:
+          'responseStatus' in performanceEntry
+            ? performanceEntry.responseStatus
+            : undefined,
+        responseDuration: Math.round(performanceEntry.duration),
       })),
     });
   });
@@ -158,11 +179,13 @@ const getRequestPerformanceEntry = async (
   after?: number,
   before?: number,
   attempt = 0,
-): Promise<PerformanceEntry> => {
+): Promise<PerformanceResourceTiming> => {
   if (attempt > 10) {
     throw new Error('Cannot find performance entry');
   }
-  const urlPerformanceEntries = win.performance.getEntriesByName(url);
+  const urlPerformanceEntries = win.performance.getEntriesByName(
+    url,
+  ) as PerformanceResourceTiming[];
   const performanceEntry = findLast(
     urlPerformanceEntries,
     (performanceEntry) =>
@@ -301,10 +324,15 @@ function initXhrObserver(
           )
             .then((performanceEntry) => {
               const request: NetworkRequest = {
-                performanceEntry,
+                requestUrl: performanceEntry.name,
                 requestMethod: req.method,
+                requestInitiator: performanceEntry.initiatorType as InitiatorType,
+                requestHeaders: networkRequest.requestHeaders,
+                requestBody: networkRequest.requestBody,
                 responseStatus: xhr.status,
-                ...networkRequest,
+                responseDuration: performanceEntry.duration,
+                responseHeaders: networkRequest.responseHeaders,
+                responseBody: networkRequest.responseBody,
               };
               cb({ requests: [request] });
             })
@@ -355,6 +383,7 @@ function initFetchObserver(
   const originalFetch = win.fetch;
   const wrappedFetch: typeof fetch = async (url, init) => {
     const req = new Request(url, init);
+    let res: Response | undefined;
     const networkRequest: Partial<NetworkRequest> = {};
     let after: number | undefined;
     let before: number | undefined;
@@ -378,7 +407,7 @@ function initFetchObserver(
         }
       }
       after = win.performance.now();
-      const res = await originalFetch(req);
+      res = await originalFetch(req);
       before = win.performance.now();
       networkRequest.responseStatus = res.status;
       if (recordResponseHeaders) {
@@ -410,9 +439,15 @@ function initFetchObserver(
       getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
         .then((performanceEntry) => {
           const request: NetworkRequest = {
-            performanceEntry,
+            requestUrl: performanceEntry.name,
             requestMethod: req.method,
-            ...networkRequest,
+            requestInitiator: performanceEntry.initiatorType as InitiatorType,
+            requestHeaders: networkRequest.requestHeaders,
+            requestBody: networkRequest.requestBody,
+            responseStatus: res?.status,
+            responseDuration: performanceEntry.duration,
+            responseHeaders: networkRequest.responseHeaders,
+            responseBody: networkRequest.responseBody,
           };
           cb({ requests: [request] });
         })
