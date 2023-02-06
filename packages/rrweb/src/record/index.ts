@@ -585,7 +585,7 @@ function record<T = eventWithTime>(
     } else {
       handlers.push(
         on(
-          'load',
+          'DOMContentLoaded',
           () => {
             wrappedEmit(
               wrapEvent({
