@@ -20,6 +20,7 @@ import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
+import documentReplacementEvents from './events/document-replacement';
 
 interface ISuite {
   code: string;
@@ -963,5 +964,26 @@ describe('replayer', function () {
 
     await page.evaluate('replayer.pause(630);');
     await check600ms();
+  });
+
+  it('should replay document replacement events without warnings or errors', async () => {
+    await page.evaluate(
+      `events = ${JSON.stringify(documentReplacementEvents)}`,
+    );
+    const warningThrown = jest.fn();
+    page.on('console', warningThrown);
+    const errorThrown = jest.fn();
+    page.on('pageerror', errorThrown);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(500);
+    `);
+    await waitForRAF(page);
+
+    // No warnings should be logged.
+    expect(warningThrown).not.toHaveBeenCalled();
+    // No errors should be thrown.
+    expect(errorThrown).not.toHaveBeenCalled();
   });
 });
