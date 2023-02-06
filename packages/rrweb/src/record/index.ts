@@ -76,6 +76,9 @@ function record<T = eventWithTime>(
     mousemoveWait,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    recordAfter = options.recordAfter === 'DOMContentLoaded'
+      ? options.recordAfter
+      : 'load',
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
@@ -408,16 +411,6 @@ function record<T = eventWithTime>(
 
   try {
     const handlers: listenerHandler[] = [];
-    handlers.push(
-      on('DOMContentLoaded', () => {
-        wrappedEmit(
-          wrapEvent({
-            type: EventType.DomContentLoaded,
-            data: {},
-          }),
-        );
-      }),
-    );
 
     const observe = (doc: Document) => {
       return initObservers(
@@ -584,8 +577,19 @@ function record<T = eventWithTime>(
       init();
     } else {
       handlers.push(
+        on('DOMContentLoaded', () => {
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.DomContentLoaded,
+              data: {},
+            }),
+          );
+          if (recordAfter === 'DOMContentLoaded') init();
+        }),
+      );
+      handlers.push(
         on(
-          'DOMContentLoaded',
+          'load',
           () => {
             wrappedEmit(
               wrapEvent({
@@ -593,7 +597,7 @@ function record<T = eventWithTime>(
                 data: {},
               }),
             );
-            init();
+            if (recordAfter === 'load') init();
           },
           window,
         ),
