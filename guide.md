@@ -311,6 +311,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
 | plugins             | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
 | useVirtualDom       | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
+| logger              | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
 
 #### Use rrweb-player
 

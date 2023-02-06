@@ -180,6 +180,10 @@ export type playerConfig = {
       };
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
+  logger: {
+    log: (...args: Parameters<typeof console.log>) => void;
+    warn: (...args: Parameters<typeof console.warn>) => void;
+  };
   plugins?: ReplayPlugin[];
 };
 

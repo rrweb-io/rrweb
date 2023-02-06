@@ -184,6 +184,7 @@ export class Replayer {
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
+      logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -259,9 +260,7 @@ export class Replayer {
               );
               value.node = realNode;
             } catch (error) {
-              if (this.config.showWarning) {
-                console.warn(error);
-              }
+              this.warn(error);
             }
           }
         }
@@ -486,7 +485,7 @@ export class Replayer {
   }
 
   public resume(timeOffset = 0) {
-    console.warn(
+    this.warn(
       `The 'resume' was deprecated in 1.0. Please use 'play' method which has the same interface.`,
     );
     this.play(timeOffset);
@@ -743,10 +742,10 @@ export class Replayer {
     isSync = false,
   ) {
     if (!this.iframe.contentDocument) {
-      return console.warn('Looks like your replayer has been destroyed.');
+      return this.warn('Looks like your replayer has been destroyed.');
     }
     if (Object.keys(this.legacy_missingNodeRetryMap).length) {
-      console.warn(
+      this.warn(
         'Found unresolved missing node map',
         this.legacy_missingNodeRetryMap,
       );
@@ -1240,12 +1239,10 @@ export class Replayer {
             mediaEl.playbackRate = d.playbackRate;
           }
         } catch (error) {
-          if (this.config.showWarning) {
-            console.warn(
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
-              `Failed to replay media interactions: ${error.message || error}`,
-            );
-          }
+          this.warn(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
+            `Failed to replay media interactions: ${error.message || error}`,
+          );
         }
         break;
       }
@@ -1302,9 +1299,7 @@ export class Replayer {
           );
           this.iframe.contentDocument?.fonts.add(fontFace);
         } catch (error) {
-          if (this.config.showWarning) {
-            console.warn(error);
-          }
+          this.warn(error);
         }
         break;
       }
@@ -1342,9 +1337,7 @@ export class Replayer {
             );
             if (virtualNode) value.node = virtualNode;
           } catch (error) {
-            if (this.config.showWarning) {
-              console.warn(error);
-            }
+            this.warn(error);
           }
         }
       }
@@ -1425,7 +1418,7 @@ export class Replayer {
 
     const appendNode = (mutation: addedNodeMutation) => {
       if (!this.iframe.contentDocument) {
-        return console.warn('Looks like your replayer has been destroyed.');
+        return this.warn('Looks like your replayer has been destroyed.');
       }
       let parent: Node | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,
@@ -1704,12 +1697,10 @@ export class Replayer {
                 value,
               );
             } catch (error) {
-              if (this.config.showWarning) {
-                console.warn(
-                  'An error occurred may due to the checkout feature.',
-                  error,
-                );
-              }
+              this.warn(
+                'An error occurred may due to the checkout feature.',
+                error,
+              );
             }
           } else if (attributeName === 'style') {
             const styleValues = value;
@@ -2122,20 +2113,20 @@ export class Replayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
+    this.debug(`Node with id '${id}' not found. `, d);
   }
 
   private warn(...args: Parameters<typeof console.warn>) {
     if (!this.config.showWarning) {
       return;
     }
-    console.warn(REPLAY_CONSOLE_PREFIX, ...args);
+    this.config.logger.warn(REPLAY_CONSOLE_PREFIX, ...args);
   }
 
   private debug(...args: Parameters<typeof console.log>) {
     if (!this.config.showDebug) {
       return;
     }
-    console.log(REPLAY_CONSOLE_PREFIX, ...args);
+    this.config.logger.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }
