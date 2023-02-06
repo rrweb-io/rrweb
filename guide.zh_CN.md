@@ -154,6 +154,7 @@ setInterval(save, 10 * 1000);
 | dataURLOptions           | {}                 | Canvas 图像快照的格式和质量,这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小                                                                    |
 | recordCanvas             | false              | 是否记录 canvas 内容, 可用选项：`false`, `true`                                                                                                                                       |
 | recordCrossOriginIframes | false              | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true`                                                                             |
+| recordAfter              | 'load'             | 在指定的事件后开始录制。可用选项： `DOMContentLoaded`, `load`                                                                                                                         |
 | inlineImages             | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput     | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
