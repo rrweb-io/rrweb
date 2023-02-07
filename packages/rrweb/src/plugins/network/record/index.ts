@@ -167,14 +167,14 @@ function initPerformanceObserver(
   };
 }
 
-const getRequestPerformanceEntry = async (
+async function getRequestPerformanceEntry(
   win: IWindow,
   initiatorType: string,
   url: string,
   after?: number,
   before?: number,
   attempt = 0,
-): Promise<PerformanceResourceTiming> => {
+): Promise<PerformanceResourceTiming> {
   if (attempt > 10) {
     throw new Error('Cannot find performance entry');
   }
@@ -201,7 +201,7 @@ const getRequestPerformanceEntry = async (
     );
   }
   return performanceEntry;
-};
+}
 
 function initXhrObserver(
   cb: networkCallback,
