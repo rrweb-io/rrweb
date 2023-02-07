@@ -1,6 +1,5 @@
 import type { IWindow, listenerHandler, RecordPlugin } from '@rrweb/types';
 import { patch } from '../../../utils';
-import { stringify, StringifyOptions } from '../../utils/stringify';
 import { findLast } from '../../utils/find-last';
 
 export type InitiatorType =
@@ -29,20 +28,8 @@ export type InitiatorType =
 type NetworkRecordOptions = {
   initiatorTypes?: InitiatorType[];
   ignoreRequestFn?: (data: NetworkRequest) => boolean;
-  recordHeaders?:
-    | boolean
-    | StringifyOptions
-    | {
-        request: boolean | StringifyOptions;
-        response: boolean | StringifyOptions;
-      };
-  recordBody?:
-    | boolean
-    | StringifyOptions
-    | {
-        request: boolean | StringifyOptions;
-        response: boolean | StringifyOptions;
-      };
+  recordHeaders?: boolean | { request: boolean; response: boolean };
+  recordBody?: boolean | { request: boolean; response: boolean };
   recordInitialRequests?: boolean;
 };
 
@@ -86,9 +73,9 @@ type NetworkRequest = {
   startTime: number;
   endTime: number;
   requestHeaders?: Headers;
-  requestBody?: string | null;
+  requestBody?: unknown;
   responseHeaders?: Headers;
-  responseBody?: string | null;
+  responseBody?: unknown;
 };
 
 export type NetworkData = {
@@ -265,12 +252,7 @@ function initXhrObserver(
             if (body === undefined || body === null) {
               networkRequest.requestBody = null;
             } else {
-              networkRequest.requestBody = stringify(
-                body,
-                typeof recordRequestBody === 'object'
-                  ? recordRequestBody
-                  : undefined,
-              );
+              networkRequest.requestBody = body;
             }
           }
           after = win.performance.now();
@@ -295,20 +277,10 @@ function initXhrObserver(
             });
           }
           if (recordResponseBody) {
-            if (!xhr.response) {
+            if (xhr.response === undefined || xhr.response === null) {
               networkRequest.responseBody = null;
             } else {
-              try {
-                const objBody = JSON.parse(xhr.response as string) as object;
-                networkRequest.responseBody = stringify(
-                  objBody,
-                  typeof recordResponseBody === 'object'
-                    ? recordResponseBody
-                    : undefined,
-                );
-              } catch {
-                networkRequest.responseBody = xhr.response as string;
-              }
+              networkRequest.responseBody = xhr.response;
             }
           }
           getRequestPerformanceEntry(
@@ -395,12 +367,7 @@ function initFetchObserver(
         if (req.body === undefined || req.body === null) {
           networkRequest.requestBody = null;
         } else {
-          networkRequest.requestBody = stringify(
-            req.body,
-            typeof recordRequestBody === 'object'
-              ? recordRequestBody
-              : undefined,
-          );
+          networkRequest.requestBody = req.body;
         }
       }
       after = win.performance.now();
@@ -413,21 +380,16 @@ function initFetchObserver(
         });
       }
       if (recordResponseBody) {
-        const reqBody = await res.clone().text();
-        if (!reqBody) {
+        let body: string | undefined;
+        try {
+          body = await res.clone().text();
+        } catch {
+          //
+        }
+        if (res.body === undefined || res.body === null) {
           networkRequest.responseBody = null;
         } else {
-          try {
-            const objBody = JSON.parse(reqBody) as object;
-            networkRequest.responseBody = stringify(
-              objBody,
-              typeof recordResponseBody === 'object'
-                ? recordResponseBody
-                : undefined,
-            );
-          } catch {
-            networkRequest.responseBody = reqBody;
-          }
+          networkRequest.responseBody = body;
         }
       }
       return res;
