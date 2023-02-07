@@ -1,6 +1,7 @@
 import type { IWindow, listenerHandler, RecordPlugin } from '@rrweb/types';
-import { findLast, patch } from '../../../utils';
+import { patch } from '../../../utils';
 import { stringify, StringifyOptions } from '../../utils/stringify';
+import { findLast } from '../../utils/find-last';
 
 export type InitiatorType =
   | 'audio'
