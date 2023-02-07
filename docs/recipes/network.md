@@ -37,8 +37,8 @@ rrweb.record({
     rrweb.getRecordConsolePlugin({
       initiatorTypes: ['fetch', 'xmlhttprequest'],
       // block recording event for request to upload events to server
-      ignoreRequestFn: ({ performanceEntry }) => {
-        if (performanceEntry.name === 'https://api.my-server.com/events') {
+      ignoreRequestFn: (request) => {
+        if (request.url === 'https://api.my-server.com/events') {
           return true;
         }
         return false;
@@ -72,9 +72,9 @@ const replayer = new rrweb.Replayer(events, {
     rrweb.getReplayNetworkPlugin({
       onNetworkData: ({ requests }) => {
         for (const request of requests) {
-          const url = request.requestUrl;
-          const method = request.responseMethod;
-          const status = request.responseStatus;
+          const url = request.url;
+          const method = request.method;
+          const status = request.status;
           console.log(`${method} ${url} ${status}`);
         }
       },
