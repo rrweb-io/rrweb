@@ -78,13 +78,14 @@ const defaultNetworkOptions: NetworkRecordOptions = {
 type Headers = Record<string, string>;
 
 type NetworkRequest = {
-  requestUrl: string;
-  requestMethod: string;
-  requestInitiator: InitiatorType;
+  url: string;
+  method?: string;
+  initiatorType: InitiatorType;
+  status?: number;
+  startTime: number;
+  endTime: number;
   requestHeaders?: Headers;
   requestBody?: string | null;
-  responseStatus?: number;
-  responseDuration: number;
   responseHeaders?: Headers;
   responseBody?: string | null;
 };
@@ -127,15 +128,12 @@ function initPerformanceObserver(
             )),
       );
     cb({
-      requests: initialPerformanceEntries.map((performanceEntry) => ({
-        requestUrl: performanceEntry.name,
-        requestMethod: 'GET',
-        requestInitiator: performanceEntry.initiatorType as InitiatorType,
-        responseStatus:
-          'responseStatus' in performanceEntry
-            ? performanceEntry.responseStatus
-            : undefined,
-        responseDuration: Math.round(performanceEntry.duration),
+      requests: initialPerformanceEntries.map((entry) => ({
+        url: entry.name,
+        initiatorType: entry.initiatorType as InitiatorType,
+        status: 'responseStatus' in entry ? entry.responseStatus : undefined,
+        startTime: Math.round(entry.startTime),
+        endTime: Math.round(entry.responseEnd),
       })),
       isInitial: true,
     });
@@ -154,15 +152,12 @@ function initPerformanceObserver(
             entry.initiatorType !== 'fetch'),
       );
     cb({
-      requests: performanceEntries.map((performanceEntry) => ({
-        requestUrl: performanceEntry.name,
-        requestMethod: 'GET',
-        requestInitiator: performanceEntry.initiatorType as InitiatorType,
-        responseStatus:
-          'responseStatus' in performanceEntry
-            ? performanceEntry.responseStatus
-            : undefined,
-        responseDuration: Math.round(performanceEntry.duration),
+      requests: performanceEntries.map((entry) => ({
+        url: entry.name,
+        initiatorType: entry.initiatorType as InitiatorType,
+        status: 'responseStatus' in entry ? entry.responseStatus : undefined,
+        startTime: Math.round(entry.startTime),
+        endTime: Math.round(entry.responseEnd),
       })),
     });
   });
@@ -188,11 +183,11 @@ const getRequestPerformanceEntry = async (
   ) as PerformanceResourceTiming[];
   const performanceEntry = findLast(
     urlPerformanceEntries,
-    (performanceEntry) =>
-      isResourceTiming(performanceEntry) &&
-      performanceEntry.initiatorType === initiatorType &&
-      (!after || performanceEntry.startTime >= after) &&
-      (!before || performanceEntry.startTime <= before),
+    (entry) =>
+      isResourceTiming(entry) &&
+      entry.initiatorType === initiatorType &&
+      (!after || entry.startTime >= after) &&
+      (!before || entry.startTime <= before),
   );
   if (!performanceEntry) {
     await new Promise((resolve) => setTimeout(resolve, 50 * attempt));
@@ -322,15 +317,16 @@ function initXhrObserver(
             after,
             before,
           )
-            .then((performanceEntry) => {
+            .then((entry) => {
               const request: NetworkRequest = {
-                requestUrl: performanceEntry.name,
-                requestMethod: req.method,
-                requestInitiator: performanceEntry.initiatorType as InitiatorType,
+                url: entry.name,
+                method: req.method,
+                initiatorType: entry.initiatorType as InitiatorType,
+                status: xhr.status,
+                startTime: Math.round(entry.startTime),
+                endTime: Math.round(entry.responseEnd),
                 requestHeaders: networkRequest.requestHeaders,
                 requestBody: networkRequest.requestBody,
-                responseStatus: xhr.status,
-                responseDuration: performanceEntry.duration,
                 responseHeaders: networkRequest.responseHeaders,
                 responseBody: networkRequest.responseBody,
               };
@@ -409,7 +405,6 @@ function initFetchObserver(
       after = win.performance.now();
       res = await originalFetch(req);
       before = win.performance.now();
-      networkRequest.responseStatus = res.status;
       if (recordResponseHeaders) {
         networkRequest.responseHeaders = {};
         res.headers.forEach((value, header) => {
@@ -437,15 +432,16 @@ function initFetchObserver(
       return res;
     } finally {
       getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
-        .then((performanceEntry) => {
+        .then((entry) => {
           const request: NetworkRequest = {
-            requestUrl: performanceEntry.name,
-            requestMethod: req.method,
-            requestInitiator: performanceEntry.initiatorType as InitiatorType,
+            url: entry.name,
+            method: req.method,
+            initiatorType: entry.initiatorType as InitiatorType,
+            status: res?.status,
+            startTime: Math.round(entry.startTime),
+            endTime: Math.round(entry.responseEnd),
             requestHeaders: networkRequest.requestHeaders,
             requestBody: networkRequest.requestBody,
-            responseStatus: res?.status,
-            responseDuration: performanceEntry.duration,
             responseHeaders: networkRequest.responseHeaders,
             responseBody: networkRequest.responseBody,
           };
