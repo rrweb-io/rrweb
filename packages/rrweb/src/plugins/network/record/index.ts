@@ -29,7 +29,10 @@ type NetworkRecordOptions = {
   initiatorTypes?: InitiatorType[];
   ignoreRequestFn?: (data: NetworkRequest) => boolean;
   recordHeaders?: boolean | { request: boolean; response: boolean };
-  recordBody?: boolean | { request: boolean; response: boolean };
+  recordBody?:
+    | boolean
+    | string[]
+    | { request: boolean | string[]; response: boolean | string[] };
   recordInitialRequests?: boolean;
 };
 
@@ -155,6 +158,13 @@ function initPerformanceObserver(
   };
 }
 
+function getContentType(headers: Headers) {
+  const contentTypeHeader = Object.keys(headers).find(
+    (key) => key.toLowerCase() === 'content-type',
+  );
+  return contentTypeHeader && headers[contentTypeHeader];
+}
+
 async function getRequestPerformanceEntry(
   win: IWindow,
   initiatorType: string,
@@ -238,21 +248,28 @@ function initXhrObserver(
         const networkRequest: Partial<NetworkRequest> = {};
         let after: number | undefined;
         let before: number | undefined;
+        const requestHeaders: Headers = {};
+        const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
+        xhr.setRequestHeader = (header: string, value: string) => {
+          requestHeaders[header] = value;
+          return originalSetRequestHeader(header, value);
+        };
         if (recordRequestHeaders) {
-          networkRequest.requestHeaders = {};
-          const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
-          xhr.setRequestHeader = (header: string, value: string) => {
-            networkRequest.requestHeaders![header] = value;
-            return originalSetRequestHeader(header, value);
-          };
+          networkRequest.requestHeaders = requestHeaders;
         }
         const originalSend = xhr.send.bind(xhr);
         xhr.send = (body) => {
           if (recordRequestBody) {
-            if (body === undefined || body === null) {
-              networkRequest.requestBody = null;
-            } else {
-              networkRequest.requestBody = body;
+            const contentType = getContentType(requestHeaders);
+            if (
+              recordRequestBody === true ||
+              (contentType && recordRequestBody.includes(contentType))
+            ) {
+              if (body === undefined || body === null) {
+                networkRequest.requestBody = null;
+              } else {
+                networkRequest.requestBody = body;
+              }
             }
           }
           after = win.performance.now();
@@ -263,24 +280,31 @@ function initXhrObserver(
             return;
           }
           before = win.performance.now();
+          const responseHeaders: Headers = {};
+          const rawHeaders = xhr.getAllResponseHeaders();
+          const headers = rawHeaders.trim().split(/[\r\n]+/);
+          headers.forEach((line) => {
+            const parts = line.split(': ');
+            const header = parts.shift();
+            const value = parts.join(': ');
+            if (header) {
+              responseHeaders[header] = value;
+            }
+          });
           if (recordResponseHeaders) {
-            networkRequest.responseHeaders = {};
-            const rawHeaders = xhr.getAllResponseHeaders();
-            const headers = rawHeaders.trim().split(/[\r\n]+/);
-            headers.forEach((line) => {
-              const parts = line.split(': ');
-              const header = parts.shift();
-              const value = parts.join(': ');
-              if (header) {
-                networkRequest.responseHeaders![header] = value;
-              }
-            });
+            networkRequest.responseHeaders = responseHeaders;
           }
           if (recordResponseBody) {
-            if (xhr.response === undefined || xhr.response === null) {
-              networkRequest.responseBody = null;
-            } else {
-              networkRequest.responseBody = xhr.response;
+            const contentType = getContentType(responseHeaders);
+            if (
+              recordResponseBody === true ||
+              (contentType && recordResponseBody.includes(contentType))
+            ) {
+              if (xhr.response === undefined || xhr.response === null) {
+                networkRequest.responseBody = null;
+              } else {
+                networkRequest.responseBody = xhr.response;
+              }
             }
           }
           getRequestPerformanceEntry(
@@ -360,39 +384,53 @@ function initFetchObserver(
       let after: number | undefined;
       let before: number | undefined;
       try {
+        const requestHeaders: Headers = {};
+        req.headers.forEach((value, header) => {
+          requestHeaders[header] = value;
+        });
         if (recordRequestHeaders) {
-          networkRequest.requestHeaders = {};
-          req.headers.forEach((value, header) => {
-            networkRequest.requestHeaders![header] = value;
-          });
+          networkRequest.requestHeaders = requestHeaders;
         }
         if (recordRequestBody) {
-          if (req.body === undefined || req.body === null) {
-            networkRequest.requestBody = null;
-          } else {
-            networkRequest.requestBody = req.body;
+          const contentType = getContentType(requestHeaders);
+          if (
+            recordRequestBody === true ||
+            (contentType && recordRequestBody.includes(contentType))
+          ) {
+            if (req.body === undefined || req.body === null) {
+              networkRequest.requestBody = null;
+            } else {
+              networkRequest.requestBody = req.body;
+            }
           }
         }
         after = win.performance.now();
         res = await originalFetch(req);
         before = win.performance.now();
+        const responseHeaders: Headers = {};
+        res.headers.forEach((value, header) => {
+          responseHeaders[header] = value;
+        });
         if (recordResponseHeaders) {
-          networkRequest.responseHeaders = {};
-          res.headers.forEach((value, header) => {
-            networkRequest.responseHeaders![header] = value;
-          });
+          networkRequest.responseHeaders = responseHeaders;
         }
         if (recordResponseBody) {
-          let body: string | undefined;
-          try {
-            body = await res.clone().text();
-          } catch {
-            //
-          }
-          if (res.body === undefined || res.body === null) {
-            networkRequest.responseBody = null;
-          } else {
-            networkRequest.responseBody = body;
+          const contentType = getContentType(responseHeaders);
+          if (
+            recordResponseBody === true ||
+            (contentType && recordResponseBody.includes(contentType))
+          ) {
+            let body: string | undefined;
+            try {
+              body = await res.clone().text();
+            } catch {
+              //
+            }
+            if (res.body === undefined || res.body === null) {
+              networkRequest.responseBody = null;
+            } else {
+              networkRequest.responseBody = body;
+            }
           }
         }
         return res;
@@ -419,7 +457,6 @@ function initFetchObserver(
       }
     };
   });
-
   return () => {
     restorePatch();
   };
