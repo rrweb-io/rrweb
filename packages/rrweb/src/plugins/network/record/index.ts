@@ -67,6 +67,16 @@ const defaultNetworkOptions: NetworkRecordOptions = {
 };
 
 type Headers = Record<string, string>;
+type Body =
+  | string
+  | Document
+  | Blob
+  | ArrayBufferView
+  | ArrayBuffer
+  | FormData
+  | URLSearchParams
+  | ReadableStream<Uint8Array>
+  | null;
 
 type NetworkRequest = {
   url: string;
@@ -76,9 +86,9 @@ type NetworkRequest = {
   startTime: number;
   endTime: number;
   requestHeaders?: Headers;
-  requestBody?: unknown;
+  requestBody?: Body;
   responseHeaders?: Headers;
-  responseBody?: unknown;
+  responseBody?: Body;
 };
 
 export type NetworkData = {
@@ -303,6 +313,7 @@ function initXhrObserver(
               if (xhr.response === undefined || xhr.response === null) {
                 networkRequest.responseBody = null;
               } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 networkRequest.responseBody = xhr.response;
               }
             }
