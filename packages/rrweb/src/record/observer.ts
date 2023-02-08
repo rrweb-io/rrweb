@@ -54,34 +54,6 @@ type WindowWithAngularZone = IWindow & {
 export const mutationBuffers: MutationBuffer[] = [];
 export const processedNodeManager = new ProcessedNodeManager();
 
-function isCSSStyleSheetMonkeyPatchable(
-  prop:
-    | 'CSSGroupingRule'
-    | 'CSSMediaRule'
-    | 'CSSSupportsRule'
-    | 'CSSConditionRule',
-): boolean {
-  return Boolean(
-    typeof window[prop] !== 'undefined' &&
-      // Note: Generally, this check _shouldn't_ be necessary
-      // However, in some scenarios (e.g. jsdom) this can sometimes fail, so we check for it here
-      window[prop].prototype &&
-      'insertRule' in window[prop].prototype &&
-      'deleteRule' in window[prop].prototype,
-  );
-}
-
-const isCSSGroupingRuleSupported = isCSSStyleSheetMonkeyPatchable(
-  'CSSGroupingRule',
-);
-const isCSSMediaRuleSupported = isCSSStyleSheetMonkeyPatchable('CSSMediaRule');
-const isCSSSupportsRuleSupported = isCSSStyleSheetMonkeyPatchable(
-  'CSSSupportsRule',
-);
-const isCSSConditionRuleSupported = isCSSStyleSheetMonkeyPatchable(
-  'CSSConditionRule',
-);
-
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
@@ -511,13 +483,13 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
   const positions: number[] = [];
   function recurse(childRule: CSSRule, pos: number[]) {
     if (
-      (isCSSGroupingRuleSupported &&
+      (hasNestedCSSRule('CSSGroupingRule') &&
         childRule.parentRule instanceof CSSGroupingRule) ||
-      (isCSSMediaRuleSupported &&
+      (hasNestedCSSRule('CSSMediaRule') &&
         childRule.parentRule instanceof CSSMediaRule) ||
-      (isCSSSupportsRuleSupported &&
+      (hasNestedCSSRule('CSSSupportsRule') &&
         childRule.parentRule instanceof CSSSupportsRule) ||
-      (isCSSConditionRuleSupported &&
+      (hasNestedCSSRule('CSSConditionRule') &&
         childRule.parentRule instanceof CSSConditionRule)
     ) {
       const rules = Array.from(
@@ -666,20 +638,20 @@ function initStyleSheetObserver(
   const supportedNestedCSSRuleTypes: {
     [key: string]: GroupingCSSRuleTypes;
   } = {};
-  if (isCSSGroupingRuleSupported) {
+  if (canMonkeyPatchNestedCSSRule('CSSGroupingRule')) {
     supportedNestedCSSRuleTypes.CSSGroupingRule = win.CSSGroupingRule;
   } else {
     // Some browsers (Safari) don't support CSSGroupingRule
     // https://caniuse.com/?search=cssgroupingrule
     // fall back to monkey patching classes that would have inherited from CSSGroupingRule
 
-    if (isCSSMediaRuleSupported) {
+    if (canMonkeyPatchNestedCSSRule('CSSMediaRule')) {
       supportedNestedCSSRuleTypes.CSSMediaRule = win.CSSMediaRule;
     }
-    if (isCSSConditionRuleSupported) {
+    if (canMonkeyPatchNestedCSSRule('CSSConditionRule')) {
       supportedNestedCSSRuleTypes.CSSConditionRule = win.CSSConditionRule;
     }
-    if (isCSSSupportsRuleSupported) {
+    if (canMonkeyPatchNestedCSSRule('CSSSupportsRule')) {
       supportedNestedCSSRuleTypes.CSSSupportsRule = win.CSSSupportsRule;
     }
   }
@@ -1190,4 +1162,25 @@ export function initObservers(
     selectionObserver();
     pluginHandlers.forEach((h) => h());
   };
+}
+
+type CSSGroupingProp =
+  | 'CSSGroupingRule'
+  | 'CSSMediaRule'
+  | 'CSSSupportsRule'
+  | 'CSSConditionRule';
+
+function hasNestedCSSRule(prop: CSSGroupingProp): boolean {
+  return typeof window[prop] !== 'undefined';
+}
+
+function canMonkeyPatchNestedCSSRule(prop: CSSGroupingProp): boolean {
+  return Boolean(
+    typeof window[prop] !== 'undefined' &&
+      // Note: Generally, this check _shouldn't_ be necessary
+      // However, in some scenarios (e.g. jsdom) this can sometimes fail, so we check for it here
+      window[prop].prototype &&
+      'insertRule' in window[prop].prototype &&
+      'deleteRule' in window[prop].prototype,
+  );
 }
