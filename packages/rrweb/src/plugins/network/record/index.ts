@@ -168,11 +168,34 @@ function initPerformanceObserver(
   };
 }
 
-function getContentType(headers: Headers) {
-  const contentTypeHeader = Object.keys(headers).find(
-    (key) => key.toLowerCase() === 'content-type',
+function shouldRecordHeaders(
+  type: 'request' | 'response',
+  recordHeaders: NetworkRecordOptions['recordHeaders'],
+) {
+  return (
+    !!recordHeaders &&
+    (typeof recordHeaders === 'boolean' || recordHeaders[type])
   );
-  return contentTypeHeader && headers[contentTypeHeader];
+}
+
+function shouldRecordBody(
+  type: 'request' | 'response',
+  recordBody: NetworkRecordOptions['recordBody'],
+  headers: Headers,
+) {
+  function matchesContentType(contentTypes: string[]) {
+    const contentTypeHeader = Object.keys(headers).find(
+      (key) => key.toLowerCase() === 'content-type',
+    );
+    const contentType = contentTypeHeader && headers[contentTypeHeader];
+    return contentTypes.some((ct) => contentType?.includes(ct));
+  }
+  if (!recordBody) return false;
+  if (typeof recordBody === 'boolean') return true;
+  if (Array.isArray(recordBody)) return matchesContentType(recordBody);
+  const recordBodyType = recordBody[type];
+  if (typeof recordBodyType === 'boolean') return recordBodyType;
+  return matchesContentType(recordBodyType);
 }
 
 async function getRequestPerformanceEntry(
@@ -221,27 +244,14 @@ function initXhrObserver(
       //
     };
   }
-  const recordRequestHeaders =
-    !!options.recordHeaders &&
-    (typeof options.recordHeaders === 'boolean' ||
-      !('request' in options.recordHeaders) ||
-      options.recordHeaders.request);
-  const recordRequestBody =
-    !!options.recordBody &&
-    (typeof options.recordBody === 'boolean' ||
-      !('request' in options.recordBody) ||
-      options.recordBody.request);
-  const recordResponseHeaders =
-    !!options.recordHeaders &&
-    (typeof options.recordHeaders === 'boolean' ||
-      !('response' in options.recordHeaders) ||
-      options.recordHeaders.response);
-  const recordResponseBody =
-    !!options.recordBody &&
-    (typeof options.recordBody === 'boolean' ||
-      !('response' in options.recordBody) ||
-      options.recordBody.response);
-
+  const recordRequestHeaders = shouldRecordHeaders(
+    'request',
+    options.recordHeaders,
+  );
+  const recordResponseHeaders = shouldRecordHeaders(
+    'response',
+    options.recordHeaders,
+  );
   const restorePatch = patch(
     win.XMLHttpRequest.prototype,
     'open',
@@ -269,17 +279,11 @@ function initXhrObserver(
         }
         const originalSend = xhr.send.bind(xhr);
         xhr.send = (body) => {
-          if (recordRequestBody) {
-            const contentType = getContentType(requestHeaders);
-            if (
-              recordRequestBody === true ||
-              (contentType && recordRequestBody.includes(contentType))
-            ) {
-              if (body === undefined || body === null) {
-                networkRequest.requestBody = null;
-              } else {
-                networkRequest.requestBody = body;
-              }
+          if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
+            if (body === undefined || body === null) {
+              networkRequest.requestBody = null;
+            } else {
+              networkRequest.requestBody = body;
             }
           }
           after = win.performance.now();
@@ -304,18 +308,14 @@ function initXhrObserver(
           if (recordResponseHeaders) {
             networkRequest.responseHeaders = responseHeaders;
           }
-          if (recordResponseBody) {
-            const contentType = getContentType(responseHeaders);
-            if (
-              recordResponseBody === true ||
-              (contentType && recordResponseBody.includes(contentType))
-            ) {
-              if (xhr.response === undefined || xhr.response === null) {
-                networkRequest.responseBody = null;
-              } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                networkRequest.responseBody = xhr.response;
-              }
+          if (
+            shouldRecordBody('response', options.recordBody, responseHeaders)
+          ) {
+            if (xhr.response === undefined || xhr.response === null) {
+              networkRequest.responseBody = null;
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              networkRequest.responseBody = xhr.response;
             }
           }
           getRequestPerformanceEntry(
@@ -363,27 +363,14 @@ function initFetchObserver(
       //
     };
   }
-  const recordRequestHeaders =
-    !!options.recordHeaders &&
-    (typeof options.recordHeaders === 'boolean' ||
-      !('request' in options.recordHeaders) ||
-      options.recordHeaders.request);
-  const recordRequestBody =
-    !!options.recordBody &&
-    (typeof options.recordBody === 'boolean' ||
-      !('request' in options.recordBody) ||
-      options.recordBody.request);
-  const recordResponseHeaders =
-    !!options.recordHeaders &&
-    (typeof options.recordHeaders === 'boolean' ||
-      !('response' in options.recordHeaders) ||
-      options.recordHeaders.response);
-  const recordResponseBody =
-    !!options.recordBody &&
-    (typeof options.recordBody === 'boolean' ||
-      !('response' in options.recordBody) ||
-      options.recordBody.response);
-
+  const recordRequestHeaders = shouldRecordHeaders(
+    'request',
+    options.recordHeaders,
+  );
+  const recordResponseHeaders = shouldRecordHeaders(
+    'response',
+    options.recordHeaders,
+  );
   const restorePatch = patch(win, 'fetch', (originalFetch: typeof fetch) => {
     return async function (
       url: URL | RequestInfo,
@@ -402,17 +389,11 @@ function initFetchObserver(
         if (recordRequestHeaders) {
           networkRequest.requestHeaders = requestHeaders;
         }
-        if (recordRequestBody) {
-          const contentType = getContentType(requestHeaders);
-          if (
-            recordRequestBody === true ||
-            (contentType && recordRequestBody.includes(contentType))
-          ) {
-            if (req.body === undefined || req.body === null) {
-              networkRequest.requestBody = null;
-            } else {
-              networkRequest.requestBody = req.body;
-            }
+        if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
+          if (req.body === undefined || req.body === null) {
+            networkRequest.requestBody = null;
+          } else {
+            networkRequest.requestBody = req.body;
           }
         }
         after = win.performance.now();
@@ -425,23 +406,17 @@ function initFetchObserver(
         if (recordResponseHeaders) {
           networkRequest.responseHeaders = responseHeaders;
         }
-        if (recordResponseBody) {
-          const contentType = getContentType(responseHeaders);
-          if (
-            recordResponseBody === true ||
-            (contentType && recordResponseBody.includes(contentType))
-          ) {
-            let body: string | undefined;
-            try {
-              body = await res.clone().text();
-            } catch {
-              //
-            }
-            if (res.body === undefined || res.body === null) {
-              networkRequest.responseBody = null;
-            } else {
-              networkRequest.responseBody = body;
-            }
+        if (shouldRecordBody('response', options.recordBody, responseHeaders)) {
+          let body: string | undefined;
+          try {
+            body = await res.clone().text();
+          } catch {
+            //
+          }
+          if (res.body === undefined || res.body === null) {
+            networkRequest.responseBody = null;
+          } else {
+            networkRequest.responseBody = body;
           }
         }
         return res;
