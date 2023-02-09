@@ -300,7 +300,6 @@ export class Replayer {
 
     const timer = new Timer([], {
       speed: this.config.speed,
-      liveMode: this.config.liveMode,
     });
     this.service = createPlayerService(
       {
@@ -722,18 +721,16 @@ export class Replayer {
           this.service.send('END');
           this.emitter.emit(ReplayerEvents.Finish);
         };
+        let finish_buffer = 50; // allow for checking whether new events aren't just about to be loaded in
         if (
           event.type === EventType.IncrementalSnapshot &&
           event.data.source === IncrementalSource.MouseMove &&
           event.data.positions.length
         ) {
-          // defer finish event if the last event is a mouse move
-          setTimeout(() => {
-            finish();
-          }, Math.max(0, -event.data.positions[0].timeOffset + 50)); // Add 50 to make sure the timer would check the last mousemove event. Otherwise, the timer may be stopped by the service before checking the last event.
-        } else {
-          finish();
+          // extend finish event if the last event is a mouse move so that the timer isn't stopped by the service before checking the last event
+          finish_buffer += Math.max(0, -event.data.positions[0].timeOffset);
         }
+        setTimeout(finish, finish_buffer);
       }
 
       this.emitter.emit(ReplayerEvents.EventCast, event);
