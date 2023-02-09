@@ -1,22 +1,7 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
 import { patch } from '../../../utils';
-import { ErrorStackParser, StackFrame } from './error-stack-parser';
-import { stringify } from './stringify';
-
-export type StringifyOptions = {
-  // limit of string length
-  stringLengthLimit?: number;
-  /**
-   * limit of number of keys in an object
-   * if an object contains more keys than this limit, we would call its toString function directly
-   */
-  numOfKeysLimit: number;
-  /**
-   * limit number of depth in an object
-   * if an object is too deep, toString process may cause browser OOM
-   */
-  depthOfLimit: number;
-};
+import { ErrorStackParser, StackFrame } from '../../utils/error-stack-parser';
+import { stringify, StringifyOptions } from '../../utils/stringify';
 
 type LogRecordOptions = {
   level?: LogLevel[];
