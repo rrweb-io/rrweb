@@ -709,7 +709,10 @@ export class Replayer {
 
       // events are kept sorted by timestamp, check if this is the last event
       const last_index = this.service.state.context.events.length - 1;
-      if (event === this.service.state.context.events[last_index]) {
+      if (
+        !this.config.liveMode &&
+        event === this.service.state.context.events[last_index]
+      ) {
         const finish = () => {
           if (last_index < this.service.state.context.events.length - 1) {
             // more events have been added since the setTimeout
