@@ -21,12 +21,16 @@ import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import documentReplacementEvents from './events/document-replacement';
+import { ReplayerEvents } from '@rrweb/types';
 
 interface ISuite {
   code: string;
   browser: puppeteer.Browser;
   page: puppeteer.Page;
 }
+
+type IWindow = Window &
+  typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
   jest.setTimeout(10_000);
@@ -46,7 +50,7 @@ describe('replayer', function () {
     page = await browser.newPage();
     await page.goto('about:blank');
     await page.evaluate(code);
-    await page.evaluate(`let events = ${JSON.stringify(events)}`);
+    await page.evaluate(`var events = ${JSON.stringify(events)}`);
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
@@ -678,6 +682,29 @@ describe('replayer', function () {
       replayer.service.state.value;
     `);
     expect(status).toEqual('live');
+  });
+
+  it("shouldn't trigger ReplayerEvents.Finish in live mode", async () => {
+    const status = await page.evaluate((FinishState) => {
+      return new Promise((resolve) => {
+        const win = window as IWindow;
+        let triggeredFinish = false;
+        const { Replayer } = win.rrweb;
+        const replayer = new Replayer([], {
+          liveMode: true,
+        });
+        replayer.on(FinishState, () => {
+          triggeredFinish = true;
+        });
+        replayer.startLive();
+        replayer.addEvent(win.events[0]);
+        requestAnimationFrame(() => {
+          resolve(triggeredFinish);
+        });
+      });
+    }, ReplayerEvents.Finish);
+
+    expect(status).toEqual(false);
   });
 
   it('replays same timestamp events in correct order', async () => {
