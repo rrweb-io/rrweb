@@ -10,7 +10,7 @@ export class Timer {
   public speed: number;
 
   private actions: actionWithDelay[];
-  private raf: number | boolean | null = null;
+  private raf: number | true | null = null;
   private lastTimestamp: number;
 
   constructor(
