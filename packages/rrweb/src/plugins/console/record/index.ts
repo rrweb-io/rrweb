@@ -90,9 +90,9 @@ function initLogObserver(
   win: IWindow, // top window or in an iframe
   options: LogRecordOptions,
 ): listenerHandler {
-  const logOptions = (options
-    ? Object.assign({}, defaultLogOptions, options)
-    : defaultLogOptions) as {
+  const logOptions = (
+    options ? Object.assign({}, defaultLogOptions, options) : defaultLogOptions
+  ) as {
     level: LogLevel[];
     lengthThreshold: number;
     stringifyOptions?: StringifyOptions;
@@ -117,9 +117,9 @@ function initLogObserver(
     const errorHandler = (event: ErrorEvent) => {
       const message = event.message,
         error = event.error as Error;
-      const trace: string[] = ErrorStackParser.parse(
-        error,
-      ).map((stackFrame: StackFrame) => stackFrame.toString());
+      const trace: string[] = ErrorStackParser.parse(error).map(
+        (stackFrame: StackFrame) => stackFrame.toString(),
+      );
       const payload = [stringify(message, logOptions.stringifyOptions)];
       cb({
         level: 'error',
@@ -149,9 +149,9 @@ function initLogObserver(
           stringify(event.reason, logOptions.stringifyOptions),
         ];
       }
-      const trace: string[] = ErrorStackParser.parse(
-        error,
-      ).map((stackFrame: StackFrame) => stackFrame.toString());
+      const trace: string[] = ErrorStackParser.parse(error).map(
+        (stackFrame: StackFrame) => stackFrame.toString(),
+      );
       cb({
         level: 'error',
         trace,

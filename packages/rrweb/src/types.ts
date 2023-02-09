@@ -209,4 +209,5 @@ export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
   origin: string;
   isCheckout?: boolean;
 };
-export type CrossOriginIframeMessageEvent = MessageEvent<CrossOriginIframeMessageEventContent>;
+export type CrossOriginIframeMessageEvent =
+  MessageEvent<CrossOriginIframeMessageEventContent>;

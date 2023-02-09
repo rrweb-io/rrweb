@@ -98,7 +98,7 @@ describe('RRDocument for browser environment', () => {
       // build from element
       expect(mirror.getMeta(document.documentElement)).toBeNull();
       rrNode = buildFromNode(
-        (document.documentElement as unknown) as Node,
+        document.documentElement as unknown as Node,
         rrdom,
         mirror,
       )!;
@@ -378,7 +378,7 @@ describe('RRDocument for browser environment', () => {
         expect(dom.mirror.getId(node1)).toEqual(0);
         const node2 = dom.createTextNode('text');
         expect(dom.mirror.getId(node2)).toEqual(-1);
-        expect(dom.mirror.getId((null as unknown) as RRNode)).toEqual(-1);
+        expect(dom.mirror.getId(null as unknown as RRNode)).toEqual(-1);
       });
 
       it('has() should return whether the mirror has an ID', () => {

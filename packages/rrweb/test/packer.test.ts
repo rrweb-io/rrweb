@@ -17,7 +17,7 @@ describe('pack', () => {
 
 describe('unpack', () => {
   it('is compatible with unpacked data 1', () => {
-    const result = unpack((event as unknown) as string);
+    const result = unpack(event as unknown as string);
     expect(result).toEqual(event);
   });
 

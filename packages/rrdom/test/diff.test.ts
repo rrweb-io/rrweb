@@ -65,9 +65,11 @@ function createTree(
   type TNode = typeof rrDocument extends RRDocument ? RRNode : Node;
   let root: TNode;
 
-  root = (rrDocument
-    ? rrDocument.createElement(treeNode.tagName)
-    : document.createElement(treeNode.tagName)) as TNode;
+  root = (
+    rrDocument
+      ? rrDocument.createElement(treeNode.tagName)
+      : document.createElement(treeNode.tagName)
+  ) as TNode;
 
   const sn = Object.assign({}, elementSn, {
     tagName: treeNode.tagName,
@@ -75,9 +77,9 @@ function createTree(
   });
 
   if (rrDocument) {
-    rrDocument.mirror.add((root as unknown) as RRNode, sn);
+    rrDocument.mirror.add(root as unknown as RRNode, sn);
   } else {
-    mirror.add((root as unknown) as Node, sn);
+    mirror.add(root as unknown as Node, sn);
   }
 
   if (treeNode.children)
@@ -320,8 +322,8 @@ describe('diff algorithm for rrdom', () => {
 
       rrNode.attributes = { id: 'node1', class: 'node' };
       diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).id).toBe('node1');
-      expect(((node as Node) as HTMLElement).className).toBe('node');
+      expect((node as Node as HTMLElement).id).toBe('node1');
+      expect((node as Node as HTMLElement).className).toBe('node');
     });
 
     it('can update exist properties', () => {
@@ -330,9 +332,9 @@ describe('diff algorithm for rrdom', () => {
       const sn = Object.assign({}, elementSn, { tagName });
       mirror.add(node, sn);
 
-      ((node as Node) as HTMLElement).id = 'element1';
-      ((node as Node) as HTMLElement).className = 'element';
-      ((node as Node) as HTMLElement).setAttribute('style', 'color: black');
+      (node as Node as HTMLElement).id = 'element1';
+      (node as Node as HTMLElement).className = 'element';
+      (node as Node as HTMLElement).setAttribute('style', 'color: black');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
       const sn2 = Object.assign({}, elementSn, { tagName });
@@ -340,17 +342,17 @@ describe('diff algorithm for rrdom', () => {
 
       rrNode.attributes = { id: 'node1', class: 'node', style: 'color: white' };
       diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).id).toBe('node1');
-      expect(((node as Node) as HTMLElement).className).toBe('node');
-      expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(
+      expect((node as Node as HTMLElement).id).toBe('node1');
+      expect((node as Node as HTMLElement).className).toBe('node');
+      expect((node as Node as HTMLElement).getAttribute('style')).toBe(
         'color: white',
       );
 
       rrNode.attributes = { id: 'node2' };
       diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).id).toBe('node2');
-      expect(((node as Node) as HTMLElement).className).toBe('');
-      expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(null);
+      expect((node as Node as HTMLElement).id).toBe('node2');
+      expect((node as Node as HTMLElement).className).toBe('');
+      expect((node as Node as HTMLElement).getAttribute('style')).toBe(null);
     });
 
     it('can delete old properties', () => {
@@ -359,9 +361,9 @@ describe('diff algorithm for rrdom', () => {
       const sn = Object.assign({}, elementSn, { tagName });
       mirror.add(node, sn);
 
-      ((node as Node) as HTMLElement).id = 'element1';
-      ((node as Node) as HTMLElement).className = 'element';
-      ((node as Node) as HTMLElement).setAttribute('style', 'color: black');
+      (node as Node as HTMLElement).id = 'element1';
+      (node as Node as HTMLElement).className = 'element';
+      (node as Node as HTMLElement).setAttribute('style', 'color: black');
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
       const sn2 = Object.assign({}, elementSn, { tagName });
@@ -369,15 +371,15 @@ describe('diff algorithm for rrdom', () => {
 
       rrNode.attributes = { id: 'node1' };
       diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).id).toBe('node1');
-      expect(((node as Node) as HTMLElement).className).toBe('');
-      expect(((node as Node) as HTMLElement).getAttribute('style')).toBe(null);
+      expect((node as Node as HTMLElement).id).toBe('node1');
+      expect((node as Node as HTMLElement).className).toBe('');
+      expect((node as Node as HTMLElement).getAttribute('style')).toBe(null);
 
       rrNode.attributes = { src: 'link' };
       diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).id).toBe('');
-      expect(((node as Node) as HTMLElement).className).toBe('');
-      expect(((node as Node) as HTMLElement).getAttribute('src')).toBe('link');
+      expect((node as Node as HTMLElement).id).toBe('');
+      expect((node as Node as HTMLElement).className).toBe('');
+      expect((node as Node as HTMLElement).getAttribute('src')).toBe('link');
     });
 
     it('can diff scroll positions', () => {
@@ -386,8 +388,8 @@ describe('diff algorithm for rrdom', () => {
       const sn = Object.assign({}, elementSn, { tagName });
       mirror.add(node, sn);
 
-      expect(((node as Node) as HTMLElement).scrollLeft).toEqual(0);
-      expect(((node as Node) as HTMLElement).scrollTop).toEqual(0);
+      expect((node as Node as HTMLElement).scrollLeft).toEqual(0);
+      expect((node as Node as HTMLElement).scrollTop).toEqual(0);
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
       const sn2 = Object.assign({}, elementSn, { tagName });
@@ -396,8 +398,8 @@ describe('diff algorithm for rrdom', () => {
       rrNode.scrollLeft = 100;
       rrNode.scrollTop = 200;
       diff(node, rrNode, replayer);
-      expect(((node as Node) as HTMLElement).scrollLeft).toEqual(100);
-      expect(((node as Node) as HTMLElement).scrollTop).toEqual(200);
+      expect((node as Node as HTMLElement).scrollLeft).toEqual(100);
+      expect((node as Node as HTMLElement).scrollTop).toEqual(200);
     });
 
     it('can diff properties for SVG elements', () => {
@@ -412,9 +414,7 @@ describe('diff algorithm for rrdom', () => {
 
       jest.spyOn(Element.prototype, 'setAttributeNS');
       diff(element, node, replayer);
-      expect(((element as Node) as SVGElement).getAttribute('xmlns')).toBe(
-        value,
-      );
+      expect((element as Node as SVGElement).getAttribute('xmlns')).toBe(value);
       expect(SVGElement.prototype.setAttributeNS).toHaveBeenCalledWith(
         'http://www.w3.org/2000/xmlns/',
         'xmlns',
@@ -464,9 +464,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
+        1, 2, 3,
       ]);
     });
 
@@ -494,11 +492,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
     });
 
@@ -526,11 +520,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
     });
 
@@ -558,11 +548,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
     });
 
@@ -589,9 +575,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
+        1, 2, 3,
       ]);
     });
 
@@ -631,11 +615,7 @@ describe('diff algorithm for rrdom', () => {
       ) as Node;
       expect(node.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
       const rrNode = createTree(
         {
@@ -650,9 +630,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        3,
-        4,
-        5,
+        3, 4, 5,
       ]);
     });
 
@@ -668,11 +646,7 @@ describe('diff algorithm for rrdom', () => {
       ) as Node;
       expect(node.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
       const rrNode = createTree(
         {
@@ -687,9 +661,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
+        1, 2, 3,
       ]);
     });
 
@@ -705,11 +677,7 @@ describe('diff algorithm for rrdom', () => {
       ) as Node;
       expect(node.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
       const rrNode = createTree(
         {
@@ -724,10 +692,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        4,
-        5,
+        1, 2, 4, 5,
       ]);
     });
 
@@ -743,11 +708,7 @@ describe('diff algorithm for rrdom', () => {
       ) as Node;
       expect(node.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
-        4,
-        5,
+        1, 2, 3, 4, 5,
       ]);
       const rrNode = createTree(
         {
@@ -762,11 +723,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        2,
-        3,
-        4,
-        1,
-        5,
+        2, 3, 4, 1, 5,
       ]);
     });
 
@@ -782,9 +739,7 @@ describe('diff algorithm for rrdom', () => {
       ) as Node;
       expect(node.childNodes.length).toEqual(3);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        2,
-        3,
+        1, 2, 3,
       ]);
       const rrNode = createTree(
         {
@@ -799,9 +754,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(3);
       expect(rrNode.childNodes.length).toEqual(3);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        2,
-        3,
-        1,
+        2, 3, 1,
       ]);
     });
 
@@ -829,10 +782,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        1,
-        4,
-        2,
-        3,
+        1, 4, 2, 3,
       ]);
     });
 
@@ -860,10 +810,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(4);
       expect(rrNode.childNodes.length).toEqual(4);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        4,
-        2,
-        3,
-        1,
+        4, 2, 3, 1,
       ]);
     });
 
@@ -891,11 +838,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(5);
       expect(rrNode.childNodes.length).toEqual(5);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        4,
-        1,
-        2,
-        3,
-        6,
+        4, 1, 2, 3, 6,
       ]);
     });
 
@@ -923,8 +866,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(2);
       expect(rrNode.childNodes.length).toEqual(2);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        4,
-        6,
+        4, 6,
       ]);
     });
 
@@ -958,14 +900,7 @@ describe('diff algorithm for rrdom', () => {
       expect(node.childNodes.length).toEqual(8);
       expect(rrNode.childNodes.length).toEqual(8);
       expect(Array.from(node.childNodes).map((c) => mirror.getId(c))).toEqual([
-        8,
-        7,
-        6,
-        5,
-        4,
-        3,
-        2,
-        1,
+        8, 7, 6, 5, 4, 3, 2, 1,
       ]);
     });
 
@@ -1131,7 +1066,7 @@ describe('diff algorithm for rrdom', () => {
         id: 1,
       } as serializedNodeWithId);
 
-      expect(((node as Node) as HTMLElement).shadowRoot).toBeNull();
+      expect((node as Node as HTMLElement).shadowRoot).toBeNull();
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
@@ -1147,11 +1082,11 @@ describe('diff algorithm for rrdom', () => {
       expect(rrNode.shadowRoot!.childNodes.length).toBe(1);
 
       diff(node, rrNode, replayer, rrDocument.mirror);
-      expect(((node as Node) as HTMLElement).shadowRoot).not.toBeNull();
-      expect(
-        ((node as Node) as HTMLElement).shadowRoot!.childNodes.length,
-      ).toBe(1);
-      const childElement = ((node as Node) as HTMLElement).shadowRoot!
+      expect((node as Node as HTMLElement).shadowRoot).not.toBeNull();
+      expect((node as Node as HTMLElement).shadowRoot!.childNodes.length).toBe(
+        1,
+      );
+      const childElement = (node as Node as HTMLElement).shadowRoot!
         .childNodes[0] as HTMLElement;
       expect(childElement.tagName).toEqual('DIV');
     });
@@ -1623,7 +1558,7 @@ describe('diff algorithm for rrdom', () => {
       let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(HTMLElement);
       expect(mirror.getId(result)).toBe(0);
-      expect(((result as Node) as HTMLElement).tagName).toBe('DIV');
+      expect((result as Node as HTMLElement).tagName).toBe('DIV');
     });
 
     it('create a node from RRNode', () => {
@@ -1639,14 +1574,14 @@ describe('diff algorithm for rrdom', () => {
       result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Text);
       expect(mirror.getId(result)).toBe(1);
-      expect(((result as Node) as Text).textContent).toBe(textContent);
+      expect((result as Node as Text).textContent).toBe(textContent);
 
       rrNode = rrDocument.createComment(textContent);
       rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 2));
       result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(Comment);
       expect(mirror.getId(result)).toBe(2);
-      expect(((result as Node) as Comment).textContent).toBe(textContent);
+      expect((result as Node as Comment).textContent).toBe(textContent);
 
       rrNode = rrDocument.createCDATASection('');
       rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 3));
@@ -1665,9 +1600,9 @@ describe('diff algorithm for rrdom', () => {
       let result = createOrGetNode(rrNode, mirror, rrDocument.mirror);
       expect(result).toBeInstanceOf(DocumentType);
       expect(mirror.getId(result)).toBe(0);
-      expect(((result as Node) as DocumentType).name).toEqual('html');
-      expect(((result as Node) as DocumentType).publicId).toEqual(publicId);
-      expect(((result as Node) as DocumentType).systemId).toEqual('');
+      expect((result as Node as DocumentType).name).toEqual('html');
+      expect((result as Node as DocumentType).publicId).toEqual(publicId);
+      expect((result as Node as DocumentType).systemId).toEqual('');
     });
 
     it('can get a node if it already exists', () => {
@@ -1687,7 +1622,7 @@ describe('diff algorithm for rrdom', () => {
 
       expect(result).toBeInstanceOf(Text);
       expect(mirror.getId(result)).toBe(0);
-      expect(((result as Node) as Text).textContent).toBe(textContent);
+      expect((result as Node as Text).textContent).toBe(textContent);
       expect(result).toEqual(text);
       // To make sure the existed text node is used.
       expect(mirror.getMeta(result)).toEqual(mirror.getMeta(text));
@@ -1696,7 +1631,7 @@ describe('diff algorithm for rrdom', () => {
 
   describe('apply virtual style rules to node', () => {
     beforeEach(() => {
-      const dummyReplayer = new Replayer(([
+      const dummyReplayer = new Replayer([
         {
           type: EventType.DomContentLoaded,
           timestamp: 0,
@@ -1709,7 +1644,7 @@ describe('diff algorithm for rrdom', () => {
           },
           timestamp: 0,
         },
-      ] as unknown) as eventWithTime[]);
+      ] as unknown as eventWithTime[]);
       replayer.applyStyleSheetMutation = (
         data: styleDeclarationData | styleSheetRuleData,
         styleSheet: CSSStyleSheet,
