@@ -306,6 +306,7 @@ replayer.destroy();
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
 | plugins             | []            | 加载插件以获得额外的回放功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                                         |
 | useVirtualDom       | true          | 在播放器跳转到一个新的时间点的过程中，是否使用 Virtual Dom 优化                                                                                                                                      |
+| logger              | console       | 当播放器出现警告或错误时用来打印日志的对象                                                                                                                                                           |
 
 #### 使用 rrweb-player
 
