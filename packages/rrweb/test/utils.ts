@@ -601,6 +601,7 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     userTriggeredOnInput: ${options.userTriggeredOnInput},
     maskTextFn: ${options.maskTextFn},
     recordCanvas: ${options.recordCanvas},
+    recordAfter: '${options.recordAfter || 'load'}',
     inlineImages: ${options.inlineImages},
     plugins: ${options.plugins}
   });
