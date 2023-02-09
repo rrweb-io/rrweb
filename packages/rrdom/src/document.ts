@@ -204,6 +204,12 @@ export function BaseRRDocumentImpl<
     public readonly RRNodeType = RRNodeType.Document;
     public textContent: string | null = null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(...args: any[]) {
+      super(args);
+      this.ownerDocument = this;
+    }
+
     public get documentElement(): IRRElement | null {
       return (
         (this.childNodes.find(
@@ -258,6 +264,7 @@ export function BaseRRDocumentImpl<
       }
       childNode.parentElement = null;
       childNode.parentNode = this;
+      childNode.ownerDocument = this.ownerDocument;
       this.childNodes.push(childNode);
       return childNode;
     }
@@ -285,6 +292,7 @@ export function BaseRRDocumentImpl<
       this.childNodes.splice(childIndex, 0, newChild);
       newChild.parentElement = null;
       newChild.parentNode = this;
+      newChild.ownerDocument = this.ownerDocument;
       return newChild;
     }
 
@@ -522,6 +530,7 @@ export function BaseRRElementImpl<
       this.childNodes.push(newChild);
       newChild.parentNode = this;
       newChild.parentElement = this;
+      newChild.ownerDocument = this.ownerDocument;
       return newChild;
     }
 
@@ -535,6 +544,7 @@ export function BaseRRElementImpl<
       this.childNodes.splice(childIndex, 0, newChild);
       newChild.parentElement = this;
       newChild.parentNode = this;
+      newChild.ownerDocument = this.ownerDocument;
       return newChild;
     }
 
