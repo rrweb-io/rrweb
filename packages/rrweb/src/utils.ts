@@ -167,20 +167,25 @@ export function patch(
   }
 }
 
-export function getWindowScroll(win: Window) {
-  const doc = win.document;
+export function getWindowScroll(
+  win: (Window & typeof globalThis) | null,
+): {
+  left: number;
+  top: number;
+} {
+  const doc = win?.document;
   return {
-    left: doc.scrollingElement
+    left: doc?.scrollingElement
       ? doc.scrollingElement.scrollLeft
-      : win.pageXOffset !== undefined
+      : win?.pageXOffset !== undefined
       ? win.pageXOffset
       : doc?.documentElement.scrollLeft ||
         doc?.body?.parentElement?.scrollLeft ||
         doc?.body?.scrollLeft ||
         0,
-    top: doc.scrollingElement
+    top: doc?.scrollingElement
       ? doc.scrollingElement.scrollTop
-      : win.pageYOffset !== undefined
+      : win?.pageYOffset !== undefined
       ? win.pageYOffset
       : doc?.documentElement.scrollTop ||
         doc?.body?.parentElement?.scrollTop ||
