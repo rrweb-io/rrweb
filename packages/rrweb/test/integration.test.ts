@@ -984,4 +984,19 @@ describe('record integration tests', function (this: ISuite) {
     )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
+
+  it('should record after DOMContentLoaded event', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'blank.html', {
+        recordAfter: 'DOMContentLoaded',
+      }),
+    );
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
 });

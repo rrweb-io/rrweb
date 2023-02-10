@@ -517,6 +517,24 @@ describe('cross origin iframes', function (this: ISuite) {
       serverBURL: string;
     };
 
+    it('should record same-origin iframe in cross-origin iframe', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        const iframe2 = document.createElement('iframe');
+        // Append a same-origin iframe in a cross-origin iframe.
+        document.body.appendChild(iframe2);
+        iframe2.contentDocument!.body.appendChild(
+          document.createTextNode('Same-origin iframe in cross-origin iframe'),
+        );
+      });
+
+      await waitForRAF(ctx.page);
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+
     it('should filter out forwarded cross origin rrweb messages', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
       const iframe2URL = `${ctx.serverBURL}/html/blank.html`;
@@ -533,10 +551,11 @@ describe('cross origin iframes', function (this: ISuite) {
 
       // Wait for iframe2 to load
       await ctx.page.waitForFrame(iframe2URL);
+      const iframe2 = frame.childFrames()[0];
       // Record iframe2
-      await injectRecordScript(frame.childFrames()[0]);
+      await injectRecordScript(iframe2);
 
-      await waitForRAF(frame.childFrames()[0]);
+      await waitForRAF(iframe2);
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
