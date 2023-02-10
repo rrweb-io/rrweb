@@ -10,64 +10,71 @@ export class Timer {
   public speed: number;
 
   private actions: actionWithDelay[];
-  private raf: number | null = null;
-  private liveMode: boolean;
+  private raf: number | true | null = null;
+  private lastTimestamp: number;
 
   constructor(
     actions: actionWithDelay[] = [],
     config: {
       speed: number;
-      liveMode: boolean;
     },
   ) {
     this.actions = actions;
     this.speed = config.speed;
-    this.liveMode = config.liveMode;
   }
   /**
    * Add an action, possibly after the timer starts.
    */
   public addAction(action: actionWithDelay) {
+    const rafWasActive = this.raf === true;
     if (
       !this.actions.length ||
       this.actions[this.actions.length - 1].delay <= action.delay
     ) {
       // 'fast track'
       this.actions.push(action);
-      return;
+    } else {
+      // binary search - events can arrive out of order in a realtime context
+      const index = this.findActionIndex(action);
+      this.actions.splice(index, 0, action);
     }
-    // binary search - events can arrive out of order in a realtime context
-    const index = this.findActionIndex(action);
-    this.actions.splice(index, 0, action);
+    if (rafWasActive) {
+      this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+    }
   }
 
   public start() {
     this.timeOffset = 0;
-    let lastTimestamp = performance.now();
-    const check = () => {
-      const time = performance.now();
-      this.timeOffset += (time - lastTimestamp) * this.speed;
-      lastTimestamp = time;
-      while (this.actions.length) {
-        const action = this.actions[0];
+    this.lastTimestamp = performance.now();
+    this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+  }
 
-        if (this.timeOffset >= action.delay) {
-          this.actions.shift();
-          action.doAction();
-        } else {
-          break;
-        }
+  private rafCheck() {
+    const time = performance.now();
+    this.timeOffset += (time - this.lastTimestamp) * this.speed;
+    this.lastTimestamp = time;
+    while (this.actions.length) {
+      const action = this.actions[0];
+
+      if (this.timeOffset >= action.delay) {
+        this.actions.shift();
+        action.doAction();
+      } else {
+        break;
       }
-      if (this.actions.length > 0 || this.liveMode) {
-        this.raf = requestAnimationFrame(check);
-      }
-    };
-    this.raf = requestAnimationFrame(check);
+    }
+    if (this.actions.length > 0) {
+      this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+    } else {
+      this.raf = true; // was active
+    }
   }
 
   public clear() {
     if (this.raf) {
-      cancelAnimationFrame(this.raf);
+      if (this.raf !== true) {
+        cancelAnimationFrame(this.raf);
+      }
       this.raf = null;
     }
     this.actions.length = 0;
@@ -75,10 +82,6 @@ export class Timer {
 
   public setSpeed(speed: number) {
     this.speed = speed;
-  }
-
-  public toggleLiveMode(mode: boolean) {
-    this.liveMode = mode;
   }
 
   public isActive() {

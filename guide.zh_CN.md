@@ -154,6 +154,7 @@ setInterval(save, 10 * 1000);
 | dataURLOptions           | {}                 | Canvas 图像快照的格式和质量,这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小                                                                    |
 | recordCanvas             | false              | 是否记录 canvas 内容, 可用选项：`false`, `true`                                                                                                                                       |
 | recordCrossOriginIframes | false              | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true`                                                                             |
+| recordAfter              | 'load'             | 如果 document 还没有加载完成，recorder 将会在指定的事件触发后开始录制。可用选项： `DOMContentLoaded`, `load`                                                                          |
 | inlineImages             | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput     | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
@@ -306,6 +307,7 @@ replayer.destroy();
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
 | plugins             | []            | 加载插件以获得额外的回放功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                                         |
 | useVirtualDom       | true          | 在播放器跳转到一个新的时间点的过程中，是否使用 Virtual Dom 优化                                                                                                                                      |
+| logger              | console       | 当播放器出现警告或错误时用来打印日志的对象                                                                                                                                                           |
 
 #### 使用 rrweb-player
 
