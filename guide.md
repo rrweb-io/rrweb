@@ -158,6 +158,7 @@ The parameter of `rrweb.record` accepts the following options.
 | sampling                 | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
 | recordCanvas             | false              | Whether to record the canvas element. Available options:<br/>`false`, <br/>`true`                                                                                                             |
 | recordCrossOriginIframes | false              | Whether to record cross origin iframes. rrweb has to be injected in each child iframe for this to work. Available options:<br/>`false`, <br/>`true`                                           |
+| recordAfter              | 'load'             | If the document is not ready, then the recorder will start recording after the specified event is fired. Available options: `DOMContentLoaded`, `load`                                        |
 | inlineImages             | false              | whether to record the image content                                                                                                                                                           |
 | collectFonts             | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput     | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
@@ -311,6 +312,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
 | plugins             | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
 | useVirtualDom       | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
+| logger              | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
 
 #### Use rrweb-player
 

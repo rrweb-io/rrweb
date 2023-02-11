@@ -27,6 +27,7 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
   inDom,
+  getShadowHost,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -179,29 +180,31 @@ export default class MutationBuffer {
   private processedNodeManager: observerParam['processedNodeManager'];
 
   public init(options: MutationBufferParam) {
-    ([
-      'mutationCb',
-      'blockClass',
-      'blockSelector',
-      'maskTextClass',
-      'maskTextSelector',
-      'inlineStylesheet',
-      'maskInputOptions',
-      'maskTextFn',
-      'maskInputFn',
-      'keepIframeSrcFn',
-      'recordCanvas',
-      'inlineImages',
-      'slimDOMOptions',
-      'dataURLOptions',
-      'doc',
-      'mirror',
-      'iframeManager',
-      'stylesheetManager',
-      'shadowDomManager',
-      'canvasManager',
-      'processedNodeManager',
-    ] as const).forEach((key) => {
+    (
+      [
+        'mutationCb',
+        'blockClass',
+        'blockSelector',
+        'maskTextClass',
+        'maskTextSelector',
+        'inlineStylesheet',
+        'maskInputOptions',
+        'maskTextFn',
+        'maskInputFn',
+        'keepIframeSrcFn',
+        'recordCanvas',
+        'inlineImages',
+        'slimDOMOptions',
+        'dataURLOptions',
+        'doc',
+        'mirror',
+        'iframeManager',
+        'stylesheetManager',
+        'shadowDomManager',
+        'canvasManager',
+        'processedNodeManager',
+      ] as const
+    ).forEach((key) => {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
     });
@@ -268,18 +271,11 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      let shadowHost: Element | null = null;
-      if (
-        n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-        (n.getRootNode() as ShadowRoot).host
-      )
-        shadowHost = (n.getRootNode() as ShadowRoot).host;
-
       if (!n.parentNode || !inDom(n)) {
         return;
       }
       const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(shadowHost)
+        ? this.mirror.getId(getShadowHost(n))
         : this.mirror.getId(n.parentNode);
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {

@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Page } from 'puppeteer';
-import type { eventWithTime, recordOptions } from '../../src/types';
+import type { eventWithTime } from '@rrweb/types';
+import type { recordOptions } from '../../src/types';
 import { startServer, launchPuppeteer, ISuite, getServerURL } from '../utils';
 
 const suites: Array<

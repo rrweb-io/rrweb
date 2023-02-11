@@ -26,7 +26,7 @@ describe('polyfill for nodejs', () => {
       polyfillPerformance();
       expect(global.performance).toBe(originalPerformance);
     }
-    const fakePerformance = (jest.fn() as unknown) as Performance;
+    const fakePerformance = jest.fn() as unknown as Performance;
     global.performance = fakePerformance;
     polyfillPerformance();
     expect(global.performance).toEqual(fakePerformance);
@@ -72,9 +72,11 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should not polyfill requestAnimationFrame if it already exists', () => {
-    const fakeRequestAnimationFrame = (jest.fn() as unknown) as typeof global.requestAnimationFrame;
+    const fakeRequestAnimationFrame =
+      jest.fn() as unknown as typeof global.requestAnimationFrame;
     global.requestAnimationFrame = fakeRequestAnimationFrame;
-    const fakeCancelAnimationFrame = (jest.fn() as unknown) as typeof global.cancelAnimationFrame;
+    const fakeCancelAnimationFrame =
+      jest.fn() as unknown as typeof global.cancelAnimationFrame;
     global.cancelAnimationFrame = fakeCancelAnimationFrame;
     polyfillRAF();
     expect(global.requestAnimationFrame).toBe(fakeRequestAnimationFrame);
@@ -91,7 +93,7 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should not polyfill Event type if it already exists', () => {
-    const fakeEvent = (jest.fn() as unknown) as typeof global.Event;
+    const fakeEvent = jest.fn() as unknown as typeof global.Event;
     global.Event = fakeEvent;
     polyfillEvent();
     expect(global.Event).toBe(fakeEvent);
@@ -106,7 +108,7 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should not polyfill Node type if it already exists', () => {
-    const fakeNode = (jest.fn() as unknown) as typeof global.Node;
+    const fakeNode = jest.fn() as unknown as typeof global.Node;
     global.Node = fakeNode;
     polyfillNode();
     expect(global.Node).toBe(fakeNode);
@@ -121,7 +123,7 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should not polyfill document object if it already exists', () => {
-    const fakeDocument = (jest.fn() as unknown) as typeof global.document;
+    const fakeDocument = jest.fn() as unknown as typeof global.document;
     global.document = fakeDocument;
     polyfillDocument();
     expect(global.document).toBe(fakeDocument);

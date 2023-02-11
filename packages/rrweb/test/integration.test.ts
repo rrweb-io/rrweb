@@ -502,7 +502,8 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(
       getHtml('log.html', {
-        plugins: ('[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown) as RecordPlugin<unknown>[],
+        plugins:
+          '[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown as RecordPlugin<unknown>[],
       }),
     );
 
@@ -790,8 +791,8 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.evaluate(() => {
       // get contentDocument of iframe five
-      const contentDocument1 = document.querySelector('iframe')!
-        .contentDocument!;
+      const contentDocument1 =
+        document.querySelector('iframe')!.contentDocument!;
       // create shadow dom #1
       contentDocument1.body.attachShadow({ mode: 'open' });
       contentDocument1.body.shadowRoot!.appendChild(
@@ -978,6 +979,21 @@ describe('record integration tests', function (this: ISuite) {
       li.innerText = 'new list item';
       p.innerText = 'mutated';
     });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should record after DOMContentLoaded event', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'blank.html', {
+        recordAfter: 'DOMContentLoaded',
+      }),
+    );
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
