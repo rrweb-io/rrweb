@@ -106,6 +106,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -123,6 +124,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       },
                       {
@@ -132,11 +134,13 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           \\"charset\\": \\"UTF-8\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 16
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 17
                       },
                       {
@@ -147,11 +151,13 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           \\"content\\": \\"IE=edge\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
@@ -162,11 +168,13 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 20
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 21
                       },
                       {
@@ -177,14 +185,17 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Audio\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 23
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 22
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
@@ -197,17 +208,21 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 25
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\",
+                    \\"rootId\\": 11,
                     \\"id\\": 27
                   },
                   {
@@ -218,6 +233,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 29
                       },
                       {
@@ -228,14 +244,17 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"1 minute of silence\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 30
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       },
                       {
@@ -250,6 +269,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 34
                           },
                           {
@@ -260,25 +280,31 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                               \\"type\\": \\"audio/mpeg\\"
                             },
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 35
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      Your browser does not support the audio element.\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 36
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 33
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 37
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 28
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -303,6 +329,681 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
       \\"muted\\": false,
       \\"playbackRate\\": 1
     }
+  }
+]"
+`;
+
+exports[`cross origin iframes blank.html should filter out forwarded cross origin rrweb messages 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {
+                      \\"rr_src\\": \\"http://localhost:3030/html/blank.html\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\\\n    \\\\n  \\",
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 7
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 15
+                          }
+                        ],
+                        \\"rootId\\": 11,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\\\n\\",
+                        \\"rootId\\": 11,
+                        \\"id\\": 17
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 16
+                  }
+                ],
+                \\"rootId\\": 11,
+                \\"id\\": 12
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 11
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"rootId\\": 11,
+            \\"id\\": 18
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 18,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 19,
+                            \\"id\\": 23
+                          }
+                        ],
+                        \\"rootId\\": 19,
+                        \\"id\\": 22
+                      }
+                    ],
+                    \\"rootId\\": 19,
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\\\n\\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 25
+                      }
+                    ],
+                    \\"rootId\\": 19,
+                    \\"id\\": 24
+                  }
+                ],
+                \\"rootId\\": 19,
+                \\"id\\": 20
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 19
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  }
+]"
+`;
+
+exports[`cross origin iframes blank.html should record same-origin iframe in cross-origin iframe 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {
+                      \\"rr_src\\": \\"http://localhost:3030/html/blank.html\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\\\n    \\\\n  \\",
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 7
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 15
+                          }
+                        ],
+                        \\"rootId\\": 11,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\\\n\\",
+                        \\"rootId\\": 11,
+                        \\"id\\": 17
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 16
+                  }
+                ],
+                \\"rootId\\": 11,
+                \\"id\\": 12
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 11
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"rootId\\": 11,
+            \\"id\\": 18
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 18,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 19,
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Same-origin iframe in cross-origin iframe\\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 23
+                      }
+                    ],
+                    \\"rootId\\": 19,
+                    \\"id\\": 22
+                  }
+                ],
+                \\"rootId\\": 19,
+                \\"id\\": 20
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 19
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  }
+]"
+`;
+
+exports[`cross origin iframes blank.html should support packFn option in record()  1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    },
+    \\"v\\": \\"v1\\"
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {
+                      \\"rr_src\\": \\"http://localhost:3030/html/blank.html\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\\\n    \\\\n  \\",
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 7
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    },
+    \\"v\\": \\"v1\\"
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 15
+                          }
+                        ],
+                        \\"rootId\\": 11,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n\\\\n\\",
+                        \\"rootId\\": 11,
+                        \\"id\\": 17
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 16
+                  }
+                ],
+                \\"rootId\\": 11,
+                \\"id\\": 12
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 11
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    },
+    \\"v\\": \\"v1\\"
   }
 ]"
 `;
@@ -414,6 +1115,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -431,6 +1133,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       },
                       {
@@ -440,11 +1143,13 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           \\"charset\\": \\"UTF-8\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 16
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 17
                       },
                       {
@@ -455,11 +1160,13 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
@@ -470,11 +1177,13 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           \\"content\\": \\"ie=edge\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 20
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 21
                       },
                       {
@@ -485,14 +1194,17 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"form fields\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 23
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 22
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
@@ -505,17 +1217,21 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 25
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n  \\",
+                    \\"rootId\\": 11,
                     \\"id\\": 27
                   },
                   {
@@ -526,6 +1242,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 29
                       },
                       {
@@ -536,6 +1253,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           },
                           {
@@ -548,6 +1266,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 33
                               },
                               {
@@ -557,19 +1276,23 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"type\\": \\"text\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 34
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 35
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 32
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 36
                           },
                           {
@@ -580,6 +1303,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 38
                               },
                               {
@@ -591,19 +1315,23 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"value\\": \\"on\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 39
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 40
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 37
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 41
                           },
                           {
@@ -614,6 +1342,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 43
                               },
                               {
@@ -626,19 +1355,23 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"checked\\": true
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 44
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 45
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 42
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 46
                           },
                           {
@@ -651,6 +1384,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 48
                               },
                               {
@@ -660,19 +1394,23 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"type\\": \\"checkbox\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 49
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 50
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 51
                           },
                           {
@@ -685,6 +1423,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 53
                               },
                               {
@@ -697,19 +1436,23 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"rows\\": \\"10\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 54
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 55
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 52
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 56
                           },
                           {
@@ -722,6 +1465,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 58
                               },
                               {
@@ -736,6 +1480,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 60
                                   },
                                   {
@@ -749,14 +1494,17 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                       {
                                         \\"type\\": 3,
                                         \\"textContent\\": \\"1\\",
+                                        \\"rootId\\": 11,
                                         \\"id\\": 62
                                       }
                                     ],
+                                    \\"rootId\\": 11,
                                     \\"id\\": 61
                                   },
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 63
                                   },
                                   {
@@ -769,30 +1517,37 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                       {
                                         \\"type\\": 3,
                                         \\"textContent\\": \\"2\\",
+                                        \\"rootId\\": 11,
                                         \\"id\\": 65
                                       }
                                     ],
+                                    \\"rootId\\": 11,
                                     \\"id\\": 64
                                   },
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"\\\\n        \\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 66
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 59
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 67
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 57
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 68
                           },
                           {
@@ -805,6 +1560,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 70
                               },
                               {
@@ -814,33 +1570,41 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"type\\": \\"password\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 71
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 72
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 73
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 30
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 74
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 28
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -1345,6 +2109,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -1362,6 +2127,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       },
                       {
@@ -1371,11 +2137,13 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           \\"charset\\": \\"UTF-8\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 16
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 17
                       },
                       {
@@ -1386,11 +2154,13 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           \\"content\\": \\"width=device-width, initial-scale=1.0\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
@@ -1401,11 +2171,13 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           \\"content\\": \\"ie=edge\\"
                         },
                         \\"childNodes\\": [],
+                        \\"rootId\\": 11,
                         \\"id\\": 20
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 21
                       },
                       {
@@ -1416,14 +2188,17 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"form fields\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 23
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 22
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
@@ -1436,17 +2211,21 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 25
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\n  \\",
+                    \\"rootId\\": 11,
                     \\"id\\": 27
                   },
                   {
@@ -1457,6 +2236,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 29
                       },
                       {
@@ -1467,6 +2247,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           },
                           {
@@ -1479,6 +2260,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 33
                               },
                               {
@@ -1488,19 +2270,23 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"type\\": \\"text\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 34
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 35
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 32
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 36
                           },
                           {
@@ -1511,6 +2297,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 38
                               },
                               {
@@ -1522,19 +2309,23 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"value\\": \\"on\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 39
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 40
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 37
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 41
                           },
                           {
@@ -1545,6 +2336,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 43
                               },
                               {
@@ -1557,19 +2349,23 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"checked\\": true
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 44
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 45
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 42
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 46
                           },
                           {
@@ -1582,6 +2378,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 48
                               },
                               {
@@ -1591,19 +2388,23 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"type\\": \\"checkbox\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 49
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 50
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 51
                           },
                           {
@@ -1616,6 +2417,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 53
                               },
                               {
@@ -1628,19 +2430,23 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"rows\\": \\"10\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 54
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 55
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 52
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 56
                           },
                           {
@@ -1653,6 +2459,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 58
                               },
                               {
@@ -1667,6 +2474,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 60
                                   },
                                   {
@@ -1680,14 +2488,17 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                       {
                                         \\"type\\": 3,
                                         \\"textContent\\": \\"1\\",
+                                        \\"rootId\\": 11,
                                         \\"id\\": 62
                                       }
                                     ],
+                                    \\"rootId\\": 11,
                                     \\"id\\": 61
                                   },
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 63
                                   },
                                   {
@@ -1700,30 +2511,37 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                       {
                                         \\"type\\": 3,
                                         \\"textContent\\": \\"2\\",
+                                        \\"rootId\\": 11,
                                         \\"id\\": 65
                                       }
                                     ],
+                                    \\"rootId\\": 11,
                                     \\"id\\": 64
                                   },
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"\\\\n        \\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 66
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 59
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 67
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 57
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 68
                           },
                           {
@@ -1736,6 +2554,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 70
                               },
                               {
@@ -1745,33 +2564,41 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"type\\": \\"password\\"
                                 },
                                 \\"childNodes\\": [],
+                                \\"rootId\\": 11,
                                 \\"id\\": 71
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 72
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 73
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 30
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 74
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 28
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -1923,6 +2750,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -1945,12 +2773,15 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -1961,6 +2792,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -1971,6 +2803,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -1978,19 +2811,23 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -2001,6 +2838,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -2011,6 +2849,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -2021,36 +2860,45 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -2316,6 +3164,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -2338,12 +3187,15 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -2354,6 +3206,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -2364,6 +3217,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -2371,19 +3225,23 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -2394,6 +3252,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -2404,6 +3263,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -2414,36 +3274,45 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -2495,6 +3364,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
             \\"tagName\\": \\"style\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
+            \\"rootId\\": 11,
             \\"id\\": 34
           }
         }
@@ -2713,6 +3583,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -2735,12 +3606,15 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -2751,6 +3625,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -2761,6 +3636,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -2768,19 +3644,23 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -2791,6 +3671,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -2801,6 +3682,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -2811,36 +3693,45 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -2980,6 +3871,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -3002,12 +3894,15 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -3018,6 +3913,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -3028,6 +3924,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -3035,19 +3932,23 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -3058,6 +3959,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -3068,6 +3970,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -3078,36 +3981,45 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -3140,6 +4052,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\\\n      \\",
+            \\"rootId\\": 11,
             \\"id\\": 25
           }
         },
@@ -3151,6 +4064,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
             \\"tagName\\": \\"i\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
+            \\"rootId\\": 11,
             \\"id\\": 26
           }
         },
@@ -3160,6 +4074,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\\\n        \\",
+            \\"rootId\\": 11,
             \\"id\\": 27
           }
         },
@@ -3171,6 +4086,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
             \\"tagName\\": \\"b\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
+            \\"rootId\\": 11,
             \\"id\\": 28
           }
         },
@@ -3180,6 +4096,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"1\\",
+            \\"rootId\\": 11,
             \\"id\\": 29
           }
         },
@@ -3189,6 +4106,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\\\n      \\",
+            \\"rootId\\": 11,
             \\"id\\": 30
           }
         },
@@ -3198,6 +4116,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\\\n    \\",
+            \\"rootId\\": 11,
             \\"id\\": 31
           }
         },
@@ -3209,6 +4128,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
+            \\"rootId\\": 11,
             \\"id\\": 33
           }
         },
@@ -3220,6 +4140,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
+            \\"rootId\\": 11,
             \\"id\\": 24
           }
         }
@@ -3335,6 +4256,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -3357,12 +4279,15 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -3373,6 +4298,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -3383,6 +4309,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -3390,19 +4317,23 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -3413,6 +4344,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -3423,6 +4355,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -3433,36 +4366,45 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -3600,6 +4542,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -3622,12 +4565,15 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -3638,6 +4584,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -3648,6 +4595,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -3655,19 +4603,23 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -3678,6 +4630,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -3688,6 +4641,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -3698,36 +4652,45 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -3865,6 +4828,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -3887,12 +4851,15 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -3903,6 +4870,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -3913,6 +4881,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -3920,19 +4889,23 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -3943,6 +4916,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -3953,6 +4927,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -3963,36 +4938,45 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],
@@ -4022,6 +5006,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
             \\"tagName\\": \\"canvas\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
+            \\"rootId\\": 11,
             \\"id\\": 33
           }
         }
@@ -4166,6 +5151,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                 \\"name\\": \\"html\\",
                 \\"publicId\\": \\"\\",
                 \\"systemId\\": \\"\\",
+                \\"rootId\\": 11,
                 \\"id\\": 12
               },
               {
@@ -4188,12 +5174,15 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"rootId\\": 11,
                             \\"id\\": 16
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 15
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 14
                   },
                   {
@@ -4204,6 +5193,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 18
                       },
                       {
@@ -4214,6 +5204,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 20
                           },
                           {
@@ -4221,19 +5212,23 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                             \\"tagName\\": \\"p\\",
                             \\"attributes\\": {},
                             \\"childNodes\\": [],
+                            \\"rootId\\": 11,
                             \\"id\\": 21
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 22
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 19
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 11,
                         \\"id\\": 23
                       },
                       {
@@ -4244,6 +5239,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 25
                           },
                           {
@@ -4254,6 +5250,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 27
                               },
                               {
@@ -4264,36 +5261,45 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                                   {
                                     \\"type\\": 3,
                                     \\"textContent\\": \\"1\\",
+                                    \\"rootId\\": 11,
                                     \\"id\\": 29
                                   }
                                 ],
+                                \\"rootId\\": 11,
                                 \\"id\\": 28
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
                                 \\"id\\": 30
                               }
                             ],
+                            \\"rootId\\": 11,
                             \\"id\\": 26
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
                             \\"id\\": 31
                           }
                         ],
+                        \\"rootId\\": 11,
                         \\"id\\": 24
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 11,
                         \\"id\\": 32
                       }
                     ],
+                    \\"rootId\\": 11,
                     \\"id\\": 17
                   }
                 ],
+                \\"rootId\\": 11,
                 \\"id\\": 13
               }
             ],

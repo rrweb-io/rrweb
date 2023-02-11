@@ -215,6 +215,11 @@ if (process.env.BROWSER_ONLY) {
       pathFn: (p) => p,
     },
     {
+      input: './src/entries/all.ts',
+      name: 'rrweb',
+      pathFn: toAllPath,
+    },
+    {
       input: './src/plugins/console/record/index.ts',
       name: 'rrwebConsoleRecord',
       pathFn: toPluginPath('console', 'record'),

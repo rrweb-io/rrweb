@@ -223,7 +223,6 @@ export function createPlayerService(
         }),
         startLive: assign({
           baselineTime: (ctx, event) => {
-            ctx.timer.toggleLiveMode(true);
             ctx.timer.start();
             if (event.type === 'TO_LIVE' && event.payload.baselineTime) {
               return event.payload.baselineTime;

@@ -1,5 +1,5 @@
 import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
-import { genId } from 'rrweb-snapshot';
+import { genId, NodeType } from 'rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, IncrementalSource } from '@rrweb/types';
@@ -8,12 +8,12 @@ import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
-  private crossOriginIframeMap: WeakMap<
-    MessageEventSource,
-    HTMLIFrameElement
-  > = new WeakMap();
+  private crossOriginIframeMap: WeakMap<MessageEventSource, HTMLIFrameElement> =
+    new WeakMap();
   public crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
   public crossOriginIframeStyleMirror: CrossOriginIframeMirror;
+  public crossOriginIframeRootIdMap: WeakMap<HTMLIFrameElement, number> =
+    new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
@@ -83,24 +83,30 @@ export class IframeManager {
       );
   }
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
-    if ((message as CrossOriginIframeMessageEvent).data.type === 'rrweb') {
-      const iframeSourceWindow = message.source;
-      if (!iframeSourceWindow) return;
+    const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
+    if (
+      crossOriginMessageEvent.data.type !== 'rrweb' ||
+      // To filter out the rrweb messages which are forwarded by some sites.
+      crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin
+    )
+      return;
 
-      const iframeEl = this.crossOriginIframeMap.get(message.source);
-      if (!iframeEl) return;
+    const iframeSourceWindow = message.source;
+    if (!iframeSourceWindow) return;
 
-      const transformedEvent = this.transformCrossOriginEvent(
-        iframeEl,
-        (message as CrossOriginIframeMessageEvent).data.event,
+    const iframeEl = this.crossOriginIframeMap.get(message.source);
+    if (!iframeEl) return;
+
+    const transformedEvent = this.transformCrossOriginEvent(
+      iframeEl,
+      crossOriginMessageEvent.data.event,
+    );
+
+    if (transformedEvent)
+      this.wrappedEmit(
+        transformedEvent,
+        crossOriginMessageEvent.data.isCheckout,
       );
-
-      if (transformedEvent)
-        this.wrappedEmit(
-          transformedEvent,
-          (message as CrossOriginIframeMessageEvent).data.isCheckout,
-        );
-    }
   }
 
   private transformCrossOriginEvent(
@@ -115,6 +121,9 @@ export class IframeManager {
          * Replaces the original id of the iframe with a new set of unique ids
          */
         this.replaceIdOnNode(e.data.node, iframeEl);
+        const rootId = e.data.node.id;
+        this.crossOriginIframeRootIdMap.set(iframeEl, rootId);
+        this.patchRootIdOnNode(e.data.node, rootId);
         return {
           timestamp: e.timestamp,
           type: EventType.IncrementalSnapshot,
@@ -165,6 +174,8 @@ export class IframeManager {
                 'previousId',
               ]);
               this.replaceIdOnNode(n.node, iframeEl);
+              const rootId = this.crossOriginIframeRootIdMap.get(iframeEl);
+              rootId && this.patchRootIdOnNode(n.node, rootId);
             });
             e.data.removes.forEach((n) => {
               this.replaceIds(n, iframeEl, ['parentId', 'id']);
@@ -267,10 +278,19 @@ export class IframeManager {
     node: serializedNodeWithId,
     iframeEl: HTMLIFrameElement,
   ) {
-    this.replaceIds(node, iframeEl, ['id']);
+    this.replaceIds(node, iframeEl, ['id', 'rootId']);
     if ('childNodes' in node) {
       node.childNodes.forEach((child) => {
         this.replaceIdOnNode(child, iframeEl);
+      });
+    }
+  }
+
+  private patchRootIdOnNode(node: serializedNodeWithId, rootId: number) {
+    if (node.type !== NodeType.Document && !node.rootId) node.rootId = rootId;
+    if ('childNodes' in node) {
+      node.childNodes.forEach((child) => {
+        this.patchRootIdOnNode(child, rootId);
       });
     }
   }

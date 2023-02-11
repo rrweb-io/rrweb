@@ -22,9 +22,9 @@ describe('webglMutation', () => {
     const createShaderMock = jest.fn().mockImplementation(() => {
       return new WebGLShader();
     });
-    const context = ({
+    const context = {
       createShader: createShaderMock,
-    } as unknown) as WebGLRenderingContext;
+    } as unknown as WebGLRenderingContext;
     jest.spyOn(canvas, 'getContext').mockImplementation(() => {
       return context;
     });

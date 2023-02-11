@@ -13,9 +13,9 @@ import {
   getServerURL,
   launchPuppeteer,
   startServer,
-  stripBase64,
   waitForRAF,
 } from '../utils';
+import { unpack } from '../../src/packer/unpack';
 import type * as http from 'http';
 
 interface ISuite {
@@ -33,42 +33,61 @@ interface IWindow extends Window {
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
+    pack: (e: eventWithTime) => string;
   };
   emit: (e: eventWithTime) => undefined;
   snapshots: eventWithTime[];
 }
+type ExtraOptions = {
+  usePackFn?: boolean;
+};
 
-async function injectRecordScript(frame: puppeteer.Frame) {
+async function injectRecordScript(
+  frame: puppeteer.Frame,
+  options?: ExtraOptions,
+) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../../dist/rrweb.js'),
+    path: path.resolve(__dirname, '../../dist/rrweb-all.js'),
   });
-  await frame.evaluate(() => {
-    ((window as unknown) as IWindow).snapshots = [];
-    const { record } = ((window as unknown) as IWindow).rrweb;
-    record({
+  options = options || {};
+  await frame.evaluate((options) => {
+    (window as unknown as IWindow).snapshots = [];
+    const { record, pack } = (window as unknown as IWindow).rrweb;
+    const config: recordOptions<eventWithTime> = {
       recordCrossOriginIframes: true,
       recordCanvas: true,
       emit(event) {
-        ((window as unknown) as IWindow).snapshots.push(event);
-        ((window as unknown) as IWindow).emit(event);
+        (window as unknown as IWindow).snapshots.push(event);
+        (window as unknown as IWindow).emit(event);
       },
-    });
-  });
+    };
+    if (options.usePackFn) {
+      config.packFn = pack;
+    }
+    record(config);
+  }, options);
 
   for (const child of frame.childFrames()) {
-    await injectRecordScript(child);
+    await injectRecordScript(child, options);
   }
 }
 
-const setup = function (this: ISuite, content: string): ISuite {
-  const ctx = {} as ISuite;
+const setup = function (
+  this: ISuite,
+  content: string,
+  options?: ExtraOptions,
+): ISuite {
+  const ctx = {} as ISuite & {
+    serverB: http.Server;
+    serverBURL: string;
+  };
 
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
     ctx.server = await startServer();
     ctx.serverURL = getServerURL(ctx.server);
-    // ctx.serverB = await startServer();
-    // ctx.serverBURL = getServerURL(ctx.serverB);
+    ctx.serverB = await startServer();
+    ctx.serverBURL = getServerURL(ctx.serverB);
 
     const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
@@ -90,7 +109,7 @@ const setup = function (this: ISuite, content: string): ISuite {
     });
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
-    await injectRecordScript(ctx.page.mainFrame());
+    await injectRecordScript(ctx.page.mainFrame(), options);
   });
 
   afterEach(async () => {
@@ -100,7 +119,7 @@ const setup = function (this: ISuite, content: string): ISuite {
   afterAll(async () => {
     await ctx.browser.close();
     ctx.server.close();
-    // ctx.serverB.close();
+    ctx.serverB.close();
   });
 
   return ctx;
@@ -129,21 +148,21 @@ describe('cross origin iframes', function (this: ISuite) {
 
       const frame = await el.contentFrame();
       const events = await frame?.evaluate(
-        () => ((window as unknown) as IWindow).snapshots,
+        () => (window as unknown as IWindow).snapshots,
       );
       expect(events).toMatchObject([]);
     });
 
     it('will emit events if it is in the top level iframe', async () => {
       const events = await ctx.page.evaluate(
-        () => ((window as unknown) as IWindow).snapshots,
+        () => (window as unknown as IWindow).snapshots,
       );
       expect(events.length).not.toBe(0);
     });
 
     it('should emit contents of iframe', async () => {
       const events = await ctx.page.evaluate(
-        () => ((window as unknown) as IWindow).snapshots,
+        () => (window as unknown as IWindow).snapshots,
       );
       await waitForRAF(ctx.page);
       // two events (full snapshot + meta) from main frame, and one full snapshot from iframe
@@ -152,7 +171,7 @@ describe('cross origin iframes', function (this: ISuite) {
 
     it('should emit full snapshot event from iframe as mutation event', async () => {
       const events = await ctx.page.evaluate(
-        () => ((window as unknown) as IWindow).snapshots,
+        () => (window as unknown as IWindow).snapshots,
       );
       await waitForRAF(ctx.page);
       // two events from main frame, and two from iframe
@@ -174,7 +193,7 @@ describe('cross origin iframes', function (this: ISuite) {
 
     it('should use unique id for child of iframes', async () => {
       const events: eventWithTime[] = await ctx.page.evaluate(
-        () => ((window as unknown) as IWindow).snapshots,
+        () => (window as unknown as IWindow).snapshots,
       );
       await waitForRAF(ctx.page);
       expect(
@@ -192,7 +211,7 @@ describe('cross origin iframes', function (this: ISuite) {
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
 
       const events: eventWithTime[] = await ctx.page.evaluate(
-        () => ((window as unknown) as IWindow).snapshots,
+        () => (window as unknown as IWindow).snapshots,
       );
       expect(
         (events[events.length - 1].data as mutationData).removes,
@@ -324,7 +343,7 @@ describe('cross origin iframes', function (this: ISuite) {
     it('should record custom events', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
       await frame.evaluate(() => {
-        ((window as unknown) as IWindow).rrweb.addCustomEvent('test', {
+        (window as unknown as IWindow).rrweb.addCustomEvent('test', {
           id: 1,
           parentId: 1,
           nextId: 2,
@@ -369,18 +388,17 @@ describe('cross origin iframes', function (this: ISuite) {
       });
       await waitForRAF(ctx.page);
       await ctx.page.evaluate(() => {
-        (document.adoptedStyleSheets![0]
-          .cssRules[0] as CSSStyleRule).style.setProperty('color', 'green');
-        (document.adoptedStyleSheets![0]
-          .cssRules[0] as CSSStyleRule).style.removeProperty('display');
+        (
+          document.adoptedStyleSheets![0].cssRules[0] as CSSStyleRule
+        ).style.setProperty('color', 'green');
+        (
+          document.adoptedStyleSheets![0].cssRules[0] as CSSStyleRule
+        ).style.removeProperty('display');
       });
       await frame.evaluate(() => {
-        (document.adoptedStyleSheets![0]
-          .cssRules[0] as CSSStyleRule).style.setProperty(
-          'font-size',
-          'medium',
-          'important',
-        );
+        (
+          document.adoptedStyleSheets![0].cssRules[0] as CSSStyleRule
+        ).style.setProperty('font-size', 'medium', 'important');
         document.adoptedStyleSheets![0].insertRule('h2 { color: red; }');
       });
       await waitForRAF(ctx.page);
@@ -426,8 +444,9 @@ describe('cross origin iframes', function (this: ISuite) {
           'color',
           'green',
         );
-        (document.styleSheets[0]
-          .cssRules[0] as CSSStyleRule).style.removeProperty('display');
+        (
+          document.styleSheets[0].cssRules[0] as CSSStyleRule
+        ).style.removeProperty('display');
       });
       await frame.evaluate(() => {
         (document.styleSheets[0].cssRules[0] as CSSStyleRule).style.setProperty(
@@ -484,6 +503,80 @@ describe('cross origin iframes', function (this: ISuite) {
       assertSnapshot(snapshots);
     });
   });
+
+  describe('blank.html', function (this: ISuite) {
+    const content = `
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <iframe src="{SERVER_URL}/html/blank.html"></iframe>
+      </body>
+    </html>
+  `;
+    const ctx = setup.call(this, content) as ISuite & {
+      serverBURL: string;
+    };
+
+    it('should record same-origin iframe in cross-origin iframe', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        const iframe2 = document.createElement('iframe');
+        // Append a same-origin iframe in a cross-origin iframe.
+        document.body.appendChild(iframe2);
+        iframe2.contentDocument!.body.appendChild(
+          document.createTextNode('Same-origin iframe in cross-origin iframe'),
+        );
+      });
+
+      await waitForRAF(ctx.page);
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+
+    it('should filter out forwarded cross origin rrweb messages', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      const iframe2URL = `${ctx.serverBURL}/html/blank.html`;
+      await frame.evaluate((iframe2URL) => {
+        // Add a message proxy to forward messages from child frames to its parent frame.
+        window.addEventListener('message', (event) => {
+          if (event.source !== window)
+            window.parent.postMessage(event.data, '*');
+        });
+        const iframe2 = document.createElement('iframe');
+        iframe2.src = iframe2URL;
+        document.body.appendChild(iframe2);
+      }, iframe2URL);
+
+      // Wait for iframe2 to load
+      await ctx.page.waitForFrame(iframe2URL);
+      const iframe2 = frame.childFrames()[0];
+      // Record iframe2
+      await injectRecordScript(iframe2);
+
+      await waitForRAF(iframe2);
+      const snapshots = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(snapshots);
+    });
+
+    describe('should support packFn option in record()', () => {
+      const ctx = setup.call(this, content, { usePackFn: true });
+      it('', async () => {
+        const frame = ctx.page.mainFrame().childFrames()[0];
+        await waitForRAF(frame);
+        const packedSnapshots = (await ctx.page.evaluate(
+          'window.snapshots',
+        )) as string[];
+        const unpackedSnapshots = packedSnapshots.map((packed) =>
+          unpack(packed),
+        ) as eventWithTime[];
+        assertSnapshot(unpackedSnapshots);
+      });
+    });
+  });
 });
 
 describe('same origin iframes', function (this: ISuite) {
@@ -503,7 +596,7 @@ describe('same origin iframes', function (this: ISuite) {
 
   it('should emit contents of iframe once', async () => {
     const events = await ctx.page.evaluate(
-      () => ((window as unknown) as IWindow).snapshots,
+      () => (window as unknown as IWindow).snapshots,
     );
     await waitForRAF(ctx.page);
     // two events (full snapshot + meta) from main frame,

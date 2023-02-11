@@ -76,6 +76,9 @@ function record<T = eventWithTime>(
     mousemoveWait,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    recordAfter = options.recordAfter === 'DOMContentLoaded'
+      ? options.recordAfter
+      : 'load',
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
@@ -165,10 +168,14 @@ function record<T = eventWithTime>(
         e = plugin.eventProcessor(e);
       }
     }
-    if (packFn) {
-      e = (packFn(e) as unknown) as eventWithTime;
+    if (
+      packFn &&
+      // Disable packing events which will be emitted to parent frames.
+      !passEmitsToParent
+    ) {
+      e = packFn(e) as unknown as eventWithTime;
     }
-    return (e as unknown) as T;
+    return e as unknown as T;
   };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
@@ -190,6 +197,7 @@ function record<T = eventWithTime>(
       const message: CrossOriginIframeMessageEventContent<T> = {
         type: 'rrweb',
         event: eventProcessor(e),
+        origin: window.location.origin,
         isCheckout,
       };
       window.parent.postMessage(message, '*');
@@ -403,16 +411,6 @@ function record<T = eventWithTime>(
 
   try {
     const handlers: listenerHandler[] = [];
-    handlers.push(
-      on('DOMContentLoaded', () => {
-        wrappedEmit(
-          wrapEvent({
-            type: EventType.DomContentLoaded,
-            data: {},
-          }),
-        );
-      }),
-    );
 
     const observe = (doc: Document) => {
       return initObservers(
@@ -579,6 +577,17 @@ function record<T = eventWithTime>(
       init();
     } else {
       handlers.push(
+        on('DOMContentLoaded', () => {
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.DomContentLoaded,
+              data: {},
+            }),
+          );
+          if (recordAfter === 'DOMContentLoaded') init();
+        }),
+      );
+      handlers.push(
         on(
           'load',
           () => {
@@ -588,7 +597,7 @@ function record<T = eventWithTime>(
                 data: {},
               }),
             );
-            init();
+            if (recordAfter === 'load') init();
           },
           window,
         ),

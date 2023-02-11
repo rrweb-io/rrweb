@@ -195,7 +195,7 @@ export class BaseRRNode implements IRRNode {
 }
 
 export function BaseRRDocumentImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>
+  RRNode extends ConstrainedConstructor<IRRNode>,
 >(RRNodeClass: RRNode) {
   return class BaseRRDocument extends RRNodeClass implements IRRDocument {
     public readonly nodeType: number = NodeType.DOCUMENT_NODE;
@@ -203,6 +203,12 @@ export function BaseRRDocumentImpl<
     public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
     public readonly RRNodeType = RRNodeType.Document;
     public textContent: string | null = null;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(...args: any[]) {
+      super(args);
+      this.ownerDocument = this;
+    }
 
     public get documentElement(): IRRElement | null {
       return (
@@ -258,6 +264,7 @@ export function BaseRRDocumentImpl<
       }
       childNode.parentElement = null;
       childNode.parentNode = this;
+      childNode.ownerDocument = this.ownerDocument;
       this.childNodes.push(childNode);
       return childNode;
     }
@@ -285,6 +292,7 @@ export function BaseRRDocumentImpl<
       this.childNodes.splice(childIndex, 0, newChild);
       newChild.parentElement = null;
       newChild.parentNode = this;
+      newChild.ownerDocument = this.ownerDocument;
       return newChild;
     }
 
@@ -393,13 +401,14 @@ export function BaseRRDocumentImpl<
 }
 
 export function BaseRRDocumentTypeImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>
+  RRNode extends ConstrainedConstructor<IRRNode>,
 >(RRNodeClass: RRNode) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return class BaseRRDocumentType
     extends RRNodeClass
-    implements IRRDocumentType {
+    implements IRRDocumentType
+  {
     public readonly nodeType: number = NodeType.DOCUMENT_TYPE_NODE;
     public readonly RRNodeType = RRNodeType.DocumentType;
     public readonly nodeName: string;
@@ -423,7 +432,7 @@ export function BaseRRDocumentTypeImpl<
 }
 
 export function BaseRRElementImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>
+  RRNode extends ConstrainedConstructor<IRRNode>,
 >(RRNodeClass: RRNode) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -471,9 +480,9 @@ export function BaseRRElementImpl<
     }
 
     public get style() {
-      const style = (this.attributes.style
-        ? parseCSSText(this.attributes.style)
-        : {}) as CSSStyleDeclaration;
+      const style = (
+        this.attributes.style ? parseCSSText(this.attributes.style) : {}
+      ) as CSSStyleDeclaration;
       const hyphenateRE = /\B([A-Z])/g;
       style.setProperty = (
         name: string,
@@ -522,6 +531,7 @@ export function BaseRRElementImpl<
       this.childNodes.push(newChild);
       newChild.parentNode = this;
       newChild.parentElement = this;
+      newChild.ownerDocument = this.ownerDocument;
       return newChild;
     }
 
@@ -535,6 +545,7 @@ export function BaseRRElementImpl<
       this.childNodes.splice(childIndex, 0, newChild);
       newChild.parentElement = this;
       newChild.parentNode = this;
+      newChild.ownerDocument = this.ownerDocument;
       return newChild;
     }
 
@@ -573,7 +584,7 @@ export function BaseRRElementImpl<
 }
 
 export function BaseRRMediaElementImpl<
-  RRElement extends ConstrainedConstructor<IRRElement>
+  RRElement extends ConstrainedConstructor<IRRElement>,
 >(RRElementClass: RRElement) {
   return class BaseRRMediaElement extends RRElementClass {
     public currentTime?: number;
@@ -627,7 +638,7 @@ export function BaseRRTextImpl<RRNode extends ConstrainedConstructor<IRRNode>>(
 }
 
 export function BaseRRCommentImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>
+  RRNode extends ConstrainedConstructor<IRRNode>,
 >(RRNodeClass: RRNode) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -657,13 +668,14 @@ export function BaseRRCommentImpl<
 }
 
 export function BaseRRCDATASectionImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>
+  RRNode extends ConstrainedConstructor<IRRNode>,
 >(RRNodeClass: RRNode) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return class BaseRRCDATASection
     extends RRNodeClass
-    implements IRRCDATASection {
+    implements IRRCDATASection
+  {
     public readonly nodeName: '#cdata-section' = '#cdata-section';
     public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
     public readonly RRNodeType = RRNodeType.CDATA;

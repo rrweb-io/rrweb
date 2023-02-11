@@ -267,8 +267,8 @@ function buildNode(
             rr_dataURL: string;
           };
           // If the canvas element is created in RRDom runtime (seeking to a time point), the canvas context isn't supported. So the data has to be stored and not handled until diff process. https://github.com/rrweb-io/rrweb/pull/944
-          if (((node as unknown) as RRCanvasElement).RRNodeType)
-            ((node as unknown) as RRCanvasElement).rr_dataURL = value.toString();
+          if ((node as unknown as RRCanvasElement).RRNodeType)
+            (node as unknown as RRCanvasElement).rr_dataURL = value.toString();
         } else if (tagName === 'img' && name === 'rr_dataURL') {
           const image = node as HTMLImageElement;
           if (!image.currentSrc.startsWith('data:')) {
