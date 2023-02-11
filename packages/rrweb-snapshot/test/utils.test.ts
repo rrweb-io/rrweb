@@ -71,8 +71,8 @@ describe('utils', () => {
     it('should return false if two nodes have different node types', () => {
       expect(
         isNodeMetaEqual(
-          (undefined as unknown) as serializedNode,
-          (null as unknown) as serializedNode,
+          undefined as unknown as serializedNode,
+          null as unknown as serializedNode,
         ),
       ).toBeFalsy();
       expect(isNodeMetaEqual(document1, element1)).toBeFalsy();
