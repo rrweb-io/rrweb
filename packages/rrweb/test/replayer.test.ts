@@ -21,6 +21,7 @@ import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import documentReplacementEvents from './events/document-replacement';
+import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
 import { ReplayerEvents } from '@rrweb/types';
 
 interface ISuite {
@@ -1014,5 +1015,65 @@ describe('replayer', function () {
     expect(warningThrown).not.toHaveBeenCalled();
     // No errors should be thrown.
     expect(errorThrown).not.toHaveBeenCalled();
+  });
+
+  it('should remove outdated hover styles in iframes and shadow doms', async () => {
+    await page.evaluate(`events = ${JSON.stringify(hoverInIframeShadowDom)}`);
+
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(550);
+    `);
+    const replayerIframe = await page.$('iframe');
+    const contentDocument = await replayerIframe!.contentFrame()!;
+    const iframe = await contentDocument!.$('iframe');
+    expect(iframe).not.toBeNull();
+    const docInIFrame = await iframe?.contentFrame();
+    expect(docInIFrame).not.toBeNull();
+
+    // hover element in iframe at 500ms
+    expect(
+      await docInIFrame?.evaluate(
+        () => document.querySelector('span')?.className,
+      ),
+    ).toBe(':hover');
+    // At this time, there should be no class name in shadow dom
+    expect(
+      await docInIFrame?.evaluate(() => {
+        const shadowRoot = document.querySelector('div')?.shadowRoot;
+        return (shadowRoot?.childNodes[0] as HTMLElement).className;
+      }),
+    ).toBe('');
+
+    // hover element in shadow dom at 1000ms
+    await page.evaluate('replayer.pause(1050);');
+    // :hover style should be removed from iframe
+    expect(
+      await docInIFrame?.evaluate(
+        () => document.querySelector('span')?.className,
+      ),
+    ).toBe('');
+    expect(
+      await docInIFrame?.evaluate(() => {
+        const shadowRoot = document.querySelector('div')?.shadowRoot;
+        return (shadowRoot?.childNodes[0] as HTMLElement).className;
+      }),
+    ).toBe(':hover');
+
+    // hover element in iframe at 1500ms again
+    await page.evaluate('replayer.pause(1550);');
+    // hover style should be removed from shadow dom
+    expect(
+      await docInIFrame?.evaluate(() => {
+        const shadowRoot = document.querySelector('div')?.shadowRoot;
+        return (shadowRoot?.childNodes[0] as HTMLElement).className;
+      }),
+    ).toBe('');
+    expect(
+      await docInIFrame?.evaluate(
+        () => document.querySelector('span')?.className,
+      ),
+    ).toBe(':hover');
   });
 });
