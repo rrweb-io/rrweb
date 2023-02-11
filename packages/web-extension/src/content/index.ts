@@ -48,9 +48,8 @@ void (() => {
 async function initMainPage() {
   let bufferedEvents: eventWithTime[] = [];
   let newEvents: eventWithTime[] = [];
-  let startResponseCb:
-    | ((response: RecordStartedMessage) => void)
-    | undefined = undefined;
+  let startResponseCb: ((response: RecordStartedMessage) => void) | undefined =
+    undefined;
   channel.provide(ServiceName.StartRecord, async () => {
     startRecord();
     return new Promise((resolve) => {
@@ -77,9 +76,8 @@ async function initMainPage() {
       };
     });
   });
-  let stopResponseCb:
-    | ((response: RecordStoppedMessage) => void)
-    | undefined = undefined;
+  let stopResponseCb: ((response: RecordStoppedMessage) => void) | undefined =
+    undefined;
   channel.provide(ServiceName.StopRecord, () => {
     window.postMessage({ message: MessageName.StopRecord });
     return new Promise((resolve) => {
@@ -169,7 +167,8 @@ async function initCrossOriginIframe() {
       const statusChange = change[
         LocalDataKey.recorderStatus
       ] as Storage.StorageChange;
-      const newStatus = statusChange.newValue as LocalData[LocalDataKey.recorderStatus];
+      const newStatus =
+        statusChange.newValue as LocalData[LocalDataKey.recorderStatus];
       if (newStatus.status === RecorderStatus.RECORDING) startRecord();
       else
         window.postMessage(

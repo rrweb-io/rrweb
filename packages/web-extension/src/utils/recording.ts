@@ -60,9 +60,11 @@ export async function resumeRecording(
       LocalDataKey.recorderStatus
     ] as LocalData[LocalDataKey.recorderStatus];
   if (!bufferedEvents)
-    bufferedEvents = ((await Browser.storage.local.get(
-      LocalDataKey.bufferedEvents,
-    )) as LocalData)[LocalDataKey.bufferedEvents];
+    bufferedEvents = (
+      (await Browser.storage.local.get(
+        LocalDataKey.bufferedEvents,
+      )) as LocalData
+    )[LocalDataKey.bufferedEvents];
   const { startTimestamp, pausedTimestamp } = status;
   // On Firefox, the new tab is not communicable immediately after it is created.
   if (isFirefox()) await new Promise((r) => setTimeout(r, 50));

@@ -108,9 +108,8 @@ void (async () => {
       .then(async (data) => {
         const localData = data as LocalData;
         if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-        const { status, activeTabId, startTimestamp } = localData[
-          LocalDataKey.recorderStatus
-        ];
+        const { status, activeTabId, startTimestamp } =
+          localData[LocalDataKey.recorderStatus];
         if (activeTabId !== tabId || status !== RecorderStatus.RECORDING)
           return;
 
