@@ -81,7 +81,7 @@ export class ShadowDomManager {
       scrollCb: this.scrollCb,
       // https://gist.github.com/praveenpuglia/0832da687ed5a5d7a0907046c9ef1813
       // scroll is not allowed to pass the boundary, so we need to listen the shadow document
-      doc: (shadowRoot as unknown) as Document,
+      doc: shadowRoot as unknown as Document,
       mirror: this.mirror,
     });
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
@@ -113,9 +113,11 @@ export class ShadowDomManager {
       const manager = this;
       this.restorePatches.push(
         patch(
-          (iframeElement.contentWindow as Window & {
-            HTMLElement: { prototype: HTMLElement };
-          }).HTMLElement.prototype,
+          (
+            iframeElement.contentWindow as Window & {
+              HTMLElement: { prototype: HTMLElement };
+            }
+          ).HTMLElement.prototype,
           'attachShadow',
           function (original: (init: ShadowRootInit) => ShadowRoot) {
             return function (this: HTMLElement, option: ShadowRootInit) {

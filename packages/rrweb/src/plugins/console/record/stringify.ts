@@ -123,7 +123,7 @@ export function stringify(
       if (value instanceof Event) {
         const eventResult: Record<string, unknown> = {};
         for (const eventKey in value) {
-          const eventValue = ((value as unknown) as Record<string, unknown>)[
+          const eventValue = (value as unknown as Record<string, unknown>)[
             eventKey
           ];
           if (Array.isArray(eventValue)) {

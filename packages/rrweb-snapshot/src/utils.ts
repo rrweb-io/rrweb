@@ -110,7 +110,7 @@ export class Mirror implements IMirror<Node> {
 
     if (n.childNodes) {
       n.childNodes.forEach((childNode) =>
-        this.removeNodeFromMap((childNode as unknown) as Node),
+        this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
   }

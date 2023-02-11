@@ -193,9 +193,8 @@ interface RRElementTagNameMap {
   video: RRMediaElement;
 }
 
-type RRElementType<
-  K extends keyof HTMLElementTagNameMap
-> = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
+type RRElementType<K extends keyof HTMLElementTagNameMap> =
+  K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
 
 function getValidTagName(element: HTMLElement): string {
   // https://github.com/rrweb-io/rrweb-snapshot/issues/56

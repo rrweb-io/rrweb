@@ -8,16 +8,12 @@ import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
-  private crossOriginIframeMap: WeakMap<
-    MessageEventSource,
-    HTMLIFrameElement
-  > = new WeakMap();
+  private crossOriginIframeMap: WeakMap<MessageEventSource, HTMLIFrameElement> =
+    new WeakMap();
   public crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
   public crossOriginIframeStyleMirror: CrossOriginIframeMirror;
-  public crossOriginIframeRootIdMap: WeakMap<
-    HTMLIFrameElement,
-    number
-  > = new WeakMap();
+  public crossOriginIframeRootIdMap: WeakMap<HTMLIFrameElement, number> =
+    new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;

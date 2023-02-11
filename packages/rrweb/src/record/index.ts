@@ -173,9 +173,9 @@ function record<T = eventWithTime>(
       // Disable packing events which will be emitted to parent frames.
       !passEmitsToParent
     ) {
-      e = (packFn(e) as unknown) as eventWithTime;
+      e = packFn(e) as unknown as eventWithTime;
     }
-    return (e as unknown) as T;
+    return e as unknown as T;
   };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
