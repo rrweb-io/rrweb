@@ -1,4 +1,4 @@
-<p align="center">
+<p align="center"> 
   <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
 </p>
 <p align="center">
