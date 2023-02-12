@@ -1,10 +1,5 @@
 ---
-'rrweb-snapshot': patch
-'@rrweb/types': patch
-'rrdom': patch
-'rrdom-nodejs': patch
 'rrweb': patch
-'rrweb-player': patch
 ---
 
 Add missing change logs manually. In the next version, all change logs will be generated automatically.
@@ -22,8 +17,6 @@ Add missing change logs manually. In the next version, all change logs will be g
 - [`729b8bf`](https://github.com/rrweb-io/rrweb/commit/729b8bf38c8c7f2e1b22b4e0f7cab14f0807bc74) [#1083](https://github.com/rrweb-io/rrweb/pull/1083) Thanks [@Juice10](https://github.com/Juice10)! - Fix: Catch iframe manager & fix formatting issues.
 
 - [`03821d9`](https://github.com/rrweb-io/rrweb/commit/03821d9b9fa0513e6e373881d43102ceb9388340) [#1083](https://github.com/rrweb-io/rrweb/pull/1083) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Harmonize on a single getWindowScroll
-
-- [`fe69bd6`](https://github.com/rrweb-io/rrweb/commit/fe69bd6456cead304bfc77cf72c9db0f8c030842) [#1087](https://github.com/rrweb-io/rrweb/pull/1087) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Refactor all suffix of bundled scripts with commonjs module from 'js' to cjs.
 
 - [`d08913d`](https://github.com/rrweb-io/rrweb/commit/d08913d0dc506dbf119e94686fe5f01c415316c9) [#1086](https://github.com/rrweb-io/rrweb/pull/1086) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: missed adopted style sheets of shadow doms in checkout full snapshot.
 
@@ -46,8 +39,6 @@ Add missing change logs manually. In the next version, all change logs will be g
 - [`3caa25e`](https://github.com/rrweb-io/rrweb/commit/3caa25ed9b19954c98775f22d5fa47233fa3d1db) [#1098](https://github.com/rrweb-io/rrweb/pull/1098) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Refactor: Don't have requestAnimationFrame looping in background for Live Mode.
 
 - [`3a26e36`](https://github.com/rrweb-io/rrweb/commit/3a26e36f6f625c0391c7e6d3f1050660adfccc4f) [#1092](https://github.com/rrweb-io/rrweb/pull/1092) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: regression of issue: ShadowHost can't be a string (issue 941)
-
-- [`4ee86fe`](https://github.com/rrweb-io/rrweb/commit/4ee86fe66d3e1fe7071f9c8764d82a6fa5c71d57) [#1091](https://github.com/rrweb-io/rrweb/pull/1091) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: improve rrdom robustness.
 
 - [`07d22e7`](https://github.com/rrweb-io/rrweb/commit/07d22e7cd999a48e7371aaef1b979574bb746500) [#1111](https://github.com/rrweb-io/rrweb/pull/1111) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Feat: enable to customize logger in the replayer.
 
