@@ -131,7 +131,8 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   }
 
   destroyTree() {
-    this.childNodes = [];
+    this.firstChild = null;
+    this.lastChild = null;
     this.mirror.reset();
   }
 

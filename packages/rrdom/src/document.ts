@@ -3,8 +3,8 @@ import { parseCSSText, camelize, toCSSText } from './style';
 export interface IRRNode {
   parentElement: IRRNode | null;
   parentNode: IRRNode | null;
-  childNodes: IRRNode[];
   ownerDocument: IRRDocument;
+  readonly childNodes: IRRNode[];
   readonly ELEMENT_NODE: number;
   readonly TEXT_NODE: number;
   // corresponding nodeType value of standard HTML Node
@@ -16,8 +16,11 @@ export interface IRRNode {
 
   lastChild: IRRNode | null;
 
+  previousSibling: IRRNode | null;
+
   nextSibling: IRRNode | null;
 
+  // If the node is a document or a doctype, textContent returns null.
   textContent: string | null;
 
   contains(node: IRRNode): boolean;
@@ -127,11 +130,16 @@ type ConstrainedConstructor<T = Record<string, unknown>> = new (
  * This is designed as an abstract class so it should never be instantiated.
  */
 export class BaseRRNode implements IRRNode {
-  public childNodes: IRRNode[] = [];
   public parentElement: IRRNode | null = null;
   public parentNode: IRRNode | null = null;
-  public textContent: string | null;
   public ownerDocument: IRRDocument;
+  public firstChild: IRRNode | null = null;
+  public lastChild: IRRNode | null = null;
+  public previousSibling: IRRNode | null = null;
+  public nextSibling: IRRNode | null = null;
+
+  public textContent: string | null;
+
   public readonly ELEMENT_NODE: number = NodeType.ELEMENT_NODE;
   public readonly TEXT_NODE: number = NodeType.TEXT_NODE;
   // corresponding nodeType value of standard HTML Node
@@ -144,20 +152,14 @@ export class BaseRRNode implements IRRNode {
     //
   }
 
-  public get firstChild(): IRRNode | null {
-    return this.childNodes[0] || null;
-  }
-
-  public get lastChild(): IRRNode | null {
-    return this.childNodes[this.childNodes.length - 1] || null;
-  }
-
-  public get nextSibling(): IRRNode | null {
-    const parentNode = this.parentNode;
-    if (!parentNode) return null;
-    const siblings = parentNode.childNodes;
-    const index = siblings.indexOf(this);
-    return siblings[index + 1] || null;
+  public get childNodes(): IRRNode[] {
+    const childNodes: IRRNode[] = [];
+    let childIterator: IRRNode | null = this.firstChild;
+    while (childIterator) {
+      childNodes.push(childIterator);
+      childIterator = childIterator.nextSibling;
+    }
+    return childNodes;
   }
 
   public contains(node: IRRNode) {
@@ -206,11 +208,11 @@ export function BaseRRDocumentImpl<
     public readonly nodeName: '#document' = '#document';
     public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
     public readonly RRNodeType = RRNodeType.Document;
-    public textContent: string | null = null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
       super(args);
+      this.textContent = null;
       this.ownerDocument = this;
     }
 
@@ -252,8 +254,8 @@ export function BaseRRDocumentImpl<
       return this.documentElement;
     }
 
-    public appendChild(childNode: IRRNode): IRRNode {
-      const nodeType = childNode.RRNodeType;
+    public appendChild(newChild: IRRNode): IRRNode {
+      const nodeType = newChild.RRNodeType;
       if (
         nodeType === RRNodeType.Element ||
         nodeType === RRNodeType.DocumentType
@@ -266,11 +268,10 @@ export function BaseRRDocumentImpl<
           );
         }
       }
-      childNode.parentElement = null;
-      childNode.parentNode = this;
-      childNode.ownerDocument = this.ownerDocument;
-      this.childNodes.push(childNode);
-      return childNode;
+
+      const child = appendChild(this, newChild);
+      child.parentElement = null;
+      return child;
     }
 
     public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
@@ -287,33 +288,19 @@ export function BaseRRDocumentImpl<
           );
         }
       }
-      if (refChild === null) return this.appendChild(newChild);
-      const childIndex = this.childNodes.indexOf(refChild);
-      if (childIndex == -1)
-        throw new Error(
-          "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
-        );
-      this.childNodes.splice(childIndex, 0, newChild);
-      newChild.parentElement = null;
-      newChild.parentNode = this;
-      newChild.ownerDocument = this.ownerDocument;
-      return newChild;
+
+      const child = insertBefore(this, newChild, refChild);
+      child.parentElement = null;
+      return child;
     }
 
-    public removeChild(node: IRRNode) {
-      const indexOfChild = this.childNodes.indexOf(node);
-      if (indexOfChild === -1)
-        throw new Error(
-          "Failed to execute 'removeChild' on 'RRDocument': The RRNode to be removed is not a child of this RRNode.",
-        );
-      this.childNodes.splice(indexOfChild, 1);
-      node.parentElement = null;
-      node.parentNode = null;
-      return node;
+    public removeChild(node: IRRNode): IRRNode {
+      return removeChild(this, node);
     }
 
     public open() {
-      this.childNodes = [];
+      this.firstChild = null;
+      this.lastChild = null;
     }
 
     public close() {
@@ -419,7 +406,6 @@ export function BaseRRDocumentTypeImpl<
     public readonly name: string;
     public readonly publicId: string;
     public readonly systemId: string;
-    public textContent: string | null = null;
 
     constructor(qualifiedName: string, publicId: string, systemId: string) {
       super();
@@ -427,6 +413,7 @@ export function BaseRRDocumentTypeImpl<
       this.publicId = publicId;
       this.systemId = systemId;
       this.nodeName = qualifiedName;
+      this.textContent = null;
     }
 
     toString() {
@@ -463,7 +450,9 @@ export function BaseRRElementImpl<
     }
 
     public set textContent(textContent: string) {
-      this.childNodes = [this.ownerDocument.createTextNode(textContent)];
+      this.firstChild = null;
+      this.lastChild = null;
+      this.appendChild(this.ownerDocument.createTextNode(textContent));
     }
 
     public get classList(): ClassList {
@@ -532,37 +521,15 @@ export function BaseRRElementImpl<
     }
 
     public appendChild(newChild: IRRNode): IRRNode {
-      this.childNodes.push(newChild);
-      newChild.parentNode = this;
-      newChild.parentElement = this;
-      newChild.ownerDocument = this.ownerDocument;
-      return newChild;
+      return appendChild(this, newChild);
     }
 
     public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
-      if (refChild === null) return this.appendChild(newChild);
-      const childIndex = this.childNodes.indexOf(refChild);
-      if (childIndex == -1)
-        throw new Error(
-          "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
-        );
-      this.childNodes.splice(childIndex, 0, newChild);
-      newChild.parentElement = this;
-      newChild.parentNode = this;
-      newChild.ownerDocument = this.ownerDocument;
-      return newChild;
+      return insertBefore(this, newChild, refChild);
     }
 
     public removeChild(node: IRRNode): IRRNode {
-      const indexOfChild = this.childNodes.indexOf(node);
-      if (indexOfChild === -1)
-        throw new Error(
-          "Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode.",
-        );
-      this.childNodes.splice(indexOfChild, 1);
-      node.parentElement = null;
-      node.parentNode = null;
-      return node;
+      return removeChild(this, node);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -744,6 +711,65 @@ export type CSSStyleDeclaration = Record<string, string> & {
   ) => void;
   removeProperty: (name: string) => string;
 };
+
+function appendChild(parent: IRRNode, newChild: IRRNode) {
+  if (parent.lastChild) {
+    parent.lastChild.nextSibling = newChild;
+    newChild.previousSibling = parent.lastChild;
+  } else {
+    parent.firstChild = newChild;
+    newChild.previousSibling = null;
+  }
+  parent.lastChild = newChild;
+  newChild.nextSibling = null;
+  newChild.parentNode = parent;
+  newChild.parentElement = parent;
+  newChild.ownerDocument = parent.ownerDocument;
+  return newChild;
+}
+
+function insertBefore(
+  parent: IRRNode,
+  newChild: IRRNode,
+  refChild: IRRNode | null,
+) {
+  if (!refChild) return appendChild(parent, newChild);
+
+  if (refChild.parentNode !== parent)
+    throw new Error(
+      "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
+    );
+
+  newChild.previousSibling = refChild.previousSibling;
+  refChild.previousSibling = newChild;
+  newChild.nextSibling = refChild;
+
+  if (newChild.previousSibling) newChild.previousSibling.nextSibling = newChild;
+  else parent.firstChild = newChild;
+
+  newChild.parentElement = parent;
+  newChild.parentNode = parent;
+  newChild.ownerDocument = parent.ownerDocument;
+  return newChild;
+}
+
+function removeChild(parent: IRRNode, child: IRRNode) {
+  if (child.parentNode !== parent)
+    throw new Error(
+      "Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode.",
+    );
+  if (child.previousSibling)
+    child.previousSibling.nextSibling = child.nextSibling;
+  else parent.firstChild = child.nextSibling;
+  if (child.nextSibling)
+    child.nextSibling.previousSibling = child.previousSibling;
+  else parent.lastChild = child.previousSibling;
+  child.previousSibling = null;
+  child.nextSibling = null;
+  child.parentElement = null;
+  child.parentNode = null;
+  return child;
+}
 
 // Enumerate nodeType value of standard HTML Node.
 export enum NodeType {
