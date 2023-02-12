@@ -426,7 +426,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.removeAttribute).toBeDefined();
       expect(node.attachShadow).toBeDefined();
       expect(node.dispatchEvent).toBeDefined();
-      expect(node.dispatchEvent((null as unknown) as Event)).toBeTruthy();
+      expect(node.dispatchEvent(null as unknown as Event)).toBeTruthy();
       expect(node.toString()).toEqual('DIV id="id" class="className" ');
     });
 

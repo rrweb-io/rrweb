@@ -281,14 +281,14 @@ export function isTouchEvent(
 export function polyfill(win = window) {
   if ('NodeList' in win && !win.NodeList.prototype.forEach) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    win.NodeList.prototype.forEach = (Array.prototype
-      .forEach as unknown) as NodeList['forEach'];
+    win.NodeList.prototype.forEach = Array.prototype
+      .forEach as unknown as NodeList['forEach'];
   }
 
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    win.DOMTokenList.prototype.forEach = (Array.prototype
-      .forEach as unknown) as DOMTokenList['forEach'];
+    win.DOMTokenList.prototype.forEach = Array.prototype
+      .forEach as unknown as DOMTokenList['forEach'];
   }
 
   // https://github.com/Financial-Times/polyfill-service/pull/183
@@ -433,7 +433,7 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean(((n as unknown) as Element)?.shadowRoot);
+  return Boolean((n as unknown as Element)?.shadowRoot);
 }
 
 export function getNestedRule(
@@ -519,16 +519,29 @@ export class StyleSheetMirror {
   }
 }
 
-export function getRootShadowHost(n: Node): Node | null {
-  const shadowHost = (n.getRootNode() as ShadowRoot).host;
-  // If n is in a nested shadow dom.
-  let rootShadowHost = shadowHost;
-
-  while (
-    rootShadowHost?.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    (rootShadowHost.getRootNode() as ShadowRoot).host
+/**
+ * Get the direct shadow host of a node in shadow dom. Returns null if it is not in a shadow dom.
+ */
+export function getShadowHost(n: Node): Element | null {
+  let shadowHost: Element | null = null;
+  if (
+    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    (n.getRootNode() as ShadowRoot).host
   )
-    rootShadowHost = (rootShadowHost.getRootNode() as ShadowRoot).host;
+    shadowHost = (n.getRootNode() as ShadowRoot).host;
+  return shadowHost;
+}
+
+/**
+ * Get the root shadow host of a node in nested shadow doms. Returns the node itself if it is not in a shadow dom.
+ */
+export function getRootShadowHost(n: Node): Node {
+  let rootShadowHost: Node = n;
+
+  let shadowHost: Element | null;
+  // If n is in a nested shadow dom.
+  while ((shadowHost = getShadowHost(rootShadowHost)))
+    rootShadowHost = shadowHost;
 
   return rootShadowHost;
 }
@@ -537,7 +550,7 @@ export function shadowHostInDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
-  return Boolean(shadowHost && doc.contains(shadowHost));
+  return doc.contains(shadowHost);
 }
 
 export function inDom(n: Node): boolean {

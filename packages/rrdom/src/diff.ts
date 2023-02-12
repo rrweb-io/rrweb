@@ -301,10 +301,9 @@ function diffAfterUpdatingChildren(
         oldTree.textContent !==
         (newTree as IRRText | IRRComment | IRRCDATASection).data
       )
-        oldTree.textContent = (newTree as
-          | IRRText
-          | IRRComment
-          | IRRCDATASection).data;
+        oldTree.textContent = (
+          newTree as IRRText | IRRComment | IRRCDATASection
+        ).data;
       break;
     }
   }
