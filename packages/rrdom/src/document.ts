@@ -756,7 +756,7 @@ function insertBefore(
 function removeChild(parent: IRRNode, child: IRRNode) {
   if (child.parentNode !== parent)
     throw new Error(
-      "Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode.",
+      "Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode.",
     );
   if (child.previousSibling)
     child.previousSibling.nextSibling = child.nextSibling;
