@@ -18,6 +18,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.26.0",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
@@ -31,6 +32,7 @@
     "lerna": "^4.0.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
+    "prettier": "2.8.4",
     "turbo": "^1.2.4",
     "typescript": "^4.7.3"
   },

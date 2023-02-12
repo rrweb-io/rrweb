@@ -8,7 +8,7 @@ import {
   attributes,
   legacyAttributes,
 } from './types';
-import { isElement, Mirror } from './utils';
+import { isElement, Mirror, isNodeMetaEqual } from './utils';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -364,6 +364,19 @@ export function buildNodeWithSN(
     afterAppend,
     cache,
   } = options;
+  /**
+   * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
+   * This situation (duplicated nodes) can happen when recorder has some unfixed bugs and the same node is recorded twice. Or something goes wrong when saving or transferring event data.
+   * Duplicated node creation may cause unexpected errors in replayer. This check tries best effort to prevent the errors.
+   */
+  if (mirror.has(n.id)) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const nodeInMirror = mirror.getNode(n.id)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const meta = mirror.getMeta(nodeInMirror)!;
+    // For safety concern, check if the node in mirror is the same as the node we are trying to build
+    if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
+  }
   let node = buildNode(n, { doc, hackCss, cache });
   if (!node) {
     return null;
