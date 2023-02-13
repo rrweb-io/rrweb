@@ -1,4 +1,4 @@
-import type { listenerHandler, RecordPlugin, IWindow } from '../../../types';
+import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
 import { patch } from '../../../utils';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
@@ -90,9 +90,9 @@ function initLogObserver(
   win: IWindow, // top window or in an iframe
   options: LogRecordOptions,
 ): listenerHandler {
-  const logOptions = (options
-    ? Object.assign({}, defaultLogOptions, options)
-    : defaultLogOptions) as {
+  const logOptions = (
+    options ? Object.assign({}, defaultLogOptions, options) : defaultLogOptions
+  ) as {
     level: LogLevel[];
     lengthThreshold: number;
     stringifyOptions?: StringifyOptions;
@@ -114,25 +114,54 @@ function initLogObserver(
   const cancelHandlers: listenerHandler[] = [];
   // add listener to thrown errors
   if (logOptions.level.includes('error')) {
-    if (window) {
-      const errorHandler = (event: ErrorEvent) => {
-        const message = event.message,
-          error = event.error as Error;
-        const trace: string[] = ErrorStackParser.parse(
-          error,
-        ).map((stackFrame: StackFrame) => stackFrame.toString());
-        const payload = [stringify(message, logOptions.stringifyOptions)];
-        cb({
-          level: 'error',
-          trace,
-          payload,
-        });
-      };
-      window.addEventListener('error', errorHandler);
-      cancelHandlers.push(() => {
-        if (window) window.removeEventListener('error', errorHandler);
+    const errorHandler = (event: ErrorEvent) => {
+      const message = event.message,
+        error = event.error as Error;
+      const trace: string[] = ErrorStackParser.parse(error).map(
+        (stackFrame: StackFrame) => stackFrame.toString(),
+      );
+      const payload = [stringify(message, logOptions.stringifyOptions)];
+      cb({
+        level: 'error',
+        trace,
+        payload,
       });
-    }
+    };
+    win.addEventListener('error', errorHandler);
+    cancelHandlers.push(() => {
+      win.removeEventListener('error', errorHandler);
+    });
+    const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
+      let error: Error;
+      let payload: string[];
+      if (event.reason instanceof Error) {
+        error = event.reason;
+        payload = [
+          stringify(
+            `Uncaught (in promise) ${error.name}: ${error.message}`,
+            logOptions.stringifyOptions,
+          ),
+        ];
+      } else {
+        error = new Error();
+        payload = [
+          stringify('Uncaught (in promise)', logOptions.stringifyOptions),
+          stringify(event.reason, logOptions.stringifyOptions),
+        ];
+      }
+      const trace: string[] = ErrorStackParser.parse(error).map(
+        (stackFrame: StackFrame) => stackFrame.toString(),
+      );
+      cb({
+        level: 'error',
+        trace,
+        payload,
+      });
+    };
+    win.addEventListener('unhandledrejection', unhandledrejectionHandler);
+    cancelHandlers.push(() => {
+      win.removeEventListener('unhandledrejection', unhandledrejectionHandler);
+    });
   }
   for (const levelType of logOptions.level) {
     cancelHandlers.push(replace(logger, levelType));

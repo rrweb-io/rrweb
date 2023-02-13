@@ -6,7 +6,7 @@ import {
   canvasMutationWithType,
   IWindow,
   listenerHandler,
-} from '../../../types';
+} from '@rrweb/types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
@@ -24,6 +24,18 @@ function patchGLPrototype(
   const props = Object.getOwnPropertyNames(prototype);
 
   for (const prop of props) {
+    if (
+      //prop.startsWith('get') ||  // e.g. getProgramParameter, but too risky
+      [
+        'isContextLost',
+        'canvas',
+        'drawingBufferWidth',
+        'drawingBufferHeight',
+      ].includes(prop)
+    ) {
+      // skip read only propery/functions
+      continue;
+    }
     try {
       if (typeof prototype[prop as keyof typeof prototype] !== 'function') {
         continue;
@@ -36,9 +48,9 @@ function patchGLPrototype(
         ) {
           return function (this: typeof prototype, ...args: Array<unknown>) {
             const result = original.apply(this, args);
-            saveWebGLVar(result, win, prototype);
+            saveWebGLVar(result, win, this);
             if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
-              const recordArgs = serializeArgs([...args], win, prototype);
+              const recordArgs = serializeArgs([...args], win, this);
               const mutation: canvasMutationWithType = {
                 type,
                 property: prop,

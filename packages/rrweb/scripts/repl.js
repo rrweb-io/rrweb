@@ -21,7 +21,44 @@ void (async () => {
   const code = getCode();
   let events = [];
 
-  await start();
+  async function injectRecording(frame) {
+    await frame.evaluate((rrwebCode) => {
+      const win = window;
+      if (win.__IS_RECORDING__) return;
+      win.__IS_RECORDING__ = true;
+
+      (async () => {
+        function loadScript(code) {
+          const s = document.createElement('script');
+          let r = false;
+          s.type = 'text/javascript';
+          s.innerHTML = code;
+          if (document.head) {
+            document.head.append(s);
+          } else {
+            requestAnimationFrame(() => {
+              document.head.append(s);
+            });
+          }
+        }
+        loadScript(rrwebCode);
+
+        win.events = [];
+        rrweb.record({
+          emit: (event) => {
+            win.events.push(event);
+            win._replLog(event);
+          },
+          plugins: [],
+          recordCanvas: true,
+          recordCrossOriginIframes: true,
+          collectFonts: true,
+        });
+      })();
+    }, code);
+  }
+
+  await start('https://react-redux.realworld.io');
 
   const fakeGoto = async (page, url) => {
     const intercept = async (request) => {
@@ -38,16 +75,19 @@ void (async () => {
     page.off('request', intercept);
   };
 
-  async function start() {
+  async function start(defaultURL) {
     events = [];
-    const { url } = await inquirer.prompt([
+    let { url } = await inquirer.prompt([
       {
         type: 'input',
         name: 'url',
-        message:
-          'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
+        message: `Enter the url you want to record, e.g [${defaultURL}]: `,
       },
     ]);
+
+    if (url === '') {
+      url = defaultURL;
+    }
 
     console.log(`Going to open ${url}...`);
     await record(url);
@@ -92,7 +132,7 @@ void (async () => {
     ]);
 
     if (shouldRecordAnother) {
-      start();
+      start(url);
     } else {
       process.exit();
     }
@@ -112,34 +152,18 @@ void (async () => {
       ],
     });
     const page = await browser.newPage();
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: 300000,
-    });
 
     await page.exposeFunction('_replLog', (event) => {
       events.push(event);
     });
-    await page.evaluate(`;${code}
-      window.__IS_RECORDING__ = true
-      rrweb.record({
-        emit: event => window._replLog(event),
-        recordCanvas: true,
-        collectFonts: true
-      });
-    `);
-    page.on('framenavigated', async () => {
-      const isRecording = await page.evaluate('window.__IS_RECORDING__');
-      if (!isRecording) {
-        await page.evaluate(`;${code}
-          window.__IS_RECORDING__ = true
-          rrweb.record({
-            emit: event => window._replLog(event),
-            recordCanvas: true,
-            collectFonts: true
-          });
-        `);
-      }
+
+    page.on('framenavigated', async (frame) => {
+      await injectRecording(frame);
+    });
+
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 300000,
     });
 
     emitter.once('done', async (shouldReplay) => {

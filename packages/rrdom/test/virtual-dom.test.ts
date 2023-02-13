@@ -3,10 +3,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import puppeteer from 'puppeteer';
-import * as rollup from 'rollup';
-import resolve from '@rollup/plugin-node-resolve';
-import typescript from 'rollup-plugin-typescript2';
+import * as puppeteer from 'puppeteer';
 import { JSDOM } from 'jsdom';
 import {
   cdataNode,
@@ -29,6 +26,7 @@ import {
   RRElement,
   BaseRRNode as RRNode,
 } from '../src';
+import { compileTSCode } from './utils';
 
 describe('RRDocument for browser environment', () => {
   jest.setTimeout(60_000);
@@ -39,7 +37,7 @@ describe('RRDocument for browser environment', () => {
 
   describe('create a RRNode from a real Node', () => {
     it('should support quicksmode documents', () => {
-      // seperate jsdom document as changes to the document would otherwise bleed into other tests
+      // separate jsdom document as changes to the document would otherwise bleed into other tests
       const dom = new JSDOM();
       const document = dom.window.document;
 
@@ -79,7 +77,7 @@ describe('RRDocument for browser environment', () => {
       // build from element
       expect(mirror.getMeta(document.documentElement)).toBeNull();
       rrNode = buildFromNode(
-        (document.documentElement as unknown) as Node,
+        document.documentElement as unknown as Node,
         rrdom,
         mirror,
       )!;
@@ -197,22 +195,7 @@ describe('RRDocument for browser environment', () => {
 
     beforeAll(async () => {
       browser = await puppeteer.launch();
-      const bundle = await rollup.rollup({
-        input: path.resolve(__dirname, '../src/index.ts'),
-        plugins: [
-          (resolve() as unknown) as rollup.Plugin,
-          (typescript({
-            tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
-          }) as unknown) as rollup.Plugin,
-        ],
-      });
-      const {
-        output: [{ code: _code }],
-      } = await bundle.generate({
-        name: 'rrdom',
-        format: 'iife',
-      });
-      code = _code;
+      code = await compileTSCode(path.resolve(__dirname, '../src/index.ts'));
     });
     afterAll(async () => {
       await browser.close();
@@ -374,7 +357,7 @@ describe('RRDocument for browser environment', () => {
         expect(dom.mirror.getId(node1)).toEqual(0);
         const node2 = dom.createTextNode('text');
         expect(dom.mirror.getId(node2)).toEqual(-1);
-        expect(dom.mirror.getId((null as unknown) as RRNode)).toEqual(-1);
+        expect(dom.mirror.getId(null as unknown as RRNode)).toEqual(-1);
       });
 
       it('has() should return whether the mirror has an ID', () => {

@@ -7,8 +7,8 @@ import {
   Optional,
   mouseInteractionData,
   event,
-  recordOptions,
-} from '../src/types';
+} from '@rrweb/types';
+import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
 import * as path from 'path';
@@ -17,7 +17,7 @@ import * as url from 'url';
 import * as fs from 'fs';
 
 export async function launchPuppeteer(
-  options?: Parameters<typeof puppeteer['launch']>[0],
+  options?: Parameters<(typeof puppeteer)['launch']>[0],
 ) {
   return await puppeteer.launch({
     headless: process.env.PUPPETEER_HEADLESS ? true : false,
@@ -119,7 +119,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.data.href = 'about:blank';
         }
         // FIXME: travis coordinates seems different with my laptop
-        const coordinatesReg = /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g;
+        const coordinatesReg =
+          /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g;
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseInteraction
@@ -178,19 +179,30 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
                 add.node.attributes.rr_dataURL &&
                 typeof add.node.attributes.rr_dataURL === 'string'
               ) {
-                add.node.attributes.rr_dataURL = add.node.attributes.rr_dataURL.replace(
-                  /,.+$/,
-                  ',...',
-                );
+                add.node.attributes.rr_dataURL =
+                  add.node.attributes.rr_dataURL.replace(/,.+$/, ',...');
               }
             }
           });
+        } else if (
+          s.type === EventType.IncrementalSnapshot &&
+          s.data.source === IncrementalSource.MediaInteraction
+        ) {
+          // round the currentTime to 1 decimal place
+          if (s.data.currentTime) {
+            s.data.currentTime = Math.round(s.data.currentTime * 10) / 10;
+          }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
         return s as event;
       }),
     null,
     2,
+  ).replace(
+    // servers might get run on a random port,
+    // so we need to normalize the port number
+    /http:\/\/localhost:\d+/g,
+    'http://localhost:3030',
   );
 }
 
@@ -271,7 +283,7 @@ export function stripBase64(events: eventWithTime[]) {
   const base64Strings: string[] = [];
   function walk<T>(obj: T): T {
     if (!obj || typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return (obj.map((e) => walk(e)) as unknown) as T;
+    if (Array.isArray(obj)) return obj.map((e) => walk(e)) as unknown as T;
     const newObj: Partial<T> = {};
     for (const prop in obj) {
       const value = obj[prop];
@@ -563,8 +575,10 @@ export const polyfillWebGLGlobals = () => {
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
 
-export async function waitForRAF(page: puppeteer.Page) {
-  return await page.evaluate(() => {
+export async function waitForRAF(
+  pageOrFrame: puppeteer.Page | puppeteer.Frame,
+) {
+  return await pageOrFrame.evaluate(() => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(resolve);
@@ -586,6 +600,7 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     userTriggeredOnInput: ${options.userTriggeredOnInput},
     maskTextFn: ${options.maskTextFn},
     recordCanvas: ${options.recordCanvas},
+    recordAfter: '${options.recordAfter || 'load'}',
     inlineImages: ${options.inlineImages},
     plugins: ${options.plugins}
   });

@@ -8,6 +8,7 @@ import {
   Mirror,
   isNativeShadowDom,
 } from 'rrweb-snapshot';
+import type { observerParam, MutationBufferParam } from '../types';
 import type {
   mutationRecord,
   textCursor,
@@ -15,10 +16,8 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   styleAttributeValue,
-  observerParam,
-  MutationBufferParam,
   Optional,
-} from '../types';
+} from '@rrweb/types';
 import {
   isBlocked,
   isAncestorRemoved,
@@ -27,6 +26,8 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
+  inDom,
+  getShadowHost,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -176,30 +177,34 @@ export default class MutationBuffer {
   private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
+  private processedNodeManager: observerParam['processedNodeManager'];
 
   public init(options: MutationBufferParam) {
-    ([
-      'mutationCb',
-      'blockClass',
-      'blockSelector',
-      'maskTextClass',
-      'maskTextSelector',
-      'inlineStylesheet',
-      'maskInputOptions',
-      'maskTextFn',
-      'maskInputFn',
-      'keepIframeSrcFn',
-      'recordCanvas',
-      'inlineImages',
-      'slimDOMOptions',
-      'dataURLOptions',
-      'doc',
-      'mirror',
-      'iframeManager',
-      'stylesheetManager',
-      'shadowDomManager',
-      'canvasManager',
-    ] as const).forEach((key) => {
+    (
+      [
+        'mutationCb',
+        'blockClass',
+        'blockSelector',
+        'maskTextClass',
+        'maskTextSelector',
+        'inlineStylesheet',
+        'maskInputOptions',
+        'maskTextFn',
+        'maskInputFn',
+        'keepIframeSrcFn',
+        'recordCanvas',
+        'inlineImages',
+        'slimDOMOptions',
+        'dataURLOptions',
+        'doc',
+        'mirror',
+        'iframeManager',
+        'stylesheetManager',
+        'shadowDomManager',
+        'canvasManager',
+        'processedNodeManager',
+      ] as const
+    ).forEach((key) => {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
     });
@@ -266,24 +271,11 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      const shadowHost: Element | null = n.getRootNode
-        ? (n.getRootNode() as ShadowRoot)?.host
-        : null;
-      // If n is in a nested shadow dom.
-      let rootShadowHost = shadowHost;
-      while ((rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host)
-        rootShadowHost =
-          (rootShadowHost?.getRootNode?.() as ShadowRoot | undefined)?.host ||
-          null;
-      // ensure contains is passed a Node, or it will throw an error
-      const notInDoc =
-        !this.doc.contains(n) &&
-        (!rootShadowHost || !this.doc.contains(rootShadowHost));
-      if (!n.parentNode || notInDoc) {
+      if (!n.parentNode || !inDom(n)) {
         return;
       }
       const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(shadowHost)
+        ? this.mirror.getId(getShadowHost(n))
         : this.mirror.getId(n.parentNode);
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
@@ -311,18 +303,20 @@ export default class MutationBuffer {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
           if (isSerializedStylesheet(currentN, this.mirror)) {
-            this.stylesheetManager.addStylesheet(currentN as HTMLLinkElement);
+            this.stylesheetManager.trackLinkElement(
+              currentN as HTMLLinkElement,
+            );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, document);
+            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn, this.mirror);
+          this.iframeManager.attachIframe(iframe, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
         onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachStylesheet(link, childSn, this.mirror);
+          this.stylesheetManager.attachLinkElement(link, childSn);
         },
       });
       if (sn) {
@@ -387,15 +381,20 @@ export default class MutationBuffer {
             }
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
-              const nodeInShadowDom = _node.value;
-              // Get the host of the shadow dom and treat it as parent node.
-              const shadowHost: Element | null = nodeInShadowDom.getRootNode
-                ? (nodeInShadowDom.getRootNode() as ShadowRoot)?.host
-                : null;
-              const parentId = this.mirror.getId(shadowHost);
-              if (parentId !== -1) {
-                node = _node;
-                break;
+              const unhandledNode = _node.value;
+              // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
+              if (
+                unhandledNode.parentNode &&
+                unhandledNode.parentNode.nodeType ===
+                  Node.DOCUMENT_FRAGMENT_NODE
+              ) {
+                const shadowHost = (unhandledNode.parentNode as ShadowRoot)
+                  .host;
+                const parentId = this.mirror.getId(shadowHost);
+                if (parentId !== -1) {
+                  node = _node;
+                  break;
+                }
               }
             }
           }
@@ -636,6 +635,9 @@ export default class MutationBuffer {
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
   private genAdds = (n: Node, target?: Node) => {
+    // this node was already recorded in other buffer, ignore it
+    if (this.processedNodeManager.inOtherBuffer(n, this)) return;
+
     if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
         return;
@@ -655,8 +657,15 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false))
+    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
       n.childNodes.forEach((childN) => this.genAdds(childN));
+      if (hasShadowRoot(n)) {
+        n.shadowRoot.childNodes.forEach((childN) => {
+          this.processedNodeManager.add(childN, this);
+          this.genAdds(childN, n);
+        });
+      }
+    }
   };
 }
 

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import 'construct-style-sheets-polyfill';
 import {
   assertDomSnapshot,
   launchPuppeteer,
@@ -17,12 +18,20 @@ import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
+import adoptedStyleSheet from './events/adopted-style-sheet';
+import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
+import documentReplacementEvents from './events/document-replacement';
+import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
+import { ReplayerEvents } from '@rrweb/types';
 
 interface ISuite {
   code: string;
   browser: puppeteer.Browser;
   page: puppeteer.Page;
 }
+
+type IWindow = Window &
+  typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
   jest.setTimeout(10_000);
@@ -42,7 +51,7 @@ describe('replayer', function () {
     page = await browser.newPage();
     await page.goto('about:blank');
     await page.evaluate(code);
-    await page.evaluate(`let events = ${JSON.stringify(events)}`);
+    await page.evaluate(`var events = ${JSON.stringify(events)}`);
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
@@ -589,7 +598,9 @@ describe('replayer', function () {
     expect(
       await iframeTwoDocument!.evaluate(
         (iframe) => (iframe as HTMLIFrameElement)!.contentDocument!.doctype,
-        (await iframeTwoDocument!.$$('iframe'))[1],
+        (
+          await iframeTwoDocument!.$$('iframe')
+        )[1],
       ),
     ).not.toBeNull();
   });
@@ -676,6 +687,29 @@ describe('replayer', function () {
     expect(status).toEqual('live');
   });
 
+  it("shouldn't trigger ReplayerEvents.Finish in live mode", async () => {
+    const status = await page.evaluate((FinishState) => {
+      return new Promise((resolve) => {
+        const win = window as IWindow;
+        let triggeredFinish = false;
+        const { Replayer } = win.rrweb;
+        const replayer = new Replayer([], {
+          liveMode: true,
+        });
+        replayer.on(FinishState, () => {
+          triggeredFinish = true;
+        });
+        replayer.startLive();
+        replayer.addEvent(win.events[0]);
+        requestAnimationFrame(() => {
+          resolve(triggeredFinish);
+        });
+      });
+    }, ReplayerEvents.Finish);
+
+    expect(status).toEqual(false);
+  });
+
   it('replays same timestamp events in correct order', async () => {
     await page.evaluate(`events = ${JSON.stringify(orderingEvents)}`);
     await page.evaluate(`
@@ -717,5 +751,329 @@ describe('replayer', function () {
     await page.evaluate(`replayer.destroy(); replayer = null;`);
     wrapper = await page.$(`.${replayerWrapperClassName}`);
     expect(wrapper).toBeNull();
+  });
+
+  it('can replay adopted stylesheet events', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(adoptedStyleSheet)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.play();
+    `);
+    await page.waitForTimeout(600);
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    const colorRGBMap = {
+      yellow: 'rgb(255, 255, 0)',
+      red: 'rgb(255, 0, 0)',
+      blue: 'rgb(0, 0, 255)',
+      green: 'rgb(0, 128, 0)',
+    };
+    const checkCorrectness = async () => {
+      // check the adopted stylesheet is applied on the outermost document
+      expect(
+        await contentDocument!.$eval(
+          'div',
+          (element) => window.getComputedStyle(element).color,
+        ),
+      ).toEqual(colorRGBMap.yellow);
+
+      // check the adopted stylesheet is applied on the shadow dom #1's root
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            window.getComputedStyle(
+              document
+                .querySelector('#shadow-host1')!
+                .shadowRoot!.querySelector('span')!,
+            ).color,
+        ),
+      ).toEqual(colorRGBMap.red);
+
+      // check the adopted stylesheet is applied on document of the IFrame element
+      expect(
+        await contentDocument!.$eval(
+          'iframe',
+          (element) =>
+            window.getComputedStyle(
+              (element as HTMLIFrameElement).contentDocument!.querySelector(
+                'h1',
+              )!,
+            ).color,
+        ),
+      ).toEqual(colorRGBMap.blue);
+
+      // check the adopted stylesheet is applied on the shadow dom #2's root
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            window.getComputedStyle(
+              document
+                .querySelector('#shadow-host2')!
+                .shadowRoot!.querySelector('span')!,
+            ).color,
+        ),
+      ).toEqual(colorRGBMap.green);
+    };
+    await checkCorrectness();
+
+    // To test the correctness of replaying adopted stylesheet events in the fast-forward mode.
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(600);');
+    await checkCorrectness();
+  });
+
+  it('can replay modification events for adoptedStyleSheet', async () => {
+    await page.evaluate(`
+    events = ${JSON.stringify(adoptedStyleSheetModification)};
+    const { Replayer } = rrweb;
+    var replayer = new Replayer(events,{showDebug:true});
+    replayer.pause(0);
+
+    async function playTill(offsetTime) {
+      replayer.play();
+      return new Promise((resolve) => {
+        const checkTime = () => {
+          if (replayer.getCurrentTime() >= offsetTime) {
+            replayer.pause();
+            resolve(undefined);
+          } else {
+            requestAnimationFrame(checkTime);
+          }
+        };
+        checkTime();
+      });
+    }`);
+
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+
+    // At 250ms, the adopted stylesheet is still empty.
+    const check250ms = async () => {
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules.length === 0,
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 0,
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 300ms, the adopted stylesheet is replaced with new content.
+    const check300ms = async () => {
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { color: yellow; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h1 { color: blue; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 400ms, check replaceSync API.
+    const check400ms = async () => {
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { display: inline; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h1 { font-size: large; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 500ms, check CSSStyleDeclaration API.
+    const check500ms = async () => {
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { color: green; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 2 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h2 { color: red; }' &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[1].cssText ===
+              'h1 { font-size: medium !important; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    // At 600ms, check insertRule and deleteRule API.
+    const check600ms = async () => {
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.adoptedStyleSheets[0].cssRules.length === 2 &&
+            document.adoptedStyleSheets[0].cssRules[0].cssText ===
+              'div { color: green; }' &&
+            document.adoptedStyleSheets[0].cssRules[1].cssText ===
+              'body { border: 2px solid blue; }',
+        ),
+      ).toBeTruthy();
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules.length === 1 &&
+            document.querySelector('iframe')!.contentDocument!
+              .adoptedStyleSheets[0].cssRules[0].cssText ===
+              'h1 { font-size: medium !important; }',
+        ),
+      ).toBeTruthy();
+    };
+
+    await page.evaluate(`playTill(250)`);
+    await check250ms();
+
+    await page.evaluate(`playTill(300)`);
+    await check300ms();
+
+    await page.evaluate(`playTill(400)`);
+    await check400ms();
+
+    await page.evaluate(`playTill(500)`);
+    await check500ms();
+
+    await page.evaluate(`playTill(600)`);
+    await check600ms();
+
+    // To test the correctness of replaying adopted stylesheet mutation events in the fast-forward mode.
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(280);');
+    await check250ms();
+
+    await page.evaluate('replayer.pause(330);');
+    await check300ms();
+
+    await page.evaluate('replayer.pause(430);');
+    await check400ms();
+
+    await page.evaluate('replayer.pause(530);');
+    await check500ms();
+
+    await page.evaluate('replayer.pause(630);');
+    await check600ms();
+  });
+
+  it('should replay document replacement events without warnings or errors', async () => {
+    await page.evaluate(
+      `events = ${JSON.stringify(documentReplacementEvents)}`,
+    );
+    const warningThrown = jest.fn();
+    page.on('console', warningThrown);
+    const errorThrown = jest.fn();
+    page.on('pageerror', errorThrown);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(500);
+    `);
+    await waitForRAF(page);
+
+    // No warnings should be logged.
+    expect(warningThrown).not.toHaveBeenCalled();
+    // No errors should be thrown.
+    expect(errorThrown).not.toHaveBeenCalled();
+  });
+
+  it('should remove outdated hover styles in iframes and shadow doms', async () => {
+    await page.evaluate(`events = ${JSON.stringify(hoverInIframeShadowDom)}`);
+
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(550);
+    `);
+    const replayerIframe = await page.$('iframe');
+    const contentDocument = await replayerIframe!.contentFrame()!;
+    const iframe = await contentDocument!.$('iframe');
+    expect(iframe).not.toBeNull();
+    const docInIFrame = await iframe?.contentFrame();
+    expect(docInIFrame).not.toBeNull();
+
+    // hover element in iframe at 500ms
+    expect(
+      await docInIFrame?.evaluate(
+        () => document.querySelector('span')?.className,
+      ),
+    ).toBe(':hover');
+    // At this time, there should be no class name in shadow dom
+    expect(
+      await docInIFrame?.evaluate(() => {
+        const shadowRoot = document.querySelector('div')?.shadowRoot;
+        return (shadowRoot?.childNodes[0] as HTMLElement).className;
+      }),
+    ).toBe('');
+
+    // hover element in shadow dom at 1000ms
+    await page.evaluate('replayer.pause(1050);');
+    // :hover style should be removed from iframe
+    expect(
+      await docInIFrame?.evaluate(
+        () => document.querySelector('span')?.className,
+      ),
+    ).toBe('');
+    expect(
+      await docInIFrame?.evaluate(() => {
+        const shadowRoot = document.querySelector('div')?.shadowRoot;
+        return (shadowRoot?.childNodes[0] as HTMLElement).className;
+      }),
+    ).toBe(':hover');
+
+    // hover element in iframe at 1500ms again
+    await page.evaluate('replayer.pause(1550);');
+    // hover style should be removed from shadow dom
+    expect(
+      await docInIFrame?.evaluate(() => {
+        const shadowRoot = document.querySelector('div')?.shadowRoot;
+        return (shadowRoot?.childNodes[0] as HTMLElement).className;
+      }),
+    ).toBe('');
+    expect(
+      await docInIFrame?.evaluate(
+        () => document.querySelector('span')?.className,
+      ),
+    ).toBe(':hover');
   });
 });

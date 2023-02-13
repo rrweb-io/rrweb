@@ -1,0 +1,41 @@
+name: Tests
+
+on: [push, pull_request]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
+          fetch-depth: 0
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Build Project
+        run: yarn build:all
+
+      - name: Check types
+        run: yarn turbo run check-types
+
+      - name: Run tests
+        run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+
+      - name: Upload diff images to GitHub
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: image-diff
+          path: packages/rrweb/test/e2e/__image_snapshots__/__diff_output__/*.png
+          if-no-files-found: ignore

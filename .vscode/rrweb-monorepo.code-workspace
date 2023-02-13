@@ -25,6 +25,10 @@
       "path": "../packages/rrweb-snapshot"
     },
     {
+      "name": "@rrweb/types",
+      "path": "../packages/types"
+    },
+    {
       "name": "rrweb-cutter (package)",
       "path": "../packages/rrweb-cutter"
     }
@@ -32,7 +36,8 @@
   "settings": {
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
-      "rrweb-player (package)"
+      "rrweb-player (package)",
+      "@rrweb/types"
     ]
   }
 }

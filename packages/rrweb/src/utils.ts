@@ -8,7 +8,7 @@ import type {
   IWindow,
   DeprecatedMirror,
   textMutation,
-} from './types';
+} from '@rrweb/types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
@@ -167,6 +167,28 @@ export function patch(
   }
 }
 
+export function getWindowScroll(win: Window) {
+  const doc = win.document;
+  return {
+    left: doc.scrollingElement
+      ? doc.scrollingElement.scrollLeft
+      : win.pageXOffset !== undefined
+      ? win.pageXOffset
+      : doc?.documentElement.scrollLeft ||
+        doc?.body?.parentElement?.scrollLeft ||
+        doc?.body?.scrollLeft ||
+        0,
+    top: doc.scrollingElement
+      ? doc.scrollingElement.scrollTop
+      : win.pageYOffset !== undefined
+      ? win.pageYOffset
+      : doc?.documentElement.scrollTop ||
+        doc?.body?.parentElement?.scrollTop ||
+        doc?.body?.scrollTop ||
+        0,
+  };
+}
+
 export function getWindowHeight(): number {
   return (
     window.innerHeight ||
@@ -213,7 +235,7 @@ export function isBlocked(
     if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
   }
   if (blockSelector) {
-    if ((node as HTMLElement).matches(blockSelector)) return true;
+    if (el.matches(blockSelector)) return true;
     if (checkAncestors && el.closest(blockSelector) !== null) return true;
   }
   return false;
@@ -259,14 +281,14 @@ export function isTouchEvent(
 export function polyfill(win = window) {
   if ('NodeList' in win && !win.NodeList.prototype.forEach) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    win.NodeList.prototype.forEach = (Array.prototype
-      .forEach as unknown) as NodeList['forEach'];
+    win.NodeList.prototype.forEach = Array.prototype
+      .forEach as unknown as NodeList['forEach'];
   }
 
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    win.DOMTokenList.prototype.forEach = (Array.prototype
-      .forEach as unknown) as DOMTokenList['forEach'];
+    win.DOMTokenList.prototype.forEach = Array.prototype
+      .forEach as unknown as DOMTokenList['forEach'];
   }
 
   // https://github.com/Financial-Times/polyfill-service/pull/183
@@ -411,7 +433,7 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean(((n as unknown) as Element)?.shadowRoot);
+  return Boolean((n as unknown as Element)?.shadowRoot);
 }
 
 export function getNestedRule(
@@ -453,4 +475,86 @@ export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
   }
 
   return uniqueMutations;
+}
+
+export class StyleSheetMirror {
+  private id = 1;
+  private styleIDMap = new WeakMap<CSSStyleSheet, number>();
+  private idStyleMap = new Map<number, CSSStyleSheet>();
+
+  getId(stylesheet: CSSStyleSheet): number {
+    return this.styleIDMap.get(stylesheet) ?? -1;
+  }
+
+  has(stylesheet: CSSStyleSheet): boolean {
+    return this.styleIDMap.has(stylesheet);
+  }
+
+  /**
+   * @returns If the stylesheet is in the mirror, returns the id of the stylesheet. If not, return the new assigned id.
+   */
+  add(stylesheet: CSSStyleSheet, id?: number): number {
+    if (this.has(stylesheet)) return this.getId(stylesheet);
+    let newId: number;
+    if (id === undefined) {
+      newId = this.id++;
+    } else newId = id;
+    this.styleIDMap.set(stylesheet, newId);
+    this.idStyleMap.set(newId, stylesheet);
+    return newId;
+  }
+
+  getStyle(id: number): CSSStyleSheet | null {
+    return this.idStyleMap.get(id) || null;
+  }
+
+  reset(): void {
+    this.styleIDMap = new WeakMap();
+    this.idStyleMap = new Map();
+    this.id = 1;
+  }
+
+  generateId(): number {
+    return this.id++;
+  }
+}
+
+/**
+ * Get the direct shadow host of a node in shadow dom. Returns null if it is not in a shadow dom.
+ */
+export function getShadowHost(n: Node): Element | null {
+  let shadowHost: Element | null = null;
+  if (
+    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    (n.getRootNode() as ShadowRoot).host
+  )
+    shadowHost = (n.getRootNode() as ShadowRoot).host;
+  return shadowHost;
+}
+
+/**
+ * Get the root shadow host of a node in nested shadow doms. Returns the node itself if it is not in a shadow dom.
+ */
+export function getRootShadowHost(n: Node): Node {
+  let rootShadowHost: Node = n;
+
+  let shadowHost: Element | null;
+  // If n is in a nested shadow dom.
+  while ((shadowHost = getShadowHost(rootShadowHost)))
+    rootShadowHost = shadowHost;
+
+  return rootShadowHost;
+}
+
+export function shadowHostInDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  const shadowHost = getRootShadowHost(n);
+  return doc.contains(shadowHost);
+}
+
+export function inDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  return doc.contains(n) || shadowHostInDom(n);
 }

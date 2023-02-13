@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import type { recordOptions } from '../../src/types';
 import {
-  recordOptions,
   listenerHandler,
   eventWithTime,
   EventType,
   IncrementalSource,
   CanvasContext,
-} from '../../src/types';
+} from '@rrweb/types';
 import {
   assertSnapshot,
   launchPuppeteer,
@@ -64,13 +64,13 @@ const setup = function (
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
     await ctx.page.evaluate((canvasSample) => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
         recordCanvas: true,
         sampling: {
           canvas: canvasSample,
         },
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
     }, canvasSample);
   });

@@ -27,7 +27,7 @@ jobs:
         run: yarn lint:report
         # Continue to the next step even if this fails
         continue-on-error: true
-      - name: Upload ESLint report
+      - name: Upload ESLint Report
         uses: actions/upload-artifact@v3
         with:
           name: eslint_report.json
@@ -50,7 +50,7 @@ jobs:
           report-json: 'eslint_report.json'
 
   prettier_check:
-    # In the forked PR, it's hard to format code and push to the branch directly.
+    # In the forked PR, it's hard to format code and push to the branch directly, so the action only check the format correctness.
     if: github.event_name != 'push' && github.event.pull_request.head.repo.full_name != 'rrweb-io/rrweb'
     runs-on: ubuntu-latest
     name: Format Check
@@ -66,7 +66,7 @@ jobs:
           cache: 'yarn'
       - name: Install Dependencies
         run: yarn
-      - name: Prettify code
+      - name: Prettier Check
         run: yarn prettier --check '**/*.{ts,md}'
 
   prettier:
@@ -86,9 +86,9 @@ jobs:
           cache: 'yarn'
       - name: Install Dependencies
         run: yarn
-      - name: Prettify code
+      - name: Prettify Code
         run: yarn prettier --write '**/*.{ts,md}'
-      - name: Commit changes
+      - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Apply formatting changes

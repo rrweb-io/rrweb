@@ -1,7 +1,7 @@
 <script lang="ts">
   import { EventType } from 'rrweb';
   import type { Replayer } from 'rrweb';
-  import type { playerMetaData } from 'rrweb/typings/types';
+  import type { playerMetaData } from '@rrweb/types';
   import type {
     PlayerMachineState,
     SpeedMachineState,
@@ -12,7 +12,7 @@
     createEventDispatcher,
     afterUpdate,
   } from 'svelte';
-  import { formatTime } from './utils';
+  import { formatTime, getInactivePeriods } from './utils';
   import Switch from './components/Switch.svelte';
 
   const dispatch = createEventDispatcher();
@@ -24,6 +24,7 @@
   export let speedOption: number[];
   export let speed = speedOption.length ? speedOption[0] : 1;
   export let tags: Record<string, string> = {};
+  export let inactiveColor: string;
 
   let currentTime = 0;
   $: {
@@ -59,6 +60,21 @@
     background: string;
     position: string;
   };
+
+  /**
+   * Calculate the tag position (percent) to be displayed on the progress bar.
+   * @param startTime - The start time of the session.
+   * @param endTime - The end time of the session.
+   * @param tagTime - The time of the tag.
+   * @returns The position of the tag. unit: percentage
+   */
+  function position(startTime: number, endTime: number, tagTime: number) {
+    const sessionDuration = endTime - startTime;
+    const eventDuration = endTime - tagTime;
+    const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
+    return eventPosition.toFixed(2);
+  }
+
   let customEvents: CustomEvent[];
   $: customEvents = (() => {
     const { context } = replayer.service.state;
@@ -66,15 +82,6 @@
     const start = context.events[0].timestamp;
     const end = context.events[totalEvents - 1].timestamp;
     const customEvents: CustomEvent[] = [];
-
-    // calculate tag position.
-    const position = (startTime: number, endTime: number, tagTime: number) => {
-      const sessionDuration = endTime - startTime;
-      const eventDuration = endTime - tagTime;
-      const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
-
-      return eventPosition.toFixed(2);
-    };
 
     // loop through all the events and find out custom event.
     context.events.forEach((event) => {
@@ -93,6 +100,43 @@
     });
 
     return customEvents;
+  })();
+
+  let inactivePeriods: {
+    name: string;
+    background: string;
+    position: string;
+    width: string;
+  }[];
+  $: inactivePeriods = (() => {
+    try {
+      const { context } = replayer.service.state;
+      const totalEvents = context.events.length;
+      const start = context.events[0].timestamp;
+      const end = context.events[totalEvents - 1].timestamp;
+      const periods = getInactivePeriods(context.events);
+      // calculate the indicator width.
+      const getWidth = (
+        startTime: number,
+        endTime: number,
+        tagStart: number,
+        tagEnd: number,
+      ) => {
+        const sessionDuration = endTime - startTime;
+        const eventDuration = tagEnd - tagStart;
+        const width = (eventDuration / sessionDuration) * 100;
+        return width.toFixed(2);
+      };
+      return periods.map((period) => ({
+        name: 'inactive period',
+        background: inactiveColor,
+        position: `${position(start, end, period[0])}%`,
+        width: `${getWidth(start, end, period[0], period[1])}%`,
+      }));
+    } catch (e) {
+      // For safety concern, if there is any error, the main function won't be affected.
+      return [];
+    }
   })();
 
   const loopTimer = () => {
@@ -174,11 +218,11 @@
   };
 
   export const playRange = (
-     timeOffset: number,
-     endTimeOffset: number,
-     startLooping: boolean = false,
-     afterHook: undefined | (() => void) = undefined,
-   ) => {
+    timeOffset: number,
+    endTimeOffset: number,
+    startLooping: boolean = false,
+    afterHook: undefined | (() => void) = undefined,
+  ) => {
     if (startLooping) {
       loop = {
         start: timeOffset,
@@ -193,7 +237,6 @@
     replayer.play(timeOffset);
   };
 
-
   const handleProgressClick = (event: MouseEvent) => {
     if (speedState === 'skipping') {
       return;
@@ -207,7 +250,7 @@
       percent = 1;
     }
     const timeOffset = meta.totalTime * percent;
-    finished = false
+    finished = false;
     goto(timeOffset);
   };
 
@@ -230,18 +273,18 @@
   export const triggerUpdateMeta = () => {
     return Promise.resolve().then(() => {
       meta = replayer.getMetaData();
-    })
-  }
+    });
+  };
 
   onMount(() => {
     playerState = replayer.service.state.value;
-    speedState = replayer.speedService.state.value ;
+    speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
       (states: { player?: PlayerMachineState; speed?: SpeedMachineState }) => {
         const { player, speed } = states;
         if (player?.value && playerState !== player.value) {
-          playerState = player.value ;
+          playerState = player.value;
           switch (playerState) {
             case 'playing':
               loopTimer();
@@ -254,7 +297,7 @@
           }
         }
         if (speed?.value && speedState !== speed.value) {
-          speedState = speed.value ;
+          speedState = speed.value;
         }
       },
     );
@@ -384,17 +427,27 @@
         class="rr-progress"
         class:disabled={speedState === 'skipping'}
         bind:this={progress}
-        on:click={handleProgressClick}>
+        on:click={handleProgressClick}
+      >
         <div
           class="rr-progress__step"
           bind:this={step}
-          style="width: {percentage}" />
+          style="width: {percentage}"
+        />
+        {#each inactivePeriods as period}
+          <div
+            title={period.name}
+            style="width: {period.width};height: 4px;position: absolute;background: {period.background};left:
+            {period.position};"
+          />
+        {/each}
         {#each customEvents as event}
           <div
             title={event.name}
             style="width: 10px;height: 5px;position: absolute;top:
             2px;transform: translate(-50%, -50%);background: {event.background};left:
-            {event.position};" />
+            {event.position};"
+          />
         {/each}
 
         <div class="rr-progress__handler" style="left: {percentage}" />
@@ -411,7 +464,8 @@
             xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink"
             width="16"
-            height="16">
+            height="16"
+          >
             <path
               d="M682.65984 128q53.00224 0 90.50112 37.49888t37.49888 90.50112l0
               512q0 53.00224-37.49888 90.50112t-90.50112
@@ -426,7 +480,8 @@
               12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928zM682.65984
               213.34016q-17.67424 0-30.16704 12.4928t-12.4928 30.16704l0 512q0
               17.67424 12.4928 30.16704t30.16704 12.4928 30.16704-12.4928
-              12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928z" />
+              12.4928-30.16704l0-512q0-17.67424-12.4928-30.16704t-30.16704-12.4928z"
+            />
           </svg>
         {:else}
           <svg
@@ -436,10 +491,12 @@
             xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink"
             width="16"
-            height="16">
+            height="16"
+          >
             <path
               d="M170.65984 896l0-768 640 384zM644.66944
-              512l-388.66944-233.32864 0 466.65728z" />
+              512l-388.66944-233.32864 0 466.65728z"
+            />
           </svg>
         {/if}
       </button>
@@ -447,7 +504,8 @@
         <button
           class:active={s === speed && speedState !== 'skipping'}
           on:click={() => setSpeed(s)}
-          disabled={speedState === 'skipping'}>
+          disabled={speedState === 'skipping'}
+        >
           {s}x
         </button>
       {/each}
@@ -455,7 +513,8 @@
         id="skip"
         bind:checked={skipInactive}
         disabled={speedState === 'skipping'}
-        label="skip inactive" />
+        label="skip inactive"
+      />
       <button on:click={() => dispatch('fullscreen')}>
         <svg
           class="icon"
@@ -464,10 +523,10 @@
           xmlns="http://www.w3.org/2000/svg"
           xmlns:xlink="http://www.w3.org/1999/xlink"
           width="16"
-          height="16">
+          height="16"
+        >
           <defs>
             <style type="text/css">
-
             </style>
           </defs>
           <path
@@ -478,7 +537,8 @@
             48s-21.6 48-48 48l-224 0c-26.4 0-48-21.6-48-48l0-224c0-26.4 21.6-48
             48-48 26.4 0 48 21.6 48 48L164 792l253.6-253.6c18.4-18.4 48.8-18.4
             68 0 18.4 18.4 18.4 48.8 0 68L231.2 860z"
-            p-id="1286" />
+            p-id="1286"
+          />
         </svg>
       </button>
     </div>

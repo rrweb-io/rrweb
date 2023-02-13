@@ -5,7 +5,7 @@ import {
   canvasManagerMutationCallback,
   IWindow,
   listenerHandler,
-} from '../../../types';
+} from '@rrweb/types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { serializeArgs } from './serialize-args';
 
@@ -14,7 +14,6 @@ export default function initCanvas2DMutationObserver(
   win: IWindow,
   blockClass: blockClass,
   blockSelector: string | null,
-  mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const props2D = Object.getOwnPropertyNames(

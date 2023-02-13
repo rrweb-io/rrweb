@@ -4,27 +4,34 @@ import {
   SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  processedNodeManager,
+} from './observer';
 import {
   on,
   getWindowWidth,
   getWindowHeight,
+  getWindowScroll,
   polyfill,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
 } from '../utils';
+import type { recordOptions } from '../types';
 import {
   EventType,
   event,
   eventWithTime,
-  recordOptions,
   IncrementalSource,
   listenerHandler,
   mutationCallbackParam,
   scrollCallback,
   canvasMutationParam,
-} from '../types';
+  adoptedStyleSheetParam,
+} from '@rrweb/types';
+import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
@@ -41,6 +48,7 @@ let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
+let recording = false;
 
 const mirror = createMirror();
 function record<T = eventWithTime>(
@@ -67,6 +75,10 @@ function record<T = eventWithTime>(
     dataURLOptions = {},
     mousemoveWait,
     recordCanvas = false,
+    recordCrossOriginIframes = false,
+    recordAfter = options.recordAfter === 'DOMContentLoaded'
+      ? options.recordAfter
+      : 'load',
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
@@ -75,8 +87,22 @@ function record<T = eventWithTime>(
     ignoreCSSAttributes = new Set([]),
   } = options;
 
+  const inEmittingFrame = recordCrossOriginIframes
+    ? window.parent === window
+    : true;
+
+  let passEmitsToParent = false;
+  if (!inEmittingFrame) {
+    try {
+      window.parent.document; // throws if parent is cross-origin
+      passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+    } catch (e) {
+      passEmitsToParent = true;
+    }
+  }
+
   // runtime checks for user options
-  if (!emit) {
+  if (inEmittingFrame && !emit) {
     throw new Error('emit function is required');
   }
   // move departed options to new options
@@ -136,23 +162,20 @@ function record<T = eventWithTime>(
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
 
-  /**
-   * Exposes mirror to the plugins
-   */
-  for (const plugin of plugins || []) {
-    if (plugin.getMirror) plugin.getMirror(mirror);
-  }
-
   const eventProcessor = (e: eventWithTime): T => {
     for (const plugin of plugins || []) {
       if (plugin.eventProcessor) {
         e = plugin.eventProcessor(e);
       }
     }
-    if (packFn) {
-      e = (packFn(e) as unknown) as eventWithTime;
+    if (
+      packFn &&
+      // Disable packing events which will be emitted to parent frames.
+      !passEmitsToParent
+    ) {
+      e = packFn(e) as unknown as eventWithTime;
     }
-    return (e as unknown) as T;
+    return e as unknown as T;
   };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
@@ -168,7 +191,18 @@ function record<T = eventWithTime>(
       mutationBuffers.forEach((buf) => buf.unfreeze());
     }
 
-    emit(eventProcessor(e), isCheckout);
+    if (inEmittingFrame) {
+      emit?.(eventProcessor(e), isCheckout);
+    } else if (passEmitsToParent) {
+      const message: CrossOriginIframeMessageEventContent<T> = {
+        type: 'rrweb',
+        event: eventProcessor(e),
+        origin: window.location.origin,
+        isCheckout,
+      };
+      window.parent.postMessage(message, '*');
+    }
+
     if (e.type === EventType.FullSnapshot) {
       lastFullSnapshotEvent = e;
       incrementalSnapshotCount = 0;
@@ -225,13 +259,42 @@ function record<T = eventWithTime>(
       }),
     );
 
-  const iframeManager = new IframeManager({
-    mutationCb: wrappedMutationEmit,
-  });
+  const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
+    wrappedEmit(
+      wrapEvent({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.AdoptedStyleSheet,
+          ...a,
+        },
+      }),
+    );
 
   const stylesheetManager = new StylesheetManager({
     mutationCb: wrappedMutationEmit,
+    adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
   });
+
+  const iframeManager = new IframeManager({
+    mirror,
+    mutationCb: wrappedMutationEmit,
+    stylesheetManager: stylesheetManager,
+    recordCrossOriginIframes,
+    wrappedEmit,
+  });
+
+  /**
+   * Exposes mirror to the plugins
+   */
+  for (const plugin of plugins || []) {
+    if (plugin.getMirror)
+      plugin.getMirror({
+        nodeMirror: mirror,
+        crossOriginIframeMirror: iframeManager.crossOriginIframeMirror,
+        crossOriginIframeStyleMirror:
+          iframeManager.crossOriginIframeStyleMirror,
+      });
+  }
 
   canvasManager = new CanvasManager({
     recordCanvas,
@@ -265,6 +328,7 @@ function record<T = eventWithTime>(
       stylesheetManager,
       canvasManager,
       keepIframeSrcFn,
+      processedNodeManager,
     },
     mirror,
   });
@@ -281,6 +345,11 @@ function record<T = eventWithTime>(
       }),
       isCheckout,
     );
+
+    // When we take a full snapshot, old tracked StyleSheets need to be removed.
+    stylesheetManager.reset();
+
+    shadowDomManager.init();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
@@ -301,18 +370,18 @@ function record<T = eventWithTime>(
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
         if (isSerializedStylesheet(n, mirror)) {
-          stylesheetManager.addStylesheet(n as HTMLLinkElement);
+          stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
           shadowDomManager.addShadowRoot(n.shadowRoot, document);
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn, mirror);
+        iframeManager.attachIframe(iframe, childSn);
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
-        stylesheetManager.attachStylesheet(linkEl, childSn, mirror);
+        stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
     });
@@ -326,40 +395,22 @@ function record<T = eventWithTime>(
         type: EventType.FullSnapshot,
         data: {
           node,
-          initialOffset: {
-            left:
-              window.pageXOffset !== undefined
-                ? window.pageXOffset
-                : document?.documentElement.scrollLeft ||
-                  document?.body?.parentElement?.scrollLeft ||
-                  document?.body.scrollLeft ||
-                  0,
-            top:
-              window.pageYOffset !== undefined
-                ? window.pageYOffset
-                : document?.documentElement.scrollTop ||
-                  document?.body?.parentElement?.scrollTop ||
-                  document?.body.scrollTop ||
-                  0,
-          },
+          initialOffset: getWindowScroll(window),
         },
       }),
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+
+    // Some old browsers don't support adoptedStyleSheets.
+    if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
+      stylesheetManager.adoptStyleSheets(
+        document.adoptedStyleSheets,
+        mirror.getId(document),
+      );
   };
 
   try {
     const handlers: listenerHandler[] = [];
-    handlers.push(
-      on('DOMContentLoaded', () => {
-        wrappedEmit(
-          wrapEvent({
-            type: EventType.DomContentLoaded,
-            data: {},
-          }),
-        );
-      }),
-    );
 
     const observe = (doc: Document) => {
       return initObservers(
@@ -480,6 +531,7 @@ function record<T = eventWithTime>(
           iframeManager,
           stylesheetManager,
           shadowDomManager,
+          processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
           plugins:
@@ -505,12 +557,18 @@ function record<T = eventWithTime>(
     };
 
     iframeManager.addLoadListener((iframeEl) => {
-      handlers.push(observe(iframeEl.contentDocument!));
+      try {
+        handlers.push(observe(iframeEl.contentDocument!));
+      } catch (error) {
+        // TODO: handle internal error
+        console.warn(error);
+      }
     });
 
     const init = () => {
       takeFullSnapshot();
       handlers.push(observe(document));
+      recording = true;
     };
     if (
       document.readyState === 'interactive' ||
@@ -518,6 +576,17 @@ function record<T = eventWithTime>(
     ) {
       init();
     } else {
+      handlers.push(
+        on('DOMContentLoaded', () => {
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.DomContentLoaded,
+              data: {},
+            }),
+          );
+          if (recordAfter === 'DOMContentLoaded') init();
+        }),
+      );
       handlers.push(
         on(
           'load',
@@ -528,7 +597,7 @@ function record<T = eventWithTime>(
                 data: {},
               }),
             );
-            init();
+            if (recordAfter === 'load') init();
           },
           window,
         ),
@@ -536,9 +605,7 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
-      // reset init fns when stopping record
-      (wrappedEmit as unknown) = undefined;
-      (takeFullSnapshot as unknown) = undefined;
+      recording = false;
     };
   } catch (error) {
     // TODO: handle internal error
@@ -547,7 +614,7 @@ function record<T = eventWithTime>(
 }
 
 record.addCustomEvent = <T>(tag: string, payload: T) => {
-  if (!wrappedEmit) {
+  if (!recording) {
     throw new Error('please add custom event after start recording');
   }
   wrappedEmit(
@@ -566,7 +633,7 @@ record.freezePage = () => {
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {
-  if (!takeFullSnapshot) {
+  if (!recording) {
     throw new Error('please take full snapshot after start recording');
   }
   takeFullSnapshot(isCheckout);

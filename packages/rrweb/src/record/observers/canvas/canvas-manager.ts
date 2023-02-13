@@ -8,9 +8,9 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
-} from '../../../types';
+} from '@rrweb/types';
 import { isBlocked } from '../../../utils';
-import { CanvasContext } from '../../../types';
+import { CanvasContext } from '@rrweb/types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
@@ -116,7 +116,8 @@ export class CanvasManager {
       blockSelector,
     );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
-    const worker = new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
+    const worker =
+      new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
     worker.onmessage = (e) => {
       const { id } = e.data;
       snapshotInProgressMap.set(id, false);
@@ -243,7 +244,6 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
-      this.mirror,
     );
 
     const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(

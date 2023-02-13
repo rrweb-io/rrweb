@@ -6,6 +6,7 @@ import snapshot, {
   needMaskingText,
   classMatchesRegex,
   IGNORED_NODE,
+  genId,
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
@@ -28,4 +29,5 @@ export {
   needMaskingText,
   classMatchesRegex,
   IGNORED_NODE,
+  genId,
 };

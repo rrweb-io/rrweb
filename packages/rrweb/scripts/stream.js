@@ -17,41 +17,62 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
+const code = fs.readFileSync(path.join(__dirname, '../dist/rrweb.js'), 'utf8');
+const pluginCode = fs.readFileSync(
+  path.join(__dirname, '../dist/plugins/canvas-webrtc-record.js'),
+  'utf8',
+);
 
-async function startRecording(page, serverURL) {
-  try {
-    await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
-    await page.addScriptTag({
-      url: `${serverURL}/plugins/canvas-webrtc-record.js`,
-    });
-    await page.evaluate((serverURL) => {
+async function injectRecording(frame) {
+  await frame.evaluate(
+    (rrwebCode, pluginCode) => {
       const win = window;
+      if (win.__IS_RECORDING__) return;
       win.__IS_RECORDING__ = true;
-      win.events = [];
-      window.record = win.rrweb.record;
-      window.plugin = new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord(
-        {
-          signalSendCallback: (msg) => {
-            // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
-            _signal(msg);
-          },
-        },
-      );
 
-      window.record({
-        emit: (event) => {
-          win.events.push(event);
-          win._captureEvent(event);
-        },
-        plugins: [window.plugin.initPlugin()],
-        recordCanvas: false,
-        collectFonts: true,
-        inlineImages: true,
-      });
-    });
-  } catch (error) {
-    console.error(error);
-  }
+      (async () => {
+        function loadScript(code) {
+          const s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.innerHTML = code;
+          if (document.head) {
+            document.head.append(s);
+          } else {
+            requestAnimationFrame(() => {
+              document.head.append(s);
+            });
+          }
+        }
+        loadScript(rrwebCode);
+        loadScript(pluginCode);
+
+        win.events = [];
+        window.record = win.rrweb.record;
+        window.plugin = new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord(
+          {
+            signalSendCallback: (msg) => {
+              // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
+              _signal(msg);
+            },
+          },
+        );
+
+        window.record({
+          emit: (event) => {
+            win.events.push(event);
+            win._captureEvent(event);
+          },
+          plugins: [window.plugin.initPlugin()],
+          recordCanvas: false,
+          recordCrossOriginIframes: true,
+          collectFonts: true,
+          inlineImages: true,
+        });
+      })();
+    },
+    code,
+    pluginCode,
+  );
 }
 
 async function startReplay(page, serverURL, recordedPage) {
@@ -209,30 +230,23 @@ void (async () => {
       resizeWindow(replayerPage, 0, 800, 800, 800),
     ]);
 
+    await recordedPage.exposeFunction('_captureEvent', (event) => {
+      replayerPage.evaluate((event) => {
+        window.replayer.addEvent(event);
+      }, event);
+    });
+
+    recordedPage.on('framenavigated', async (frame) => {
+      console.log('framenavigated');
+      await injectRecording(frame, serverURL);
+    });
+
     await recordedPage.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: 300000,
     });
 
     if (!replayerPage) throw new Error('No replayer page found');
-
-    await recordedPage.exposeFunction('_captureEvent', (event) => {
-      replayerPage.evaluate((event) => {
-        window.replayer.addEvent(event);
-      }, event);
-    });
-    await startRecording(recordedPage, serverURL);
-    recordedPage.on('framenavigated', async () => {
-      const isRecording = await recordedPage.evaluate(
-        'window.__IS_RECORDING__',
-      );
-      if (!isRecording) {
-        // When the page navigates, I notice this event is emitted twice so that there are two recording processes running in a single page.
-        // Set recording flag True ASAP to prevent recording twice.
-        await recordedPage.evaluate('window.__IS_RECORDING__ = true');
-        await startRecording(recordedPage, serverURL);
-      }
-    });
 
     emitter.once('done', async () => {
       const pages = [

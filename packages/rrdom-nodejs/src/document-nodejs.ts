@@ -36,15 +36,16 @@ export class RRWindow {
 
 export class RRDocument
   extends BaseRRDocumentImpl(RRNode)
-  implements IRRDocument {
+  implements IRRDocument
+{
   readonly nodeName: '#document' = '#document';
   private _nwsapi: NWSAPI;
   get nwsapi() {
     if (!this._nwsapi) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       this._nwsapi = nwsapi({
-        document: (this as unknown) as Document,
-        DOMException: (null as unknown) as new (
+        document: this as unknown as Document,
+        DOMException: null as unknown as new (
           message?: string,
           name?: string,
         ) => DOMException,
@@ -97,7 +98,7 @@ export class RRDocument
   }
 
   querySelectorAll(selectors: string): RRNode[] {
-    return (this.nwsapi.select(selectors) as unknown) as RRNode[];
+    return this.nwsapi.select(selectors) as unknown as RRNode[];
   }
 
   getElementsByTagName(tagName: string): RRElement[] {
@@ -220,7 +221,7 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   get style() {
-    return (this._style as unknown) as CSSStyleDeclaration;
+    return this._style as unknown as CSSStyleDeclaration;
   }
 
   attachShadow(_init: ShadowRootInit): RRElement {
@@ -268,14 +269,14 @@ export class RRElement extends BaseRRElementImpl(RRNode) {
   querySelectorAll(selectors: string): RRNode[] {
     const result: RRElement[] = [];
     if (this.ownerDocument !== null) {
-      ((this.ownerDocument as RRDocument).nwsapi.select(
+      (this.ownerDocument as RRDocument).nwsapi.select(
         selectors,
-        (this as unknown) as Element,
+        this as unknown as Element,
         (element) => {
-          if (((element as unknown) as RRElement) !== this)
-            result.push((element as unknown) as RRElement);
+          if ((element as unknown as RRElement) !== this)
+            result.push(element as unknown as RRElement);
         },
-      ) as unknown) as RRNode[];
+      ) as unknown as RRNode[];
     }
     return result;
   }
@@ -393,6 +394,5 @@ interface RRElementTagNameMap {
   video: RRMediaElement;
 }
 
-type RRElementType<
-  K extends keyof HTMLElementTagNameMap
-> = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
+type RRElementType<K extends keyof HTMLElementTagNameMap> =
+  K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;

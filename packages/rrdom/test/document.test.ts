@@ -133,7 +133,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.parentElement).toEqual(null);
       expect(node.childNodes).toBeInstanceOf(Array);
       expect(node.childNodes.length).toBe(0);
-      expect(node.ownerDocument).toBeUndefined();
+      expect(node.ownerDocument).toBe(node);
       expect(node.textContent).toBeNull();
       expect(node.RRNodeType).toBe(RRNodeType.Document);
       expect(node.nodeType).toBe(document.nodeType);
@@ -424,7 +424,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.removeAttribute).toBeDefined();
       expect(node.attachShadow).toBeDefined();
       expect(node.dispatchEvent).toBeDefined();
-      expect(node.dispatchEvent((null as unknown) as Event)).toBeTruthy();
+      expect(node.dispatchEvent(null as unknown as Event)).toBeTruthy();
       expect(node.toString()).toEqual('DIV id="id" class="className" ');
     });
 

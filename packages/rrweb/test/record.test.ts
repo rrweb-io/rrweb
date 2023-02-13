@@ -1,16 +1,24 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import 'construct-style-sheets-polyfill';
+import type { recordOptions } from '../src/types';
 import {
-  recordOptions,
   listenerHandler,
   eventWithTime,
   EventType,
   IncrementalSource,
   styleSheetRuleData,
   selectionData,
-} from '../src/types';
-import { assertSnapshot, launchPuppeteer, waitForRAF } from './utils';
+} from '@rrweb/types';
+import {
+  assertSnapshot,
+  getServerURL,
+  launchPuppeteer,
+  startServer,
+  waitForRAF,
+} from './utils';
+import type { Server } from 'http';
 
 interface ISuite {
   code: string;
@@ -21,9 +29,12 @@ interface ISuite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: (
+    record: ((
       options: recordOptions<eventWithTime>,
-    ) => listenerHandler | undefined;
+    ) => listenerHandler | undefined) & {
+      takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
+    };
+
     addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
@@ -85,9 +96,9 @@ describe('record', function (this: ISuite) {
 
   it('will only have one full snapshot without checkout config', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
     });
     let count = 30;
@@ -109,9 +120,9 @@ describe('record', function (this: ISuite) {
 
   it('can checkout full snapshot by count', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
         checkoutEveryNth: 10,
       });
     });
@@ -138,9 +149,9 @@ describe('record', function (this: ISuite) {
 
   it('can checkout full snapshot by time', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
         checkoutEveryNms: 500,
       });
     });
@@ -171,9 +182,9 @@ describe('record', function (this: ISuite) {
 
   it('is safe to checkout during async callbacks', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
         checkoutEveryNth: 2,
       });
       const p = document.createElement('p');
@@ -197,9 +208,9 @@ describe('record', function (this: ISuite) {
 
   it('should record scroll position', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
       const p = document.createElement('p');
       p.innerText = 'testtesttesttesttesttesttesttesttesttest';
@@ -214,9 +225,9 @@ describe('record', function (this: ISuite) {
 
   it('should record selection event', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
       const startNode = document.createElement('p');
 
@@ -255,9 +266,9 @@ describe('record', function (this: ISuite) {
 
   it('can add custom event', async () => {
     await ctx.page.evaluate(() => {
-      const { record, addCustomEvent } = ((window as unknown) as IWindow).rrweb;
+      const { record, addCustomEvent } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
       addCustomEvent<number>('tag1', 1);
       addCustomEvent<{ a: string }>('tag2', {
@@ -270,10 +281,10 @@ describe('record', function (this: ISuite) {
 
   it('captures stylesheet rules', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
 
       const styleElement = document.createElement('style');
@@ -320,10 +331,10 @@ describe('record', function (this: ISuite) {
 
   const captureNestedStylesheetRulesTest = async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
 
       const styleElement = document.createElement('style');
@@ -381,10 +392,10 @@ describe('record', function (this: ISuite) {
 
   it('captures style property changes', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
         ignoreCSSAttributes: new Set(['color']),
       });
 
@@ -417,7 +428,7 @@ describe('record', function (this: ISuite) {
 
   it('captures inserted style text nodes correctly', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       const styleEl = document.createElement(`style`);
       styleEl.append(document.createTextNode('div { color: red; }'));
@@ -425,7 +436,7 @@ describe('record', function (this: ISuite) {
       document.head.appendChild(styleEl);
 
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
 
       styleEl.append(document.createTextNode('span { color: orange; }'));
@@ -451,11 +462,157 @@ describe('record', function (this: ISuite) {
     });
     await waitForRAF(ctx.page);
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       record({
         inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
+      });
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures mutations on adopted stylesheets', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        document.body.innerHTML = `
+        <div>div in outermost document</div>
+        <iframe></iframe>
+      `;
+
+        const sheet = new CSSStyleSheet();
+        // Add stylesheet to a document.
+
+        document.adoptedStyleSheets = [sheet];
+
+        const iframe = document.querySelector('iframe');
+        const sheet2 = new (
+          iframe!.contentWindow! as Window & typeof globalThis
+        ).CSSStyleSheet();
+
+        // Add stylesheet to an IFrame document.
+        iframe!.contentDocument!.adoptedStyleSheets = [sheet2];
+        iframe!.contentDocument!.body.innerHTML = '<h1>h1 in iframe</h1>';
+
+        const { rrweb, emit } = window as unknown as IWindow;
+        rrweb.record({
+          emit,
+        });
+
+        setTimeout(() => {
+          sheet.replace!('div { color: yellow; }');
+          sheet2.replace!('h1 { color: blue; }');
+        }, 0);
+
+        setTimeout(() => {
+          sheet.replaceSync!('div { display: inline ; }');
+          sheet2.replaceSync!('h1 { font-size: large; }');
+        }, 5);
+
+        setTimeout(() => {
+          (sheet.cssRules[0] as CSSStyleRule).style.setProperty(
+            'color',
+            'green',
+          );
+          (sheet.cssRules[0] as CSSStyleRule).style.removeProperty('display');
+          (sheet2.cssRules[0] as CSSStyleRule).style.setProperty(
+            'font-size',
+            'medium',
+            'important',
+          );
+          sheet2.insertRule('h2 { color: red; }');
+        }, 10);
+
+        setTimeout(() => {
+          sheet.insertRule('body { border: 2px solid blue; }', 1);
+          sheet2.deleteRule(0);
+        }, 15);
+
+        setTimeout(() => {
+          resolve(undefined);
+        }, 20);
+      });
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets in nested shadow doms and iframes', async () => {
+    await ctx.page.evaluate(() => {
+      document.body.innerHTML = `
+        <div id="shadow-host-1">entry</div>
+      `;
+
+      let shadowHost = document.querySelector('div')!;
+      shadowHost!.attachShadow({ mode: 'open' });
+      let iframeDocument: Document;
+      const NestedDepth = 4;
+      // construct nested shadow doms and iframe elements
+      for (let i = 1; i <= NestedDepth; i++) {
+        const shadowRoot = shadowHost.shadowRoot!;
+        const iframeElement = document.createElement('iframe');
+        shadowRoot.appendChild(iframeElement);
+        iframeElement.id = `iframe-${i}`;
+        iframeDocument = iframeElement.contentDocument!;
+        shadowHost = iframeDocument.createElement('div');
+        shadowHost.id = `shadow-host-${i + 1}`;
+        iframeDocument.body.append(shadowHost);
+        shadowHost!.attachShadow({ mode: 'open' });
+      }
+
+      const iframeWin = iframeDocument!.defaultView!;
+      const sheet1 = new iframeWin.CSSStyleSheet();
+      sheet1.replaceSync!('h1 {color: blue;}');
+      iframeDocument!.adoptedStyleSheets = [sheet1];
+      const sheet2 = new iframeWin.CSSStyleSheet();
+      sheet2.replaceSync!('div {font-size: large;}');
+      shadowHost.shadowRoot!.adoptedStyleSheets = [sheet2];
+
+      const { rrweb, emit } = window as unknown as IWindow;
+      rrweb.record({
+        emit,
+      });
+
+      setTimeout(() => {
+        sheet1.insertRule!('div { display: inline ; }', 1);
+        sheet2.replaceSync!('h1 { font-size: large; }');
+      }, 100);
+
+      setTimeout(() => {
+        const sheet3 = new iframeWin.CSSStyleSheet();
+        sheet3.replaceSync!('span {background-color: red;}');
+        iframeDocument!.adoptedStyleSheets = [sheet3, sheet2];
+        shadowHost.shadowRoot!.adoptedStyleSheets = [sheet1, sheet3];
+      }, 150);
+    });
+    await ctx.page.waitForTimeout(200);
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets of shadow doms in checkout full snapshot', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        document.body.innerHTML = `
+            <div id="shadow-host-1">entry</div>
+          `;
+
+        let shadowHost = document.querySelector('div')!;
+        shadowHost!.attachShadow({ mode: 'open' });
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!('h1 {color: blue;}');
+        shadowHost.shadowRoot!.adoptedStyleSheets = [sheet];
+
+        const { rrweb, emit } = window as unknown as IWindow;
+        rrweb.record({
+          emit,
+        });
+
+        setTimeout(() => {
+          // When a full snapshot is checked out manually, all adoptedStylesheets should also be captured.
+          rrweb.record.takeFullSnapshot(true);
+          resolve(undefined);
+        }, 10);
       });
     });
     await waitForRAF(ctx.page);
@@ -483,76 +640,102 @@ describe('record', function (this: ISuite) {
     });
     await waitForRAF(ctx.page);
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       record({
         inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
     });
     await waitForRAF(ctx.page);
     assertSnapshot(ctx.events);
   });
 
-  it('captures stylesheets that are still loading', async () => {
-    await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+  describe('loading stylesheets', () => {
+    let server: Server;
+    let serverURL: string;
 
-      record({
-        inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
-      });
-
-      const link1 = document.createElement('link');
-      link1.setAttribute('rel', 'stylesheet');
-      link1.setAttribute(
-        'href',
-        URL.createObjectURL(
-          new Blob(['body { color: pink; }'], {
-            type: 'text/css',
-          }),
-        ),
-      );
-      document.head.appendChild(link1);
+    beforeAll(async () => {
+      server = await startServer();
+      serverURL = getServerURL(server);
     });
 
-    // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
-    await waitForRAF(ctx.page);
-
-    assertSnapshot(ctx.events);
-  });
-
-  it('captures stylesheets in iframes that are still loading', async () => {
-    await ctx.page.evaluate(() => {
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('src', 'about:blank');
-      document.body.appendChild(iframe);
-      const iframeDoc = iframe.contentDocument!;
-
-      const { record } = ((window as unknown) as IWindow).rrweb;
-
-      record({
-        inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
+    beforeEach(async () => {
+      ctx.page = await ctx.browser.newPage();
+      await ctx.page.goto(`${serverURL}/html/hello-world.html`);
+      await ctx.page.evaluate(ctx.code);
+      ctx.events = [];
+      await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
+        if (
+          e.type === EventType.DomContentLoaded ||
+          e.type === EventType.Load
+        ) {
+          return;
+        }
+        ctx.events.push(e);
       });
 
-      const linkEl = document.createElement('link');
-      linkEl.setAttribute('rel', 'stylesheet');
-      linkEl.setAttribute(
-        'href',
-        URL.createObjectURL(
-          new Blob(['body { color: pink; }'], {
-            type: 'text/css',
-          }),
-        ),
-      );
-      iframeDoc.head.appendChild(linkEl);
+      ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
     });
 
-    // `blob:` URLs are not available immediately, so we need to wait for the browser to load them
-    await waitForRAF(ctx.page);
+    afterAll(async () => {
+      await server.close();
+    });
 
-    assertSnapshot(ctx.events);
+    it('captures stylesheets that are still loading', async () => {
+      ctx.page.evaluate((serverURL) => {
+        const { record } = (window as unknown as IWindow).rrweb;
+
+        record({
+          inlineStylesheet: true,
+          emit: (window as unknown as IWindow).emit,
+        });
+
+        const link1 = document.createElement('link');
+        link1.setAttribute('rel', 'stylesheet');
+        link1.setAttribute('href', `${serverURL}/html/assets/style.css`);
+        document.head.appendChild(link1);
+      }, serverURL);
+
+      await ctx.page.waitForResponse(`${serverURL}/html/assets/style.css`);
+      await waitForRAF(ctx.page);
+
+      assertSnapshot(ctx.events);
+    });
+
+    it('captures stylesheets in iframes that are still loading', async () => {
+      ctx.page.evaluate(() => {
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('src', `/html/hello-world.html?2`);
+        document.body.appendChild(iframe);
+
+        const { record } = (window as unknown as IWindow).rrweb;
+
+        record({
+          inlineStylesheet: true,
+          emit: (window as unknown as IWindow).emit,
+        });
+      });
+
+      await ctx.page.waitForResponse(`${serverURL}/html/hello-world.html?2`);
+
+      await waitForRAF(ctx.page);
+
+      ctx.page.evaluate(() => {
+        const iframe = document.querySelector('iframe')!;
+        const iframeDoc = iframe.contentDocument!;
+        const linkEl = document.createElement('link');
+        linkEl.setAttribute('rel', 'stylesheet');
+        linkEl.setAttribute('href', `/html/assets/style.css`);
+        iframeDoc.head.appendChild(linkEl);
+      });
+
+      await ctx.page.waitForResponse(`${serverURL}/html/assets/style.css`);
+
+      await waitForRAF(ctx.page);
+
+      assertSnapshot(ctx.events);
+    });
   });
 
   it('captures CORS stylesheets that are still loading', async () => {
@@ -561,11 +744,11 @@ describe('record', function (this: ISuite) {
 
     // do not `await` the following function, otherwise `waitForResponse` _might_ not be called
     void ctx.page.evaluate((corsStylesheetURL) => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
 
       record({
         inlineStylesheet: true,
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
 
       const link1 = document.createElement('link');
@@ -576,6 +759,81 @@ describe('record', function (this: ISuite) {
 
     await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
     await waitForRAF(ctx.page); // wait for rrweb to emit events
+
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures adopted stylesheets in shadow doms and iframe', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        document.body.innerHTML = `
+        <div>div in outermost document</div>
+        <div id="shadow-host1"></div>
+        <div id="shadow-host2"></div>
+        <iframe></iframe>
+      `;
+
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!(
+          'div { color: yellow; } h2 { color: orange; } h3 { font-size: larger;}',
+        );
+        // Add stylesheet to a document.
+
+        document.adoptedStyleSheets = [sheet];
+
+        // Add stylesheet to a shadow host.
+        const host = document.querySelector('#shadow-host1');
+        const shadow = host!.attachShadow({ mode: 'open' });
+        shadow.innerHTML =
+          '<div>div in shadow dom 1</div><span>span in shadow dom 1</span>';
+        const sheet2 = new CSSStyleSheet();
+
+        sheet2.replaceSync!('span { color: red; }');
+
+        shadow.adoptedStyleSheets = [sheet, sheet2];
+
+        // Add stylesheet to an IFrame document.
+        const iframe = document.querySelector('iframe');
+        const sheet3 = new (
+          iframe!.contentWindow! as IWindow & typeof globalThis
+        ).CSSStyleSheet();
+        sheet3.replaceSync!('h1 { color: blue; }');
+
+        iframe!.contentDocument!.adoptedStyleSheets = [sheet3];
+
+        const ele = iframe!.contentDocument!.createElement('h1');
+        ele.innerText = 'h1 in iframe';
+        iframe!.contentDocument!.body.appendChild(ele);
+
+        (window as unknown as IWindow).rrweb.record({
+          emit: (window.top as unknown as IWindow).emit,
+        });
+
+        // Make incremental changes to shadow dom.
+        setTimeout(() => {
+          const host = document.querySelector('#shadow-host2');
+          const shadow = host!.attachShadow({ mode: 'open' });
+          shadow.innerHTML =
+            '<div>div in shadow dom 2</div><span>span in shadow dom 2</span>';
+          const sheet4 = new CSSStyleSheet();
+          sheet4.replaceSync!('span { color: green; }');
+          shadow.adoptedStyleSheets = [sheet, sheet4];
+
+          document.adoptedStyleSheets = [sheet4, sheet, sheet2];
+
+          const sheet5 = new (
+            iframe!.contentWindow! as IWindow & typeof globalThis
+          ).CSSStyleSheet();
+          sheet5.replaceSync!('h2 { color: purple; }');
+          iframe!.contentDocument!.adoptedStyleSheets = [sheet5, sheet3];
+        }, 10);
+
+        setTimeout(() => {
+          resolve(null);
+        }, 20);
+      });
+    });
+    await waitForRAF(ctx.page); // wait till events get sent
 
     assertSnapshot(ctx.events);
   });
@@ -598,9 +856,9 @@ describe('record iframes', function (this: ISuite) {
 
   it('captures iframe content in correct order', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
     });
     await waitForRAF(ctx.page);
@@ -622,10 +880,10 @@ describe('record iframes', function (this: ISuite) {
 
   it('captures stylesheet mutations in iframes', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
         // need to reference window.top for when we are in an iframe!
-        emit: ((window.top as unknown) as IWindow).emit,
+        emit: (window.top as unknown as IWindow).emit,
       });
 
       const iframe = document.querySelector('iframe');

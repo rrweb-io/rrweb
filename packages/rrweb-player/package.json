@@ -1,9 +1,10 @@
 {
   "name": "rrweb-player",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.4",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
+    "@rrweb/types": "^2.0.0-alpha.4",
     "@types/offscreencanvas": "^2019.6.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -24,7 +25,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "rrweb": "^2.0.0-alpha.2"
+    "rrweb": "^2.0.0-alpha.4"
   },
   "scripts": {
     "build": "rollup -c",
@@ -36,7 +37,7 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",
-  "main": "lib/index.js",
+  "main": "lib/index.cjs",
   "module": "dist/index.mjs",
   "unpkg": "dist/index.js",
   "files": [
@@ -45,6 +46,7 @@
     "typings"
   ],
   "typings": "typings/index.d.ts",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"

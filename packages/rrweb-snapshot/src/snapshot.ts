@@ -19,6 +19,7 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
+  getCssRulesString,
 } from './utils';
 
 let _id = 1;
@@ -26,7 +27,7 @@ const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
 export const IGNORED_NODE = -2;
 
-function genId(): number {
+export function genId(): number {
   return _id++;
 }
 
@@ -45,31 +46,6 @@ function getValidTagName(element: HTMLElement): string {
   }
 
   return processedTagName;
-}
-
-function getCssRulesString(s: CSSStyleSheet): string | null {
-  try {
-    const rules = s.rules || s.cssRules;
-    return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
-  } catch (error) {
-    return null;
-  }
-}
-
-function getCssRuleString(rule: CSSRule): string {
-  let cssStringified = rule.cssText;
-  if (isCSSImportRule(rule)) {
-    try {
-      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
-    } catch {
-      // ignore
-    }
-  }
-  return cssStringified;
-}
-
-function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
-  return 'styleSheet' in rule;
 }
 
 function stringifyStyleSheet(sheet: CSSStyleSheet): string {
@@ -1189,7 +1165,6 @@ export function serializeNodeWithId(
       },
       stylesheetLoadTimeout,
     );
-    if (isStylesheetLoaded(n as HTMLLinkElement) === false) return null; // add stylesheet in later mutation
   }
 
   return serializedNode;

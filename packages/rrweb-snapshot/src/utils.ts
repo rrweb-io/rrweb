@@ -5,6 +5,12 @@ import {
   nodeMetaMap,
   IMirror,
   serializedNodeWithId,
+  serializedNode,
+  NodeType,
+  documentNode,
+  documentTypeNode,
+  textNode,
+  elementNode,
 } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -22,6 +28,59 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
  */
 export function isNativeShadowDom(shadowRoot: ShadowRoot) {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
+}
+
+/**
+ * Browsers sometimes destructively modify the css rules they receive.
+ * This function tries to rectify the modifications the browser made to make it more cross platform compatible.
+ * @param cssText - output of `CSSStyleRule.cssText`
+ * @returns `cssText` with browser inconsistencies fixed.
+ */
+function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
+  /**
+   * Chrome outputs `-webkit-background-clip` as `background-clip` in `CSSStyleRule.cssText`.
+   * But then Chrome ignores `background-clip` as css input.
+   * Re-introduce `-webkit-background-clip` to fix this issue.
+   */
+  if (
+    cssText.includes(' background-clip: text;') &&
+    !cssText.includes(' -webkit-background-clip: text;')
+  ) {
+    cssText = cssText.replace(
+      ' background-clip: text;',
+      ' -webkit-background-clip: text; background-clip: text;',
+    );
+  }
+  return cssText;
+}
+
+export function getCssRulesString(s: CSSStyleSheet): string | null {
+  try {
+    const rules = s.rules || s.cssRules;
+    return rules
+      ? fixBrowserCompatibilityIssuesInCSS(
+          Array.from(rules).map(getCssRuleString).join(''),
+        )
+      : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getCssRuleString(rule: CSSRule): string {
+  let cssStringified = rule.cssText;
+  if (isCSSImportRule(rule)) {
+    try {
+      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
+    } catch {
+      // ignore
+    }
+  }
+  return cssStringified;
+}
+
+export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
+  return 'styleSheet' in rule;
 }
 
 export class Mirror implements IMirror<Node> {
@@ -57,7 +116,7 @@ export class Mirror implements IMirror<Node> {
 
     if (n.childNodes) {
       n.childNodes.forEach((childNode) =>
-        this.removeNodeFromMap((childNode as unknown) as Node),
+        this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
   }
@@ -76,6 +135,11 @@ export class Mirror implements IMirror<Node> {
   }
 
   replace(id: number, n: Node) {
+    const oldNode = this.getNode(id);
+    if (oldNode) {
+      const meta = this.nodeMetaMap.get(oldNode);
+      if (meta) this.nodeMetaMap.set(n, meta);
+    }
     this.idNodeMap.set(id, n);
   }
 
@@ -154,4 +218,31 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
     }
   }
   return true;
+}
+
+export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
+  if (!a || !b || a.type !== b.type) return false;
+  if (a.type === NodeType.Document)
+    return a.compatMode === (b as documentNode).compatMode;
+  else if (a.type === NodeType.DocumentType)
+    return (
+      a.name === (b as documentTypeNode).name &&
+      a.publicId === (b as documentTypeNode).publicId &&
+      a.systemId === (b as documentTypeNode).systemId
+    );
+  else if (
+    a.type === NodeType.Comment ||
+    a.type === NodeType.Text ||
+    a.type === NodeType.CDATA
+  )
+    return a.textContent === (b as textNode).textContent;
+  else if (a.type === NodeType.Element)
+    return (
+      a.tagName === (b as elementNode).tagName &&
+      JSON.stringify(a.attributes) ===
+        JSON.stringify((b as elementNode).attributes) &&
+      a.isSVG === (b as elementNode).isSVG &&
+      a.needBlock === (b as elementNode).needBlock
+    );
+  return false;
 }

@@ -1,4 +1,5 @@
-import { EventType, eventWithTime, IncrementalSource } from '../../src/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
+import type { eventWithTime } from '@rrweb/types';
 
 const now = Date.now();
 const events: eventWithTime[] = [
@@ -146,8 +147,7 @@ const events: eventWithTime[] = [
       id: 101,
       adds: [
         {
-          rule:
-            '.css-added-at-500-overwritten-at-3000 {border: 1px solid blue;}',
+          rule: '.css-added-at-500-overwritten-at-3000 {border: 1px solid blue;}',
           index: 1,
         },
       ],
@@ -162,8 +162,7 @@ const events: eventWithTime[] = [
       id: 105,
       adds: [
         {
-          rule:
-            '.css-added-at-1000-deleted-at-2500{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
+          rule: '.css-added-at-1000-deleted-at-2500{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
           index: 2,
         },
       ],

@@ -173,9 +173,12 @@ exports[`record captures CORS stylesheets that are still loading 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 4,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -188,10 +191,1074 @@ exports[`record captures CORS stylesheets that are still loading 1`] = `
             \\"id\\": 9
           }
         }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record captures adopted stylesheets in nested shadow doms and iframes 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"shadow-host-1\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"entry\\",
+                        \\"id\\": 8
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"iframe\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"iframe-1\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 9,
+                        \\"isShadow\\": true
+                      }
+                    ],
+                    \\"id\\": 7,
+                    \\"isShadowHost\\": true
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\",
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 11,
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"shadow-host-2\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"iframe\\",
+                            \\"attributes\\": {
+                              \\"id\\": \\"iframe-2\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 11,
+                            \\"id\\": 16,
+                            \\"isShadow\\": true
+                          }
+                        ],
+                        \\"rootId\\": 11,
+                        \\"id\\": 15,
+                        \\"isShadowHost\\": true
+                      }
+                    ],
+                    \\"rootId\\": 11,
+                    \\"id\\": 14
+                  }
+                ],
+                \\"rootId\\": 11,
+                \\"id\\": 12
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 11
+          }
+        }
       ],
       \\"removes\\": [],
       \\"texts\\": [],
-      \\"attributes\\": []
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 17,
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"shadow-host-3\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"iframe\\",
+                            \\"attributes\\": {
+                              \\"id\\": \\"iframe-3\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 17,
+                            \\"id\\": 22,
+                            \\"isShadow\\": true
+                          }
+                        ],
+                        \\"rootId\\": 17,
+                        \\"id\\": 21,
+                        \\"isShadowHost\\": true
+                      }
+                    ],
+                    \\"rootId\\": 17,
+                    \\"id\\": 20
+                  }
+                ],
+                \\"rootId\\": 17,
+                \\"id\\": 18
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 17
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 23,
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"shadow-host-4\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"iframe\\",
+                            \\"attributes\\": {
+                              \\"id\\": \\"iframe-4\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 23,
+                            \\"id\\": 28,
+                            \\"isShadow\\": true
+                          }
+                        ],
+                        \\"rootId\\": 23,
+                        \\"id\\": 27,
+                        \\"isShadowHost\\": true
+                      }
+                    ],
+                    \\"rootId\\": 23,
+                    \\"id\\": 26
+                  }
+                ],
+                \\"rootId\\": 23,
+                \\"id\\": 24
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 23
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 28,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 29,
+                    \\"id\\": 31
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {
+                          \\"id\\": \\"shadow-host-5\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 29,
+                        \\"id\\": 33,
+                        \\"isShadowHost\\": true
+                      }
+                    ],
+                    \\"rootId\\": 29,
+                    \\"id\\": 32
+                  }
+                ],
+                \\"rootId\\": 29,
+                \\"id\\": 30
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 29
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 29,
+      \\"styleIds\\": [
+        1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h1 { color: blue; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 33,
+      \\"styleIds\\": [
+        2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"div { font-size: large; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"div { display: inline ; }\\",
+          \\"index\\": 1
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replaceSync\\": \\"h1 { font-size: large; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 29,
+      \\"styleIds\\": [
+        3,
+        2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 3,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"span { background-color: red; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 33,
+      \\"styleIds\\": [
+        1,
+        3
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"div in outermost document\\",
+                        \\"id\\": 8
+                      }
+                    ],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"shadow-host1\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"div\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"div in shadow dom 1\\",
+                            \\"id\\": 12
+                          }
+                        ],
+                        \\"id\\": 11,
+                        \\"isShadow\\": true
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"span\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"span in shadow dom 1\\",
+                            \\"id\\": 14
+                          }
+                        ],
+                        \\"id\\": 13,
+                        \\"isShadow\\": true
+                      }
+                    ],
+                    \\"id\\": 10,
+                    \\"isShadowHost\\": true
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"shadow-host2\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\",
+                    \\"id\\": 19
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 1,
+      \\"styleIds\\": [
+        1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"div { color: yellow; }\\",
+              \\"index\\": 0
+            },
+            {
+              \\"rule\\": \\"h2 { color: orange; }\\",
+              \\"index\\": 1
+            },
+            {
+              \\"rule\\": \\"h3 { font-size: larger; }\\",
+              \\"index\\": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 10,
+      \\"styleIds\\": [
+        1,
+        2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"span { color: red; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 18,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 20,
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"h1\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"h1 in iframe\\",
+                            \\"rootId\\": 20,
+                            \\"id\\": 25
+                          }
+                        ],
+                        \\"rootId\\": 20,
+                        \\"id\\": 24
+                      }
+                    ],
+                    \\"rootId\\": 20,
+                    \\"id\\": 23
+                  }
+                ],
+                \\"rootId\\": 20,
+                \\"id\\": 21
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 20
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 20,
+      \\"styleIds\\": [
+        3
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 3,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h1 { color: blue; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 1,
+      \\"styleIds\\": [
+        4,
+        1,
+        2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 4,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"span { color: green; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 20,
+      \\"styleIds\\": [
+        5,
+        3
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 5,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h2 { color: purple; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 26,
+            \\"isShadow\\": true
+          }
+        },
+        {
+          \\"parentId\\": 26,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"span in shadow dom 2\\",
+            \\"id\\": 27
+          }
+        },
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": 26,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 28,
+            \\"isShadow\\": true
+          }
+        },
+        {
+          \\"parentId\\": 28,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"div in shadow dom 2\\",
+            \\"id\\": 29
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 16,
+      \\"styleIds\\": [
+        1,
+        4
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record captures adopted stylesheets of shadow doms in checkout full snapshot 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n            \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"shadow-host-1\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"entry\\",
+                        \\"id\\": 8
+                      }
+                    ],
+                    \\"id\\": 7,
+                    \\"isShadowHost\\": true
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 9
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 7,
+      \\"styleIds\\": [
+        1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h1 { color: blue; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n            \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"shadow-host-1\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"entry\\",
+                        \\"id\\": 8
+                      }
+                    ],
+                    \\"id\\": 7,
+                    \\"isShadowHost\\": true
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 9
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 7,
+      \\"styleIds\\": [
+        1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": [
+            {
+              \\"rule\\": \\"h1 { color: blue; }\\",
+              \\"index\\": 0
+            }
+          ]
+        }
+      ]
     }
   }
 ]"
@@ -320,6 +1387,306 @@ exports[`record captures inserted style text nodes correctly 1`] = `
             \\"isStyle\\": true,
             \\"id\\": 13
           }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record captures mutations on adopted stylesheets 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"div in outermost document\\",
+                        \\"id\\": 8
+                      }
+                    ],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n      \\",
+                    \\"id\\": 11
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 1,
+      \\"styleIds\\": [
+        1
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 1,
+          \\"rules\\": []
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 10,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 12,
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"h1\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"h1 in iframe\\",
+                            \\"rootId\\": 12,
+                            \\"id\\": 17
+                          }
+                        ],
+                        \\"rootId\\": 12,
+                        \\"id\\": 16
+                      }
+                    ],
+                    \\"rootId\\": 12,
+                    \\"id\\": 15
+                  }
+                ],
+                \\"rootId\\": 12,
+                \\"id\\": 13
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 12
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 15,
+      \\"id\\": 12,
+      \\"styleIds\\": [
+        2
+      ],
+      \\"styles\\": [
+        {
+          \\"styleId\\": 2,
+          \\"rules\\": []
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"replace\\": \\"div { color: yellow; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replace\\": \\"h1 { color: blue; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"replaceSync\\": \\"div { display: inline ; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"replaceSync\\": \\"h1 { font-size: large; }\\"
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 1,
+      \\"set\\": {
+        \\"property\\": \\"color\\",
+        \\"value\\": \\"green\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 1,
+      \\"remove\\": {
+        \\"property\\": \\"display\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"styleId\\": 2,
+      \\"set\\": {
+        \\"property\\": \\"font-size\\",
+        \\"value\\": \\"medium\\",
+        \\"priority\\": \\"important\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"h2 { color: red; }\\"
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 1,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { border: 2px solid blue; }\\",
+          \\"index\\": 1
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"styleId\\": 2,
+      \\"removes\\": [
+        {
+          \\"index\\": 0
         }
       ]
     }
@@ -743,164 +2110,6 @@ exports[`record captures stylesheet rules 1`] = `
 ]"
 `;
 
-exports[`record captures stylesheets in iframes that are still loading 1`] = `
-"[
-  {
-    \\"type\\": 4,
-    \\"data\\": {
-      \\"href\\": \\"about:blank\\",
-      \\"width\\": 1920,
-      \\"height\\": 1080
-    }
-  },
-  {
-    \\"type\\": 2,
-    \\"data\\": {
-      \\"node\\": {
-        \\"type\\": 0,
-        \\"childNodes\\": [
-          {
-            \\"type\\": 1,
-            \\"name\\": \\"html\\",
-            \\"publicId\\": \\"\\",
-            \\"systemId\\": \\"\\",
-            \\"id\\": 2
-          },
-          {
-            \\"type\\": 2,
-            \\"tagName\\": \\"html\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"head\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"input\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"text\\",
-                      \\"size\\": \\"40\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 7
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"iframe\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"id\\": 9
-                  }
-                ],
-                \\"id\\": 5
-              }
-            ],
-            \\"id\\": 3
-          }
-        ],
-        \\"id\\": 1
-      },
-      \\"initialOffset\\": {
-        \\"left\\": 0,
-        \\"top\\": 0
-      }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 0,
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"html\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"head\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 10,
-                    \\"id\\": 12
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"body\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 10,
-                    \\"id\\": 14
-                  }
-                ],
-                \\"rootId\\": 10,
-                \\"id\\": 11
-              }
-            ],
-            \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 10
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"isAttachIframe\\": true
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 13,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"link\\",
-            \\"attributes\\": {
-              \\"_cssText\\": \\"body { color: pink; }\\"
-            },
-            \\"childNodes\\": [],
-            \\"rootId\\": 10,
-            \\"id\\": 13
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": []
-    }
-  }
-]"
-`;
-
 exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
 "[
   {
@@ -1040,108 +2249,6 @@ exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [],
       \\"isAttachIframe\\": true
-    }
-  }
-]"
-`;
-
-exports[`record captures stylesheets that are still loading 1`] = `
-"[
-  {
-    \\"type\\": 4,
-    \\"data\\": {
-      \\"href\\": \\"about:blank\\",
-      \\"width\\": 1920,
-      \\"height\\": 1080
-    }
-  },
-  {
-    \\"type\\": 2,
-    \\"data\\": {
-      \\"node\\": {
-        \\"type\\": 0,
-        \\"childNodes\\": [
-          {
-            \\"type\\": 1,
-            \\"name\\": \\"html\\",
-            \\"publicId\\": \\"\\",
-            \\"systemId\\": \\"\\",
-            \\"id\\": 2
-          },
-          {
-            \\"type\\": 2,
-            \\"tagName\\": \\"html\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"head\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"input\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"text\\",
-                      \\"size\\": \\"40\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 7
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
-                  }
-                ],
-                \\"id\\": 5
-              }
-            ],
-            \\"id\\": 3
-          }
-        ],
-        \\"id\\": 1
-      },
-      \\"initialOffset\\": {
-        \\"left\\": 0,
-        \\"top\\": 0
-      }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"link\\",
-            \\"attributes\\": {
-              \\"_cssText\\": \\"body { color: pink; }\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 9
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": []
     }
   }
 ]"
@@ -1718,6 +2825,522 @@ exports[`record is safe to checkout during async callbacks 1`] = `
             \\"type\\": 3,
             \\"textContent\\": \\"test\\",
             \\"id\\": 11
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record loading stylesheets captures stylesheets in iframes that are still loading 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"IE=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Hello World!\\",
+                        \\"id\\": 13
+                      }
+                    ],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 15
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    Hello world!\\\\n  \\\\n\\\\n\\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"iframe\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"id\\": 18
+                  }
+                ],
+                \\"id\\": 16
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 18,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 1,
+                \\"name\\": \\"html\\",
+                \\"publicId\\": \\"\\",
+                \\"systemId\\": \\"\\",
+                \\"rootId\\": 19,
+                \\"id\\": 20
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {
+                  \\"lang\\": \\"en\\"
+                },
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 23
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"charset\\": \\"UTF-8\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 19,
+                        \\"id\\": 24
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 25
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"http-equiv\\": \\"X-UA-Compatible\\",
+                          \\"content\\": \\"IE=edge\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 19,
+                        \\"id\\": 26
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 27
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"meta\\",
+                        \\"attributes\\": {
+                          \\"name\\": \\"viewport\\",
+                          \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"rootId\\": 19,
+                        \\"id\\": 28
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 29
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"title\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"Hello World!\\",
+                            \\"rootId\\": 19,
+                            \\"id\\": 31
+                          }
+                        ],
+                        \\"rootId\\": 19,
+                        \\"id\\": 30
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n  \\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 32
+                      }
+                    ],
+                    \\"rootId\\": 19,
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"rootId\\": 19,
+                    \\"id\\": 33
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    Hello world!\\\\n  \\\\n\\\\n\\",
+                        \\"rootId\\": 19,
+                        \\"id\\": 35
+                      }
+                    ],
+                    \\"rootId\\": 19,
+                    \\"id\\": 34
+                  }
+                ],
+                \\"rootId\\": 19,
+                \\"id\\": 21
+              }
+            ],
+            \\"id\\": 19
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"link\\",
+            \\"attributes\\": {
+              \\"rel\\": \\"stylesheet\\",
+              \\"href\\": \\"http://localhost:3030/html/assets/style.css\\"
+            },
+            \\"childNodes\\": [],
+            \\"rootId\\": 19,
+            \\"id\\": 36
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 36,
+          \\"attributes\\": {
+            \\"_cssText\\": \\"body { color: pink; }\\"
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record loading stylesheets captures stylesheets that are still loading 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"IE=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Hello World!\\",
+                        \\"id\\": 13
+                      }
+                    ],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 15
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    Hello world!\\\\n  \\\\n\\\\n\\",
+                    \\"id\\": 17
+                  }
+                ],
+                \\"id\\": 16
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"link\\",
+            \\"attributes\\": {
+              \\"rel\\": \\"stylesheet\\",
+              \\"href\\": \\"http://localhost:3030/html/assets/style.css\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 18
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 18,
+          \\"attributes\\": {
+            \\"_cssText\\": \\"body { color: pink; }\\"
           }
         }
       ]

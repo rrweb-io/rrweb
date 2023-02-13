@@ -1,5 +1,5 @@
 import type { Replayer } from '../';
-import type { canvasMutationCommand } from '../../types';
+import type { canvasMutationCommand } from '@rrweb/types';
 import { deserializeArg } from './deserialize-args';
 
 export default async function canvasMutation({
@@ -20,7 +20,7 @@ export default async function canvasMutation({
 
     if (mutation.setter) {
       // skip some read-only type checks
-      ((ctx as unknown) as Record<string, unknown>)[mutation.property] =
+      (ctx as unknown as Record<string, unknown>)[mutation.property] =
         mutation.args[0];
       return;
     }
