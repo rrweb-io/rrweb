@@ -5,7 +5,6 @@
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "dev:chrome": "cross-env TARGET_BROWSER=chrome vite dev",
     "dev:firefox": "cross-env TARGET_BROWSER=firefox vite dev",
