@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { createMirror, snapshot, NodeType } from 'rrweb-snapshot';
 import { EventType } from 'rrweb';
-import { SyncReplayer } from 'rrweb/sync-replayer';
+import { SyncReplayer } from 'rrweb';
 import type { eventWithTime } from '@rrweb/types';
 import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
 import { sessionCut, getValidSortedPoints, pruneBranches } from '../src';

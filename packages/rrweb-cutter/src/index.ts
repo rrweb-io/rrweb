@@ -5,7 +5,7 @@ import type {
 } from '@rrweb/types';
 import { IncrementalSource } from 'rrweb';
 import { EventType } from 'rrweb';
-import { SyncReplayer } from 'rrweb/sync-replayer';
+import { SyncReplayer } from 'rrweb';
 import snapshot from './snapshot';
 import { serializedNodeWithId } from 'rrweb-snapshot';
 type CutterConfig = {

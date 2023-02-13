@@ -38,23 +38,6 @@
     "es",
     "typings"
   ],
-  "exports": {
-    ".": {
-      "import": "./es/rrweb/packages/rrweb/src/entries/all.js",
-      "require": "./lib/rrweb-all.cjs"
-    },
-    "./sync-replayer": {
-      "import": "./es/rrweb/packages/rrweb/src/replay/sync-replayer.js",
-      "require": "./lib/replay/rrweb-sync-replay.cjs"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "sync-replayer": [
-        "typings/replay/sync-replayer.d.ts"
-      ]
-    }
-  },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
