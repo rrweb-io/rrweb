@@ -1,20 +1,20 @@
-import { elementNode, NodeType, serializedNode } from 'rrweb-snapshot';
 import type { serializedNodeWithId, attributes } from 'rrweb-snapshot';
-import { Mirror } from 'rrdom';
+import { elementNode, NodeType, serializedNode } from 'rrweb-snapshot';
 import type {
-  RRNode,
-  RRMediaElement,
-  RRElement,
-  RRDocument,
-  RRDocumentType,
+  IRRComment,
+  IRRDocument,
+  IRRDocumentType,
+  IRRElement,
+  IRRNode,
   RRIFrameElement,
-  RRComment,
+  RRMediaElement,
 } from 'rrdom';
+import { Mirror } from 'rrdom';
 
 function serializeNode(
-  n: RRNode,
+  n: IRRNode,
   options: {
-    doc: RRDocument;
+    doc: IRRDocument;
     mirror: Mirror;
   },
 ): serializedNode | false {
@@ -23,11 +23,11 @@ function serializeNode(
   const rootId = getRootId(doc, mirror);
   switch (n.RRNodeType) {
     case NodeType.Document:
-      if ((n as RRDocument).compatMode !== 'CSS1Compat') {
+      if ((n as IRRDocument).compatMode !== 'CSS1Compat') {
         return {
           type: NodeType.Document,
           childNodes: [],
-          compatMode: (n as RRDocument).compatMode, // probably "BackCompat"
+          compatMode: (n as IRRDocument).compatMode, // probably "BackCompat"
           rootId,
         };
       } else {
@@ -40,19 +40,20 @@ function serializeNode(
     case NodeType.DocumentType:
       return {
         type: NodeType.DocumentType,
-        name: (n as RRDocumentType).name,
-        publicId: (n as RRDocumentType).publicId,
-        systemId: (n as RRDocumentType).systemId,
+        name: (n as IRRDocumentType).name,
+        publicId: (n as IRRDocumentType).publicId,
+        systemId: (n as IRRDocumentType).systemId,
         rootId,
       };
     case NodeType.Element:
-      return serializeElementNode(n as RRElement, {
+      return serializeElementNode(n as IRRElement, {
         doc,
         mirror,
         rootId,
       });
     case NodeType.Text: {
-      const parentTagName = n.parentNode && (n.parentNode as RRElement).tagName;
+      const parentTagName =
+        n.parentNode && (n.parentNode as IRRElement).tagName;
       const isStyle = parentTagName === 'STYLE' ? true : undefined;
       return {
         type: NodeType.Text,
@@ -70,7 +71,7 @@ function serializeNode(
     case NodeType.Comment:
       return {
         type: NodeType.Comment,
-        textContent: (n as RRComment).textContent || '',
+        textContent: (n as IRRComment).textContent || '',
         rootId,
       };
     default:
@@ -78,13 +79,13 @@ function serializeNode(
   }
 }
 
-function getRootId(doc: RRDocument, mirror: Mirror): number | undefined {
+function getRootId(doc: IRRDocument, mirror: Mirror): number | undefined {
   if (!mirror.hasNode(doc)) return undefined;
   const docId = mirror.getId(doc);
   return docId === 1 ? undefined : docId;
 }
 
-function getValidTagName(element: RRElement): string {
+function getValidTagName(element: IRRElement): string {
   const processedTagName = element.tagName.toLowerCase().trim();
   const tagNameRegex = new RegExp('[^a-z0-9-_:]');
   if (tagNameRegex.test(processedTagName)) {
@@ -98,9 +99,9 @@ function getValidTagName(element: RRElement): string {
 }
 
 function serializeElementNode(
-  n: RRElement,
+  n: IRRElement,
   options: {
-    doc: RRDocument;
+    doc: IRRDocument;
     mirror: Mirror;
     rootId: number | undefined;
   },
@@ -120,7 +121,7 @@ function serializeElementNode(
   ) {
     // the child text is inserted and untracked by the rrweb replayer
     if (n.childNodes[0] && mirror.getId(n.childNodes[0]) < 0)
-      attributes._cssText = n.textContent;
+      attributes._cssText = n.textContent || '';
   }
   if (n.scrollLeft) {
     attributes.rr_scrollLeft = n.scrollLeft;
@@ -150,12 +151,12 @@ function serializeElementNode(
 }
 
 export function serializeNodeWithId(
-  n: RRNode,
+  n: IRRNode,
   options: {
-    doc: RRDocument;
+    doc: IRRDocument;
     mirror: Mirror;
     skipChild: boolean;
-    onSerialize?: (n: RRNode) => unknown;
+    onSerialize?: (n: IRRNode) => unknown;
     onIframeLoad?: (
       iframeNode: RRIFrameElement,
       node: serializedNodeWithId,
@@ -212,9 +213,9 @@ export function serializeNodeWithId(
       }
     }
 
-    if (n.RRNodeType === NodeType.Element && (n as RRElement).shadowRoot) {
+    if (n.RRNodeType === NodeType.Element && (n as IRRElement).shadowRoot) {
       serializedNode.isShadowHost = true;
-      const shadowRoot = (n as RRElement).shadowRoot;
+      const shadowRoot = (n as IRRElement).shadowRoot;
       if (shadowRoot) {
         bypassOptions.isShadowDom = true;
         for (const childN of Array.from(shadowRoot.childNodes)) {
@@ -255,11 +256,11 @@ export function serializeNodeWithId(
 }
 
 export function snapshot(
-  n: RRDocument,
+  n: IRRDocument,
   options?: {
     mirror?: Mirror;
     skipChild?: boolean;
-    onSerialize?: (n: RRNode) => unknown;
+    onSerialize?: (n: IRRNode) => unknown;
     onIframeLoad?: (
       iframeNode: RRIFrameElement,
       node: serializedNodeWithId,

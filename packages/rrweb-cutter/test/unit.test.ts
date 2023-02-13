@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { NodeType } from 'rrweb-snapshot';
 import { getTreeForId } from '../src';
 
@@ -28,7 +31,6 @@ describe('getTreeForId', () => {
       },
       [],
     );
-    console.log(tree);
     expect(tree).toEqual(new Set([1, 2, 99]));
   });
   it('should return parents id as part of tree 2', () => {
@@ -57,7 +59,6 @@ describe('getTreeForId', () => {
       },
       [],
     );
-    console.log(tree);
     expect(tree).toEqual(new Set([1, 2]));
   });
 
@@ -100,7 +101,6 @@ describe('getTreeForId', () => {
       },
       [],
     );
-    console.log(tree);
     expect(tree).toEqual(new Set([1, 2, 98, 3, 99]));
   });
 });

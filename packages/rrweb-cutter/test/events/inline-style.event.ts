@@ -1,4 +1,4 @@
-import { EventType, eventWithTime, IncrementalSource } from 'rrweb/src/types';
+import { EventType, eventWithTime, IncrementalSource } from '@rrweb/types';
 
 const now = Date.now();
 

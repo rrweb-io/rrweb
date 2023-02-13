@@ -2,9 +2,10 @@ import type {
   addedNodeMutation,
   eventWithTime,
   mousePosition,
-} from 'rrweb/typings/types';
+} from '@rrweb/types';
 import { IncrementalSource } from 'rrweb';
-import { EventType, SyncReplayer } from 'rrweb';
+import { EventType } from 'rrweb';
+import { SyncReplayer } from 'rrweb/sync-replayer';
 import snapshot from './snapshot';
 import { serializedNodeWithId } from 'rrweb-snapshot';
 type CutterConfig = {
@@ -172,7 +173,8 @@ export function pruneBranches(
             },
           } as eventWithTime);
       } else if ('id' in event.data) {
-        if (treeSet.has(event.data.id)) result.push(event);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (treeSet.has(event.data.id!)) result.push(event);
       } else if (event.data.source === IncrementalSource.Mutation) {
         const { removes, adds, texts, attributes } = event.data;
         const prunedRemoves = removes.filter((remove) =>

@@ -7,7 +7,8 @@ export default {
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
-      name: 'rrwebTypes',
+      name: 'rrwebCutter',
+      fileName: 'index',
       formats: ['es', 'cjs', 'umd', 'iife'],
     },
 

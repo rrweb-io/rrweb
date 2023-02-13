@@ -20,7 +20,8 @@
     "skipLibCheck": true
   },
   "compileOnSave": true,
-  "include": ["src", "../rrweb/src/record/workers/workers.d.ts"],
+  "include": ["src"],
+  "exclude": ["test"],
   "references": [
     {
       "path": "../rrdom"

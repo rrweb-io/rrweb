@@ -3,22 +3,16 @@
  */
 import path from 'path';
 import fs from 'fs';
-import {
-  createMirror,
-  snapshot,
-  serializedNodeWithId,
-  NodeType,
-  elementNode,
-  documentNode,
-} from 'rrweb-snapshot';
-import { EventType, SyncReplayer } from 'rrweb';
-import type { eventWithTime } from 'rrweb/typings/types';
+import { createMirror, snapshot, NodeType } from 'rrweb-snapshot';
+import { EventType } from 'rrweb';
+import { SyncReplayer } from 'rrweb/sync-replayer';
+import type { eventWithTime } from '@rrweb/types';
 import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
 import { sessionCut, getValidSortedPoints, pruneBranches } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
 import { eventsFn as inlineStyleEvents } from './events/inline-style.event';
-import { assertSnapshot } from './utils';
+import { assertSnapshot } from 'rrweb/test/utils';
 
 describe('session cutter', () => {
   it('should return the same events if the events length is too short', () => {
