@@ -4,10 +4,12 @@ import {
   NodeType,
   BuildCache,
   createCache,
-  IMirror,
   Mirror,
+  attributes,
+  serializedElementNodeWithId,
+  IMirror,
 } from 'rrweb-snapshot';
-import { RRDocument as BaseRRDocument, StyleRuleType } from 'rrdom';
+import { RRDocument as BaseRRDocument } from 'rrdom';
 import type {
   RRNode,
   RRElement,
@@ -16,29 +18,33 @@ import type {
   RRMediaElement,
   RRCanvasElement,
   Mirror as RRDOMMirror,
-  VirtualStyleRules,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
+import type { playerConfig } from '../types';
 import {
+  EventType,
+  IncrementalSource,
   fullSnapshotEvent,
   eventWithTime,
-  playerConfig,
+  MouseInteractions,
   playerMetaData,
   addedNodeMutation,
   incrementalSnapshotEvent,
   incrementalData,
+  ReplayerEvents,
   Handler,
   Emitter,
+  MediaInteractions,
   metaEvent,
   mutationData,
   styleValueWithPriority,
   mouseMovePos,
   canvasEventWithTime,
-  MediaInteractions,
-  ReplayerEvents,
-  EventType,
-  IncrementalSource,
-} from '../types';
+  selectionData,
+  styleSheetRuleData,
+  styleDeclarationData,
+  adoptedStyleSheetData,
+} from '@rrweb/types';
 import {
   queueToResolveTrees,
   iterateResolveTree,
@@ -74,6 +80,18 @@ export class SyncReplayer {
 
   public mousePos: mouseMovePos | null = null;
 
+  // In the fast-forward mode, only the last selection data needs to be applied.
+  public lastSelectionData: selectionData | null = null;
+
+  // In the fast-forward mode using VirtualDom optimization, all stylesheetRule, and styleDeclaration events on constructed StyleSheets will be delayed to get applied until the flush stage.
+  public constructedStyleMutations: (
+    | styleSheetRuleData
+    | styleDeclarationData
+  )[] = [];
+
+  // Similar to the reason for constructedStyleMutations.
+  public adoptedStyleSheets: adoptedStyleSheetData[] = [];
+
   public events: eventWithTime[];
 
   public latestMetaEvent: eventWithTime | null = null;
@@ -84,7 +102,6 @@ export class SyncReplayer {
 
   private emitter: Emitter = mitt();
 
-  // tslint:disable-next-line: variable-name
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
   // The replayer uses the cache to speed up replay and scrubbing.
@@ -98,7 +115,7 @@ export class SyncReplayer {
     events: Array<eventWithTime | string>,
     config?: Partial<playerConfig>,
   ) {
-    if (events.length < 2) {
+    if (!config?.liveMode && events.length < 2) {
       throw new Error('Replayer need at least 2 events.');
     }
     this.events = events
@@ -109,14 +126,21 @@ export class SyncReplayer {
         return e as eventWithTime;
       })
       .sort((a1, a2) => a1.timestamp - a2.timestamp);
-    this.getCastFn = this.getCastFn.bind(this);
-
     const defaultConfig = {
       showWarning: true,
       showDebug: false,
       liveMode: false,
+      logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
+
+    /**
+     * Exposes mirror to the plugins
+     */
+    for (const plugin of this.config.plugins || []) {
+      if (plugin.getMirror)
+        plugin.getMirror({ nodeMirror: this.mirror as unknown as Mirror });
+    }
 
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.mirror.reset();
@@ -222,6 +246,27 @@ export class SyncReplayer {
   }
 
   /**
+   * Totally destroy this replayer and please be careful that this operation is irreversible.
+   * Memory occupation can be released by removing all references to this replayer.
+   */
+  public destroy() {
+    this.emitter.emit(ReplayerEvents.Destroy);
+  }
+
+  public startLive() {
+    this.config.liveMode = true;
+    this.play();
+  }
+
+  public addEvent(rawEvent: eventWithTime | string) {
+    const event = this.config.unpackFn
+      ? this.config.unpackFn(rawEvent as string)
+      : (rawEvent as eventWithTime);
+    const castFn = this.getCastFn(event);
+    castFn();
+  }
+
+  /**
    * Empties the replayer's cache and reclaims memory.
    * The replayer will use this cache to speed up the playback.
    */
@@ -229,7 +274,7 @@ export class SyncReplayer {
     this.cache = createCache();
   }
 
-  private getCastFn(event: eventWithTime) {
+  private getCastFn = (event: eventWithTime) => {
     let castFn: undefined | (() => void);
     switch (event.type) {
       case EventType.DomContentLoaded:
@@ -279,38 +324,55 @@ export class SyncReplayer {
           });
       }
 
+      // events are kept sorted by timestamp, check if this is the last event
+      if (
+        !this.config.liveMode &&
+        event === this.events[this.events.length - 1]
+      ) {
+        this.emitter.emit(ReplayerEvents.Finish);
+      }
+
       this.emitter.emit(ReplayerEvents.EventCast, event);
     };
     return wrappedCastFn;
-  }
+  };
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
   ) {
     if (Object.keys(this.legacy_missingNodeRetryMap).length) {
-      console.warn(
+      this.warn(
         'Found unresolved missing node map',
         this.legacy_missingNodeRetryMap,
       );
     }
     this.legacy_missingNodeRetryMap = {};
     const collected: AppendedIframe[] = [];
+    const afterAppend = (builtNode: Node, id: number) => {
+      this.collectIframeAndAttachDocument(
+        collected,
+        builtNode as unknown as RRNode,
+      );
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.onBuild)
+          plugin.onBuild(builtNode, {
+            id,
+            replayer: this as unknown as Replayer,
+          });
+      }
+    };
+
+    this.mirror.reset();
     rebuild(event.data.node, {
       doc: this.virtualDom as unknown as Document,
-      afterAppend: (builtNode) => {
-        this.collectIframeAndAttachDocument(
-          collected,
-          builtNode as unknown as RRNode,
-        );
-      },
+      afterAppend,
       cache: this.cache,
       mirror: this.mirror as unknown as Mirror,
     });
+    afterAppend(this.virtualDom as unknown as Document, event.data.node.id);
+
     for (const { mutationInQueue, builtNode } of collected) {
-      this.attachDocumentToIframe(
-        mutationInQueue,
-        builtNode as unknown as RRIFrameElement,
-      );
+      this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
@@ -323,13 +385,34 @@ export class SyncReplayer {
     iframeEl: RRIFrameElement,
   ) {
     const collected: AppendedIframe[] = [];
+    const afterAppend = (builtNode: Node, id: number) => {
+      this.collectIframeAndAttachDocument(
+        collected,
+        builtNode as unknown as RRNode,
+      );
+
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.onBuild)
+          plugin.onBuild(builtNode, {
+            id,
+            replayer: this as unknown as Replayer,
+          });
+      }
+    };
+
     buildNodeWithSN(mutation.node, {
       doc: iframeEl.contentDocument as unknown as Document,
       mirror: this.mirror as unknown as Mirror,
       hackCss: true,
       skipChild: false,
+      afterAppend,
       cache: this.cache,
     });
+    afterAppend(
+      iframeEl.contentDocument as unknown as Document,
+      mutation.node.id,
+    );
+
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
@@ -369,6 +452,7 @@ export class SyncReplayer {
         try {
           this.applyMutation(d);
         } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
           this.warn(`Exception in mutation ${error.message || error}`, d);
         }
         break;
@@ -386,8 +470,43 @@ export class SyncReplayer {
           };
         }
         break;
-      case IncrementalSource.MouseInteraction:
+      case IncrementalSource.MouseInteraction: {
+        /**
+         * Same as the situation of missing input target.
+         */
+        if (d.id === -1) {
+          break;
+        }
+
+        const target = this.mirror.getNode(d.id);
+        if (!target) {
+          return this.debugNodeNotFound(d, d.id);
+        }
+        this.emitter.emit(ReplayerEvents.MouseInteraction, {
+          type: d.type,
+          target,
+        });
+        switch (d.type) {
+          case MouseInteractions.Blur:
+            break;
+          case MouseInteractions.Focus:
+            break;
+          case MouseInteractions.Click:
+          case MouseInteractions.TouchStart:
+          case MouseInteractions.TouchEnd:
+            this.mousePos = {
+              x: d.x,
+              y: d.y,
+              id: d.id,
+              debugData: d,
+            };
+            break;
+          case MouseInteractions.TouchCancel:
+            break;
+          default:
+        }
         break;
+      }
       case IncrementalSource.Scroll: {
         /**
          * Same as the situation of missing input target.
@@ -433,13 +552,13 @@ export class SyncReplayer {
         }
         const mediaEl = target as RRMediaElement;
         try {
-          if (d.currentTime) {
+          if (d.currentTime !== undefined) {
             mediaEl.currentTime = d.currentTime;
           }
-          if (d.volume) {
+          if (d.volume !== undefined) {
             mediaEl.volume = d.volume;
           }
-          if (d.muted) {
+          if (d.muted !== undefined) {
             mediaEl.muted = d.muted;
           }
           if (d.type === MediaInteractions.Pause) {
@@ -452,52 +571,22 @@ export class SyncReplayer {
             // unexpeted behavior
             void mediaEl.play();
           }
-        } catch (error) {
-          if (this.config.showWarning) {
-            console.warn(
-              `Failed to replay media interactions: ${error.message || error}`,
-            );
+          if (d.type === MediaInteractions.RateChange) {
+            mediaEl.playbackRate = d.playbackRate;
           }
+        } catch (error) {
+          this.warn(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
+            `Failed to replay media interactions: ${error.message || error}`,
+          );
         }
         break;
       }
-      case IncrementalSource.StyleSheetRule: {
-        const target = this.virtualDom.mirror.getNode(d.id) as RRStyleElement;
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
-        }
-        const rules: VirtualStyleRules = target.rules;
-        d.adds?.forEach(({ rule, index: nestedIndex }) =>
-          rules?.push({
-            cssText: rule,
-            index: nestedIndex,
-            type: StyleRuleType.Insert,
-          }),
-        );
-        d.removes?.forEach(({ index: nestedIndex }) =>
-          rules?.push({ index: nestedIndex, type: StyleRuleType.Remove }),
-        );
-        break;
-      }
+      case IncrementalSource.StyleSheetRule:
       case IncrementalSource.StyleDeclaration: {
-        const target = this.mirror.getNode(d.id) as RRStyleElement;
-        if (!target) {
-          return this.debugNodeNotFound(d, d.id);
-        }
-        const rules: VirtualStyleRules = target.rules;
-        d.set &&
-          rules.push({
-            type: StyleRuleType.SetProperty,
-            index: d.index,
-            ...d.set,
-          });
-        d.remove &&
-          rules.push({
-            type: StyleRuleType.RemoveProperty,
-            index: d.index,
-            ...d.remove,
-          });
-
+        if (d.styleId) this.constructedStyleMutations.push(d);
+        else if (d.id)
+          (this.mirror.getNode(d.id) as RRStyleElement | null)?.rules.push(d);
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -517,6 +606,14 @@ export class SyncReplayer {
       }
       case IncrementalSource.Font: {
         this.unhandledEvents.push(e);
+        break;
+      }
+      case IncrementalSource.Selection: {
+        this.lastSelectionData = d;
+        break;
+      }
+      case IncrementalSource.AdoptedStyleSheet: {
+        this.adoptedStyleSheets.push(d);
         break;
       }
       default:
@@ -571,8 +668,7 @@ export class SyncReplayer {
         }
     });
 
-    // tslint:disable-next-line: variable-name
-    const legacy_missingNodeMap = {
+    const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
     const queue: addedNodeMutation[] = [];
@@ -608,7 +704,9 @@ export class SyncReplayer {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
         if (!hasShadowRoot(parent as unknown as Node)) {
           (parent as RRElement).attachShadow({ mode: 'open' });
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           parent = (parent as RRElement).shadowRoot!;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         } else parent = (parent as RRElement).shadowRoot!;
       }
 
@@ -631,18 +729,29 @@ export class SyncReplayer {
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
         : this.virtualDom;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (isSerializedIframe(parent, mirror)) {
+
+      if (isSerializedIframe<typeof parent>(parent, mirror)) {
         this.attachDocumentToIframe(mutation, parent as RRIFrameElement);
         return;
       }
+      const afterAppend = (node: Node | RRNode, id: number) => {
+        for (const plugin of this.config.plugins || []) {
+          if (plugin.onBuild)
+            plugin.onBuild(node, { id, replayer: this as unknown as Replayer });
+        }
+      };
+
       const target = buildNodeWithSN(mutation.node, {
-        doc: targetDoc as unknown as Document, // can be Document or RRDocument
+        doc: targetDoc as unknown as Document,
         mirror: mirror as unknown as Mirror,
         skipChild: true,
         hackCss: true,
         cache: this.cache,
+        /**
+         * caveat: `afterAppend` only gets called on child nodes of target
+         * we have to call it again below when this target was added to the DOM
+         */
+        afterAppend,
       }) as unknown as RRNode;
 
       // legacy data, we should not have -1 siblings any more
@@ -663,11 +772,33 @@ export class SyncReplayer {
       ) {
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
-        for (const c of Array.from(parent.childNodes)) {
+        for (const c of parent.childNodes) {
           if (c.nodeType === parent.TEXT_NODE) {
             parent.removeChild(c);
           }
         }
+      } else if (parentSn?.type === NodeType.Document) {
+        /**
+         * Sometimes the document object is changed or reopened and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded.
+         * After the change of document, we may get another mutation which adds a new doctype or a HTML element, while the old one still exists in the dom.
+         * So, we need to remove the old one first to avoid collision.
+         */
+        const parentDoc = parent as RRDocument;
+        /**
+         * To detect the exist of the old doctype before adding a new doctype.
+         * We need to remove the old doctype before adding the new one. Otherwise, code will throw "mutation Failed to execute 'insertBefore' on 'Node': Only one doctype on document allowed".
+         */
+        if (
+          mutation.node.type === NodeType.DocumentType &&
+          parentDoc.childNodes[0]?.nodeType === Node.DOCUMENT_TYPE_NODE
+        )
+          parentDoc.removeChild(parentDoc.childNodes[0]);
+        /**
+         * To detect the exist of the old HTML element before adding a new HTML element.
+         * The reason is similar to the above. One document only allows exactly one DocType and one HTML Element.
+         */
+        if (target.nodeName === 'HTML' && parentDoc.documentElement)
+          parentDoc.removeChild(parentDoc.documentElement);
       }
 
       if (previous && previous.nextSibling && previous.nextSibling.parentNode) {
@@ -679,17 +810,13 @@ export class SyncReplayer {
           ? parent.insertBefore(target, next)
           : parent.insertBefore(target, null);
       } else {
-        /**
-         * Sometimes the document changes and the MutationObserver is disconnected, so the removal of child elements can't be detected and recorded. After the change of document, we may get another mutation which adds a new html element, while the old html element still exists in the dom, and we need to remove the old html element first to avoid collision.
-         */
-        if (parent === targetDoc) {
-          while (targetDoc.firstChild) {
-            targetDoc.removeChild(targetDoc.firstChild);
-          }
-        }
-
         parent.appendChild(target);
       }
+      /**
+       * target was added, execute plugin hooks
+       */
+      afterAppend(target, mutation.node.id);
+
       /**
        * https://github.com/rrweb-io/rrweb/pull/887
        * Remove any virtual style rules for stylesheets if a new text node is appended.
@@ -701,8 +828,6 @@ export class SyncReplayer {
       )
         (parent as RRStyleElement).rules = [];
 
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       if (isSerializedIframe(target, this.mirror)) {
         const targetId = this.mirror.getId(target);
         const mutationInQueue = this.newDocumentQueue.find(
@@ -798,14 +923,44 @@ export class SyncReplayer {
             (target as RRElement).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
             try {
+              // When building snapshot, some link styles haven't loaded. Then they are loaded, they will be inlined as incremental mutation change of attribute. We need to replace the old elements whose styles aren't inlined.
+              if (
+                attributeName === '_cssText' &&
+                (target.nodeName === 'LINK' || target.nodeName === 'STYLE')
+              ) {
+                try {
+                  const newSn = mirror.getMeta(
+                    target,
+                  ) as serializedElementNodeWithId;
+                  Object.assign(
+                    newSn.attributes,
+                    mutation.attributes as attributes,
+                  );
+                  const newNode = buildNodeWithSN(newSn, {
+                    doc: target.ownerDocument as unknown as Document,
+                    mirror: mirror as unknown as Mirror,
+                    skipChild: true,
+                    hackCss: true,
+                    cache: this.cache,
+                  }) as unknown as RRNode;
+                  const siblingNode = target.nextSibling;
+                  const parentNode = target.parentNode;
+                  if (newNode && parentNode) {
+                    parentNode.removeChild(target);
+                    parentNode.insertBefore(newNode, siblingNode);
+                    mirror.replace(mutation.id, newNode as Node & RRNode);
+                    break;
+                  }
+                } catch (e) {
+                  // for safe
+                }
+              }
               (target as RRElement).setAttribute(attributeName, value);
             } catch (error) {
-              if (this.config.showWarning) {
-                console.warn(
-                  'An error occurred may due to the checkout feature.',
-                  error,
-                );
-              }
+              this.warn(
+                'An error occurred may due to the checkout feature.',
+                error,
+              );
             }
           } else if (attributeName === 'style') {
             const styleValues = value;
@@ -867,21 +1022,20 @@ export class SyncReplayer {
      * is microtask, so events fired on a removed DOM may emit
      * snapshots in the reverse order.
      */
-    this.debug(REPLAY_CONSOLE_PREFIX, `Node with id '${id}' not found. `, d);
+    this.debug(`Node with id '${id}' not found. `, d);
   }
 
   private warn(...args: Parameters<typeof console.warn>) {
     if (!this.config.showWarning) {
       return;
     }
-    console.warn(REPLAY_CONSOLE_PREFIX, ...args);
+    this.config.logger?.warn(REPLAY_CONSOLE_PREFIX, ...args);
   }
 
   private debug(...args: Parameters<typeof console.log>) {
     if (!this.config.showDebug) {
       return;
     }
-    // tslint:disable-next-line: no-console
-    console.log(REPLAY_CONSOLE_PREFIX, ...args);
+    this.config.logger?.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }

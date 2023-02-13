@@ -1,6 +1,5 @@
 import record from './record';
 import { Replayer } from './replay';
-import { SyncReplayer } from './replay/sync-replayer';
 import { _mirror } from './utils';
 import * as utils from './utils';
 
@@ -21,7 +20,6 @@ export {
   addCustomEvent,
   freezePage,
   Replayer,
-  SyncReplayer,
   _mirror as mirror,
   utils,
 };
