@@ -275,7 +275,7 @@ export class SyncReplayer {
       for (const plugin of this.config.plugins || []) {
         if (plugin.handler)
           plugin.handler(event, true, {
-            replayer: (this as unknown) as Replayer,
+            replayer: this as unknown as Replayer,
           });
       }
 
@@ -296,20 +296,20 @@ export class SyncReplayer {
     this.legacy_missingNodeRetryMap = {};
     const collected: AppendedIframe[] = [];
     rebuild(event.data.node, {
-      doc: (this.virtualDom as unknown) as Document,
+      doc: this.virtualDom as unknown as Document,
       afterAppend: (builtNode) => {
         this.collectIframeAndAttachDocument(
           collected,
-          (builtNode as unknown) as RRNode,
+          builtNode as unknown as RRNode,
         );
       },
       cache: this.cache,
-      mirror: (this.mirror as unknown) as Mirror,
+      mirror: this.mirror as unknown as Mirror,
     });
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(
         mutationInQueue,
-        (builtNode as unknown) as RRIFrameElement,
+        builtNode as unknown as RRIFrameElement,
       );
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
@@ -324,8 +324,8 @@ export class SyncReplayer {
   ) {
     const collected: AppendedIframe[] = [];
     buildNodeWithSN(mutation.node, {
-      doc: (iframeEl.contentDocument as unknown) as Document,
-      mirror: (this.mirror as unknown) as Mirror,
+      doc: iframeEl.contentDocument as unknown as Document,
+      mirror: this.mirror as unknown as Mirror,
       hackCss: true,
       skipChild: false,
       cache: this.cache,
@@ -344,8 +344,8 @@ export class SyncReplayer {
   ) {
     if (
       isSerializedIframe(
-        (builtNode as unknown) as Node,
-        (this.mirror as unknown) as IMirror<Node>,
+        builtNode as unknown as Node,
+        this.mirror as unknown as IMirror<Node>,
       )
     ) {
       const mutationInQueue = this.newDocumentQueue.find(
@@ -539,7 +539,7 @@ export class SyncReplayer {
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
       }
-      if (mutation.isShadow && hasShadowRoot((parent as unknown) as Node)) {
+      if (mutation.isShadow && hasShadowRoot(parent as unknown as Node)) {
         parent = (parent as RRElement).shadowRoot;
       }
       // target may be removed with its parents before
@@ -606,7 +606,7 @@ export class SyncReplayer {
       }
       if (mutation.node.isShadow) {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
-        if (!hasShadowRoot((parent as unknown) as Node)) {
+        if (!hasShadowRoot(parent as unknown as Node)) {
           (parent as RRElement).attachShadow({ mode: 'open' });
           parent = (parent as RRElement).shadowRoot!;
         } else parent = (parent as RRElement).shadowRoot!;
@@ -637,13 +637,13 @@ export class SyncReplayer {
         this.attachDocumentToIframe(mutation, parent as RRIFrameElement);
         return;
       }
-      const target = (buildNodeWithSN(mutation.node, {
-        doc: (targetDoc as unknown) as Document, // can be Document or RRDocument
-        mirror: (mirror as unknown) as Mirror,
+      const target = buildNodeWithSN(mutation.node, {
+        doc: targetDoc as unknown as Document, // can be Document or RRDocument
+        mirror: mirror as unknown as Mirror,
         skipChild: true,
         hackCss: true,
         cache: this.cache,
-      }) as unknown) as RRNode;
+      }) as unknown as RRNode;
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
