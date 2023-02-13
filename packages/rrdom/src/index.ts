@@ -141,7 +141,7 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   }
 }
 
-export class RRDocumentType extends BaseRRDocumentTypeImpl(RRNode) {}
+export const RRDocumentType = BaseRRDocumentTypeImpl(RRNode);
 
 export class RRElement extends BaseRRElementImpl(RRNode) {
   inputData: inputData | null = null;
@@ -176,11 +176,14 @@ export class RRIFrameElement extends RRElement {
   }
 }
 
-export class RRText extends BaseRRTextImpl(RRNode) {}
+export const RRText = BaseRRTextImpl(RRNode);
+export type RRText = typeof RRText;
 
-export class RRComment extends BaseRRCommentImpl(RRNode) {}
+export const RRComment = BaseRRCommentImpl(RRNode);
+export type RRComment = typeof RRComment;
 
-export class RRCDATASection extends BaseRRCDATASectionImpl(RRNode) {}
+export const RRCDATASection = BaseRRCDATASectionImpl(RRNode);
+export type RRCDATASection = typeof RRCDATASection;
 
 interface RRElementTagNameMap {
   audio: RRMediaElement;

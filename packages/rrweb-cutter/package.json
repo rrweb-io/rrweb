@@ -1,14 +1,22 @@
 {
   "name": "rrweb-cutter",
-  "version": "0.1.2",
+  "version": "0.1.7",
   "scripts": {
-    "check-types": "tsc -noEmit",
-    "dev": "vite build --watch",
-    "bundle": "vite build && tsc --emitDeclarationOnly",
+    "dev": "vite",
     "test": "jest",
-    "prune-events": "npx vite-node scripts/prune.ts --",
-    "prepublish": "npm run bundle",
-    "lint": "yarn eslint src/**/*.ts"
+    "build": "tsc -noEmit && vite build",
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run build",
+    "lint": "yarn eslint src/**/*.ts",
+    "prune-events": "npx vite-node scripts/prune.ts --"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-cutter#README.md",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "author": "yun.feng0817@gmail.com",
   "keywords": [
@@ -17,26 +25,31 @@
     "session cutter"
   ],
   "license": "MIT",
-  "main": "dist/index.umd.js",
+  "type": "module",
+  "main": "dist/index.umd.cjs",
   "unpkg": "dist/index.iife.js",
   "module": "dist/index.es.js",
-  "typings": "dist/types",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.cjs"
+    }
+  },
   "files": [
     "dist"
   ],
   "devDependencies": {
     "@types/jest": "^27.4.1",
-    "@typescript-eslint/eslint-plugin": "^5.23.0",
-    "@typescript-eslint/parser": "^5.23.0",
-    "eslint": "^8.15.0",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
     "typescript": "^4.7.3",
-    "vite": "^2.9.13"
+    "vite": "^4.1.1",
+    "vite-plugin-dts": "^1.7.2"
   },
   "dependencies": {
-    "rrdom": "^0.1.3",
-    "rrweb-snapshot": "^2.0.0-alpha.0",
-    "rrweb": "^2.0.0-alpha.0"
+    "rrdom": "^0.1.7",
+    "rrweb-snapshot": "^2.0.0-alpha.4",
+    "rrweb": "^2.0.0-alpha.4"
   }
 }

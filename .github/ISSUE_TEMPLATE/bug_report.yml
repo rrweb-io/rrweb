@@ -17,8 +17,11 @@ body:
       options:
         - rrweb
         - rrweb-snapshot
-        - rrdom
         - rrweb-player
+        - @rrweb/types
+        - rrweb-cutter
+        - rrdom
+        - rrdom-nodejs
         - Other (specify below)
     validations:
       required: true
