@@ -6,7 +6,10 @@
     "declarationDir": "dist/types",
     "target": "ES5",
     "module": "commonjs",
-    "lib": ["ES6", "DOM"],
+    "lib": [
+      "ES6",
+      "DOM"
+    ],
     "moduleResolution": "Node",
     "sourceMap": true,
     "strictNullChecks": true,
@@ -20,9 +23,16 @@
     "skipLibCheck": true
   },
   "compileOnSave": true,
-  "include": ["src"],
-  "exclude": ["test"],
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "test"
+  ],
   "references": [
+    {
+      "path": "../types"
+    },
     {
       "path": "../rrdom"
     },

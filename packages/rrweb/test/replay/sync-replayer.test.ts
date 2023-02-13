@@ -1,6 +1,6 @@
 import { printRRDom } from 'rrdom';
 import { SyncReplayer } from '../../src/replay/sync-replayer';
-import { EventType, eventWithTime } from '../../src/types';
+import { EventType, eventWithTime } from '@rrweb/types';
 import { events as mutationEvents } from '../events/node-mutation';
 
 describe('A synchronous replayer purely built with RRDom', () => {
