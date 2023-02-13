@@ -1,5 +1,6 @@
 {
-  "name": "web-extension",
+  "name": "@rrweb/web-extension",
+  "private": true,
   "version": "2.0.0",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
