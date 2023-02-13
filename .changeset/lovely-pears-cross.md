@@ -1,5 +1,5 @@
 ---
-'web-extension': patch
+'@rrweb/web-extension': patch
 ---
 
 Add rrweb browser extension
