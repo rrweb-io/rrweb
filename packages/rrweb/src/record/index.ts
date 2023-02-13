@@ -173,9 +173,9 @@ function record<T = eventWithTime>(
       // Disable packing events which will be emitted to parent frames.
       !passEmitsToParent
     ) {
-      e = (packFn(e) as unknown) as eventWithTime;
+      e = packFn(e) as unknown as eventWithTime;
     }
-    return (e as unknown) as T;
+    return e as unknown as T;
   };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
@@ -348,8 +348,8 @@ function record<T = eventWithTime>(
 
     // When we take a full snapshot, old tracked StyleSheets need to be removed.
     stylesheetManager.reset();
-    // Old shadow doms cache need to be cleared.
-    shadowDomManager.clearCache();
+
+    shadowDomManager.init();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {

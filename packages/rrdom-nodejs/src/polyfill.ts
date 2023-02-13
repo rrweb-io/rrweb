@@ -51,10 +51,10 @@ export function polyfillRAF() {
     }
   }
 
-  (global as Window &
-    typeof globalThis).requestAnimationFrame = requestAnimationFrame;
-  (global as Window &
-    typeof globalThis).cancelAnimationFrame = cancelAnimationFrame;
+  (global as Window & typeof globalThis).requestAnimationFrame =
+    requestAnimationFrame;
+  (global as Window & typeof globalThis).cancelAnimationFrame =
+    cancelAnimationFrame;
 }
 
 /**
@@ -88,5 +88,5 @@ export function polyfillDocument() {
     rrdom.documentElement!.appendChild(rrdom.createElement('head'));
     rrdom.documentElement!.appendChild(rrdom.createElement('body'));
   })();
-  global.document = (rrdom as unknown) as Document;
+  global.document = rrdom as unknown as Document;
 }

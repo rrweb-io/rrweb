@@ -149,6 +149,9 @@ export class Replayer {
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
 
+  // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
+  private lastHoveredRootNode: Document | ShadowRoot;
+
   // In the fast-forward mode, only the last selection data needs to be applied.
   private lastSelectionData: selectionData | null = null;
 
@@ -434,9 +437,10 @@ export class Replayer {
 
   public getMetaData(): playerMetaData {
     const firstEvent = this.service.state.context.events[0];
-    const lastEvent = this.service.state.context.events[
-      this.service.state.context.events.length - 1
-    ];
+    const lastEvent =
+      this.service.state.context.events[
+        this.service.state.context.events.length - 1
+      ];
     return {
       startTime: firstEvent.timestamp,
       endTime: lastEvent.timestamp,
@@ -855,7 +859,7 @@ export class Replayer {
     const collected: AppendedIframe[] = [];
     const afterAppend = (builtNode: Node, id: number) => {
       this.collectIframeAndAttachDocument(collected, builtNode);
-      const sn = (mirror as TMirror).getMeta((builtNode as unknown) as TNode);
+      const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
         sn?.type === NodeType.Element &&
         sn?.tagName.toUpperCase() === 'HTML'
@@ -1263,9 +1267,9 @@ export class Replayer {
         if (this.usingVirtualDom) {
           if (d.styleId) this.constructedStyleMutations.push(d);
           else if (d.id)
-            (this.virtualDom.mirror.getNode(
-              d.id,
-            ) as RRStyleElement | null)?.rules.push(d);
+            (
+              this.virtualDom.mirror.getNode(d.id) as RRStyleElement | null
+            )?.rules.push(d);
         } else this.applyStyleSheetMutation(d);
         break;
       }
@@ -1916,10 +1920,10 @@ export class Replayer {
     styleSheet: CSSStyleSheet,
   ) {
     if (data.set) {
-      const rule = (getNestedRule(
+      const rule = getNestedRule(
         styleSheet.rules,
         data.index,
-      ) as unknown) as CSSStyleRule;
+      ) as unknown as CSSStyleRule;
       rule.style.setProperty(
         data.set.property,
         data.set.value,
@@ -1928,10 +1932,10 @@ export class Replayer {
     }
 
     if (data.remove) {
-      const rule = (getNestedRule(
+      const rule = getNestedRule(
         styleSheet.rules,
         data.index,
-      ) as unknown) as CSSStyleRule;
+      ) as unknown as CSSStyleRule;
       rule.style.removeProperty(data.remove.property);
     }
   }
@@ -1977,7 +1981,8 @@ export class Replayer {
         .filter((style) => style !== null) as CSSStyleSheet[];
       if (hasShadowRoot(targetHost))
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets = stylesToAdopt;
+        (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets =
+          stylesToAdopt;
       else if (targetHost.nodeName === '#document')
         (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
 
@@ -2089,11 +2094,12 @@ export class Replayer {
   }
 
   private hoverElements(el: Element) {
-    this.iframe.contentDocument
+    (this.lastHoveredRootNode || this.iframe.contentDocument)
       ?.querySelectorAll('.\\:hover')
       .forEach((hoveredEl) => {
         hoveredEl.classList.remove(':hover');
       });
+    this.lastHoveredRootNode = el.getRootNode() as Document | ShadowRoot;
     let currentEl: Element | null = el;
     while (currentEl) {
       if (currentEl.classList) {
