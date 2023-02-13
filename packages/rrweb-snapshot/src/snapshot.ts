@@ -815,7 +815,8 @@ function slimDOMExcluded(
       (sn.tagName === 'script' ||
         // (module)preload link
         (sn.tagName === 'link' &&
-          (sn.attributes.rel === 'preload' || sn.attributes.rel === 'modulepreload') &&
+          (sn.attributes.rel === 'preload' ||
+            sn.attributes.rel === 'modulepreload') &&
           sn.attributes.as === 'script') ||
         // prefetch link
         (sn.tagName === 'link' &&
