@@ -221,7 +221,7 @@ function buildNode(
             continue;
           } else if (
             tagName === 'link' &&
-            n.attributes.rel === 'preload' &&
+            (n.attributes.rel === 'preload' || n.attributes.rel === 'modulepreload') &&
             n.attributes.as === 'script'
           ) {
             // ignore

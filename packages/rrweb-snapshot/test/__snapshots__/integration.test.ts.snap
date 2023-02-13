@@ -370,6 +370,7 @@ exports[`integration tests [html file]: preload.html 1`] = `
     <title>Document</title>
     <link />
     <link />
+    <link />
   </head>
   <body></body></html>"
 `;
