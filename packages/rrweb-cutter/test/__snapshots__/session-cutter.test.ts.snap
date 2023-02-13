@@ -5,120 +5,120 @@ exports[`pruneBranches should cut branches that doesn't include id: pruned all b
   -1 RRDocumentType
   2 HTML 
     12 BODY 
-      14 DIV id="root" 
-        15 RRText text="      \\n    "
+      14 DIV id=\\"root\\" 
+        15 RRText text=\\"      \\\\n    \\"
 "
 `;
 
 exports[`pruneBranches should keep branches where target child nodes was, and gets moved to 1`] = `
 "[
   {
-    "type": 0,
-    "data": {}
+    \\"type\\": 0,
+    \\"data\\": {}
   },
   {
-    "type": 1,
-    "data": {}
+    \\"type\\": 1,
+    \\"data\\": {}
   },
   {
-    "type": 4,
-    "data": {
-      "href": "about:blank",
-      "width": 1512,
-      "height": 395
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1512,
+      \\"height\\": 395
     }
   },
   {
-    "type": 2,
-    "data": {
-      "node": {
-        "type": 0,
-        "childNodes": [
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
           {
-            "type": 2,
-            "tagName": "html",
-            "attributes": {},
-            "childNodes": [
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
               {
-                "type": 2,
-                "tagName": "head",
-                "attributes": {},
-                "childNodes": [
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
                   {
-                    "type": 2,
-                    "tagName": "meta",
-                    "attributes": {
-                      "charset": "utf-8"
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"utf-8\\"
                     },
-                    "childNodes": [],
-                    "id": 5
+                    \\"childNodes\\": [],
+                    \\"id\\": 5
                   }
                 ],
-                "id": 3
+                \\"id\\": 3
               },
               {
-                "type": 2,
-                "tagName": "body",
-                "childNodes": [
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"childNodes\\": [
                   {
-                    "type": 2,
-                    "tagName": "div",
-                    "attributes": {
-                      "id": "root"
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"root\\"
                     },
-                    "childNodes": [
+                    \\"childNodes\\": [
                       {
-                        "type": 3,
-                        "textContent": "      \\n    ",
-                        "id": 15
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"      \\\\n    \\",
+                        \\"id\\": 15
                       }
                     ],
-                    "id": 14
+                    \\"id\\": 14
                   }
                 ],
-                "id": 12
+                \\"id\\": 12
               }
             ],
-            "id": 2
+            \\"id\\": 2
           }
         ],
-        "compatMode": "BackCompat",
-        "id": 1
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
       },
-      "initialOffset": {
-        "left": 0,
-        "top": 0
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
       }
     }
   },
   {
-    "type": 3,
-    "data": {
-      "source": 2,
-      "type": 2,
-      "id": 15
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 15
     }
   },
   {
-    "type": 3,
-    "data": {
-      "source": 0,
-      "texts": [],
-      "attributes": [],
-      "removes": [
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [
         {
-          "parentId": 14,
-          "id": 15
+          \\"parentId\\": 14,
+          \\"id\\": 15
         }
       ],
-      "adds": [
+      \\"adds\\": [
         {
-          "parentId": 5,
-          "nextId": null,
-          "node": {
-            "type": 3,
-            "textContent": "      \\n    ",
-            "id": 15
+          \\"parentId\\": 5,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"      \\\\n    \\",
+            \\"id\\": 15
           }
         }
       ]
@@ -130,84 +130,84 @@ exports[`pruneBranches should keep branches where target child nodes was, and ge
 exports[`pruneBranches should remove branches based on child nodes that came in after fullsnapshot 1`] = `
 "[
   {
-    "type": 0,
-    "data": {}
+    \\"type\\": 0,
+    \\"data\\": {}
   },
   {
-    "type": 1,
-    "data": {}
+    \\"type\\": 1,
+    \\"data\\": {}
   },
   {
-    "type": 4,
-    "data": {
-      "href": "about:blank",
-      "width": 1512,
-      "height": 395
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1512,
+      \\"height\\": 395
     }
   },
   {
-    "type": 2,
-    "data": {
-      "node": {
-        "type": 0,
-        "childNodes": [
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
           {
-            "type": 2,
-            "tagName": "html",
-            "attributes": {},
-            "childNodes": [
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
               {
-                "type": 2,
-                "tagName": "body",
-                "childNodes": [
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"childNodes\\": [
                   {
-                    "type": 2,
-                    "tagName": "div",
-                    "attributes": {
-                      "id": "root"
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"root\\"
                     },
-                    "childNodes": [],
-                    "id": 14
+                    \\"childNodes\\": [],
+                    \\"id\\": 14
                   }
                 ],
-                "id": 12
+                \\"id\\": 12
               }
             ],
-            "id": 2
+            \\"id\\": 2
           }
         ],
-        "compatMode": "BackCompat",
-        "id": 1
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
       },
-      "initialOffset": {
-        "left": 0,
-        "top": 0
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
       }
     }
   },
   {
-    "type": 3,
-    "data": {
-      "source": 0,
-      "texts": [],
-      "attributes": [],
-      "removes": [],
-      "adds": [
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
         {
-          "parentId": 14,
-          "nextId": null,
-          "node": {
-            "id": 98,
-            "type": 2,
-            "tagName": "main",
-            "attributes": {},
-            "childNodes": [
+          \\"parentId\\": 14,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"id\\": 98,
+            \\"type\\": 2,
+            \\"tagName\\": \\"main\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
               {
-                "id": 99,
-                "type": 2,
-                "tagName": "canvas",
-                "attributes": {},
-                "childNodes": []
+                \\"id\\": 99,
+                \\"type\\": 2,
+                \\"tagName\\": \\"canvas\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": []
               }
             ]
           }
@@ -221,78 +221,78 @@ exports[`pruneBranches should remove branches based on child nodes that came in 
 exports[`pruneBranches should remove branches based on nodes that came in after fullsnapshot 1`] = `
 "[
   {
-    "type": 0,
-    "data": {}
+    \\"type\\": 0,
+    \\"data\\": {}
   },
   {
-    "type": 1,
-    "data": {}
+    \\"type\\": 1,
+    \\"data\\": {}
   },
   {
-    "type": 4,
-    "data": {
-      "href": "about:blank",
-      "width": 1512,
-      "height": 395
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1512,
+      \\"height\\": 395
     }
   },
   {
-    "type": 2,
-    "data": {
-      "node": {
-        "type": 0,
-        "childNodes": [
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
           {
-            "type": 2,
-            "tagName": "html",
-            "attributes": {},
-            "childNodes": [
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
               {
-                "type": 2,
-                "tagName": "body",
-                "childNodes": [
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"childNodes\\": [
                   {
-                    "type": 2,
-                    "tagName": "div",
-                    "attributes": {
-                      "id": "root"
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"root\\"
                     },
-                    "childNodes": [],
-                    "id": 14
+                    \\"childNodes\\": [],
+                    \\"id\\": 14
                   }
                 ],
-                "id": 12
+                \\"id\\": 12
               }
             ],
-            "id": 2
+            \\"id\\": 2
           }
         ],
-        "compatMode": "BackCompat",
-        "id": 1
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
       },
-      "initialOffset": {
-        "left": 0,
-        "top": 0
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
       }
     }
   },
   {
-    "type": 3,
-    "data": {
-      "source": 0,
-      "texts": [],
-      "attributes": [],
-      "removes": [],
-      "adds": [
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
         {
-          "parentId": 14,
-          "nextId": null,
-          "node": {
-            "id": 99,
-            "type": 2,
-            "tagName": "canvas",
-            "attributes": {},
-            "childNodes": []
+          \\"parentId\\": 14,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"id\\": 99,
+            \\"type\\": 2,
+            \\"tagName\\": \\"canvas\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": []
           }
         }
       ]
@@ -302,32 +302,32 @@ exports[`pruneBranches should remove branches based on nodes that came in after 
 `;
 
 exports[`pruneBranches should remove mutations that don't include ids 1`] = `
-{
-  "data": {
-    "adds": [
-      {
+Object {
+  "data": Object {
+    "adds": Array [
+      Object {
         "nextId": null,
-        "node": {},
+        "node": Object {},
         "parentId": 14,
       },
     ],
-    "attributes": [
-      {
-        "attributes": {
+    "attributes": Array [
+      Object {
+        "attributes": Object {
           "data-attr": "Kept",
         },
         "id": 14,
       },
     ],
-    "removes": [
-      {
+    "removes": Array [
+      Object {
         "id": 15,
         "parentId": 14,
       },
     ],
     "source": 0,
-    "texts": [
-      {
+    "texts": Array [
+      Object {
         "id": 15,
         "value": "Kept",
       },
@@ -341,22 +341,22 @@ exports[`session cutter Cut the session events from several time points should c
 "1 RRDocument
   2 HTML 
     3 HEAD 
-      4 META charset="utf-8" 
-      5 RRText text="    \\n  "
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
     6 BODY 
-      16 RRText text="\\n    "
-      17 DIV id="container" 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
         34 DIV 
-          35 RRText text="1"
+          35 RRText text=\\"1\\"
         33 DIV 
-          36 RRText text="2"
+          36 RRText text=\\"2\\"
         32 DIV 
-          37 RRText text="3"
+          37 RRText text=\\"3\\"
         31 DIV 
-          38 RRText text="4"
+          38 RRText text=\\"4\\"
         29 DIV 
-          30 RRText text="5"
-      19 RRText text="\\n  \\n  "
+          30 RRText text=\\"5\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
 "
 `;
 
@@ -364,22 +364,22 @@ exports[`session cutter Cut the session events from several time points should c
 "1 RRDocument
   2 HTML 
     3 HEAD 
-      4 META charset="utf-8" 
-      5 RRText text="    \\n  "
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
     6 BODY 
-      16 RRText text="\\n    "
-      17 DIV id="container" 
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
         29 DIV 
-          30 RRText text="5"
+          30 RRText text=\\"5\\"
         31 DIV 
-          38 RRText text="4"
+          38 RRText text=\\"4\\"
         32 DIV 
-          37 RRText text="3"
+          37 RRText text=\\"3\\"
         33 DIV 
-          36 RRText text="2"
+          36 RRText text=\\"2\\"
         34 DIV 
-          35 RRText text="1"
-      19 RRText text="\\n  \\n  "
+          35 RRText text=\\"1\\"
+      19 RRText text=\\"\\\\n  \\\\n  \\"
 "
 `;
 
@@ -387,12 +387,12 @@ exports[`session cutter Cut the session events from several time points should c
 "1 RRDocument
   2 HTML 
     3 HEAD 
-      4 META charset="utf-8" 
-      5 RRText text="    \\n  "
+      4 META charset=\\"utf-8\\" 
+      5 RRText text=\\"    \\\\n  \\"
     6 BODY 
-      16 RRText text="\\n    "
-      17 DIV id="container" 
-      19 RRText text="\\n  \\n  "
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV id=\\"container\\" 
+      19 RRText text=\\"\\\\n  \\\\n  \\"
 "
 `;
 
@@ -400,21 +400,21 @@ exports[`session cutter should cut events with inline styles: screenshot at 1000
 "1 RRDocument
   2 HTML 
     3 HEAD 
-      4 RRText text="\\n    "
-      5 META charset="utf-8" 
-      6 RRText text="\\n    "
+      4 RRText text=\\"\\\\n    \\"
+      5 META charset=\\"utf-8\\" 
+      6 RRText text=\\"\\\\n    \\"
       7 STYLE 
-        -1 RRText text="#root { background: yellow; width: 10px; height: 10px; }"
-      8 RRText text="\\n    "
+        -1 RRText text=\\"#root { background: yellow; width: 10px; height: 10px; }\\"
+      8 RRText text=\\"\\\\n    \\"
       9 STYLE 
-        -1 RRText text=".block { width: 20px; height: 20px; background: red; }"
-      10 RRText text="\\n  "
-    11 RRText text="\\n  "
+        -1 RRText text=\\".block { width: 20px; height: 20px; background: red; }\\"
+      10 RRText text=\\"\\\\n  \\"
+    11 RRText text=\\"\\\\n  \\"
     12 BODY 
-      13 RRText text="\\n    "
-      14 DIV id="root" 
-        15 RRText text="      \\n    "
-      16 RRText text="\\n    "
-      17 DIV class="block" 
+      13 RRText text=\\"\\\\n    \\"
+      14 DIV id=\\"root\\" 
+        15 RRText text=\\"      \\\\n    \\"
+      16 RRText text=\\"\\\\n    \\"
+      17 DIV class=\\"block\\" 
 "
 `;
