@@ -24,7 +24,7 @@ jobs:
         run: yarn
 
       - name: Build Project
-        run: yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
       - name: Check types
         run: yarn turbo run check-types
