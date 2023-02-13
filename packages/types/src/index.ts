@@ -404,6 +404,7 @@ type mouseInteractionParam = {
   id: number;
   x: number;
   y: number;
+  pointerType?: string;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;

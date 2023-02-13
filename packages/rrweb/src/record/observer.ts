@@ -13,7 +13,7 @@ import {
   getWindowHeight,
   getWindowWidth,
   isBlocked,
-  isTouchEvent,
+  legacy_isTouchEvent,
   patch,
   StyleSheetMirror,
 } from '../utils';
@@ -174,7 +174,8 @@ function initMoveObserver({
     throttle<MouseEvent | TouchEvent | DragEvent>(
       callbackWrapper((evt) => {
         const target = getEventTarget(evt);
-        const { clientX, clientY } = isTouchEvent(evt)
+        // 'legacy' here as we could switch to https://developer.mozilla.org/en-US/docs/Web/API/Element/pointermove_event
+        const { clientX, clientY } = legacy_isTouchEvent(evt)
           ? evt.changedTouches[0]
           : evt;
         if (!timeBaseline) {
@@ -232,13 +233,38 @@ function initMouseInteractionObserver({
       : sampling.mouseInteraction;
 
   const handlers: listenerHandler[] = [];
+  let currentPointerType = null;
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
-    return (event: MouseEvent | TouchEvent) => {
+    return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as Node;
       if (isBlocked(target, blockClass, blockSelector, true)) {
         return;
       }
-      const e = isTouchEvent(event) ? event.changedTouches[0] : event;
+      let pointerType = null;
+      let e = event;
+      if ('pointerType' in e) {
+        pointerType = (e as PointerEvent).pointerType; // touch / pen / mouse
+        if (pointerType === 'touch') {
+          if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
+            // we are actually listening on 'pointerdown'
+            eventKey = 'TouchStart';
+          } else if (MouseInteractions[eventKey] === MouseInteractions.MouseUp) {
+            // we are actually listening on 'pointerup'
+            eventKey = 'TouchEnd';
+          }
+        } else if (pointerType == 'pen') {
+          // TODO: these will get incorrectly emitted as MouseDown/MouseUp
+        }
+      } else if (legacy_isTouchEvent(event)) {
+        e = event.changedTouches[0];
+        pointerType = 'touch';
+      }
+      if (pointerType) {
+        currentPointerType = pointerType;
+      } else if (MouseInteractions[eventKey] === MouseInteractions.Click) {
+        pointerType = currentPointerType;
+        currentPointerType = null;  // cleanup as we've used it
+      }
       if (!e) {
         return;
       }
@@ -249,6 +275,7 @@ function initMouseInteractionObserver({
         id,
         x: clientX,
         y: clientY,
+        ...pointerType && { pointerType }
       });
     };
   };
@@ -260,8 +287,20 @@ function initMouseInteractionObserver({
         disableMap[key] !== false,
     )
     .forEach((eventKey: keyof typeof MouseInteractions) => {
-      const eventName = eventKey.toLowerCase();
+      let eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
+      if (window.PointerEvent) {
+        switch(MouseInteractions[eventKey]) {
+        case MouseInteractions.MouseDown:
+        case MouseInteractions.MouseUp:
+          eventName = eventName.replace('mouse', 'pointer');
+          break;
+        case MouseInteractions.TouchStart:
+        case MouseInteractions.TouchEnd:
+          // these are handled by pointerdown/pointerup
+          return;
+        }
+      }
       handlers.push(on(eventName, handler, doc));
     });
   return callbackWrapper(() => {
