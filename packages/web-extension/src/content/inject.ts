@@ -43,7 +43,13 @@ const messageHandler = (
       startRecord(data.config || {});
     },
     [MessageName.StopRecord]: () => {
-      if (stopFn) stopFn();
+      if (stopFn) {
+        try {
+          stopFn();
+        } catch (e) {
+          //
+        }
+      }
       postMessage({
         message: MessageName.RecordStopped,
         events,
