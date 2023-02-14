@@ -10,7 +10,8 @@
       "rrdom-nodejs",
       "rrweb-player",
       "@rrweb/types",
-      "@rrweb/web-extension"
+      "@rrweb/web-extension",
+      "@rrweb/cutter"
     ]
   ],
   "linked": [],

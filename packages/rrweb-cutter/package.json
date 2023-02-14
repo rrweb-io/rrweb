@@ -1,6 +1,9 @@
 {
-  "name": "rrweb-cutter",
+  "name": "@rrweb/cutter",
   "version": "0.1.7",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
     "test": "jest",
