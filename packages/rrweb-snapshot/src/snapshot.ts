@@ -93,7 +93,7 @@ export function absoluteToStylesheet(
       if (!filePath) {
         return origin;
       }
-      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath) {
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (DATA_URI.test(filePath)) {
