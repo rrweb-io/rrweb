@@ -10513,7 +10513,7 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-jszip@^3.2.2:
+jszip@^3.2.2, jszip@^3.7.1:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/jszip/-/jszip-3.10.1.tgz#34aee70eb18ea1faec2f589208a157d1feb091c2"
   integrity sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==
@@ -15643,12 +15643,12 @@ vite-plugin-web-extension@^1.4.5:
     md5 "^2.3.0"
     web-ext "^6.5.0"
 
-vite-plugin-zip@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/vite-plugin-zip/-/vite-plugin-zip-1.0.1.tgz#a72ad7f29ddc873f7d6f3917397fd008a6badaa3"
-  integrity sha512-DdQQGq8eSLwMHtFmzwKZ/h59qaeSNsSFM6TKiUsHl2Cx2D1KD0iJD9OQP7rLOSEZCPoUoUvW45G2nJNcr0qlEg==
+vite-plugin-zip-pack@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/vite-plugin-zip-pack/-/vite-plugin-zip-pack-1.0.5.tgz#6c2ef0a02cdfc9c7a9c785a4310ec7024695c91f"
+  integrity sha512-AY6F3GJL///Dc3d7fQhalJvWb08e0oIATVqHLwDAiK2/S1NCxbAFXfT4m2V+LtJRjHrRkHa0zbZvAI6/lb6vTQ==
   dependencies:
-    yazl "^2.5.1"
+    jszip "^3.7.1"
 
 vite@^3.1.8:
   version "3.1.8"
@@ -16150,13 +16150,6 @@ yauzl@2.10.0, yauzl@^2.10.0:
   dependencies:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
-
-yazl@^2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/yazl/-/yazl-2.5.1.tgz#a3d65d3dd659a5b0937850e8609f22fffa2b5c35"
-  integrity sha512-phENi2PLiHnHb6QBVot+dJnaAZ0xosj7p3fWl+znIjBDlnMI2PsZCJZ306BPTFOaHf5qdDEI8x5qFrSOBN5vrw==
-  dependencies:
-    buffer-crc32 "~0.2.3"
 
 yn@3.1.1:
   version "3.1.1"
