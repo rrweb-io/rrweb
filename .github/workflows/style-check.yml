@@ -20,7 +20,7 @@ jobs:
       - name: Install Dependencies
         run: yarn
       - name: Build Packages
-        run: yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
       - name: Eslint Check
         run: yarn turbo run lint
       - name: Save Code Linting Report JSON

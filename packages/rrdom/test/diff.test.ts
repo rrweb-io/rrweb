@@ -1271,7 +1271,7 @@ describe('diff algorithm for rrdom', () => {
       expect(rrdom.mirror.getId(rrdom)).toBe(-2);
       expect(rrdom.mirror.getId(rrdom.body)).toBe(-6);
 
-      rrdom.childNodes = [];
+      while (rrdom.firstChild) rrdom.removeChild(rrdom.firstChild);
       /**
        * Rebuild the rrdom and make it looks like this:
        * -7 RRDocument

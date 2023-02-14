@@ -25,13 +25,14 @@
       "path": "../packages/rrweb-snapshot"
     },
     {
-      "name": "@rrweb/types",
-      "path": "../packages/types"
+      "name": "web-extension (package)",
+      "path": "../packages/web-extension"
     },
     {
-      "name": "rrweb-cutter (package)",
+      "name": "@rrweb/cutter (package)",
       "path": "../packages/rrweb-cutter"
-    }
+    },
+    { "name": "@rrweb/types (package)", "path": "../packages/types" }
   ],
   "settings": {
     "jest.disabledWorkspaceFolders": [
