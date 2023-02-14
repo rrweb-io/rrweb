@@ -439,7 +439,7 @@ export function buildNodeWithSN(
         node.shadowRoot.appendChild(childNode);
       } else if (
         n.type === NodeType.Document &&
-          childN.type == NodeType.Element
+        childN.type == NodeType.Element
       ) {
         const bodys = (childNode as HTMLElement).getElementsByTagName('body');
         if (bodys.length == 1 && bodys[0].parentElement) {
@@ -452,7 +452,7 @@ export function buildNodeWithSN(
           // append <head> and <style>s
           node.appendChild(childNode);
           // now append <body>
-          bodyP.appendChild(tmpBody)
+          bodyP.appendChild(tmpBody);
         } else {
           node.appendChild(childNode);
         }
