@@ -7,7 +7,17 @@
     "rrweb": "2.0.0-alpha.4",
     "rrweb-player": "1.0.0-alpha.4",
     "rrweb-snapshot": "2.0.0-alpha.4",
-    "@rrweb/types": "2.0.0-alpha.4"
+    "@rrweb/types": "2.0.0-alpha.4",
+    "@rrweb/web-extension": "2.0.0-alpha.4"
   },
-  "changesets": []
+  "changesets": [
+    "five-peas-lay",
+    "loud-seals-raise",
+    "lovely-pears-cross",
+    "nervous-poets-grin",
+    "real-trains-switch",
+    "serious-ants-juggle",
+    "tidy-yaks-joke",
+    "twenty-lies-switch"
+  ]
 }
