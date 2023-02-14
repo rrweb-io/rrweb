@@ -18,7 +18,7 @@ function useSpecialFormat(
     name: 'use-special-format',
     config(config) {
       const shouldUse = entriesToUse.includes(
-        (config.build?.lib as LibraryOptions)?.entry,
+        (config.build?.lib as LibraryOptions)?.entry as string,
       );
       if (shouldUse) {
         config.build ??= {};
