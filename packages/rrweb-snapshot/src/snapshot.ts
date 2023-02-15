@@ -71,7 +71,8 @@ let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
-const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/|#).*/;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
 export function absoluteToStylesheet(
   cssText: string | null,
@@ -92,7 +93,7 @@ export function absoluteToStylesheet(
       if (!filePath) {
         return origin;
       }
-      if (!RELATIVE_PATH.test(filePath)) {
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (DATA_URI.test(filePath)) {
