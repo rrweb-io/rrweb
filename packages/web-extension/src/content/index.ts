@@ -40,7 +40,7 @@ void (() => {
   );
   if (isInCrossOriginIFrame()) {
     void initCrossOriginIframe();
-  } else {
+  } else if (window === window.top) {
     void initMainPage();
   }
 })();
@@ -154,7 +154,9 @@ async function initMainPage() {
   }
 
   // Before unload pages, cache the new events in the local storage.
-  window.addEventListener('beforeunload', () => {
+  window.addEventListener('beforeunload', (event) => {
+    event.preventDefault();
+    if (newEvents.length === 0) return;
     void Browser.storage.local.set({
       [LocalDataKey.bufferedEvents]: bufferedEvents.concat(newEvents),
     });

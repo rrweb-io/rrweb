@@ -5,7 +5,7 @@ import {
   PluginOption,
 } from 'vite';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
-import zip from 'vite-plugin-zip';
+import zip from 'vite-plugin-zip-pack';
 import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
@@ -94,8 +94,9 @@ export default defineConfig({
     ),
     process.env.ZIP === 'true' &&
       zip({
-        dir: 'dist',
-        outputName: process.env.TARGET_BROWSER,
+        inDir: `dist/${process.env.TARGET_BROWSER || 'chrome'}`,
+        outDir: 'dist',
+        outFileName: `${process.env.TARGET_BROWSER || 'chrome'}.zip`,
       }),
   ],
   resolve: {
