@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/cutter",
-  "version": "0.1.7",
+  "version": "2.0.0-alpha.5",
   "publishConfig": {
     "access": "public"
   },
@@ -45,9 +45,9 @@
     "vite-plugin-dts": "^1.7.2"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.4",
-    "rrdom": "^0.1.7",
-    "rrweb-snapshot": "^2.0.0-alpha.4",
-    "rrweb": "^2.0.0-alpha.4"
+    "@rrweb/types": "^2.0.0-alpha.5",
+    "rrdom": "^2.0.0-alpha.5",
+    "rrweb-snapshot": "^2.0.0-alpha.5",
+    "rrweb": "^2.0.0-alpha.5"
   }
 }

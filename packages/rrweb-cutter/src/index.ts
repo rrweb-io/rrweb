@@ -1,3 +1,4 @@
+import { NodeType, serializedNodeWithId } from 'rrweb-snapshot';
 import type {
   addedNodeMutation,
   eventWithTime,
@@ -7,7 +8,6 @@ import { IncrementalSource } from 'rrweb';
 import { EventType } from 'rrweb';
 import { SyncReplayer } from 'rrweb';
 import snapshot from './snapshot';
-import { serializedNodeWithId } from 'rrweb-snapshot';
 type CutterConfig = {
   points: number[];
 };
@@ -39,8 +39,16 @@ export function sessionCut(
       index + 1 < events.length
     ) {
       const nextEvent = events[index + 1];
+
+      let currentTimestamp = event.timestamp;
+      let fullSnapshotEvent: eventWithTime | null = null;
+      /**
+       * This loop is for the situation that cutting points are in the middle gap between two events.
+       * These cut points share the same fullsnapshot event so there is no need to generate one for each cut point.
+       */
       while (
         cutPointIndex < validSortedTimestamp.length &&
+        // If the next event exceed the cut point, we need to cut the events with the current replayer status.
         nextEvent.timestamp > validSortedTimestamp[cutPointIndex]
       ) {
         if (results.length === 0) {
@@ -51,13 +59,43 @@ export function sessionCut(
           cutPointIndex < validSortedPoints.length
             ? validSortedTimestamp[cutPointIndex]
             : events[events.length - 1].timestamp;
+        if (!fullSnapshotEvent) {
+          let fullSnapshot = snapshot(replayer.virtualDom, {
+            mirror: replayer.getMirror(),
+          });
+          if (!fullSnapshot) {
+            console.warn(
+              `Failed to generate full snapshot at timestamp ${currentTimestamp}. Using a blank snapshot as fallback.`,
+            );
+            // Fallback to a blank snapshot.
+            fullSnapshot = {
+              type: NodeType.Document,
+              childNodes: [],
+              id: 1,
+            };
+          }
+          fullSnapshotEvent = {
+            type: EventType.FullSnapshot,
+            data: {
+              node: fullSnapshot,
+              initialOffset: {
+                top: replayer.virtualDom.scrollTop,
+                left: replayer.virtualDom.scrollLeft,
+              },
+            },
+            timestamp: currentTimestamp,
+          };
+        }
+        fullSnapshotEvent.timestamp = currentTimestamp;
         const result = cutEvents(
           events.slice(index + 1),
           replayer,
-          event.timestamp,
+          fullSnapshotEvent,
+          currentTimestamp,
           nextCutTimestamp,
         );
         results.push(result);
+        currentTimestamp = nextCutTimestamp;
       }
       return cutPointIndex < validSortedTimestamp.length;
     }
@@ -66,11 +104,22 @@ export function sessionCut(
   return results;
 }
 
+/**
+ * Cut original events at the cutting point which will produce two parts.
+ * Only return the events before the cutting point (the previous part).
+ * The previous part will be built on the given full snapshot event.
+ * @param events - The events to be cut.
+ * @param replayer - The sync replayer instance.
+ * @param fullSnapshotEvent - The full snapshot event of the current timestamp.
+ * @param currentTimestamp - The current timestamp.
+ * @param cutTimeStamp - The timestamp to cut.
+ */
 function cutEvents(
   events: eventWithTime[],
   replayer: SyncReplayer,
+  fullSnapshotEvent: eventWithTime,
   currentTimestamp: number,
-  endTimestamp: number,
+  cutTimeStamp: number,
 ) {
   const result: eventWithTime[] = [];
   if (replayer.latestMetaEvent) {
@@ -78,28 +127,21 @@ function cutEvents(
     metaEvent.timestamp = currentTimestamp;
     result.push(metaEvent);
   }
+  result.push(fullSnapshotEvent);
+  const properDelay = 10;
   result.push(
     ...replayer.unhandledEvents.map((e) => {
-      e.timestamp = currentTimestamp + 10;
+      e.timestamp = currentTimestamp + properDelay;
       return e;
     }),
   );
-  const fullSnapshot = snapshot(replayer.virtualDom, {
-    mirror: replayer.getMirror(),
-  });
-  if (fullSnapshot)
-    result.push({
-      type: EventType.FullSnapshot,
-      data: {
-        node: fullSnapshot,
-        initialOffset: {
-          top: 0,
-          left: 0,
-        },
-      },
-      timestamp: currentTimestamp,
-    });
-  result.push(...events.filter((event) => event.timestamp <= endTimestamp));
+  // TODO handle adoptedStyleSheets
+  // TODO handle viewportResize
+  // TODO handle input
+  // TODO handle mediaInteraction
+  // TODO handle scroll
+
+  result.push(...events.filter((event) => event.timestamp <= cutTimeStamp));
   return result;
 }
 

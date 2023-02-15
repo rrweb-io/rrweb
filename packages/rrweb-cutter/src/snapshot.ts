@@ -180,11 +180,8 @@ export function serializeNodeWithId(
     doc,
     mirror,
   });
-  if (!_serializedNode) {
-    // TODO: dev only
-    console.warn(n, 'not serialized');
-    return null;
-  }
+  if (!_serializedNode) return null;
+
   const serializedNode = Object.assign(_serializedNode, { id: oldMeta.id });
 
   if (onSerialize) {
