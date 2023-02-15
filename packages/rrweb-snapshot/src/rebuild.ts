@@ -439,7 +439,8 @@ export function buildNodeWithSN(
         node.shadowRoot.appendChild(childNode);
       } else if (
         n.type === NodeType.Document &&
-        childN.type == NodeType.Element
+        childN.type == NodeType.Element &&
+        doc.defaultView && childNode instanceof doc.defaultView.Element // FIXME: simpler test for 'not RRDom'
       ) {
         const bodys = (childNode as HTMLElement).getElementsByTagName('body');
         if (bodys.length == 1 && bodys[0].parentElement) {
