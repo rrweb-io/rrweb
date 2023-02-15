@@ -111,6 +111,7 @@ function initLogObserver(
     logger = loggerType;
   }
   let logCount = 0;
+  let inStack = false;
   const cancelHandlers: listenerHandler[] = [];
   // add listener to thrown errors
   if (logOptions.level.includes('error')) {
@@ -188,6 +189,12 @@ function initLogObserver(
       (original: (...args: Array<unknown>) => void) => {
         return (...args: Array<unknown>) => {
           original.apply(this, args);
+          if (inStack) {
+            // If we are already in a stack this means something from the following code is calling a console method
+            // likely a proxy method called from stringify. We don't want to log this as it will cause an infinite loop
+            return;
+          }
+          inStack = true
           try {
             const trace = ErrorStackParser.parse(new Error())
               .map((stackFrame: StackFrame) => stackFrame.toString())
@@ -214,6 +221,8 @@ function initLogObserver(
             }
           } catch (error) {
             original('rrweb logger error:', error, ...args);
+          } finally {
+            inStack = false;
           }
         };
       },

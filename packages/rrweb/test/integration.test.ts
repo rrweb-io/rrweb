@@ -542,6 +542,52 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should handle recursive console messages', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml('log.html', {
+        plugins: ('[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown) as RecordPlugin<unknown>[],
+      }),
+    );
+
+    await page.evaluate(() => {
+      // Some frameworks like Vue.js use proxies to implement reactivity.
+      // This can cause infinite loops when logging objects.
+      let recursiveTarget = {  foo: 'bar', proxied: "i-am", proxy: null };
+      let count = 0;
+
+      const handler = {
+        get(target: any, prop: any, ...args: any[]) {
+          if (prop === 'proxied') {
+            if (count > 9) {
+              return
+            }
+            count++; // We don't want out test to get into an infinite loop...
+            console.warn(
+              'proxied was accessed so triggering a console.warn',
+              target,
+            );
+          }
+          return Reflect.get(target, prop, ...args);
+        },
+      };
+
+      const proxy = new Proxy(recursiveTarget, handler);
+      recursiveTarget.proxy = proxy;
+
+      console.log("Proxied object:", proxy);
+    });
+
+    await waitForRAF(page);
+    
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    // The snapshots should containe 1 console log, not multiple.
+    assertSnapshot(snapshots);
+  });
+
   it('should nest record iframe', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto(`${serverURL}/html`);
