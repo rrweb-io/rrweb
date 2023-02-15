@@ -29,6 +29,7 @@ jobs:
         with:
           publish: yarn run release
         env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 

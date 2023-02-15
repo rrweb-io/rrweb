@@ -25,9 +25,10 @@
       "path": "../packages/rrweb-snapshot"
     },
     {
-      "name": "@rrweb/types",
-      "path": "../packages/types"
-    }
+      "name": "web-extension (package)",
+      "path": "../packages/web-extension"
+    },
+    { "name": "@rrweb/types", "path": "../packages/types" }
   ],
   "settings": {
     "jest.disabledWorkspaceFolders": [
