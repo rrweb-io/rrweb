@@ -194,7 +194,7 @@ function initLogObserver(
             // likely a proxy method called from stringify. We don't want to log this as it will cause an infinite loop
             return;
           }
-          inStack = true
+          inStack = true;
           try {
             const trace = ErrorStackParser.parse(new Error())
               .map((stackFrame: StackFrame) => stackFrame.toString())

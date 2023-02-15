@@ -547,21 +547,22 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(
       getHtml('log.html', {
-        plugins: ('[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown) as RecordPlugin<unknown>[],
+        plugins:
+          '[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown as RecordPlugin<unknown>[],
       }),
     );
 
     await page.evaluate(() => {
       // Some frameworks like Vue.js use proxies to implement reactivity.
       // This can cause infinite loops when logging objects.
-      let recursiveTarget = {  foo: 'bar', proxied: "i-am", proxy: null };
+      let recursiveTarget = { foo: 'bar', proxied: 'i-am', proxy: null };
       let count = 0;
 
       const handler = {
         get(target: any, prop: any, ...args: any[]) {
           if (prop === 'proxied') {
             if (count > 9) {
-              return
+              return;
             }
             count++; // We don't want out test to get into an infinite loop...
             console.warn(
@@ -576,11 +577,11 @@ describe('record integration tests', function (this: ISuite) {
       const proxy = new Proxy(recursiveTarget, handler);
       recursiveTarget.proxy = proxy;
 
-      console.log("Proxied object:", proxy);
+      console.log('Proxied object:', proxy);
     });
 
     await waitForRAF(page);
-    
+
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
