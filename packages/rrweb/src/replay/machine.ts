@@ -187,16 +187,27 @@ export function createPlayerService(
           }
 
           const syncEvents = new Array<eventWithTime>();
+          let renderedFullSnapshot = false;
           for (const event of neededEvents) {
+            const isFullSnapshot = event.type === EventType.FullSnapshot;
             if (
               lastPlayedTimestamp &&
               lastPlayedTimestamp < baselineTime &&
               (event.timestamp <= lastPlayedTimestamp ||
                 event === lastPlayedEvent)
             ) {
+              if (isFullSnapshot) {
+                renderedFullSnapshot = true;
+              }
               continue;
             }
-            if (event.timestamp <= baselineTime) {
+            if (
+              event.timestamp <= baselineTime ||
+              (isFullSnapshot && !renderedFullSnapshot)
+            ) {
+              if (isFullSnapshot) {
+                renderedFullSnapshot = true;
+              }
               syncEvents.push(event);
             } else {
               const castFn = getCastFn(event, false);
