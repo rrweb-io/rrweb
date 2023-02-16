@@ -1,12 +1,16 @@
 import { NodeType, serializedNodeWithId } from 'rrweb-snapshot';
 import type {
   addedNodeMutation,
+  adoptedStyleSheetData,
   eventWithTime,
   mousePosition,
+  styleDeclarationData,
+  styleSheetRuleData,
 } from '@rrweb/types';
 import { IncrementalSource } from 'rrweb';
 import { EventType } from 'rrweb';
 import { SyncReplayer } from 'rrweb';
+import cloneDeep from 'lodash.clonedeep';
 import snapshot from './snapshot';
 type CutterConfig = {
   points: number[];
@@ -34,66 +38,48 @@ export function sessionCut(
     (point) => baseTime + point,
   );
   replayer.play(({ index, event }) => {
-    if (
-      event.timestamp <= validSortedTimestamp[cutPointIndex] &&
-      index + 1 < events.length
-    ) {
+    const cutPoint = validSortedPoints[cutPointIndex];
+    if (event.timestamp <= cutPoint && index + 1 < events.length) {
+      if (results.length === 0) {
+        results.push(events.slice(0, index + 1));
+      }
       const nextEvent = events[index + 1];
 
-      let currentTimestamp = event.timestamp;
-      let fullSnapshotEvent: eventWithTime | null = null;
+      let currentTimestamp = cutPoint;
+      let eventsCache: eventWithTime[] | null = null;
       /**
        * This loop is for the situation that cutting points are in the middle gap between two events.
-       * These cut points share the same fullsnapshot event so there is no need to generate one for each cut point.
+       * These cut points have the same cut events so there is no need to generate them for each cut point.
+       * We can cache the them and use them for the next cut point.
        */
       while (
         cutPointIndex < validSortedTimestamp.length &&
         // If the next event exceed the cut point, we need to cut the events with the current replayer status.
         nextEvent.timestamp > validSortedTimestamp[cutPointIndex]
       ) {
-        if (results.length === 0) {
-          results.push(events.slice(0, index + 1));
-        }
         cutPointIndex++;
+        if (eventsCache !== null) {
+          const timeDiff = currentTimestamp - eventsCache[0].timestamp;
+          const newEvents = eventsCache.map((e) => {
+            const newEvent = cloneDeep(e);
+            newEvent.timestamp += timeDiff;
+            return newEvent;
+          });
+          results.push(newEvents);
+          continue;
+        }
+
         const nextCutTimestamp =
           cutPointIndex < validSortedPoints.length
             ? validSortedTimestamp[cutPointIndex]
             : events[events.length - 1].timestamp;
-        if (!fullSnapshotEvent) {
-          let fullSnapshot = snapshot(replayer.virtualDom, {
-            mirror: replayer.getMirror(),
-          });
-          if (!fullSnapshot) {
-            console.warn(
-              `Failed to generate full snapshot at timestamp ${currentTimestamp}. Using a blank snapshot as fallback.`,
-            );
-            // Fallback to a blank snapshot.
-            fullSnapshot = {
-              type: NodeType.Document,
-              childNodes: [],
-              id: 1,
-            };
-          }
-          fullSnapshotEvent = {
-            type: EventType.FullSnapshot,
-            data: {
-              node: fullSnapshot,
-              initialOffset: {
-                top: replayer.virtualDom.scrollTop,
-                left: replayer.virtualDom.scrollLeft,
-              },
-            },
-            timestamp: currentTimestamp,
-          };
-        }
-        fullSnapshotEvent.timestamp = currentTimestamp;
         const result = cutEvents(
           events.slice(index + 1),
           replayer,
-          fullSnapshotEvent,
           currentTimestamp,
           nextCutTimestamp,
         );
+        eventsCache = result;
         results.push(result);
         currentTimestamp = nextCutTimestamp;
       }
@@ -107,17 +93,14 @@ export function sessionCut(
 /**
  * Cut original events at the cutting point which will produce two parts.
  * Only return the events before the cutting point (the previous part).
- * The previous part will be built on the given full snapshot event.
  * @param events - The events to be cut.
  * @param replayer - The sync replayer instance.
- * @param fullSnapshotEvent - The full snapshot event of the current timestamp.
  * @param currentTimestamp - The current timestamp.
  * @param cutTimeStamp - The timestamp to cut.
  */
 function cutEvents(
   events: eventWithTime[],
   replayer: SyncReplayer,
-  fullSnapshotEvent: eventWithTime,
   currentTimestamp: number,
   cutTimeStamp: number,
 ) {
@@ -125,24 +108,148 @@ function cutEvents(
   if (replayer.latestMetaEvent) {
     const metaEvent = replayer.latestMetaEvent;
     metaEvent.timestamp = currentTimestamp;
-    result.push(metaEvent);
+    result.push(cloneDeep(metaEvent));
   }
+  const fullsnapshotDelay = 1,
+    styleDelay = 2;
+  let fullSnapshot = snapshot(replayer.virtualDom, {
+    mirror: replayer.getMirror(),
+  });
+  if (!fullSnapshot) {
+    console.warn(
+      `Failed to generate full snapshot at timestamp ${currentTimestamp}. Using a blank snapshot as fallback.`,
+    );
+    // Fallback to a blank snapshot.
+    fullSnapshot = {
+      type: NodeType.Document,
+      childNodes: [],
+      id: 1,
+    };
+  }
+  const fullSnapshotEvent: eventWithTime = {
+    type: EventType.FullSnapshot,
+    data: {
+      node: fullSnapshot,
+      initialOffset: {
+        top: replayer.virtualDom.scrollTop,
+        left: replayer.virtualDom.scrollLeft,
+      },
+    },
+    timestamp: currentTimestamp,
+  };
   result.push(fullSnapshotEvent);
-  const properDelay = 10;
   result.push(
     ...replayer.unhandledEvents.map((e) => {
-      e.timestamp = currentTimestamp + properDelay;
+      e.timestamp = currentTimestamp + fullsnapshotDelay;
       return e;
     }),
   );
-  // TODO handle adoptedStyleSheets
+  result.push(
+    ...filterAdoptedStyleData(
+      replayer,
+      replayer.adoptedStyleSheets,
+      replayer.constructedStyleMutations,
+      events
+        .filter(
+          (event) =>
+            event.timestamp <= cutTimeStamp &&
+            event.type === EventType.IncrementalSnapshot &&
+            event.data.source === IncrementalSource.AdoptedStyleSheet,
+        )
+        .map((event) => event.data as adoptedStyleSheetData),
+      currentTimestamp + styleDelay,
+    ),
+  );
   // TODO handle viewportResize
   // TODO handle input
   // TODO handle mediaInteraction
   // TODO handle scroll
 
-  result.push(...events.filter((event) => event.timestamp <= cutTimeStamp));
+  result.push(
+    ...events
+      .filter((event) => event.timestamp <= cutTimeStamp)
+      .map((e) => cloneDeep(e)),
+  );
   return result;
+}
+
+/**
+ * Keep the adopted style data and style mutations which are still valid at this time point.
+ */
+function filterAdoptedStyleData(
+  replayer: SyncReplayer,
+  adoptedStyleSheetData: adoptedStyleSheetData[],
+  constructedStyleMutations: (styleSheetRuleData | styleDeclarationData)[],
+  upcomingAdoptedStyleSheets: adoptedStyleSheetData[],
+  timestamp: number,
+) {
+  const events: eventWithTime[] = [];
+  // A map from style id without style construction to the owner node id.
+  const noConstructStyleIdToNodeIdMap = new Map<number, number>();
+  const builtStyleIds = new Set<number>();
+  const mirror = replayer.getMirror();
+  /**
+   * Reversely iterate the adopted style sheet data to find valid styles.
+   * @param adoptedStyleSheetData - The adopted style sheet data.
+   * @param onValidData - The callback function when the data is valid.
+   */
+  const reverseIterateAdoptedStyleData = (
+    adoptedStyleSheetData: adoptedStyleSheetData[],
+    onValidData?: (data: adoptedStyleSheetData) => void,
+  ) => {
+    for (let i = adoptedStyleSheetData.length - 1; i >= 0; i--) {
+      const adoptedStyleSheet = adoptedStyleSheetData[i];
+      if (mirror.has(adoptedStyleSheet.id)) {
+        adoptedStyleSheet.styleIds?.forEach((styleId: number) => {
+          if (builtStyleIds.has(styleId)) return;
+          noConstructStyleIdToNodeIdMap.set(styleId, adoptedStyleSheet.id);
+        });
+        adoptedStyleSheet.styles?.forEach((styleConstruction) => {
+          if (noConstructStyleIdToNodeIdMap.has(styleConstruction.styleId))
+            noConstructStyleIdToNodeIdMap.delete(styleConstruction.styleId);
+        });
+        onValidData?.(adoptedStyleSheet);
+      }
+      // The owner node of style data has been removed but its style construction may still be used by other adoptedStyleSheets.
+      else {
+        if (!adoptedStyleSheet.styles) continue;
+        adoptedStyleSheet.styles.forEach((style) => {
+          if (builtStyleIds.has(style.styleId)) return;
+          const ownerNodeId = noConstructStyleIdToNodeIdMap.get(style.styleId);
+          if (!ownerNodeId) return;
+          noConstructStyleIdToNodeIdMap.delete(style.styleId);
+          builtStyleIds.add(style.styleId);
+          onValidData?.({
+            source: IncrementalSource.AdoptedStyleSheet,
+            id: ownerNodeId,
+            styles: [style],
+            styleIds: [style.styleId],
+          });
+        });
+      }
+    }
+  };
+  reverseIterateAdoptedStyleData(upcomingAdoptedStyleSheets);
+  reverseIterateAdoptedStyleData(adoptedStyleSheetData, (data) => {
+    events.unshift({
+      type: EventType.IncrementalSnapshot,
+      data: cloneDeep(data),
+      timestamp,
+    });
+  });
+  const styleMutationDelay = 1;
+  constructedStyleMutations.forEach((styleConstruction) => {
+    if (
+      styleConstruction.styleId &&
+      builtStyleIds.has(styleConstruction.styleId)
+    )
+      events.push({
+        type: EventType.IncrementalSnapshot,
+        data: cloneDeep(styleConstruction),
+        timestamp: timestamp + styleMutationDelay,
+      });
+  });
+  return events;
 }
 
 export function pruneBranches(
