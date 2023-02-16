@@ -439,22 +439,23 @@ export function buildNodeWithSN(
         node.shadowRoot.appendChild(childNode);
       } else if (
         n.type === NodeType.Document &&
-        childN.type == NodeType.Element &&
-        doc.defaultView &&
-        childNode instanceof doc.defaultView.Element // FIXME: simpler test for 'not RRDom'
+        childN.type == NodeType.Element
       ) {
-        const bodys = (childNode as HTMLElement).getElementsByTagName('body');
-        if (bodys.length == 1 && bodys[0].parentElement) {
+        const htmlElement = childNode as HTMLElement;
+        let body: HTMLBodyElement | null = null;
+        htmlElement.childNodes.forEach((child) => {
+          if (child.nodeName === 'BODY') body = child as HTMLBodyElement;
+        });
+        if (body) {
           // this branch solves a problem in Firefox where css transitions are incorrectly
           // being applied upon rebuild.  Presumably FF doesn't finished parsing the styles
           // in time, and applies e.g. a default margin:0 to elements which have a non-zero
           // margin set in CSS, along with a transition on them
-          const bodyP = bodys[0].parentElement;
-          const tmpBody = bodyP.removeChild(bodys[0]);
+          htmlElement.removeChild(body);
           // append <head> and <style>s
           node.appendChild(childNode);
           // now append <body>
-          bodyP.appendChild(tmpBody);
+          htmlElement.appendChild(body);
         } else {
           node.appendChild(childNode);
         }
