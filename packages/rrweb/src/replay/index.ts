@@ -777,6 +777,16 @@ export class Replayer {
       }
     };
 
+    /**
+     * Normally rebuilding full snapshot should not be under virtual dom environment.
+     * But if the order of data events has some issues, it might be possible.
+     * Adding this check to avoid any potential issues.
+     */
+    if (this.usingVirtualDom) {
+      this.virtualDom.destroyTree();
+      this.usingVirtualDom = false;
+    }
+
     this.mirror.reset();
     rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
