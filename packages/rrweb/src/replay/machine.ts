@@ -196,7 +196,7 @@ export function createPlayerService(
             ) {
               continue;
             }
-            if (event.timestamp < baselineTime) {
+            if (event.timestamp <= baselineTime) {
               syncEvents.push(event);
             } else {
               const castFn = getCastFn(event, false);
