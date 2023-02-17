@@ -1,4 +1,3 @@
-import path from 'path';
 import dts from 'vite-plugin-dts';
 /**
  * @type {import('vite').UserConfig}
@@ -6,7 +5,7 @@ import dts from 'vite-plugin-dts';
 export default {
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: 'src/index.ts',
       name: 'rrwebCutter',
       fileName: 'index',
       formats: ['es', 'cjs', 'umd', 'iife'],
@@ -15,6 +14,8 @@ export default {
     minify: true,
 
     sourcemap: true,
+
+    emptyOutDir: true,
   },
   plugins: [dts()],
 };
