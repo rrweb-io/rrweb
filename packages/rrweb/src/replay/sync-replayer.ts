@@ -231,8 +231,6 @@ export class SyncReplayer {
     const baseTime = this.events[0].timestamp;
     for (let i = this.events.length - 1; i >= 0; i--) {
       const event = this.events[i];
-      const castFn = this.getCastFn(event);
-      castFn();
       this.currentTime = event.timestamp - baseTime;
       if (
         castEventCallback?.({

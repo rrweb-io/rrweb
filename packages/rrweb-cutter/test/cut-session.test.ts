@@ -3,22 +3,21 @@
  */
 import path from 'path';
 import fs from 'fs';
-import { createMirror, snapshot, NodeType } from 'rrweb-snapshot';
+import { createMirror, snapshot } from 'rrweb-snapshot';
 import { EventType } from 'rrweb';
 import { SyncReplayer } from 'rrweb';
 import type { eventWithTime } from '@rrweb/types';
 import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
-import { sessionCut, getValidSortedPoints, pruneBranches } from '../src';
+import { cutSession, getValidSortedPoints } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
 import { eventsFn as inlineStyleEvents } from './events/inline-style.event';
-import { assertSnapshot } from 'rrweb/test/utils';
 
-describe('session cutter', () => {
+describe('cut session', () => {
   it('should return the same events if the events length is too short', () => {
     const events1: eventWithTime[] = [];
     const config = { points: [10] };
-    expect(sessionCut(events1, config)).toEqual([events1]);
+    expect(cutSession(events1, config)).toEqual([events1]);
 
     const events2: eventWithTime[] = [
       {
@@ -27,7 +26,7 @@ describe('session cutter', () => {
         timestamp: 1,
       } as eventWithTime,
     ];
-    expect(sessionCut(events2, config)).toEqual([events2]);
+    expect(cutSession(events2, config)).toEqual([events2]);
   });
 
   it('should return the same events if the points length is 0', () => {
@@ -44,7 +43,7 @@ describe('session cutter', () => {
       } as eventWithTime,
     ];
     const config = { points: [] };
-    expect(sessionCut(events, config)).toEqual([events]);
+    expect(cutSession(events, config)).toEqual([events]);
   });
 
   it('should sort and validate cutting points array', () => {
@@ -77,18 +76,18 @@ describe('session cutter', () => {
   describe('Cut the session events from several time points', () => {
     it('should cut the simplest mutation events', () => {
       const events = mutationEvents as eventWithTime[];
-      const result = sessionCut(events, { points: [1000, 2000] });
+      const result = cutSession(events, { points: [1000, 2000] });
       expect(result).toHaveLength(3);
 
       // all events before 1000ms
-      const sessionBefore1s = result[0];
+      const sessionBefore1s = result[0].events;
       const cutPoint1Length = 5;
       expect(sessionBefore1s).toHaveLength(cutPoint1Length);
       // These events are directly sliced from the original events.
       expect(sessionBefore1s).toEqual(events.slice(0, cutPoint1Length));
 
       // all events between 1000ms and 2000ms
-      const sessionBetween1s2s = result[1];
+      const sessionBetween1s2s = result[1].events;
       expect(sessionBetween1s2s).toHaveLength(3);
       expect(sessionBetween1s2s[0].type).toEqual(EventType.Meta);
       expect(sessionBetween1s2s[1].type).toEqual(EventType.FullSnapshot);
@@ -101,7 +100,7 @@ describe('session cutter', () => {
       ).toMatchSnapshot('screenshot at 1000ms');
 
       // all events after 2000ms
-      const sessionAfter2s = result[2];
+      const sessionAfter2s = result[2].events;
       expect(sessionAfter2s).toHaveLength(3);
       expect(sessionAfter2s[0].type).toEqual(EventType.Meta);
       expect(sessionAfter2s[1].type).toEqual(EventType.FullSnapshot);
@@ -124,17 +123,17 @@ describe('session cutter', () => {
 
   it('should cut events with inline styles', () => {
     const events = inlineStyleEvents() as eventWithTime[];
-    const result = sessionCut(events, { points: [1000] });
+    const result = cutSession(events, { points: [1000] });
     expect(result).toHaveLength(2);
     // all events before 1000ms
-    const sessionBefore1s = result[0];
+    const sessionBefore1s = result[0].events;
     const cutPoint1Length = 5;
     expect(sessionBefore1s).toHaveLength(cutPoint1Length);
     // These events are directly sliced from the original events.
     expect(sessionBefore1s).toEqual(events.slice(0, cutPoint1Length));
 
     // all events after 1000ms
-    const sessionAfter1s = result[1];
+    const sessionAfter1s = result[1].events;
     expect(sessionAfter1s).toHaveLength(3);
     const replayer = new SyncReplayer(sessionAfter1s.slice(0, 2)); // only play meta and full snapshot events
     replayer.play();
@@ -142,168 +141,6 @@ describe('session cutter', () => {
     expect(
       printRRDom(replayer.virtualDom, replayer.getMirror()),
     ).toMatchSnapshot('screenshot at 1000ms');
-  });
-});
-
-describe('pruneBranches', () => {
-  it("should cut branches that doesn't include id", () => {
-    const events = inlineStyleEvents() as eventWithTime[];
-    const result = pruneBranches(events, { keep: [14] });
-    expect(result).toHaveLength(5);
-    const replayer = new SyncReplayer(result);
-    replayer.play();
-
-    expect(
-      printRRDom(replayer.virtualDom, replayer.getMirror()),
-    ).toMatchSnapshot('pruned all but 14');
-  });
-
-  it("should remove mutations that don't include ids", () => {
-    const mutationEvent = {
-      type: EventType.IncrementalSnapshot,
-      data: {
-        source: 0,
-        texts: [
-          {
-            id: 15,
-            value: 'Kept',
-          },
-          {
-            id: 1001,
-            value: 'Cut',
-          },
-        ],
-        attributes: [
-          {
-            id: 14,
-            attributes: {
-              'data-attr': 'Kept',
-            },
-          },
-          {
-            id: 1002,
-            attributes: {
-              'data-attr': 'Cut',
-            },
-          },
-        ],
-        removes: [
-          {
-            parentId: 14,
-            id: 15,
-          },
-          {
-            parentId: 1002,
-            id: 1003,
-          },
-        ],
-        adds: [
-          {
-            parentId: 14,
-            nextId: null,
-            node: {},
-          },
-          {
-            parentId: 1001,
-            nextId: null,
-            node: {},
-          },
-        ],
-      },
-    };
-    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
-    const result = pruneBranches(events, { keep: [14] });
-    expect(result[result.length - 1]).toMatchSnapshot();
-  });
-
-  it('should remove branches based on nodes that came in after fullsnapshot', () => {
-    const mutationEvent = {
-      type: EventType.IncrementalSnapshot,
-      data: {
-        source: 0,
-        texts: [],
-        attributes: [],
-        removes: [],
-        adds: [
-          {
-            parentId: 14,
-            nextId: null,
-            node: {
-              id: 99,
-              type: NodeType.Element,
-              tagName: 'canvas',
-              attributes: {},
-              childNodes: [],
-            },
-          },
-        ],
-      },
-    };
-    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
-    const result = pruneBranches(events, { keep: [99] });
-    assertSnapshot(result);
-  });
-  it('should remove branches based on child nodes that came in after fullsnapshot', () => {
-    const mutationEvent = {
-      type: EventType.IncrementalSnapshot,
-      data: {
-        source: 0,
-        texts: [],
-        attributes: [],
-        removes: [],
-        adds: [
-          {
-            parentId: 14,
-            nextId: null,
-            node: {
-              id: 98,
-              type: NodeType.Element,
-              tagName: 'main',
-              attributes: {},
-              childNodes: [
-                {
-                  id: 99,
-                  type: NodeType.Element,
-                  tagName: 'canvas',
-                  attributes: {},
-                  childNodes: [],
-                },
-              ],
-            },
-          },
-        ],
-      },
-    };
-    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
-    const result = pruneBranches(events, { keep: [99] });
-    assertSnapshot(result);
-  });
-
-  it('should keep branches where target child nodes was, and gets moved to', () => {
-    const mutationEvent = {
-      type: EventType.IncrementalSnapshot,
-      data: {
-        source: 0,
-        texts: [],
-        attributes: [],
-        removes: [
-          {
-            parentId: 14,
-            id: 15,
-          },
-        ],
-        adds: [
-          {
-            parentId: 5,
-            nextId: null,
-            node: { type: 3, textContent: '      \n    ', id: 15 },
-          },
-        ],
-      },
-    };
-    const events = [...inlineStyleEvents(), mutationEvent] as eventWithTime[];
-    const result = pruneBranches(events, { keep: [15] });
-    assertSnapshot(result);
   });
 });
 

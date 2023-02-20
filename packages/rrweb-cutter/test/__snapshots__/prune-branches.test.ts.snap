@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`pruneBranches should cut branches that doesn't include id: pruned all but 14 1`] = `
+exports[`prune branches should cut branches that doesn't include id: pruned all but 14 1`] = `
 "1 RRDocument
   -1 RRDocumentType
   2 HTML 
@@ -10,7 +10,7 @@ exports[`pruneBranches should cut branches that doesn't include id: pruned all b
 "
 `;
 
-exports[`pruneBranches should keep branches where target child nodes was, and gets moved to 1`] = `
+exports[`prune branches should keep branches where target child nodes was, and gets moved to 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -127,7 +127,7 @@ exports[`pruneBranches should keep branches where target child nodes was, and ge
 ]"
 `;
 
-exports[`pruneBranches should remove branches based on child nodes that came in after fullsnapshot 1`] = `
+exports[`prune branches should remove branches based on child nodes that came in after fullsnapshot 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -218,7 +218,7 @@ exports[`pruneBranches should remove branches based on child nodes that came in 
 ]"
 `;
 
-exports[`pruneBranches should remove branches based on nodes that came in after fullsnapshot 1`] = `
+exports[`prune branches should remove branches based on nodes that came in after fullsnapshot 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -301,7 +301,7 @@ exports[`pruneBranches should remove branches based on nodes that came in after 
 ]"
 `;
 
-exports[`pruneBranches should remove mutations that don't include ids 1`] = `
+exports[`prune branches should remove mutations that don't include ids 1`] = `
 Object {
   "data": Object {
     "adds": Array [
@@ -335,86 +335,4 @@ Object {
   },
   "type": 3,
 }
-`;
-
-exports[`session cutter Cut the session events from several time points should cut the simplest mutation events: screenshot at 1000ms 1`] = `
-"1 RRDocument
-  2 HTML 
-    3 HEAD 
-      4 META charset=\\"utf-8\\" 
-      5 RRText text=\\"    \\\\n  \\"
-    6 BODY 
-      16 RRText text=\\"\\\\n    \\"
-      17 DIV id=\\"container\\" 
-        34 DIV 
-          35 RRText text=\\"1\\"
-        33 DIV 
-          36 RRText text=\\"2\\"
-        32 DIV 
-          37 RRText text=\\"3\\"
-        31 DIV 
-          38 RRText text=\\"4\\"
-        29 DIV 
-          30 RRText text=\\"5\\"
-      19 RRText text=\\"\\\\n  \\\\n  \\"
-"
-`;
-
-exports[`session cutter Cut the session events from several time points should cut the simplest mutation events: screenshot at 2000ms 1`] = `
-"1 RRDocument
-  2 HTML 
-    3 HEAD 
-      4 META charset=\\"utf-8\\" 
-      5 RRText text=\\"    \\\\n  \\"
-    6 BODY 
-      16 RRText text=\\"\\\\n    \\"
-      17 DIV id=\\"container\\" 
-        29 DIV 
-          30 RRText text=\\"5\\"
-        31 DIV 
-          38 RRText text=\\"4\\"
-        32 DIV 
-          37 RRText text=\\"3\\"
-        33 DIV 
-          36 RRText text=\\"2\\"
-        34 DIV 
-          35 RRText text=\\"1\\"
-      19 RRText text=\\"\\\\n  \\\\n  \\"
-"
-`;
-
-exports[`session cutter Cut the session events from several time points should cut the simplest mutation events: screenshot at 3000ms 1`] = `
-"1 RRDocument
-  2 HTML 
-    3 HEAD 
-      4 META charset=\\"utf-8\\" 
-      5 RRText text=\\"    \\\\n  \\"
-    6 BODY 
-      16 RRText text=\\"\\\\n    \\"
-      17 DIV id=\\"container\\" 
-      19 RRText text=\\"\\\\n  \\\\n  \\"
-"
-`;
-
-exports[`session cutter should cut events with inline styles: screenshot at 1000ms 1`] = `
-"1 RRDocument
-  2 HTML 
-    3 HEAD 
-      4 RRText text=\\"\\\\n    \\"
-      5 META charset=\\"utf-8\\" 
-      6 RRText text=\\"\\\\n    \\"
-      7 STYLE 
-        -1 RRText text=\\"#root { background: yellow; width: 10px; height: 10px; }\\"
-      8 RRText text=\\"\\\\n    \\"
-      9 STYLE 
-        -1 RRText text=\\".block { width: 20px; height: 20px; background: red; }\\"
-      10 RRText text=\\"\\\\n  \\"
-    11 RRText text=\\"\\\\n  \\"
-    12 BODY 
-      13 RRText text=\\"\\\\n    \\"
-      14 DIV id=\\"root\\" 
-        15 RRText text=\\"      \\\\n    \\"
-      16 RRText text=\\"\\\\n    \\"
-      17 DIV class=\\"block\\" 
-"
 `;
