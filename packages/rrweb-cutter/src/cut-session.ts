@@ -7,12 +7,12 @@ import {
   styleSheetRuleData,
 } from '@rrweb/types';
 import {
-  RRElement,
-  RRNode,
   RRCanvasElement,
   RRStyleElement,
   RRMediaElement,
+  RRIFrameElement,
 } from 'rrdom';
+import type { IRRNode, RRElement } from 'rrdom';
 import { IncrementalSource, EventType, SyncReplayer } from 'rrweb';
 import { playerConfig } from 'rrweb/typings/types';
 import cloneDeep from 'lodash.clonedeep';
@@ -111,9 +111,9 @@ export function cutSession(
             .slice(index + 1)
             .filter((e) => e.timestamp <= nextCutTimestamp),
           replayer,
+          config,
           currentTimestamp,
           nextCutTimestamp,
-          config,
         );
         results.push(session);
         eventsCache = session.events;
@@ -159,9 +159,9 @@ function wrapCutSession(
 function cutEvents(
   events: eventWithTime[],
   replayer: SyncReplayer,
+  config: CutterConfig,
   currentTimestamp: number,
   cutTimestamp: number,
-  config: CutterConfig,
 ) {
   let result: eventWithTime[] = [];
   if (replayer.latestMetaEvent) {
@@ -171,68 +171,95 @@ function cutEvents(
   }
   const fullsnapshotDelay = 1,
     IncrementalEventDelay = 2;
+
+  const iframeSnapshots: eventWithTime[] = [];
+  const onSerialize = (n: IRRNode) => {
+    const timestamp = currentTimestamp + fullsnapshotDelay;
+    if (n.RRNodeType !== NodeType.Element) return;
+    const rrElement = n as RRElement;
+    rrElement.inputData &&
+      result.push({
+        type: EventType.IncrementalSnapshot,
+        data: rrElement.inputData,
+        timestamp,
+      });
+    rrElement.scrollData &&
+      result.push({
+        type: EventType.IncrementalSnapshot,
+        data: rrElement.scrollData,
+        timestamp,
+      });
+    if (rrElement instanceof RRCanvasElement)
+      rrElement.canvasMutations.forEach((canvasData) =>
+        result.push({
+          type: EventType.IncrementalSnapshot,
+          data: canvasData.mutation,
+          timestamp,
+        }),
+      );
+    else if (rrElement instanceof RRStyleElement)
+      rrElement.rules.forEach((styleRule) =>
+        result.push({
+          type: EventType.IncrementalSnapshot,
+          data: styleRule,
+          timestamp,
+        }),
+      );
+    else if (rrElement instanceof RRMediaElement) {
+      (rrElement.volume !== undefined || rrElement.muted !== undefined) &&
+        result.push({
+          type: EventType.IncrementalSnapshot,
+          data: {
+            source: IncrementalSource.MediaInteraction,
+            type: MediaInteractions.VolumeChange,
+            volume: rrElement.volume,
+            muted: rrElement.muted,
+            id: replayer.getMirror().getId(n),
+          },
+          timestamp,
+        });
+      rrElement.playbackRate !== undefined &&
+        result.push({
+          type: EventType.IncrementalSnapshot,
+          data: {
+            source: IncrementalSource.MediaInteraction,
+            type: MediaInteractions.RateChange,
+            playbackRate: rrElement.playbackRate,
+            id: replayer.getMirror().getId(n),
+          },
+          timestamp,
+        });
+    } else if (rrElement instanceof RRIFrameElement) {
+      if (!rrElement.contentDocument) return;
+      const iframeSnapshot = snapshot(rrElement.contentDocument, {
+        mirror: replayer.getMirror(),
+        onSerialize,
+      });
+      if (!iframeSnapshot) return;
+      iframeSnapshots.push({
+        type: EventType.IncrementalSnapshot,
+        data: {
+          source: IncrementalSource.Mutation,
+          adds: [
+            {
+              parentId: replayer.getMirror().getId(rrElement),
+              nextId: null,
+              node: iframeSnapshot,
+            },
+          ],
+          removes: [],
+          texts: [],
+          attributes: [],
+          isAttachIframe: true,
+        },
+        timestamp,
+      });
+    }
+  };
+
   let fullSnapshot = snapshot(replayer.virtualDom, {
     mirror: replayer.getMirror(),
-    onSerialize: (n: RRNode) => {
-      const timestamp = currentTimestamp + fullsnapshotDelay;
-      if (n.RRNodeType === NodeType.Element) {
-        const rrElement = n as RRElement;
-        rrElement.inputData &&
-          result.push({
-            type: EventType.IncrementalSnapshot,
-            data: rrElement.inputData,
-            timestamp,
-          });
-        rrElement.scrollData &&
-          result.push({
-            type: EventType.IncrementalSnapshot,
-            data: rrElement.scrollData,
-            timestamp,
-          });
-        if (rrElement instanceof RRCanvasElement)
-          rrElement.canvasMutations.forEach((canvasData) =>
-            result.push({
-              type: EventType.IncrementalSnapshot,
-              data: canvasData.mutation,
-              timestamp,
-            }),
-          );
-        else if (rrElement instanceof RRStyleElement)
-          rrElement.rules.forEach((styleRule) =>
-            result.push({
-              type: EventType.IncrementalSnapshot,
-              data: styleRule,
-              timestamp,
-            }),
-          );
-        else if (rrElement instanceof RRMediaElement) {
-          (rrElement.volume !== undefined || rrElement.muted !== undefined) &&
-            result.push({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.MediaInteraction,
-                type: MediaInteractions.VolumeChange,
-                volume: rrElement.volume,
-                muted: rrElement.muted,
-                id: replayer.getMirror().getId(n),
-              },
-              timestamp,
-            });
-          rrElement.playbackRate !== undefined &&
-            result.push({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.MediaInteraction,
-                type: MediaInteractions.RateChange,
-                playbackRate: rrElement.playbackRate,
-                id: replayer.getMirror().getId(n),
-              },
-              timestamp,
-            });
-        }
-      }
-      // TODO handle iframe
-    },
+    onSerialize,
   });
   if (!fullSnapshot) {
     console.warn(
@@ -257,6 +284,7 @@ function cutEvents(
     timestamp: currentTimestamp + fullsnapshotDelay,
   };
   result.push(fullSnapshotEvent);
+  result = result.concat(iframeSnapshots);
   result = result.concat(
     replayer.unhandledEvents.map((e) => ({
       ...e,
