@@ -527,6 +527,11 @@ export class SyncReplayer {
           width: d.width,
           height: d.height,
         });
+        if (!this.latestMetaEvent) break;
+        Object.assign(this.latestMetaEvent.data as metaEvent, {
+          width: d.width,
+          height: d.height,
+        });
         break;
       case IncrementalSource.Input: {
         /**

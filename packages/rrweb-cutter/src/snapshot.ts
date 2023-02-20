@@ -6,6 +6,7 @@ import type {
   IRRDocumentType,
   IRRElement,
   IRRNode,
+  RRCanvasElement,
   RRIFrameElement,
   RRMediaElement,
 } from 'rrdom';
@@ -122,6 +123,8 @@ function serializeElementNode(
     // the child text is inserted and untracked by the rrweb replayer
     if (n.childNodes[0] && mirror.getId(n.childNodes[0]) < 0)
       attributes._cssText = n.textContent || '';
+  } else if (tagName === 'canvas' && (n as RRCanvasElement).rr_dataURL) {
+    attributes.rr_dataURL = (n as RRCanvasElement).rr_dataURL as string;
   }
   if (n.scrollLeft) {
     attributes.rr_scrollLeft = n.scrollLeft;

@@ -1,10 +1,18 @@
 import { NodeType } from 'rrweb-snapshot';
-import type {
+import {
   adoptedStyleSheetData,
   eventWithTime,
+  MediaInteractions,
   styleDeclarationData,
   styleSheetRuleData,
 } from '@rrweb/types';
+import {
+  RRElement,
+  RRNode,
+  RRCanvasElement,
+  RRStyleElement,
+  RRMediaElement,
+} from 'rrdom';
 import { IncrementalSource } from 'rrweb';
 import { EventType } from 'rrweb';
 import { SyncReplayer } from 'rrweb';
@@ -85,16 +93,14 @@ export function cutSession(
           continue;
         }
 
-        const result = cutEvents(
+        const session = cutEvents(
           events.slice(index + 1),
           replayer,
           currentTimestamp,
           nextCutTimestamp,
         );
-        eventsCache = result;
-        results.push(
-          wrapCutSession(result, currentTimestamp, nextCutTimestamp),
-        );
+        results.push(session);
+        eventsCache = session.events;
         currentTimestamp = nextCutTimestamp;
       }
       return cutPointIndex < validSortedTimestamp.length;
@@ -128,7 +134,7 @@ function wrapCutSession(
 
 /**
  * Cut original events at the cutting point which will produce two parts.
- * Only return the events before the cutting point (the previous part).
+ * Only return the deep cloned cut session before the cutting point (the previous part).
  * @param events - The events to be cut.
  * @param replayer - The sync replayer instance.
  * @param currentTimestamp - The current timestamp.
@@ -147,10 +153,69 @@ function cutEvents(
     result.push(metaEvent);
   }
   const fullsnapshotDelay = 1,
-    styleDelay = 2,
-    unhandledEventDelay = 2;
+    IncrementalEventDelay = 2;
   let fullSnapshot = snapshot(replayer.virtualDom, {
     mirror: replayer.getMirror(),
+    onSerialize: (n: RRNode) => {
+      const timestamp = currentTimestamp + fullsnapshotDelay;
+      if (n.RRNodeType === NodeType.Element) {
+        const rrElement = n as RRElement;
+        rrElement.inputData &&
+          result.push({
+            type: EventType.IncrementalSnapshot,
+            data: rrElement.inputData,
+            timestamp,
+          });
+        rrElement.scrollData &&
+          result.push({
+            type: EventType.IncrementalSnapshot,
+            data: rrElement.scrollData,
+            timestamp,
+          });
+        if (rrElement instanceof RRCanvasElement)
+          rrElement.canvasMutations.forEach((canvasData) =>
+            result.push({
+              type: EventType.IncrementalSnapshot,
+              data: canvasData.mutation,
+              timestamp,
+            }),
+          );
+        else if (rrElement instanceof RRStyleElement)
+          rrElement.rules.forEach((styleRule) =>
+            result.push({
+              type: EventType.IncrementalSnapshot,
+              data: styleRule,
+              timestamp,
+            }),
+          );
+        else if (rrElement instanceof RRMediaElement) {
+          (rrElement.volume !== undefined || rrElement.muted !== undefined) &&
+            result.push({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MediaInteraction,
+                type: MediaInteractions.VolumeChange,
+                volume: rrElement.volume,
+                muted: rrElement.muted,
+                id: replayer.getMirror().getId(n),
+              },
+              timestamp,
+            });
+          rrElement.playbackRate !== undefined &&
+            result.push({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MediaInteraction,
+                type: MediaInteractions.RateChange,
+                playbackRate: rrElement.playbackRate,
+                id: replayer.getMirror().getId(n),
+              },
+              timestamp,
+            });
+        }
+      }
+      // TODO handle iframe
+    },
   });
   if (!fullSnapshot) {
     console.warn(
@@ -178,7 +243,7 @@ function cutEvents(
   result = result.concat(
     replayer.unhandledEvents.map((e) => ({
       ...e,
-      timestamp: currentTimestamp + unhandledEventDelay,
+      timestamp: currentTimestamp + IncrementalEventDelay,
     })),
   );
   result = result.concat(
@@ -194,18 +259,42 @@ function cutEvents(
             event.data.source === IncrementalSource.AdoptedStyleSheet,
         )
         .map((event) => event.data as adoptedStyleSheetData),
-      currentTimestamp + styleDelay,
+      currentTimestamp + IncrementalEventDelay,
     ),
   );
-  // TODO handle viewportResize
-  // TODO handle input
-  // TODO handle mediaInteraction
-  // TODO handle scroll
+
+  replayer.mousePos &&
+    result.push({
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: IncrementalSource.MouseMove,
+        positions: [
+          {
+            x: replayer.mousePos.x,
+            y: replayer.mousePos.y,
+            id: replayer.mousePos.id,
+            timeOffset: 0,
+          },
+        ],
+      },
+      timestamp: currentTimestamp + IncrementalEventDelay,
+    });
+
+  replayer.lastSelectionData &&
+    result.push({
+      type: EventType.IncrementalSnapshot,
+      data: replayer.lastSelectionData,
+      timestamp: currentTimestamp + IncrementalEventDelay,
+    });
 
   result = result.concat(
     events.filter((event) => event.timestamp <= cutTimeStamp),
   );
-  return result;
+  const session = wrapCutSession(result, currentTimestamp, cutTimeStamp);
+  // TODO handle node mutations (hard to do)
+  // TODO handle sequential plugin
+  // TODO handle custom event
+  return session;
 }
 
 /**
