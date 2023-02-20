@@ -766,6 +766,22 @@ describe('Basic RRDocument implementation', () => {
       expect(node.contains(child2)).toBeTruthy();
     });
 
+    it('can append a child with parent node', () => {
+      const node = document.createElement('div');
+      const child = document.createElement('span');
+      expect(node.appendChild(child)).toBe(child);
+      expect(node.childNodes).toEqual([child]);
+      expect(node.appendChild(child)).toBe(child);
+      expect(node.childNodes).toEqual([child]);
+      expect(child.parentNode).toBe(node);
+
+      const node1 = document.createElement('div');
+      expect(node1.appendChild(child)).toBe(child);
+      expect(node1.childNodes).toEqual([child]);
+      expect(child.parentNode).toBe(node1);
+      expect(node.childNodes).toEqual([]);
+    });
+
     it('can insert new child before an existing child', () => {
       const node = document.createElement('div');
       const child1 = document.createElement('h1');
@@ -818,6 +834,25 @@ describe('Basic RRDocument implementation', () => {
       expect(node.contains(child2)).toBeTruthy();
       expect(node.contains(child3)).toBeTruthy();
       expect(node.contains(child1)).toBeTruthy();
+    });
+
+    it('can insert a child with parent node', () => {
+      const node = document.createElement('div');
+      const child1 = document.createElement('h1');
+      expect(node.insertBefore(child1, null)).toBe(child1);
+      expect(node.childNodes).toEqual([child1]);
+      expect(node.insertBefore(child1, child1)).toBe(child1);
+      expect(node.childNodes).toEqual([child1]);
+      expect(child1.parentNode).toEqual(node);
+
+      const node2 = document.createElement('div');
+      const child2 = document.createElement('h2');
+      expect(node2.insertBefore(child2, null)).toBe(child2);
+      expect(node2.childNodes).toEqual([child2]);
+      expect(node2.insertBefore(child1, child2)).toBe(child1);
+      expect(node2.childNodes).toEqual([child1, child2]);
+      expect(child1.parentNode).toEqual(node2);
+      expect(node.childNodes).toEqual([]);
     });
 
     it('can remove an existing child', () => {

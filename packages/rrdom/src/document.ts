@@ -713,6 +713,8 @@ export type CSSStyleDeclaration = Record<string, string> & {
 };
 
 function appendChild(parent: IRRNode, newChild: IRRNode) {
+  if (newChild.parentNode) newChild.parentNode.removeChild(newChild);
+
   if (parent.lastChild) {
     parent.lastChild.nextSibling = newChild;
     newChild.previousSibling = parent.lastChild;
@@ -739,6 +741,9 @@ function insertBefore(
     throw new Error(
       "Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.",
     );
+
+  if (newChild === refChild) return newChild;
+  if (newChild.parentNode) newChild.parentNode.removeChild(newChild);
 
   newChild.previousSibling = refChild.previousSibling;
   refChild.previousSibling = newChild;
