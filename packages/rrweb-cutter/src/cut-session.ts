@@ -13,13 +13,24 @@ import {
   RRStyleElement,
   RRMediaElement,
 } from 'rrdom';
-import { IncrementalSource } from 'rrweb';
-import { EventType } from 'rrweb';
-import { SyncReplayer } from 'rrweb';
+import { IncrementalSource, EventType, SyncReplayer } from 'rrweb';
+import { playerConfig } from 'rrweb/typings/types';
 import cloneDeep from 'lodash.clonedeep';
 import snapshot from './snapshot';
-type CutterConfig = {
+export type CutterConfig = {
   points: number[];
+  replayerConfig?: Partial<playerConfig>;
+  onSessionCut?: (context: {
+    replayer: SyncReplayer;
+    cutSession: SessionCut;
+    originalEvents: eventWithTime[];
+  }) => SessionCut;
+  customEventsHandler?: (context: {
+    replayer: SyncReplayer;
+    events: eventWithTime[];
+    currentTimestamp: number;
+    cutTimestamp: number;
+  }) => eventWithTime[];
 };
 
 export type SessionCut = {
@@ -45,7 +56,9 @@ export function cutSession(
   if (validSortedPoints.length < 1)
     return [wrapCutSession(events, 0, events[events.length - 1].timestamp)];
   const results: SessionCut[] = [];
-  const replayer = new SyncReplayer(events);
+  const replayer = new SyncReplayer(events, {
+    ...config.replayerConfig,
+  });
   let cutPointIndex = 0;
   const baseTime = events[0].timestamp;
   const validSortedTimestamp = validSortedPoints.map(
@@ -94,10 +107,13 @@ export function cutSession(
         }
 
         const session = cutEvents(
-          events.slice(index + 1),
+          events
+            .slice(index + 1)
+            .filter((e) => e.timestamp <= nextCutTimestamp),
           replayer,
           currentTimestamp,
           nextCutTimestamp,
+          config,
         );
         results.push(session);
         eventsCache = session.events;
@@ -138,13 +154,14 @@ function wrapCutSession(
  * @param events - The events to be cut.
  * @param replayer - The sync replayer instance.
  * @param currentTimestamp - The current timestamp.
- * @param cutTimeStamp - The timestamp to cut.
+ * @param cutTimestamp - The timestamp to cut.
  */
 function cutEvents(
   events: eventWithTime[],
   replayer: SyncReplayer,
   currentTimestamp: number,
-  cutTimeStamp: number,
+  cutTimestamp: number,
+  config: CutterConfig,
 ) {
   let result: eventWithTime[] = [];
   if (replayer.latestMetaEvent) {
@@ -254,7 +271,7 @@ function cutEvents(
       events
         .filter(
           (event) =>
-            event.timestamp <= cutTimeStamp &&
+            event.timestamp <= cutTimestamp &&
             event.type === EventType.IncrementalSnapshot &&
             event.data.source === IncrementalSource.AdoptedStyleSheet,
         )
@@ -286,14 +303,38 @@ function cutEvents(
       data: replayer.lastSelectionData,
       timestamp: currentTimestamp + IncrementalEventDelay,
     });
-
-  result = result.concat(
-    events.filter((event) => event.timestamp <= cutTimeStamp),
+  if (config.customEventsHandler)
+    try {
+      result = result.concat(
+        config.customEventsHandler({
+          events,
+          replayer,
+          currentTimestamp,
+          cutTimestamp,
+        }),
+      );
+    } catch (e) {
+      warn(config, 'Custom Event Handler error: ', e);
+    }
+  result = result.concat(events);
+  let session = wrapCutSession(
+    result,
+    currentTimestamp + IncrementalEventDelay,
+    cutTimestamp,
   );
-  const session = wrapCutSession(result, currentTimestamp, cutTimeStamp);
+  if (config.onSessionCut)
+    try {
+      session = config.onSessionCut({
+        cutSession: session,
+        replayer,
+        originalEvents: events,
+      });
+    } catch (e) {
+      warn(config, 'Custom Event Handler error: ', e);
+    }
+
   // TODO handle node mutations (hard to do)
   // TODO handle sequential plugin
-  // TODO handle custom event
   return session;
 }
 
@@ -374,4 +415,10 @@ function filterAdoptedStyleData(
       });
   });
   return events;
+}
+
+function warn(config: CutterConfig, ...args: unknown[]) {
+  const logger = config.replayerConfig?.logger || console;
+  if (config.replayerConfig?.showWarning || config.replayerConfig?.showDebug)
+    logger.warn(args);
 }
