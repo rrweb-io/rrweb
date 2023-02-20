@@ -34,7 +34,7 @@ rrweb.record({
   },
   // customized record options
   plugins: [
-    rrweb.getRecordConsolePlugin({
+    rrweb.getRecordNetworkPlugin({
       initiatorTypes: ['fetch', 'xmlhttprequest'],
       // block recording event for request to upload events to server
       ignoreRequestFn: (request) => {
