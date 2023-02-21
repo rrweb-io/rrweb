@@ -19,7 +19,13 @@ import cloneDeep from 'lodash.clonedeep';
 import snapshot from './snapshot';
 export type CutterConfig = {
   points: number[];
+  // config for the Sync Replayer
   replayerConfig?: Partial<playerConfig>;
+  /**
+   * If true, the sequentialId of the events will be updated.
+   * If a string, the sequentialId will be updated with the string as the key.
+   */
+  updateSequentialId?: boolean | string;
   onSessionCut?: (context: {
     replayer: SyncReplayer;
     cutSession: SessionCut;
@@ -47,14 +53,18 @@ export function cutSession(
   if (events.length < 2) return [];
   const { points } = config;
   if (!points || points.length == 0)
-    return [wrapCutSession(events, 0, events[events.length - 1].timestamp)];
+    return [
+      wrapCutSession(events, config, 0, events[events.length - 1].timestamp),
+    ];
 
   events = events.sort((a1, a2) => a1.timestamp - a2.timestamp);
   const totalTime = events[events.length - 1].timestamp - events[0].timestamp;
 
   const validSortedPoints = getValidSortedPoints(points, totalTime);
   if (validSortedPoints.length < 1)
-    return [wrapCutSession(events, 0, events[events.length - 1].timestamp)];
+    return [
+      wrapCutSession(events, config, 0, events[events.length - 1].timestamp),
+    ];
   const results: SessionCut[] = [];
   const replayer = new SyncReplayer(events, {
     ...config.replayerConfig,
@@ -69,7 +79,12 @@ export function cutSession(
     if (event.timestamp <= cutPoint && index + 1 < events.length) {
       if (results.length === 0) {
         results.push(
-          wrapCutSession(events.slice(0, index + 1), 0, cutPoint - baseTime),
+          wrapCutSession(
+            events.slice(0, index + 1),
+            config,
+            0,
+            cutPoint - baseTime,
+          ),
         );
       }
       const nextEvent = events[index + 1];
@@ -101,7 +116,12 @@ export function cutSession(
                 : e.timestamp,
           }));
           results.push(
-            wrapCutSession(newEvents, currentTimestamp, nextCutTimestamp),
+            wrapCutSession(
+              newEvents,
+              config,
+              currentTimestamp,
+              nextCutTimestamp,
+            ),
           );
           continue;
         }
@@ -138,11 +158,26 @@ export function getValidSortedPoints(points: number[], totalTime: number) {
 
 function wrapCutSession(
   events: eventWithTime[],
+  config: CutterConfig,
   startTimestamp: number,
   endTimestamp: number,
 ): SessionCut {
+  let clonedEvents = cloneDeep(events);
+  if (config.updateSequentialId) {
+    const key =
+      typeof config.updateSequentialId === 'string'
+        ? config.updateSequentialId
+        : '_sid';
+    let sequentialId = 0;
+    clonedEvents = events.map((e) => {
+      Object.assign(e, {
+        [key]: ++sequentialId,
+      });
+      return e;
+    });
+  }
   return {
-    events: cloneDeep(events),
+    events: clonedEvents,
     startTimestamp,
     endTimestamp,
   };
@@ -347,6 +382,7 @@ function cutEvents(
   result = result.concat(events);
   let session = wrapCutSession(
     result,
+    config,
     currentTimestamp + IncrementalEventDelay,
     cutTimestamp,
   );
@@ -360,9 +396,6 @@ function cutEvents(
     } catch (e) {
       warn(config, 'Custom Event Handler error: ', e);
     }
-
-  // TODO handle node mutations (hard to do)
-  // TODO handle sequential plugin
   return session;
 }
 
