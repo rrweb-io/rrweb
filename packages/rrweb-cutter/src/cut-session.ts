@@ -43,105 +43,111 @@ export type SessionCut = {
   events: eventWithTime[];
   startTimestamp: number;
   endTimestamp: number;
+  startTime: number;
+  endTime: number;
 };
 
 export function cutSession(
   events: eventWithTime[],
   config: CutterConfig,
 ): SessionCut[] {
+  const baseTimestamp = events[0]?.timestamp || 0;
+  const defaultResult = [
+    wrapCutSession(
+      events,
+      config,
+      baseTimestamp,
+      events[events.length - 1]?.timestamp || 0,
+      baseTimestamp,
+    ),
+  ];
   // Events length is too short so that cutting process is not needed.
-  if (events.length < 2) return [];
+  if (events.length < 2) return defaultResult;
+
   const { points } = config;
-  if (!points || points.length == 0)
-    return [
-      wrapCutSession(events, config, 0, events[events.length - 1].timestamp),
-    ];
+  if (!points || points.length == 0) return defaultResult;
 
   events = events.sort((a1, a2) => a1.timestamp - a2.timestamp);
   const totalTime = events[events.length - 1].timestamp - events[0].timestamp;
 
   const validSortedPoints = getValidSortedPoints(points, totalTime);
-  if (validSortedPoints.length < 1)
-    return [
-      wrapCutSession(events, config, 0, events[events.length - 1].timestamp),
-    ];
+  if (validSortedPoints.length < 1) return defaultResult;
+  const validSortedTimestamp = validSortedPoints.map(
+    (point) => baseTimestamp + point,
+  );
+
   const results: SessionCut[] = [];
   const replayer = new SyncReplayer(events, {
     ...config.replayerConfig,
   });
   let cutPointIndex = 0;
-  const baseTime = events[0].timestamp;
-  const validSortedTimestamp = validSortedPoints.map(
-    (point) => baseTime + point,
-  );
-  replayer.play(({ index, event }) => {
-    const cutPoint = validSortedPoints[cutPointIndex];
-    if (event.timestamp <= cutPoint && index + 1 < events.length) {
+  replayer.play(({ index }) => {
+    if (index + 1 >= events.length) return false;
+
+    const nextEvent = events[index + 1];
+
+    let currentTimestamp = validSortedTimestamp[cutPointIndex];
+    let eventsCache: eventWithTime[] | null = null;
+    /**
+     * This loop is for the situation that cutting points are in the middle gap between two events.
+     * These cut points have the same cut events so there is no need to generate them for each cut point.
+     * We can cache the them and use them for the next cut point.
+     */
+    while (
+      cutPointIndex < validSortedTimestamp.length &&
+      // If the next event exceed the cut point, we need to cut the events with the current replayer status.
+      nextEvent.timestamp > validSortedTimestamp[cutPointIndex]
+    ) {
       if (results.length === 0) {
         results.push(
           wrapCutSession(
             events.slice(0, index + 1),
             config,
-            0,
-            cutPoint - baseTime,
+            baseTimestamp,
+            currentTimestamp,
+            baseTimestamp,
           ),
         );
       }
-      const nextEvent = events[index + 1];
-
-      let currentTimestamp = cutPoint;
-      let eventsCache: eventWithTime[] | null = null;
-      /**
-       * This loop is for the situation that cutting points are in the middle gap between two events.
-       * These cut points have the same cut events so there is no need to generate them for each cut point.
-       * We can cache the them and use them for the next cut point.
-       */
-      while (
-        cutPointIndex < validSortedTimestamp.length &&
-        // If the next event exceed the cut point, we need to cut the events with the current replayer status.
-        nextEvent.timestamp > validSortedTimestamp[cutPointIndex]
-      ) {
-        cutPointIndex++;
-        const nextCutTimestamp =
-          cutPointIndex < validSortedPoints.length
-            ? validSortedTimestamp[cutPointIndex]
-            : events[events.length - 1].timestamp;
-        if (eventsCache !== null) {
-          const timeDiff = currentTimestamp - eventsCache[0].timestamp;
-          const newEvents = eventsCache.map((e) => ({
-            ...e,
-            timestamp:
-              e.timestamp < currentTimestamp
-                ? e.timestamp + timeDiff
-                : e.timestamp,
-          }));
-          results.push(
-            wrapCutSession(
-              newEvents,
-              config,
-              currentTimestamp,
-              nextCutTimestamp,
-            ),
-          );
-          continue;
-        }
-
-        const session = cutEvents(
-          events
-            .slice(index + 1)
-            .filter((e) => e.timestamp <= nextCutTimestamp),
-          replayer,
-          config,
-          currentTimestamp,
-          nextCutTimestamp,
+      cutPointIndex++;
+      const nextCutTimestamp =
+        cutPointIndex < validSortedTimestamp.length
+          ? validSortedTimestamp[cutPointIndex]
+          : events[events.length - 1].timestamp;
+      if (eventsCache !== null) {
+        const timeDiff = currentTimestamp - eventsCache[0].timestamp;
+        const newEvents = eventsCache.map((e) => ({
+          ...e,
+          timestamp:
+            e.timestamp < currentTimestamp
+              ? e.timestamp + timeDiff
+              : e.timestamp,
+        }));
+        results.push(
+          wrapCutSession(
+            newEvents,
+            config,
+            currentTimestamp,
+            nextCutTimestamp,
+            baseTimestamp,
+          ),
         );
-        results.push(session);
-        eventsCache = session.events;
-        currentTimestamp = nextCutTimestamp;
+        continue;
       }
-      return cutPointIndex < validSortedTimestamp.length;
+
+      const session = cutEvents(
+        events.slice(index + 1).filter((e) => e.timestamp <= nextCutTimestamp),
+        replayer,
+        config,
+        currentTimestamp,
+        nextCutTimestamp,
+        baseTimestamp,
+      );
+      results.push(session);
+      eventsCache = session.events;
+      currentTimestamp = nextCutTimestamp;
     }
-    return false;
+    return cutPointIndex < validSortedTimestamp.length;
   });
   return results;
 }
@@ -161,6 +167,7 @@ function wrapCutSession(
   config: CutterConfig,
   startTimestamp: number,
   endTimestamp: number,
+  baseTimestamp: number,
 ): SessionCut {
   let clonedEvents = cloneDeep(events);
   if (config.updateSequentialId) {
@@ -180,6 +187,8 @@ function wrapCutSession(
     events: clonedEvents,
     startTimestamp,
     endTimestamp,
+    startTime: startTimestamp - baseTimestamp,
+    endTime: endTimestamp - baseTimestamp,
   };
 }
 
@@ -197,6 +206,7 @@ function cutEvents(
   config: CutterConfig,
   currentTimestamp: number,
   cutTimestamp: number,
+  baseTimestamp: number,
 ) {
   let result: eventWithTime[] = [];
   if (replayer.latestMetaEvent) {
@@ -383,8 +393,9 @@ function cutEvents(
   let session = wrapCutSession(
     result,
     config,
-    currentTimestamp + IncrementalEventDelay,
+    currentTimestamp,
     cutTimestamp,
+    baseTimestamp,
   );
   if (config.onSessionCut)
     try {
