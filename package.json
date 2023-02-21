@@ -38,7 +38,7 @@
   },
   "scripts": {
     "lerna": "lerna",
-    "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
+    "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run --concurrency=1 prepublish'",
     "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
     "test:watch": "yarn turbo run test:watch",
     "dev": "yarn turbo run dev",
