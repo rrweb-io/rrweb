@@ -12,7 +12,7 @@
     "live-stream": "yarn bundle:browser && node scripts/stream.js",
     "dev": "yarn bundle:browser --watch",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
-    "bundle": "rollup --config",
+    "bundle": "cross-env NODE_OPTIONS=--max_old_space_size=1024 rollup --config",
     "typings": "tsc -d --declarationDir typings",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run typings && npm run bundle",
