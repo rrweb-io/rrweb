@@ -252,6 +252,10 @@ export function transformAttribute(
   }
 }
 
+function ignoreAttribute(tagName: string, name: string, _value: unknown) {
+  return (tagName === 'video' || tagName === 'audio') && name === 'autplay';
+}
+
 export function _isBlockedElement(
   element: HTMLElement,
   blockClass: string | RegExp,
@@ -614,12 +618,14 @@ function serializeElementNode(
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    attributes[attr.name] = transformAttribute(
-      doc,
-      tagName,
-      attr.name,
-      attr.value,
-    );
+    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+      attributes[attr.name] = transformAttribute(
+        doc,
+        tagName,
+        attr.name,
+        attr.value,
+      );
+    }
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
