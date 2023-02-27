@@ -252,7 +252,11 @@ export function transformAttribute(
   }
 }
 
-export function ignoreAttribute(tagName: string, name: string, _value: unknown): boolean {
+export function ignoreAttribute(
+  tagName: string,
+  name: string,
+  _value: unknown,
+): boolean {
   return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
 }
 
