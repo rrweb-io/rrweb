@@ -563,7 +563,7 @@ export default class MutationBuffer {
             this.doc,
             target.tagName,
             m.attributeName!,
-            value!,
+            value,
           );
         }
         break;
