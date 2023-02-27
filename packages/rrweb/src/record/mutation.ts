@@ -2,6 +2,7 @@ import {
   serializeNodeWithId,
   transformAttribute,
   IGNORED_NODE,
+  ignoreAttribute,
   isShadowRoot,
   needMaskingText,
   maskInputValue,
@@ -557,7 +558,7 @@ export default class MutationBuffer {
               styleObj[pname] = false; // delete
             }
           }
-        } else {
+        } else if(!ignoreAttribute(target.tagName, m.attributeName!, value)) {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[m.attributeName!] = transformAttribute(
             this.doc,
