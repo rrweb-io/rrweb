@@ -142,6 +142,17 @@ function buildNode(
       if (n.isSVG) {
         node = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
       } else {
+        if (
+          // If the tag name is a custom element name
+          n.tagName.includes('-') &&
+          doc.defaultView &&
+          // If the custom element hasn't been defined yet
+          !doc.defaultView.customElements.get(n.tagName)
+        )
+          doc.defaultView.customElements.define(
+            n.tagName,
+            class extends doc.defaultView.HTMLElement {},
+          );
         node = doc.createElement(tagName);
       }
       /**
