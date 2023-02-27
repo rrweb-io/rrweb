@@ -1,2 +1,2 @@
 import { IWindow, listenerHandler } from '../../../types';
-export default function initCanvasContextObserver(win: IWindow, blockSelector?: string): listenerHandler;
+export default function initCanvasContextObserver(win: IWindow, blockSelector: string | null): listenerHandler;

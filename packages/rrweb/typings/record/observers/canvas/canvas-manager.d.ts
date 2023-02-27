@@ -21,7 +21,7 @@ export declare class CanvasManager {
         recordCanvas: boolean;
         mutationCb: canvasMutationCallback;
         win: IWindow;
-        blockSelector?: string;
+        blockSelector: string | null;
         mirror: Mirror;
         sampling?: 'all' | number;
     });

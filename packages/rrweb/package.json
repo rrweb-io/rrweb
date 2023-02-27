@@ -1,6 +1,6 @@
 {
   "name": "@fullview/rrweb",
-  "version": "1.1.44",
+  "version": "1.1.45",
   "publishConfig": {
     "access": "restricted"
   },

@@ -269,8 +269,10 @@ export default class MutationBuffer {
           null;
       // ensure shadowHost is a Node, or doc.contains will throw an error
       const notInDoc =
-        !this.doc.contains(n) &&
-        (rootShadowHost === null || !this.doc.contains(rootShadowHost));
+        (!(n instanceof Node) || !this.doc.contains(n)) &&
+        (!(rootShadowHost instanceof Node) ||
+          rootShadowHost === null ||
+          !this.doc.contains(rootShadowHost));
       if (!n.parentNode || notInDoc) {
         return;
       }
