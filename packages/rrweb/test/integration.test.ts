@@ -144,9 +144,7 @@ describe('record integration tests', function (this: ISuite) {
   it('handles null attribute values', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(
-      getHtml.call(this, 'mutation-observer.html', {}),
-    );
+    await page.setContent(getHtml.call(this, 'mutation-observer.html', {}));
 
     await page.evaluate(() => {
       const li = document.createElement('li');
@@ -168,7 +166,6 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = await page.evaluate('window.snapshots');
     assertSnapshot(snapshots);
   });
-
 
   it('can record node mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
