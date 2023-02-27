@@ -223,33 +223,36 @@ export function transformAttribute(
   doc: Document,
   tagName: string,
   name: string,
-  value: string,
-): string {
+  value: string | null,
+): string | null {
+  if (!value) {
+    return value;
+  }
+
   // relative path in attribute
   if (
     name === 'src' ||
-    (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))
+    (name === 'href' && !(tagName === 'use' && value[0] === '#'))
   ) {
     // href starts with a # is an id pointer for svg
     return absoluteToDoc(doc, value);
-  } else if (name === 'xlink:href' && value && value[0] !== '#') {
+  } else if (name === 'xlink:href' && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
   } else if (
     name === 'background' &&
-    value &&
     (tagName === 'table' || tagName === 'td' || tagName === 'th')
   ) {
     return absoluteToDoc(doc, value);
-  } else if (name === 'srcset' && value) {
+  } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
-  } else if (name === 'style' && value) {
+  } else if (name === 'style') {
     return absoluteToStylesheet(value, getHref());
-  } else if (tagName === 'object' && name === 'data' && value) {
+  } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
-  } else {
-    return value;
   }
+
+  return value;
 }
 
 export function _isBlockedElement(
@@ -794,8 +797,10 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(maybeAttr: string | number | boolean): string {
-  if (maybeAttr === undefined) {
+function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): string {
+  if (maybeAttr === undefined || maybeAttr === null) {
     return '';
   } else {
     return (maybeAttr as string).toLowerCase();

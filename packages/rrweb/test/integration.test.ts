@@ -141,6 +141,35 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('handles null attribute values', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'mutation-observer.html', {}),
+    );
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      ul.appendChild(li);
+
+      li.setAttribute('aria-label', 'label');
+      li.setAttribute('id', 'test-li');
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await page.evaluate(() => {
+      const li = document.querySelector('#test-li') as HTMLLIElement;
+      // This triggers the mutation observer with a `null` attribute value
+      li.removeAttribute('aria-label');
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
+
   it('can record node mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
