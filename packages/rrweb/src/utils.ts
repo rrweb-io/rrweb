@@ -228,11 +228,15 @@ export function isBlocked(
       : node.parentElement;
   if (!el) return false;
 
-  if (typeof blockClass === 'string') {
-    if (el.classList.contains(blockClass)) return true;
-    if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
-  } else {
-    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+  try {
+    if (typeof blockClass === 'string') {
+      if (el.classList.contains(blockClass)) return true;
+      if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
+    } else {
+      if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+    }
+  } catch (e) {
+    // e
   }
   if (blockSelector) {
     if (el.matches(blockSelector)) return true;
