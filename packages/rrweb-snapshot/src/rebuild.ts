@@ -144,8 +144,9 @@ function buildNode(
       } else {
         if (
           // If the tag name is a custom element name
-          n.tagName.includes('-') &&
-          doc.defaultView &&
+          n.isCustom &&
+          // If the browser supports custom elements
+          doc.defaultView?.customElements &&
           // If the custom element hasn't been defined yet
           !doc.defaultView.customElements.get(n.tagName)
         )

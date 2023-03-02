@@ -71,6 +71,7 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'custom-element',
                     childNodes: [],
+                    isCustom: true,
                   },
                 ],
               },

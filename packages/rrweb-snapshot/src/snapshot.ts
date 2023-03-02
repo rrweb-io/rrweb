@@ -783,6 +783,13 @@ function serializeElementNode(
     delete attributes.src; // prevent auto loading
   }
 
+  let isCustomElement: true | undefined;
+  try {
+    if (customElements.get(tagName)) isCustomElement = true;
+  } catch (e) {
+    // In case old browsers don't support customElements
+  }
+
   return {
     type: NodeType.Element,
     tagName,
@@ -791,6 +798,7 @@ function serializeElementNode(
     isSVG: isSVGElement(n as Element) || undefined,
     needBlock,
     rootId,
+    isCustom: isCustomElement,
   };
 }
 
