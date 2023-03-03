@@ -14,9 +14,9 @@ We actively welcome your pull requests (PRs)!
 
 1. Fork the repo and create your branch from `master`.
 2. If you've added code that should be tested, add tests
-5. Ensure the test suite passes or ask for help as to why tests are failing
-3. We use [changesets](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md) to enable you to easily document your PR so that it can be packaged up into the next release. A github plugin will prompt you to fill in your changeset if you haven't already done so.
-4. If you've changed APIs, update the documentation.
+3. Ensure the test suite passes or ask for help as to why tests are failing
+4. We use [changesets](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md) to enable you to easily document your PR so that it can be packaged up into the next release. A github plugin will prompt you to fill in your changeset if you haven't already done so.
+5. If you've changed APIs, update the documentation.
 6. Make sure your code lints and typechecks.
 
 ## Issues
