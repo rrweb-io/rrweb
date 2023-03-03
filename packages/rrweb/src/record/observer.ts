@@ -453,7 +453,10 @@ function initInputObserver({
           {
             set() {
               // mock to a normal event
-              eventHandler({ target: this as EventTarget } as Event);
+              eventHandler({
+                target: this as EventTarget,
+                isTrusted: false, // userTriggered to false as this could well be programmatic
+              } as Event);
             },
           },
           false,
