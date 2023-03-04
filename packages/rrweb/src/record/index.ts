@@ -94,8 +94,10 @@ function record<T = eventWithTime>(
   let passEmitsToParent = false;
   if (!inEmittingFrame) {
     try {
-      window.parent.document; // throws if parent is cross-origin
-      passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+      // throws if parent is cross-origin
+      if (window.parent.document) {
+        passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+      }
     } catch (e) {
       passEmitsToParent = true;
     }

@@ -161,7 +161,7 @@ function buildNode(
        * They often overwrite other attributes on the element.
        * We need to parse them last so they can overwrite conflicting attributes.
        */
-      const specialAttributes: attributes = {};
+      const specialAttributes: { [key: string]: string | number } = {};
       for (const name in n.attributes) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
@@ -174,6 +174,11 @@ function buildNode(
         ) {
           // legacy fix (TODO: if `value === false` can be generated for other attrs,
           // should we also omit those other attrs from build ?)
+          continue;
+        }
+
+        // null values mean the attribute was removed
+        if (value === null) {
           continue;
         }
 
