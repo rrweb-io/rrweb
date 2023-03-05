@@ -83,6 +83,7 @@ export enum IncrementalSource {
   StyleDeclaration,
   Selection,
   AdoptedStyleSheet,
+  CustomElement,
 }
 
 export type mutationData = {
@@ -142,6 +143,10 @@ export type adoptedStyleSheetData = {
   source: IncrementalSource.AdoptedStyleSheet;
 } & adoptedStyleSheetParam;
 
+export type customElementData = {
+  source: IncrementalSource.CustomElement;
+} & customElementParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -155,7 +160,8 @@ export type incrementalData =
   | fontData
   | selectionData
   | styleDeclarationData
-  | adoptedStyleSheetData;
+  | adoptedStyleSheetData
+  | customElementData;
 
 export type event =
   | domContentLoadedEvent
@@ -583,6 +589,14 @@ export type selectionParam = {
 };
 
 export type selectionCallback = (p: selectionParam) => void;
+
+export type customElementParam = {
+  define?: {
+    name: string;
+  };
+};
+
+export type customElementCallback = (c: customElementParam) => void;
 
 export type DeprecatedMirror = {
   map: {

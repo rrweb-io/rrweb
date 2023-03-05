@@ -17,6 +17,7 @@ import type {
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,
+  customElementCallback,
   eventWithTime,
   fontCallback,
   hooksParam,
@@ -93,6 +94,7 @@ export type observerParam = {
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
+  customElementCb: customElementCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
