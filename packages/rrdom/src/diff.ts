@@ -491,7 +491,7 @@ function diffChildren(
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
-      if (!node || !parentNode.contains(node)) continue;
+      if (!node || node.parentNode !== parentNode) continue;
       try {
         parentNode.removeChild(node);
         replayer.mirror.removeNodeFromMap(node);
