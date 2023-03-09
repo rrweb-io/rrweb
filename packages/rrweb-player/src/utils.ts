@@ -15,6 +15,9 @@ declare global {
   }
 }
 
+import { EventType, IncrementalSource } from 'rrweb';
+import type { eventWithTime } from '@rrweb/types';
+
 export function inlineCss(cssObj: Record<string, string>): string {
   let style = '';
   Object.keys(cssObj).forEach((key) => {
@@ -28,7 +31,7 @@ function padZero(num: number, len = 2): string {
   const threshold = Math.pow(10, len - 1);
   if (num < threshold) {
     while (String(threshold).length > str.length) {
-      str = '0' + num;
+      str = `0${num}`;
     }
   }
   return str;
@@ -83,12 +86,18 @@ export function exitFullscreen(): Promise<void> {
 }
 
 export function isFullscreen(): boolean {
-  return (
-    document.fullscreen ||
-    document.webkitIsFullScreen ||
-    document.mozFullScreen ||
-    document.msFullscreenElement
-  );
+  let fullscreen = false;
+  [
+    'fullscreen',
+    'webkitIsFullScreen',
+    'mozFullScreen',
+    'msFullscreenElement',
+  ].forEach((fullScreenAccessor) => {
+    if (fullScreenAccessor in document) {
+      fullscreen = fullscreen || Boolean(document[fullScreenAccessor]);
+    }
+  });
+  return fullscreen;
 }
 
 export function onFullscreenChange(handler: () => unknown): () => void {
@@ -118,6 +127,7 @@ export function typeOf(
   | 'undefined'
   | 'null'
   | 'object' {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const toString = Object.prototype.toString;
   const map = {
     '[object Boolean]': 'boolean',
@@ -131,5 +141,43 @@ export function typeOf(
     '[object Null]': 'null',
     '[object Object]': 'object',
   };
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return map[toString.call(obj)];
+}
+
+/**
+ * Forked from 'rrweb' replay/index.ts. The original function is not exported.
+ * Determine whether the event is a user interaction event
+ * @param event - event to be determined
+ * @returns true if the event is a user interaction event
+ */
+function isUserInteraction(event: eventWithTime): boolean {
+  if (event.type !== EventType.IncrementalSnapshot) {
+    return false;
+  }
+  return (
+    event.data.source > IncrementalSource.Mutation &&
+    event.data.source <= IncrementalSource.Input
+  );
+}
+
+// Forked from 'rrweb' replay/index.ts. A const threshold of inactive time.
+const SKIP_TIME_THRESHOLD = 10 * 1000;
+
+/**
+ * Get periods of time when no user interaction happened from a list of events.
+ * @param events - all events
+ * @returns periods of time consist with [start time, end time]
+ */
+export function getInactivePeriods(events: eventWithTime[]) {
+  const inactivePeriods: [number, number][] = [];
+  let lastActiveTime = events[0].timestamp;
+  for (const event of events) {
+    if (!isUserInteraction(event)) continue;
+    if (event.timestamp - lastActiveTime > SKIP_TIME_THRESHOLD) {
+      inactivePeriods.push([lastActiveTime, event.timestamp]);
+    }
+    lastActiveTime = event.timestamp;
+  }
+  return inactivePeriods;
 }

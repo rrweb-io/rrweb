@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>canvas shader</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      width="300"
+      height="300"
+      style="border: 1px solid #000000"
+    >
+    </canvas>
+    <script>
+      function createTriangle(canvas) {
+        // copied from https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
+        var gl = canvas.getContext('webgl');
+        var vertices = [-0.5, 0.5, -0.5, -0.5, 0.0, -0.5,];
+        var vertex_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        var vertCode =
+             'attribute vec2 coordinates;' +
+             'void main(void) {' + ' gl_Position = vec4(coordinates,0.0, 1.0);' + '}';
+        var vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, vertCode);
+        gl.compileShader(vertShader);
+        var fragCode = 'void main(void) {' + 'gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' + '}';
+        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, fragCode);
+        gl.compileShader(fragShader);
+        var shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertShader);
+        gl.attachShader(shaderProgram, fragShader);
+        gl.linkProgram(shaderProgram);
+        gl.useProgram(shaderProgram);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+        var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+        gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(coord);
+        gl.clearColor(0.5, 0.5, 0.5, 0.9);
+        gl.enable(gl.DEPTH_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.viewport(0,0,canvas.width,canvas.height);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
+      setTimeout(() => {
+        // canvas element that never gets appended to the DOM
+        const confound = document.createElement('canvas');
+        // These will not be emitted (but was triggering a bug in the emitted canvas)
+        // @see https://github.com/rrweb-io/rrweb/pull/1013
+        createTriangle(confound);
+        const c = document.getElementById('myCanvas');
+        createTriangle(c);
+      }, 10);
+    </script>
+  </body>
+</html>

@@ -1,4 +1,5 @@
-import { EventType, eventWithTime, IncrementalSource } from '../../src/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
+import type { eventWithTime } from '@rrweb/types';
 
 const now = Date.now();
 const events: eventWithTime[] = [
@@ -105,22 +106,6 @@ const events: eventWithTime[] = [
     type: EventType.FullSnapshot,
     timestamp: now + 100,
   },
-  // mutation that adds style rule to existing stylesheet
-  {
-    data: {
-      id: 101,
-      adds: [
-        {
-          rule:
-            '.css-added-at-400-overwritten-at-3000 {border: 1px solid blue;}',
-          index: 1,
-        },
-      ],
-      source: IncrementalSource.StyleSheetRule,
-    },
-    type: EventType.IncrementalSnapshot,
-    timestamp: now + 400,
-  },
   // mutation that adds stylesheet
   {
     data: {
@@ -142,7 +127,7 @@ const events: eventWithTime[] = [
             type: 3,
             isStyle: true,
             textContent:
-              '\n.css-added-at-500 {\n  padding: 1.3125rem;\n  flex: none;\n  width: 100%;\n}\n',
+              '\n.css-added-at-400 {\n  padding: 1.3125rem;\n  flex: none;\n  width: 100%;\n}\n',
           },
           nextId: null,
           parentId: 255,
@@ -154,6 +139,21 @@ const events: eventWithTime[] = [
       attributes: [],
     },
     type: EventType.IncrementalSnapshot,
+    timestamp: now + 400,
+  },
+  // mutation that adds style rule to existing stylesheet
+  {
+    data: {
+      id: 101,
+      adds: [
+        {
+          rule: '.css-added-at-500-overwritten-at-3000 {border: 1px solid blue;}',
+          index: 1,
+        },
+      ],
+      source: IncrementalSource.StyleSheetRule,
+    },
+    type: EventType.IncrementalSnapshot,
     timestamp: now + 500,
   },
   // adds StyleSheetRule
@@ -162,8 +162,7 @@ const events: eventWithTime[] = [
       id: 105,
       adds: [
         {
-          rule:
-            '.css-added-at-1000-deleted-at-2500{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
+          rule: '.css-added-at-1000-deleted-at-2500{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;min-width:60rem;min-height:100vh;color:blue;}',
           index: 2,
         },
       ],

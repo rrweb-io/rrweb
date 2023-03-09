@@ -1,88 +1,92 @@
 <head>
   <title>Uber Application for Codegen Testing</title>
-
+  <style>
+    #b-class,
+    #b-class-2 {
+      height: 33px;
+      width: 200px;
+    }
+  </style>
 </head>
 
 <body>
   <script>
-      function mutate1() {
-        const bClassDiv = document.getElementById("b-class");
-        bClassDiv.className = "notB";
+    function mutate1() {
+      const bClassDiv = document.getElementById('b-class');
+      bClassDiv.className = 'notB';
 
-        const removeBlockedButton = document.getElementById("remove");
-        removeBlockedButton.remove();
+      const removeBlockedButton = document.getElementById('remove');
+      removeBlockedButton.remove();
 
-        const visibleCollection = document.getElementsByClassName("visible");
-        const i1Div = document.createElement("div");
-        const i1i1Div = document.createElement("div");
-        const i1i2Div = document.createElement("div");
+      const visibleCollection = document.getElementsByClassName('visible');
+      const i1Div = document.createElement('div');
+      const i1i1Div = document.createElement('div');
+      const i1i2Div = document.createElement('div');
 
-        const i1i1Button = document.createElement("button");
-        i1i1Button.innerHTML = "I1I1 VISIBLE";
-        i1i1Div.appendChild(i1i1Button);
+      const i1i1Button = document.createElement('button');
+      i1i1Button.innerHTML = 'I1I1 VISIBLE';
+      i1i1Div.appendChild(i1i1Button);
 
-        const i1i2Button = document.createElement("button");
-        i1i2Button.innerHTML = "I1I2 VISIBLE";
-        i1i2Div.appendChild(i1i2Button);
+      const i1i2Button = document.createElement('button');
+      i1i2Button.innerHTML = 'I1I2 VISIBLE';
+      i1i2Div.appendChild(i1i2Button);
 
-        i1Div.appendChild(i1i1Div);
-        i1Div.appendChild(i1i2Div);
-        visibleCollection[0].appendChild(i1Div);
-      }
-      function mutate2() {
-        const bClassDiv = document.getElementById("b-class-2");
-        bClassDiv.className = "notB";
+      i1Div.appendChild(i1i1Div);
+      i1Div.appendChild(i1i2Div);
+      visibleCollection[0].appendChild(i1Div);
+    }
+    function mutate2() {
+      const bClassDiv = document.getElementById('b-class-2');
+      bClassDiv.className = 'notB';
 
-        const removeBlockedButton = document.getElementById("remove2");
-        const innerButton = document.createElement("button");
-        innerButton.innerHTML = "INNER BLOCKED";
-        removeBlockedButton.appendChild(innerButton)
-        removeBlockedButton.remove();
+      const removeBlockedButton = document.getElementById('remove2');
+      const innerButton = document.createElement('button');
+      innerButton.innerHTML = 'INNER BLOCKED';
+      removeBlockedButton.appendChild(innerButton);
+      removeBlockedButton.remove();
 
-        const visibleCollection = document.getElementsByClassName("visible2");
-        const i1Div = document.createElement("div");
-        const i1i1Div = document.createElement("div");
-        const i1i2Div = document.createElement("div");
+      const visibleCollection = document.getElementsByClassName('visible2');
+      const i1Div = document.createElement('div');
+      const i1i1Div = document.createElement('div');
+      const i1i2Div = document.createElement('div');
 
-        const i1i1Button = document.createElement("button");
-        i1i1Button.innerHTML = "I1I1 VISIBLE";
-        i1i1Div.appendChild(i1i1Button);
+      const i1i1Button = document.createElement('button');
+      i1i1Button.innerHTML = 'I1I1 VISIBLE';
+      i1i1Div.appendChild(i1i1Button);
 
-        const i1i2Button = document.createElement("button");
-        i1i2Button.innerHTML = "I1I2 VISIBLE";
-        i1i2Div.appendChild(i1i2Button);
+      const i1i2Button = document.createElement('button');
+      i1i2Button.innerHTML = 'I1I2 VISIBLE';
+      i1i2Div.appendChild(i1i2Button);
 
-        i1Div.appendChild(i1i1Div);
-        i1Div.appendChild(i1i2Div);
-        visibleCollection[0].appendChild(i1Div);
-      }
+      i1Div.appendChild(i1i1Div);
+      i1Div.appendChild(i1i2Div);
+      visibleCollection[0].appendChild(i1Div);
+    }
   </script>
-  <br/>
-  <h1>
-      Verify that block class bugs are fixed
-  </h1>
-  <br/>
+  <br />
+  <h1>Verify that block class bugs are fixed</h1>
+  <br />
   <div class="first">
     <div class="visible">
       <button>VISIBLE</button>
     </div>
-    <br/><br/><br/>
+    <br /><br /><br />
     <div class="rr-block" id="b-class">
       <button id="remove">BLOCKED</button>
     </div>
-    <br/><br/><br/>
+    <br /><br /><br />
     <button onclick="mutate1()">MUTATE</button>
   </div>
-  <br/><br/><br/>
+  <br /><br /><br />
   <div class="second">
     <div class="visible2">
       <button>VISIBLE</button>
     </div>
-    <br/><br/><br/>
+    <br /><br /><br />
     <div class="rr-block" id="b-class-2">
       <button id="remove2">BLOCKED</button>
     </div>
-    <br/><br/><br/>
+    <br /><br /><br />
     <button onclick="mutate2()">MUTATE</button>
   </div>
 </body>

@@ -1,4 +1,5 @@
-import { EventType, eventWithTime, IncrementalSource } from '../../src/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
+import type { eventWithTime } from '@rrweb/types';
 
 const now = Date.now();
 const events: eventWithTime[] = [
@@ -80,7 +81,7 @@ const events: eventWithTime[] = [
         {
           id: 102,
           value: 'Intermediate - incorrect',
-        }
+        },
       ],
       source: IncrementalSource.Mutation,
       removes: [],
@@ -97,7 +98,7 @@ const events: eventWithTime[] = [
         {
           id: 102,
           value: 'Final - correct',
-        }
+        },
       ],
       source: IncrementalSource.Mutation,
       removes: [],

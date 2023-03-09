@@ -7,7 +7,8 @@ import {
   Optional,
   mouseInteractionData,
   event,
-} from '../src/types';
+} from '@rrweb/types';
+import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
 import * as path from 'path';
@@ -15,20 +16,31 @@ import * as http from 'http';
 import * as url from 'url';
 import * as fs from 'fs';
 
-export async function launchPuppeteer() {
+export async function launchPuppeteer(
+  options?: Parameters<(typeof puppeteer)['launch']>[0],
+) {
   return await puppeteer.launch({
     headless: process.env.PUPPETEER_HEADLESS ? true : false,
     defaultViewport: {
       width: 1920,
       height: 1080,
     },
-    // devtools: true,
     args: ['--no-sandbox'],
+    ...options,
   });
 }
 
 interface IMimeType {
   [key: string]: string;
+}
+
+export interface ISuite {
+  server: http.Server;
+  serverURL: string;
+  code: string;
+  browser: puppeteer.Browser;
+  page: puppeteer.Page;
+  events: eventWithTime[];
 }
 
 export const startServer = (defaultPort: number = 3030) =>
@@ -43,7 +55,11 @@ export const startServer = (defaultPort: number = 3030) =>
       const sanitizePath = path
         .normalize(parsedUrl.pathname!)
         .replace(/^(\.\.[\/\\])+/, '');
+
       let pathname = path.join(__dirname, sanitizePath);
+      if (/^\/rrweb.*\.js.*/.test(sanitizePath)) {
+        pathname = path.join(__dirname, `../dist`, sanitizePath);
+      }
 
       try {
         const data = fs.readFileSync(pathname);
@@ -65,7 +81,6 @@ export const startServer = (defaultPort: number = 3030) =>
         resolve(s);
       })
       .on('error', (e) => {
-        console.log('port in use, trying next one');
         s.listen().on('listening', () => {
           resolve(s);
         });
@@ -104,7 +119,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.data.href = 'about:blank';
         }
         // FIXME: travis coordinates seems different with my laptop
-        const coordinatesReg = /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g;
+        const coordinatesReg =
+          /(bottom|top|left|right|width|height): \d+(\.\d+)?px/g;
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MouseInteraction
@@ -136,28 +152,75 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
                 coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
               }
             }
+
+            // strip blob:urls as they are different every time
+            stripBlobURLsFromAttributes(a);
           });
           s.data.adds.forEach((add) => {
-            if (
-              add.node.type === NodeType.Element &&
-              'style' in add.node.attributes &&
-              typeof add.node.attributes.style === 'string' &&
-              coordinatesReg.test(add.node.attributes.style)
-            ) {
-              add.node.attributes.style = add.node.attributes.style.replace(
-                coordinatesReg,
-                '$1: Npx',
-              );
+            if (add.node.type === NodeType.Element) {
+              if (
+                'style' in add.node.attributes &&
+                typeof add.node.attributes.style === 'string' &&
+                coordinatesReg.test(add.node.attributes.style)
+              ) {
+                add.node.attributes.style = add.node.attributes.style.replace(
+                  coordinatesReg,
+                  '$1: Npx',
+                );
+              }
+              coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
+
+              // strip blob:urls as they are different every time
+              stripBlobURLsFromAttributes(add.node);
+
+              // strip rr_dataURL as they are not consistent
+              if (
+                'rr_dataURL' in add.node.attributes &&
+                add.node.attributes.rr_dataURL &&
+                typeof add.node.attributes.rr_dataURL === 'string'
+              ) {
+                add.node.attributes.rr_dataURL =
+                  add.node.attributes.rr_dataURL.replace(/,.+$/, ',...');
+              }
             }
-            coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
           });
+        } else if (
+          s.type === EventType.IncrementalSnapshot &&
+          s.data.source === IncrementalSource.MediaInteraction
+        ) {
+          // round the currentTime to 1 decimal place
+          if (s.data.currentTime) {
+            s.data.currentTime = Math.round(s.data.currentTime * 10) / 10;
+          }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
         return s as event;
       }),
     null,
     2,
+  ).replace(
+    // servers might get run on a random port,
+    // so we need to normalize the port number
+    /http:\/\/localhost:\d+/g,
+    'http://localhost:3030',
   );
+}
+
+function stripBlobURLsFromAttributes(node: {
+  attributes: {
+    src?: string;
+  };
+}) {
+  if (
+    'src' in node.attributes &&
+    node.attributes.src &&
+    typeof node.attributes.src === 'string' &&
+    node.attributes.src.startsWith('blob:')
+  ) {
+    node.attributes.src = node.attributes.src
+      .replace(/[\w-]+$/, '...')
+      .replace(/:[0-9]+\//, ':xxxx/');
+  }
 }
 
 function stringifyDomSnapshot(mhtml: string): string {
@@ -179,9 +242,9 @@ function stringifyDomSnapshot(mhtml: string): string {
     .rewrite() // rewrite all links
     .spit(); // return all contents
 
-  const newResult: Array<{ filename: string; content: string }> = result.map(
+  const newResult: { filename: string; content: string }[] = result.map(
     (asset: { filename: string; content: string }) => {
-      let { filename, content } = asset;
+      const { filename, content } = asset;
       let res: string | undefined;
       if (filename.includes('frame')) {
         res = format(content, {
@@ -207,11 +270,7 @@ export function replaceLast(str: string, find: string, replace: string) {
   return str.substring(0, index) + replace + str.substring(index + find.length);
 }
 
-export async function assertDomSnapshot(
-  page: puppeteer.Page,
-  filename: string,
-  name: string,
-) {
+export async function assertDomSnapshot(page: puppeteer.Page) {
   const cdp = await page.target().createCDPSession();
   const { data } = await cdp.send('Page.captureSnapshot', {
     format: 'mhtml',
@@ -224,9 +283,9 @@ export function stripBase64(events: eventWithTime[]) {
   const base64Strings: string[] = [];
   function walk<T>(obj: T): T {
     if (!obj || typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return (obj.map((e) => walk(e)) as unknown) as T;
+    if (Array.isArray(obj)) return obj.map((e) => walk(e)) as unknown as T;
     const newObj: Partial<T> = {};
-    for (let prop in obj) {
+    for (const prop in obj) {
       const value = obj[prop];
       if (prop === 'base64' && typeof value === 'string') {
         let index = base64Strings.indexOf(value);
@@ -241,15 +300,15 @@ export function stripBase64(events: eventWithTime[]) {
     return newObj as T;
   }
 
-  return events.map((event) => {
+  return events.map((evt) => {
     if (
-      event.type === EventType.IncrementalSnapshot &&
-      event.data.source === IncrementalSource.CanvasMutation
+      evt.type === EventType.IncrementalSnapshot &&
+      evt.data.source === IncrementalSource.CanvasMutation
     ) {
-      const newData = walk(event.data);
-      return { ...event, data: newData };
+      const newData = walk(evt.data);
+      return { ...evt, data: newData };
     }
-    return event;
+    return evt;
   });
 }
 
@@ -516,12 +575,34 @@ export const polyfillWebGLGlobals = () => {
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
 
-export async function waitForRAF(page: puppeteer.Page) {
-  return await page.evaluate(() => {
+export async function waitForRAF(
+  pageOrFrame: puppeteer.Page | puppeteer.Frame,
+) {
+  return await pageOrFrame.evaluate(() => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(resolve);
       });
     });
   });
+}
+
+export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
+  return `
+  window.snapshots = [];
+  rrweb.record({
+    emit: event => {
+      window.snapshots.push(event);
+    },
+    maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
+    maskAllInputs: ${options.maskAllInputs},
+    maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
+    userTriggeredOnInput: ${options.userTriggeredOnInput},
+    maskTextFn: ${options.maskTextFn},
+    recordCanvas: ${options.recordCanvas},
+    recordAfter: '${options.recordAfter || 'load'}',
+    inlineImages: ${options.inlineImages},
+    plugins: ${options.plugins}
+  });
+  `;
 }

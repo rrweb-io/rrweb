@@ -15,20 +15,44 @@
   "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "workspaces": [
-    "packages/rrweb",
-    "packages/rrweb-snapshot",
-    "packages/rrweb-player",
-    "packages/rrdom"
+    "packages/*"
   ],
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "@changesets/changelog-github": "^0.4.8",
+    "@changesets/cli": "^2.26.0",
+    "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
+    "@typescript-eslint/eslint-plugin": "^5.25.0",
+    "@typescript-eslint/parser": "^5.25.0",
+    "browserslist": "^4.21.4",
+    "concurrently": "^7.1.0",
+    "eslint": "^8.19.0",
+    "eslint-plugin-compat": "^4.0.2",
+    "eslint-plugin-jest": "^27.1.3",
+    "eslint-plugin-tsdoc": "^0.2.16",
+    "lerna": "^4.0.0",
+    "markdownlint": "^0.25.1",
+    "markdownlint-cli": "^0.31.1",
+    "prettier": "2.8.4",
+    "turbo": "^1.2.4",
+    "typescript": "^4.7.3"
   },
   "scripts": {
     "lerna": "lerna",
-    "build:all": "yarn lerna run prepublish",
-    "test": "yarn lerna run test",
-    "test:watch": "yarn lerna run test:watch --parallel",
-    "dev": "yarn lerna run dev --parallel",
-    "repl": "cd packages/rrweb && npm run repl"
-  }
+    "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
+    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
+    "test:watch": "yarn turbo run test:watch",
+    "dev": "yarn turbo run dev",
+    "repl": "cd packages/rrweb && npm run repl",
+    "live-stream": "cd packages/rrweb && yarn live-stream",
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
+    "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
+    "release": "yarn build:all && changeset publish"
+  },
+  "resolutions": {
+    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz"
+  },
+  "browserslist": [
+    "defaults",
+    "not op_mini all"
+  ]
 }

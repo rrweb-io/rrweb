@@ -1,4 +1,4 @@
-import { listenerHandler, RecordPlugin, IWindow } from '../../../types';
+import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
 import { patch } from '../../../utils';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
@@ -59,27 +59,6 @@ export type LogData = {
 
 type logCallback = (p: LogData) => void;
 
-export type LogLevel =
-  | 'assert'
-  | 'clear'
-  | 'count'
-  | 'countReset'
-  | 'debug'
-  | 'dir'
-  | 'dirxml'
-  | 'error'
-  | 'group'
-  | 'groupCollapsed'
-  | 'groupEnd'
-  | 'info'
-  | 'log'
-  | 'table'
-  | 'time'
-  | 'timeEnd'
-  | 'timeLog'
-  | 'trace'
-  | 'warn';
-
 /* fork from interface Console */
 // all kinds of console functions
 export type Logger = {
@@ -104,14 +83,26 @@ export type Logger = {
   warn?: typeof console.warn;
 };
 
+export type LogLevel = keyof Logger;
+
 function initLogObserver(
   cb: logCallback,
   win: IWindow, // top window or in an iframe
-  logOptions: LogRecordOptions,
+  options: LogRecordOptions,
 ): listenerHandler {
+  const logOptions = (
+    options ? Object.assign({}, defaultLogOptions, options) : defaultLogOptions
+  ) as {
+    level: LogLevel[];
+    lengthThreshold: number;
+    stringifyOptions?: StringifyOptions;
+    logger: Logger | 'console';
+  };
   const loggerType = logOptions.logger;
   if (!loggerType) {
-    return () => {};
+    return () => {
+      //
+    };
   }
   let logger: Logger;
   if (typeof loggerType === 'string') {
@@ -120,29 +111,60 @@ function initLogObserver(
     logger = loggerType;
   }
   let logCount = 0;
+  let inStack = false;
   const cancelHandlers: listenerHandler[] = [];
   // add listener to thrown errors
-  if (logOptions.level!.includes('error')) {
-    if (window) {
-      const errorHandler = (event: ErrorEvent) => {
-        const { message, error } = event;
-        const trace: string[] = ErrorStackParser.parse(
-          error,
-        ).map((stackFrame: StackFrame) => stackFrame.toString());
-        const payload = [stringify(message, logOptions.stringifyOptions)];
-        cb({
-          level: 'error',
-          trace,
-          payload,
-        });
-      };
-      window.addEventListener('error', errorHandler);
-      cancelHandlers.push(() => {
-        if (window) window.removeEventListener('error', errorHandler);
+  if (logOptions.level.includes('error')) {
+    const errorHandler = (event: ErrorEvent) => {
+      const message = event.message,
+        error = event.error as Error;
+      const trace: string[] = ErrorStackParser.parse(error).map(
+        (stackFrame: StackFrame) => stackFrame.toString(),
+      );
+      const payload = [stringify(message, logOptions.stringifyOptions)];
+      cb({
+        level: 'error',
+        trace,
+        payload,
       });
-    }
+    };
+    win.addEventListener('error', errorHandler);
+    cancelHandlers.push(() => {
+      win.removeEventListener('error', errorHandler);
+    });
+    const unhandledrejectionHandler = (event: PromiseRejectionEvent) => {
+      let error: Error;
+      let payload: string[];
+      if (event.reason instanceof Error) {
+        error = event.reason;
+        payload = [
+          stringify(
+            `Uncaught (in promise) ${error.name}: ${error.message}`,
+            logOptions.stringifyOptions,
+          ),
+        ];
+      } else {
+        error = new Error();
+        payload = [
+          stringify('Uncaught (in promise)', logOptions.stringifyOptions),
+          stringify(event.reason, logOptions.stringifyOptions),
+        ];
+      }
+      const trace: string[] = ErrorStackParser.parse(error).map(
+        (stackFrame: StackFrame) => stackFrame.toString(),
+      );
+      cb({
+        level: 'error',
+        trace,
+        payload,
+      });
+    };
+    win.addEventListener('unhandledrejection', unhandledrejectionHandler);
+    cancelHandlers.push(() => {
+      win.removeEventListener('unhandledrejection', unhandledrejectionHandler);
+    });
   }
-  for (const levelType of logOptions.level!) {
+  for (const levelType of logOptions.level) {
     cancelHandlers.push(replace(logger, levelType));
   }
   return () => {
@@ -151,46 +173,60 @@ function initLogObserver(
 
   /**
    * replace the original console function and record logs
-   * @param logger the logger object such as Console
-   * @param level the name of log function to be replaced
+   * @param logger - the logger object such as Console
+   * @param level - the name of log function to be replaced
    */
   function replace(_logger: Logger, level: LogLevel) {
     if (!_logger[level]) {
-      return () => {};
+      return () => {
+        //
+      };
     }
     // replace the logger.{level}. return a restore function
-    return patch(_logger, level, (original) => {
-      return (...args: Array<unknown>) => {
-        original.apply(this, args);
-        try {
-          const trace = ErrorStackParser.parse(new Error())
-            .map((stackFrame: StackFrame) => stackFrame.toString())
-            .splice(1); // splice(1) to omit the hijacked log function
-          const payload = args.map((s) =>
-            stringify(s, logOptions.stringifyOptions),
-          );
-          logCount++;
-          if (logCount < logOptions.lengthThreshold!) {
-            cb({
-              level,
-              trace,
-              payload,
-            });
-          } else if (logCount === logOptions.lengthThreshold) {
-            // notify the user
-            cb({
-              level: 'warn',
-              trace: [],
-              payload: [
-                stringify('The number of log records reached the threshold.'),
-              ],
-            });
+    return patch(
+      _logger,
+      level,
+      (original: (...args: Array<unknown>) => void) => {
+        return (...args: Array<unknown>) => {
+          original.apply(this, args);
+          if (inStack) {
+            // If we are already in a stack this means something from the following code is calling a console method
+            // likely a proxy method called from stringify. We don't want to log this as it will cause an infinite loop
+            return;
           }
-        } catch (error) {
-          original('rrweb logger error:', error, ...args);
-        }
-      };
-    });
+          inStack = true;
+          try {
+            const trace = ErrorStackParser.parse(new Error())
+              .map((stackFrame: StackFrame) => stackFrame.toString())
+              .splice(1); // splice(1) to omit the hijacked log function
+            const payload = args.map((s) =>
+              stringify(s, logOptions.stringifyOptions),
+            );
+            logCount++;
+            if (logCount < logOptions.lengthThreshold) {
+              cb({
+                level,
+                trace,
+                payload,
+              });
+            } else if (logCount === logOptions.lengthThreshold) {
+              // notify the user
+              cb({
+                level: 'warn',
+                trace: [],
+                payload: [
+                  stringify('The number of log records reached the threshold.'),
+                ],
+              });
+            }
+          } catch (error) {
+            original('rrweb logger error:', error, ...args);
+          } finally {
+            inStack = false;
+          }
+        };
+      },
+    );
   }
 }
 
@@ -201,7 +237,5 @@ export const getRecordConsolePlugin: (
 ) => RecordPlugin = (options) => ({
   name: PLUGIN_NAME,
   observer: initLogObserver,
-  options: options
-    ? Object.assign({}, defaultLogOptions, options)
-    : defaultLogOptions,
+  options: options,
 });

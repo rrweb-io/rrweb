@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { assertDomSnapshot, launchPuppeteer } from '../utils';
+import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 import events from '../events/webgl';
 
 interface ISuite {
@@ -23,7 +23,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 

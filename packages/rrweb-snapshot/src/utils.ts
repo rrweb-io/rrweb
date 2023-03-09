@@ -3,7 +3,14 @@ import {
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+  IMirror,
   serializedNodeWithId,
+  serializedNode,
+  NodeType,
+  documentNode,
+  documentTypeNode,
+  textNode,
+  elementNode,
 } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -34,10 +41,71 @@ export function isBlocked(node: Node | null, blockSelector?: string): boolean {
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
   const host: Element | null = (n as ShadowRoot)?.host;
-  return Boolean(host && host.shadowRoot && host.shadowRoot === n);
+  return Boolean(host?.shadowRoot === n);
 }
 
-export class Mirror {
+/**
+ * To fix the issue https://github.com/rrweb-io/rrweb/issues/933.
+ * Some websites use polyfilled shadow dom and this function is used to detect this situation.
+ */
+export function isNativeShadowDom(shadowRoot: ShadowRoot) {
+  return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
+}
+
+/**
+ * Browsers sometimes destructively modify the css rules they receive.
+ * This function tries to rectify the modifications the browser made to make it more cross platform compatible.
+ * @param cssText - output of `CSSStyleRule.cssText`
+ * @returns `cssText` with browser inconsistencies fixed.
+ */
+function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
+  /**
+   * Chrome outputs `-webkit-background-clip` as `background-clip` in `CSSStyleRule.cssText`.
+   * But then Chrome ignores `background-clip` as css input.
+   * Re-introduce `-webkit-background-clip` to fix this issue.
+   */
+  if (
+    cssText.includes(' background-clip: text;') &&
+    !cssText.includes(' -webkit-background-clip: text;')
+  ) {
+    cssText = cssText.replace(
+      ' background-clip: text;',
+      ' -webkit-background-clip: text; background-clip: text;',
+    );
+  }
+  return cssText;
+}
+
+export function getCssRulesString(s: CSSStyleSheet): string | null {
+  try {
+    const rules = s.rules || s.cssRules;
+    return rules
+      ? fixBrowserCompatibilityIssuesInCSS(
+          Array.from(rules).map(getCssRuleString).join(''),
+        )
+      : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getCssRuleString(rule: CSSRule): string {
+  let cssStringified = rule.cssText;
+  if (isCSSImportRule(rule)) {
+    try {
+      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
+    } catch {
+      // ignore
+    }
+  }
+  return cssStringified;
+}
+
+export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
+  return 'styleSheet' in rule;
+}
+
+export class Mirror implements IMirror<Node> {
   private idNodeMap: idNodeMap = new Map();
   private nodeMetaMap: nodeMetaMap = new WeakMap();
 
@@ -69,7 +137,9 @@ export class Mirror {
     this.idNodeMap.delete(id);
 
     if (n.childNodes) {
-      n.childNodes.forEach((childNode) => this.removeNodeFromMap(childNode));
+      n.childNodes.forEach((childNode) =>
+        this.removeNodeFromMap(childNode as unknown as Node),
+      );
     }
   }
   has(id: number): boolean {
@@ -87,6 +157,11 @@ export class Mirror {
   }
 
   replace(id: number, n: Node) {
+    const oldNode = this.getNode(id);
+    if (oldNode) {
+      const meta = this.nodeMetaMap.get(oldNode);
+      if (meta) this.nodeMetaMap.set(n, meta);
+    }
     this.idNodeMap.set(id, n);
   }
 
@@ -141,6 +216,7 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
   // get chunks of the canvas and check if it is blank
   for (let x = 0; x < canvas.width; x += chunkSize) {
     for (let y = 0; y < canvas.height; y += chunkSize) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const getImageData = ctx.getImageData as PatchedGetImageData;
       const originalGetImageData =
         ORIGINAL_ATTRIBUTE_NAME in getImageData
@@ -151,6 +227,7 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
       // even if we can already tell from the first chunk(s) that
       // the canvas isn't blank
       const pixelBuffer = new Uint32Array(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         originalGetImageData.call(
           ctx,
           x,
@@ -163,4 +240,31 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
     }
   }
   return true;
+}
+
+export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
+  if (!a || !b || a.type !== b.type) return false;
+  if (a.type === NodeType.Document)
+    return a.compatMode === (b as documentNode).compatMode;
+  else if (a.type === NodeType.DocumentType)
+    return (
+      a.name === (b as documentTypeNode).name &&
+      a.publicId === (b as documentTypeNode).publicId &&
+      a.systemId === (b as documentTypeNode).systemId
+    );
+  else if (
+    a.type === NodeType.Comment ||
+    a.type === NodeType.Text ||
+    a.type === NodeType.CDATA
+  )
+    return a.textContent === (b as textNode).textContent;
+  else if (a.type === NodeType.Element)
+    return (
+      a.tagName === (b as elementNode).tagName &&
+      JSON.stringify(a.attributes) ===
+        JSON.stringify((b as elementNode).attributes) &&
+      a.isSVG === (b as elementNode).isSVG &&
+      a.needBlock === (b as elementNode).needBlock
+    );
+  return false;
 }

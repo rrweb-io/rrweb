@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "ES6",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "build",
+    "lib": ["es6", "dom"],
+    "skipLibCheck": true,
+    "declaration": true,
+    "importsNotUsedAsValues": "error"
+  },
+  "references": [
+    {
+      "path": "../rrweb-snapshot"
+    },
+    {
+      "path": "../types"
+    }
+  ],
+  "compileOnSave": true,
+  "exclude": ["test"],
+  "include": [
+    "src",
+    "../rrweb/src/record/workers/workers.d.ts",
+    "../rrweb/src/record/constructable-stylesheets.d.ts"
+  ]
+}

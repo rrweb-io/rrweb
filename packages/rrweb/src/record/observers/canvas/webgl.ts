@@ -1,11 +1,11 @@
-import { Mirror } from '@fullview/rrweb-snapshot';
+import type { Mirror } from 'rrweb-snapshot';
 import {
   CanvasContext,
   canvasManagerMutationCallback,
   canvasMutationWithType,
   IWindow,
   listenerHandler,
-} from '../../../types';
+} from '@rrweb/types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
@@ -13,6 +13,7 @@ function patchGLPrototype(
   prototype: WebGLRenderingContext | WebGL2RenderingContext,
   type: CanvasContext,
   cb: canvasManagerMutationCallback,
+  blockClass: blockClass,
   blockSelector: string | null,
   mirror: Mirror,
   win: IWindow,
@@ -22,35 +23,52 @@ function patchGLPrototype(
   const props = Object.getOwnPropertyNames(prototype);
 
   for (const prop of props) {
+    if (
+      //prop.startsWith('get') ||  // e.g. getProgramParameter, but too risky
+      [
+        'isContextLost',
+        'canvas',
+        'drawingBufferWidth',
+        'drawingBufferHeight',
+      ].includes(prop)
+    ) {
+      // skip read only propery/functions
+      continue;
+    }
     try {
       if (typeof prototype[prop as keyof typeof prototype] !== 'function') {
         continue;
       }
-      const restoreHandler = patch(prototype, prop, function (original) {
-        return function (this: typeof prototype, ...args: Array<unknown>) {
-          const result = original.apply(this, args);
-          saveWebGLVar(result, win, prototype);
-          if (!isBlocked(this.canvas as Node, blockSelector)) {
-            const id = mirror.getId(this.canvas as Node);
+      const restoreHandler = patch(
+        prototype,
+        prop,
+        function (
+          original: (this: typeof prototype, ...args: Array<unknown>) => void,
+        ) {
+          return function (this: typeof prototype, ...args: Array<unknown>) {
+            const result = original.apply(this, args);
+            saveWebGLVar(result, win, this);
+            if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
+              const recordArgs = serializeArgs([...args], win, this);
+              const mutation: canvasMutationWithType = {
+                type,
+                property: prop,
+                args: recordArgs,
+              };
+              // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
+              cb(this.canvas, mutation);
+            }
 
-            const recordArgs = serializeArgs([...args], win, prototype);
-            const mutation: canvasMutationWithType = {
-              type,
-              property: prop,
-              args: recordArgs,
-            };
-            // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
-            cb(this.canvas as HTMLCanvasElement, mutation);
-          }
-
-          return result;
-        };
-      });
+            return result;
+          };
+        },
+      );
       handlers.push(restoreHandler);
     } catch {
       const hookHandler = hookSetter<typeof prototype>(prototype, prop, {
         set(v) {
           // TODO: this could potentially also be an OffscreenCanvas as well as HTMLCanvasElement
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           cb(this.canvas as HTMLCanvasElement, {
             type,
             property: prop,
@@ -69,6 +87,7 @@ function patchGLPrototype(
 export default function initCanvasWebGLMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
+  blockClass: blockClass,
   blockSelector: string | null,
   mirror: Mirror,
 ): listenerHandler {
@@ -79,6 +98,7 @@ export default function initCanvasWebGLMutationObserver(
       win.WebGLRenderingContext.prototype,
       CanvasContext.WebGL,
       cb,
+      blockClass,
       blockSelector,
       mirror,
       win,
@@ -91,6 +111,7 @@ export default function initCanvasWebGLMutationObserver(
         win.WebGL2RenderingContext.prototype,
         CanvasContext.WebGL2,
         cb,
+        blockClass,
         blockSelector,
         mirror,
         win,

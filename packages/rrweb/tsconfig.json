@@ -2,17 +2,37 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Node",
-    "target": "ES5",
+    "target": "ES6",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": ["es6", "dom"],
-    "downlevelIteration": true
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "downlevelIteration": true,
+    "importsNotUsedAsValues": "error",
+    "strictBindCallApply": true,
+    "composite": true
   },
-  "exclude": ["test"],
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../rrdom"
+    },
+    {
+      "path": "../rrweb-snapshot"
+    }
+  ],
+  "exclude": [
+    "test",
+    "scripts"
+  ],
   "include": [
     "src",
     "node_modules/@types/css-font-loading-module/index.d.ts",

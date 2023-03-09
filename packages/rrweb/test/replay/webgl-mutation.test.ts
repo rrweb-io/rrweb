@@ -6,7 +6,7 @@ import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
 import webglMutation from '../../src/replay/canvas/webgl';
-import { CanvasContext } from '../../src/types';
+import { CanvasContext } from '@rrweb/types';
 import { variableListFor } from '../../src/replay/canvas/deserialize-args';
 
 let canvas: HTMLCanvasElement;
@@ -22,9 +22,9 @@ describe('webglMutation', () => {
     const createShaderMock = jest.fn().mockImplementation(() => {
       return new WebGLShader();
     });
-    const context = ({
+    const context = {
       createShader: createShaderMock,
-    } as unknown) as WebGLRenderingContext;
+    } as unknown as WebGLRenderingContext;
     jest.spyOn(canvas, 'getContext').mockImplementation(() => {
       return context;
     });

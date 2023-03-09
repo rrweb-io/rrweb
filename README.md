@@ -88,13 +88,13 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/Mark-Fenng">
+      <a href="https://github.com/YunFeng0817">
         <img
           src="https://avatars.githubusercontent.com/u/27533910?s=100"
           width="100px;"
           alt=""
         />
-        <br /><sub><b>Mark-Fenng</b></sub>
+        <br /><sub><b>Yun Feng</b></sub>
       </a>
     </td>
     <td align="center">
@@ -120,7 +120,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
   </tr>
 </table>
 
-## Who's using rrweb
+## Who's using rrweb?
 
 <table>
   <tr>
@@ -141,7 +141,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     </td>
     <td align="center">
       <a href="https://cux.io" target="_blank">
-        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://static.cux.io/logo.svg">
+        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
       </a>
     </td>
   </tr>

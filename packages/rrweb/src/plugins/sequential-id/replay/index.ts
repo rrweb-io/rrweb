@@ -1,5 +1,6 @@
 import type { SequentialIdOptions } from '../record';
-import { ReplayPlugin, eventWithTime } from '../../../types';
+import type { ReplayPlugin } from '../../../types';
+import type { eventWithTime } from '@rrweb/types';
 
 type Options = SequentialIdOptions & {
   warnOnMissingId: boolean;
@@ -21,7 +22,7 @@ export const getReplaySequentialIdPlugin: (
   return {
     handler(event: eventWithTime) {
       if (key in event) {
-        const id = ((event as unknown) as Record<string, number>)[key];
+        const id = (event as unknown as Record<string, number>)[key];
         if (id !== currentId) {
           console.error(
             `[sequential-id-plugin]: expect to get an id with value "${currentId}", but got "${id}"`,

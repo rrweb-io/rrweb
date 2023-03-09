@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "rrweb-io/rrweb" }],
+  "commit": false,
+  "fixed": [
+    [
+      "rrweb",
+      "rrweb-snapshot",
+      "rrdom",
+      "rrdom-nodejs",
+      "rrweb-player",
+      "@rrweb/types",
+      "@rrweb/web-extension"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "master",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}

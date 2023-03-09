@@ -1,23 +1,21 @@
-/* tslint:disable no-console */
-
 import * as fs from 'fs';
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
+import type { recordOptions } from '../../src/types';
 import {
-  recordOptions,
   listenerHandler,
   eventWithTime,
   EventType,
   IncrementalSource,
   CanvasContext,
-} from '../../src/types';
+} from '@rrweb/types';
 import {
   assertSnapshot,
   launchPuppeteer,
   stripBase64,
   waitForRAF,
 } from '../utils';
-import { ICanvas } from '@fullview/rrweb-snapshot';
+import type { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
   code: string;
@@ -46,7 +44,7 @@ const setup = function (
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -66,13 +64,13 @@ const setup = function (
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
     await ctx.page.evaluate((canvasSample) => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
         recordCanvas: true,
         sampling: {
           canvas: canvasSample,
         },
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
     }, canvasSample);
   });

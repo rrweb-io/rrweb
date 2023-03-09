@@ -1,0 +1,95 @@
+name: Code Style Check
+
+on: [push, pull_request_target]
+
+jobs:
+  eslint_check_upload:
+    runs-on: ubuntu-latest
+    name: ESLint Check and Report Upload
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn
+      - name: Build Packages
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+      - name: Eslint Check
+        run: yarn turbo run lint
+      - name: Save Code Linting Report JSON
+        run: yarn lint:report
+        # Continue to the next step even if this fails
+        continue-on-error: true
+      - name: Upload ESLint Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
+
+  annotation:
+    # Skip the annotation action in push events
+    if: github.event_name == 'pull_request_target'
+    needs: eslint_check_upload
+    runs-on: ubuntu-latest
+    name: ESLint Annotation
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: eslint_report.json
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@v2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'eslint_report.json'
+
+  prettier_check:
+    # In the forked PR, it's hard to format code and push to the branch directly, so the action only check the format correctness.
+    if: github.event_name != 'push' && github.event.pull_request.head.repo.full_name != 'rrweb-io/rrweb'
+    runs-on: ubuntu-latest
+    name: Format Check
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn
+      - name: Prettier Check
+        run: yarn prettier --check '**/*.{ts,md}'
+
+  prettier:
+    # Skip the format code action in forked PRs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == 'rrweb-io/rrweb'
+    runs-on: ubuntu-latest
+    name: Format Code
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn
+      - name: Prettify Code
+        run: yarn prettier --write '**/*.{ts,md}'
+      - name: Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply formatting changes
+          branch: ${{ github.head_ref }}

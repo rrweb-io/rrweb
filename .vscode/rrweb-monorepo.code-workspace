@@ -9,6 +9,10 @@
       "path": "../packages/rrdom"
     },
     {
+      "name": "rrdom-nodejs (package)",
+      "path": "../packages/rrdom-nodejs"
+    },
+    {
       "name": "rrweb (package)",
       "path": "../packages/rrweb"
     },
@@ -19,13 +23,18 @@
     {
       "name": "rrweb-snapshot (package)",
       "path": "../packages/rrweb-snapshot"
-    }
+    },
+    {
+      "name": "web-extension (package)",
+      "path": "../packages/web-extension"
+    },
+    { "name": "@rrweb/types", "path": "../packages/types" }
   ],
   "settings": {
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
       "rrweb-player (package)",
-      "rrdom (package)"
+      "@rrweb/types"
     ]
   }
 }

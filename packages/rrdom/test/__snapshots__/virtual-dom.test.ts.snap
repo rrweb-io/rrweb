@@ -1,0 +1,160 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RRDocument for browser environment create a RRDocument from a html document can build from a common html 1`] = `
+"-2 RRDocument
+  -3 RRDocumentType
+  -4 HTML lang=\\"en\\" 
+    -5 HEAD 
+      -6 RRText text=\\"\\\\n    \\"
+      -7 META charset=\\"UTF-8\\" 
+      -8 RRText text=\\"\\\\n    \\"
+      -9 META name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" 
+      -10 RRText text=\\"\\\\n    \\"
+      -11 TITLE 
+        -12 RRText text=\\"Main\\"
+      -13 RRText text=\\"\\\\n    \\"
+      -14 LINK rel=\\"stylesheet\\" href=\\"somelink\\" 
+      -15 RRText text=\\"\\\\n    \\"
+      -16 STYLE 
+        -17 RRText text=\\"\\\\n      h1 {\\\\n        color: 'black';\\\\n      }\\\\n      .blocks {\\\\n        padding: 0;\\\\n      }\\\\n      .blocks1 {\\\\n        margin: 0;\\\\n      }\\\\n      #block1 {\\\\n        width: 100px;\\\\n        height: 200px;\\\\n      }\\\\n      @import url('main.css');\\\\n    \\"
+      -18 RRText text=\\"\\\\n  \\"
+    -19 RRText text=\\"\\\\n  \\"
+    -20 BODY 
+      -21 RRText text=\\"\\\\n    \\"
+      -22 H1 
+        -23 RRText text=\\"This is a h1 heading\\"
+      -24 RRText text=\\"\\\\n    \\"
+      -25 H1 style=\\"font-size: 16px\\" 
+        -26 RRText text=\\"This is a h1 heading with styles\\"
+      -27 RRText text=\\"\\\\n    \\"
+      -28 DIV id=\\"block1\\" class=\\"blocks blocks1\\" 
+        -29 RRText text=\\"\\\\n      \\"
+        -30 DIV id=\\"block2\\" class=\\"blocks blocks1 :hover\\" 
+          -31 RRText text=\\"\\\\n        Text 1\\\\n        \\"
+          -32 DIV id=\\"block3\\" 
+            -33 RRText text=\\"\\\\n          \\"
+            -34 P 
+              -35 RRText text=\\"This is a paragraph\\"
+            -36 RRText text=\\"\\\\n          \\"
+            -37 BUTTON 
+              -38 RRText text=\\"button1\\"
+            -39 RRText text=\\"\\\\n        \\"
+          -40 RRText text=\\"\\\\n        Text 2\\\\n      \\"
+        -41 RRText text=\\"\\\\n      \\"
+        -42 IMG src=\\"somelink\\" alt=\\"This is an image\\" 
+        -43 RRText text=\\"\\\\n      \\"
+        -44 RRComment text=\\" This is a line of comment \\"
+        -45 RRText text=\\"\\\\n      \\"
+        -46 FORM 
+          -47 RRText text=\\"\\\\n        \\"
+          -48 INPUT type=\\"text\\" id=\\"input1\\" 
+          -49 RRText text=\\"\\\\n      \\"
+        -50 RRText text=\\"\\\\n    \\"
+      -51 RRText text=\\"\\\\n  \\\\n\\\\n\\"
+"
+`;
+
+exports[`RRDocument for browser environment create a RRDocument from a html document can build from a html containing nested shadow doms 1`] = `
+"-2 RRDocument
+  -3 RRDocumentType
+  -4 HTML lang=\\"en\\" 
+    -5 HEAD 
+      -6 RRText text=\\"\\\\n    \\"
+      -7 META charset=\\"UTF-8\\" 
+      -8 RRText text=\\"\\\\n    \\"
+      -9 META name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" 
+      -10 RRText text=\\"\\\\n    \\"
+      -11 TITLE 
+        -12 RRText text=\\"shadow dom\\"
+      -13 RRText text=\\"\\\\n  \\"
+    -14 RRText text=\\"\\\\n  \\"
+    -15 BODY 
+      -16 RRText text=\\"\\\\n    \\"
+      -17 DIV 
+        -18 SHADOWROOT 
+          -19 RRText text=\\"\\\\n        \\"
+          -20 SPAN 
+            -21 RRText text=\\" shadow dom one \\"
+          -22 RRText text=\\"\\\\n        \\"
+          -23 DIV 
+            -24 SHADOWROOT 
+              -25 RRText text=\\"\\\\n            \\"
+              -26 SPAN 
+                -27 RRText text=\\" shadow dom two \\"
+              -28 RRText text=\\"\\\\n          \\"
+            -29 RRText text=\\"\\\\n          \\\\n        \\"
+          -30 RRText text=\\"\\\\n      \\"
+        -31 RRText text=\\"\\\\n      \\\\n    \\"
+      -32 RRText text=\\"\\\\n  \\\\n\\\\n\\"
+"
+`;
+
+exports[`RRDocument for browser environment create a RRDocument from a html document can build from a xml page 1`] = `
+"-2 RRDocument
+  -3 XML 
+    -4 RRCDATASection data=\\"Some <CDATA> data & then some\\"
+"
+`;
+
+exports[`RRDocument for browser environment create a RRDocument from a html document can build from an iframe html  1`] = `
+"-2 RRDocument
+  -3 RRDocumentType
+  -4 HTML lang=\\"en\\" 
+    -5 HEAD 
+      -6 RRText text=\\"\\\\n    \\"
+      -7 META charset=\\"UTF-8\\" 
+      -8 RRText text=\\"\\\\n    \\"
+      -9 META name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" 
+      -10 RRText text=\\"\\\\n    \\"
+      -11 TITLE 
+        -12 RRText text=\\"Iframe\\"
+      -13 RRText text=\\"\\\\n  \\"
+    -14 RRText text=\\"\\\\n  \\"
+    -15 BODY 
+      -16 RRText text=\\"\\\\n    \\"
+      -17 IFRAME id=\\"iframe1\\" srcdoc=\\"
+	    <html>
+        <head>
+          <meta charset='UTF-8' />
+          <meta
+            name='viewport'
+            content='width=device-width, initial-scale=1.0'
+          />
+        </head>
+        <body>
+          <div>This is a block inside the iframe1.</div>
+          <iframe id='iframe3' srcdoc='<div>This is a block inside the iframe3.</div>'>
+        </body>
+      </html>\\" 
+        -18 RRDocument
+          -19 HTML 
+            -20 HEAD 
+              -21 RRText text=\\"\\\\n          \\"
+              -22 META charset=\\"UTF-8\\" 
+              -23 RRText text=\\"\\\\n          \\"
+              -24 META name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" 
+              -25 RRText text=\\"\\\\n        \\"
+            -26 RRText text=\\"\\\\n        \\"
+            -27 BODY 
+              -28 RRText text=\\"\\\\n          \\"
+              -29 DIV 
+                -30 RRText text=\\"This is a block inside the iframe1.\\"
+              -31 RRText text=\\"\\\\n          \\"
+              -32 IFRAME id=\\"iframe3\\" srcdoc=\\"<div>This is a block inside the iframe3.</div>\\" 
+                -33 RRDocument
+                  -34 HTML 
+                    -35 HEAD 
+                    -36 BODY 
+                      -37 DIV 
+                        -38 RRText text=\\"This is a block inside the iframe3.\\"
+      -39 RRText text=\\"\\\\n    \\"
+      -40 IFRAME id=\\"iframe2\\" srcdoc=\\"<div>This is a block inside the iframe2.</div>\\" 
+        -41 RRDocument
+          -42 HTML 
+            -43 HEAD 
+            -44 BODY 
+              -45 DIV 
+                -46 RRText text=\\"This is a block inside the iframe2.\\"
+      -47 RRText text=\\"\\\\n  \\\\n\\\\n\\"
+"
+`;

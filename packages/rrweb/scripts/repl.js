@@ -1,23 +1,64 @@
-/* tslint:disable: no-console */
+/* eslint:disable: no-console */
 
-const fs = require('fs');
-const path = require('path');
-const EventEmitter = require('events');
-const inquirer = require('inquirer');
-const puppeteer = require('puppeteer');
+import * as path from 'path';
+import * as fs from 'fs';
+import { EventEmitter } from 'node:events';
+import inquirer from 'inquirer';
+import puppeteer from 'puppeteer';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
 
 function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.min.js');
+  const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
-(async () => {
+void (async () => {
   const code = getCode();
   let events = [];
 
-  start();
+  async function injectRecording(frame) {
+    await frame.evaluate((rrwebCode) => {
+      const win = window;
+      if (win.__IS_RECORDING__) return;
+      win.__IS_RECORDING__ = true;
+
+      (async () => {
+        function loadScript(code) {
+          const s = document.createElement('script');
+          let r = false;
+          s.type = 'text/javascript';
+          s.innerHTML = code;
+          if (document.head) {
+            document.head.append(s);
+          } else {
+            requestAnimationFrame(() => {
+              document.head.append(s);
+            });
+          }
+        }
+        loadScript(rrwebCode);
+
+        win.events = [];
+        rrweb.record({
+          emit: (event) => {
+            win.events.push(event);
+            win._replLog(event);
+          },
+          plugins: [],
+          recordCanvas: true,
+          recordCrossOriginIframes: true,
+          collectFonts: true,
+        });
+      })();
+    }, code);
+  }
+
+  await start('https://react-redux.realworld.io');
 
   const fakeGoto = async (page, url) => {
     const intercept = async (request) => {
@@ -34,16 +75,19 @@ function getCode() {
     page.off('request', intercept);
   };
 
-  async function start() {
+  async function start(defaultURL) {
     events = [];
-    const { url } = await inquirer.prompt([
+    let { url } = await inquirer.prompt([
       {
         type: 'input',
         name: 'url',
-        message:
-          'Enter the url you want to record, e.g https://react-redux.realworld.io: ',
+        message: `Enter the url you want to record, e.g [${defaultURL}]: `,
       },
     ]);
+
+    if (url === '') {
+      url = defaultURL;
+    }
 
     console.log(`Going to open ${url}...`);
     await record(url);
@@ -88,7 +132,7 @@ function getCode() {
     ]);
 
     if (shouldRecordAnother) {
-      start();
+      start(url);
     } else {
       process.exit();
     }
@@ -108,34 +152,18 @@ function getCode() {
       ],
     });
     const page = await browser.newPage();
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: 300000,
-    });
 
     await page.exposeFunction('_replLog', (event) => {
       events.push(event);
     });
-    await page.evaluate(`;${code}
-      window.__IS_RECORDING__ = true
-      rrweb.record({
-        emit: event => window._replLog(event),
-        recordCanvas: true,
-        collectFonts: true
-      });
-    `);
-    page.on('framenavigated', async () => {
-      const isRecording = await page.evaluate('window.__IS_RECORDING__');
-      if (!isRecording) {
-        await page.evaluate(`;${code}
-          window.__IS_RECORDING__ = true
-          rrweb.record({
-            emit: event => window._replLog(event),
-            recordCanvas: true,
-            collectFonts: true
-          });
-        `);
-      }
+
+    page.on('framenavigated', async (frame) => {
+      await injectRecording(frame);
+    });
+
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 300000,
     });
 
     emitter.once('done', async (shouldReplay) => {
@@ -165,7 +193,7 @@ function getCode() {
     }
 
     await page.addStyleTag({
-      path: path.resolve(__dirname, '../dist/rrweb.min.css'),
+      path: path.resolve(__dirname, '../dist/rrweb.css'),
     });
     await page.evaluate(`${code}
       const events = ${JSON.stringify(events)};
@@ -196,10 +224,10 @@ function getCode() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Record @${time}</title>
-    <link rel="stylesheet" href="../dist/rrweb.min.css" />
+    <link rel="stylesheet" href="../dist/rrweb.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.min.js"></script>
+    <script src="../dist/rrweb.js"></script>
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(

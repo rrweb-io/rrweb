@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { Replayer, unpack } from 'rrweb';
-  import type { eventWithTime } from 'rrweb/typings/types';
+  import type { eventWithTime } from '@rrweb/types';
   import {
     inlineCss,
     openFullscreen,
@@ -12,18 +12,21 @@
   } from './utils';
   import Controller from './Controller.svelte';
 
-  export let width: number = 1024;
-  export let height: number = 576;
+  export let width = 1024;
+  export let height = 576;
+  export let maxScale = 1;
   export let events: eventWithTime[] = [];
-  export let skipInactive: boolean = true;
-  export let autoPlay: boolean = true;
+  export let skipInactive = true;
+  export let autoPlay = true;
   export let speedOption: number[] = [1, 2, 4, 8];
-  export let speed: number = 1;
-  export let showController: boolean = true;
+  export let speed = 1;
+  export let showController = true;
   export let tags: Record<string, string> = {};
+  // color of inactive periods indicator
+  export let inactiveColor = '#D4D4D4';
 
   let replayer: Replayer;
-  
+
   export const getMirror = () => replayer.getMirror();
 
   const controllerHeight = 80;
@@ -55,9 +58,10 @@
   ) => {
     const widthScale = width / frameDimension.width;
     const heightScale = height / frameDimension.height;
+    const scale = [widthScale, heightScale];
+    if (maxScale) scale.push(maxScale);
     el.style.transform =
-      `scale(${Math.min(widthScale, heightScale, 1)})` +
-      'translate(-50%, -50%)';
+      `scale(${Math.min(...scale)})` + 'translate(-50%, -50%)';
   };
 
   export const triggerResize = () => {
@@ -114,6 +118,14 @@
   export const goto = (timeOffset: number, play?: boolean) => {
     controller.goto(timeOffset, play);
   };
+  export const playRange = (
+    timeOffset: number,
+    endTimeOffset: number,
+    startLooping: boolean = false,
+    afterHook: undefined | (() => void) = undefined,
+  ) => {
+    controller.playRange(timeOffset, endTimeOffset, startLooping, afterHook);
+  };
 
   onMount(() => {
     // runtime type check
@@ -157,7 +169,8 @@
           _width = width;
           _height = height;
           width = player.offsetWidth;
-          height = player.offsetHeight;
+          height =
+            player.offsetHeight - (showController ? controllerHeight : 0);
           updateScale(replayer.wrapper, {
             width: replayer.iframe.offsetWidth,
             height: replayer.iframe.offsetHeight,
@@ -218,6 +231,8 @@
       {speedOption}
       {skipInactive}
       {tags}
-      on:fullscreen={() => toggleFullscreen()} />
+      {inactiveColor}
+      on:fullscreen={() => toggleFullscreen()}
+    />
   {/if}
 </div>

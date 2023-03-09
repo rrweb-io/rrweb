@@ -1,0 +1,16 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <img src="" alt="This is a robot" />
+  </body>
+  <script>
+    setTimeout(async function () {
+      const robotFile = await fetch('/images/robot.png');
+      const robotBlob = await robotFile.blob();
+      const robotBlobUrl = URL.createObjectURL(robotBlob);
+      const images = document.querySelectorAll('img');
+      images.forEach((img) => {
+        img.setAttribute('src', robotBlobUrl);
+      });
+    }, 0);
+  </script>
+</html>

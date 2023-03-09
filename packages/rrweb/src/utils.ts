@@ -1,22 +1,17 @@
-import {
+import type {
   throttleOptions,
   listenerHandler,
   hookResetter,
-  IncrementalSource,
+  blockClass,
   addedNodeMutation,
-  removedNodeMutation,
-  textMutation,
-  attributeMutation,
-  mutationData,
-  scrollData,
-  inputData,
   DocumentDimension,
   IWindow,
   DeprecatedMirror,
-  eventWithTime,
-  EventType,
-} from './types';
-import { Mirror, IGNORED_NODE, isShadowRoot } from '@fullview/rrweb-snapshot';
+  textMutation,
+} from '@rrweb/types';
+import type { IMirror, Mirror } from 'rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
+import type { RRNode, RRIFrameElement } from 'rrdom';
 
 export function on(
   type: string,
@@ -35,6 +30,7 @@ const DEPARTED_MIRROR_ACCESS_WARNING =
   'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
   '\r\n' +
   'or you can use record.mirror to access the mirror instance during recording.';
+/** @deprecated */
 export let _mirror: DeprecatedMirror = {
   map: {},
   getId() {
@@ -62,6 +58,7 @@ if (typeof window !== 'undefined' && window.Proxy && window.Reflect) {
       if (prop === 'map') {
         console.error(DEPARTED_MIRROR_ACCESS_WARNING);
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return Reflect.get(target, prop, receiver);
     },
   });
@@ -75,15 +72,14 @@ export function throttle<T>(
 ) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let previous = 0;
-  // tslint:disable-next-line: only-arrow-functions
-  return function (arg: T) {
-    let now = Date.now();
+  return function (...args: T[]) {
+    const now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
     }
-    let remaining = wait - (now - previous);
-    let context = this;
-    let args = arguments;
+    const remaining = wait - (now - previous);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-this-alias
+    const context = this;
     if (remaining <= 0 || remaining > wait) {
       if (timeout) {
         clearTimeout(timeout);
@@ -131,15 +127,15 @@ export function hookSetter<T>(
 
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
 export function patch(
-  // tslint:disable-next-line:no-any
   source: { [key: string]: any },
   name: string,
-  // tslint:disable-next-line:no-any
-  replacement: (...args: any[]) => any,
+  replacement: (...args: unknown[]) => unknown,
 ): () => void {
   try {
     if (!(name in source)) {
-      return () => {};
+      return () => {
+        //
+      };
     }
 
     const original = source[name] as () => unknown;
@@ -147,8 +143,8 @@ export function patch(
 
     // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
     // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
-    // tslint:disable-next-line:strict-type-predicates
     if (typeof wrapped === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       wrapped.prototype = wrapped.prototype || {};
       Object.defineProperties(wrapped, {
         __rrweb_original__: {
@@ -164,10 +160,34 @@ export function patch(
       source[name] = original;
     };
   } catch {
-    return () => {};
+    return () => {
+      //
+    };
     // This can throw if multiple fill happens on a global object like XMLHttpRequest
     // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
   }
+}
+
+export function getWindowScroll(win: Window) {
+  const doc = win.document;
+  return {
+    left: doc.scrollingElement
+      ? doc.scrollingElement.scrollLeft
+      : win.pageXOffset !== undefined
+      ? win.pageXOffset
+      : doc?.documentElement.scrollLeft ||
+        doc?.body?.parentElement?.scrollLeft ||
+        doc?.body?.scrollLeft ||
+        0,
+    top: doc.scrollingElement
+      ? doc.scrollingElement.scrollTop
+      : win.pageYOffset !== undefined
+      ? win.pageYOffset
+      : doc?.documentElement.scrollTop ||
+        doc?.body?.parentElement?.scrollTop ||
+        doc?.body?.scrollTop ||
+        0,
+  };
 }
 
 export function getWindowHeight(): number {
@@ -186,26 +206,40 @@ export function getWindowWidth(): number {
   );
 }
 
-export function isBlocked(node: Node | null, blockSelector: string | null): boolean {
-  if (!node) return false;
-
-  if (node.nodeType === node.ELEMENT_NODE) {
-    const element = node as HTMLElement;
-    let needBlock = false;
-
-    if (blockSelector) needBlock = element.matches(blockSelector);
-
-    return needBlock || isBlocked(node.parentNode, blockSelector);
+/**
+ * Checks if the given element set to be blocked by rrweb
+ * @param node - node to check
+ * @param blockClass - class name to check
+ * @param blockSelector - css selectors to check
+ * @param checkAncestors - whether to search through parent nodes for the block class
+ * @returns true/false if the node was blocked or not
+ */
+export function isBlocked(
+  node: Node | null,
+  blockClass: blockClass,
+  blockSelector: string | null,
+  checkAncestors: boolean,
+): boolean {
+  if (!node) {
+    return false;
   }
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  if (!el) return false;
 
-  if (node.nodeType === node.TEXT_NODE) {
-    /**
-     * Check parent node since text node do not have class name
-     */
-    return isBlocked(node.parentNode, blockSelector);
+  if (typeof blockClass === 'string') {
+    if (el.classList.contains(blockClass)) return true;
+    if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
+  } else {
+    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
   }
-
-  return isBlocked(node.parentNode, blockSelector);
+  if (blockSelector) {
+    if (el.matches(blockSelector)) return true;
+    if (checkAncestors && el.closest(blockSelector) !== null) return true;
+  }
+  return false;
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {
@@ -247,19 +281,22 @@ export function isTouchEvent(
 
 export function polyfill(win = window) {
   if ('NodeList' in win && !win.NodeList.prototype.forEach) {
-    win.NodeList.prototype.forEach = (Array.prototype
-      .forEach as unknown) as NodeList['forEach'];
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    win.NodeList.prototype.forEach = Array.prototype
+      .forEach as unknown as NodeList['forEach'];
   }
 
   if ('DOMTokenList' in win && !win.DOMTokenList.prototype.forEach) {
-    win.DOMTokenList.prototype.forEach = (Array.prototype
-      .forEach as unknown) as DOMTokenList['forEach'];
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    win.DOMTokenList.prototype.forEach = Array.prototype
+      .forEach as unknown as DOMTokenList['forEach'];
   }
 
   // https://github.com/Financial-Times/polyfill-service/pull/183
   if (!Node.prototype.contains) {
-    Node.prototype.contains = function contains(node) {
-      if (!(0 in arguments)) {
+    Node.prototype.contains = (...args: unknown[]) => {
+      let node = args[0] as Node | null;
+      if (!(0 in args)) {
         throw new TypeError('1 argument is required');
       }
 
@@ -267,206 +304,10 @@ export function polyfill(win = window) {
         if (this === node) {
           return true;
         }
-        // tslint:disable-next-line: no-conditional-assignment
       } while ((node = node && node.parentNode));
 
       return false;
     };
-  }
-}
-
-export type TreeNode = {
-  id: number;
-  mutation: addedNodeMutation;
-  parent?: TreeNode;
-  children: Record<number, TreeNode>;
-  texts: textMutation[];
-  attributes: attributeMutation[];
-};
-
-export class TreeIndex {
-  public tree!: Record<number, TreeNode>;
-
-  private removeNodeMutations!: removedNodeMutation[];
-  private textMutations!: textMutation[];
-  private attributeMutations!: attributeMutation[];
-  private indexes!: Map<number, TreeNode>;
-  private removeIdSet!: Set<number>;
-  private scrollMap!: Map<number, scrollData>;
-  private inputMap!: Map<number, inputData>;
-
-  constructor() {
-    this.reset();
-  }
-
-  public add(mutation: addedNodeMutation) {
-    const parentTreeNode = this.indexes.get(mutation.parentId);
-    const treeNode: TreeNode = {
-      id: mutation.node.id,
-      mutation,
-      children: [],
-      texts: [],
-      attributes: [],
-    };
-    if (!parentTreeNode) {
-      this.tree[treeNode.id] = treeNode;
-    } else {
-      treeNode.parent = parentTreeNode;
-      parentTreeNode.children[treeNode.id] = treeNode;
-    }
-    this.indexes.set(treeNode.id, treeNode);
-  }
-
-  public remove(mutation: removedNodeMutation, mirror: Mirror) {
-    const parentTreeNode = this.indexes.get(mutation.parentId);
-    const treeNode = this.indexes.get(mutation.id);
-
-    const deepRemoveFromMirror = (id: number) => {
-      if (id === -1) return;
-
-      this.removeIdSet.add(id);
-      const node = mirror.getNode(id);
-      node?.childNodes.forEach((childNode) => {
-        deepRemoveFromMirror(mirror.getId(childNode));
-      });
-    };
-    const deepRemoveFromTreeIndex = (node: TreeNode) => {
-      this.removeIdSet.add(node.id);
-      Object.values(node.children).forEach((n) => deepRemoveFromTreeIndex(n));
-      const _treeNode = this.indexes.get(node.id);
-      if (_treeNode) {
-        const _parentTreeNode = _treeNode.parent;
-        if (_parentTreeNode) {
-          delete _treeNode.parent;
-          delete _parentTreeNode.children[_treeNode.id];
-          this.indexes.delete(mutation.id);
-        }
-      }
-    };
-
-    if (!treeNode) {
-      this.removeNodeMutations.push(mutation);
-      deepRemoveFromMirror(mutation.id);
-    } else if (!parentTreeNode) {
-      delete this.tree[treeNode.id];
-      this.indexes.delete(treeNode.id);
-      deepRemoveFromTreeIndex(treeNode);
-    } else {
-      delete treeNode.parent;
-      delete parentTreeNode.children[treeNode.id];
-      this.indexes.delete(mutation.id);
-      deepRemoveFromTreeIndex(treeNode);
-    }
-  }
-
-  public text(mutation: textMutation) {
-    const treeNode = this.indexes.get(mutation.id);
-    if (treeNode) {
-      treeNode.texts.push(mutation);
-    } else {
-      this.textMutations.push(mutation);
-    }
-  }
-
-  public attribute(mutation: attributeMutation) {
-    const treeNode = this.indexes.get(mutation.id);
-    if (treeNode) {
-      treeNode.attributes.push(mutation);
-    } else {
-      this.attributeMutations.push(mutation);
-    }
-  }
-
-  public scroll(d: scrollData) {
-    this.scrollMap.set(d.id, d);
-  }
-
-  public input(d: inputData) {
-    this.inputMap.set(d.id, d);
-  }
-
-  public flush(): {
-    mutationData: mutationData;
-    scrollMap: TreeIndex['scrollMap'];
-    inputMap: TreeIndex['inputMap'];
-  } {
-    const {
-      tree,
-      removeNodeMutations,
-      textMutations,
-      attributeMutations,
-    } = this;
-
-    const batchMutationData: mutationData = {
-      source: IncrementalSource.Mutation,
-      removes: removeNodeMutations,
-      texts: textMutations,
-      attributes: attributeMutations,
-      adds: [],
-    };
-
-    const walk = (treeNode: TreeNode, removed: boolean) => {
-      if (removed) {
-        this.removeIdSet.add(treeNode.id);
-      }
-      batchMutationData.texts = batchMutationData.texts
-        .concat(removed ? [] : treeNode.texts)
-        .filter((m) => !this.removeIdSet.has(m.id));
-      batchMutationData.attributes = batchMutationData.attributes
-        .concat(removed ? [] : treeNode.attributes)
-        .filter((m) => !this.removeIdSet.has(m.id));
-      if (
-        !this.removeIdSet.has(treeNode.id) &&
-        !this.removeIdSet.has(treeNode.mutation.parentId) &&
-        !removed
-      ) {
-        batchMutationData.adds.push(treeNode.mutation);
-        if (treeNode.children) {
-          Object.values(treeNode.children).forEach((n) => walk(n, false));
-        }
-      } else {
-        Object.values(treeNode.children).forEach((n) => walk(n, true));
-      }
-    };
-
-    Object.values(tree).forEach((n) => walk(n, false));
-
-    for (const id of this.scrollMap.keys()) {
-      if (this.removeIdSet.has(id)) {
-        this.scrollMap.delete(id);
-      }
-    }
-    for (const id of this.inputMap.keys()) {
-      if (this.removeIdSet.has(id)) {
-        this.inputMap.delete(id);
-      }
-    }
-
-    const scrollMap = new Map(this.scrollMap);
-    const inputMap = new Map(this.inputMap);
-
-    this.reset();
-
-    return {
-      mutationData: batchMutationData,
-      scrollMap,
-      inputMap,
-    };
-  }
-
-  private reset() {
-    this.tree = [];
-    this.indexes = new Map();
-    this.removeNodeMutations = [];
-    this.textMutations = [];
-    this.attributeMutations = [];
-    this.removeIdSet = new Set();
-    this.scrollMap = new Map();
-    this.inputMap = new Map();
-  }
-
-  public idRemoved(id: number): boolean {
-    return this.removeIdSet.has(id);
   }
 }
 
@@ -537,14 +378,27 @@ export function iterateResolveTree(
 
 export type AppendedIframe = {
   mutationInQueue: addedNodeMutation;
-  builtNode: HTMLIFrameElement;
+  builtNode: HTMLIFrameElement | RRIFrameElement;
 };
 
-export function isSerializedIframe(
-  n: Node,
-  mirror: Mirror,
-): n is HTMLIFrameElement {
+export function isSerializedIframe<TNode extends Node | RRNode>(
+  n: TNode,
+  mirror: IMirror<TNode>,
+): boolean {
   return Boolean(n.nodeName === 'IFRAME' && mirror.getMeta(n));
+}
+
+export function isSerializedStylesheet<TNode extends Node | RRNode>(
+  n: TNode,
+  mirror: IMirror<TNode>,
+): boolean {
+  return Boolean(
+    n.nodeName === 'LINK' &&
+      n.nodeType === n.ELEMENT_NODE &&
+      (n as HTMLElement).getAttribute &&
+      (n as HTMLElement).getAttribute('rel') === 'stylesheet' &&
+      mirror.getMeta(n),
+  );
 }
 
 export function getBaseDimension(
@@ -577,10 +431,133 @@ export function getBaseDimension(
   };
 }
 
-export function hasShadowRoot<T extends Node>(
+export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean(((n as unknown) as Element)?.shadowRoot);
+  return Boolean((n as unknown as Element)?.shadowRoot);
+}
+
+export function getNestedRule(
+  rules: CSSRuleList,
+  position: number[],
+): CSSGroupingRule {
+  const rule = rules[position[0]] as CSSGroupingRule;
+  if (position.length === 1) {
+    return rule;
+  } else {
+    return getNestedRule(
+      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
+      position.slice(2),
+    );
+  }
+}
+
+export function getPositionsAndIndex(nestedIndex: number[]) {
+  const positions = [...nestedIndex];
+  const index = positions.pop();
+  return { positions, index };
+}
+
+/**
+ * Returns the latest mutation in the queue for each node.
+ * @param mutations - mutations The text mutations to filter.
+ * @returns The filtered text mutations.
+ */
+export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
+  const idSet = new Set<number>();
+  const uniqueMutations: textMutation[] = [];
+
+  for (let i = mutations.length; i--; ) {
+    const mutation = mutations[i];
+    if (!idSet.has(mutation.id)) {
+      uniqueMutations.push(mutation);
+      idSet.add(mutation.id);
+    }
+  }
+
+  return uniqueMutations;
+}
+
+export class StyleSheetMirror {
+  private id = 1;
+  private styleIDMap = new WeakMap<CSSStyleSheet, number>();
+  private idStyleMap = new Map<number, CSSStyleSheet>();
+
+  getId(stylesheet: CSSStyleSheet): number {
+    return this.styleIDMap.get(stylesheet) ?? -1;
+  }
+
+  has(stylesheet: CSSStyleSheet): boolean {
+    return this.styleIDMap.has(stylesheet);
+  }
+
+  /**
+   * @returns If the stylesheet is in the mirror, returns the id of the stylesheet. If not, return the new assigned id.
+   */
+  add(stylesheet: CSSStyleSheet, id?: number): number {
+    if (this.has(stylesheet)) return this.getId(stylesheet);
+    let newId: number;
+    if (id === undefined) {
+      newId = this.id++;
+    } else newId = id;
+    this.styleIDMap.set(stylesheet, newId);
+    this.idStyleMap.set(newId, stylesheet);
+    return newId;
+  }
+
+  getStyle(id: number): CSSStyleSheet | null {
+    return this.idStyleMap.get(id) || null;
+  }
+
+  reset(): void {
+    this.styleIDMap = new WeakMap();
+    this.idStyleMap = new Map();
+    this.id = 1;
+  }
+
+  generateId(): number {
+    return this.id++;
+  }
+}
+
+/**
+ * Get the direct shadow host of a node in shadow dom. Returns null if it is not in a shadow dom.
+ */
+export function getShadowHost(n: Node): Element | null {
+  let shadowHost: Element | null = null;
+  if (
+    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    (n.getRootNode() as ShadowRoot).host
+  )
+    shadowHost = (n.getRootNode() as ShadowRoot).host;
+  return shadowHost;
+}
+
+/**
+ * Get the root shadow host of a node in nested shadow doms. Returns the node itself if it is not in a shadow dom.
+ */
+export function getRootShadowHost(n: Node): Node {
+  let rootShadowHost: Node = n;
+
+  let shadowHost: Element | null;
+  // If n is in a nested shadow dom.
+  while ((shadowHost = getShadowHost(rootShadowHost)))
+    rootShadowHost = shadowHost;
+
+  return rootShadowHost;
+}
+
+export function shadowHostInDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  const shadowHost = getRootShadowHost(n);
+  return !(shadowHost instanceof Node) || doc.contains(shadowHost);
+}
+
+export function inDom(n: Node): boolean {
+  const doc = n.ownerDocument;
+  if (!doc) return false;
+  return !(n instanceof Node) || doc.contains(n) || shadowHostInDom(n);
 }
 
 export function isUserInteraction(event: eventWithTime): boolean {

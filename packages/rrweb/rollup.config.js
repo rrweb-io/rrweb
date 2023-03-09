@@ -1,6 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
+import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import renameNodeModules from 'rollup-plugin-rename-node-modules';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
@@ -90,6 +90,16 @@ const baseConfigs = [
     pathFn: toPluginPath('console', 'record'),
   },
   {
+    input: './src/plugins/canvas-webrtc/record/index.ts',
+    name: 'rrwebCanvasWebRTCRecord',
+    pathFn: toPluginPath('canvas-webrtc', 'record'),
+  },
+  {
+    input: './src/plugins/canvas-webrtc/replay/index.ts',
+    name: 'rrwebCanvasWebRTCReplay',
+    pathFn: toPluginPath('canvas-webrtc', 'replay'),
+  },
+  {
     input: './src/plugins/console/replay/index.ts',
     name: 'rrwebConsoleReplay',
     pathFn: toPluginPath('console', 'replay'),
@@ -108,6 +118,27 @@ const baseConfigs = [
 
 let configs = [];
 
+function getPlugins(options = {}) {
+  const { minify = false, sourceMap = false } = options;
+  return [
+    resolve({ browser: true }),
+    webWorkerLoader({
+      targetPlatform: 'browser',
+      inline: true,
+      sourceMap,
+    }),
+    esbuild({
+      minify,
+    }),
+    postcss({
+      extract: true,
+      inject: false,
+      minimize: minify,
+      sourceMap,
+    }),
+  ];
+}
+
 for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
@@ -123,7 +154,7 @@ for (const c of baseConfigs) {
   // browser
   configs.push({
     input: c.input,
-    plugins,
+    plugins: getPlugins(),
     output: [
       {
         name: c.name,
@@ -135,14 +166,7 @@ for (const c of baseConfigs) {
   // browser + minify
   configs.push({
     input: c.input,
-    plugins: basePlugins.concat(
-      postcss({
-        extract: true,
-        minimize: true,
-        sourceMap: true,
-      }),
-      terser(),
-    ),
+    plugins: getPlugins({ minify: true, sourceMap: true }),
     output: [
       {
         name: c.name,
@@ -159,7 +183,7 @@ for (const c of baseConfigs) {
     output: [
       {
         format: 'cjs',
-        file: c.pathFn('lib/rrweb.js'),
+        file: c.pathFn('lib/rrweb.cjs'),
       },
     ],
   });
@@ -188,9 +212,24 @@ if (process.env.BROWSER_ONLY) {
       pathFn: (p) => p,
     },
     {
+      input: './src/entries/all.ts',
+      name: 'rrweb',
+      pathFn: toAllPath,
+    },
+    {
       input: './src/plugins/console/record/index.ts',
       name: 'rrwebConsoleRecord',
       pathFn: toPluginPath('console', 'record'),
+    },
+    {
+      input: './src/plugins/canvas-webrtc/record/index.ts',
+      name: 'rrwebCanvasWebRTCRecord',
+      pathFn: toPluginPath('canvas-webrtc', 'record'),
+    },
+    {
+      input: './src/plugins/canvas-webrtc/replay/index.ts',
+      name: 'rrwebCanvasWebRTCReplay',
+      pathFn: toPluginPath('canvas-webrtc', 'replay'),
     },
   ];
 
@@ -213,13 +252,12 @@ if (process.env.BROWSER_ONLY) {
 
     configs.push({
       input: c.input,
-      plugins,
+      plugins: getPlugins(),
       output: [
         {
           name: c.name,
           format: 'iife',
-          file: toMinPath(c.pathFn(pkg.unpkg)),
-          sourcemap: true,
+          file: c.pathFn(pkg.unpkg),
         },
       ],
     });

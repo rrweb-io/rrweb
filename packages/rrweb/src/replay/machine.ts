@@ -1,13 +1,12 @@
 import { createMachine, interpret, assign, StateMachine } from '@xstate/fsm';
+import type { playerConfig } from '../types';
 import {
-  playerConfig,
   eventWithTime,
-  actionWithDelay,
   ReplayerEvents,
   EventType,
   Emitter,
   IncrementalSource,
-} from '../types';
+} from '@rrweb/types';
 import { Timer, addDelay } from './timer';
 
 export type PlayerContext = {
@@ -207,7 +206,6 @@ export function createPlayerService(
           }
 
           const syncEvents = new Array<eventWithTime>();
-          const actions = new Array<actionWithDelay>();
           for (const event of neededEvents) {
             if (
               lastPlayedTimestamp &&
@@ -221,7 +219,7 @@ export function createPlayerService(
               syncEvents.push(event);
             } else {
               const castFn = getCastFn(event, false);
-              actions.push({
+              timer.addAction({
                 doAction: () => {
                   castFn();
                 },
@@ -231,7 +229,6 @@ export function createPlayerService(
           }
           applyEventsSynchronously(syncEvents);
           emitter.emit(ReplayerEvents.Flush);
-          timer.addActions(actions);
           timer.start();
         },
         pause(ctx) {
@@ -245,7 +242,6 @@ export function createPlayerService(
         }),
         startLive: assign({
           baselineTime: (ctx, event) => {
-            ctx.timer.toggleLiveMode(true);
             ctx.timer.start();
             if (event.type === 'TO_LIVE' && event.payload.baselineTime) {
               return event.payload.baselineTime;
@@ -267,7 +263,7 @@ export function createPlayerService(
               let insertionIndex = -1;
               let start = 0;
               while (start <= end) {
-                let mid = Math.floor((start + end) / 2);
+                const mid = Math.floor((start + end) / 2);
                 if (events[mid].timestamp <= event.timestamp) {
                   start = mid + 1;
                 } else {

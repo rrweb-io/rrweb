@@ -1,0 +1,36 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "rrdom": "0.1.7",
+    "rrdom-nodejs": "0.1.7",
+    "rrweb": "2.0.0-alpha.4",
+    "rrweb-player": "1.0.0-alpha.4",
+    "rrweb-snapshot": "2.0.0-alpha.4",
+    "@rrweb/types": "2.0.0-alpha.4",
+    "@rrweb/web-extension": "2.0.0-alpha.4"
+  },
+  "changesets": [
+    "calm-bulldogs-speak",
+    "chatty-cherries-train",
+    "eight-terms-hunt",
+    "five-peas-lay",
+    "grumpy-ways-own",
+    "large-ants-prove",
+    "loud-seals-raise",
+    "lovely-pears-cross",
+    "mighty-frogs-sparkle",
+    "nervous-poets-grin",
+    "old-dryers-hide",
+    "real-masks-explode",
+    "real-trains-switch",
+    "serious-ants-juggle",
+    "stupid-ghosts-help",
+    "swift-peas-film",
+    "tidy-yaks-joke",
+    "twenty-lies-switch",
+    "twenty-planets-repeat",
+    "violet-melons-itch",
+    "young-timers-grow"
+  ]
+}

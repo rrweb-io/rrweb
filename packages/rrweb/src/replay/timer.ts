@@ -3,65 +3,78 @@ import {
   eventWithTime,
   EventType,
   IncrementalSource,
-} from '../types';
+} from '@rrweb/types';
 
 export class Timer {
-  public timeOffset: number = 0;
+  public timeOffset = 0;
   public speed: number;
 
   private actions: actionWithDelay[];
-  private raf: number | null = null;
-  private liveMode: boolean;
+  private raf: number | true | null = null;
+  private lastTimestamp: number;
 
-  constructor(actions: actionWithDelay[] = [], speed: number) {
+  constructor(
+    actions: actionWithDelay[] = [],
+    config: {
+      speed: number;
+    },
+  ) {
     this.actions = actions;
-    this.speed = speed;
+    this.speed = config.speed;
   }
   /**
-   * Add an action after the timer starts.
-   * @param action
+   * Add an action, possibly after the timer starts.
    */
   public addAction(action: actionWithDelay) {
-    const index = this.findActionIndex(action);
-    this.actions.splice(index, 0, action);
-  }
-  /**
-   * Add all actions before the timer starts
-   * @param actions
-   */
-  public addActions(actions: actionWithDelay[]) {
-    this.actions = this.actions.concat(actions);
+    const rafWasActive = this.raf === true;
+    if (
+      !this.actions.length ||
+      this.actions[this.actions.length - 1].delay <= action.delay
+    ) {
+      // 'fast track'
+      this.actions.push(action);
+    } else {
+      // binary search - events can arrive out of order in a realtime context
+      const index = this.findActionIndex(action);
+      this.actions.splice(index, 0, action);
+    }
+    if (rafWasActive) {
+      this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+    }
   }
 
   public start() {
     this.timeOffset = 0;
-    let lastTimestamp = performance.now();
-    const { actions } = this;
-    const self = this;
-    function check() {
-      const time = performance.now();
-      self.timeOffset += (time - lastTimestamp) * self.speed;
-      lastTimestamp = time;
-      while (actions.length) {
-        const action = actions[0];
+    this.lastTimestamp = performance.now();
+    this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+  }
 
-        if (self.timeOffset >= action.delay) {
-          actions.shift();
-          action.doAction();
-        } else {
-          break;
-        }
-      }
-      if (actions.length > 0 || self.liveMode) {
-        self.raf = requestAnimationFrame(check);
+  private rafCheck() {
+    const time = performance.now();
+    this.timeOffset += (time - this.lastTimestamp) * this.speed;
+    this.lastTimestamp = time;
+    while (this.actions.length) {
+      const action = this.actions[0];
+
+      if (this.timeOffset >= action.delay) {
+        this.actions.shift();
+        action.doAction();
+      } else {
+        break;
       }
     }
-    this.raf = requestAnimationFrame(check);
+    if (this.actions.length > 0) {
+      this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+    } else {
+      this.raf = true; // was active
+    }
   }
 
   public clear() {
     if (this.raf) {
-      cancelAnimationFrame(this.raf);
+      if (this.raf !== true) {
+        cancelAnimationFrame(this.raf);
+      }
       this.raf = null;
     }
     this.actions.length = 0;
@@ -69,10 +82,6 @@ export class Timer {
 
   public setSpeed(speed: number) {
     this.speed = speed;
-  }
-
-  public toggleLiveMode(mode: boolean) {
-    this.liveMode = mode;
   }
 
   public isActive() {
@@ -83,7 +92,7 @@ export class Timer {
     let start = 0;
     let end = this.actions.length - 1;
     while (start <= end) {
-      let mid = Math.floor((start + end) / 2);
+      const mid = Math.floor((start + end) / 2);
       if (this.actions[mid].delay < action.delay) {
         start = mid + 1;
       } else if (this.actions[mid].delay > action.delay) {
@@ -104,7 +113,9 @@ export function addDelay(event: eventWithTime, baselineTime: number): number {
   // so we need to find the real timestamp by traverse the time offsets.
   if (
     event.type === EventType.IncrementalSnapshot &&
-    event.data.source === IncrementalSource.MouseMove
+    event.data.source === IncrementalSource.MouseMove &&
+    event.data.positions &&
+    event.data.positions.length
   ) {
     const firstOffset = event.data.positions[0].timeOffset;
     // timeOffset is a negative offset to event.timestamp

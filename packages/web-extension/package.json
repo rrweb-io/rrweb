@@ -1,0 +1,47 @@
+{
+  "name": "@rrweb/web-extension",
+  "private": true,
+  "version": "2.0.0-alpha.6",
+  "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
+  "author": "rrweb-io",
+  "license": "MIT",
+  "scripts": {
+    "dev:chrome": "cross-env TARGET_BROWSER=chrome vite dev",
+    "dev:firefox": "cross-env TARGET_BROWSER=firefox vite dev",
+    "build:chrome": "cross-env TARGET_BROWSER=chrome vite build",
+    "build:firefox": "cross-env TARGET_BROWSER=firefox vite build",
+    "pack:chrome": "cross-env TARGET_BROWSER=chrome ZIP=true vite build",
+    "pack:firefox": "cross-env TARGET_BROWSER=firefox ZIP=true vite build",
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run pack:chrome && npm run pack:firefox"
+  },
+  "devDependencies": {
+    "@rrweb/types": "^2.0.0-alpha.6",
+    "@types/react-dom": "^18.0.6",
+    "@types/webextension-polyfill": "^0.9.1",
+    "@vitejs/plugin-react": "^2.1.0",
+    "cross-env": "^7.0.3",
+    "type-fest": "^2.19.0",
+    "typescript": "^4.7.3",
+    "vite": "^3.1.8",
+    "vite-plugin-web-extension": "^1.4.5",
+    "vite-plugin-zip-pack": "^1.0.5",
+    "webextension-polyfill": "^0.10.0"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.3.4",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@tanstack/react-table": "^8.5.22",
+    "framer-motion": "^7.3.6",
+    "idb": "^7.1.1",
+    "mitt": "^3.0.0",
+    "nanoid": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0",
+    "react-router-dom": "^6.4.1",
+    "rrweb": "^2.0.0-alpha.6",
+    "rrweb-player": "^2.0.0-alpha.6"
+  }
+}

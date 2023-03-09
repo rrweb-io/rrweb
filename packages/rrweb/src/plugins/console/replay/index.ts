@@ -1,10 +1,7 @@
 import { LogLevel, LogData, PLUGIN_NAME } from '../record';
-import {
-  eventWithTime,
-  EventType,
-  IncrementalSource,
-  ReplayPlugin,
-} from '../../../types';
+import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
+import type { ReplayPlugin } from '../../../types';
 
 /**
  * define an interface to replay log records
@@ -62,29 +59,29 @@ class LogReplayPlugin {
     for (const level of this.config.level!) {
       if (level === 'trace') {
         replayLogger[level] = (data: LogData) => {
-          const logger = ((console.log as unknown) as PatchedConsoleLog)[
+          const logger = (console.log as unknown as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? ((console.log as unknown) as PatchedConsoleLog)[
+            ? (console.log as unknown as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console.log;
           logger(
-            ...data.payload.map((s) => JSON.parse(s)),
+            ...data.payload.map((s) => JSON.parse(s) as object),
             this.formatMessage(data),
           );
         };
       } else {
         replayLogger[level] = (data: LogData) => {
-          const logger = ((console[level] as unknown) as PatchedConsoleLog)[
+          const logger = (console[level] as unknown as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? ((console[level] as unknown) as PatchedConsoleLog)[
+            ? (console[level] as unknown as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console[level];
           logger(
-            ...data.payload.map((s) => JSON.parse(s)),
+            ...data.payload.map((s) => JSON.parse(s) as object),
             this.formatMessage(data),
           );
         };
@@ -95,7 +92,7 @@ class LogReplayPlugin {
 
   /**
    * format the trace data to a string
-   * @param data the log data
+   * @param data - the log data
    */
   private formatMessage(data: LogData): string {
     if (data.trace.length === 0) {
@@ -121,7 +118,7 @@ export const getReplayConsolePlugin: (
         event.type === EventType.IncrementalSnapshot &&
         event.data.source === (IncrementalSource.Log as IncrementalSource)
       ) {
-        logData = (event.data as unknown) as LogData;
+        logData = event.data as unknown as LogData;
       } else if (
         event.type === EventType.Plugin &&
         event.data.plugin === PLUGIN_NAME

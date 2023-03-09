@@ -21,8 +21,16 @@ export type documentTypeNode = {
 };
 
 export type attributes = {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | true | null;
 };
+export type legacyAttributes = {
+  /**
+   * @deprecated old bug in rrweb was causing these to always be set
+   * @see https://github.com/rrweb-io/rrweb/pull/651
+   */
+  selected: false;
+};
+
 export type elementNode = {
   type: NodeType.Element;
   tagName: string;
@@ -64,6 +72,11 @@ export type serializedNode = (
 
 export type serializedNodeWithId = serializedNode & { id: number };
 
+export type serializedElementNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Element>
+>;
+
 export type tagMap = {
   [key: string]: string;
 };
@@ -75,6 +88,28 @@ export interface INode extends Node {
 
 export interface ICanvas extends HTMLCanvasElement {
   __context: string;
+}
+
+export interface IMirror<TNode> {
+  getId(n: TNode | undefined | null): number;
+
+  getNode(id: number): TNode | null;
+
+  getIds(): number[];
+
+  getMeta(n: TNode): serializedNodeWithId | null;
+
+  removeNodeFromMap(n: TNode): void;
+
+  has(id: number): boolean;
+
+  hasNode(node: TNode): boolean;
+
+  add(n: TNode, meta: serializedNodeWithId): void;
+
+  replace(id: number, n: TNode): void;
+
+  reset(): void;
 }
 
 export type idNodeMap = Map<number, Node>;

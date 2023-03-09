@@ -1,4 +1,5 @@
-import { EventType, eventWithTime, IncrementalSource } from '../../src/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
+import type { eventWithTime } from '@rrweb/types';
 
 const now = Date.now();
 
@@ -490,6 +491,30 @@ const events: eventWithTime[] = [
     type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 75,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'iframe',
+            attributes: { id: 'five' },
+            childNodes: [],
+            rootId: 62,
+            id: 80,
+          },
+        },
+      ],
+    },
+    timestamp: now + 2000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
       adds: [
         {
           parentId: 80,
@@ -547,30 +572,6 @@ const events: eventWithTime[] = [
       texts: [],
       attributes: [],
       isAttachIframe: true,
-    },
-    timestamp: now + 2000,
-  },
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [],
-      adds: [
-        {
-          parentId: 75,
-          nextId: null,
-          node: {
-            type: 2,
-            tagName: 'iframe',
-            attributes: { id: 'five' },
-            childNodes: [],
-            rootId: 62,
-            id: 80,
-          },
-        },
-      ],
     },
     timestamp: now + 2000,
   },

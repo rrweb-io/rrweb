@@ -1,31 +1,19 @@
-import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 import {
   startServer,
   launchPuppeteer,
   getServerURL,
   replaceLast,
   waitForRAF,
+  generateRecordSnippet,
+  ISuite,
 } from '../utils';
-import {
-  recordOptions,
-  eventWithTime,
-  EventType,
-  IncrementalSource,
-} from '../../src/types';
+import type { recordOptions } from '../../src/types';
+import type { eventWithTime } from '@rrweb/types';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 expect.extend({ toMatchImageSnapshot });
-
-interface ISuite {
-  code: string;
-  browser: puppeteer.Browser;
-  server: http.Server;
-  page: puppeteer.Page;
-  events: eventWithTime[];
-  serverURL: string;
-}
 
 describe('e2e webgl', () => {
   let code: ISuite['code'];
@@ -39,7 +27,7 @@ describe('e2e webgl', () => {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -64,26 +52,14 @@ describe('e2e webgl', () => {
       `
     <script>
       ${code}
-      window.snapshots = [];
-      rrweb.record({
-        emit: event => {          
-          window.snapshots.push(event);
-        },
-        maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
-        maskAllInputs: ${options.maskAllInputs},
-        maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
-        userTriggeredOnInput: ${options.userTriggeredOnInput},
-        maskTextFn: ${options.maskTextFn},
-        recordCanvas: ${options.recordCanvas},
-        plugins: ${options.plugins}        
-      });
+      ${generateRecordSnippet(options)}
     </script>
     </body>
     `,
     );
   };
 
-  const fakeGoto = async (page: puppeteer.Page, url: string) => {
+  const fakeGoto = async (p: puppeteer.Page, url: string) => {
     const intercept = async (request: puppeteer.HTTPRequest) => {
       await request.respond({
         status: 200,
@@ -91,16 +67,18 @@ describe('e2e webgl', () => {
         body: ' ', // non-empty string or page will load indefinitely
       });
     };
-    await page.setRequestInterception(true);
-    page.on('request', intercept);
-    await page.goto(url);
-    page.off('request', intercept);
-    await page.setRequestInterception(false);
+    await p.setRequestInterception(true);
+    p.on('request', intercept);
+    await p.goto(url);
+    p.off('request', intercept);
+    await p.setRequestInterception(false);
   };
 
-  const hideMouseAnimation = async (page: puppeteer.Page) => {
-    await page.addStyleTag({
-      content: '.replayer-mouse-tail{display: none !important;}',
+  const hideMouseAnimation = async (p: puppeteer.Page) => {
+    await p.addStyleTag({
+      content: `.replayer-mouse-tail{display: none !important;}
+                html, body { margin: 0; padding: 0; }
+                iframe { border: none; }`,
     });
   };
 
@@ -114,7 +92,9 @@ describe('e2e webgl', () => {
 
     await waitForRAF(page);
 
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots: eventWithTime[] = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
@@ -132,9 +112,8 @@ describe('e2e webgl', () => {
     `);
     await waitForRAF(page);
 
-    const element = await page.$('iframe');
-    const frameImage = await element!.screenshot();
-
+    const frameImage = await page!.screenshot();
+    await waitForRAF(page);
     expect(frameImage).toMatchImageSnapshot();
   });
 
@@ -146,8 +125,11 @@ describe('e2e webgl', () => {
       getHtml.call(this, 'canvas-webgl-image.html', { recordCanvas: true }),
     );
 
+    await waitForRAF(page);
     await page.waitForTimeout(100);
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots: eventWithTime[] = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
@@ -167,9 +149,7 @@ describe('e2e webgl', () => {
     await page.evaluate(`replayer.play(500);`);
     await waitForRAF(page);
 
-    const element = await page.$('iframe');
-    const frameImage = await element!.screenshot();
-
+    const frameImage = await page!.screenshot();
     expect(frameImage).toMatchImageSnapshot();
   });
 });

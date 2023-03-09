@@ -1,0 +1,58 @@
+{
+  "name": "rrdom-nodejs",
+  "version": "2.0.0-alpha.6",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "bundle": "rollup --config",
+    "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
+    "check-types": "tsc -noEmit",
+    "test": "jest",
+    "prepublish": "npm run bundle",
+    "lint": "yarn eslint src/**/*.ts"
+  },
+  "keywords": [
+    "rrweb",
+    "rrdom-nodejs"
+  ],
+  "license": "MIT",
+  "main": "lib/rrdom-nodejs.cjs",
+  "module": "es/rrdom-nodejs.js",
+  "typings": "es",
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "typings"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "@types/cssom": "^0.4.1",
+    "@types/cssstyle": "^2.2.1",
+    "@types/jest": "^27.4.1",
+    "@types/nwsapi": "^2.2.2",
+    "@types/puppeteer": "^5.4.4",
+    "@typescript-eslint/eslint-plugin": "^5.23.0",
+    "@typescript-eslint/parser": "^5.23.0",
+    "compare-versions": "^4.1.3",
+    "eslint": "^8.15.0",
+    "jest": "^27.5.1",
+    "puppeteer": "^9.1.1",
+    "rollup": "^2.56.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.2",
+    "rollup-plugin-web-worker-loader": "^1.6.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "cssom": "^0.5.0",
+    "cssstyle": "^2.3.0",
+    "nwsapi": "^2.2.0",
+    "rrdom": "^2.0.0-alpha.6",
+    "rrweb-snapshot": "^2.0.0-alpha.6"
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
+}
