@@ -159,6 +159,7 @@ export default class MutationBuffer {
   private droppedSet = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
+  private blockClass: observerParam['blockClass'];
   private blockSelector: observerParam['blockSelector'];
   private deleteSelector: observerParam['deleteSelector'];
   private maskTextClass: observerParam['maskTextClass'];
@@ -286,6 +287,7 @@ export default class MutationBuffer {
       const sn = serializeNodeWithId(n, {
         doc: this.doc,
         mirror: this.mirror,
+        blockClass: this.blockClass,
         blockSelector: this.blockSelector,
         deleteSelector: this.deleteSelector,
         maskTextClass: this.maskTextClass,
