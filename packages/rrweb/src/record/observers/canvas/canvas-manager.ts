@@ -16,7 +16,6 @@ import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
-import { isBlocked } from '../../../utils';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -181,7 +180,7 @@ export class CanvasManager {
 
       getCanvas()
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        .filter((canvas) => !isBlocked(canvas, blockSelector))
+        .filter((canvas) => !isBlocked(canvas, blockClass, blockSelector, true))
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
           if (snapshotInProgressMap.get(id)) return;

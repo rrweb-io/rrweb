@@ -182,7 +182,7 @@ export type playerConfig = {
         lineWidth?: number;
         strokeStyle?: string;
       };
-  unpackFn?: UnpackFn;
+  unpackFn?: UnpackFn<eventWithTime>;
   useVirtualDom: boolean;
   logger: {
     log: (...args: Parameters<typeof console.log>) => void;

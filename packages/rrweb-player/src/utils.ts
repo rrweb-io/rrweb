@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-import { isUserInteraction } from 'rrweb';
+import { utils } from 'rrweb';
 import type { eventWithTime } from '@rrweb/types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
@@ -158,7 +158,7 @@ export function getInactivePeriods(events: eventWithTime[]) {
   const inactivePeriods: [number, number][] = [];
   let lastActiveTime = events[0].timestamp;
   for (const event of events) {
-    if (!isUserInteraction(event)) continue;
+    if (!utils.isUserInteraction(event)) continue;
     if (event.timestamp - lastActiveTime > SKIP_TIME_THRESHOLD) {
       inactivePeriods.push([lastActiveTime, event.timestamp]);
     }

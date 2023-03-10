@@ -71,7 +71,7 @@ import {
   getBaseDimension,
   hasShadowRoot,
   isSerializedIframe,
-  isUserInteraction
+  isUserInteraction,
   getNestedRule,
   getPositionsAndIndex,
   uniqueTextMutations,
