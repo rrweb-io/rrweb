@@ -359,8 +359,8 @@ function record<T = eventWithTime>(
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
-      blockSelector,
       blockClass,
+      blockSelector,
       deleteSelector,
       maskTextClass,
       maskTextSelector,
