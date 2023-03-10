@@ -52,7 +52,7 @@ for (let config of baseConfigs) {
       plugins: basePlugins,
       output: [
         {
-          name: config.name,
+          name: 'rrdom',
           format: 'iife',
           file: pkg.unpkg.replace(pkg.name, config.path),
         },
@@ -63,7 +63,7 @@ for (let config of baseConfigs) {
       plugins: basePlugins.concat(terser()),
       output: [
         {
-          name: config.name,
+          name: 'rrdom',
           format: 'iife',
           file: toMinPath(pkg.unpkg).replace(pkg.name, config.path),
           sourcemap: true,

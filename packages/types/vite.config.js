@@ -9,6 +9,7 @@ export default {
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'rrwebTypes',
+      fileName: 'types',
     },
 
     // Leaving this unminified so you can see what exactly gets included in

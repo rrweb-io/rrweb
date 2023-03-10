@@ -3455,6 +3455,20 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
+"@rrweb/types@^2.0.0-alpha.6":
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@rrweb/types/-/types-2.0.0-alpha.6.tgz#0c880272d455666c57c4180a2b6c818d642aebc7"
+  integrity sha512-c7Adw44pNkNsE9wkBPrONaLS9fq2WtWAMFks9+6SjOLaRv+d6Iu7/6RNBokESHQkvaj1fZ8nPqxT9GjfQ5TMyQ==
+  dependencies:
+    rrweb-snapshot "^2.0.0-alpha.6"
+
+"@rrweb/types@npm:@fullview/rrweb-types@^2.0.0-alpha.6.1":
+  version "2.0.0-alpha.6.1"
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.6.1.tgz#9b73594dd4437d07366774eb7e8c5557326469b1"
+  integrity sha512-cJQsVS11Lkeq9pKj3uJhgceqN5/yjVc9pMTxJfkE0V23tbTnSt3uQXY/9d4sb/D2oLBoc1pyhN0Stdwwo11NCw==
+  dependencies:
+    rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
+
 "@rushstack/node-core-library@3.53.2", "@rushstack/node-core-library@^3.53.2":
   version "3.53.2"
   resolved "https://registry.yarnpkg.com/@rushstack/node-core-library/-/node-core-library-3.53.2.tgz#f442e121f9e6c8bef9a23b7337e6399ab5c0c579"
@@ -13834,6 +13848,25 @@ rollup@~2.78.0:
   integrity sha512-VeeCgtGi4P+o9hIg+xz4qQpRl6R401LWEXBmxYKOV4zlF82lyhgh2hTZnheFUbANE8l2A41F458iwj2vEYaXJg==
   optionalDependencies:
     fsevents "~2.3.2"
+
+rrdom@^2.0.0-alpha.6:
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/rrdom/-/rrdom-2.0.0-alpha.6.tgz#80d2efc1afe94ab617622d256375837b19299b9b"
+  integrity sha512-b7eFnFbWQ5/t7abHgioeGPxsYUPj0sSf0yLjX+n1bKkC2zS3NBETdSK1KGMmBdLRgjxpKDh061EVKoA1AG65JQ==
+  dependencies:
+    rrweb-snapshot "^2.0.0-alpha.6"
+
+"rrdom@npm:@fullview/rrdom@^2.0.0-alpha.6.1":
+  version "2.0.0-alpha.6.1"
+  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.6.1.tgz#ea59e37027da31a00161c30be686a648891d776d"
+  integrity sha512-FFdSgOyHVeBxLo1TUPbJDr2xbnLCfQ3E0uwutlZojtgdG1IV0jMJYwnKhb49tMf3fFfSCxpY4b4pY39e+LONBA==
+  dependencies:
+    rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
+
+rrweb-snapshot@^2.0.0-alpha.6, "rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6", "rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1":
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.tgz#dd518299bfd1f13c1300820e8aec47ccbc6da8e2"
+  integrity sha512-t46ibQ9DEgWVjfW5XGF5Uakob/0LfWw+d6e0BQp1yZyVEra57kPnlKyVAeQBWYddINPWWVII8gW4DatO/u/0Yg==
 
 run-async@^2.4.0:
   version "2.4.1"
