@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from 'rrweb';
+import { isUserInteraction } from 'rrweb';
 import type { eventWithTime } from '@rrweb/types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
@@ -145,21 +145,6 @@ export function typeOf(
   return map[toString.call(obj)];
 }
 
-/**
- * Forked from 'rrweb' replay/index.ts. The original function is not exported.
- * Determine whether the event is a user interaction event
- * @param event - event to be determined
- * @returns true if the event is a user interaction event
- */
-function isUserInteraction(event: eventWithTime): boolean {
-  if (event.type !== EventType.IncrementalSnapshot) {
-    return false;
-  }
-  return (
-    event.data.source > IncrementalSource.Mutation &&
-    event.data.source <= IncrementalSource.Input
-  );
-}
 
 // Forked from 'rrweb' replay/index.ts. A const threshold of inactive time.
 const SKIP_TIME_THRESHOLD = 10 * 1000;

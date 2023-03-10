@@ -1,4 +1,4 @@
-import type {
+import {
   throttleOptions,
   listenerHandler,
   hookResetter,
@@ -8,6 +8,9 @@ import type {
   IWindow,
   DeprecatedMirror,
   textMutation,
+  EventType,
+  eventWithTime,
+  IncrementalSource,
 } from '@rrweb/types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
@@ -560,6 +563,11 @@ export function inDom(n: Node): boolean {
   return !(n instanceof Node) || doc.contains(n) || shadowHostInDom(n);
 }
 
+/**
+ * Determine whether the event is a user interaction event
+ * @param event - event to be determined
+ * @returns true if the event is a user interaction event
+ */
 export function isUserInteraction(event: eventWithTime): boolean {
   if (event.type !== EventType.IncrementalSnapshot) {
     return false;
