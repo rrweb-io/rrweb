@@ -180,6 +180,7 @@ export class Replayer {
       skipInactive: false,
       showWarning: true,
       showDebug: false,
+      blockClass: 'rr-block',
       liveMode: false,
       insertStyleRules: [],
       triggerFocus: true,

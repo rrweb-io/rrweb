@@ -167,6 +167,7 @@ export type playerConfig = {
   skipInactive: boolean;
   showWarning: boolean;
   showDebug: boolean;
+  blockClass: string;
   liveMode: boolean;
   insertStyleRules: string[];
   triggerFocus: boolean;
