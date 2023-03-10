@@ -1028,9 +1028,6 @@ export function serializeNodeWithId(
   } else {
     id = genId();
   }
-  if (id === IGNORED_NODE) {
-    return null; // slimDOM
-  }
 
   if (_serializedNode.type === NodeType.Element && _serializedNode.needDelete) {
     return null;
@@ -1223,9 +1220,9 @@ function snapshot(
   n: Document,
   options?: {
     mirror?: Mirror;
-    blockClass: string | RegExp;
-    blockSelector: string | null;
-    deleteSelector: string | null;
+    blockClass?: string | RegExp;
+    blockSelector?: string | null;
+    deleteSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
     inlineStylesheet?: boolean;
