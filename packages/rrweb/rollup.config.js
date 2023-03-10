@@ -142,7 +142,10 @@ function getPlugins(options = {}) {
 for (const c of baseConfigs) {
   const basePlugins = [
     resolve({ browser: true }),
+
+    // supports bundling `web-worker:..filename`
     webWorkerLoader({ targetPlatform: 'browser' }),
+
     typescript(),
   ];
   const plugins = basePlugins.concat(
@@ -236,20 +239,6 @@ if (process.env.BROWSER_ONLY) {
   configs = [];
 
   for (const c of browserOnlyBaseConfigs) {
-    const plugins = [
-      resolve({ browser: true }),
-      webWorkerLoader({ targetPlatform: 'browser' }),
-      typescript({
-        outDir: null,
-      }),
-      postcss({
-        extract: false,
-        inject: false,
-        sourceMap: true,
-      }),
-      terser(),
-    ];
-
     configs.push({
       input: c.input,
       plugins: getPlugins(),
