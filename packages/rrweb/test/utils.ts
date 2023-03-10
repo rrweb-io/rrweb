@@ -1,4 +1,4 @@
-import { NodeType } from '@fullview/rrweb-snapshot';
+import { NodeType } from 'rrweb-snapshot';
 import {
   EventType,
   IncrementalSource,

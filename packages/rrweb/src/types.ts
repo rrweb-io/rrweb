@@ -125,6 +125,7 @@ export type observerParam = {
 export type MutationBufferParam = Pick<
   observerParam,
   | 'mutationCb'
+  | 'blockClass'
   | 'blockSelector'
   | 'deleteSelector'
   | 'maskTextClass'
