@@ -736,6 +736,7 @@ function serializeElementNode(
     const oldValue = image.crossOrigin;
     image.crossOrigin = 'anonymous';
     const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
       try {
         canvasService!.width = image.naturalWidth;
         canvasService!.height = image.naturalHeight;
@@ -755,7 +756,7 @@ function serializeElementNode(
     };
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.onload = recordInlineImage;
+    else image.addEventListener('load', recordInlineImage);
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
