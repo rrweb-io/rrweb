@@ -509,15 +509,9 @@ export default class MutationBuffer {
         if (
           target.tagName === 'IFRAME' &&
           m.attributeName === 'src' &&
-          !this.keepIframeSrcFn(value as string)
+          (target as HTMLIFrameElement).contentDocument
         ) {
-          if (!(target as HTMLIFrameElement).contentDocument) {
-            // we can't record it directly as we can't see into it
-            // preserve the src attribute so a decision can be taken at replay time
-            m.attributeName = 'rr_src';
-          } else {
-            return;
-          }
+          return;
         }
         if (!item) {
           item = {
