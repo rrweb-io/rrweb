@@ -145,7 +145,6 @@ export function typeOf(
   return map[toString.call(obj)];
 }
 
-
 // Forked from 'rrweb' replay/index.ts. A const threshold of inactive time.
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 

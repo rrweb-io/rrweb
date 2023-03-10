@@ -19,7 +19,7 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  getCssRulesString
+  getCssRulesString,
 } from './utils';
 
 let _id = 1;
