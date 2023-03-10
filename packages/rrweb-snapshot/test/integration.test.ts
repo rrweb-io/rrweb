@@ -307,9 +307,12 @@ iframe.contentDocument.querySelector('center').clientHeight
   it('images with inline onload should work', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto('http://localhost:3030/html/picture-with-inline-onload.html', {
-      waitUntil: 'load',
-    });
+    await page.goto(
+      'http://localhost:3030/html/picture-with-inline-onload.html',
+      {
+        waitUntil: 'load',
+      },
+    );
     await page.waitForSelector('img', { timeout: 1000 });
     await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
@@ -317,7 +320,9 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false
     })`);
     await waitForRAF(page);
-    const fnName = (await page.evaluate('document.querySelector("img").onload.name')) as string;
+    const fnName = (await page.evaluate(
+      'document.querySelector("img").onload.name',
+    )) as string;
     assert(fnName === 'onload');
   });
 });
