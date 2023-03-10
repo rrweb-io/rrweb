@@ -19,8 +19,7 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  getCssRulesString,
-  isBlocked
+  getCssRulesString
 } from './utils';
 
 let _id = 1;
@@ -636,7 +635,7 @@ function serializeElementNode(
     newlyAddedElement = false,
     rootId,
   } = options;
-  const needDelete = _isDeletedElement(n as HTMLElement, deleteSelector);
+  const needDelete = _isDeletedElement(n, deleteSelector);
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
