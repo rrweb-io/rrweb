@@ -17,28 +17,6 @@ export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
 }
 
-export function isBlocked(node: Node | null, blockSelector?: string): boolean {
-  if (!node) return false;
-
-  if (node.nodeType === node.ELEMENT_NODE) {
-    const element = node as HTMLElement;
-    let needBlock = false;
-
-    if (blockSelector) needBlock = element.matches(blockSelector);
-
-    return needBlock || isBlocked(node.parentNode, blockSelector);
-  }
-
-  if (node.nodeType === node.TEXT_NODE) {
-    /**
-     * Check parent node since text node do not have class name
-     */
-    return isBlocked(node.parentNode, blockSelector);
-  }
-
-  return isBlocked(node.parentNode, blockSelector);
-}
-
 export function isShadowRoot(n: Node): n is ShadowRoot {
   const host: Element | null = (n as ShadowRoot)?.host;
   return Boolean(host?.shadowRoot === n);
