@@ -59,6 +59,7 @@ function record<T = eventWithTime>(
     emit,
     checkoutEveryNms,
     checkoutEveryNth,
+    blockClass = 'rr-block',
     blockSelector = null,
     deleteSelector = null,
     ignoreClass = 'rr-ignore',
@@ -176,9 +177,9 @@ function record<T = eventWithTime>(
       // Disable packing events which will be emitted to parent frames.
       !passEmitsToParent
     ) {
-      e = packFn(e) as unknown as eventWithTime;
+      e = (packFn(e) as unknown) as eventWithTime;
     }
-    return e as unknown as T;
+    return (e as unknown) as T;
   };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
     if (
@@ -314,6 +315,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
     bypassOptions: {
+      blockClass,
       blockSelector,
       deleteSelector,
       maskTextClass,
@@ -358,6 +360,7 @@ function record<T = eventWithTime>(
     const node = snapshot(document, {
       mirror,
       blockSelector,
+      blockClass,
       deleteSelector,
       maskTextClass,
       maskTextSelector,

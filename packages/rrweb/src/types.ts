@@ -43,6 +43,7 @@ export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
+  blockClass?: blockClass;
   blockSelector?: string;
   deleteSelector?: string;
   ignoreClass?: string;

@@ -1,5 +1,6 @@
 import type { Mirror } from 'rrweb-snapshot';
 import {
+  blockClass,
   CanvasContext,
   canvasManagerMutationCallback,
   canvasMutationWithType,
