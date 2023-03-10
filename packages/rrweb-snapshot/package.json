@@ -1,6 +1,6 @@
 {
   "name": "@fullview/rrweb-snapshot",
-  "version": "2.0.0-alpha.6",
+  "version": "2.0.0-alpha.6.1",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",

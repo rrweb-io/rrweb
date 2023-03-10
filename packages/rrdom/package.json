@@ -48,6 +48,6 @@
     "typescript": "^4.7.3"
   },
   "dependencies": {
-    "rrweb-snapshot": "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6"
+    "rrweb-snapshot": "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
   }
 }

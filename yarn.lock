@@ -13863,7 +13863,7 @@ rrdom@^2.0.0-alpha.6:
   dependencies:
     rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
 
-rrweb-snapshot@^2.0.0-alpha.6, "rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6", "rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1":
+rrweb-snapshot@^2.0.0-alpha.6, "rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1":
   version "2.0.0-alpha.6"
   resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.tgz#dd518299bfd1f13c1300820e8aec47ccbc6da8e2"
   integrity sha512-t46ibQ9DEgWVjfW5XGF5Uakob/0LfWw+d6e0BQp1yZyVEra57kPnlKyVAeQBWYddINPWWVII8gW4DatO/u/0Yg==
