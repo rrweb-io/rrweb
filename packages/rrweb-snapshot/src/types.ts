@@ -21,7 +21,7 @@ export type documentTypeNode = {
 };
 
 export type attributes = {
-  [key: string]: string | number | true;
+  [key: string]: string | number | true | null;
 };
 export type legacyAttributes = {
   /**

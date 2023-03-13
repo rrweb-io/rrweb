@@ -223,33 +223,44 @@ export function transformAttribute(
   doc: Document,
   tagName: string,
   name: string,
-  value: string,
-): string {
+  value: string | null,
+): string | null {
+  if (!value) {
+    return value;
+  }
+
   // relative path in attribute
   if (
     name === 'src' ||
-    (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))
+    (name === 'href' && !(tagName === 'use' && value[0] === '#'))
   ) {
     // href starts with a # is an id pointer for svg
     return absoluteToDoc(doc, value);
-  } else if (name === 'xlink:href' && value && value[0] !== '#') {
+  } else if (name === 'xlink:href' && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
   } else if (
     name === 'background' &&
-    value &&
     (tagName === 'table' || tagName === 'td' || tagName === 'th')
   ) {
     return absoluteToDoc(doc, value);
-  } else if (name === 'srcset' && value) {
+  } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
-  } else if (name === 'style' && value) {
+  } else if (name === 'style') {
     return absoluteToStylesheet(value, getHref());
-  } else if (tagName === 'object' && name === 'data' && value) {
+  } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
-  } else {
-    return value;
   }
+
+  return value;
+}
+
+export function ignoreAttribute(
+  tagName: string,
+  name: string,
+  _value: unknown,
+): boolean {
+  return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
 }
 
 export function _isBlockedElement(
@@ -614,12 +625,14 @@ function serializeElementNode(
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    attributes[attr.name] = transformAttribute(
-      doc,
-      tagName,
-      attr.name,
-      attr.value,
-    );
+    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+      attributes[attr.name] = transformAttribute(
+        doc,
+        tagName,
+        attr.name,
+        attr.value,
+      );
+    }
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
@@ -723,6 +736,7 @@ function serializeElementNode(
     const oldValue = image.crossOrigin;
     image.crossOrigin = 'anonymous';
     const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
       try {
         canvasService!.width = image.naturalWidth;
         canvasService!.height = image.naturalHeight;
@@ -742,7 +756,7 @@ function serializeElementNode(
     };
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.onload = recordInlineImage;
+    else image.addEventListener('load', recordInlineImage);
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
@@ -794,8 +808,10 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(maybeAttr: string | number | boolean): string {
-  if (maybeAttr === undefined) {
+function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): string {
+  if (maybeAttr === undefined || maybeAttr === null) {
     return '';
   } else {
     return (maybeAttr as string).toLowerCase();

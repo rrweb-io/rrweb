@@ -1,6 +1,7 @@
 import snapshot, {
   serializeNodeWithId,
   transformAttribute,
+  ignoreAttribute,
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
@@ -24,6 +25,7 @@ export {
   addHoverClass,
   createCache,
   transformAttribute,
+  ignoreAttribute,
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
