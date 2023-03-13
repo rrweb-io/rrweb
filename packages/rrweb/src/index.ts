@@ -3,13 +3,6 @@ import { Replayer } from './replay';
 import { _mirror } from './utils';
 import * as utils from './utils';
 
-export {
-  EventType,
-  IncrementalSource,
-  MouseInteractions,
-  ReplayerEvents,
-} from '@rrweb/types';
-
 export type { recordOptions } from './types';
 
 const { addCustomEvent } = record;

@@ -3455,13 +3455,6 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@rrweb/types@^2.0.0-alpha.6":
-  version "2.0.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/@rrweb/types/-/types-2.0.0-alpha.6.tgz#0c880272d455666c57c4180a2b6c818d642aebc7"
-  integrity sha512-c7Adw44pNkNsE9wkBPrONaLS9fq2WtWAMFks9+6SjOLaRv+d6Iu7/6RNBokESHQkvaj1fZ8nPqxT9GjfQ5TMyQ==
-  dependencies:
-    rrweb-snapshot "^2.0.0-alpha.6"
-
 "@rrweb/types@npm:@fullview/rrweb-types@^2.0.0-alpha.6.1":
   version "2.0.0-alpha.6.1"
   resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.6.1.tgz#9b73594dd4437d07366774eb7e8c5557326469b1"
