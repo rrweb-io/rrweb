@@ -3455,12 +3455,19 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@rrweb/types@npm:@fullview/rrweb-types@^2.0.0-alpha.6.1":
-  version "2.0.0-alpha.6.1"
-  resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.6.1.tgz#9b73594dd4437d07366774eb7e8c5557326469b1"
-  integrity sha512-cJQsVS11Lkeq9pKj3uJhgceqN5/yjVc9pMTxJfkE0V23tbTnSt3uQXY/9d4sb/D2oLBoc1pyhN0Stdwwo11NCw==
+"@rrweb/types@^2.0.0-alpha.6":
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@rrweb/types/-/types-2.0.0-alpha.6.tgz#0c880272d455666c57c4180a2b6c818d642aebc7"
+  integrity sha512-c7Adw44pNkNsE9wkBPrONaLS9fq2WtWAMFks9+6SjOLaRv+d6Iu7/6RNBokESHQkvaj1fZ8nPqxT9GjfQ5TMyQ==
   dependencies:
-    rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
+    rrweb-snapshot "^2.0.0-alpha.6"
+
+"@rrweb/types@npm:@fullview/rrweb-types@^2.0.0-alpha.6.8", "@rrweb/types@yarn:@fullview/rrweb-types":
+  version "2.0.0-alpha.6.8"
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.6.8.tgz#1b4d8e87a4c67e868fe7b7f07d98973f34fa36c2"
+  integrity sha512-McyKJ1/iojxtGjKfF2xn2wr82xe57l5Hfn/tlZgxcVGAidZT96bYsjdUq3RkkgG4fSO9e0/LjWU+uJF1PmhzJA==
+  dependencies:
+    rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.8"
 
 "@rushstack/node-core-library@3.53.2", "@rushstack/node-core-library@^3.53.2":
   version "3.53.2"
@@ -13849,17 +13856,36 @@ rrdom@^2.0.0-alpha.6:
   dependencies:
     rrweb-snapshot "^2.0.0-alpha.6"
 
-"rrdom@npm:@fullview/rrdom@^2.0.0-alpha.6.1":
-  version "2.0.0-alpha.6.1"
-  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.6.1.tgz#ea59e37027da31a00161c30be686a648891d776d"
-  integrity sha512-FFdSgOyHVeBxLo1TUPbJDr2xbnLCfQ3E0uwutlZojtgdG1IV0jMJYwnKhb49tMf3fFfSCxpY4b4pY39e+LONBA==
+"rrdom@yarn:@fullview/rrdom":
+  version "2.0.0-alpha.6.8"
+  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.6.8.tgz#d6dde8848eb5c1ee878419bbd959d316941262c4"
+  integrity sha512-iQCz0+emMI95XGXztMrDnlvEJFi6Y8DmpY9RIVPxdwVdu8TZTl+fHvAMKNkM9IILKUhYRGAfX42+kIJbQEYJ1A==
   dependencies:
-    rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
+    rrweb-snapshot "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.8"
 
-rrweb-snapshot@^2.0.0-alpha.6, "rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1":
+rrweb-snapshot@^2.0.0-alpha.6:
   version "2.0.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.tgz#dd518299bfd1f13c1300820e8aec47ccbc6da8e2"
-  integrity sha512-t46ibQ9DEgWVjfW5XGF5Uakob/0LfWw+d6e0BQp1yZyVEra57kPnlKyVAeQBWYddINPWWVII8gW4DatO/u/0Yg==
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.tgz#c7e7f902312a564d8494d916042e1d9aefe62ce7"
+  integrity sha512-mTeIZn8a6crtHigyO+cSENuKq68ayEdSZJAybkWWVjJQOvDY9EHaqhc8jWXpNkPVcc8M5T8ORc/RXsc52osYHQ==
+
+"rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.8", "rrweb-snapshot@yarn:@fullview/rrweb-snapshot":
+  version "2.0.0-alpha.6.8"
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.8.tgz#02794c9ee5272eacad013b6b163dd02088040c0a"
+  integrity sha512-L/WnO6eHCuzFAYwUG90O+5SkiB11TV6qr+sNEt2pKck6MKeulTvhVWaWCnGlBPr6V2/zs9Cl9EBiVp6m5uDzQA==
+
+rrweb@^2.0.0-alpha.6:
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-2.0.0-alpha.6.tgz#f38e63635747314adf144e1a96c1bbc7b2b90883"
+  integrity sha512-WbgkEB4MIEnD03SBN6lG0HYCQTIUaDo1+dw/nKXhBlqwRip3p/I+lambTv+6SuIGx4f0cdvUWHTKF++4H48DJA==
+  dependencies:
+    "@rrweb/types" "^2.0.0-alpha.6"
+    "@types/css-font-loading-module" "0.0.7"
+    "@xstate/fsm" "^1.4.0"
+    base64-arraybuffer "^1.0.1"
+    fflate "^0.4.4"
+    mitt "^3.0.0"
+    rrdom "^2.0.0-alpha.6"
+    rrweb-snapshot "^2.0.0-alpha.6"
 
 run-async@^2.4.0:
   version "2.4.1"

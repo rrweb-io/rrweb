@@ -1,6 +1,6 @@
 {
   "name": "@fullview/rrweb",
-  "version": "2.0.0-alpha.6.3",
+  "version": "2.0.0-alpha.6.9",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -78,13 +78,16 @@
     "typescript": "^4.7.3"
   },
   "dependencies": {
-    "@rrweb/types": "npm:@fullview/rrweb-types@^2.0.0-alpha.6.1",
+    "@fullview/rrweb-types": "^2.0.0-alpha.6.8",
+    "@rrweb/types": "yarn:@fullview/rrweb-types",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0",
-    "rrdom": "npm:@fullview/rrdom@^2.0.0-alpha.6.1",
-    "rrweb-snapshot": "npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.1"
+    "@fullview/rrdom": "^2.0.0-alpha.6.8",
+    "rrdom": "yarn:@fullview/rrdom",
+    "@fullview/rrweb-snapshot": "^2.0.0-alpha.6.8",
+    "rrweb-snapshot": "yarn:@fullview/rrweb-snapshot"
   }
 }
