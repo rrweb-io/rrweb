@@ -487,8 +487,9 @@ export default class MutationBuffer {
       }
       case 'attributes': {
         const target = m.target as HTMLElement;
-        let value = (m.target as HTMLElement).getAttribute(m.attributeName!);
-        if (m.attributeName === 'value') {
+        let attributeName = m.attributeName as string;
+        let value = (m.target as HTMLElement).getAttribute(attributeName);
+        if (attributeName === 'value') {
           value = maskInputValue({
             maskInputOptions: this.maskInputOptions,
             tagName: (m.target as HTMLElement).tagName,
@@ -509,13 +510,13 @@ export default class MutationBuffer {
         );
         if (
           target.tagName === 'IFRAME' &&
-          m.attributeName === 'src' &&
+          attributeName === 'src' &&
           !this.keepIframeSrcFn(value as string)
         ) {
           if (!(target as HTMLIFrameElement).contentDocument) {
             // we can't record it directly as we can't see into it
             // preserve the src attribute so a decision can be taken at replay time
-            m.attributeName = 'rr_src';
+            attributeName = 'rr_src';
           } else {
             return;
           }
@@ -527,7 +528,7 @@ export default class MutationBuffer {
           };
           this.attributes.push(item);
         }
-        if (m.attributeName === 'style') {
+        if (attributeName === 'style') {
           const old = unattachedDoc.createElement('span');
           if (m.oldValue) {
             old.setAttribute('style', m.oldValue);
@@ -559,12 +560,12 @@ export default class MutationBuffer {
               styleObj[pname] = false; // delete
             }
           }
-        } else if (!ignoreAttribute(target.tagName, m.attributeName!, value)) {
+        } else if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[m.attributeName!] = transformAttribute(
+          item.attributes[attributeName] = transformAttribute(
             this.doc,
             target.tagName,
-            m.attributeName!,
+            attributeName,
             value,
           );
         }

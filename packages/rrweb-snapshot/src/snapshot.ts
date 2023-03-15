@@ -1200,7 +1200,7 @@ function snapshot(
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
-    slimDOM?: boolean | SlimDOMOptions;
+    slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
     recordCanvas?: boolean;
