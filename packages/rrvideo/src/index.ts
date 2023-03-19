@@ -1,26 +1,43 @@
-import * as fs from "fs";
-import * as path from "path";
-import { spawn } from "child_process";
-import puppeteer from "puppeteer";
-import type { eventWithTime } from "rrweb/typings/types";
-import type { RRwebPlayerOptions } from "rrweb-player";
-import type { Page, Browser } from "puppeteer";
+import * as fs from 'fs';
+import * as path from 'path';
+import { spawn } from 'child_process';
+import puppeteer from 'puppeteer';
+import type { Page, Browser } from 'puppeteer';
+import type { eventWithTime } from '@rrweb/types';
+import type { RRwebPlayerOptions } from 'rrweb-player';
 
 const rrwebScriptPath = path.resolve(
-  require.resolve("rrweb-player"),
-  "../../dist/index.js"
+  require.resolve('rrweb-player'),
+  '../../dist/index.js',
 );
-const rrwebStylePath = path.resolve(rrwebScriptPath, "../style.css");
-const rrwebRaw = fs.readFileSync(rrwebScriptPath, "utf-8");
-const rrwebStyle = fs.readFileSync(rrwebStylePath, "utf-8");
-interface Config {
+const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');
+const rrwebRaw = fs.readFileSync(rrwebScriptPath, 'utf-8');
+const rrwebStyle = fs.readFileSync(rrwebStylePath, 'utf-8');
+
+type RRvideoConfig = {
+  input: string;
+  output?: string;
+  headless?: boolean;
+  fps?: number;
+  cb?: (file: string, error: null | Error) => void;
   // start playback delay time
-  startDelayTime?: number,
-} 
+  startDelayTime?: number;
+  rrwebPlayer?: Omit<RRwebPlayerOptions['props'], 'events'>;
+};
+
+const defaultConfig: Required<RRvideoConfig> = {
+  input: '',
+  output: 'rrvideo-output.mp4',
+  headless: true,
+  fps: 15,
+  cb: () => {},
+  startDelayTime: 1000,
+  rrwebPlayer: {},
+};
 
 function getHtml(
   events: Array<eventWithTime>,
-  config?: Omit<RRwebPlayerOptions["props"] & Config, "events">
+  config?: Omit<RRwebPlayerOptions['props'], 'events'>,
 ): string {
   return `
 <html>
@@ -33,143 +50,110 @@ function getHtml(
       /*<!--*/
       const events = ${JSON.stringify(events).replace(
         /<\/script>/g,
-        "<\\/script>"
+        '<\\/script>',
       )};
       /*-->*/
       const userConfig = ${config ? JSON.stringify(config) : {}};
       window.replayer = new rrwebPlayer({
         target: document.body,
         props: {
+          ...userConfig,
           events,
           showController: false,
           autoPlay: false, // autoPlay off by default
-          ...userConfig
         },
-      }); 
-      
+      });
       window.replayer.addEventListener('finish', () => window.onReplayFinish());
-      let time = userConfig.startDelayTime || 1000 // start playback delay time, default 1000ms
-      let start = fn => {
-        setTimeout(() => {
-          fn()
-        }, time)
-      }
-      // It is recommended not to play auto by default. If the speed is not 1, the page block in the early stage of autoPlay will be blank
-      if (userConfig.autoPlay) {
-        start = fn => {
-          fn()
-        };
-      }
-      start(() => {
-        window.onReplayStart();
-        window.replayer.play();
-      })
     </script>
   </body>
 </html>
 `;
 }
 
-type RRvideoConfig = {
-  fps: number;
-  headless: boolean;
-  input: string;
-  cb: (file: string, error: null | Error) => void;
-  output: string;
-  rrwebPlayer: Omit<RRwebPlayerOptions["props"] & Config, "events">;
-};
-
-const defaultConfig: RRvideoConfig = {
-  fps: 15,
-  headless: true,
-  input: "",
-  cb: () => {},
-  output: "rrvideo-output.mp4",
-  rrwebPlayer: {},
-};
-
-class RRvideo {
+export class RRvideo {
   private browser!: Browser;
   private page!: Page;
-  private state: "idle" | "recording" | "closed" = "idle";
-  private config: RRvideoConfig;
+  private state: 'idle' | 'recording' | 'closed' = 'idle';
+  private config = {
+    ...defaultConfig,
+  };
 
-  constructor(config?: Partial<RRvideoConfig> & { input: string }) {
-    this.config = {
-      fps: config?.fps || defaultConfig.fps,
-      headless: config?.headless || defaultConfig.headless,
-      input: config?.input || defaultConfig.input,
-      cb: config?.cb || defaultConfig.cb,
-      output: config?.output || defaultConfig.output,
-      rrwebPlayer: config?.rrwebPlayer || defaultConfig.rrwebPlayer,
-    };
+  constructor(config: RRvideoConfig) {
+    this.updateConfig(config);
   }
 
-  public async init() {
+  public async transform() {
     try {
       this.browser = await puppeteer.launch({
         headless: this.config.headless,
       });
       this.page = await this.browser.newPage();
-      await this.page.goto("about:blank");
+      await this.page.goto('about:blank');
 
-      await this.page.exposeFunction("onReplayStart", () => {
-        this.startRecording();
-      });
-
-      await this.page.exposeFunction("onReplayFinish", () => {
+      await this.page.exposeFunction('onReplayFinish', () => {
         this.finishRecording();
       });
 
       const eventsPath = path.isAbsolute(this.config.input)
         ? this.config.input
         : path.resolve(process.cwd(), this.config.input);
-      const events = JSON.parse(fs.readFileSync(eventsPath, "utf-8"));
+      const events = JSON.parse(fs.readFileSync(eventsPath, 'utf-8'));
 
       await this.page.setContent(getHtml(events, this.config.rrwebPlayer));
+
+      setTimeout(() => {
+        this.startRecording();
+        this.page.evaluate('window.replayer.play();');
+      }, this.config.startDelayTime);
     } catch (error) {
-      this.config.cb("", error);
+      this.config.cb('', error);
     }
   }
 
+  public updateConfig(config: RRvideoConfig) {
+    if (!config.input) throw new Error('input is required');
+    config.output = config.output || defaultConfig.output;
+    Object.assign(this.config, defaultConfig, config);
+  }
+
   private async startRecording() {
-    this.state = "recording";
-    let wrapperSelector = ".replayer-wrapper";
+    this.state = 'recording';
+    let wrapperSelector = '.replayer-wrapper';
     if (this.config.rrwebPlayer.width && this.config.rrwebPlayer.height) {
-      wrapperSelector = ".rr-player";
+      wrapperSelector = '.rr-player';
     }
     const wrapperEl = await this.page.$(wrapperSelector);
 
     if (!wrapperEl) {
-      throw new Error("failed to get replayer element");
+      throw new Error('failed to get replayer element');
     }
 
     // start ffmpeg
     const args = [
       // fps
-      "-framerate",
+      '-framerate',
       this.config.fps.toString(),
       // input
-      "-f",
-      "image2pipe",
-      "-i",
-      "-",
+      '-f',
+      'image2pipe',
+      '-i',
+      '-',
       // output
-      "-y",
+      '-y',
       this.config.output,
     ];
 
-    const ffmpegProcess = spawn("ffmpeg", args);
-    ffmpegProcess.stderr.setEncoding("utf-8");
-    ffmpegProcess.stderr.on("data", console.log);
+    const ffmpegProcess = spawn('ffmpeg', args);
+    ffmpegProcess.stderr.setEncoding('utf-8');
+    ffmpegProcess.stderr.on('data', console.log);
 
     let processError: Error | null = null;
 
     const timer = setInterval(async () => {
-      if (this.state === "recording" && !processError) {
+      if (this.state === 'recording' && !processError) {
         try {
           const buffer = await wrapperEl.screenshot({
-            encoding: "binary",
+            encoding: 'binary',
           });
           ffmpegProcess.stdin.write(buffer);
         } catch (error) {
@@ -177,7 +161,7 @@ class RRvideo {
         }
       } else {
         clearInterval(timer);
-        if (this.state === "closed" && !processError) {
+        if (this.state === 'closed' && !processError) {
           ffmpegProcess.stdin.end();
         }
       }
@@ -186,20 +170,20 @@ class RRvideo {
     const outputPath = path.isAbsolute(this.config.output)
       ? this.config.output
       : path.resolve(process.cwd(), this.config.output);
-    ffmpegProcess.on("close", () => {
+    ffmpegProcess.on('close', () => {
       if (processError) {
         return;
       }
       this.config.cb(outputPath, null);
     });
-    ffmpegProcess.on("error", (error) => {
+    ffmpegProcess.on('error', (error) => {
       if (processError) {
         return;
       }
       processError = error;
       this.config.cb(outputPath, error);
     });
-    ffmpegProcess.stdin.on("error", (error) => {
+    ffmpegProcess.stdin.on('error', (error) => {
       if (processError) {
         return;
       }
@@ -209,14 +193,12 @@ class RRvideo {
   }
 
   private async finishRecording() {
-    this.state = "closed";
+    this.state = 'closed';
     await this.browser.close();
   }
 }
 
-export function transformToVideo(
-  config: Partial<RRvideoConfig> & { input: string }
-): Promise<string> {
+export function transformToVideo(config: RRvideoConfig): Promise<string> {
   return new Promise((resolve, reject) => {
     const rrvideo = new RRvideo({
       ...config,
@@ -227,6 +209,6 @@ export function transformToVideo(
         resolve(file);
       },
     });
-    rrvideo.init();
+    rrvideo.transform();
   });
 }

@@ -22,7 +22,7 @@ if (argv.config) {
 transformToVideo({
   input: argv.input,
   output: argv.output,
-  rrwebPlayer: config
+  rrwebPlayer: config,
 })
   .then((file) => {
     console.log(`Successfully transformed into "${file}".`);

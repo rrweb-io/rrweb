@@ -20,8 +20,7 @@
     "svelte": "^3.2.0",
     "svelte-check": "^1.4.0",
     "svelte-preprocess": "^4.0.0",
-    "tslib": "^2.0.0",
-    "typescript": "^4.7.3"
+    "tslib": "^2.0.0"
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",

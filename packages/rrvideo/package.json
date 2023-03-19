@@ -1,6 +1,6 @@
 {
   "name": "rrvideo",
-  "version": "0.2.2",
+  "version": "2.0.0-alpha.6",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
@@ -9,18 +9,20 @@
   "files": [
     "build"
   ],
+  "types": "build/index.d.ts",
   "scripts": {
-    "test": "test",
     "build": "tsc",
     "prepublish": "yarn build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "@types/minimist": "^1.2.1",
+    "@rrweb/types": "^2.0.0-alpha.6"
+  },
+  "dependencies": {
     "minimist": "^1.2.5",
     "puppeteer": "^19.7.2",
-    "rrweb-player": "^1.0.0-alpha.4",
-    "typescript": "^4.0.5"
+    "rrweb-player": "^2.0.0-alpha.6"
   }
 }
