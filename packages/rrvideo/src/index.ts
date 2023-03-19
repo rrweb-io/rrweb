@@ -30,7 +30,9 @@ const defaultConfig: Required<RRvideoConfig> = {
   output: 'rrvideo-output.mp4',
   headless: true,
   fps: 15,
-  cb: () => {},
+  cb: () => {
+    //
+  },
   startDelayTime: 1000,
   rrwebPlayer: {},
 };
@@ -53,7 +55,7 @@ function getHtml(
         '<\\/script>',
       )};
       /*-->*/
-      const userConfig = ${config ? JSON.stringify(config) : {}};
+      const userConfig = ${JSON.stringify(config || {})};
       window.replayer = new rrwebPlayer({
         target: document.body,
         props: {
@@ -91,22 +93,25 @@ export class RRvideo {
       await this.page.goto('about:blank');
 
       await this.page.exposeFunction('onReplayFinish', () => {
-        this.finishRecording();
+        void this.finishRecording();
       });
 
       const eventsPath = path.isAbsolute(this.config.input)
         ? this.config.input
         : path.resolve(process.cwd(), this.config.input);
-      const events = JSON.parse(fs.readFileSync(eventsPath, 'utf-8'));
+      const events = JSON.parse(
+        fs.readFileSync(eventsPath, 'utf-8'),
+      ) as eventWithTime[];
 
       await this.page.setContent(getHtml(events, this.config.rrwebPlayer));
 
       setTimeout(() => {
-        this.startRecording();
-        this.page.evaluate('window.replayer.play();');
+        void this.startRecording().then(() => {
+          return this.page.evaluate('window.replayer.play();');
+        });
       }, this.config.startDelayTime);
     } catch (error) {
-      this.config.cb('', error);
+      this.config.cb('', error as Error);
     }
   }
 
@@ -149,16 +154,14 @@ export class RRvideo {
 
     let processError: Error | null = null;
 
-    const timer = setInterval(async () => {
+    const timer = setInterval(() => {
       if (this.state === 'recording' && !processError) {
-        try {
-          const buffer = await wrapperEl.screenshot({
+        void wrapperEl
+          .screenshot({
             encoding: 'binary',
-          });
-          ffmpegProcess.stdin.write(buffer);
-        } catch (error) {
-          // ignore
-        }
+          })
+          .then((buffer) => ffmpegProcess.stdin.write(buffer))
+          .catch();
       } else {
         clearInterval(timer);
         if (this.state === 'closed' && !processError) {
@@ -209,6 +212,6 @@ export function transformToVideo(config: RRvideoConfig): Promise<string> {
         resolve(file);
       },
     });
-    rrvideo.transform();
+    void rrvideo.transform();
   });
 }
