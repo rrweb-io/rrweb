@@ -4,6 +4,7 @@ import { spawn } from "child_process";
 import puppeteer from "puppeteer";
 import type { eventWithTime } from "rrweb/typings/types";
 import type { RRwebPlayerOptions } from "rrweb-player";
+import type { Page, Browser } from "puppeteer";
 
 const rrwebScriptPath = path.resolve(
   require.resolve("rrweb-player"),
@@ -12,10 +13,14 @@ const rrwebScriptPath = path.resolve(
 const rrwebStylePath = path.resolve(rrwebScriptPath, "../style.css");
 const rrwebRaw = fs.readFileSync(rrwebScriptPath, "utf-8");
 const rrwebStyle = fs.readFileSync(rrwebStylePath, "utf-8");
+interface Config {
+  // start playback delay time
+  startDelayTime?: number,
+} 
 
 function getHtml(
   events: Array<eventWithTime>,
-  config?: Omit<RRwebPlayerOptions["props"], "events">
+  config?: Omit<RRwebPlayerOptions["props"] & Config, "events">
 ): string {
   return `
 <html>
@@ -37,12 +42,28 @@ function getHtml(
         props: {
           events,
           showController: false,
+          autoPlay: false, // autoPlay off by default
           ...userConfig
         },
-      });
-      window.onReplayStart();
-      window.replayer.play();
+      }); 
+      
       window.replayer.addEventListener('finish', () => window.onReplayFinish());
+      let time = userConfig.startDelayTime || 1000 // start playback delay time, default 1000ms
+      let start = fn => {
+        setTimeout(() => {
+          fn()
+        }, time)
+      }
+      // It is recommended not to play auto by default. If the speed is not 1, the page block in the early stage of autoPlay will be blank
+      if (userConfig.autoPlay) {
+        start = fn => {
+          fn()
+        };
+      }
+      start(() => {
+        window.onReplayStart();
+        window.replayer.play();
+      })
     </script>
   </body>
 </html>
@@ -55,7 +76,7 @@ type RRvideoConfig = {
   input: string;
   cb: (file: string, error: null | Error) => void;
   output: string;
-  rrwebPlayer: Omit<RRwebPlayerOptions["props"], "events">;
+  rrwebPlayer: Omit<RRwebPlayerOptions["props"] & Config, "events">;
 };
 
 const defaultConfig: RRvideoConfig = {
@@ -68,8 +89,8 @@ const defaultConfig: RRvideoConfig = {
 };
 
 class RRvideo {
-  private browser!: puppeteer.Browser;
-  private page!: puppeteer.Page;
+  private browser!: Browser;
+  private page!: Page;
   private state: "idle" | "recording" | "closed" = "idle";
   private config: RRvideoConfig;
 
