@@ -15,7 +15,6 @@ export function unregisterErrorHandler() {
 /**
  * Wrap callbacks in a wrapper that allows to pass errors to a configured `errorHandler` method.
  */
-
 export const callbackWrapper = <T extends Callback>(cb: T): T => {
   if (!errorHandler) {
     return cb;
