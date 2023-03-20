@@ -338,39 +338,44 @@ function initInputObserver({
   userTriggeredOnInput,
 }: observerParam): listenerHandler {
   function eventHandler(event: Event) {
-    let target = getEventTarget(event);
+    let target = getEventTarget(event) as HTMLElement | null;
     const userTriggered = event.isTrusted;
+    const tagName = target && target.tagName;
+
     /**
      * If a site changes the value 'selected' of an option element, the value of its parent element, usually a select element, will be changed as well.
      * We can treat this change as a value change of the select element the current target belongs to.
      */
-    if (target && (target as Element).tagName === 'OPTION')
-      target = (target as Element).parentElement;
+    if (target && tagName === 'OPTION') {
+      target = target.parentElement;
+    }
     if (
       !target ||
-      !(target as Element).tagName ||
-      INPUT_TAGS.indexOf((target as Element).tagName) < 0 ||
+      !tagName ||
+      INPUT_TAGS.indexOf(tagName) < 0 ||
       isBlocked(target as Node, blockClass, blockSelector, true)
     ) {
       return;
     }
-    const type: string | undefined = (target as HTMLInputElement).type;
-    if ((target as HTMLElement).classList.contains(ignoreClass)) {
+
+    if (target.classList.contains(ignoreClass)) {
       return;
     }
     let text = (target as HTMLInputElement).value;
     let isChecked = false;
+    const type: string = target.hasAttribute('data-rr-is-password')
+      ? 'password'
+      : ((target as HTMLInputElement).type || '').toLowerCase();
+
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
     } else if (
-      maskInputOptions[
-        (target as Element).tagName.toLowerCase() as keyof MaskInputOptions
-      ] ||
+      maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
       text = maskInputValue({
         maskInputOptions,
-        tagName: (target as HTMLElement).tagName,
+        tagName,
         type,
         value: text,
         maskInputFn,
