@@ -488,7 +488,7 @@ export default class MutationBuffer {
       case 'attributes': {
         const target = m.target as HTMLElement;
         let attributeName = m.attributeName as string;
-        let value = (m.target as HTMLElement).getAttribute(attributeName);        
+        let value = (m.target as HTMLElement).getAttribute(attributeName);
 
         if (attributeName === 'value') {
           const type = getInputType(target);
