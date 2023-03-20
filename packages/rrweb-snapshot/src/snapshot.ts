@@ -32,12 +32,14 @@ export function genId(): number {
   return _id++;
 }
 
-function getValidTagName(element: HTMLElement): string {
+function getValidTagName(element: HTMLElement): Lowercase<string> {
   if (element instanceof HTMLFormElement) {
     return 'form';
   }
 
-  const processedTagName = element.tagName.toLowerCase().trim();
+  const processedTagName = element.tagName
+    .toLowerCase()
+    .trim() as Lowercase<string>;
 
   if (tagNameRegex.test(processedTagName)) {
     // if the tag name is odd and we cannot extract
@@ -222,8 +224,8 @@ function getHref() {
 
 export function transformAttribute(
   doc: Document,
-  tagName: string,
-  name: string,
+  tagName: Lowercase<string>,
+  name: Lowercase<string>,
   value: string | null,
 ): string | null {
   if (!value) {
@@ -638,7 +640,7 @@ function serializeElementNode(
       attributes[attr.name] = transformAttribute(
         doc,
         tagName,
-        attr.name,
+        attr.name.toLowerCase() as Lowercase<string>,
         attr.value,
       );
     }

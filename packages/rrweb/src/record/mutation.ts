@@ -579,8 +579,8 @@ export default class MutationBuffer {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName] = transformAttribute(
             this.doc,
-            target.tagName,
-            attributeName,
+            target.tagName.toLowerCase() as Lowercase<string>,
+            attributeName.toLowerCase() as Lowercase<string>,
             value,
           );
         }
