@@ -20,7 +20,7 @@ export const callbackWrapper = <T extends Callback>(cb: T): T => {
     return cb;
   }
 
-  const rrwebWrapped = (((...rest: unknown[]) => {
+  const rrwebWrapped = ((...rest: unknown[]) => {
     try {
       return cb(...rest);
     } catch (error) {
@@ -30,7 +30,7 @@ export const callbackWrapper = <T extends Callback>(cb: T): T => {
 
       throw error;
     }
-  }) as unknown) as T;
+  }) as unknown as T;
 
   return rrwebWrapped;
 };

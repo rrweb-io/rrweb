@@ -446,10 +446,8 @@ function initInputObserver({
     }
   }
   const events = sampling.input === 'last' ? ['change'] : ['input', 'change'];
-  const handlers: Array<
-    listenerHandler | hookResetter
-  > = events.map((eventName) =>
-    on(eventName, callbackWrapper(eventHandler), doc),
+  const handlers: Array<listenerHandler | hookResetter> = events.map(
+    (eventName) => on(eventName, callbackWrapper(eventHandler), doc),
   );
   const currentWindow = doc.defaultView;
   if (!currentWindow) {
@@ -970,25 +968,29 @@ function initMediaInteractionObserver({
   sampling,
 }: observerParam): listenerHandler {
   const handler = callbackWrapper((type: MediaInteractions) =>
-    throttle(callbackWrapper((event: Event) => {
-      const target = getEventTarget(event);
-      if (
-        !target ||
-        isBlocked(target as Node, blockClass, blockSelector, true)
-      ) {
-        return;
-      }
-      const { currentTime, volume, muted, playbackRate } =
-        target as HTMLMediaElement;
-      mediaInteractionCb({
-        type,
-        id: mirror.getId(target as Node),
-        currentTime,
-        volume,
-        muted,
-        playbackRate,
-      });
-    }), sampling.media || 500));
+    throttle(
+      callbackWrapper((event: Event) => {
+        const target = getEventTarget(event);
+        if (
+          !target ||
+          isBlocked(target as Node, blockClass, blockSelector, true)
+        ) {
+          return;
+        }
+        const { currentTime, volume, muted, playbackRate } =
+          target as HTMLMediaElement;
+        mediaInteractionCb({
+          type,
+          id: mirror.getId(target as Node),
+          currentTime,
+          volume,
+          muted,
+          playbackRate,
+        });
+      }),
+      sampling.media || 500,
+    ),
+  );
   const handlers = [
     on('play', handler(MediaInteractions.Play)),
     on('pause', handler(MediaInteractions.Pause)),

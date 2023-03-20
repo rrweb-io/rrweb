@@ -100,12 +100,12 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet insert
@@ -135,12 +135,12 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet delete
@@ -169,12 +169,12 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet insert
@@ -204,12 +204,12 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet insert
@@ -239,12 +239,12 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet insert
@@ -280,12 +280,12 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet delete
@@ -318,19 +318,21 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet insert
         setTimeout(() => {
-          ((document.styleSheets[0].cssRules[0] as unknown) as {
-            style: CSSStyleDeclaration;
-          }).style.setProperty('background', 'blue');
+          (
+            document.styleSheets[0].cssRules[0] as unknown as {
+              style: CSSStyleDeclaration;
+            }
+          ).style.setProperty('background', 'blue');
         }, 50);
       });
 
@@ -354,19 +356,21 @@ describe('error-handler', function (this: ISuite) {
       });
 
       await ctx.page.evaluate(() => {
-        const { record } = ((window as unknown) as IWindow).rrweb;
+        const { record } = (window as unknown as IWindow).rrweb;
         record({
           errorHandler: (error) => {
             document.getElementById('out')!.innerText = `${error}`;
           },
-          emit: ((window as unknown) as IWindow).emit,
+          emit: (window as unknown as IWindow).emit,
         });
 
         // Trigger buggy style sheet insert
         setTimeout(() => {
-          ((document.styleSheets[0].cssRules[0] as unknown) as {
-            style: CSSStyleDeclaration;
-          }).style.removeProperty('background');
+          (
+            document.styleSheets[0].cssRules[0] as unknown as {
+              style: CSSStyleDeclaration;
+            }
+          ).style.removeProperty('background');
         }, 50);
       });
 
@@ -383,12 +387,12 @@ describe('error-handler', function (this: ISuite) {
 
   it('triggers for errors from mutation observer', async () => {
     await ctx.page.evaluate(() => {
-      const { record } = ((window as unknown) as IWindow).rrweb;
+      const { record } = (window as unknown as IWindow).rrweb;
       record({
         errorHandler: (error) => {
           document.getElementById('out')!.innerText = `${error}`;
         },
-        emit: ((window as unknown) as IWindow).emit,
+        emit: (window as unknown as IWindow).emit,
       });
 
       // Trigger buggy mutation observer
