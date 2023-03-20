@@ -4,6 +4,7 @@ import {
   throttle,
   on,
   hookSetter,
+  getInputType,
   getWindowScroll,
   getWindowHeight,
   getWindowWidth,
@@ -363,9 +364,7 @@ function initInputObserver({
     }
     let text = (target as HTMLInputElement).value;
     let isChecked = false;
-    const type: string = target.hasAttribute('data-rr-is-password')
-      ? 'password'
-      : ((target as HTMLInputElement).type || '').toLowerCase();
+    const type: Lowercase<string> = getInputType(target) || '';
 
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;

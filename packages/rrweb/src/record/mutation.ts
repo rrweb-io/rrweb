@@ -29,6 +29,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
+  getInputType,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -487,12 +488,11 @@ export default class MutationBuffer {
       case 'attributes': {
         const target = m.target as HTMLElement;
         let attributeName = m.attributeName as string;
-        let value = (m.target as HTMLElement).getAttribute(attributeName);
-        const type = target.hasAttribute('data-rr-is-password')
-          ? 'password'
-          : target.getAttribute('type') || null;
+        let value = (m.target as HTMLElement).getAttribute(attributeName);        
 
         if (attributeName === 'value') {
+          const type = getInputType(target);
+
           value = maskInputValue({
             maskInputOptions: this.maskInputOptions,
             tagName: target.tagName,
@@ -535,11 +535,11 @@ export default class MutationBuffer {
         // Keep this property on inputs that used to be password inputs
         // This is used to ensure we do not unmask value when using e.g. a "Show password" type button
         if (
-          m.attributeName === 'type' &&
-          (m.target as HTMLElement).tagName === 'INPUT' &&
+          attributeName === 'type' &&
+          target.tagName === 'INPUT' &&
           (m.oldValue || '').toLowerCase() === 'password'
         ) {
-          (m.target as HTMLElement).setAttribute('data-rr-is-password', 'true');
+          target.setAttribute('data-rr-is-password', 'true');
         }
 
         if (attributeName === 'style') {
