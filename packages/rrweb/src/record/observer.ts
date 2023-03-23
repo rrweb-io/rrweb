@@ -393,6 +393,7 @@ function initInputObserver({
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
       text = maskInputValue({
+        element: target,
         maskInputOptions,
         tagName,
         type,

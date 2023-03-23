@@ -680,6 +680,7 @@ function serializeElementNode(
         ? attributes.type.toLowerCase()
         : null;
       attributes.value = maskInputValue({
+        element: n,
         type,
         tagName,
         value,
