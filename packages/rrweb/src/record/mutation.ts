@@ -358,6 +358,16 @@ export default class MutationBuffer {
     }
 
     let candidate: DoubleLinkedListNode | null = null;
+
+    // create linkedNodeList based on DoubleLinkedList to accelerate node query with array index
+    // time complexity O(n) decrease to O(1)
+    let linkedNodeList: DoubleLinkedListNode[] | null = [];
+    let headNode = addList.head;
+    while (headNode) {
+      linkedNodeList.push(headNode);
+      headNode = headNode.next;
+    }
+
     while (addList.length) {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
@@ -368,10 +378,10 @@ export default class MutationBuffer {
         }
       }
       if (!node) {
-        for (let index = addList.length - 1; index >= 0; index--) {
-          const _node = addList.get(index);
+        for (let index = linkedNodeList.length - 1; index >= 0; index--) {
+          const _node = linkedNodeList[index];
           // ensure _node is defined before attempting to find value
-          if (_node) {
+          if (_node && _node.value.__ln) {
             const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value);
 
@@ -417,7 +427,7 @@ export default class MutationBuffer {
       addList.removeNode(node.value);
       pushAdd(node.value);
     }
-
+    linkedNodeList = null;
     const payload = {
       texts: this.texts
         .map((text) => ({
@@ -654,6 +664,9 @@ export default class MutationBuffer {
   private genAdds = (n: Node, target?: Node) => {
     // this node was already recorded in other buffer, ignore it
     if (this.processedNodeManager.inOtherBuffer(n, this)) return;
+
+    // if n is added to set, there is no need to travel it and its' children again
+    if (this.addedSet.has(n) || this.movedSet.has(n)) return;
 
     if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
