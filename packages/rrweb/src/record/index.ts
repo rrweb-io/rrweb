@@ -615,6 +615,7 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      processedNodeManager.destroy();
       recording = false;
       unregisterErrorHandler();
     };
