@@ -316,7 +316,7 @@ describe('record integration tests', function (this: ISuite) {
           if (element.hasAttribute('data-unmask-example')) {
             return text;
           }
-          
+
           return '*'.repeat(text.length);
         },
       }),
