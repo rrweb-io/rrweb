@@ -41,7 +41,6 @@ import {
   selectionCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
-import ProcessedNodeManager from './processed-node-manager';
 import { callbackWrapper } from './error-handler';
 
 type WindowWithStoredMutationObserver = IWindow & {
@@ -54,7 +53,6 @@ type WindowWithAngularZone = IWindow & {
 };
 
 export const mutationBuffers: MutationBuffer[] = [];
-export const processedNodeManager = new ProcessedNodeManager();
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {

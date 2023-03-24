@@ -574,6 +574,7 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
   return element.hasAttribute('data-rr-is-password')
     ? 'password'
     : element.hasAttribute('type')
-    ? (element.getAttribute('type')!.toLowerCase() as Lowercase<string>)
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-non-null-assertion
+      (element.getAttribute('type')!.toLowerCase() as Lowercase<string>)
     : null;
 }
