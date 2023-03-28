@@ -1,6 +1,6 @@
 {
   "name": "rrvideo",
-  "version": "2.0.0-alpha.6",
+  "version": "2.0.0-alpha.7",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
@@ -18,11 +18,11 @@
   "license": "MIT",
   "devDependencies": {
     "@types/minimist": "^1.2.1",
-    "@rrweb/types": "^2.0.0-alpha.6"
+    "@rrweb/types": "^2.0.0-alpha.7"
   },
   "dependencies": {
     "minimist": "^1.2.5",
     "puppeteer": "^19.7.2",
-    "rrweb-player": "^2.0.0-alpha.6"
+    "rrweb-player": "^2.0.0-alpha.7"
   }
 }
