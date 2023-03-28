@@ -148,6 +148,7 @@ export class Replayer {
 
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
+  private lastMouseDownEvent: [Node, Event] | null = null;
 
   // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
   private lastHoveredRootNode: Document | ShadowRoot;
@@ -299,6 +300,20 @@ export class Replayer {
         );
         this.mousePos = null;
       }
+
+      if (this.touchActive === true) {
+        this.mouse.classList.add('touch-active');
+      } else if (this.touchActive === false) {
+        this.mouse.classList.remove('touch-active');
+      }
+      this.touchActive = null;
+
+      if (this.lastMouseDownEvent) {
+        const [target, event] = this.lastMouseDownEvent;
+        target.dispatchEvent(event);
+      }
+      this.lastMouseDownEvent = null;
+
       if (this.lastSelectionData) {
         this.applySelection(this.lastSelectionData);
         this.lastSelectionData = null;
@@ -614,12 +629,6 @@ export class Replayer {
       const castFn = this.getCastFn(event, true);
       castFn();
     }
-    if (this.touchActive === true) {
-      this.mouse.classList.add('touch-active');
-    } else if (this.touchActive === false) {
-      this.mouse.classList.remove('touch-active');
-    }
-    this.touchActive = null;
   };
 
   private getCastFn = (event: eventWithTime, isSync = false) => {
@@ -1144,6 +1153,11 @@ export class Replayer {
                 this.touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.touchActive = false;
+              }
+              if (d.type === MouseInteractions.MouseDown) {
+                this.lastMouseDownEvent = [target, event];
+              } else if (d.type === MouseInteractions.MouseUp) {
+                this.lastMouseDownEvent = null;
               }
               this.mousePos = {
                 x: d.x,
