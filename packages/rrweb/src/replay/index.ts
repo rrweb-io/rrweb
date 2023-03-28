@@ -1108,7 +1108,7 @@ export class Replayer {
         /**
          * Same as the situation of missing input target.
          */
-        if (d.id === -1 || isSync) {
+        if (d.id === -1) {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
@@ -1137,6 +1137,8 @@ export class Replayer {
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
+          case MouseInteractions.MouseDown:
+          case MouseInteractions.MouseUp:
             if (isSync) {
               if (d.type === MouseInteractions.TouchStart) {
                 this.touchActive = true;
@@ -1172,6 +1174,9 @@ export class Replayer {
                 this.mouse.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.mouse.classList.remove('touch-active');
+              } else {
+                // for MouseDown & MouseUp also invoke default behavior
+                target.dispatchEvent(event);
               }
             }
             break;
