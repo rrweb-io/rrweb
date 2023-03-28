@@ -1302,14 +1302,14 @@ function snapshot(
         }
       : maskAllInputs;
   const slimDOMOptions: SlimDOMOptions =
-    slimDOM === true || slimDOM as unknown === 'all'
+    slimDOM === true || slimDOM === 'all'
       ? // if true: set of sensible options that should not throw away any information
         {
           script: true,
           comment: true,
           headFavicon: true,
           headWhitespace: true,
-          headMetaDescKeywords: slimDOM as unknown === 'all', // destructive
+          headMetaDescKeywords: slimDOM === 'all', // destructive
           headMetaSocial: true,
           headMetaRobots: true,
           headMetaHttpEquiv: true,
