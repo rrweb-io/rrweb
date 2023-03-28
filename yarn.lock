@@ -3462,7 +3462,7 @@
   dependencies:
     rrweb-snapshot "^2.0.0-alpha.6"
 
-"@rrweb/types@npm:@fullview/rrweb-types@^2.0.0-alpha.6.8", "@rrweb/types@yarn:@fullview/rrweb-types":
+"@rrweb/types@npm:@fullview/rrweb-types@^2.0.0-alpha.6.8":
   version "2.0.0-alpha.6.8"
   resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.6.8.tgz#1b4d8e87a4c67e868fe7b7f07d98973f34fa36c2"
   integrity sha512-McyKJ1/iojxtGjKfF2xn2wr82xe57l5Hfn/tlZgxcVGAidZT96bYsjdUq3RkkgG4fSO9e0/LjWU+uJF1PmhzJA==
@@ -13856,7 +13856,7 @@ rrdom@^2.0.0-alpha.6:
   dependencies:
     rrweb-snapshot "^2.0.0-alpha.6"
 
-"rrdom@yarn:@fullview/rrdom":
+"rrdom@npm:@fullview/rrdom@^2.0.0-alpha.6.8":
   version "2.0.0-alpha.6.8"
   resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.6.8.tgz#d6dde8848eb5c1ee878419bbd959d316941262c4"
   integrity sha512-iQCz0+emMI95XGXztMrDnlvEJFi6Y8DmpY9RIVPxdwVdu8TZTl+fHvAMKNkM9IILKUhYRGAfX42+kIJbQEYJ1A==
@@ -13868,7 +13868,7 @@ rrweb-snapshot@^2.0.0-alpha.6:
   resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.tgz#c7e7f902312a564d8494d916042e1d9aefe62ce7"
   integrity sha512-mTeIZn8a6crtHigyO+cSENuKq68ayEdSZJAybkWWVjJQOvDY9EHaqhc8jWXpNkPVcc8M5T8ORc/RXsc52osYHQ==
 
-"rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.8", "rrweb-snapshot@yarn:@fullview/rrweb-snapshot":
+"rrweb-snapshot@npm:@fullview/rrweb-snapshot@^2.0.0-alpha.6.8":
   version "2.0.0-alpha.6.8"
   resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.6.8.tgz#02794c9ee5272eacad013b6b163dd02088040c0a"
   integrity sha512-L/WnO6eHCuzFAYwUG90O+5SkiB11TV6qr+sNEt2pKck6MKeulTvhVWaWCnGlBPr6V2/zs9Cl9EBiVp6m5uDzQA==

@@ -691,8 +691,13 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
+      const type: string | null = n.hasAttribute('data-rr-is-password')
+        ? 'password'
+        : typeof attributes.type === 'string'
+        ? attributes.type.toLowerCase()
+        : null;
       attributes.value = maskInputValue({
-        type: attributes.type,
+        type,
         tagName,
         value,
         maskInputOptions,
@@ -753,6 +758,7 @@ function serializeElementNode(
     const oldValue = image.crossOrigin;
     image.crossOrigin = 'anonymous';
     const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
       try {
         canvasService!.width = image.naturalWidth;
         canvasService!.height = image.naturalHeight;
@@ -772,7 +778,7 @@ function serializeElementNode(
     };
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.onload = recordInlineImage;
+    else image.addEventListener('load', recordInlineImage);
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
@@ -1228,7 +1234,7 @@ function snapshot(
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
-    slimDOM?: boolean | SlimDOMOptions;
+    slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
     recordCanvas?: boolean;
