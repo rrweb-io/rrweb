@@ -823,16 +823,18 @@ export function initAdoptedStyleSheetObserver(
     host.nodeName === '#document'
       ? (host as Document).defaultView?.Document
       : host.ownerDocument?.defaultView?.ShadowRoot;
+
+  if (hostId === null || hostId === -1 || !patchTarget)
+    return () => {
+      //
+    };
+
   const originalPropertyDescriptor = Object.getOwnPropertyDescriptor(
-    patchTarget?.prototype,
+    patchTarget.prototype,
     'adoptedStyleSheets',
   );
-  if (
-    hostId === null ||
-    hostId === -1 ||
-    !patchTarget ||
-    !originalPropertyDescriptor
-  )
+  
+  if (!originalPropertyDescriptor)
     return () => {
       //
     };
