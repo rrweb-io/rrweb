@@ -29,7 +29,6 @@
     "eslint-plugin-compat": "^4.0.2",
     "eslint-plugin-jest": "^27.1.3",
     "eslint-plugin-tsdoc": "^0.2.16",
-    "lerna": "^4.0.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
@@ -38,7 +37,6 @@
     "cross-env": "7.0.3"
   },
   "scripts": {
-    "lerna": "lerna",
     "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run --concurrency=1 prepublish'",
     "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
     "test:watch": "yarn turbo run test:watch",

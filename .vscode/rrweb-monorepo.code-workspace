@@ -28,6 +28,7 @@
       "name": "web-extension (package)",
       "path": "../packages/web-extension"
     },
+    { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
     { "name": "@rrweb/types", "path": "../packages/types" }
   ],
   "settings": {

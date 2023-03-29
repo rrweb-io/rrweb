@@ -674,8 +674,13 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
+      const type: string | null = n.hasAttribute('data-rr-is-password')
+        ? 'password'
+        : typeof attributes.type === 'string'
+        ? attributes.type.toLowerCase()
+        : null;
       attributes.value = maskInputValue({
-        type: attributes.type,
+        type,
         tagName,
         value,
         maskInputOptions,

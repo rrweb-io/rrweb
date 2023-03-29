@@ -5,6 +5,8 @@ import type MutationBuffer from './mutation';
  */
 export default class ProcessedNodeManager {
   private nodeMap: WeakMap<Node, Set<MutationBuffer>> = new WeakMap();
+  // Whether to continue RAF loop.
+  private loop = true;
 
   constructor() {
     this.periodicallyClear();
@@ -14,7 +16,7 @@ export default class ProcessedNodeManager {
     try {
       requestAnimationFrame(() => {
         this.clear();
-        this.periodicallyClear();
+        if (this.loop)this.periodicallyClear();
       });
     } catch (e) {
       // do nothing
@@ -34,5 +36,10 @@ export default class ProcessedNodeManager {
 
   private clear() {
     this.nodeMap = new WeakMap();
+  }
+
+  public destroy() {
+    // Stop the RAF loop.
+    this.loop = false;
   }
 }
