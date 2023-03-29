@@ -1,14 +1,6 @@
-import { parse } from './css';
-import {
-  serializedNodeWithId,
-  NodeType,
-  tagMap,
-  elementNode,
-  BuildCache,
-  attributes,
-  legacyAttributes,
-} from './types';
-import { isElement, Mirror, isNodeMetaEqual } from './utils';
+import {parse} from './css';
+import {BuildCache, elementNode, legacyAttributes, NodeType, serializedNodeWithId, tagMap,} from './types';
+import {isElement, isNodeMetaEqual, Mirror} from './utils';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -50,6 +42,7 @@ const tagMap: tagMap = {
   lineargradient: 'linearGradient',
   radialgradient: 'radialGradient',
 };
+
 function getTagName(n: elementNode): string {
   let tagName = tagMap[n.tagName] ? tagMap[n.tagName] : n.tagName;
   if (tagName === 'link' && n.attributes._cssText) {
@@ -65,6 +58,7 @@ function escapeRegExp(str: string) {
 
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
+
 export function addHoverClass(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
@@ -126,7 +120,7 @@ function buildNode(
     cache: BuildCache;
   },
 ): Node | null {
-  const { doc, hackCss, cache } = options;
+  const {doc, hackCss, cache} = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -323,7 +317,7 @@ function buildNode(
          * we can remove it.
          */
         if (!node.shadowRoot) {
-          node.attachShadow({ mode: 'open' });
+          node.attachShadow({mode: 'open'});
         } else {
           while (node.shadowRoot.firstChild) {
             node.shadowRoot.removeChild(node.shadowRoot.firstChild);
@@ -383,7 +377,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, {doc, hackCss, cache});
   if (!node) {
     return null;
   }
