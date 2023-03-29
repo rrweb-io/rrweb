@@ -16,7 +16,7 @@ export default class ProcessedNodeManager {
     try {
       requestAnimationFrame(() => {
         this.clear();
-        if (this.loop)this.periodicallyClear();
+        if (this.loop) this.periodicallyClear();
       });
     } catch (e) {
       // do nothing
