@@ -244,7 +244,9 @@ function initMouseInteractionObserver({
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
             // we are actually listening on 'pointerdown'
             eventKey = 'TouchStart';
-          } else if (MouseInteractions[eventKey] === MouseInteractions.MouseUp) {
+          } else if (
+            MouseInteractions[eventKey] === MouseInteractions.MouseUp
+          ) {
             // we are actually listening on 'pointerup'
             eventKey = 'TouchEnd';
           }
@@ -259,7 +261,7 @@ function initMouseInteractionObserver({
         currentPointerType = pointerType;
       } else if (MouseInteractions[eventKey] === MouseInteractions.Click) {
         pointerType = currentPointerType;
-        currentPointerType = null;  // cleanup as we've used it
+        currentPointerType = null; // cleanup as we've used it
       }
       if (!e) {
         return;
@@ -271,7 +273,7 @@ function initMouseInteractionObserver({
         id,
         x: clientX,
         y: clientY,
-        ...pointerType && { pointerType }
+        ...(pointerType && { pointerType }),
       });
     };
   };
@@ -286,15 +288,15 @@ function initMouseInteractionObserver({
       let eventName = eventKey.toLowerCase();
       const handler = getHandler(eventKey);
       if (window.PointerEvent) {
-        switch(MouseInteractions[eventKey]) {
-        case MouseInteractions.MouseDown:
-        case MouseInteractions.MouseUp:
-          eventName = eventName.replace('mouse', 'pointer');
-          break;
-        case MouseInteractions.TouchStart:
-        case MouseInteractions.TouchEnd:
-          // these are handled by pointerdown/pointerup
-          return;
+        switch (MouseInteractions[eventKey]) {
+          case MouseInteractions.MouseDown:
+          case MouseInteractions.MouseUp:
+            eventName = eventName.replace('mouse', 'pointer');
+            break;
+          case MouseInteractions.TouchStart:
+          case MouseInteractions.TouchEnd:
+            // these are handled by pointerdown/pointerup
+            return;
         }
       }
       handlers.push(on(eventName, handler, doc));
