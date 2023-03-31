@@ -2,6 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import minimist from 'minimist';
+import { ProgressBar } from '@open-tech-world/cli-progress-bar';
 import type { RRwebPlayerOptions } from 'rrweb-player';
 import { transformToVideo } from './index';
 
@@ -24,10 +25,18 @@ if (argv.config) {
   >;
 }
 
+const pBar = new ProgressBar({ prefix: 'Transforming' });
+const onProgressUpdate = (percent: number) => {
+  if (percent < 1) pBar.run({ value: percent * 100, total: 100 });
+  else
+    pBar.run({ value: 100, total: 100, prefix: 'Transformation Completed!' });
+};
+
 transformToVideo({
   input: argv.input as string,
   output: argv.output as string,
   rrwebPlayer: config,
+  onProgressUpdate,
 })
   .then((file) => {
     console.log(`Successfully transformed into "${file}".`);

@@ -23,6 +23,7 @@
     "@rrweb/types": "^2.0.0-alpha.7"
   },
   "dependencies": {
+    "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
     "playwright": "^1.32.1",

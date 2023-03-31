@@ -2517,6 +2517,24 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@open-tech-world/cli-progress-bar@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@open-tech-world/cli-progress-bar/-/cli-progress-bar-2.0.2.tgz#9a4f3470ee460224e7a38790d0d3f257fe9d6812"
+  integrity sha512-miNmdKNdKp7Lhy295wxnJcWFrbIAoQmypoCynlG8HTQPxsG5dhOpPL5udsZFoW99RxcLAj2JTCaEhrosTzPE3g==
+  dependencies:
+    "@open-tech-world/es-cli-styles" "^0.3.0"
+    "@open-tech-world/es-utils" "^0.10.0"
+
+"@open-tech-world/es-cli-styles@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@open-tech-world/es-cli-styles/-/es-cli-styles-0.3.0.tgz#316c3c2934ed87629366a5827bc2353fa4c061c7"
+  integrity sha512-0SyxBAUkUDkjt83snx1QvPDk6zJJIb/xRbY0daWGG6ONCfx5RITxc0qty2tLmyBNsCM41+V1shtHNeSrEBu8KQ==
+
+"@open-tech-world/es-utils@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@open-tech-world/es-utils/-/es-utils-0.10.0.tgz#97ca72c7dad63dcf9a3534b01f3d763f187bafb2"
+  integrity sha512-JqpxcVk3Go4RAArI3oB18fhIMeeuNSThwmSQM7ScygVv2/AHRAxkkiodtggC7QniJvLs7i5AzL9pILNvAEBYDg==
+
 "@polka/url@^0.5.0":
   version "0.5.0"
   resolved "https://registry.npmjs.org/@polka/url/-/url-0.5.0.tgz"

@@ -16,6 +16,8 @@ type RRvideoConfig = {
   input: string;
   output?: string;
   headless?: boolean;
+  // A callback function that will be called when the progress of the replay is updated.
+  onProgressUpdate?: (percent: number) => void;
   rrwebPlayer?: Omit<RRwebPlayerOptions['props'], 'events'>;
 };
 
@@ -23,6 +25,9 @@ const defaultConfig: Required<RRvideoConfig> = {
   input: '',
   output: 'rrvideo-output.webm',
   headless: true,
+  onProgressUpdate: () => {
+    //
+  },
   rrwebPlayer: {},
 };
 
@@ -55,6 +60,7 @@ function getHtml(
         },
       });
       window.replayer.addEventListener('finish', () => window.onReplayFinish());
+      window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
     </script>
   </body>
 </html>
@@ -110,6 +116,13 @@ export async function transformToVideo(options: RRvideoConfig) {
   });
   const page = await context.newPage();
   await page.goto('about:blank');
+  await page.exposeFunction(
+    'onReplayProgressUpdate',
+    (data: { payload: number }) => {
+      config.onProgressUpdate(data.payload);
+    },
+  );
+
   // Wait for the replay to finish
   await new Promise<void>(
     (resolve) =>

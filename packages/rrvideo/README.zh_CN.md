@@ -2,6 +2,8 @@
 
 rrvideo 是用于将 [rrweb](https://github.com/rrweb-io/rrweb) 录制的数据转为视频格式的工具。
 
+![Demo Video](./demo/demo.mp4)
+
 ## 安装 rrvideo
 
 1. 安装 [Node.JS](https://nodejs.org/en/download/)。

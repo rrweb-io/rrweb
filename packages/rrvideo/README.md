@@ -4,6 +4,8 @@
 
 rrvideo is a tool for transforming the session recorded by [rrweb](https://github.com/rrweb-io/rrweb) into a video.
 
+![Demo Video](./demo/demo.mp4)
+
 ## Install rrvideo
 
 1. Install [Node.JS](https://nodejs.org/en/download/)。
