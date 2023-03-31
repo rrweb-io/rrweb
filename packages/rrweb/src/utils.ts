@@ -172,7 +172,7 @@ export function patch(
 let nowTimestamp = Date.now;
 if (!/[1-9][0-9]{12}/.test(Date.now())) {
   // they have already redefined it! use a fallback
-  nowTimestamp = () => (new Date()).getTime();
+  nowTimestamp = () => new Date().getTime();
 }
 export { nowTimestamp };
 
