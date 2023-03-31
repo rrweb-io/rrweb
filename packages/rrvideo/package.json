@@ -11,18 +11,21 @@
   ],
   "types": "build/index.d.ts",
   "scripts": {
+    "install": "playwright install",
     "build": "tsc",
     "prepublish": "yarn build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "devDependencies": {
+    "@types/fs-extra": "11.0.1",
     "@types/minimist": "^1.2.1",
     "@rrweb/types": "^2.0.0-alpha.7"
   },
   "dependencies": {
+    "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
-    "puppeteer": "^19.7.2",
+    "playwright": "^1.32.1",
     "rrweb-player": "^2.0.0-alpha.7"
   }
 }
