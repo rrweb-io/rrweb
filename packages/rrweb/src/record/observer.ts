@@ -16,6 +16,7 @@ import {
   legacy_isTouchEvent,
   patch,
   StyleSheetMirror,
+  nowTimestamp,
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
@@ -180,13 +181,13 @@ function initMoveObserver({
           ? evt.changedTouches[0]
           : evt;
         if (!timeBaseline) {
-          timeBaseline = Date.now();
+          timeBaseline = nowTimestamp();
         }
         positions.push({
           x: clientX,
           y: clientY,
           id: mirror.getId(target as Node),
-          timeOffset: Date.now() - timeBaseline,
+          timeOffset: nowTimestamp() - timeBaseline,
         });
         // it is possible DragEvent is undefined even on devices
         // that support event 'drag'

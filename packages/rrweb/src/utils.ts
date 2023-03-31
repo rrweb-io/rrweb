@@ -168,6 +168,14 @@ export function patch(
   }
 }
 
+// guard against old third party libraries which redefine Date.now
+let nowTimestamp = Date.now;
+if (!/[1-9][0-9]{12}/.test(Date.now())) {
+  // they have already redefined it! use a fallback
+  nowTimestamp = () => (new Date()).getTime();
+}
+export { nowTimestamp };
+
 export function getWindowScroll(win: Window) {
   const doc = win.document;
   return {

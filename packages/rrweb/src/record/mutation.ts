@@ -30,6 +30,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
+  nowTimestamp,
 } from '../utils';
 
 type DoubleLinkedListNode = {
