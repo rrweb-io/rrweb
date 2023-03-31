@@ -74,8 +74,7 @@
     "simple-peer-light": "^9.10.0",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.9.1",
-    "tslib": "^2.3.1",
-    "typescript": "^4.7.3"
+    "tslib": "^2.3.1"
   },
   "dependencies": {
     "@rrweb/types": "npm:@fullview/rrweb-types@2.0.0-alpha.6.10",

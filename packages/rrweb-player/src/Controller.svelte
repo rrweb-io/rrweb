@@ -220,7 +220,7 @@
   export const playRange = (
     timeOffset: number,
     endTimeOffset: number,
-    startLooping: boolean = false,
+    startLooping = false,
     afterHook: undefined | (() => void) = undefined,
   ) => {
     if (startLooping) {

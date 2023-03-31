@@ -121,7 +121,7 @@
   export const playRange = (
     timeOffset: number,
     endTimeOffset: number,
-    startLooping: boolean = false,
+    startLooping = false,
     afterHook: undefined | (() => void) = undefined,
   ) => {
     controller.playRange(timeOffset, endTimeOffset, startLooping, afterHook);
