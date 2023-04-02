@@ -13,14 +13,20 @@
   "scripts": {
     "install": "playwright install",
     "build": "tsc",
+    "test": "jest",
+    "check-types": "tsc -noEmit",
     "prepublish": "yarn build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "11.0.1",
+    "@types/jest": "^27.4.1",
     "@types/minimist": "^1.2.1",
-    "@rrweb/types": "^2.0.0-alpha.7"
+    "@types/node": "^18.15.11",
+    "@rrweb/types": "^2.0.0-alpha.7",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",
