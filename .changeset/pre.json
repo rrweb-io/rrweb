@@ -8,17 +8,40 @@
     "rrweb-player": "1.0.0-alpha.4",
     "rrweb-snapshot": "2.0.0-alpha.4",
     "@rrweb/types": "2.0.0-alpha.4",
-    "@rrweb/web-extension": "2.0.0-alpha.4"
+    "@rrweb/web-extension": "2.0.0-alpha.4",
+    "rrvideo": "2.0.0-alpha.6"
   },
   "changesets": [
+    "calm-bulldogs-speak",
+    "chatty-cherries-train",
+    "eight-terms-hunt",
+    "fast-chefs-smell",
     "five-peas-lay",
+    "fresh-spoons-drive",
+    "grumpy-ways-own",
+    "large-ants-prove",
     "loud-seals-raise",
     "lovely-pears-cross",
     "mighty-frogs-sparkle",
     "nervous-poets-grin",
+    "new-snakes-call",
+    "old-dryers-hide",
+    "pretty-plums-rescue",
+    "proud-experts-jam",
+    "real-masks-explode",
     "real-trains-switch",
     "serious-ants-juggle",
+    "sixty-impalas-laugh",
+    "small-olives-arrive",
+    "stupid-ghosts-help",
+    "swift-peas-film",
     "tidy-yaks-joke",
-    "twenty-lies-switch"
+    "tricky-panthers-guess",
+    "twenty-lies-switch",
+    "twenty-planets-repeat",
+    "violet-melons-itch",
+    "violet-zebras-cry",
+    "yellow-mails-cheat",
+    "young-timers-grow"
   ]
 }

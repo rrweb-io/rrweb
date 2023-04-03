@@ -163,6 +163,7 @@ The parameter of `rrweb.record` accepts the following options.
 | collectFonts             | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput     | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
 | plugins                  | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
+| errorHandler             | -                  | A callback that is called if something inside of rrweb throws an error. The callback receives the error as argument.                                                                          |
 
 #### Privacy
 

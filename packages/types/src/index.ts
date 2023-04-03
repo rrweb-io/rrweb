@@ -271,14 +271,14 @@ export type hooksParam = {
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
-export type mutationRecord = {
+export type mutationRecord = Readonly<{
   type: string;
   target: Node;
   oldValue: string | null;
   addedNodes: NodeList;
   removedNodes: NodeList;
   attributeName: string | null;
-};
+}>;
 
 export type textCursor = {
   node: Node;

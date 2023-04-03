@@ -148,6 +148,7 @@ export class Replayer {
 
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
+  private lastMouseDownEvent: [Node, Event] | null = null;
 
   // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
   private lastHoveredRootNode: Document | ShadowRoot;
@@ -299,6 +300,20 @@ export class Replayer {
         );
         this.mousePos = null;
       }
+
+      if (this.touchActive === true) {
+        this.mouse.classList.add('touch-active');
+      } else if (this.touchActive === false) {
+        this.mouse.classList.remove('touch-active');
+      }
+      this.touchActive = null;
+
+      if (this.lastMouseDownEvent) {
+        const [target, event] = this.lastMouseDownEvent;
+        target.dispatchEvent(event);
+      }
+      this.lastMouseDownEvent = null;
+
       if (this.lastSelectionData) {
         this.applySelection(this.lastSelectionData);
         this.lastSelectionData = null;
@@ -614,12 +629,6 @@ export class Replayer {
       const castFn = this.getCastFn(event, true);
       castFn();
     }
-    if (this.touchActive === true) {
-      this.mouse.classList.add('touch-active');
-    } else if (this.touchActive === false) {
-      this.mouse.classList.remove('touch-active');
-    }
-    this.touchActive = null;
   };
 
   private getCastFn = (event: eventWithTime, isSync = false) => {
@@ -776,6 +785,16 @@ export class Replayer {
           });
       }
     };
+
+    /**
+     * Normally rebuilding full snapshot should not be under virtual dom environment.
+     * But if the order of data events has some issues, it might be possible.
+     * Adding this check to avoid any potential issues.
+     */
+    if (this.usingVirtualDom) {
+      this.virtualDom.destroyTree();
+      this.usingVirtualDom = false;
+    }
 
     this.mirror.reset();
     rebuild(event.data.node, {
@@ -1098,7 +1117,7 @@ export class Replayer {
         /**
          * Same as the situation of missing input target.
          */
-        if (d.id === -1 || isSync) {
+        if (d.id === -1) {
           break;
         }
         const event = new Event(MouseInteractions[d.type].toLowerCase());
@@ -1127,11 +1146,18 @@ export class Replayer {
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
+          case MouseInteractions.MouseDown:
+          case MouseInteractions.MouseUp:
             if (isSync) {
               if (d.type === MouseInteractions.TouchStart) {
                 this.touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.touchActive = false;
+              }
+              if (d.type === MouseInteractions.MouseDown) {
+                this.lastMouseDownEvent = [target, event];
+              } else if (d.type === MouseInteractions.MouseUp) {
+                this.lastMouseDownEvent = null;
               }
               this.mousePos = {
                 x: d.x,
@@ -1162,6 +1188,9 @@ export class Replayer {
                 this.mouse.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.mouse.classList.remove('touch-active');
+              } else {
+                // for MouseDown & MouseUp also invoke default behavior
+                target.dispatchEvent(event);
               }
             }
             break;
@@ -1361,14 +1390,20 @@ export class Replayer {
     const mirror = this.usingVirtualDom ? this.virtualDom.mirror : this.mirror;
     type TNode = typeof mirror extends Mirror ? Node : RRNode;
 
+    d.removes = d.removes.filter((mutation) => {
+      // warn of absence from mirror before we start applying each removal
+      // as earlier removals could remove a tree that includes a later removal
+      if (!mirror.getNode(mutation.id)) {
+        this.warnNodeNotFound(d, mutation.id);
+        return false;
+      }
+      return true;
+    });
     d.removes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
-        if (d.removes.find((r) => r.id === mutation.parentId)) {
-          // no need to warn, parent was already removed
-          return;
-        }
-        return this.warnNodeNotFound(d, mutation.id);
+        // no need to warn here, an ancestor may have already been removed
+        return;
       }
       let parent: Node | null | ShadowRoot | RRNode = mirror.getNode(
         mutation.parentId,

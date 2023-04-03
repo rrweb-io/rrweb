@@ -144,7 +144,7 @@ for (const c of baseConfigs) {
     resolve({ browser: true }),
 
     // supports bundling `web-worker:..filename`
-    webWorkerLoader(),
+    webWorkerLoader({ targetPlatform: 'browser' }),
 
     typescript(),
   ];

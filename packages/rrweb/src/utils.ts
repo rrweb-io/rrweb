@@ -30,6 +30,7 @@ const DEPARTED_MIRROR_ACCESS_WARNING =
   'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
   '\r\n' +
   'or you can use record.mirror to access the mirror instance during recording.';
+/** @deprecated */
 export let _mirror: DeprecatedMirror = {
   map: {},
   getId() {
@@ -228,11 +229,15 @@ export function isBlocked(
       : node.parentElement;
   if (!el) return false;
 
-  if (typeof blockClass === 'string') {
-    if (el.classList.contains(blockClass)) return true;
-    if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
-  } else {
-    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+  try {
+    if (typeof blockClass === 'string') {
+      if (el.classList.contains(blockClass)) return true;
+      if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
+    } else {
+      if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+    }
+  } catch (e) {
+    // e
   }
   if (blockSelector) {
     if (el.matches(blockSelector)) return true;
@@ -557,4 +562,19 @@ export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   return doc.contains(n) || shadowHostInDom(n);
+}
+
+/**
+ * Get the type of an input element.
+ * This takes care of the case where a password input is changed to a text input.
+ * In this case, we continue to consider this of type password, in order to avoid leaking sensitive data
+ * where passwords should be masked.
+ */
+export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  return element.hasAttribute('data-rr-is-password')
+    ? 'password'
+    : element.hasAttribute('type')
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-non-null-assertion
+      (element.getAttribute('type')!.toLowerCase() as Lowercase<string>)
+    : null;
 }

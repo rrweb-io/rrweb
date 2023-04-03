@@ -29,6 +29,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
+  getInputType,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -333,7 +334,7 @@ export default class MutationBuffer {
       this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
     }
 
-    for (const n of Array.from(this.movedSet.values())) {
+    for (const n of this.movedSet) {
       if (
         isParentRemoved(this.removes, n, this.mirror) &&
         !this.movedSet.has(n.parentNode!)
@@ -343,7 +344,7 @@ export default class MutationBuffer {
       pushAdd(n);
     }
 
-    for (const n of Array.from(this.addedSet.values())) {
+    for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
         !isParentRemoved(this.removes, n, this.mirror)
@@ -486,12 +487,16 @@ export default class MutationBuffer {
       }
       case 'attributes': {
         const target = m.target as HTMLElement;
-        let value = (m.target as HTMLElement).getAttribute(m.attributeName!);
-        if (m.attributeName === 'value') {
+        let attributeName = m.attributeName as string;
+        let value = (m.target as HTMLElement).getAttribute(attributeName);
+
+        if (attributeName === 'value') {
+          const type = getInputType(target);
+
           value = maskInputValue({
             maskInputOptions: this.maskInputOptions,
-            tagName: (m.target as HTMLElement).tagName,
-            type: (m.target as HTMLElement).getAttribute('type'),
+            tagName: target.tagName,
+            type,
             value,
             maskInputFn: this.maskInputFn,
           });
@@ -508,13 +513,13 @@ export default class MutationBuffer {
         );
         if (
           target.tagName === 'IFRAME' &&
-          m.attributeName === 'src' &&
+          attributeName === 'src' &&
           !this.keepIframeSrcFn(value as string)
         ) {
           if (!(target as HTMLIFrameElement).contentDocument) {
             // we can't record it directly as we can't see into it
             // preserve the src attribute so a decision can be taken at replay time
-            m.attributeName = 'rr_src';
+            attributeName = 'rr_src';
           } else {
             return;
           }
@@ -526,7 +531,18 @@ export default class MutationBuffer {
           };
           this.attributes.push(item);
         }
-        if (m.attributeName === 'style') {
+
+        // Keep this property on inputs that used to be password inputs
+        // This is used to ensure we do not unmask value when using e.g. a "Show password" type button
+        if (
+          attributeName === 'type' &&
+          target.tagName === 'INPUT' &&
+          (m.oldValue || '').toLowerCase() === 'password'
+        ) {
+          target.setAttribute('data-rr-is-password', 'true');
+        }
+
+        if (attributeName === 'style') {
           const old = this.doc.createElement('span');
           if (m.oldValue) {
             old.setAttribute('style', m.oldValue);
@@ -558,12 +574,12 @@ export default class MutationBuffer {
               styleObj[pname] = false; // delete
             }
           }
-        } else if (!ignoreAttribute(target.tagName, m.attributeName!, value)) {
+        } else if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[m.attributeName!] = transformAttribute(
+          item.attributes[attributeName] = transformAttribute(
             this.doc,
             target.tagName,
-            m.attributeName!,
+            attributeName,
             value,
           );
         }
