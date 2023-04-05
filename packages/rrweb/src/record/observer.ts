@@ -24,6 +24,7 @@ import {
   mousePosition,
   mouseInteractionCallBack,
   MouseInteractions,
+  PointerTypes,
   listenerHandler,
   scrollCallback,
   styleSheetRuleCallback,
@@ -240,11 +241,17 @@ function initMouseInteractionObserver({
       if (isBlocked(target, blockClass, blockSelector, true)) {
         return;
       }
-      let pointerType = null;
+      let pointerType: PointerTypes | null = null;
       let e = event;
       if ('pointerType' in e) {
-        pointerType = (e as PointerEvent).pointerType; // touch / pen / mouse
-        if (pointerType === 'touch') {
+        Object.keys(PointerTypes)
+          .forEach((pointerKey: keyof typeof PointerKeys) => {
+            if ((e as PointerEvent).pointerType === pointerKey.toLowerCase()) {
+              pointerType = PointerTypes[pointerKey];
+              return;
+            }
+          });
+        if (pointerType === PointerTypes.Touch) {
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
             // we are actually listening on 'pointerdown'
             eventKey = 'TouchStart';
@@ -254,14 +261,14 @@ function initMouseInteractionObserver({
             // we are actually listening on 'pointerup'
             eventKey = 'TouchEnd';
           }
-        } else if (pointerType == 'pen') {
+        } else if (pointerType == PointerTypes.Pen) {
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
         }
       } else if (legacy_isTouchEvent(event)) {
         e = event.changedTouches[0];
-        pointerType = 'touch';
+        pointerType = PointerTypes.Touch;
       }
-      if (pointerType) {
+      if (pointerType !== null) {
         currentPointerType = pointerType;
       } else if (MouseInteractions[eventKey] === MouseInteractions.Click) {
         pointerType = currentPointerType;
@@ -277,7 +284,7 @@ function initMouseInteractionObserver({
         id,
         x: clientX,
         y: clientY,
-        ...(pointerType && { pointerType }),
+        ...(pointerType !== null && { pointerType }),
       });
     };
   };
