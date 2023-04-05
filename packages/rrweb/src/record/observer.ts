@@ -244,13 +244,14 @@ function initMouseInteractionObserver({
       let pointerType: PointerTypes | null = null;
       let e = event;
       if ('pointerType' in e) {
-        Object.keys(PointerTypes)
-          .forEach((pointerKey: keyof typeof PointerKeys) => {
+        Object.keys(PointerTypes).forEach(
+          (pointerKey: keyof typeof PointerKeys) => {
             if ((e as PointerEvent).pointerType === pointerKey.toLowerCase()) {
               pointerType = PointerTypes[pointerKey];
               return;
             }
-          });
+          },
+        );
         if (pointerType === PointerTypes.Touch) {
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
             // we are actually listening on 'pointerdown'
