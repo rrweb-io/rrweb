@@ -362,6 +362,12 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum PointerTypes {
+  Mouse,
+  Pen,
+  Touch,
+}
+
 export enum CanvasContext {
   '2D',
   WebGL,
@@ -404,7 +410,7 @@ type mouseInteractionParam = {
   id: number;
   x: number;
   y: number;
-  pointerType?: string;
+  pointerType?: PointerTypes;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
