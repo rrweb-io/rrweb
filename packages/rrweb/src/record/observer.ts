@@ -1,10 +1,14 @@
-import { MaskInputOptions, maskInputValue, Mirror } from 'rrweb-snapshot';
+import {
+  MaskInputOptions,
+  maskInputValue,
+  Mirror,
+  getInputType,
+} from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
   on,
   hookSetter,
-  getInputType,
   getWindowScroll,
   getWindowHeight,
   getWindowWidth,

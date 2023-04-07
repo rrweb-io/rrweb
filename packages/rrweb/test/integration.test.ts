@@ -455,6 +455,30 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should not record input values if dynamically added and maskAllInputs is true', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'empty.html', { maskAllInputs: true }),
+    );
+
+    await page.evaluate(() => {
+      const el = document.createElement('input');
+      el.id = 'input';
+      el.value = 'input should be masked';
+
+      const nextElement = document.querySelector('#one')!;
+      nextElement.parentNode!.insertBefore(el, nextElement);
+    });
+
+    await page.type('#input', 'moo');
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should record webgl canvas mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
