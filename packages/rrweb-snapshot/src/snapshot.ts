@@ -20,6 +20,7 @@ import {
   maskInputValue,
   isNativeShadowDom,
   getCssRulesString,
+  getInputType,
 } from './utils';
 
 let _id = 1;
@@ -682,11 +683,7 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
-      const type: string | null = n.hasAttribute('data-rr-is-password')
-        ? 'password'
-        : typeof attributes.type === 'string'
-        ? attributes.type.toLowerCase()
-        : null;
+      const type = getInputType(n);
       attributes.value = maskInputValue({
         type,
         tagName,

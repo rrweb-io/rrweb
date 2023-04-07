@@ -248,3 +248,19 @@ export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
     );
   return false;
 }
+
+/**
+ * Get the type of an input element.
+ * This takes care of the case where a password input is changed to a text input.
+ * In this case, we continue to consider this of type password, in order to avoid leaking sensitive data
+ * where passwords should be masked.
+ */
+export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  const type = (element as HTMLInputElement).type;
+
+  return element.hasAttribute('data-rr-is-password')
+    ? 'password'
+    : type
+    ? (type.toLowerCase() as Lowercase<string>)
+    : null;
+}
