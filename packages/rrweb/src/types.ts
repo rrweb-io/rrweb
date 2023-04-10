@@ -69,6 +69,7 @@ export type recordOptions<T> = {
   // departed, please use sampling options
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
+  errorHandler?: ErrorHandler;
 };
 
 export type observerParam = {
@@ -211,3 +212,5 @@ export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
 };
 export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
+
+export type ErrorHandler = (error: unknown) => void | boolean;

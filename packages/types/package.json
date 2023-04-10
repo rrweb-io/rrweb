@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/types",
-  "version": "2.0.0-alpha.5",
+  "version": "2.0.0-alpha.7",
   "publishConfig": {
     "access": "public"
   },
@@ -39,12 +39,11 @@
     "dist"
   ],
   "devDependencies": {
-    "typescript": "^4.7.3",
     "vite": "^4.1.1",
     "vite-plugin-dts": "^1.7.2"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.5"
+    "rrweb-snapshot": "^2.0.0-alpha.7"
   },
   "browserslist": [
     "supports es6-class"

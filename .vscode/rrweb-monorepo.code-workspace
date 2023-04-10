@@ -32,6 +32,7 @@
       "name": "@rrweb/cutter (package)",
       "path": "../packages/rrweb-cutter"
     },
+    { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
     { "name": "@rrweb/types (package)", "path": "../packages/types" }
   ],
   "settings": {

@@ -208,6 +208,7 @@
   export const goto = (timeOffset: number, play?: boolean) => {
     currentTime = timeOffset;
     pauseAt = false;
+    finished = false;
     const resumePlaying =
       typeof play === 'boolean' ? play : playerState === 'playing';
     if (resumePlaying) {
@@ -220,7 +221,7 @@
   export const playRange = (
     timeOffset: number,
     endTimeOffset: number,
-    startLooping: boolean = false,
+    startLooping = false,
     afterHook: undefined | (() => void) = undefined,
   ) => {
     if (startLooping) {
@@ -250,7 +251,6 @@
       percent = 1;
     }
     const timeOffset = meta.totalTime * percent;
-    finished = false;
     goto(timeOffset);
   };
 

@@ -21,9 +21,10 @@ function useSpecialFormat(
         (config.build?.lib as LibraryOptions)?.entry as string,
       );
       if (shouldUse) {
-        config.build ??= {};
+        config.build = config.build ?? {};
         // @ts-expect-error: lib needs to be an object, forcing it.
-        config.build.lib ||= {};
+        config.build.lib =
+          typeof config.build.lib == 'object' ? config.build.lib : {};
         // @ts-expect-error: lib is an object
         config.build.lib.formats = [format];
       }

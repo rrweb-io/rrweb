@@ -20,6 +20,7 @@ import {
   maskInputValue,
   isNativeShadowDom,
   getCssRulesString,
+  getInputType,
 } from './utils';
 
 let _id = 1;
@@ -71,7 +72,8 @@ let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
-const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/|#).*/;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
 export function absoluteToStylesheet(
   cssText: string | null,
@@ -92,7 +94,7 @@ export function absoluteToStylesheet(
       if (!filePath) {
         return origin;
       }
-      if (!RELATIVE_PATH.test(filePath)) {
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (DATA_URI.test(filePath)) {
@@ -222,33 +224,44 @@ export function transformAttribute(
   doc: Document,
   tagName: string,
   name: string,
-  value: string,
-): string {
+  value: string | null,
+): string | null {
+  if (!value) {
+    return value;
+  }
+
   // relative path in attribute
   if (
     name === 'src' ||
-    (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))
+    (name === 'href' && !(tagName === 'use' && value[0] === '#'))
   ) {
     // href starts with a # is an id pointer for svg
     return absoluteToDoc(doc, value);
-  } else if (name === 'xlink:href' && value && value[0] !== '#') {
+  } else if (name === 'xlink:href' && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
   } else if (
     name === 'background' &&
-    value &&
     (tagName === 'table' || tagName === 'td' || tagName === 'th')
   ) {
     return absoluteToDoc(doc, value);
-  } else if (name === 'srcset' && value) {
+  } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
-  } else if (name === 'style' && value) {
+  } else if (name === 'style') {
     return absoluteToStylesheet(value, getHref());
-  } else if (tagName === 'object' && name === 'data' && value) {
+  } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
-  } else {
-    return value;
   }
+
+  return value;
+}
+
+export function ignoreAttribute(
+  tagName: string,
+  name: string,
+  _value: unknown,
+): boolean {
+  return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
 }
 
 export function _isBlockedElement(
@@ -256,20 +269,24 @@ export function _isBlockedElement(
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
-  if (typeof blockClass === 'string') {
-    if (element.classList.contains(blockClass)) {
-      return true;
-    }
-  } else {
-    for (let eIndex = element.classList.length; eIndex--; ) {
-      const className = element.classList[eIndex];
-      if (blockClass.test(className)) {
+  try {
+    if (typeof blockClass === 'string') {
+      if (element.classList.contains(blockClass)) {
         return true;
       }
+    } else {
+      for (let eIndex = element.classList.length; eIndex--; ) {
+        const className = element.classList[eIndex];
+        if (blockClass.test(className)) {
+          return true;
+        }
+      }
     }
-  }
-  if (blockSelector) {
-    return element.matches(blockSelector);
+    if (blockSelector) {
+      return element.matches(blockSelector);
+    }
+  } catch (e) {
+    //
   }
 
   return false;
@@ -301,22 +318,26 @@ export function needMaskingText(
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
-  const el: HTMLElement | null =
-    node.nodeType === node.ELEMENT_NODE
-      ? (node as HTMLElement)
-      : node.parentElement;
-  if (el === null) return false;
+  try {
+    const el: HTMLElement | null =
+      node.nodeType === node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
+    if (el === null) return false;
 
-  if (typeof maskTextClass === 'string') {
-    if (el.classList.contains(maskTextClass)) return true;
-    if (el.closest(`.${maskTextClass}`)) return true;
-  } else {
-    if (classMatchesRegex(el, maskTextClass, true)) return true;
-  }
+    if (typeof maskTextClass === 'string') {
+      if (el.classList.contains(maskTextClass)) return true;
+      if (el.closest(`.${maskTextClass}`)) return true;
+    } else {
+      if (classMatchesRegex(el, maskTextClass, true)) return true;
+    }
 
-  if (maskTextSelector) {
-    if (el.matches(maskTextSelector)) return true;
-    if (el.closest(maskTextSelector)) return true;
+    if (maskTextSelector) {
+      if (el.matches(maskTextSelector)) return true;
+      if (el.closest(maskTextSelector)) return true;
+    }
+  } catch (e) {
+    //
   }
   return false;
 }
@@ -613,12 +634,14 @@ function serializeElementNode(
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    attributes[attr.name] = transformAttribute(
-      doc,
-      tagName,
-      attr.name,
-      attr.value,
-    );
+    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+      attributes[attr.name] = transformAttribute(
+        doc,
+        tagName,
+        attr.name,
+        attr.value,
+      );
+    }
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
@@ -660,8 +683,9 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
+      const type = getInputType(n);
       attributes.value = maskInputValue({
-        type: attributes.type,
+        type,
         tagName,
         value,
         maskInputOptions,
@@ -722,6 +746,7 @@ function serializeElementNode(
     const oldValue = image.crossOrigin;
     image.crossOrigin = 'anonymous';
     const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
       try {
         canvasService!.width = image.naturalWidth;
         canvasService!.height = image.naturalHeight;
@@ -741,7 +766,7 @@ function serializeElementNode(
     };
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.onload = recordInlineImage;
+    else image.addEventListener('load', recordInlineImage);
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
@@ -793,8 +818,10 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(maybeAttr: string | number | boolean): string {
-  if (maybeAttr === undefined) {
+function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): string {
+  if (maybeAttr === undefined || maybeAttr === null) {
     return '';
   } else {
     return (maybeAttr as string).toLowerCase();
@@ -1183,7 +1210,7 @@ function snapshot(
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
-    slimDOM?: boolean | SlimDOMOptions;
+    slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
     recordCanvas?: boolean;

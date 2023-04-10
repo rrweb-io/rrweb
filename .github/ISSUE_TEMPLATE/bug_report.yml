@@ -22,6 +22,8 @@ body:
         - rrweb-cutter
         - rrdom
         - rrdom-nodejs
+        - web-extension
+        - rrvideo
         - Other (specify below)
     validations:
       required: true

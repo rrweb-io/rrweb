@@ -141,6 +141,32 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('handles null attribute values', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'mutation-observer.html', {}));
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      ul.appendChild(li);
+
+      li.setAttribute('aria-label', 'label');
+      li.setAttribute('id', 'test-li');
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await page.evaluate(() => {
+      const li = document.querySelector('#test-li') as HTMLLIElement;
+      // This triggers the mutation observer with a `null` attribute value
+      li.removeAttribute('aria-label');
+    });
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('can record node mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -255,7 +281,7 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
-  it('should mask value attribute with maskInputOptions', async () => {
+  it('should mask password value attribute with maskInputOptions', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(
@@ -266,7 +292,12 @@ describe('record integration tests', function (this: ISuite) {
       }),
     );
 
-    await page.type('input[type="password"]', 'secr3t');
+    await page.type('#password', 'secr3t');
+
+    // Change type to text (simulate "show password")
+    await page.click('#show-password');
+    await page.type('#password', 'XY');
+    await page.click('#show-password');
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -424,6 +455,30 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should not record input values if dynamically added and maskAllInputs is true', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'empty.html', { maskAllInputs: true }),
+    );
+
+    await page.evaluate(() => {
+      const el = document.createElement('input');
+      el.id = 'input';
+      el.value = 'input should be masked';
+
+      const nextElement = document.querySelector('#one')!;
+      nextElement.parentNode!.insertBefore(el, nextElement);
+    });
+
+    await page.type('#input', 'moo');
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should record webgl canvas mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -539,6 +594,53 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('should handle recursive console messages', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml('log.html', {
+        plugins:
+          '[rrwebConsoleRecord.getRecordConsolePlugin()]' as unknown as RecordPlugin<unknown>[],
+      }),
+    );
+
+    await page.evaluate(() => {
+      // Some frameworks like Vue.js use proxies to implement reactivity.
+      // This can cause infinite loops when logging objects.
+      let recursiveTarget = { foo: 'bar', proxied: 'i-am', proxy: null };
+      let count = 0;
+
+      const handler = {
+        get(target: any, prop: any, ...args: any[]) {
+          if (prop === 'proxied') {
+            if (count > 9) {
+              return;
+            }
+            count++; // We don't want out test to get into an infinite loop...
+            console.warn(
+              'proxied was accessed so triggering a console.warn',
+              target,
+            );
+          }
+          return Reflect.get(target, prop, ...args);
+        },
+      };
+
+      const proxy = new Proxy(recursiveTarget, handler);
+      recursiveTarget.proxy = proxy;
+
+      console.log('Proxied object:', proxy);
+    });
+
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    // The snapshots should containe 1 console log, not multiple.
     assertSnapshot(snapshots);
   });
 

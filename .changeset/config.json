@@ -11,7 +11,8 @@
       "rrweb-player",
       "@rrweb/types",
       "@rrweb/web-extension",
-      "@rrweb/cutter"
+      "@rrweb/cutter",
+      "rrvideo"
     ]
   ],
   "linked": [],

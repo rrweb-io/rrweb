@@ -162,14 +162,16 @@ export function maskInputValue({
 }: {
   maskInputOptions: MaskInputOptions;
   tagName: string;
-  type: string | number | boolean | null;
+  type: string | null;
   value: string | null;
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
+  const actualType = type && type.toLowerCase();
+
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    maskInputOptions[type as keyof MaskInputOptions]
+    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
   ) {
     if (maskInputFn) {
       text = maskInputFn(text);
@@ -245,4 +247,21 @@ export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
       a.needBlock === (b as elementNode).needBlock
     );
   return false;
+}
+
+/**
+ * Get the type of an input element.
+ * This takes care of the case where a password input is changed to a text input.
+ * In this case, we continue to consider this of type password, in order to avoid leaking sensitive data
+ * where passwords should be masked.
+ */
+export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  const type = (element as HTMLInputElement).type;
+
+  return element.hasAttribute('data-rr-is-password')
+    ? 'password'
+    : type
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      (type.toLowerCase() as Lowercase<string>)
+    : null;
 }

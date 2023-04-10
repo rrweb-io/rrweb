@@ -149,7 +149,7 @@ function buildNode(
        * They often overwrite other attributes on the element.
        * We need to parse them last so they can overwrite conflicting attributes.
        */
-      const specialAttributes: attributes = {};
+      const specialAttributes: { [key: string]: string | number } = {};
       for (const name in n.attributes) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
@@ -162,6 +162,11 @@ function buildNode(
         ) {
           // legacy fix (TODO: if `value === false` can be generated for other attrs,
           // should we also omit those other attrs from build ?)
+          continue;
+        }
+
+        // null values mean the attribute was removed
+        if (value === null) {
           continue;
         }
 
@@ -438,6 +443,28 @@ export function buildNodeWithSN(
 
       if (childN.isShadow && isElement(node) && node.shadowRoot) {
         node.shadowRoot.appendChild(childNode);
+      } else if (
+        n.type === NodeType.Document &&
+        childN.type == NodeType.Element
+      ) {
+        const htmlElement = childNode as HTMLElement;
+        let body: HTMLBodyElement | null = null;
+        htmlElement.childNodes.forEach((child) => {
+          if (child.nodeName === 'BODY') body = child as HTMLBodyElement;
+        });
+        if (body) {
+          // this branch solves a problem in Firefox where css transitions are incorrectly
+          // being applied upon rebuild.  Presumably FF doesn't finished parsing the styles
+          // in time, and applies e.g. a default margin:0 to elements which have a non-zero
+          // margin set in CSS, along with a transition on them
+          htmlElement.removeChild(body);
+          // append <head> and <style>s
+          node.appendChild(childNode);
+          // now append <body>
+          htmlElement.appendChild(body);
+        } else {
+          node.appendChild(childNode);
+        }
       } else {
         node.appendChild(childNode);
       }

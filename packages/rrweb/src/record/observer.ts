@@ -1,4 +1,9 @@
-import { MaskInputOptions, maskInputValue, Mirror } from 'rrweb-snapshot';
+import {
+  MaskInputOptions,
+  maskInputValue,
+  Mirror,
+  getInputType,
+} from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -40,7 +45,7 @@ import {
   selectionCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
-import ProcessedNodeManager from './processed-node-manager';
+import { callbackWrapper } from './error-handler';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -52,7 +57,6 @@ type WindowWithAngularZone = IWindow & {
 };
 
 export const mutationBuffers: MutationBuffer[] = [];
-export const processedNodeManager = new ProcessedNodeManager();
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
@@ -109,7 +113,9 @@ export function initMutationObserver(
   }
   const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
-  ) => MutationObserver)(mutationBuffer.processMutations.bind(mutationBuffer));
+  ) => MutationObserver)(
+    callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
+  );
   observer.observe(rootEl, {
     attributes: true,
     attributeOldValue: true,
@@ -143,63 +149,67 @@ function initMoveObserver({
   let positions: mousePosition[] = [];
   let timeBaseline: number | null;
   const wrappedCb = throttle(
-    (
-      source:
-        | IncrementalSource.MouseMove
-        | IncrementalSource.TouchMove
-        | IncrementalSource.Drag,
-    ) => {
-      const totalOffset = Date.now() - timeBaseline!;
-      mousemoveCb(
-        positions.map((p) => {
-          p.timeOffset -= totalOffset;
-          return p;
-        }),
-        source,
-      );
-      positions = [];
-      timeBaseline = null;
-    },
+    callbackWrapper(
+      (
+        source:
+          | IncrementalSource.MouseMove
+          | IncrementalSource.TouchMove
+          | IncrementalSource.Drag,
+      ) => {
+        const totalOffset = Date.now() - timeBaseline!;
+        mousemoveCb(
+          positions.map((p) => {
+            p.timeOffset -= totalOffset;
+            return p;
+          }),
+          source,
+        );
+        positions = [];
+        timeBaseline = null;
+      },
+    ),
     callbackThreshold,
   );
-  const updatePosition = throttle<MouseEvent | TouchEvent | DragEvent>(
-    (evt) => {
-      const target = getEventTarget(evt);
-      const { clientX, clientY } = isTouchEvent(evt)
-        ? evt.changedTouches[0]
-        : evt;
-      if (!timeBaseline) {
-        timeBaseline = Date.now();
-      }
-      positions.push({
-        x: clientX,
-        y: clientY,
-        id: mirror.getId(target as Node),
-        timeOffset: Date.now() - timeBaseline,
-      });
-      // it is possible DragEvent is undefined even on devices
-      // that support event 'drag'
-      wrappedCb(
-        typeof DragEvent !== 'undefined' && evt instanceof DragEvent
-          ? IncrementalSource.Drag
-          : evt instanceof MouseEvent
-          ? IncrementalSource.MouseMove
-          : IncrementalSource.TouchMove,
-      );
-    },
-    threshold,
-    {
-      trailing: false,
-    },
+  const updatePosition = callbackWrapper(
+    throttle<MouseEvent | TouchEvent | DragEvent>(
+      callbackWrapper((evt) => {
+        const target = getEventTarget(evt);
+        const { clientX, clientY } = isTouchEvent(evt)
+          ? evt.changedTouches[0]
+          : evt;
+        if (!timeBaseline) {
+          timeBaseline = Date.now();
+        }
+        positions.push({
+          x: clientX,
+          y: clientY,
+          id: mirror.getId(target as Node),
+          timeOffset: Date.now() - timeBaseline,
+        });
+        // it is possible DragEvent is undefined even on devices
+        // that support event 'drag'
+        wrappedCb(
+          typeof DragEvent !== 'undefined' && evt instanceof DragEvent
+            ? IncrementalSource.Drag
+            : evt instanceof MouseEvent
+            ? IncrementalSource.MouseMove
+            : IncrementalSource.TouchMove,
+        );
+      }),
+      threshold,
+      {
+        trailing: false,
+      },
+    ),
   );
   const handlers = [
     on('mousemove', updatePosition, doc),
     on('touchmove', updatePosition, doc),
     on('drag', updatePosition, doc),
   ];
-  return () => {
+  return callbackWrapper(() => {
     handlers.forEach((h) => h());
-  };
+  });
 }
 
 function initMouseInteractionObserver({
@@ -234,7 +244,7 @@ function initMouseInteractionObserver({
       }
       const id = mirror.getId(target);
       const { clientX, clientY } = e;
-      mouseInteractionCb({
+      callbackWrapper(mouseInteractionCb)({
         type: MouseInteractions[eventKey],
         id,
         x: clientX,
@@ -254,9 +264,9 @@ function initMouseInteractionObserver({
       const handler = getHandler(eventKey);
       handlers.push(on(eventName, handler, doc));
     });
-  return () => {
+  return callbackWrapper(() => {
     handlers.forEach((h) => h());
-  };
+  });
 }
 
 export function initScrollObserver({
@@ -270,27 +280,35 @@ export function initScrollObserver({
   observerParam,
   'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'blockSelector' | 'sampling'
 >): listenerHandler {
-  const updatePosition = throttle<UIEvent>((evt) => {
-    const target = getEventTarget(evt);
-    if (!target || isBlocked(target as Node, blockClass, blockSelector, true)) {
-      return;
-    }
-    const id = mirror.getId(target as Node);
-    if (target === doc && doc.defaultView) {
-      const scrollLeftTop = getWindowScroll(doc.defaultView);
-      scrollCb({
-        id,
-        x: scrollLeftTop.left,
-        y: scrollLeftTop.top,
-      });
-    } else {
-      scrollCb({
-        id,
-        x: (target as HTMLElement).scrollLeft,
-        y: (target as HTMLElement).scrollTop,
-      });
-    }
-  }, sampling.scroll || 100);
+  const updatePosition = callbackWrapper(
+    throttle<UIEvent>(
+      callbackWrapper((evt) => {
+        const target = getEventTarget(evt);
+        if (
+          !target ||
+          isBlocked(target as Node, blockClass, blockSelector, true)
+        ) {
+          return;
+        }
+        const id = mirror.getId(target as Node);
+        if (target === doc && doc.defaultView) {
+          const scrollLeftTop = getWindowScroll(doc.defaultView);
+          scrollCb({
+            id,
+            x: scrollLeftTop.left,
+            y: scrollLeftTop.top,
+          });
+        } else {
+          scrollCb({
+            id,
+            x: (target as HTMLElement).scrollLeft,
+            y: (target as HTMLElement).scrollTop,
+          });
+        }
+      }),
+      sampling.scroll || 100,
+    ),
+  );
   return on('scroll', updatePosition, doc);
 }
 
@@ -299,18 +317,23 @@ function initViewportResizeObserver({
 }: observerParam): listenerHandler {
   let lastH = -1;
   let lastW = -1;
-  const updateDimension = throttle(() => {
-    const height = getWindowHeight();
-    const width = getWindowWidth();
-    if (lastH !== height || lastW !== width) {
-      viewportResizeCb({
-        width: Number(width),
-        height: Number(height),
-      });
-      lastH = height;
-      lastW = width;
-    }
-  }, 200);
+  const updateDimension = callbackWrapper(
+    throttle(
+      callbackWrapper(() => {
+        const height = getWindowHeight();
+        const width = getWindowWidth();
+        if (lastH !== height || lastW !== width) {
+          viewportResizeCb({
+            width: Number(width),
+            height: Number(height),
+          });
+          lastH = height;
+          lastW = width;
+        }
+      }),
+      200,
+    ),
+  );
   return on('resize', updateDimension, window);
 }
 
@@ -338,39 +361,42 @@ function initInputObserver({
   userTriggeredOnInput,
 }: observerParam): listenerHandler {
   function eventHandler(event: Event) {
-    let target = getEventTarget(event);
+    let target = getEventTarget(event) as HTMLElement | null;
     const userTriggered = event.isTrusted;
+    const tagName = target && target.tagName;
+
     /**
      * If a site changes the value 'selected' of an option element, the value of its parent element, usually a select element, will be changed as well.
      * We can treat this change as a value change of the select element the current target belongs to.
      */
-    if (target && (target as Element).tagName === 'OPTION')
-      target = (target as Element).parentElement;
+    if (target && tagName === 'OPTION') {
+      target = target.parentElement;
+    }
     if (
       !target ||
-      !(target as Element).tagName ||
-      INPUT_TAGS.indexOf((target as Element).tagName) < 0 ||
+      !tagName ||
+      INPUT_TAGS.indexOf(tagName) < 0 ||
       isBlocked(target as Node, blockClass, blockSelector, true)
     ) {
       return;
     }
-    const type: string | undefined = (target as HTMLInputElement).type;
-    if ((target as HTMLElement).classList.contains(ignoreClass)) {
+
+    if (target.classList.contains(ignoreClass)) {
       return;
     }
     let text = (target as HTMLInputElement).value;
     let isChecked = false;
+    const type: Lowercase<string> = getInputType(target) || '';
+
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
     } else if (
-      maskInputOptions[
-        (target as Element).tagName.toLowerCase() as keyof MaskInputOptions
-      ] ||
+      maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
       text = maskInputValue({
         maskInputOptions,
-        tagName: (target as HTMLElement).tagName,
+        tagName,
         type,
         value: text,
         maskInputFn,
@@ -378,7 +404,7 @@ function initInputObserver({
     }
     cbWithDedup(
       target,
-      wrapEventWithUserTriggeredFlag(
+      callbackWrapper(wrapEventWithUserTriggeredFlag)(
         { text, isChecked, userTriggered },
         userTriggeredOnInput,
       ),
@@ -393,7 +419,7 @@ function initInputObserver({
           if (el !== target) {
             cbWithDedup(
               el,
-              wrapEventWithUserTriggeredFlag(
+              callbackWrapper(wrapEventWithUserTriggeredFlag)(
                 {
                   text: (el as HTMLInputElement).value,
                   isChecked: !isChecked,
@@ -415,7 +441,7 @@ function initInputObserver({
     ) {
       lastInputValueMap.set(target, v);
       const id = mirror.getId(target as Node);
-      inputCb({
+      callbackWrapper(inputCb)({
         ...v,
         id,
       });
@@ -423,7 +449,7 @@ function initInputObserver({
   }
   const events = sampling.input === 'last' ? ['change'] : ['input', 'change'];
   const handlers: Array<listenerHandler | hookResetter> = events.map(
-    (eventName) => on(eventName, eventHandler, doc),
+    (eventName) => on(eventName, callbackWrapper(eventHandler), doc),
   );
   const currentWindow = doc.defaultView;
   if (!currentWindow) {
@@ -453,7 +479,10 @@ function initInputObserver({
           {
             set() {
               // mock to a normal event
-              eventHandler({ target: this as EventTarget } as Event);
+              callbackWrapper(eventHandler)({
+                target: this as EventTarget,
+                isTrusted: false, // userTriggered to false as this could well be programmatic
+              } as Event);
             },
           },
           false,
@@ -462,9 +491,9 @@ function initInputObserver({
       ),
     );
   }
-  return () => {
+  return callbackWrapper(() => {
     handlers.forEach((h) => h());
-  };
+  });
 }
 
 type GroupingCSSRule =
@@ -541,97 +570,125 @@ function initStyleSheetObserver(
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
-  win.CSSStyleSheet.prototype.insertRule = function (
-    this: CSSStyleSheet,
-    rule: string,
-    index?: number,
-  ) {
-    const { id, styleId } = getIdAndStyleId(
-      this,
-      mirror,
-      stylesheetManager.styleMirror,
-    );
+  win.CSSStyleSheet.prototype.insertRule = new Proxy(insertRule, {
+    apply: callbackWrapper(
+      (
+        target: typeof insertRule,
+        thisArg: CSSStyleSheet,
+        argumentsList: [string, number | undefined],
+      ) => {
+        const [rule, index] = argumentsList;
 
-    if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      styleSheetRuleCb({
-        id,
-        styleId,
-        adds: [{ rule, index }],
-      });
-    }
-    return insertRule.apply(this, [rule, index]);
-  };
+        const { id, styleId } = getIdAndStyleId(
+          thisArg,
+          mirror,
+          stylesheetManager.styleMirror,
+        );
+
+        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+          styleSheetRuleCb({
+            id,
+            styleId,
+            adds: [{ rule, index }],
+          });
+        }
+        return target.apply(thisArg, argumentsList);
+      },
+    ),
+  });
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
-  win.CSSStyleSheet.prototype.deleteRule = function (
-    this: CSSStyleSheet,
-    index: number,
-  ) {
-    const { id, styleId } = getIdAndStyleId(
-      this,
-      mirror,
-      stylesheetManager.styleMirror,
-    );
+  win.CSSStyleSheet.prototype.deleteRule = new Proxy(deleteRule, {
+    apply: callbackWrapper(
+      (
+        target: typeof deleteRule,
+        thisArg: CSSStyleSheet,
+        argumentsList: [number],
+      ) => {
+        const [index] = argumentsList;
 
-    if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      styleSheetRuleCb({
-        id,
-        styleId,
-        removes: [{ index }],
-      });
-    }
-    return deleteRule.apply(this, [index]);
-  };
+        const { id, styleId } = getIdAndStyleId(
+          thisArg,
+          mirror,
+          stylesheetManager.styleMirror,
+        );
+
+        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+          styleSheetRuleCb({
+            id,
+            styleId,
+            removes: [{ index }],
+          });
+        }
+        return target.apply(thisArg, argumentsList);
+      },
+    ),
+  });
 
   let replace: (text: string) => Promise<CSSStyleSheet>;
+
   if (win.CSSStyleSheet.prototype.replace) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     replace = win.CSSStyleSheet.prototype.replace;
-    win.CSSStyleSheet.prototype.replace = function (
-      this: CSSStyleSheet,
-      text: string,
-    ) {
-      const { id, styleId } = getIdAndStyleId(
-        this,
-        mirror,
-        stylesheetManager.styleMirror,
-      );
+    win.CSSStyleSheet.prototype.replace = new Proxy(replace, {
+      apply: callbackWrapper(
+        (
+          target: typeof replace,
+          thisArg: CSSStyleSheet,
+          argumentsList: [string],
+        ) => {
+          const [text] = argumentsList;
 
-      if ((id && id !== -1) || (styleId && styleId !== -1)) {
-        styleSheetRuleCb({
-          id,
-          styleId,
-          replace: text,
-        });
-      }
-      return replace.apply(this, [text]);
-    };
+          const { id, styleId } = getIdAndStyleId(
+            thisArg,
+            mirror,
+            stylesheetManager.styleMirror,
+          );
+
+          if ((id && id !== -1) || (styleId && styleId !== -1)) {
+            styleSheetRuleCb({
+              id,
+              styleId,
+              replace: text,
+            });
+          }
+          return target.apply(thisArg, argumentsList);
+        },
+      ),
+    });
   }
 
   let replaceSync: (text: string) => void;
   if (win.CSSStyleSheet.prototype.replaceSync) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     replaceSync = win.CSSStyleSheet.prototype.replaceSync;
-    win.CSSStyleSheet.prototype.replaceSync = function (
-      this: CSSStyleSheet,
-      text: string,
-    ) {
-      const { id, styleId } = getIdAndStyleId(
-        this,
-        mirror,
-        stylesheetManager.styleMirror,
-      );
+    win.CSSStyleSheet.prototype.replaceSync = new Proxy(replaceSync, {
+      apply: callbackWrapper(
+        (
+          target: typeof replaceSync,
+          thisArg: CSSStyleSheet,
+          argumentsList: [string],
+        ) => {
+          const [text] = argumentsList;
 
-      if ((id && id !== -1) || (styleId && styleId !== -1)) {
-        styleSheetRuleCb({
-          id,
-          styleId,
-          replaceSync: text,
-        });
-      }
-      return replaceSync.apply(this, [text]);
-    };
+          const { id, styleId } = getIdAndStyleId(
+            thisArg,
+            mirror,
+            stylesheetManager.styleMirror,
+          );
+
+          if ((id && id !== -1) || (styleId && styleId !== -1)) {
+            styleSheetRuleCb({
+              id,
+              styleId,
+              replaceSync: text,
+            });
+          }
+          return target.apply(thisArg, argumentsList);
+        },
+      ),
+    });
   }
 
   const supportedNestedCSSRuleTypes: {
@@ -670,59 +727,78 @@ function initStyleSheetObserver(
       deleteRule: type.prototype.deleteRule,
     };
 
-    type.prototype.insertRule = function (
-      this: CSSGroupingRule,
-      rule: string,
-      index?: number,
-    ) {
-      const { id, styleId } = getIdAndStyleId(
-        this.parentStyleSheet,
-        mirror,
-        stylesheetManager.styleMirror,
-      );
+    type.prototype.insertRule = new Proxy(
+      unmodifiedFunctions[typeKey].insertRule,
+      {
+        apply: callbackWrapper(
+          (
+            target: typeof insertRule,
+            thisArg: CSSRule,
+            argumentsList: [string, number | undefined],
+          ) => {
+            const [rule, index] = argumentsList;
 
-      if ((id && id !== -1) || (styleId && styleId !== -1)) {
-        styleSheetRuleCb({
-          id,
-          styleId,
-          adds: [
-            {
-              rule,
-              index: [
-                ...getNestedCSSRulePositions(this as CSSRule),
-                index || 0, // defaults to 0
-              ],
-            },
-          ],
-        });
-      }
-      return unmodifiedFunctions[typeKey].insertRule.apply(this, [rule, index]);
-    };
+            const { id, styleId } = getIdAndStyleId(
+              thisArg.parentStyleSheet,
+              mirror,
+              stylesheetManager.styleMirror,
+            );
 
-    type.prototype.deleteRule = function (
-      this: CSSGroupingRule,
-      index: number,
-    ) {
-      const { id, styleId } = getIdAndStyleId(
-        this.parentStyleSheet,
-        mirror,
-        stylesheetManager.styleMirror,
-      );
+            if ((id && id !== -1) || (styleId && styleId !== -1)) {
+              styleSheetRuleCb({
+                id,
+                styleId,
+                adds: [
+                  {
+                    rule,
+                    index: [
+                      ...getNestedCSSRulePositions(thisArg),
+                      index || 0, // defaults to 0
+                    ],
+                  },
+                ],
+              });
+            }
+            return target.apply(thisArg, argumentsList);
+          },
+        ),
+      },
+    );
 
-      if ((id && id !== -1) || (styleId && styleId !== -1)) {
-        styleSheetRuleCb({
-          id,
-          styleId,
-          removes: [
-            { index: [...getNestedCSSRulePositions(this as CSSRule), index] },
-          ],
-        });
-      }
-      return unmodifiedFunctions[typeKey].deleteRule.apply(this, [index]);
-    };
+    type.prototype.deleteRule = new Proxy(
+      unmodifiedFunctions[typeKey].deleteRule,
+      {
+        apply: callbackWrapper(
+          (
+            target: typeof deleteRule,
+            thisArg: CSSRule,
+            argumentsList: [number],
+          ) => {
+            const [index] = argumentsList;
+
+            const { id, styleId } = getIdAndStyleId(
+              thisArg.parentStyleSheet,
+              mirror,
+              stylesheetManager.styleMirror,
+            );
+
+            if ((id && id !== -1) || (styleId && styleId !== -1)) {
+              styleSheetRuleCb({
+                id,
+                styleId,
+                removes: [
+                  { index: [...getNestedCSSRulePositions(thisArg), index] },
+                ],
+              });
+            }
+            return target.apply(thisArg, argumentsList);
+          },
+        ),
+      },
+    );
   });
 
-  return () => {
+  return callbackWrapper(() => {
     win.CSSStyleSheet.prototype.insertRule = insertRule;
     win.CSSStyleSheet.prototype.deleteRule = deleteRule;
     replace && (win.CSSStyleSheet.prototype.replace = replace);
@@ -731,7 +807,7 @@ function initStyleSheetObserver(
       type.prototype.insertRule = unmodifiedFunctions[typeKey].insertRule;
       type.prototype.deleteRule = unmodifiedFunctions[typeKey].deleteRule;
     });
-  };
+  });
 }
 
 export function initAdoptedStyleSheetObserver(
@@ -785,7 +861,7 @@ export function initAdoptedStyleSheetObserver(
     },
   });
 
-  return () => {
+  return callbackWrapper(() => {
     Object.defineProperty(host, 'adoptedStyleSheets', {
       configurable: originalPropertyDescriptor.configurable,
       enumerable: originalPropertyDescriptor.enumerable,
@@ -794,7 +870,7 @@ export function initAdoptedStyleSheetObserver(
       // eslint-disable-next-line @typescript-eslint/unbound-method
       set: originalPropertyDescriptor.set,
     });
-  };
+  });
 }
 
 function initStyleDeclarationObserver(
@@ -808,70 +884,82 @@ function initStyleDeclarationObserver(
 ): listenerHandler {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const setProperty = win.CSSStyleDeclaration.prototype.setProperty;
-  win.CSSStyleDeclaration.prototype.setProperty = function (
-    this: CSSStyleDeclaration,
-    property: string,
-    value: string,
-    priority: string,
-  ) {
-    // ignore this mutation if we do not care about this css attribute
-    if (ignoreCSSAttributes.has(property)) {
-      return setProperty.apply(this, [property, value, priority]);
-    }
-    const { id, styleId } = getIdAndStyleId(
-      this.parentRule?.parentStyleSheet,
-      mirror,
-      stylesheetManager.styleMirror,
-    );
-    if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      styleDeclarationCb({
-        id,
-        styleId,
-        set: {
-          property,
-          value,
-          priority,
-        },
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        index: getNestedCSSRulePositions(this.parentRule!),
-      });
-    }
-    return setProperty.apply(this, [property, value, priority]);
-  };
+  win.CSSStyleDeclaration.prototype.setProperty = new Proxy(setProperty, {
+    apply: callbackWrapper(
+      (
+        target: typeof setProperty,
+        thisArg: CSSStyleDeclaration,
+        argumentsList: [string, string, string],
+      ) => {
+        const [property, value, priority] = argumentsList;
+
+        // ignore this mutation if we do not care about this css attribute
+        if (ignoreCSSAttributes.has(property)) {
+          return setProperty.apply(thisArg, [property, value, priority]);
+        }
+        const { id, styleId } = getIdAndStyleId(
+          thisArg.parentRule?.parentStyleSheet,
+          mirror,
+          stylesheetManager.styleMirror,
+        );
+        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+          styleDeclarationCb({
+            id,
+            styleId,
+            set: {
+              property,
+              value,
+              priority,
+            },
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            index: getNestedCSSRulePositions(thisArg.parentRule!),
+          });
+        }
+        return target.apply(thisArg, argumentsList);
+      },
+    ),
+  });
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const removeProperty = win.CSSStyleDeclaration.prototype.removeProperty;
-  win.CSSStyleDeclaration.prototype.removeProperty = function (
-    this: CSSStyleDeclaration,
-    property: string,
-  ) {
-    // ignore this mutation if we do not care about this css attribute
-    if (ignoreCSSAttributes.has(property)) {
-      return removeProperty.apply(this, [property]);
-    }
-    const { id, styleId } = getIdAndStyleId(
-      this.parentRule?.parentStyleSheet,
-      mirror,
-      stylesheetManager.styleMirror,
-    );
-    if ((id && id !== -1) || (styleId && styleId !== -1)) {
-      styleDeclarationCb({
-        id,
-        styleId,
-        remove: {
-          property,
-        },
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        index: getNestedCSSRulePositions(this.parentRule!),
-      });
-    }
-    return removeProperty.apply(this, [property]);
-  };
+  win.CSSStyleDeclaration.prototype.removeProperty = new Proxy(removeProperty, {
+    apply: callbackWrapper(
+      (
+        target: typeof removeProperty,
+        thisArg: CSSStyleDeclaration,
+        argumentsList: [string],
+      ) => {
+        const [property] = argumentsList;
 
-  return () => {
+        // ignore this mutation if we do not care about this css attribute
+        if (ignoreCSSAttributes.has(property)) {
+          return removeProperty.apply(thisArg, [property]);
+        }
+        const { id, styleId } = getIdAndStyleId(
+          thisArg.parentRule?.parentStyleSheet,
+          mirror,
+          stylesheetManager.styleMirror,
+        );
+        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+          styleDeclarationCb({
+            id,
+            styleId,
+            remove: {
+              property,
+            },
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            index: getNestedCSSRulePositions(thisArg.parentRule!),
+          });
+        }
+        return target.apply(thisArg, argumentsList);
+      },
+    ),
+  });
+
+  return callbackWrapper(() => {
     win.CSSStyleDeclaration.prototype.setProperty = setProperty;
     win.CSSStyleDeclaration.prototype.removeProperty = removeProperty;
-  };
+  });
 }
 
 function initMediaInteractionObserver({
@@ -881,26 +969,30 @@ function initMediaInteractionObserver({
   mirror,
   sampling,
 }: observerParam): listenerHandler {
-  const handler = (type: MediaInteractions) =>
-    throttle((event: Event) => {
-      const target = getEventTarget(event);
-      if (
-        !target ||
-        isBlocked(target as Node, blockClass, blockSelector, true)
-      ) {
-        return;
-      }
-      const { currentTime, volume, muted, playbackRate } =
-        target as HTMLMediaElement;
-      mediaInteractionCb({
-        type,
-        id: mirror.getId(target as Node),
-        currentTime,
-        volume,
-        muted,
-        playbackRate,
-      });
-    }, sampling.media || 500);
+  const handler = callbackWrapper((type: MediaInteractions) =>
+    throttle(
+      callbackWrapper((event: Event) => {
+        const target = getEventTarget(event);
+        if (
+          !target ||
+          isBlocked(target as Node, blockClass, blockSelector, true)
+        ) {
+          return;
+        }
+        const { currentTime, volume, muted, playbackRate } =
+          target as HTMLMediaElement;
+        mediaInteractionCb({
+          type,
+          id: mirror.getId(target as Node),
+          currentTime,
+          volume,
+          muted,
+          playbackRate,
+        });
+      }),
+      sampling.media || 500,
+    ),
+  );
   const handlers = [
     on('play', handler(MediaInteractions.Play)),
     on('pause', handler(MediaInteractions.Pause)),
@@ -908,9 +1000,9 @@ function initMediaInteractionObserver({
     on('volumechange', handler(MediaInteractions.VolumeChange)),
     on('ratechange', handler(MediaInteractions.RateChange)),
   ];
-  return () => {
+  return callbackWrapper(() => {
     handlers.forEach((h) => h());
-  };
+  });
 }
 
 function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
@@ -949,13 +1041,16 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
     'add',
     function (original: (font: FontFace) => void) {
       return function (this: FontFaceSet, fontFace: FontFace) {
-        setTimeout(() => {
-          const p = fontMap.get(fontFace);
-          if (p) {
-            fontCb(p);
-            fontMap.delete(fontFace);
-          }
-        }, 0);
+        setTimeout(
+          callbackWrapper(() => {
+            const p = fontMap.get(fontFace);
+            if (p) {
+              fontCb(p);
+              fontMap.delete(fontFace);
+            }
+          }),
+          0,
+        );
         return original.apply(this, [fontFace]);
       };
     },
@@ -966,16 +1061,16 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
   });
   handlers.push(restoreHandler);
 
-  return () => {
+  return callbackWrapper(() => {
     handlers.forEach((h) => h());
-  };
+  });
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
   const { doc, mirror, blockClass, blockSelector, selectionCb } = param;
   let collapsed = true;
 
-  const updateSelection = () => {
+  const updateSelection = callbackWrapper(() => {
     const selection = doc.getSelection();
 
     if (!selection || (collapsed && selection?.isCollapsed)) return;
@@ -1005,7 +1100,7 @@ function initSelectionObserver(param: observerParam): listenerHandler {
     }
 
     selectionCb({ ranges });
-  };
+  });
 
   updateSelection();
 
@@ -1141,7 +1236,7 @@ export function initObservers(
     );
   }
 
-  return () => {
+  return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
     mutationObserver.disconnect();
     mousemoveHandler();
@@ -1156,7 +1251,7 @@ export function initObservers(
     fontObserver();
     selectionObserver();
     pluginHandlers.forEach((h) => h());
-  };
+  });
 }
 
 type CSSGroupingProp =

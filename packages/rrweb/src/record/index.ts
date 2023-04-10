@@ -4,11 +4,7 @@ import {
   SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import {
-  initObservers,
-  mutationBuffers,
-  processedNodeManager,
-} from './observer';
+import { initObservers, mutationBuffers } from './observer';
 import {
   on,
   getWindowWidth,
@@ -36,6 +32,12 @@ import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
 import { StylesheetManager } from './stylesheet-manager';
+import ProcessedNodeManager from './processed-node-manager';
+import {
+  callbackWrapper,
+  registerErrorHandler,
+  unregisterErrorHandler,
+} from './error-handler';
 
 function wrapEvent(e: event): eventWithTime {
   return {
@@ -85,7 +87,10 @@ function record<T = eventWithTime>(
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
+    errorHandler,
   } = options;
+
+  registerErrorHandler(errorHandler);
 
   const inEmittingFrame = recordCrossOriginIframes
     ? window.parent === window
@@ -94,8 +99,10 @@ function record<T = eventWithTime>(
   let passEmitsToParent = false;
   if (!inEmittingFrame) {
     try {
-      window.parent.document; // throws if parent is cross-origin
-      passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+      // throws if parent is cross-origin
+      if (window.parent.document) {
+        passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+      }
     } catch (e) {
       passEmitsToParent = true;
     }
@@ -296,6 +303,8 @@ function record<T = eventWithTime>(
       });
   }
 
+  const processedNodeManager = new ProcessedNodeManager();
+
   canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
@@ -398,6 +407,7 @@ function record<T = eventWithTime>(
           initialOffset: getWindowScroll(window),
         },
       }),
+      isCheckout,
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
@@ -413,7 +423,7 @@ function record<T = eventWithTime>(
     const handlers: listenerHandler[] = [];
 
     const observe = (doc: Document) => {
-      return initObservers(
+      return callbackWrapper(initObservers)(
         {
           mutationCb: wrappedMutationEmit,
           mousemoveCb: (positions, source) =>
@@ -605,7 +615,9 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      processedNodeManager.destroy();
       recording = false;
+      unregisterErrorHandler();
     };
   } catch (error) {
     // TODO: handle internal error
