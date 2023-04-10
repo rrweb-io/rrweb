@@ -626,14 +626,21 @@ export class SyncReplayer {
   private applyMutation(d: mutationData) {
     const mirror = this.mirror;
 
+    d.removes = d.removes.filter((mutation) => {
+      // warn of absence from mirror before we start applying each removal
+      // as earlier removals could remove a tree that includes a later removal
+      if (!mirror.getNode(mutation.id)) {
+        this.warnNodeNotFound(d, mutation.id);
+        return false;
+      }
+      return true;
+    });
+
     d.removes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
-        if (d.removes.find((r) => r.id === mutation.parentId)) {
-          // no need to warn, parent was already removed
-          return;
-        }
-        return this.warnNodeNotFound(d, mutation.id);
+        // no need to warn, parent was already removed
+        return;
       }
       let parent = mirror.getNode(mutation.parentId);
       if (!parent) {
