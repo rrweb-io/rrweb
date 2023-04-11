@@ -263,6 +263,6 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     : type
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       (type.toLowerCase() as Lowercase<string>)
-      // the missing value default is the text
-    : 'text';
+    : // the missing value default is the text
+      'text';
 }
