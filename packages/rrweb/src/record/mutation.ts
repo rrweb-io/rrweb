@@ -462,7 +462,7 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
-    const unattachedDoc = new Document(); // avoid upsetting original document from a Content Security point of view
+    const unattachedDoc = document.implementation.createHTMLDocument(); // avoid upsetting original document from a Content Security point of view
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
