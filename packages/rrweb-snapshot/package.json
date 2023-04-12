@@ -7,6 +7,7 @@
     "prepack": "npm run bundle && npm run typings",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:update": "jest --updateSnapshot",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "dev": "npm run bundle:es-only --watch",

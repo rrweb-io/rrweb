@@ -39,6 +39,7 @@
     "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
     "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
     "test:watch": "yarn turbo run test:watch",
+    "test:update": "yarn turbo run test:update",
     "dev": "yarn turbo run dev",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",

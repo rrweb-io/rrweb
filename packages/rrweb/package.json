@@ -8,6 +8,7 @@
     "test": "npm run bundle:browser && jest --testPathIgnorePatterns test/benchmark",
     "test:headless": "PUPPETEER_HEADLESS=true npm run test",
     "test:watch": "PUPPETEER_HEADLESS=true npm run test -- --watch",
+    "test:update": "PUPPETEER_HEADLESS=true npm run test -- --updateSnapshot",
     "repl": "npm run bundle:browser && node scripts/repl.js",
     "live-stream": "npm run bundle:browser && node scripts/stream.js",
     "dev": "npm run bundle:browser --watch",

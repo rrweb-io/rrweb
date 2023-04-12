@@ -8,6 +8,7 @@
     },
     "test": {},
     "test:watch": {},
+    "test:update": {},
     "dev": {},
     "lint": {},
     "check-types": {}
