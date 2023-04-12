@@ -234,7 +234,7 @@ function initMouseInteractionObserver({
       : sampling.mouseInteraction;
 
   const handlers: listenerHandler[] = [];
-  let currentPointerType = null;
+  let currentPointerType: PointerTypes | null = null;
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as Node;
@@ -245,7 +245,7 @@ function initMouseInteractionObserver({
       let e = event;
       if ('pointerType' in e) {
         Object.keys(PointerTypes).forEach(
-          (pointerKey: keyof typeof PointerKeys) => {
+          (pointerKey: keyof typeof PointerTypes) => {
             if ((e as PointerEvent).pointerType === pointerKey.toLowerCase()) {
               pointerType = PointerTypes[pointerKey];
               return;
