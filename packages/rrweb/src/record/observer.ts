@@ -238,6 +238,7 @@ function initMouseInteractionObserver({
         return;
       }
       let pointerType: PointerTypes | null = null;
+      let thisEventKey = eventKey;
       if ('pointerType' in event) {
         Object.keys(PointerTypes).forEach(
           (pointerKey: keyof typeof PointerTypes) => {
@@ -252,12 +253,12 @@ function initMouseInteractionObserver({
         if (pointerType === PointerTypes.Touch) {
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
             // we are actually listening on 'pointerdown'
-            eventKey = 'TouchStart';
+            thisEventKey = 'TouchStart';
           } else if (
             MouseInteractions[eventKey] === MouseInteractions.MouseUp
           ) {
             // we are actually listening on 'pointerup'
-            eventKey = 'TouchEnd';
+            thisEventKey = 'TouchEnd';
           }
         } else if (pointerType == PointerTypes.Pen) {
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
@@ -278,7 +279,7 @@ function initMouseInteractionObserver({
       const id = mirror.getId(target);
       const { clientX, clientY } = e;
       callbackWrapper(mouseInteractionCb)({
-        type: MouseInteractions[eventKey],
+        type: MouseInteractions[thisEventKey],
         id,
         x: clientX,
         y: clientY,

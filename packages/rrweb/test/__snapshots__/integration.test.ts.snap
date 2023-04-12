@@ -1555,6 +1555,33 @@ exports[`record integration tests can record clicks 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 2,
+      \\"type\\": 7,
+      \\"id\\": 18,
+      \\"pointerType\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 9,
+      \\"id\\": 18,
+      \\"pointerType\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 18,
+      \\"pointerType\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
       \\"type\\": 1,
       \\"id\\": 21,
       \\"pointerType\\": 0
