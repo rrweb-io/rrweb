@@ -29,10 +29,10 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "npm run build",
     "start": "sirv public",
     "validate": "svelte-check",
-    "prepublish": "yarn build",
+    "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",
