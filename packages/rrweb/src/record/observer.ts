@@ -242,11 +242,12 @@ function initMouseInteractionObserver({
         return;
       }
       let pointerType: PointerTypes | null = null;
-      let e = event;
-      if ('pointerType' in e) {
+      if ('pointerType' in event) {
         Object.keys(PointerTypes).forEach(
           (pointerKey: keyof typeof PointerTypes) => {
-            if ((e as PointerEvent).pointerType === pointerKey.toLowerCase()) {
+            if (
+              (event as PointerEvent).pointerType === pointerKey.toLowerCase()
+            ) {
               pointerType = PointerTypes[pointerKey];
               return;
             }
@@ -266,7 +267,6 @@ function initMouseInteractionObserver({
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
         }
       } else if (legacy_isTouchEvent(event)) {
-        e = event.changedTouches[0];
         pointerType = PointerTypes.Touch;
       }
       if (pointerType !== null) {
@@ -275,6 +275,7 @@ function initMouseInteractionObserver({
         pointerType = currentPointerType;
         currentPointerType = null; // cleanup as we've used it
       }
+      const e = legacy_isTouchEvent(event) ? event.changedTouches[0] : event;
       if (!e) {
         return;
       }
