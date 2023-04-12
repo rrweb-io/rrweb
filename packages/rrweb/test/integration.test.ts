@@ -67,6 +67,18 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'link.html'));
     await page.click('span');
+
+    // also tap on the span
+    const span = await page.waitForSelector('span');
+    const center = await page.evaluate((el) => {
+      const { x, y, width, height } = el.getBoundingClientRect();
+      return {
+        x: Math.round(x + width / 2),
+        y: Math.round(y + height / 2),
+      };
+    }, span);
+    await page.touchscreen.tap(center.x, center.y);
+
     await page.click('a');
 
     const snapshots = await page.evaluate('window.snapshots');
