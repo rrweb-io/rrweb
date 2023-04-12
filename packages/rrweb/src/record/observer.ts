@@ -242,9 +242,7 @@ function initMouseInteractionObserver({
       if ('pointerType' in event) {
         Object.keys(PointerTypes).forEach(
           (pointerKey: keyof typeof PointerTypes) => {
-            if (
-              (event as PointerEvent).pointerType === pointerKey.toLowerCase()
-            ) {
+            if (event.pointerType === pointerKey.toLowerCase()) {
               pointerType = PointerTypes[pointerKey];
               return;
             }
