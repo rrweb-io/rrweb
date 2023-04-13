@@ -84,7 +84,7 @@ describe('replayer', function () {
       replayer.play();
       replayer['timer']['actions'].length;
     `);
-    expect(actionLength).toEqual(events.length);
+    expect(actionLength).toEqual(actions.length - 2);  // subtract 2 as DomContentLoaded and first FullSnapshot have been rendered synchronously
   });
 
   it('will clean actions when pause', async () => {
@@ -119,7 +119,7 @@ describe('replayer', function () {
       replayer['timer']['actions'].length;
     `);
     expect(actionLength).toEqual(
-      events.filter((e) => e.timestamp - events[0].timestamp >= 1500).length,
+      events.filter((e) => e.timestamp - events[0].timestamp > 1500).length,
     );
   });
 
@@ -132,7 +132,7 @@ describe('replayer', function () {
       replayer['timer']['actions'].length;
     `);
     expect(actionLength).toEqual(
-      events.filter((e) => e.timestamp - events[0].timestamp >= 500).length,
+      events.filter((e) => e.timestamp - events[0].timestamp > 500).length,
     );
   });
 
