@@ -256,6 +256,7 @@ export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
  * where passwords should be masked.
  */
 export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  // when omitting the type of input element(e.g. <input />), the type is treated as text
   const type = (element as HTMLInputElement).type;
 
   return element.hasAttribute('data-rr-is-password')
@@ -263,6 +264,5 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     : type
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       (type.toLowerCase() as Lowercase<string>)
-    : // the missing value default is the text
-      'text';
+    : null;
 }
