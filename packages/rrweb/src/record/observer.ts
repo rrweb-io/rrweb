@@ -270,6 +270,15 @@ function initMouseInteractionObserver({
       }
       if (pointerType !== null) {
         currentPointerType = pointerType;
+        if (
+          (thisEventKey.substring(0, 5) === 'Touch' &&
+            pointerType === PointerTypes.Touch) ||
+          (thisEventKey.substring(0, 5) === 'Mouse' &&
+            pointerType === PointerTypes.Mouse)
+        ) {
+          // don't output redundant info
+          pointerType = null;
+        }
       } else if (MouseInteractions[eventKey] === MouseInteractions.Click) {
         pointerType = currentPointerType;
         currentPointerType = null; // cleanup as we've used it

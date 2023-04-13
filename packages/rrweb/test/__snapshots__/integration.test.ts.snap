@@ -1529,8 +1529,7 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 18,
-      \\"pointerType\\": 0
+      \\"id\\": 18
     }
   },
   {
@@ -1538,8 +1537,7 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 18,
-      \\"pointerType\\": 0
+      \\"id\\": 18
     }
   },
   {
@@ -1556,8 +1554,7 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 7,
-      \\"id\\": 18,
-      \\"pointerType\\": 2
+      \\"id\\": 18
     }
   },
   {
@@ -1565,8 +1562,7 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 9,
-      \\"id\\": 18,
-      \\"pointerType\\": 2
+      \\"id\\": 18
     }
   },
   {
@@ -1583,8 +1579,7 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 21,
-      \\"pointerType\\": 0
+      \\"id\\": 21
     }
   },
   {
@@ -1600,8 +1595,7 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 21,
-      \\"pointerType\\": 0
+      \\"id\\": 21
     }
   },
   {
@@ -2135,8 +2129,7 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -2160,8 +2153,7 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -2196,8 +2188,7 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -2221,8 +2212,7 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -2915,8 +2905,7 @@ exports[`record integration tests can record node mutations 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 26,
-      \\"pointerType\\": 0
+      \\"id\\": 26
     }
   },
   {
@@ -3373,8 +3362,7 @@ exports[`record integration tests can record node mutations 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 70,
-      \\"pointerType\\": 0
+      \\"id\\": 70
     }
   },
   {
@@ -3921,8 +3909,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -3946,8 +3933,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -3982,8 +3968,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -4007,8 +3992,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -4972,8 +4956,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 42,
-      \\"pointerType\\": 0
+      \\"id\\": 42
     }
   },
   {
@@ -4989,8 +4972,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 42,
-      \\"pointerType\\": 0
+      \\"id\\": 42
     }
   },
   {
@@ -5098,8 +5080,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 68,
-      \\"pointerType\\": 0
+      \\"id\\": 68
     }
   },
   {
@@ -5123,8 +5104,7 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 68,
-      \\"pointerType\\": 0
+      \\"id\\": 68
     }
   },
   {
@@ -5692,8 +5672,7 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 20,
-      \\"pointerType\\": 0
+      \\"id\\": 20
     }
   },
   {
@@ -5717,8 +5696,7 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 20,
-      \\"pointerType\\": 0
+      \\"id\\": 20
     }
   },
   {
@@ -5803,8 +5781,7 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 20,
-      \\"pointerType\\": 0
+      \\"id\\": 20
     }
   },
   {
@@ -5828,8 +5805,7 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 20,
-      \\"pointerType\\": 0
+      \\"id\\": 20
     }
   },
   {
@@ -8537,8 +8513,7 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -8562,8 +8537,7 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -8598,8 +8572,7 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -8623,8 +8596,7 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -10574,8 +10546,7 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 26,
-      \\"pointerType\\": 0
+      \\"id\\": 26
     }
   },
   {
@@ -10583,8 +10554,7 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 26,
-      \\"pointerType\\": 0
+      \\"id\\": 26
     }
   },
   {
@@ -12255,8 +12225,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -12280,8 +12249,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -12318,8 +12286,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -12343,8 +12310,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
