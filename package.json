@@ -36,6 +36,7 @@
     "typescript": "^4.7.3"
   },
   "scripts": {
+    "build:all:lowmem": "NODE_OPTIONS='--max-old-space-size=4096' npm run build:all",
     "build:all": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
     "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
     "test:watch": "yarn turbo run test:watch",
