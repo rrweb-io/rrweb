@@ -5,7 +5,8 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run bundle",
-    "build-and-test": "npm run bundle:browser && jest --testPathIgnorePatterns test/benchmark",
+    "retest": "jest --testPathIgnorePatterns test/benchmark",
+    "build-and-test": "npm run bundle:browser && npm run retest",
     "test": "npm run test:headless",
     "test:headless": "PUPPETEER_HEADLESS=true npm run build-and-test",
     "test:headful": "PUPPETEER_HEADLESS=false npm run build-and-test",
