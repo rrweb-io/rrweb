@@ -262,7 +262,7 @@ function initMouseInteractionObserver({
             // we are actually listening on 'pointerup'
             thisEventKey = 'TouchEnd';
           }
-        } else if (pointerType == PointerTypes.Pen) {
+        } else if (pointerType === PointerTypes.Pen) {
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
         }
       } else if (legacy_isTouchEvent(event)) {
