@@ -245,15 +245,15 @@ function initMouseInteractionObserver({
       let thisEventKey = eventKey;
       if ('pointerType' in event) {
         switch (event.pointerType) {
-        case 'mouse':
-          pointerType = PointerTypes.Mouse;
-          break;
-        case 'touch':
-          pointerType = PointerTypes.Touch;
-          break;
-        case 'pen':
-          pointerType = PointerTypes.Pen;
-          break;
+          case 'mouse':
+            pointerType = PointerTypes.Mouse;
+            break;
+          case 'touch':
+            pointerType = PointerTypes.Touch;
+            break;
+          case 'pen':
+            pointerType = PointerTypes.Pen;
+            break;
         }
         if (pointerType === PointerTypes.Touch) {
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
