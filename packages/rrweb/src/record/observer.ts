@@ -234,7 +234,7 @@ function initMouseInteractionObserver({
       : sampling.mouseInteraction;
 
   const handlers: listenerHandler[] = [];
-  let currentPointerType = null;
+  let currentPointerType: PointerTypes | null = null;
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as Node;
@@ -242,11 +242,11 @@ function initMouseInteractionObserver({
         return;
       }
       let pointerType: PointerTypes | null = null;
-      let e = event;
-      if ('pointerType' in e) {
+      let thisEventKey = eventKey;
+      if ('pointerType' in event) {
         Object.keys(PointerTypes).forEach(
-          (pointerKey: keyof typeof PointerKeys) => {
-            if ((e as PointerEvent).pointerType === pointerKey.toLowerCase()) {
+          (pointerKey: keyof typeof PointerTypes) => {
+            if (event.pointerType === pointerKey.toLowerCase()) {
               pointerType = PointerTypes[pointerKey];
               return;
             }
@@ -255,18 +255,17 @@ function initMouseInteractionObserver({
         if (pointerType === PointerTypes.Touch) {
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
             // we are actually listening on 'pointerdown'
-            eventKey = 'TouchStart';
+            thisEventKey = 'TouchStart';
           } else if (
             MouseInteractions[eventKey] === MouseInteractions.MouseUp
           ) {
             // we are actually listening on 'pointerup'
-            eventKey = 'TouchEnd';
+            thisEventKey = 'TouchEnd';
           }
         } else if (pointerType == PointerTypes.Pen) {
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
         }
       } else if (legacy_isTouchEvent(event)) {
-        e = event.changedTouches[0];
         pointerType = PointerTypes.Touch;
       }
       if (pointerType !== null) {
@@ -275,13 +274,14 @@ function initMouseInteractionObserver({
         pointerType = currentPointerType;
         currentPointerType = null; // cleanup as we've used it
       }
+      const e = legacy_isTouchEvent(event) ? event.changedTouches[0] : event;
       if (!e) {
         return;
       }
       const id = mirror.getId(target);
       const { clientX, clientY } = e;
       callbackWrapper(mouseInteractionCb)({
-        type: MouseInteractions[eventKey],
+        type: MouseInteractions[thisEventKey],
         id,
         x: clientX,
         y: clientY,
