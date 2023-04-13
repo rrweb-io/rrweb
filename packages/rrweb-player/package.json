@@ -28,6 +28,7 @@
   },
   "scripts": {
     "build": "rollup -c",
+    "reformat": "yarn prettier --write '**/*.{ts,md}'",
     "dev": "rollup -c -w",
     "prepublishOnly": "npm run build",
     "start": "sirv public",

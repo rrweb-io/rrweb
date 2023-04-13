@@ -9,6 +9,7 @@
     "@rrweb/types"
   ],
   "scripts": {
+    "reformat": "yarn prettier --write '**/*.{ts,md}'",
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",

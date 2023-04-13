@@ -19,6 +19,7 @@
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "scripts": {
+    "reformat": "yarn prettier --write '**/*.{ts,md}'",
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",

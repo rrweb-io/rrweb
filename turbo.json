@@ -9,6 +9,7 @@
     "test": {},
     "test:watch": {},
     "test:update": {},
+    "reformat": {},
     "dev": {},
     "lint": {},
     "check-types": {}

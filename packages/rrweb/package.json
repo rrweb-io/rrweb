@@ -15,6 +15,7 @@
     "repl": "npm run bundle:browser && node scripts/repl.js",
     "live-stream": "npm run bundle:browser && node scripts/stream.js",
     "dev": "npm run bundle:browser --watch",
+    "reformat": "yarn prettier --write '**/*.{ts,md}'",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
     "typings": "tsc -d --declarationDir typings",
