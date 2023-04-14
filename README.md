@@ -73,6 +73,47 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 [Using the REPL tool](./guide.md#REPL-tool)
 
+## Sponsors
+
+### Gold
+
+[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
+
+<div>
+
+<a href="https://opencollective.com/rrweb/goldsponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/0/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/1/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/2/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/3/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/4/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/5/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/6/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/7/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/8/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/9/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/9/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/10/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/10/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/11/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/11/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/12/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/12/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/13/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/13/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/14/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/14/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/15/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/15/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/16/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/16/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/17/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/17/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/18/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/18/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/19/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/19/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/20/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/20/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/21/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/21/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/22/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/22/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/23/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/23/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/24/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/24/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/25/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/25/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/26/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/26/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/27/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/27/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/28/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/28/avatar.svg?requireActive=false"></a>
+<a href="https://opencollective.com/rrweb/goldsponsor/29/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/29/avatar.svg?requireActive=false"></a>
+
+</div>
+
 ## Core Team Members
 
 <table>
