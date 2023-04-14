@@ -1328,6 +1328,294 @@ exports[`record integration tests can record childList mutations 1`] = `
 ]"
 `;
 
+exports[`record integration tests can record clicks 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"ie=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Link click\\",
+                        \\"id\\": 13
+                      }
+                    ],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 14
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n\\\\n  \\",
+                \\"id\\": 15
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"span\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"not-a-link\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"not link\\",
+                        \\"id\\": 19
+                      }
+                    ],
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 20
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"a\\",
+                    \\"attributes\\": {
+                      \\"href\\": \\"about:blank#clicked\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"link\\\\n  \\\\n    \\",
+                        \\"id\\": 22
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"script\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                            \\"id\\": 24
+                          }
+                        ],
+                        \\"id\\": 23
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                        \\"id\\": 25
+                      }
+                    ],
+                    \\"id\\": 21
+                  }
+                ],
+                \\"id\\": 16
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 18,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 18,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 18,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 7,
+      \\"id\\": 18,
+      \\"pointerType\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 9,
+      \\"id\\": 18,
+      \\"pointerType\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 18,
+      \\"pointerType\\": 2
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 21,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 21
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 21,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 21,
+      \\"pointerType\\": 0
+    }
+  }
+]"
+`;
+
 exports[`record integration tests can record form interactions 1`] = `
 "[
   {
@@ -1847,7 +2135,8 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -1871,7 +2160,8 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -1879,7 +2169,8 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -1905,7 +2196,8 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -1929,7 +2221,8 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -1937,7 +2230,8 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -2621,7 +2915,8 @@ exports[`record integration tests can record node mutations 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 26
+      \\"id\\": 26,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3078,7 +3373,8 @@ exports[`record integration tests can record node mutations 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 70
+      \\"id\\": 70,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3625,7 +3921,8 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3649,7 +3946,8 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3657,7 +3955,8 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3683,7 +3982,8 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3707,7 +4007,8 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -3715,7 +4016,8 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -4670,7 +4972,8 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 42
+      \\"id\\": 42,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -4686,7 +4989,8 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 42
+      \\"id\\": 42,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -4694,7 +4998,8 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 42
+      \\"id\\": 42,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -4793,7 +5098,8 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 68
+      \\"id\\": 68,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -4817,7 +5123,8 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 68
+      \\"id\\": 68,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -4825,7 +5132,8 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 68
+      \\"id\\": 68,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -5384,7 +5692,8 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 20
+      \\"id\\": 20,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -5408,7 +5717,8 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 20
+      \\"id\\": 20,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -5416,7 +5726,8 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 20
+      \\"id\\": 20,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -5492,7 +5803,8 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 20
+      \\"id\\": 20,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -5516,7 +5828,8 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 20
+      \\"id\\": 20,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -5524,7 +5837,8 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 20
+      \\"id\\": 20,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -8223,7 +8537,8 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -8247,7 +8562,8 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -8255,7 +8571,8 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -8281,7 +8598,8 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -8305,7 +8623,8 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -8313,7 +8632,8 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -10254,7 +10574,8 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 26
+      \\"id\\": 26,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -10262,7 +10583,8 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 26
+      \\"id\\": 26,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -10270,7 +10592,8 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 26
+      \\"id\\": 26,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -11932,7 +12255,8 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -11956,7 +12280,8 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -11964,7 +12289,8 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 27
+      \\"id\\": 27,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -11992,7 +12318,8 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -12016,7 +12343,8 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -12024,7 +12352,8 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 37
+      \\"id\\": 37,
+      \\"pointerType\\": 0
     }
   },
   {
