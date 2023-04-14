@@ -8,6 +8,7 @@ import {
   maskInputValue,
   Mirror,
   isNativeShadowDom,
+  getInputType,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -29,7 +30,6 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
-  getInputType,
 } from '../utils';
 
 type DoubleLinkedListNode = {

@@ -17,6 +17,12 @@
     },
     {
       "path": "packages/types"
+    },
+    {
+      "path": "packages/rrvideo"
+    },
+    {
+      "path": "packages/web-extension"
     }
   ],
   "files": [],

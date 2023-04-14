@@ -4,11 +4,7 @@ import {
   SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import {
-  initObservers,
-  mutationBuffers,
-  processedNodeManager,
-} from './observer';
+import { initObservers, mutationBuffers } from './observer';
 import {
   on,
   getWindowWidth,
@@ -36,6 +32,7 @@ import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
 import { StylesheetManager } from './stylesheet-manager';
+import ProcessedNodeManager from './processed-node-manager';
 import {
   callbackWrapper,
   registerErrorHandler,
@@ -305,6 +302,8 @@ function record<T = eventWithTime>(
           iframeManager.crossOriginIframeStyleMirror,
       });
   }
+
+  const processedNodeManager = new ProcessedNodeManager();
 
   canvasManager = new CanvasManager({
     recordCanvas,
@@ -616,6 +615,7 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      processedNodeManager.destroy();
       recording = false;
       unregisterErrorHandler();
     };

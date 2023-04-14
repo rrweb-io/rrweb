@@ -1,6 +1,6 @@
 {
   "name": "rrdom-nodejs",
-  "version": "2.0.0-alpha.6",
+  "version": "2.0.0-alpha.7",
   "scripts": {
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
@@ -42,15 +42,14 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
     "rollup-plugin-web-worker-loader": "^1.6.1",
-    "ts-jest": "^27.1.3",
-    "typescript": "^4.7.3"
+    "ts-jest": "^27.1.3"
   },
   "dependencies": {
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "rrdom": "^2.0.0-alpha.6",
-    "rrweb-snapshot": "^2.0.0-alpha.6"
+    "rrdom": "^2.0.0-alpha.7",
+    "rrweb-snapshot": "^2.0.0-alpha.7"
   },
   "browserslist": [
     "supports es6-class"
