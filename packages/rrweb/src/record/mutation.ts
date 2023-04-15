@@ -494,6 +494,7 @@ export default class MutationBuffer {
           const type = getInputType(target);
 
           value = maskInputValue({
+            element: target,
             maskInputOptions: this.maskInputOptions,
             tagName: target.tagName,
             type,
