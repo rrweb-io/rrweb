@@ -274,7 +274,7 @@ function initMouseInteractionObserver({
       if (pointerType !== null) {
         currentPointerType = pointerType;
         if (
-          (thisEventKey.substring(0, 5) === 'Touch' &&
+          (thisEventKey.startsWith('Touch') &&
             pointerType === PointerTypes.Touch) ||
           (thisEventKey.substring(0, 5) === 'Mouse' &&
             pointerType === PointerTypes.Mouse)
