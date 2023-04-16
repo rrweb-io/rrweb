@@ -154,12 +154,14 @@ export function createMirror(): Mirror {
 }
 
 export function maskInputValue({
+  element,
   maskInputOptions,
   tagName,
   type,
   value,
   maskInputFn,
 }: {
+  element: HTMLElement;
   maskInputOptions: MaskInputOptions;
   tagName: string;
   type: string | null;
@@ -174,7 +176,7 @@ export function maskInputValue({
     (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
   ) {
     if (maskInputFn) {
-      text = maskInputFn(text);
+      text = maskInputFn(text, element);
     } else {
       text = '*'.repeat(text.length);
     }
@@ -256,6 +258,7 @@ export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
  * where passwords should be masked.
  */
 export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  // when omitting the type of input element(e.g. <input />), the type is treated as text
   const type = (element as HTMLInputElement).type;
 
   return element.hasAttribute('data-rr-is-password')
