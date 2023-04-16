@@ -5911,8 +5911,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -5936,8 +5935,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 27,
-      \\"pointerType\\": 0
+      \\"id\\": 27
     }
   },
   {
@@ -5972,8 +5970,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
@@ -5997,8 +5994,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
+      \\"id\\": 37
     }
   },
   {
