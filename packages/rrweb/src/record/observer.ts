@@ -276,7 +276,7 @@ function initMouseInteractionObserver({
         if (
           (thisEventKey.startsWith('Touch') &&
             pointerType === PointerTypes.Touch) ||
-          (thisEventKey.substring(0, 5) === 'Mouse' &&
+          (thisEventKey.startsWith('Mouse') &&
             pointerType === PointerTypes.Mouse)
         ) {
           // don't output redundant info
