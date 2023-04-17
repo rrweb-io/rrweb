@@ -280,8 +280,8 @@ export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   return isAncestorRemoved(target.parentNode, mirror);
 }
 
-export function isTouchEvent(
-  event: MouseEvent | TouchEvent,
+export function legacy_isTouchEvent(
+  event: MouseEvent | TouchEvent | PointerEvent,
 ): event is TouchEvent {
   return Boolean((event as TouchEvent).changedTouches);
 }
