@@ -136,7 +136,7 @@ export function cutSession(
       }
 
       const session = cutEvents(
-        events.slice(index + 1).filter((e) => e.timestamp <= nextCutTimestamp),
+        events.slice(index + 1).filter((e) => e.timestamp < nextCutTimestamp),
         replayer,
         config,
         currentTimestamp,
@@ -159,7 +159,8 @@ export function getValidSortedPoints(points: number[], totalTime: number) {
     if (point <= 0 || point >= totalTime) continue;
     validSortedPoints.push(point);
   }
-  return validSortedPoints.sort();
+  // The default sortting function will sort the array as string.
+  return validSortedPoints.sort((a, b) => a - b);
 }
 
 function wrapCutSession(
@@ -214,29 +215,33 @@ function cutEvents(
     metaEvent.timestamp = currentTimestamp;
     result.push(metaEvent);
   }
-  const fullsnapshotDelay = 1,
-    IncrementalEventDelay = 2;
+  const FullsnapshotDelay = 1, // The delay between MetaEvent and FullSnapshot.
+    // The delay between FullSnapshot and MetaEvent. Make sure the iframe event is after the full snapshot.
+    IFrameEventDelay = 2,
+    // The delay between IncrementalSnapshot and MetaEvent. Make sure the incremental event is applied after all frames are loaded.
+    IncrementalEventDelay = 3;
 
   const iframeSnapshots: eventWithTime[] = [];
+  const incrementalEvents: eventWithTime[] = [];
   const onSerialize = (n: IRRNode) => {
-    const timestamp = currentTimestamp + fullsnapshotDelay;
+    const timestamp = currentTimestamp + IncrementalEventDelay;
     if (n.RRNodeType !== NodeType.Element) return;
     const rrElement = n as RRElement;
     rrElement.inputData &&
-      result.push({
+      incrementalEvents.push({
         type: EventType.IncrementalSnapshot,
         data: rrElement.inputData,
         timestamp,
       });
     rrElement.scrollData &&
-      result.push({
+      incrementalEvents.push({
         type: EventType.IncrementalSnapshot,
         data: rrElement.scrollData,
         timestamp,
       });
     if (rrElement instanceof RRCanvasElement)
       rrElement.canvasMutations.forEach((canvasData) =>
-        result.push({
+        incrementalEvents.push({
           type: EventType.IncrementalSnapshot,
           data: canvasData.mutation,
           timestamp,
@@ -244,7 +249,7 @@ function cutEvents(
       );
     else if (rrElement instanceof RRStyleElement)
       rrElement.rules.forEach((styleRule) =>
-        result.push({
+        incrementalEvents.push({
           type: EventType.IncrementalSnapshot,
           data: styleRule,
           timestamp,
@@ -252,7 +257,7 @@ function cutEvents(
       );
     else if (rrElement instanceof RRMediaElement) {
       (rrElement.volume !== undefined || rrElement.muted !== undefined) &&
-        result.push({
+        incrementalEvents.push({
           type: EventType.IncrementalSnapshot,
           data: {
             source: IncrementalSource.MediaInteraction,
@@ -264,7 +269,7 @@ function cutEvents(
           timestamp,
         });
       rrElement.playbackRate !== undefined &&
-        result.push({
+        incrementalEvents.push({
           type: EventType.IncrementalSnapshot,
           data: {
             source: IncrementalSource.MediaInteraction,
@@ -297,7 +302,7 @@ function cutEvents(
           attributes: [],
           isAttachIframe: true,
         },
-        timestamp,
+        timestamp: currentTimestamp + IFrameEventDelay,
       });
     }
   };
@@ -326,10 +331,10 @@ function cutEvents(
         left: replayer.virtualDom.scrollLeft,
       },
     },
-    timestamp: currentTimestamp + fullsnapshotDelay,
+    timestamp: currentTimestamp + FullsnapshotDelay,
   };
   result.push(fullSnapshotEvent);
-  result = result.concat(iframeSnapshots);
+  result = result.concat(iframeSnapshots, incrementalEvents);
   result = result.concat(
     replayer.unhandledEvents.map((e) => ({
       ...e,

@@ -2,7 +2,7 @@ import { EventType, IncrementalSource } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 
 const now = Date.now();
-const events: eventWithTime[] = [
+export const events: eventWithTime[] = [
   {
     type: EventType.DomContentLoaded,
     data: {},
@@ -48,7 +48,19 @@ const events: eventWithTime[] = [
                 type: 2,
                 tagName: 'body',
                 attributes: {},
-                childNodes: [],
+                childNodes: [
+                  {
+                    id: 6,
+                    type: 2,
+                    tagName: 'input',
+                    attributes: {
+                      type: 'text',
+                      value: 'valueA',
+                      id: 'input1',
+                    },
+                    childNodes: [],
+                  },
+                ],
               },
             ],
           },
@@ -74,7 +86,9 @@ const events: eventWithTime[] = [
           node: {
             type: 2,
             tagName: 'select',
-            attributes: {},
+            attributes: {
+              id: 'select1',
+            },
             childNodes: [],
             id: 26,
           },
@@ -85,7 +99,7 @@ const events: eventWithTime[] = [
           node: {
             type: 2,
             tagName: 'option',
-            attributes: { value: 'valueC' },
+            attributes: { value: 'valueB' },
             childNodes: [],
             id: 27,
           },
@@ -93,7 +107,7 @@ const events: eventWithTime[] = [
         {
           parentId: 27,
           nextId: null,
-          node: { type: 3, textContent: 'C', id: 28 },
+          node: { type: 3, textContent: 'B', id: 28 },
         },
         {
           parentId: 26,
@@ -101,7 +115,7 @@ const events: eventWithTime[] = [
           node: {
             type: 2,
             tagName: 'option',
-            attributes: { value: 'valueB', selected: true },
+            attributes: { value: 'valueC', selected: true },
             childNodes: [],
             id: 29,
           },
@@ -112,7 +126,7 @@ const events: eventWithTime[] = [
           node: {
             type: 2,
             tagName: 'option',
-            attributes: { value: 'valueA' },
+            attributes: { value: 'valueD' },
             childNodes: [],
             id: 30,
           },
@@ -120,98 +134,70 @@ const events: eventWithTime[] = [
         {
           parentId: 30,
           nextId: null,
-          node: { type: 3, textContent: 'A', id: 31 },
+          node: { type: 3, textContent: 'D', id: 31 },
         },
         {
           parentId: 29,
           nextId: null,
-          node: { type: 3, textContent: 'B', id: 32 },
+          node: { type: 3, textContent: 'C', id: 32 },
         },
-      ],
-    },
-    timestamp: now + 1000,
-  },
-  // input event
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Input,
-      text: 'valueA',
-      isChecked: false,
-      id: 26,
-    },
-    timestamp: now + 1500,
-  },
-  // input event
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Input,
-      text: 'valueC',
-      isChecked: false,
-      id: 26,
-    },
-    timestamp: now + 2000,
-  },
-  // mutation that adds an input element
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [],
-      adds: [
         {
           parentId: 5,
           nextId: null,
           node: {
             type: 2,
             tagName: 'input',
-            attributes: {},
+            attributes: {
+              id: 'input2',
+            },
             childNodes: [],
             id: 33,
           },
         },
       ],
     },
-    timestamp: now + 2500,
+    timestamp: now + 1000,
   },
-  // an input event
+  // change the value of the input element '#input1'
   {
     type: EventType.IncrementalSnapshot,
     data: {
       source: IncrementalSource.Input,
-      text: 'test input',
+      text: 'valueE',
+      isChecked: false,
+      id: 6,
+    },
+    timestamp: now + 1000,
+  },
+  // change the value of the input element '#input2'
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Input,
+      text: 'valueF',
       isChecked: false,
       id: 33,
     },
-    timestamp: now + 3000,
+    timestamp: now + 1500,
   },
-  // remove the select element
+  // Change the value of the select element '#select1'
   {
     type: EventType.IncrementalSnapshot,
     data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [{ parentId: 5, id: 26 }],
-      adds: [],
+      source: IncrementalSource.Input,
+      text: 'valueG',
+      isChecked: false,
+      id: 26,
     },
-    timestamp: now + 3500,
+    timestamp: now + 1500,
   },
-  // remove the input element
+  // A dummy event to increase the session duration
   {
-    type: EventType.IncrementalSnapshot,
+    type: EventType.Custom,
     data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [{ parentId: 5, id: 33 }],
-      adds: [],
+      tag: 'dummy',
+      payload: {},
     },
-    timestamp: now + 4000,
+    timestamp: now + 2000,
   },
 ];
-
-export default events;

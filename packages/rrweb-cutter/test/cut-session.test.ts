@@ -6,11 +6,12 @@ import fs from 'fs';
 import { createMirror, snapshot } from 'rrweb-snapshot';
 import { EventType } from 'rrweb';
 import { SyncReplayer } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
-import { RRDocument, buildFromDom, printRRDom } from 'rrdom';
+import { IncrementalSource, eventWithTime, metaEvent } from '@rrweb/types';
+import { RRDocument, RRElement, buildFromDom, printRRDom } from 'rrdom';
 import { cutSession, getValidSortedPoints } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
+import { events as inputEvents } from './events/input.event';
 import { eventsFn as inlineStyleEvents } from './events/inline-style.event';
 
 describe('cut session', () => {
@@ -192,6 +193,96 @@ describe('cut session', () => {
     expect(
       printRRDom(replayer.virtualDom, replayer.getMirror()),
     ).toMatchSnapshot('screenshot at 1000ms');
+  });
+
+  it('new generated session should have a correct meta event', () => {
+    const cutTime = 1000;
+    const result = cutSession(mutationEvents, { points: [cutTime] });
+    expect(result).toHaveLength(2);
+    const generatedSession = result[1];
+    const originalMetaEvent = mutationEvents.filter(
+      (event) => event.type === EventType.Meta,
+    )[0] as metaEvent;
+    expect(originalMetaEvent.type).toEqual(EventType.Meta);
+    const metaEvent = generatedSession.events[0] as eventWithTime;
+    expect(metaEvent.type).toEqual(EventType.Meta);
+    expect(metaEvent.data).toEqual(originalMetaEvent.data);
+    expect(metaEvent.timestamp).toEqual(generatedSession.startTimestamp);
+  });
+
+  it('should generate correct meta events from multiple meta events', () => {
+    // TODO
+  });
+
+  it('should cut events with input events correctly', () => {
+    const points = [1000, 1500];
+    const results = cutSession(inputEvents, { points });
+    expect(results).toHaveLength(3);
+
+    const Input1NodeId = 6,
+      Input2NodeId = 33,
+      SelectionNodeId = 26;
+
+    let replayer = new SyncReplayer(results[0].events);
+    replayer.play();
+    let inputElement1 = replayer.getMirror().getNode(Input1NodeId);
+    expect(inputElement1).not.toBeNull();
+    expect((inputElement1 as RRElement).getAttribute('value')).toEqual(
+      'valueA',
+    );
+
+    // The new session start from 1000ms
+    replayer = new SyncReplayer(results[1].events);
+    replayer.play();
+    let incrementalInputEvents = results[1].events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Input,
+    );
+    expect(incrementalInputEvents).toHaveLength(1);
+    // The incremental input event should be played within 5ms
+    const inputEvent = incrementalInputEvents[0];
+    expect(inputEvent.timestamp - results[1].startTimestamp).toBeLessThan(5);
+    inputElement1 = replayer.getMirror().getNode(Input1NodeId);
+    expect(inputElement1).not.toBeNull();
+    expect((inputElement1 as RRElement).inputData).toEqual(inputEvent.data);
+    let selectionElement = replayer.getMirror().getNode(SelectionNodeId);
+    expect(selectionElement).not.toBeNull();
+    expect(selectionElement?.childNodes).toHaveLength(3);
+    let inputElement2 = replayer.getMirror().getNode(Input2NodeId);
+    expect(inputElement2).not.toBeNull();
+    expect(inputElement2?.nodeType).toBe(document.ELEMENT_NODE);
+
+    // The new session start from 1500ms
+    replayer = new SyncReplayer(results[2].events);
+    replayer.play();
+    // The incremental input event should be played within 5ms
+    incrementalInputEvents = results[2].events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Input,
+    );
+    expect(incrementalInputEvents).toHaveLength(3);
+    // All incremental input events should be played within 5ms
+    expect(
+      incrementalInputEvents.filter(
+        (e) => e.timestamp - results[2].startTimestamp < 5,
+      ),
+    ).toHaveLength(3);
+    inputElement1 = replayer.getMirror().getNode(Input1NodeId);
+    expect((inputElement1 as RRElement).inputData).toEqual(
+      incrementalInputEvents[0].data,
+    );
+    selectionElement = replayer.getMirror().getNode(SelectionNodeId);
+    expect(selectionElement).not.toBeNull();
+    expect((selectionElement as RRElement).inputData).toEqual(
+      incrementalInputEvents[1].data,
+    );
+    inputElement2 = replayer.getMirror().getNode(Input2NodeId);
+    expect(inputElement2).not.toBeNull();
+    expect((inputElement2 as RRElement).inputData).toEqual(
+      incrementalInputEvents[2].data,
+    );
   });
 });
 

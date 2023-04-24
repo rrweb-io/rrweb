@@ -75,6 +75,7 @@ export const eventsFn = (): eventWithTime[] => [
               {
                 type: 2,
                 tagName: 'body',
+                attributes: {},
                 childNodes: [
                   { type: 3, textContent: '\n    ', id: 13 },
                   {
