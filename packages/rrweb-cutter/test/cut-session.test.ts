@@ -13,6 +13,7 @@ import { snapshot as RRDomSnapshot } from '../src/snapshot';
 import { events as mutationEvents } from './events/mutation.event';
 import { events as inputEvents } from './events/input.event';
 import { eventsFn as inlineStyleEvents } from './events/inline-style.event';
+import { events as multipleSnapshotEvents } from './events/multi-fullsnapshot.event';
 
 describe('cut session', () => {
   it('should return the same events if the events length is too short', () => {
@@ -211,7 +212,30 @@ describe('cut session', () => {
   });
 
   it('should generate correct meta events from multiple meta events', () => {
-    // TODO
+    const points = [2000, 4000];
+    const results = cutSession(multipleSnapshotEvents, { points });
+    expect(results).toHaveLength(3);
+
+    // All meta events in the original events
+    const metaEvents = multipleSnapshotEvents.filter(
+      (e) => e.type === EventType.Meta,
+    );
+    expect(metaEvents).toHaveLength(2);
+
+    // The first session should have the first meta event
+    expect(
+      results[0].events.filter((e) => e.type === EventType.Meta)[0].data,
+    ).toEqual(metaEvents[0].data);
+
+    // The session after 2000ms should still have the first meta event
+    expect(
+      results[1].events.filter((e) => e.type === EventType.Meta)[0].data,
+    ).toEqual(metaEvents[0].data);
+
+    // The session after 4000ms should start from the second meta event
+    expect(
+      results[2].events.filter((e) => e.type === EventType.Meta)[0].data,
+    ).toEqual(metaEvents[1].data);
   });
 
   it('should cut events with input events correctly', () => {
