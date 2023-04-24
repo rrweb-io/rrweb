@@ -136,7 +136,11 @@ export function cutSession(
       }
 
       const session = cutEvents(
-        events.slice(index + 1).filter((e) => e.timestamp < nextCutTimestamp),
+        events.slice(index + 1).filter((e) => {
+          // If this would be the last session, include all of the rest events.
+          if (cutPointIndex >= validSortedTimestamp.length) return true;
+          return e.timestamp < nextCutTimestamp;
+        }),
         replayer,
         config,
         currentTimestamp,

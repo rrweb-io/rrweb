@@ -59,6 +59,7 @@ exports[`prune branches should keep branches where target child nodes was, and g
               {
                 \\"type\\": 2,
                 \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
                 \\"childNodes\\": [
                   {
                     \\"type\\": 2,
@@ -159,6 +160,7 @@ exports[`prune branches should remove branches based on child nodes that came in
               {
                 \\"type\\": 2,
                 \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
                 \\"childNodes\\": [
                   {
                     \\"type\\": 2,
@@ -250,6 +252,7 @@ exports[`prune branches should remove branches based on nodes that came in after
               {
                 \\"type\\": 2,
                 \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
                 \\"childNodes\\": [
                   {
                     \\"type\\": 2,

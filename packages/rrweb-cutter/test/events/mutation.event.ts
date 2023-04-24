@@ -263,7 +263,7 @@ export const events: eventWithTime[] = [
         },
       ],
     },
-    timestamp: now + 2000,
+    timestamp: now + 1500,
   },
   // mutation that removes five div elements at 3000ms
   {
