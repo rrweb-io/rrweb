@@ -73,6 +73,42 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 [Using the REPL tool](./guide.md#REPL-tool)
 
+## Sponsors
+
+[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
+
+### Gold Sponsors 🥇
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=400"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=400"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=400"></a>
+
+</div>
+
+### Silver Sponsors 🥈
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=200"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=200"></a>
+
+</div>
+
+### Bronze Sponsors 🥉
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/avatar.svg?requireActive=false&avatarHeight=100"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/avatar.svg?requireActive=false&avatarHeight=100"></a>
+
+</div>
+
+### Backers
+
+<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
+
 ## Core Team Members
 
 <table>

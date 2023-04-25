@@ -1433,7 +1433,8 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"name\\": \\"\\",
                                   \\"id\\": \\"\\",
                                   \\"cols\\": \\"30\\",
-                                  \\"rows\\": \\"10\\"
+                                  \\"rows\\": \\"10\\",
+                                  \\"data-unmask-example\\": \\"true\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -1699,7 +1700,8 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 39
+      \\"id\\": 39,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -1757,7 +1759,8 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 49
+      \\"id\\": 49,
+      \\"pointerType\\": 0
     }
   },
   {
@@ -2427,7 +2430,8 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"name\\": \\"\\",
                                   \\"id\\": \\"\\",
                                   \\"cols\\": \\"30\\",
-                                  \\"rows\\": \\"10\\"
+                                  \\"rows\\": \\"10\\",
+                                  \\"data-unmask-example\\": \\"true\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,

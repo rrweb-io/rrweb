@@ -277,8 +277,8 @@ export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   return isAncestorRemoved(target.parentNode, mirror);
 }
 
-export function isTouchEvent(
-  event: MouseEvent | TouchEvent,
+export function legacy_isTouchEvent(
+  event: MouseEvent | TouchEvent | PointerEvent,
 ): event is TouchEvent {
   return Boolean((event as TouchEvent).changedTouches);
 }
@@ -562,19 +562,4 @@ export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   return doc.contains(n) || shadowHostInDom(n);
-}
-
-/**
- * Get the type of an input element.
- * This takes care of the case where a password input is changed to a text input.
- * In this case, we continue to consider this of type password, in order to avoid leaking sensitive data
- * where passwords should be masked.
- */
-export function getInputType(element: HTMLElement): Lowercase<string> | null {
-  return element.hasAttribute('data-rr-is-password')
-    ? 'password'
-    : element.hasAttribute('type')
-    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-non-null-assertion
-      (element.getAttribute('type')!.toLowerCase() as Lowercase<string>)
-    : null;
 }
