@@ -49,7 +49,7 @@ export function polyfill(w: Window = window, d = document) {
    * rounding up scrollHeight and scrollWidth causing false positives
    * on hasScrollableSpace
    */
-  const ROUNDING_TOLERANCE = isMicrosoftBrowser(w.navigator.userAgent) ? 1 : 0;
+  const ROUNDING_TOLERANCE = isMicrosoftBrowser(w?.navigator?.userAgent) ? 1 : 0;
 
   /**
    * changes scroll position inside an element
