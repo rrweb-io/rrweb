@@ -11,11 +11,15 @@ const rrwebScriptPath = path.resolve(
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');
 const rrwebRaw = fs.readFileSync(rrwebScriptPath, 'utf-8');
 const rrwebStyle = fs.readFileSync(rrwebStylePath, 'utf-8');
+// The max valid scale value for the scaling method which can improve the video quality.
+const MaxScaleValue = 2.5;
 
 type RRvideoConfig = {
   input: string;
   output?: string;
   headless?: boolean;
+  // A number between 0 and 1. The higher the value, the better the quality of the video.
+  resolutionRatio?: number;
   // A callback function that will be called when the progress of the replay is updated.
   onProgressUpdate?: (percent: number) => void;
   rrwebPlayer?: Omit<RRwebPlayerOptions['props'], 'events'>;
@@ -25,16 +29,15 @@ const defaultConfig: Required<RRvideoConfig> = {
   input: '',
   output: 'rrvideo-output.webm',
   headless: true,
+  // A good trade-off value between quality and file size.
+  resolutionRatio: 0.8,
   onProgressUpdate: () => {
     //
   },
   rrwebPlayer: {},
 };
 
-function getHtml(
-  events: Array<eventWithTime>,
-  config?: Omit<RRwebPlayerOptions['props'], 'events'>,
-): string {
+function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
   return `
 <html>
   <head>
@@ -50,17 +53,23 @@ function getHtml(
         '<\\/script>',
       )};
       /*-->*/
-      const userConfig = ${JSON.stringify(config || {})};
+      const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
       window.replayer = new rrwebPlayer({
         target: document.body,
+        width: userConfig.width,
+        height: userConfig.height,
         props: {
           ...userConfig,
           events,
-          showController: false,
+          showController: false,          
         },
       });
       window.replayer.addEventListener('finish', () => window.onReplayFinish());
-      window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
+      window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate
+      (payload));
+      window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
+        (config?.resolutionRatio ?? 1) * MaxScaleValue
+      }) translate(-50%, -50%)');
     </script>
   </body>
 </html>
@@ -91,6 +100,8 @@ export async function transformToVideo(options: RRvideoConfig) {
   // If the output is not specified or undefined, use the default value.
   if (!options.output) delete options.output;
   Object.assign(config, options);
+  if (config.resolutionRatio > 1) config.resolutionRatio = 1; // The max value is 1.
+
   const eventsPath = path.isAbsolute(config.input)
     ? config.input
     : path.resolve(process.cwd(), config.input);
@@ -103,15 +114,24 @@ export async function transformToVideo(options: RRvideoConfig) {
 
   // Make the browser viewport fit the player size.
   const maxViewport = getMaxViewport(events);
-  Object.assign(config.rrwebPlayer, maxViewport);
+  // Use the scaling method to improve the video quality.
+  const scaledViewport = {
+    width: Math.round(
+      maxViewport.width * (config.resolutionRatio ?? 1) * MaxScaleValue,
+    ),
+    height: Math.round(
+      maxViewport.height * (config.resolutionRatio ?? 1) * MaxScaleValue,
+    ),
+  };
+  Object.assign(config.rrwebPlayer, scaledViewport);
   const browser = await chromium.launch({
     headless: config.headless,
   });
   const context = await browser.newContext({
-    viewport: maxViewport,
+    viewport: scaledViewport,
     recordVideo: {
       dir: defaultVideoDir,
-      size: maxViewport,
+      size: scaledViewport,
     },
   });
   const page = await context.newPage();
@@ -128,7 +148,7 @@ export async function transformToVideo(options: RRvideoConfig) {
     (resolve) =>
       void page
         .exposeFunction('onReplayFinish', () => resolve())
-        .then(() => page.setContent(getHtml(events, config.rrwebPlayer))),
+        .then(() => page.setContent(getHtml(events, config))),
   );
   const videoPath = (await page.video()?.path()) || '';
   const cleanFiles = async (videoPath: string) => {
