@@ -180,6 +180,11 @@ export type blockClass = string | RegExp;
 
 export type maskTextClass = string | RegExp;
 
+export type maskTextRule = {
+  cssSelector: string,
+  maskFn: (originText: string) => string
+}
+
 export type SamplingStrategy = Partial<{
   /**
    * false means not to record mouse/touch move events

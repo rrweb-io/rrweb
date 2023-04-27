@@ -5,6 +5,7 @@ import {
   ignoreAttribute,
   isShadowRoot,
   needMaskingText,
+  getMatchedCustomMaskTextFn,
   maskInputValue,
   Mirror,
   isNativeShadowDom,
@@ -164,6 +165,7 @@ export default class MutationBuffer {
   private blockSelector: observerParam['blockSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
+  private customMaskTextRule: observerParam['customMaskTextRule'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
@@ -189,6 +191,7 @@ export default class MutationBuffer {
         'blockSelector',
         'maskTextClass',
         'maskTextSelector',
+        'customMaskTextRule',
         'inlineStylesheet',
         'maskInputOptions',
         'maskTextFn',
@@ -290,6 +293,7 @@ export default class MutationBuffer {
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
+        customMaskTextRule: this.customMaskTextRule,
         skipChild: true,
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
@@ -469,17 +473,14 @@ export default class MutationBuffer {
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
         ) {
+          let textValue = value;
+          if(needMaskingText(m.target, this.maskTextClass, this.maskTextSelector, this.customMaskTextRule)){
+            const customMaskFn = getMatchedCustomMaskTextFn(m.target, this.customMaskTextRule);
+            const maskFn = customMaskFn ?? this.maskTextFn;
+            textValue = maskFn ? maskFn(value) : value.replace(/[\S]/g, '*');
+          }
           this.texts.push({
-            value:
-              needMaskingText(
-                m.target,
-                this.maskTextClass,
-                this.maskTextSelector,
-              ) && value
-                ? this.maskTextFn
-                  ? this.maskTextFn(value)
-                  : value.replace(/[\S]/g, '*')
-                : value,
+            value: textValue,
             node: m.target,
           });
         }

@@ -23,6 +23,10 @@ import {
   getInputType,
 } from './utils';
 
+import {
+  maskTextRule
+} from '@rrweb/types';
+
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
@@ -317,6 +321,7 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  customMaskTextRule: maskTextRule[]
 ): boolean {
   try {
     const el: HTMLElement | null =
@@ -336,10 +341,35 @@ export function needMaskingText(
       if (el.matches(maskTextSelector)) return true;
       if (el.closest(maskTextSelector)) return true;
     }
+    if(customMaskTextRule) {
+      for(let rule of customMaskTextRule){
+        if (el.matches(rule.cssSelector)) return true;
+        if (el.closest(rule.cssSelector)) return true;
+      }
+    }
   } catch (e) {
     //
   }
   return false;
+}
+
+export function getMatchedCustomMaskTextFn(node: Node, customMaskTextRule: maskTextRule[]): ((originText: string) => string) | null{
+  try {
+    const el: HTMLElement | null =
+      node.nodeType === node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
+    if (el === null) return null;
+
+    for(let rule of customMaskTextRule){
+      if (el.matches(rule.cssSelector)) return rule.maskFn;
+      if (el.closest(rule.cssSelector)) return rule.maskFn;
+    }
+  } catch (error) {
+    return null
+  }
+
+  return null;
 }
 
 // https://stackoverflow.com/a/36155560
@@ -435,6 +465,7 @@ function serializeNode(
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    customMaskTextRule: maskTextRule[];
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -456,6 +487,7 @@ function serializeNode(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    customMaskTextRule,
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
@@ -509,6 +541,7 @@ function serializeNode(
       return serializeTextNode(n as Text, {
         maskTextClass,
         maskTextSelector,
+        customMaskTextRule,
         maskTextFn,
         rootId,
       });
@@ -540,11 +573,12 @@ function serializeTextNode(
   options: {
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    customMaskTextRule: maskTextRule[];
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const { maskTextClass, maskTextSelector, customMaskTextRule, maskTextFn, rootId } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -579,10 +613,12 @@ function serializeTextNode(
     !isStyle &&
     !isScript &&
     textContent &&
-    needMaskingText(n, maskTextClass, maskTextSelector)
+    needMaskingText(n, maskTextClass, maskTextSelector, customMaskTextRule)
   ) {
-    textContent = maskTextFn
-      ? maskTextFn(textContent)
+    const customMaskFn = getMatchedCustomMaskTextFn(n, customMaskTextRule);
+    const maskFn = customMaskFn ?? maskTextFn;
+    textContent = maskFn
+      ? maskFn(textContent)
       : textContent.replace(/[\S]/g, '*');
   }
 
@@ -930,6 +966,7 @@ export function serializeNodeWithId(
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    customMaskTextRule: maskTextRule[];
     skipChild: boolean;
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
@@ -962,6 +999,7 @@ export function serializeNodeWithId(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    customMaskTextRule,
     skipChild = false,
     inlineStylesheet = true,
     maskInputOptions = {},
@@ -987,6 +1025,7 @@ export function serializeNodeWithId(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    customMaskTextRule,
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
@@ -1059,6 +1098,7 @@ export function serializeNodeWithId(
       blockSelector,
       maskTextClass,
       maskTextSelector,
+      customMaskTextRule,
       skipChild,
       inlineStylesheet,
       maskInputOptions,
@@ -1119,6 +1159,7 @@ export function serializeNodeWithId(
             blockSelector,
             maskTextClass,
             maskTextSelector,
+            customMaskTextRule,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1166,6 +1207,7 @@ export function serializeNodeWithId(
             blockSelector,
             maskTextClass,
             maskTextSelector,
+            customMaskTextRule,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1207,6 +1249,7 @@ function snapshot(
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
+    customMaskTextRule?: maskTextRule[];
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
@@ -1236,6 +1279,7 @@ function snapshot(
     blockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
+    customMaskTextRule = [],
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,
@@ -1302,6 +1346,7 @@ function snapshot(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    customMaskTextRule,
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,
