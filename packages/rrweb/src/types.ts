@@ -51,8 +51,8 @@ export type recordOptions<T> = {
   maskTextSelector?: string;
   /**
    * only the first matched rule will be applied
-   * customMaskTextRule has higher priority than priomaskTextSelector & maskTextFn
-   * once one of customMaskTextRule match, priomaskTextSelector & maskTextFn won't be applied
+   * customMaskTextRule has higher priority than maskTextSelector & maskTextFn
+   * once one of customMaskTextRule match, maskTextSelector & maskTextFn won't be applied
    */
   customMaskTextRule?: maskTextRule[],
   maskAllInputs?: boolean;
