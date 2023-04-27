@@ -181,9 +181,9 @@ export type blockClass = string | RegExp;
 export type maskTextClass = string | RegExp;
 
 export type maskTextRule = {
-  cssSelector: string,
-  maskFn: (originText: string) => string
-}
+  cssSelector: string;
+  maskFn: (originText: string) => string;
+};
 
 export type SamplingStrategy = Partial<{
   /**

@@ -23,9 +23,7 @@ import {
   getInputType,
 } from './utils';
 
-import {
-  maskTextRule
-} from '@rrweb/types';
+import { maskTextRule } from '@rrweb/types';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -321,7 +319,7 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
-  customMaskTextRule: maskTextRule[]
+  customMaskTextRule: maskTextRule[],
 ): boolean {
   try {
     const el: HTMLElement | null =
@@ -341,8 +339,8 @@ export function needMaskingText(
       if (el.matches(maskTextSelector)) return true;
       if (el.closest(maskTextSelector)) return true;
     }
-    if(customMaskTextRule) {
-      for(let rule of customMaskTextRule){
+    if (customMaskTextRule) {
+      for (let rule of customMaskTextRule) {
         if (el.matches(rule.cssSelector)) return true;
         if (el.closest(rule.cssSelector)) return true;
       }
@@ -353,7 +351,10 @@ export function needMaskingText(
   return false;
 }
 
-export function getMatchedCustomMaskTextFn(node: Node, customMaskTextRule: maskTextRule[]): ((originText: string) => string) | null{
+export function getMatchedCustomMaskTextFn(
+  node: Node,
+  customMaskTextRule: maskTextRule[],
+): ((originText: string) => string) | null {
   try {
     const el: HTMLElement | null =
       node.nodeType === node.ELEMENT_NODE
@@ -361,12 +362,12 @@ export function getMatchedCustomMaskTextFn(node: Node, customMaskTextRule: maskT
         : node.parentElement;
     if (el === null) return null;
 
-    for(let rule of customMaskTextRule){
+    for (let rule of customMaskTextRule) {
       if (el.matches(rule.cssSelector)) return rule.maskFn;
       if (el.closest(rule.cssSelector)) return rule.maskFn;
     }
   } catch (error) {
-    return null
+    return null;
   }
 
   return null;
@@ -578,7 +579,13 @@ function serializeTextNode(
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, customMaskTextRule, maskTextFn, rootId } = options;
+  const {
+    maskTextClass,
+    maskTextSelector,
+    customMaskTextRule,
+    maskTextFn,
+    rootId,
+  } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;

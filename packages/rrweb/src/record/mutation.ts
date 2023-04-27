@@ -474,8 +474,18 @@ export default class MutationBuffer {
           value !== m.oldValue
         ) {
           let textValue = value;
-          if(needMaskingText(m.target, this.maskTextClass, this.maskTextSelector, this.customMaskTextRule)){
-            const customMaskFn = getMatchedCustomMaskTextFn(m.target, this.customMaskTextRule);
+          if (
+            needMaskingText(
+              m.target,
+              this.maskTextClass,
+              this.maskTextSelector,
+              this.customMaskTextRule,
+            )
+          ) {
+            const customMaskFn = getMatchedCustomMaskTextFn(
+              m.target,
+              this.customMaskTextRule,
+            );
             const maskFn = customMaskFn ?? this.maskTextFn;
             textValue = maskFn ? maskFn(value) : value.replace(/[\S]/g, '*');
           }

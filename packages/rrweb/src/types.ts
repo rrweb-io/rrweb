@@ -54,7 +54,7 @@ export type recordOptions<T> = {
    * customMaskTextRule has higher priority than maskTextSelector & maskTextFn
    * once one of customMaskTextRule match, maskTextSelector & maskTextFn won't be applied
    */
-  customMaskTextRule?: maskTextRule[],
+  customMaskTextRule?: maskTextRule[];
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
@@ -93,7 +93,7 @@ export type observerParam = {
   ignoreClass: string;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
-  customMaskTextRule: maskTextRule[],
+  customMaskTextRule: maskTextRule[];
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;

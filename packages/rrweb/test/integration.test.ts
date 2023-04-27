@@ -1123,10 +1123,12 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(
       getHtml.call(this, 'mask-text.html', {
-        customMaskTextRule:[{
-          cssSelector: '[data-masking="true"]',
-          maskFn: (t: string) => t.replace(/[a-z]/g, '*')
-        }]
+        customMaskTextRule: [
+          {
+            cssSelector: '[data-masking="true"]',
+            maskFn: (t: string) => t.replace(/[a-z]/g, '*'),
+          },
+        ],
       }),
     );
 
