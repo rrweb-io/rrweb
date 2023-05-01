@@ -81,9 +81,13 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 <div dir="auto">
 
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=400"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=400"></a>
-<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=400"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 
 </div>
 
@@ -91,8 +95,13 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 <div dir="auto">
 
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=200"></a>
-<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=200"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
 
 </div>
 
@@ -100,8 +109,15 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 <div dir="auto">
 
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/avatar.svg?requireActive=false&avatarHeight=100"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/avatar.svg?requireActive=false&avatarHeight=100"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
 
 </div>
 
