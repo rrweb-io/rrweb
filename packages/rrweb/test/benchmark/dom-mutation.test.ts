@@ -30,6 +30,12 @@ const suites: Array<
     eval: 'window.workload()',
     times: 10,
   },
+  {
+    title: 'create 1000 DOM nodes and append into its previous looped node',
+    html: 'benchmark-dom-mutation-multiple-descendant-add.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
 ];
 
 function avg(v: number[]): number {

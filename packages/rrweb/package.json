@@ -51,7 +51,7 @@
     "@types/inquirer": "^8.2.1",
     "@types/jest": "^27.4.1",
     "@types/jest-image-snapshot": "^5.1.0",
-    "@types/node": "^17.0.21",
+    "@types/node": "^18.15.11",
     "@types/offscreencanvas": "^2019.6.4",
     "@types/puppeteer": "^5.4.4",
     "construct-style-sheets-polyfill": "^3.1.0",

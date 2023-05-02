@@ -1,0 +1,18 @@
+<html>
+  <body></body>
+  <script>
+    function addMultiNodes() {
+      const total = 1000;
+      let parent = document.body;
+      for (let i = 0; i < total; i++) {
+        const el = document.createElement('div');
+        el.textContent = `el-${i + 1}`;
+        parent.append(el);
+        parent = el;
+      }
+    }
+    window.workload = () => {
+      addMultiNodes();
+    };
+  </script>
+</html>
