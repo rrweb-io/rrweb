@@ -2,7 +2,7 @@ import { EventType, eventWithTime, IncrementalSource } from '@rrweb/types';
 
 const now = Date.now();
 
-export const events: eventWithTime[] = [
+const events: eventWithTime[] = [
   {
     type: EventType.DomContentLoaded,
     data: {},
@@ -73,7 +73,7 @@ export const events: eventWithTime[] = [
     },
     timestamp: now + 100,
   },
-  // mutation that adds five div elements at 1000ms
+  // mutation that adds five div elements before 1000ms
   {
     type: EventType.IncrementalSnapshot,
     data: {
@@ -164,7 +164,7 @@ export const events: eventWithTime[] = [
         },
       ],
     },
-    timestamp: now + 1000,
+    timestamp: now + 999,
   },
   // mutation that reverses the order of five div elements at 2000ms
   {
@@ -284,3 +284,5 @@ export const events: eventWithTime[] = [
     timestamp: now + 3000,
   },
 ];
+
+export default events;

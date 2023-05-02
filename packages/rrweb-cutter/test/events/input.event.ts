@@ -2,7 +2,7 @@ import { EventType, IncrementalSource } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 
 const now = Date.now();
-export const events: eventWithTime[] = [
+const events: eventWithTime[] = [
   {
     type: EventType.DomContentLoaded,
     data: {},
@@ -201,3 +201,5 @@ export const events: eventWithTime[] = [
     timestamp: now + 2000,
   },
 ];
+
+export default events;

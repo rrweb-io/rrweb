@@ -4,16 +4,16 @@
 import path from 'path';
 import fs from 'fs';
 import { createMirror, snapshot } from 'rrweb-snapshot';
-import { EventType } from 'rrweb';
-import { SyncReplayer } from 'rrweb';
+import { EventType, SyncReplayer } from 'rrweb';
 import { IncrementalSource, eventWithTime, metaEvent } from '@rrweb/types';
 import { RRDocument, RRElement, buildFromDom, printRRDom } from 'rrdom';
 import { cutSession, getValidSortedPoints } from '../src';
 import { snapshot as RRDomSnapshot } from '../src/snapshot';
-import { events as mutationEvents } from './events/mutation.event';
-import { events as inputEvents } from './events/input.event';
 import { eventsFn as inlineStyleEvents } from './events/inline-style.event';
-import { events as multipleSnapshotEvents } from './events/multi-fullsnapshot.event';
+import mutationEvents from './events/mutation.event';
+import inputEvents from './events/input.event';
+import multipleSnapshotEvents from './events/multi-fullsnapshot.event';
+import scrollEvents from './events/scroll.event';
 
 describe('cut session', () => {
   it('should return the same events if the events length is too short', () => {
@@ -307,6 +307,29 @@ describe('cut session', () => {
     expect((inputElement2 as RRElement).inputData).toEqual(
       incrementalInputEvents[2].data,
     );
+  });
+
+  it('should cut the session with scroll events correctly', () => {
+    const results = cutSession(scrollEvents, { points: [1500] });
+    expect(results).toHaveLength(2);
+
+    expect(results[0].events).toHaveLength(5);
+    expect(results[1].events).toHaveLength(5);
+    const replayer = new SyncReplayer(results[1].events);
+
+    replayer.play();
+    expect((replayer.virtualDom as RRDocument).scrollData).toEqual({
+      source: IncrementalSource.Scroll,
+      id: 1,
+      x: 200,
+      y: 250,
+    });
+    expect((replayer.getMirror().getNode(6) as RRElement).scrollData).toEqual({
+      source: IncrementalSource.Scroll,
+      id: 6,
+      x: 100,
+      y: 150,
+    });
   });
 });
 

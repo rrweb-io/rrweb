@@ -110,7 +110,7 @@ export const eventsFn = (): eventWithTime[] => [
     },
     timestamp: now + 200,
   },
-  // mutation that adds a div element at 1000ms
+  // mutation that adds a div element before 1000ms
   {
     type: EventType.IncrementalSnapshot,
     data: {
@@ -120,7 +120,7 @@ export const eventsFn = (): eventWithTime[] => [
       removes: [{ parentId: 12, id: 18 }],
       adds: [],
     },
-    timestamp: now + 1000,
+    timestamp: now + 999,
   },
   // a placeholder event to extend the duration of the whole session
   {

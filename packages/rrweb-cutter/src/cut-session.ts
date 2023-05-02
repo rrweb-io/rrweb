@@ -11,6 +11,7 @@ import {
   RRStyleElement,
   RRMediaElement,
   RRIFrameElement,
+  RRDocument,
 } from 'rrdom';
 import type { IRRNode, RRElement } from 'rrdom';
 import { IncrementalSource, EventType, SyncReplayer } from 'rrweb';
@@ -101,7 +102,9 @@ export function cutSession(
       if (results.length === 0) {
         results.push(
           wrapCutSession(
-            events.slice(0, index + 1),
+            events
+              .slice(0, index + 1)
+              .filter((e) => e.timestamp < validSortedTimestamp[cutPointIndex]),
             config,
             baseTimestamp,
             currentTimestamp,
@@ -229,7 +232,16 @@ function cutEvents(
   const incrementalEvents: eventWithTime[] = [];
   const onSerialize = (n: IRRNode) => {
     const timestamp = currentTimestamp + IncrementalEventDelay;
-    if (n.RRNodeType !== NodeType.Element) return;
+    if (n.RRNodeType === NodeType.Document) {
+      const rrDoc = n as RRDocument;
+      rrDoc.scrollData &&
+        incrementalEvents.push({
+          type: EventType.IncrementalSnapshot,
+          data: rrDoc.scrollData,
+          timestamp,
+        });
+      return;
+    }
     const rrElement = n as RRElement;
     rrElement.inputData &&
       incrementalEvents.push({
