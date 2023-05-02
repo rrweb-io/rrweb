@@ -2615,12 +2615,19 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
-"@rrweb/types@^2.0.0-alpha.7", "@rrweb/types@npm:@fullview/rrweb-types@2.0.0-alpha.7":
+"@rrweb/types@^2.0.0-alpha.7":
   version "2.0.0-alpha.7"
   resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.7.tgz#3e279eb127b5d7c9faf7b8db0e27e4fdb0a54880"
   integrity sha512-pPoP1fKzDFw5wglqzYPkBRZli6GkHx4SSB3luc82s3bDHNUFtH67w62KnkTetS9nCRIzM5EdyJgmi5sz/j+mkQ==
   dependencies:
     rrweb-snapshot "npm:@fullview/rrweb-snapshot@2.0.0-alpha.7"
+
+"@rrweb/types@npm:@fullview/rrweb-types@2.0.0-alpha.7.2":
+  version "2.0.0-alpha.7.2"
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.7.2.tgz#bf9536468dda73ceaaa2f102b5dd45cd5c23fdcc"
+  integrity sha512-T7vHTAeNjsha+UAnLY+xLiWh3ZzhEykwSepIT5E4pJ99IDhWLyhn1D0wvs+UZy+y95lLTelz3UA+hj1e+3B1Rg==
+  dependencies:
+    rrweb-snapshot "npm:@fullview/rrweb-snapshot@2.0.0-alpha.7.2"
 
 "@rushstack/node-core-library@3.53.2", "@rushstack/node-core-library@^3.53.2":
   version "3.53.2"
@@ -11819,12 +11826,12 @@ rrdom@^2.0.0-alpha.7:
   dependencies:
     rrweb-snapshot "^2.0.0-alpha.7"
 
-"rrdom@npm:@fullview/rrdom@2.0.0-alpha.7":
-  version "2.0.0-alpha.7"
-  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.7.tgz#33ef42b0e1d76c776c4c70f80c5250effc410b19"
-  integrity sha512-Qfj1KnyyKvKD5u71eUYf6hgR53j/8VfkRNBCFfvb2qWNModqla4t++gOoP/Pk2iWcyTHrEgA3pZa+QBoJDU1Iw==
+"rrdom@npm:@fullview/rrdom@2.0.0-alpha.7.2":
+  version "2.0.0-alpha.7.2"
+  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.7.2.tgz#cf9781f5145ec805fbcecacbf3814058dccdb986"
+  integrity sha512-o162OJg3uy47CqeVGLbRNL07JshhpVdP/o01ZRHE0lHGFLWhAs0QZ5NwlEfqJ2mP2pthrQILc5aq0g72CKZusw==
   dependencies:
-    rrweb-snapshot "npm:@fullview/rrweb-snapshot@2.0.0-alpha.7"
+    rrweb-snapshot "npm:@fullview/rrweb-snapshot@2.0.0-alpha.7.2"
 
 rrweb-snapshot@^2.0.0-alpha.7:
   version "2.0.0-alpha.7"
@@ -11835,6 +11842,11 @@ rrweb-snapshot@^2.0.0-alpha.7:
   version "2.0.0-alpha.7"
   resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.7.tgz#d438455c17980cd0e794f5793940c9e5573cdde6"
   integrity sha512-+pBtwT7QIZ8mRuBMGeCfHuy7wPT1b0kTdJ6DLJ2S1qO7pLEKwbvLYNDD9ElOupbXqGpdMoCAa6zmWRU6+brQEQ==
+
+"rrweb-snapshot@npm:@fullview/rrweb-snapshot@2.0.0-alpha.7.2":
+  version "2.0.0-alpha.7.2"
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.7.2.tgz#7b655ab8b5d90694a7829f7cf091f51914fca4a5"
+  integrity sha512-Shxl+BmWRKtKz38dErwqGlwHpRoezG106O5aoUTrNBT8ruhysNxft2ySer76j5wHO3v3FsufeMtI61+fEValig==
 
 rrweb@^2.0.0-alpha.7:
   version "2.0.0-alpha.7"
