@@ -1,7 +1,9 @@
-export type PackFn<T extends { timestamp: number }> = (event: T) => string;
-export type UnpackFn<T extends { timestamp: number }> = (raw: string) => T;
+import type { eventWithTime } from '@rrweb/types';
 
-export type eventWithTimeAndPacker<T extends { timestamp: number }> = T & {
+export type PackFn = (event: eventWithTime) => string;
+export type UnpackFn = (raw: string) => eventWithTime;
+
+export type eventWithTimeAndPacker = eventWithTime & {
   v: string;
 };
 
