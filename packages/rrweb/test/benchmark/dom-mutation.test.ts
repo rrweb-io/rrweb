@@ -36,6 +36,12 @@ const suites: Array<
     eval: 'window.workload()',
     times: 5,
   },
+  {
+    title: 'create 10000 DOM nodes and move it to new container',
+    html: 'benchmark-dom-mutation-add-and-move.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
 ];
 
 function avg(v: number[]): number {
