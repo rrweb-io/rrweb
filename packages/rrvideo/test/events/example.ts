@@ -74,8 +74,8 @@ const events: eventWithTime[] = [
           node: {
             type: 2,
             tagName: 'select',
-            attributes: {},
             childNodes: [],
+            attributes: {},
             id: 26,
           },
         },
@@ -129,7 +129,7 @@ const events: eventWithTime[] = [
         },
       ],
     },
-    timestamp: now + 1000,
+    timestamp: now + 200,
   },
   // input event
   {
@@ -140,77 +140,7 @@ const events: eventWithTime[] = [
       isChecked: false,
       id: 26,
     },
-    timestamp: now + 1500,
-  },
-  // input event
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Input,
-      text: 'valueC',
-      isChecked: false,
-      id: 26,
-    },
-    timestamp: now + 2000,
-  },
-  // mutation that adds an input element
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [],
-      adds: [
-        {
-          parentId: 5,
-          nextId: null,
-          node: {
-            type: 2,
-            tagName: 'input',
-            attributes: {},
-            childNodes: [],
-            id: 33,
-          },
-        },
-      ],
-    },
-    timestamp: now + 2500,
-  },
-  // an input event
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Input,
-      text: 'test input',
-      isChecked: false,
-      id: 33,
-    },
-    timestamp: now + 3000,
-  },
-  // remove the select element
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [{ parentId: 5, id: 26 }],
-      adds: [],
-    },
-    timestamp: now + 3500,
-  },
-  // remove the input element
-  {
-    type: EventType.IncrementalSnapshot,
-    data: {
-      source: IncrementalSource.Mutation,
-      texts: [],
-      attributes: [],
-      removes: [{ parentId: 5, id: 33 }],
-      adds: [],
-    },
-    timestamp: now + 4000,
+    timestamp: now + 300,
   },
 ];
 

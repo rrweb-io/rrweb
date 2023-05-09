@@ -657,6 +657,9 @@ export default class MutationBuffer {
     // this node was already recorded in other buffer, ignore it
     if (this.processedNodeManager.inOtherBuffer(n, this)) return;
 
+    // if n is added to set, there is no need to travel it and its' children again
+    if (this.addedSet.has(n) || this.movedSet.has(n)) return;
+
     if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
         return;

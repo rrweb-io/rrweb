@@ -75,44 +75,55 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 ## Sponsors
 
-### Gold
-
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
 
-<div>
+### Gold Sponsors 🥇
 
-<a href="https://opencollective.com/rrweb/goldsponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/0/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/1/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/2/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/3/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/4/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/5/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/6/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/7/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/8/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/9/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/9/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/10/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/10/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/11/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/11/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/12/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/12/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/13/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/13/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/14/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/14/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/15/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/15/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/16/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/16/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/17/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/17/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/18/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/18/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/19/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/19/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/20/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/20/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/21/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/21/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/22/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/22/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/23/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/23/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/24/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/24/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/25/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/25/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/26/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/26/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/27/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/27/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/28/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/28/avatar.svg?requireActive=false"></a>
-<a href="https://opencollective.com/rrweb/goldsponsor/29/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/goldsponsor/29/avatar.svg?requireActive=false"></a>
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 
 </div>
+
+### Silver Sponsors 🥈
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+
+</div>
+
+### Bronze Sponsors 🥉
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+
+</div>
+
+### Backers
+
+<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
 
 ## Core Team Members
 
@@ -189,12 +200,17 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     <tr>
     <td align="center">
       <a href="https://recordonce.com/" target="_blank">
-        <img width="195px" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
+        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
       </a>
     </td>
     <td align="center">
       <a href="https://remsupp.com" target="_blank">
         <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://highlight.io" target="_blank">
+        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
       </a>
     </td>
   </tr>
