@@ -186,7 +186,7 @@ export function maskInputValue({
 
 export function toLowerCase<T extends string>(str: T): Lowercase<T> {
   return str.toLowerCase() as unknown as Lowercase<T>;
-} 
+}
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
 type PatchedGetImageData = {
@@ -269,6 +269,6 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     ? 'password'
     : type
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    toLowerCase(type)
+      toLowerCase(type)
     : null;
 }

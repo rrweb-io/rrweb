@@ -316,7 +316,10 @@ function initMouseInteractionObserver({
         switch (MouseInteractions[eventKey]) {
           case MouseInteractions.MouseDown:
           case MouseInteractions.MouseUp:
-            eventName = eventName.replace('mouse', 'pointer') as unknown as typeof eventName;
+            eventName = eventName.replace(
+              'mouse',
+              'pointer',
+            ) as unknown as typeof eventName;
             break;
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
