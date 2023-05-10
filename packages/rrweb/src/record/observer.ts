@@ -3,6 +3,7 @@ import {
   maskInputValue,
   Mirror,
   getInputType,
+  toLowerCase,
 } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
@@ -309,13 +310,13 @@ function initMouseInteractionObserver({
         disableMap[key] !== false,
     )
     .forEach((eventKey: keyof typeof MouseInteractions) => {
-      let eventName = eventKey.toLowerCase();
+      let eventName = toLowerCase(eventKey);
       const handler = getHandler(eventKey);
       if (window.PointerEvent) {
         switch (MouseInteractions[eventKey]) {
           case MouseInteractions.MouseDown:
           case MouseInteractions.MouseUp:
-            eventName = eventName.replace('mouse', 'pointer');
+            eventName = eventName.replace('mouse', 'pointer') as unknown as typeof eventName;
             break;
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:

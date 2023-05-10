@@ -21,6 +21,7 @@ import {
   isNativeShadowDom,
   getCssRulesString,
   getInputType,
+  toLowerCase,
 } from './utils';
 
 let _id = 1;
@@ -37,9 +38,7 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
     return 'form';
   }
 
-  const processedTagName = element.tagName
-    .toLowerCase()
-    .trim() as Lowercase<string>;
+  const processedTagName = toLowerCase(element.tagName);
 
   if (tagNameRegex.test(processedTagName)) {
     // if the tag name is odd and we cannot extract
@@ -640,7 +639,7 @@ function serializeElementNode(
       attributes[attr.name] = transformAttribute(
         doc,
         tagName,
-        attr.name.toLowerCase() as Lowercase<string>,
+        toLowerCase(attr.name),
         attr.value,
       );
     }
