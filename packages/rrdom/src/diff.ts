@@ -116,27 +116,7 @@ export function diff(
     rrnodeMirror,
   );
 
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
-  if (oldChildren.length > 0 || newChildren.length > 0) {
-    // This function doesn't update props of children.
-    diffChildren(
-      Array.from(oldChildren),
-      newChildren,
-      oldTree,
-      replayer,
-      rrnodeMirror,
-    );
-
-    // Recursively diff the children of the old tree and the new tree with their props and deeper structures.
-    let oldChild = oldTree.firstChild;
-    let newChild = newTree.firstChild;
-    while (oldChild !== null && newChild !== null) {
-      diff(oldChild, newChild, replayer, rrnodeMirror);
-      oldChild = oldChild.nextSibling;
-      newChild = newChild.nextSibling;
-    }
-  }
+  diffChildren(oldTree, newTree, replayer, rrnodeMirror);
 
   diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
 }
@@ -206,18 +186,13 @@ function diffBeforeUpdatingChildren(
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const oldChildren = oldElement.shadowRoot!.childNodes;
-        const newChildren = newRRElement.shadowRoot.childNodes;
-        if (oldChildren.length > 0 || newChildren.length > 0)
-          diffChildren(
-            Array.from(oldChildren),
-            newChildren,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            oldElement.shadowRoot!,
-            replayer,
-            rrnodeMirror,
-          );
+        diffChildren(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          oldElement.shadowRoot!,
+          newRRElement.shadowRoot,
+          replayer,
+          rrnodeMirror,
+        );
       }
       break;
     }
@@ -356,16 +331,15 @@ function diffProps(
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }
 
-/**
- * Make sure two nodes have the same number, order, and type of children in the next level.
- */
 function diffChildren(
-  oldChildren: (Node | undefined)[],
-  newChildren: IRRNode[],
-  parentNode: Node,
+  oldTree: Node,
+  newTree: IRRNode,
   replayer: ReplayerHandler,
   rrnodeMirror: Mirror,
 ) {
+  const oldChildren: (Node | undefined)[] = Array.from(oldTree.childNodes);
+  const newChildren = newTree.childNodes;
+  if (oldChildren.length === 0 && newChildren.length === 0) return;
   let oldStartIndex = 0,
     oldEndIndex = oldChildren.length - 1,
     newStartIndex = 0,
@@ -398,7 +372,7 @@ function diffChildren(
       nodeMatching(oldStartNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
-        parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
+        oldTree.insertBefore(oldStartNode, oldEndNode.nextSibling);
       } catch (e) {
         console.warn(e);
       }
@@ -409,7 +383,7 @@ function diffChildren(
       nodeMatching(oldEndNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
-        parentNode.insertBefore(oldEndNode, oldStartNode);
+        oldTree.insertBefore(oldEndNode, oldStartNode);
       } catch (e) {
         console.warn(e);
       }
@@ -434,7 +408,7 @@ function diffChildren(
         nodeMatching(nodeToMove, newStartNode, replayer.mirror, rrnodeMirror)
       ) {
         try {
-          parentNode.insertBefore(nodeToMove, oldStartNode);
+          oldTree.insertBefore(nodeToMove, oldStartNode);
         } catch (e) {
           console.warn(e);
         }
@@ -447,7 +421,7 @@ function diffChildren(
         );
 
         if (
-          parentNode.nodeName === '#document' &&
+          oldTree.nodeName === '#document' &&
           oldStartNode &&
           /**
            * Special case 1: one document isn't allowed to have two doctype nodes at the same time, so we need to remove the old one first before inserting the new one.
@@ -462,13 +436,13 @@ function diffChildren(
             (newNode.nodeType === newNode.ELEMENT_NODE &&
               oldStartNode.nodeType === oldStartNode.ELEMENT_NODE))
         ) {
-          parentNode.removeChild(oldStartNode);
+          oldTree.removeChild(oldStartNode);
           replayer.mirror.removeNodeFromMap(oldStartNode);
           oldStartNode = oldChildren[++oldStartIndex];
         }
 
         try {
-          parentNode.insertBefore(newNode, oldStartNode || null);
+          oldTree.insertBefore(newNode, oldStartNode || null);
         } catch (e) {
           console.warn(e);
         }
@@ -490,7 +464,7 @@ function diffChildren(
         rrnodeMirror,
       );
       try {
-        parentNode.insertBefore(newNode, referenceNode);
+        oldTree.insertBefore(newNode, referenceNode);
       } catch (e) {
         console.warn(e);
       }
@@ -498,14 +472,23 @@ function diffChildren(
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
-      if (!node || node.parentNode !== parentNode) continue;
+      if (!node || node.parentNode !== oldTree) continue;
       try {
-        parentNode.removeChild(node);
+        oldTree.removeChild(node);
         replayer.mirror.removeNodeFromMap(node);
       } catch (e) {
         console.warn(e);
       }
     }
+  }
+
+  // Recursively diff the children of the old tree and the new tree with their props and deeper structures.
+  let oldChild = oldTree.firstChild;
+  let newChild = newTree.firstChild;
+  while (oldChild !== null && newChild !== null) {
+    diff(oldChild, newChild, replayer, rrnodeMirror);
+    oldChild = oldChild.nextSibling;
+    newChild = newChild.nextSibling;
   }
 }
 
