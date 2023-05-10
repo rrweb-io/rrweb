@@ -116,8 +116,8 @@ export function diff(
     rrnodeMirror,
   );
 
-  let oldChildren = oldTree.childNodes;
-  let newChildren = newTree.childNodes;
+  const oldChildren = oldTree.childNodes;
+  const newChildren = newTree.childNodes;
   if (oldChildren.length > 0 || newChildren.length > 0) {
     // This function doesn't update props of children.
     diffChildren(
@@ -129,12 +129,12 @@ export function diff(
     );
 
     // Recursively diff the children of the old tree and the new tree with their props and deeper structures.
-    oldChildren = oldTree.childNodes;
-    newChildren = newTree.childNodes;
-    for (let i = 0; i < newChildren.length; i++) {
-      const oldChild = oldChildren[i];
-      const newChild = newChildren[i];
+    let oldChild = oldTree.firstChild;
+    let newChild = newTree.firstChild;
+    while (oldChild !== null && newChild !== null) {
       diff(oldChild, newChild, replayer, rrnodeMirror);
+      oldChild = oldChild.nextSibling;
+      newChild = newChild.nextSibling;
     }
   }
 
