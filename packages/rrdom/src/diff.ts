@@ -116,9 +116,10 @@ export function diff(
     rrnodeMirror,
   );
 
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
+  let oldChildren = oldTree.childNodes;
+  let newChildren = newTree.childNodes;
   if (oldChildren.length > 0 || newChildren.length > 0) {
+    // This function doesn't update props of children.
     diffChildren(
       Array.from(oldChildren),
       newChildren,
@@ -126,6 +127,15 @@ export function diff(
       replayer,
       rrnodeMirror,
     );
+
+    // Recursively diff the children of the old tree and the new tree with their props and deeper structures.
+    oldChildren = oldTree.childNodes;
+    newChildren = newTree.childNodes;
+    for (let i = 0; i < newChildren.length; i++) {
+      const oldChild = oldChildren[i];
+      const newChild = newChildren[i];
+      diff(oldChild, newChild, replayer, rrnodeMirror);
+    }
   }
 
   diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
@@ -335,7 +345,8 @@ function diffProps(
           ctx.drawImage(image, 0, 0, image.width, image.height);
         }
       };
-    } else oldTree.setAttribute(name, newValue);
+    } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
+    else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes))
@@ -345,6 +356,9 @@ function diffProps(
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }
 
+/**
+ * Make sure two nodes have the same number, order, and type of children in the next level.
+ */
 function diffChildren(
   oldChildren: (Node | undefined)[],
   newChildren: IRRNode[],
@@ -371,14 +385,12 @@ function diffChildren(
       // same first node?
       nodeMatching(oldStartNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
-      diff(oldStartNode, newStartNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (
       // same last node?
       nodeMatching(oldEndNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
-      diff(oldEndNode, newEndNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
@@ -390,7 +402,6 @@ function diffChildren(
       } catch (e) {
         console.warn(e);
       }
-      diff(oldStartNode, newEndNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
@@ -402,7 +413,6 @@ function diffChildren(
       } catch (e) {
         console.warn(e);
       }
-      diff(oldEndNode, newStartNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
     } else {
@@ -428,7 +438,6 @@ function diffChildren(
         } catch (e) {
           console.warn(e);
         }
-        diff(nodeToMove, newStartNode, replayer, rrnodeMirror);
         oldChildren[indexInOld] = undefined;
       } else {
         const newNode = createOrGetNode(
@@ -460,7 +469,6 @@ function diffChildren(
 
         try {
           parentNode.insertBefore(newNode, oldStartNode || null);
-          diff(newNode, newStartNode, replayer, rrnodeMirror);
         } catch (e) {
           console.warn(e);
         }
@@ -483,7 +491,6 @@ function diffChildren(
       );
       try {
         parentNode.insertBefore(newNode, referenceNode);
-        diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
       } catch (e) {
         console.warn(e);
       }
