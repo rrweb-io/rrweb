@@ -428,7 +428,6 @@ export default class MutationBuffer {
       pushAdd(node.value);
     }
 
-    addedNodeIndexArr = null;
     const payload = {
       texts: this.texts
         .map((text) => ({
