@@ -18,7 +18,10 @@ export function on(
   fn: EventListenerOrEventListenerObject,
   target: Document | IWindow = document,
 ): listenerHandler {
-  const options = { capture: true, passive: true };
+  /**
+   * Disable passive event for click events so we can preventDefault on assist navigation
+   */
+  const options = { capture: true, passive: type !== 'click' };
   target.addEventListener(type, fn, options);
   return () => target.removeEventListener(type, fn, options);
 }
