@@ -213,5 +213,10 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
       </a>
     </td>
+    <td align="center">
+      <a href="https://analyzee.io" target="_blank">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+      </a>
+    </td>
   </tr>
 </table>
