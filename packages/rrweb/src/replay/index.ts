@@ -551,6 +551,10 @@ export class Replayer {
     this.service.send({ type: 'REMOVE_EVENTS', payload: { start, end } });
   }
 
+  public removeAllEvents() {
+    this.service.send({ type: 'REMOVE_ALL_EVENTS' });
+  }
+
   public getAllEvents() {
     return this.service.state.context.events;
   }
