@@ -57,7 +57,7 @@ export type recordOptions<T> = {
   ignoreCSSAttributes?: Set<string>;
   inlineStylesheet?: boolean;
   hooks?: hooksParam;
-  packFn?: PackFn;
+  packFn?: PackFn<eventWithTime>;
   sampling?: SamplingStrategy;
   dataURLOptions?: DataURLOptions;
   recordCanvas?: boolean;
@@ -183,7 +183,7 @@ export type playerConfig = {
         lineWidth?: number;
         strokeStyle?: string;
       };
-  unpackFn?: UnpackFn;
+  unpackFn?: UnpackFn<eventWithTime>;
   useVirtualDom: boolean;
   logger: {
     log: (...args: Parameters<typeof console.log>) => void;
