@@ -9,7 +9,7 @@
     "preserveConstEnums": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": ["es6", "dom"]
+    "lib": ["es6", "dom", "ES2020", "ES2021.WeakRef"]
   },
   "exclude": ["test"],
   "include": ["src"],
