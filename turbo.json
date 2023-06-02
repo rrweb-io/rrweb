@@ -10,6 +10,7 @@
     "test:watch": {
       "persistent": true
     },
+    "test:update": {},
     "dev": {
       "dependsOn": ["^prepublish"],
       "persistent": true

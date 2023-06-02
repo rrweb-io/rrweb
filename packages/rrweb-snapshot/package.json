@@ -7,11 +7,12 @@
     "prepack": "npm run bundle && npm run typings",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:update": "jest --updateSnapshot",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "dev": "yarn bundle:es-only --watch",
     "typings": "tsc -d --declarationDir typings",
-    "prepublish": "npm run typings && npm run bundle",
+    "prepublish": "yarn typings && yarn bundle",
     "lint": "yarn eslint src"
   },
   "type": "module",
