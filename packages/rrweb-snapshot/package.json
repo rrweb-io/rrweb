@@ -10,10 +10,9 @@
     "test:update": "jest --updateSnapshot",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
-    "reformat": "yarn prettier --write '**/*.{ts,md}'",
-    "dev": "npm run bundle:es-only --watch",
+    "dev": "yarn bundle:es-only --watch",
     "typings": "tsc -d --declarationDir typings",
-    "prepublish": "npm run typings && npm run bundle",
+    "prepublish": "yarn typings && yarn bundle",
     "lint": "yarn eslint src"
   },
   "type": "module",

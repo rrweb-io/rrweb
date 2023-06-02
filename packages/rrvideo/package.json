@@ -12,7 +12,7 @@
   "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "prepublish": "npm run build"
+    "prepublish": "yarn build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
