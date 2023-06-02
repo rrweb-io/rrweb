@@ -169,7 +169,7 @@ export function maskInputValue({
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
-  const actualType = type && type.toLowerCase();
+  const actualType = type && toLowerCase(type);
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
@@ -182,6 +182,10 @@ export function maskInputValue({
     }
   }
   return text;
+}
+
+export function toLowerCase<T extends string>(str: T): Lowercase<T> {
+  return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -265,6 +269,6 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     ? 'password'
     : type
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (type.toLowerCase() as Lowercase<string>)
+      toLowerCase(type)
     : null;
 }

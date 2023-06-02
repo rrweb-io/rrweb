@@ -9,6 +9,7 @@ import {
   Mirror,
   isNativeShadowDom,
   getInputType,
+  toLowerCase,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -597,8 +598,8 @@ export default class MutationBuffer {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName] = transformAttribute(
             this.doc,
-            target.tagName,
-            attributeName,
+            toLowerCase(target.tagName),
+            toLowerCase(attributeName),
             value,
           );
         }
