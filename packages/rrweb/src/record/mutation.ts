@@ -48,6 +48,7 @@ function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
 class DoubleLinkedList {
   public length = 0;
   public head: DoubleLinkedListNode | null = null;
+  public tail: DoubleLinkedListNode | null = null;
 
   public get(position: number) {
     if (position >= this.length) {
@@ -95,6 +96,9 @@ class DoubleLinkedList {
       node.next = this.head;
       this.head = node;
     }
+    if (node.next === null) {
+      this.tail = node;
+    }
     this.length++;
   }
 
@@ -108,11 +112,15 @@ class DoubleLinkedList {
       this.head = current.next;
       if (this.head) {
         this.head.previous = null;
+      } else {
+        this.tail = null;
       }
     } else {
       current.previous.next = current.next;
       if (current.next) {
         current.next.previous = current.previous;
+      } else {
+        this.tail = current.previous;
       }
     }
     if (n.__ln) {
@@ -368,8 +376,10 @@ export default class MutationBuffer {
         }
       }
       if (!node) {
-        for (let index = addList.length - 1; index >= 0; index--) {
-          const _node = addList.get(index);
+        let tailNode = addList.tail;
+        while (tailNode) {
+          const _node = tailNode;
+          tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
             const parentId = this.mirror.getId(_node.value.parentNode);
@@ -462,6 +472,14 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
+    let unattachedDoc;
+    try {
+      // avoid upsetting original document from a Content Security point of view
+      unattachedDoc = document.implementation.createHTMLDocument();
+    } catch (e) {
+      // fallback to more direct method
+      unattachedDoc = this.doc;
+    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
@@ -494,6 +512,7 @@ export default class MutationBuffer {
           const type = getInputType(target);
 
           value = maskInputValue({
+            element: target,
             maskInputOptions: this.maskInputOptions,
             tagName: target.tagName,
             type,
@@ -543,7 +562,7 @@ export default class MutationBuffer {
         }
 
         if (attributeName === 'style') {
-          const old = this.doc.createElement('span');
+          const old = unattachedDoc.createElement('span');
           if (m.oldValue) {
             old.setAttribute('style', m.oldValue);
           }
@@ -654,6 +673,9 @@ export default class MutationBuffer {
   private genAdds = (n: Node, target?: Node) => {
     // this node was already recorded in other buffer, ignore it
     if (this.processedNodeManager.inOtherBuffer(n, this)) return;
+
+    // if n is added to set, there is no need to travel it and its' children again
+    if (this.addedSet.has(n) || this.movedSet.has(n)) return;
 
     if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {

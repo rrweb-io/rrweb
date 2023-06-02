@@ -244,14 +244,17 @@ function initMouseInteractionObserver({
       let pointerType: PointerTypes | null = null;
       let thisEventKey = eventKey;
       if ('pointerType' in event) {
-        Object.keys(PointerTypes).forEach(
-          (pointerKey: keyof typeof PointerTypes) => {
-            if (event.pointerType === pointerKey.toLowerCase()) {
-              pointerType = PointerTypes[pointerKey];
-              return;
-            }
-          },
-        );
+        switch (event.pointerType) {
+          case 'mouse':
+            pointerType = PointerTypes.Mouse;
+            break;
+          case 'touch':
+            pointerType = PointerTypes.Touch;
+            break;
+          case 'pen':
+            pointerType = PointerTypes.Pen;
+            break;
+        }
         if (pointerType === PointerTypes.Touch) {
           if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
             // we are actually listening on 'pointerdown'
@@ -262,7 +265,7 @@ function initMouseInteractionObserver({
             // we are actually listening on 'pointerup'
             thisEventKey = 'TouchEnd';
           }
-        } else if (pointerType == PointerTypes.Pen) {
+        } else if (pointerType === PointerTypes.Pen) {
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
         }
       } else if (legacy_isTouchEvent(event)) {
@@ -270,6 +273,15 @@ function initMouseInteractionObserver({
       }
       if (pointerType !== null) {
         currentPointerType = pointerType;
+        if (
+          (thisEventKey.startsWith('Touch') &&
+            pointerType === PointerTypes.Touch) ||
+          (thisEventKey.startsWith('Mouse') &&
+            pointerType === PointerTypes.Mouse)
+        ) {
+          // don't output redundant info
+          pointerType = null;
+        }
       } else if (MouseInteractions[eventKey] === MouseInteractions.Click) {
         pointerType = currentPointerType;
         currentPointerType = null; // cleanup as we've used it
@@ -444,6 +456,7 @@ function initInputObserver({
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
       text = maskInputValue({
+        element: target,
         maskInputOptions,
         tagName,
         type,

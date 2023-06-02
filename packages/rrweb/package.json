@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "2.0.0-alpha.7",
+  "version": "2.0.0-alpha.8",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -55,7 +55,7 @@
     "@types/inquirer": "^8.2.1",
     "@types/jest": "^27.4.1",
     "@types/jest-image-snapshot": "^5.1.0",
-    "@types/node": "^17.0.21",
+    "@types/node": "^18.15.11",
     "@types/offscreencanvas": "^2019.6.4",
     "@types/puppeteer": "^5.4.4",
     "construct-style-sheets-polyfill": "^3.1.0",
@@ -81,13 +81,13 @@
     "tslib": "^2.3.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.7",
+    "@rrweb/types": "^2.0.0-alpha.8",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.7",
-    "rrweb-snapshot": "^2.0.0-alpha.7"
+    "rrdom": "^2.0.0-alpha.8",
+    "rrweb-snapshot": "^2.0.0-alpha.8"
   }
 }

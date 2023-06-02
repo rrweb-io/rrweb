@@ -685,6 +685,7 @@ function serializeElementNode(
     ) {
       const type = getInputType(n);
       attributes.value = maskInputValue({
+        element: n,
         type,
         tagName,
         value,

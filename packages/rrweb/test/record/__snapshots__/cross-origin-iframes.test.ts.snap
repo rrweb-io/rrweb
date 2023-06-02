@@ -1433,7 +1433,8 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                   \\"name\\": \\"\\",
                                   \\"id\\": \\"\\",
                                   \\"cols\\": \\"30\\",
-                                  \\"rows\\": \\"10\\"
+                                  \\"rows\\": \\"10\\",
+                                  \\"data-unmask-example\\": \\"true\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -1667,8 +1668,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 39,
-      \\"pointerType\\": 0
+      \\"id\\": 39
     }
   },
   {
@@ -1692,8 +1692,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 39,
-      \\"pointerType\\": 0
+      \\"id\\": 39
     }
   },
   {
@@ -1728,8 +1727,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 49,
-      \\"pointerType\\": 0
+      \\"id\\": 49
     }
   },
   {
@@ -1753,8 +1751,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 49,
-      \\"pointerType\\": 0
+      \\"id\\": 49
     }
   },
   {
@@ -2433,7 +2430,8 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                   \\"name\\": \\"\\",
                                   \\"id\\": \\"\\",
                                   \\"cols\\": \\"30\\",
-                                  \\"rows\\": \\"10\\"
+                                  \\"rows\\": \\"10\\",
+                                  \\"data-unmask-example\\": \\"true\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
