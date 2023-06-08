@@ -40,6 +40,7 @@ import type {
   UnpackFn,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
+import type AssetManager from './record/observers/asset-manager';
 
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
@@ -77,6 +78,21 @@ export type recordOptions<T> = {
    * be superseded by future captureAssets asset recording APIs.
    */
   inlineImages?: boolean;
+  assetCaptureConfig?: {
+    /**
+     * Captures object URLs (blobs, files, media sources).
+     * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+     */
+    captureObjectURLs: boolean;
+    /**
+     * Allowlist of origins to capture object URLs from.
+     * [origin, origin, ...] to capture from specific origins.
+     *   e.g. ['https://example.com', 'https://www.example.com']
+     * Set to `true` capture from all origins.
+     * Set to `false` or `[]` to disable capturing from any origin apart from object URLs.
+     */
+    captureOrigins: string[] | true | false;
+  };
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -124,6 +140,7 @@ export type observerParam = {
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
   processedNodeManager: ProcessedNodeManager;
+  assetManager: AssetManager;
   ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
@@ -159,6 +176,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'assetManager'
 >;
 
 export type ReplayPlugin = {

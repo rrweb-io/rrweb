@@ -60,6 +60,14 @@ export type pluginEvent<T = unknown> = {
   };
 };
 
+export type assetEvent = {
+  type: EventType.Asset;
+  data: {
+    url: string;
+    payload: SerializedCanvasArg;
+  };
+};
+
 export type NetworkInitiatorType =
   | 'audio'
   | 'beacon'

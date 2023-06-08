@@ -30,6 +30,7 @@ import {
   extractFileExtension,
   absolutifyURLs,
   markCssSplits,
+  getUrlsFromSrcset,
 } from './snapshot-utils';
 import dom from '@rrweb/utils';
 
@@ -404,6 +405,13 @@ function serializeNode(
      */
     newlyAddedElement?: boolean;
     cssCaptured?: boolean;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -422,6 +430,7 @@ function serializeNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     cssCaptured = false,
+    onAssetDetected,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -461,6 +470,7 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        onAssetDetected,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -554,6 +564,13 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -569,10 +586,12 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    onAssetDetected = false,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
+  const assets: string[] = [];
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
@@ -687,7 +706,16 @@ function serializeElementNode(
     }
   }
   // save image offline
-  if (tagName === 'img' && inlineImages) {
+  if (tagName === 'img' && onAssetDetected) {
+    if (attributes.src) {
+      assets.push(attributes.src.toString());
+    }
+    if (attributes.srcset) {
+      assets.push(...getUrlsFromSrcset(attributes.srcset.toString()));
+    }
+    // TODO: decide if inlineImages should still be supported,
+    // and if so if it should be moved into `rrweb` package.
+  } else if (tagName === 'img' && inlineImages) {
     if (!canvasService) {
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
@@ -778,6 +806,9 @@ function serializeElementNode(
     if (customElements.get(tagName)) isCustomElement = true;
   } catch (e) {
     // In case old browsers don't support customElements
+  }
+  if (assets.length && onAssetDetected) {
+    onAssetDetected({ urls: assets });
   }
 
   return {
@@ -953,6 +984,13 @@ export function serializeNodeWithId(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     cssCaptured?: boolean;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -979,6 +1017,7 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
     cssCaptured = false,
+    onAssetDetected,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
@@ -1010,6 +1049,7 @@ export function serializeNodeWithId(
     keepIframeSrcFn,
     newlyAddedElement,
     cssCaptured,
+    onAssetDetected,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1090,6 +1130,7 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
       cssCaptured: false,
+      onAssetDetected,
     };
 
     if (
@@ -1263,6 +1304,13 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1285,6 +1333,7 @@ function snapshot(
     iframeLoadTimeout,
     onStylesheetLoad,
     stylesheetLoadTimeout,
+    onAssetDetected,
     keepIframeSrcFn = () => false,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
@@ -1338,6 +1387,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    onAssetDetected,
   });
 }
 
