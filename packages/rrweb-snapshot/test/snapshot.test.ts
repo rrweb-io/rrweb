@@ -207,7 +207,7 @@ describe('scrollTop/scrollLeft', () => {
   };
 
   it('should serialize scroll positions', () => {
-    const el = render(`<div stylel='overflow: auto; width: 1px; height: 1px;'>
+    const el = render(`<div style='overflow: auto; width: 1px; height: 1px;'>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </div>`);
     el.scrollTop = 10;
@@ -280,6 +280,90 @@ describe('jsdom snapshot', () => {
     });
     expect(sn).toMatchObject({
       type: 0,
+    });
+  });
+});
+
+describe('onAssetDetected callback', () => {
+  const serializeNode = (
+    node: Node,
+    onAssetDetected: (result: { urls: string[] }) => void,
+  ): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+      inlineImages: false,
+      onAssetDetected,
+    });
+  };
+
+  const render = (html: string): HTMLDivElement => {
+    document.write(html);
+    return document.querySelector('div')!;
+  };
+
+  it('should detect `src` attribute in image', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toHaveBeenCalledWith({
+      urls: ['https://example.com/image.png'],
+    });
+  });
+
+  it('should detect `set` attribute in image with ObjectURL', () => {
+    const el = render(`<div>
+      <img src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toHaveBeenCalledWith({
+      urls: ['blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4'],
+    });
+  });
+  it('should detect `srcset` attribute in image', () => {
+    const el = render(`<div>
+      <img srcset="https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toHaveBeenCalledWith({
+      urls: [
+        'https://example.com/images/team-photo.jpg',
+        'https://example.com/images/team-photo-retina.jpg',
+      ],
+    });
+  });
+
+  it('should detect `src` attribute in two images', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+      <img src="https://example.com/image2.png" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(2);
+    expect(callback).toHaveBeenCalledWith({
+      urls: ['https://example.com/image.png'],
+    });
+    expect(callback).toHaveBeenCalledWith({
+      urls: ['https://example.com/image2.png'],
     });
   });
 });
