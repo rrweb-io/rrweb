@@ -191,6 +191,7 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
+  private assetManager: observerParam['assetManager'];
 
   public init(options: MutationBufferParam) {
     (
@@ -216,6 +217,7 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
+        'assetManager',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
@@ -347,6 +349,11 @@ export default class MutationBuffer {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
         cssCaptured,
+        onAssetDetected: (assets) => {
+          assets.urls.forEach((url) => {
+            this.assetManager.capture(url);
+          });
+        },
       });
       if (sn) {
         adds.push({
@@ -606,6 +613,12 @@ export default class MutationBuffer {
           } else {
             return;
           }
+        } else if (
+          target.tagName === 'IMG' &&
+          (attributeName === 'src' || attributeName === 'srcset') &&
+          value
+        ) {
+          this.assetManager.capture(value);
         }
         if (!item) {
           item = {
