@@ -58,6 +58,6 @@
     "rollup-plugin-typescript2": "^0.31.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
-    "tslib": "^1.9.3"
+    "tslib": "^2.5.3"
   }
 }

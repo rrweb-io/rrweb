@@ -25,6 +25,8 @@ interface ISuite {
   events: eventWithTime[];
   server: http.Server;
   serverURL: string;
+  serverB: http.Server;
+  serverBURL: string;
 }
 
 interface IWindow extends Window {
@@ -77,10 +79,7 @@ const setup = function (
   content: string,
   options?: ExtraOptions,
 ): ISuite {
-  const ctx = {} as ISuite & {
-    serverB: http.Server;
-    serverBURL: string;
-  };
+  const ctx = {} as ISuite;
 
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();

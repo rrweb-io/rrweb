@@ -27,6 +27,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
+  assetParam,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -39,11 +40,13 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import AssetManager from './observers/asset-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
+let assetManager!: AssetManager;
 let recording = false;
 
 const mirror = createMirror();
@@ -80,6 +83,10 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
+    assetCaptureConfig = {
+      captureObjectURLs: true,
+      captureOrigins: false,
+    },
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
@@ -258,6 +265,12 @@ function record<T = eventWithTime>(
       },
     });
 
+  const wrappedAssetEmit = (p: assetParam) =>
+    wrappedEmit({
+      type: EventType.Asset,
+      data: p,
+    });
+
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
@@ -306,6 +319,12 @@ function record<T = eventWithTime>(
     dataURLOptions,
   });
 
+  assetManager = new AssetManager({
+    mutationCb: wrappedAssetEmit,
+    win: window,
+    assetCaptureConfig,
+  });
+
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
@@ -328,6 +347,7 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
+      assetManager,
     },
     mirror,
   });
@@ -384,6 +404,11 @@ function record<T = eventWithTime>(
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
+      },
+      onAssetDetected: (assets) => {
+        assets.urls.forEach((url) => {
+          assetManager.capture(url);
+        });
       },
       keepIframeSrcFn,
     });
@@ -529,6 +554,7 @@ function record<T = eventWithTime>(
           shadowDomManager,
           processedNodeManager,
           canvasManager,
+          assetManager,
           ignoreCSSAttributes,
           plugins:
             plugins
