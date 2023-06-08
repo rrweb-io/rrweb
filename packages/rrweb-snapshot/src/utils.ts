@@ -594,3 +594,22 @@ export function markCssSplits(
 ): string {
   return splitCssText(cssText, style).join('/* rr_split */');
 }
+
+export function getUrlsFromSrcset(srcset: string): string[] {
+  const urls: string[] = [];
+  const parts = srcset.split(',');
+  for (let i = 0; i < parts.length; i++) {
+    const trimmed = parts[i].trim();
+    const spaceIndex = trimmed.indexOf(' ');
+    if (spaceIndex === -1) {
+      // If no descriptor is specified, it's a single URL.
+      urls.push(trimmed);
+    } else {
+      // Otherwise, it's one or more URLs followed by a single descriptor.
+      // Since we don't know how long the URL will be, we'll assume it's everything
+      // after the first space.
+      urls.push(trimmed.substring(0, spaceIndex));
+    }
+  }
+  return urls;
+}

@@ -6,6 +6,7 @@ export enum EventType {
   Meta,
   Custom,
   Plugin,
+  Asset,
 }
 
 export type domContentLoadedEvent = {
@@ -56,6 +57,14 @@ export type pluginEvent<T = unknown> = {
   data: {
     plugin: string;
     payload: T;
+  };
+};
+
+export type assetEvent = {
+  type: EventType.Asset;
+  data: {
+    url: string;
+    payload: SerializedCanvasArg;
   };
 };
 
@@ -163,7 +172,8 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
-  | pluginEvent;
+  | pluginEvent
+  | assetEvent;
 
 /**
  * @deprecated intended for internal use
@@ -607,6 +617,13 @@ export type customElementParam = {
 };
 
 export type customElementCallback = (c: customElementParam) => void;
+
+export type assetParam = {
+  url: string;
+  payload: SerializedCanvasArg;
+};
+
+export type assetCallback = (d: assetParam) => void;
 
 /**
  *  @deprecated
