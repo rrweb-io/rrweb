@@ -78,7 +78,7 @@ export type recordOptions<T> = {
    * be superseded by future captureAssets asset recording APIs.
    */
   inlineImages?: boolean;
-  assetCaptureConfig?: {
+  assetCapture?: {
     /**
      * Captures object URLs (blobs, files, media sources).
      * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
