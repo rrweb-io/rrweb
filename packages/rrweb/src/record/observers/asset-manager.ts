@@ -18,7 +18,7 @@ export default class AssetManager {
   private resetHandlers: listenerHandler[] = [];
   private mutationCb: assetCallback;
   public readonly config: Exclude<
-    recordOptions<eventWithTime>['assetCaptureConfig'],
+    recordOptions<eventWithTime>['assetCapture'],
     undefined
   >;
 
@@ -33,15 +33,15 @@ export default class AssetManager {
   constructor(options: {
     mutationCb: assetCallback;
     win: IWindow;
-    assetCaptureConfig: Exclude<
-      recordOptions<eventWithTime>['assetCaptureConfig'],
+    assetCapture: Exclude<
+      recordOptions<eventWithTime>['assetCapture'],
       undefined
     >;
   }) {
     const { win } = options;
 
     this.mutationCb = options.mutationCb;
-    this.config = options.assetCaptureConfig;
+    this.config = options.assetCapture;
 
     const urlObjectMap = this.urlObjectMap;
 
