@@ -35,7 +35,7 @@ interface IWindow extends Window {
   snapshots: eventWithTime[];
 }
 type ExtraOptions = {
-  assetCaptureConfig?: recordOptions<eventWithTime>['assetCaptureConfig'];
+  assetCapture?: recordOptions<eventWithTime>['assetCapture'];
 };
 
 const BASE64_PNG_RECTANGLE =
@@ -53,7 +53,7 @@ async function injectRecordScript(
     (window as unknown as IWindow).snapshots = [];
     const { record, pack } = (window as unknown as IWindow).rrweb;
     const config: recordOptions<eventWithTime> = {
-      assetCaptureConfig: options.assetCaptureConfig,
+      assetCapture: options.assetCapture,
       emit(event) {
         (window as unknown as IWindow).snapshots.push(event);
         (window as unknown as IWindow).emit(event);
@@ -105,11 +105,11 @@ const setup = function (
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
     if (
-      options?.assetCaptureConfig?.captureOrigins &&
-      Array.isArray(options.assetCaptureConfig.captureOrigins)
+      options?.assetCapture?.captureOrigins &&
+      Array.isArray(options.assetCapture.captureOrigins)
     ) {
-      options.assetCaptureConfig.captureOrigins =
-        options.assetCaptureConfig.captureOrigins.map((origin) =>
+      options.assetCapture.captureOrigins =
+        options.assetCapture.captureOrigins.map((origin) =>
           origin.replace(/\{SERVER_URL\}/g, ctx.serverURL),
         );
     }
@@ -142,7 +142,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureObjectURLs: true,
           captureOrigins: false,
         },
@@ -284,7 +284,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureObjectURLs: true,
           captureOrigins: false,
         },
@@ -329,7 +329,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureObjectURLs: false,
           captureOrigins: false,
         },
@@ -409,7 +409,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureOrigins: false,
           captureObjectURLs: false,
         },
@@ -441,7 +441,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureOrigins: [],
           captureObjectURLs: false,
         },
@@ -473,7 +473,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureOrigins: true,
           captureObjectURLs: false,
         },
@@ -509,7 +509,7 @@ describe('asset caching', function (this: ISuite) {
         </html>
       `,
       {
-        assetCaptureConfig: {
+        assetCapture: {
           captureOrigins: ['{SERVER_URL}'],
           captureObjectURLs: false,
         },
