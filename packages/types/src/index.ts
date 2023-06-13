@@ -389,16 +389,18 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedBlobArg = {
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+};
+
 export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
     }
-  | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  | SerializedBlobArg
   | {
       rr_type: string;
       src: string; // url of image
@@ -726,6 +728,18 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+export abstract class RebuildAssetManagerInterface {
+  abstract add(event: assetEvent): Promise<void>;
+
+  abstract get(
+    url: string,
+  ):
+    | { status: 'loading' }
+    | { status: 'loaded'; url: string }
+    | { status: 'failed' }
+    | { status: 'unknown' };
+}
 
 export enum NodeType {
   Document,
