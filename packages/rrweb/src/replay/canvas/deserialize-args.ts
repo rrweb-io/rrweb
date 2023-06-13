@@ -31,6 +31,21 @@ export function isSerializedArg(arg: unknown): arg is SerializedCanvasArg {
   return Boolean(arg && typeof arg === 'object' && 'rr_type' in arg);
 }
 
+type deserializeArgOutput =
+  | ImageBitmap
+  | ArrayBuffer
+  | HTMLImageElement
+  | Blob
+  | {
+      rr_type: string;
+      index: number;
+    }
+  | string
+  | number
+  | boolean
+  | null
+  | deserializeArgOutput[];
+
 export function deserializeArg(
   imageMap: Replayer['imageMap'],
   ctx:
@@ -41,13 +56,17 @@ export function deserializeArg(
   preload?: {
     isUnchanged: boolean;
   },
-): (arg: CanvasArg) => Promise<any> {
-  return async (arg: CanvasArg): Promise<any> => {
+): (arg: CanvasArg) => Promise<deserializeArgOutput> {
+  return async (arg: CanvasArg): Promise<deserializeArgOutput> => {
     if (arg && typeof arg === 'object' && 'rr_type' in arg) {
       if (preload) preload.isUnchanged = false;
       if (arg.rr_type === 'ImageBitmap' && 'args' in arg) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const args = await deserializeArg(imageMap, ctx, preload)(arg.args);
+        const args = (await deserializeArg(
+          imageMap,
+          ctx,
+          preload,
+        )(arg.args)) as unknown as Parameters<typeof createImageBitmap>;
         // eslint-disable-next-line prefer-spread
         return await createImageBitmap.apply(null, args);
       } else if ('index' in arg) {
@@ -79,9 +98,9 @@ export function deserializeArg(
           return image;
         }
       } else if ('data' in arg && arg.rr_type === 'Blob') {
-        const blobContents = await Promise.all(
+        const blobContents = (await Promise.all(
           arg.data.map(deserializeArg(imageMap, ctx, preload)),
-        );
+        )) as BlobPart[];
         const blob = new Blob(blobContents, {
           type: arg.type,
         });

@@ -2,13 +2,13 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
-import { elementNode, serializedNodeWithId } from '../src/types';
+import type { serializedNodeWithId, elementNode } from '@rrweb/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
 const serializeNode = (node: Node): serializedNodeWithId | null => {
@@ -287,7 +287,7 @@ describe('onAssetDetected callback', () => {
       <img src="https://example.com/image.png" />
     </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toHaveBeenCalledWith({
       urls: ['https://example.com/image.png'],
@@ -299,7 +299,7 @@ describe('onAssetDetected callback', () => {
       <img src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" />
     </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toHaveBeenCalledWith({
       urls: ['blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4'],
@@ -310,7 +310,7 @@ describe('onAssetDetected callback', () => {
       <img srcset="https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x" />
     </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toHaveBeenCalledWith({
       urls: [
@@ -326,7 +326,7 @@ describe('onAssetDetected callback', () => {
       <img src="https://example.com/image2.png" />
     </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toBeCalledTimes(2);
     expect(callback).toHaveBeenCalledWith({
