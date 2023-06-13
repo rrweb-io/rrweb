@@ -1,5 +1,5 @@
-import { NodeType } from 'rrweb-snapshot';
 import {
+  NodeType,
   EventType,
   IncrementalSource,
   eventWithTime,

@@ -5,12 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi, MockInstance } from 'vitest';
-import {
-  NodeType as RRNodeType,
-  createMirror,
-  Mirror as NodeMirror,
-  serializedNodeWithId,
-} from 'rrweb-snapshot';
+import { createMirror, Mirror as NodeMirror } from 'rrweb-snapshot';
 import {
   buildFromDom,
   getDefaultSN,
@@ -27,7 +22,12 @@ import {
   sameNodeType,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
-import type { canvasMutationData, styleSheetRuleData } from '@rrweb/types';
+import type {
+  NodeType as RRNodeType,
+  serializedNodeWithId,
+  canvasMutationData,
+  styleSheetRuleData,
+} from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
 
 const elementSn = {

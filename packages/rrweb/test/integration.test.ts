@@ -14,8 +14,8 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { eventWithTime, EventType, NodeType, RecordPlugin } from '@rrweb/types';
+import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });

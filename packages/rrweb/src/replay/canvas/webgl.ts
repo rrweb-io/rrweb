@@ -88,7 +88,7 @@ export default async function webglMutation({
     const args = await Promise.all(
       mutation.args.map(deserializeArg(imageMap, ctx)),
     );
-    const result = original.apply(ctx, args);
+    const result = original.apply(ctx, args as unknown[]);
     saveToWebGLVarMap(ctx, result);
 
     // Slows down replay considerably, only use for debugging
@@ -96,21 +96,21 @@ export default async function webglMutation({
     if (debugMode) {
       if (mutation.property === 'compileShader') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        if (!ctx.getShaderParameter(args[0], ctx.COMPILE_STATUS))
+        if (!ctx.getShaderParameter(args[0] as WebGLShader, ctx.COMPILE_STATUS))
           console.warn(
             'something went wrong in replay',
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            ctx.getShaderInfoLog(args[0]),
+            ctx.getShaderInfoLog(args[0] as WebGLShader),
           );
       } else if (mutation.property === 'linkProgram') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        ctx.validateProgram(args[0]);
+        ctx.validateProgram(args[0] as WebGLProgram);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        if (!ctx.getProgramParameter(args[0], ctx.LINK_STATUS))
+        if (!ctx.getProgramParameter(args[0] as WebGLProgram, ctx.LINK_STATUS))
           console.warn(
             'something went wrong in replay',
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            ctx.getProgramInfoLog(args[0]),
+            ctx.getProgramInfoLog(args[0] as WebGLProgram),
           );
       }
       const webglError = ctx.getError();

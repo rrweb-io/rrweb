@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import {
   startServer,
   launchPuppeteer,

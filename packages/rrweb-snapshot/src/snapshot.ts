@@ -1,19 +1,21 @@
-import {
-  type serializedNode,
-  type serializedNodeWithId,
-  NodeType,
-  type attributes,
-  type MaskInputOptions,
-  type SlimDOMOptions,
-  type DataURLOptions,
-  type MaskTextFn,
-  type MaskInputFn,
-  type KeepIframeSrcFn,
-  type ICanvas,
-  type elementNode,
-  type serializedElementNodeWithId,
-  type mediaAttributes,
+import type {
+  MaskInputOptions,
+  SlimDOMOptions,
+  MaskTextFn,
+  MaskInputFn,
+  KeepIframeSrcFn,
+  ICanvas,
+  serializedElementNodeWithId,
 } from './types';
+import { NodeType } from '@rrweb/types';
+import type {
+  serializedNode,
+  serializedNodeWithId,
+  elementNode,
+  attributes,
+  mediaAttributes,
+  DataURLOptions,
+} from '@rrweb/types';
 import {
   Mirror,
   is2DCanvasBlank,
