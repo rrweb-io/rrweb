@@ -806,6 +806,18 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
 
+export abstract class RebuildAssetManagerInterface {
+  abstract add(event: assetEvent): Promise<void>;
+
+  abstract get(
+    url: string,
+  ):
+    | { status: 'loading' }
+    | { status: 'loaded'; url: string }
+    | { status: 'failed' }
+    | { status: 'unknown' };
+}
+
 export enum NodeType {
   Document,
   DocumentType,
