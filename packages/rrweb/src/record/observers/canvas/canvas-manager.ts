@@ -1,4 +1,4 @@
-import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
+import type { ICanvas, Mirror } from 'rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,
@@ -8,6 +8,7 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
+  DataURLOptions,
 } from '@rrweb/types';
 import { isBlocked } from '../../../utils';
 import { CanvasContext } from '@rrweb/types';

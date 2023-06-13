@@ -1,13 +1,9 @@
-import {
-  NodeType as RRNodeType,
-  createMirror as createNodeMirror,
-} from 'rrweb-snapshot';
+import { createMirror as createNodeMirror } from 'rrweb-snapshot';
+import type { Mirror as NodeMirror } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from '@rrweb/types';
 import type {
-  Mirror as NodeMirror,
   IMirror,
   serializedNodeWithId,
-} from 'rrweb-snapshot';
-import type {
   canvasMutationData,
   canvasEventWithTime,
   inputData,
@@ -451,6 +447,8 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         type: node.RRNodeType,
         textContent: '',
       };
+    default:
+      throw new Error(`Unknown node type`);
   }
 }
 

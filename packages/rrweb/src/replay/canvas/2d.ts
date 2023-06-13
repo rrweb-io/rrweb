@@ -28,7 +28,7 @@ export default async function canvasMutation({
       return Promise.all(mutation.args.map(deserializeArg(imageMap, ctx)));
     },
   );
-  const args = await Promise.all(mutationArgsPromises);
+  const args = (await Promise.all(mutationArgsPromises)) as unknown[];
   // step 2 apply all mutations
   args.forEach((args, index) => {
     const mutation = mutations[index];

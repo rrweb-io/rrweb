@@ -1,12 +1,10 @@
 import {
   rebuild,
   buildNodeWithSN,
-  NodeType,
   BuildCache,
   createCache,
   Mirror,
   createMirror,
-  attributes,
   serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
@@ -34,6 +32,8 @@ import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
+  NodeType,
+  attributes,
   EventType,
   IncrementalSource,
   fullSnapshotEvent,
@@ -81,6 +81,7 @@ import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
 import { MediaManager } from './media';
+import AssetManager from './assets';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
@@ -855,6 +856,7 @@ export class Replayer {
     if (this.config.UNSAFE_replayCanvas) {
       void this.preloadAllImages();
     }
+    void this.preloadAllAssets();
   }
 
   private insertStyleRules(
@@ -1023,15 +1025,23 @@ export class Replayer {
   }
 
   /**
+   * Process all asset events and preload them
+   */
+  private async preloadAllAssets(): Promise<void[]> {
+    const assetManager = new AssetManager();
+    const promises: Promise<void>[] = [];
+    for (const event of this.service.state.context.events) {
+      if (event.type === EventType.Asset) {
+        promises.push(assetManager.add(event));
+      }
+    }
+    return Promise.all(promises);
+  }
+
+  /**
    * pause when there are some canvas drawImage args need to be loaded
    */
   private async preloadAllImages(): Promise<void[]> {
-    let beforeLoadState = this.service.state;
-    const stateHandler = () => {
-      beforeLoadState = this.service.state;
-    };
-    this.emitter.on(ReplayerEvents.Start, stateHandler);
-    this.emitter.on(ReplayerEvents.Pause, stateHandler);
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (

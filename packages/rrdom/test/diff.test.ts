@@ -3,12 +3,7 @@
  */
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import {
-  NodeType as RRNodeType,
-  serializedNodeWithId,
-  createMirror,
-  Mirror as NodeMirror,
-} from 'rrweb-snapshot';
+import { createMirror, Mirror as NodeMirror } from 'rrweb-snapshot';
 import {
   buildFromDom,
   getDefaultSN,
@@ -27,6 +22,8 @@ import {
 import type { IRRElement, IRRNode } from '../src/document';
 import { Replayer } from 'rrweb';
 import type {
+  NodeType as RRNodeType,
+  serializedNodeWithId,
   eventWithTime,
   canvasMutationData,
   styleDeclarationData,

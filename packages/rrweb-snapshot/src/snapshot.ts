@@ -1,11 +1,6 @@
 import {
-  serializedNode,
-  serializedNodeWithId,
-  NodeType,
-  attributes,
   MaskInputOptions,
   SlimDOMOptions,
-  DataURLOptions,
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
@@ -14,6 +9,13 @@ import {
   serializedElementNodeWithId,
   type mediaAttributes,
 } from './types';
+import {
+  serializedNode,
+  serializedNodeWithId,
+  NodeType,
+  attributes,
+  DataURLOptions,
+} from '@rrweb/types';
 import {
   Mirror,
   is2DCanvasBlank,

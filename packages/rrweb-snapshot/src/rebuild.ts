@@ -1,12 +1,11 @@
-import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
-  NodeType,
-  tagMap,
   elementNode,
-  BuildCache,
   legacyAttributes,
-} from './types';
+  NodeType,
+} from '@rrweb/types';
+import { Rule, Media, NodeWithRules, parse } from './css';
+import { tagMap, BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
 
 const tagMap: tagMap = {
