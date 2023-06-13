@@ -9,7 +9,7 @@
     "@rrweb/types"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build -w",
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
