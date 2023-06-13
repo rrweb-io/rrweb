@@ -4,7 +4,6 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-  DataURLOptions,
 } from 'rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
@@ -14,6 +13,7 @@ import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
+  DataURLOptions,
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,

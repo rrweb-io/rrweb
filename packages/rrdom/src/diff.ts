@@ -1,9 +1,7 @@
+import type { Mirror as NodeMirror } from 'rrweb-snapshot';
 import {
   NodeType as RRNodeType,
-  Mirror as NodeMirror,
   elementNode,
-} from 'rrweb-snapshot';
-import type {
   canvasMutationData,
   canvasEventWithTime,
   inputData,
@@ -540,6 +538,9 @@ export function createOrGetNode(
     case RRNodeType.CDATA:
       node = document.createCDATASection((rrNode as IRRCDATASection).data);
       break;
+    default:
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`Unknown node type ${rrNode.RRNodeType}`);
   }
 
   if (sn) domMirror.add(node, { ...sn });

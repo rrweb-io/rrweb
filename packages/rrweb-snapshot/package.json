@@ -11,8 +11,8 @@
     "test:update": "jest --updateSnapshot",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
-    "dev": "yarn bundle:es-only --watch",
-    "typings": "tsc -d --declarationDir typings",
+    "dev": "yarn bundle:es-only --watch & yarn typings -w",
+    "typings": "tsc -d --declarationDir typings --emitDeclarationOnly",
     "prepublish": "yarn typings && yarn bundle",
     "lint": "yarn eslint src"
   },
@@ -42,6 +42,9 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "dependencies": {
+    "@rrweb/types": "^2.0.0-alpha.8"
+  },
   "devDependencies": {
     "@types/chai": "^4.1.4",
     "@types/jest": "^27.0.2",
@@ -53,11 +56,12 @@
     "jest-snapshot": "^23.6.0",
     "jsdom": "^16.4.0",
     "puppeteer": "^17.1.3",
-    "rollup": "^2.45.2",
+    "rollup": "^2.46.0",
     "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.31.2",
+    "rollup-plugin-typescript2": "^0.34.1",
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
-    "tslib": "^2.5.3"
+    "tslib": "^2.5.3",
+    "typescript": "^4.7.3"
   }
 }

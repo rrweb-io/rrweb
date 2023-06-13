@@ -14,5 +14,9 @@
   },
   "exclude": ["test"],
   "include": ["src"],
-  "references": []
+  "references": [
+    {
+      "path": "../types"
+    }
+  ]
 }
