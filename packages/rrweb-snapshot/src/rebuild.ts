@@ -1,4 +1,5 @@
 import {
+  RebuildAssetManagerInterface,
   serializedNodeWithId,
   elementNode,
   legacyAttributes,
@@ -150,6 +151,7 @@ function buildNode(
     doc: Document;
     hackCss: boolean;
     cache: BuildCache;
+    assetManager?: RebuildAssetManagerInterface;
   },
 ): Node | null {
   const { doc, hackCss, cache } = options;
@@ -281,6 +283,13 @@ function buildNode(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
             );
+          } else if (
+            tagName === 'img' &&
+            n.attributes.src &&
+            options.assetManager
+          ) {
+            // TODO: do something with the asset manager
+            console.log('WIP! Please implement me!');
           } else {
             node.setAttribute(name, value.toString());
           }
@@ -404,6 +413,7 @@ export function buildNodeWithSN(
      */
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
+    assetManager?: RebuildAssetManagerInterface;
   },
 ): Node | null {
   const {
