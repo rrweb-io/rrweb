@@ -453,6 +453,8 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         type: node.RRNodeType,
         textContent: '',
       };
+    default:
+      throw new Error(`Unknown node type`);
   }
 }
 
