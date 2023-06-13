@@ -701,7 +701,8 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     recordCanvas: ${options.recordCanvas},
     recordAfter: '${options.recordAfter || 'load'}',
     inlineImages: ${options.inlineImages},
-    plugins: ${options.plugins}
+    plugins: ${options.plugins},
+    assetCapture: ${JSON.stringify(options.assetCapture)},
   });
   `;
 }

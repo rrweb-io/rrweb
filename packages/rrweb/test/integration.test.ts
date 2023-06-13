@@ -77,7 +77,7 @@ describe('record integration tests', function (this: ISuite) {
         x: Math.round(x + width / 2),
         y: Math.round(y + height / 2),
       };
-    }, span);
+    }, span!);
     await page.touchscreen.tap(center.x, center.y);
 
     await page.click('a');
@@ -836,7 +836,10 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     page.setContent(
-      getHtml.call(this, 'image-blob-url.html', { inlineImages: true }),
+      getHtml.call(this, 'image-blob-url.html', {
+        inlineImages: true,
+        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+      }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
     await page.waitForSelector('img'); // wait for image to get added
@@ -853,7 +856,10 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
-      getHtml.call(this, 'frame-image-blob-url.html', { inlineImages: true }),
+      getHtml.call(this, 'frame-image-blob-url.html', {
+        inlineImages: true,
+        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+      }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
     await page.waitForTimeout(50); // wait for image to get added
@@ -870,7 +876,10 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
-      getHtml.call(this, 'frame2.html', { inlineImages: true }),
+      getHtml.call(this, 'frame2.html', {
+        inlineImages: true,
+        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+      }),
     );
     await page.waitForSelector('iframe'); // wait for iframe to get added
     await waitForRAF(page); // wait for iframe to load

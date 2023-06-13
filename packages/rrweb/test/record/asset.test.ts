@@ -94,7 +94,6 @@ const setup = function (
     );
     // await ctx.page.evaluate(ctx.code);
     await waitForRAF(ctx.page);
-    await ctx.page.waitForTimeout(500); // FIXME!!
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
@@ -496,6 +495,77 @@ describe('asset caching', function (this: ISuite) {
       );
     });
   });
+
+  describe('captureOrigins: true with invalid urls', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <img src="failprotocol://example.com/image.png" />
+            <img src="https://example.com/image.png" />
+          </body>
+        </html>
+      `,
+      {
+        assetCapture: {
+          captureOrigins: true,
+          captureObjectURLs: false,
+        },
+      },
+    );
+
+    it('capture invalid url', async () => {
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      // expect an event to be emitted with `event.type` === EventType.Asset
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: `failprotocol://example.com/image.png`,
+            failed: {
+              message: 'Failed to fetch',
+            },
+          },
+        }),
+      );
+    });
+
+    it('capture url failed due to CORS', async () => {
+      // Puppeteer has issues with failed requests below 19.8.0 (more info: https://github.com/puppeteer/puppeteer/pull/9883)
+      // TODO: re-enable next line after upgrading to puppeteer 19.8.0
+      // await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+
+      // TODO: remove next line after upgrading to puppeteer 19.8.0
+      await ctx.page.waitForTimeout(500);
+
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      // expect an event to be emitted with `event.type` === EventType.Asset
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: `https://example.com/image.png`,
+            failed: {
+              message: 'Failed to fetch',
+            },
+          },
+        }),
+      );
+    });
+  });
+
   describe('captureOrigins: ["http://localhost:xxxxx/"]', () => {
     const ctx: ISuite = setup.call(
       this,
