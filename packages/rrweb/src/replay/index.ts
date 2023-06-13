@@ -2,12 +2,10 @@ import {
   rebuild,
   adaptCssForReplay,
   buildNodeWithSN,
-  NodeType,
   type BuildCache,
   createCache,
   Mirror,
   createMirror,
-  type attributes,
   type serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
@@ -40,6 +38,8 @@ import {
 } from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
+  NodeType,
+  type attributes,
   EventType,
   IncrementalSource,
   MouseInteractions,
@@ -88,6 +88,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
+// import AssetManager from './assets';
 import { MediaManager } from './media';
 import { applyDialogToTopLevel, removeDialogFromTopLevel } from './dialog';
 
@@ -868,6 +869,7 @@ export class Replayer {
     if (this.config.UNSAFE_replayCanvas) {
       void this.preloadAllImages();
     }
+    void this.preloadAllAssets();
   }
 
   private insertStyleRules(
@@ -1041,6 +1043,20 @@ export class Replayer {
         }, this.config.loadTimeout);
       }
     }
+  }
+
+  /**
+   * Process all asset events and preload them
+   */
+  private async preloadAllAssets(): Promise<void[]> {
+    // const assetManager = new AssetManager();
+    const promises: Promise<void>[] = [];
+    for (const event of this.service.state.context.events) {
+      if (event.type === EventType.Asset) {
+        // promises.push(assetManager.add(event));
+      }
+    }
+    return Promise.all(promises);
   }
 
   /**

@@ -13,11 +13,11 @@ import {
   documentNode,
   documentTypeNode,
   elementNode,
-  Mirror,
   NodeType,
   NodeType as RRNodeType,
   textNode,
-} from 'rrweb-snapshot';
+} from '@rrweb/types';
+import { Mirror } from 'rrweb-snapshot';
 import {
   buildFromDom,
   buildFromNode,
