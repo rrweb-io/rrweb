@@ -6,5 +6,9 @@
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
-  "references": []
+  "references": [
+    {
+      "path": "../types"
+    }
+  ]
 }

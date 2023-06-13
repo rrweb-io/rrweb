@@ -1,10 +1,3 @@
-import type {
-  serializedNodeWithId,
-  Mirror,
-  INode,
-  DataURLOptions,
-} from 'rrweb-snapshot';
-
 export enum EventType {
   DomContentLoaded,
   Load,
@@ -261,7 +254,7 @@ export type RecordPlugin<TOptions = unknown> = {
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
   getMirror?: (mirrors: {
-    nodeMirror: Mirror;
+    nodeMirror: IMirror<Node>;
     crossOriginIframeMirror: ICrossOriginIframeMirror;
     crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
   }) => void;
@@ -637,6 +630,13 @@ export type assetParam =
 
 export type assetCallback = (d: assetParam) => void;
 
+/**
+ *  @deprecated
+ */
+interface INode extends Node {
+  __sn: serializedNodeWithId;
+}
+
 export type DeprecatedMirror = {
   map: {
     [key: number]: INode;
@@ -726,6 +726,130 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+export enum NodeType {
+  Document,
+  DocumentType,
+  Element,
+  Text,
+  CDATA,
+  Comment,
+}
+
+export type documentNode = {
+  type: NodeType.Document;
+  childNodes: serializedNodeWithId[];
+  compatMode?: string;
+};
+
+export type documentTypeNode = {
+  type: NodeType.DocumentType;
+  name: string;
+  publicId: string;
+  systemId: string;
+};
+
+export type attributes = {
+  [key: string]: string | number | true | null;
+};
+
+export type legacyAttributes = {
+  /**
+   * @deprecated old bug in rrweb was causing these to always be set
+   * @see https://github.com/rrweb-io/rrweb/pull/651
+   */
+  selected: false;
+};
+
+export type mediaAttributes = {
+  rr_mediaState: 'played' | 'paused';
+  rr_mediaCurrentTime: number;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaPlaybackRate?: number;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaMuted?: boolean;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaLoop?: boolean;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaVolume?: number;
+};
+
+export type elementNode = {
+  type: NodeType.Element;
+  tagName: string;
+  attributes: attributes;
+  childNodes: serializedNodeWithId[];
+  isSVG?: true;
+  needBlock?: boolean;
+  // This is a custom element or not.
+  isCustom?: true;
+};
+
+export type textNode = {
+  type: NodeType.Text;
+  textContent: string;
+  isStyle?: true;
+};
+
+export type cdataNode = {
+  type: NodeType.CDATA;
+  textContent: '';
+};
+
+export type commentNode = {
+  type: NodeType.Comment;
+  textContent: string;
+};
+
+export type serializedNode = (
+  | documentNode
+  | documentTypeNode
+  | elementNode
+  | textNode
+  | cdataNode
+  | commentNode
+) & {
+  rootId?: number;
+  isShadowHost?: boolean;
+  isShadow?: boolean;
+};
+
+export type serializedNodeWithId = serializedNode & { id: number };
+
+export interface IMirror<TNode> {
+  getId(n: TNode | undefined | null): number;
+
+  getNode(id: number): TNode | null;
+
+  getIds(): number[];
+
+  getMeta(n: TNode): serializedNodeWithId | null;
+
+  removeNodeFromMap(n: TNode): void;
+
+  has(id: number): boolean;
+
+  hasNode(node: TNode): boolean;
+
+  add(n: TNode, meta: serializedNodeWithId): void;
+
+  replace(id: number, n: TNode): void;
+
+  reset(): void;
+}
+
+export type DataURLOptions = Partial<{
+  type: string;
+  quality: number;
+}>;
 
 // Types for @rrweb/packer
 export type PackFn = (event: eventWithTime) => string;

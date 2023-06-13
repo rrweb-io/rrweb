@@ -4,6 +4,7 @@ import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
 import events from '../events/assets';
+import { vi } from 'vitest';
 
 interface ISuite {
   code: string;
@@ -14,7 +15,7 @@ interface ISuite {
 expect.extend({ toMatchImageSnapshot });
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   let code: ISuite['code'];
   let browser: ISuite['browser'];
@@ -23,7 +24,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 

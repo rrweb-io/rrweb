@@ -11,6 +11,7 @@ import {
   waitForRAF,
 } from '../utils';
 import type * as http from 'http';
+import { vi } from 'vitest';
 
 interface ISuite {
   code: string;
@@ -46,7 +47,7 @@ async function injectRecordScript(
   options?: ExtraOptions,
 ) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../../dist/rrweb-all.js'),
+    path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
   });
   options = options || {};
   await frame.evaluate((options) => {
@@ -80,7 +81,7 @@ const setup = function (
     ctx.serverB = await startServer();
     ctx.serverBURL = getServerURL(ctx.serverB);
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -129,7 +130,7 @@ const setup = function (
 };
 
 describe('asset caching', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   describe('captureObjectURLs: true with incremental snapshots', function (this: ISuite) {
     const ctx: ISuite = setup.call(

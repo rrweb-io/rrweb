@@ -1,8 +1,12 @@
 import type {
-  idNodeMap,
   MaskInputFn,
   MaskInputOptions,
+  idNodeMap,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,8 +14,7 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
-import { NodeType } from './types';
+} from '@rrweb/types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
