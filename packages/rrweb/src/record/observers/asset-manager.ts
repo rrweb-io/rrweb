@@ -169,8 +169,22 @@ export default class AssetManager {
           }
         }
       })
-      .catch(() => {
-        // TODO: add mutationCb for failed urls
+      .catch((e: unknown) => {
+        let message = '';
+        if (e instanceof Error) {
+          message = e.message;
+        } else if (typeof e === 'string') {
+          message = e;
+        } else if (e && typeof e === 'object' && 'toString' in e) {
+          message = (e as { toString(): string }).toString();
+        }
+        this.mutationCb({
+          url,
+          failed: {
+            message,
+          },
+        });
+
         this.failedURLs.add(url);
         this.capturingURLs.delete(url);
       });
