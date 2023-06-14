@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Replaying rrweb events after time</title>
+	<script src="https://cdn.jsdelivr.net/npm/rrweb/dist/rrweb.min.js"></script>
+</head>
+
+<body>
+	<div id="replay-container"></div>
+	<script>
+		const timepoint = Date.now() - 60000; // Fetch events that occurred in the last minute
+		fetch(`/rrweb-events-after-time/${timepoint}`)
+			.then(response => response.json())
+			.then(events => {
+				const replayer = new rrweb.Replayer(events, {
+					root: document.getElementById('replay-container'),
+				});
+				replayer.play();
+			});
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "An example package of using rrweb-cutter with express",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "nodemon src/index.ts"
+  },
+  "dependencies": {
+    "@rrweb-cutter": "../../",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@rrweb/types": "../../../types",
+    "@types/express": "^4.17.17",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.3"
+  }
+}
