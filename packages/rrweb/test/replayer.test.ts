@@ -22,6 +22,7 @@ import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
+import multipleFullSnapshotEvents from './events/multiple-fullsnapshot-events';
 import { ReplayerEvents } from '@rrweb/types';
 
 interface ISuite {
@@ -1075,5 +1076,43 @@ describe('replayer', function () {
         () => document.querySelector('span')?.className,
       ),
     ).toBe(':hover');
+  });
+
+  it('should restart playback with multiple fullsnapshot events', async () => {
+    /**
+     * This is a corner case.
+     * Steps to reproduce:
+     * 1. Init the replayer with multiple full snapshot events but don't start the playback.
+     * 2. Seek to the last full snapshot directly without replaying the first full snapshot and wait the playback to finish.
+     * 3. Then restart the playback and the first fullsnapshot is omitted incorrectly.
+     */
+    await page.evaluate(
+      `events = ${JSON.stringify(multipleFullSnapshotEvents)}`,
+    );
+    // Initialize the replayer.
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+    `);
+    await page.waitForTimeout(10); // Wait for the first full snapshot to be rebuilt.
+
+    // Seek to the second full snapshot directly without replaying the first full snapshot.
+    await page.evaluate('replayer.play(1499)');
+    await page.waitForTimeout(100); // Wait for the playback to finish.
+    expect(
+      await page.evaluate(
+        'replayer.getMirror().getId(replayer.iframe.contentDocument)',
+      ),
+    ).toEqual(100);
+
+    // Restart the playback.
+    await page.evaluate('replayer.play();');
+    await page.waitForTimeout(50);
+    await page.evaluate('replayer.pause();');
+    expect(
+      await page.evaluate(
+        'replayer.getMirror().getId(replayer.iframe.contentDocument)',
+      ),
+    ).toEqual(1);
   });
 });

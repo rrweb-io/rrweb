@@ -143,6 +143,12 @@ export class Replayer {
   // Used to track StyleSheetObjects adopted on multiple document hosts.
   private styleMirror: StyleSheetMirror = new StyleSheetMirror();
 
+  /**
+   * The replayer uses to implement the config: firstFullsnapshot (rebuild a full snapshot when the replayer is initiated even if the playback has not yet started).
+   * If the value is null, it means that the first full snapshot has not been rebuilt yet.
+   * If the value is a fullsnapshot event, it means that the first full snapshot has been rebuilt (the replayer was just initiated and the playback has not started) and can be reused during playback if the full snapshot that was cast is the same one.
+   * If the value is true, it means that the first full snapshot was rebuilt, but should not be reused because some incremental events may have been applied upon it.
+   */
   private firstFullSnapshot: eventWithTime | true | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
@@ -657,16 +663,14 @@ export class Replayer {
         break;
       case EventType.FullSnapshot:
         castFn = () => {
-          if (this.firstFullSnapshot) {
-            if (this.firstFullSnapshot === event) {
-              // we've already built this exact FullSnapshot when the player was mounted, and haven't built any other FullSnapshot since
-              this.firstFullSnapshot = true; // forget as we might need to re-execute this FullSnapshot later e.g. to rebuild after scrubbing
-              return;
-            }
-          } else {
-            // Timer (requestAnimationFrame) can be faster than setTimeout(..., 1)
-            this.firstFullSnapshot = true;
+          if (this.firstFullSnapshot === event) {
+            // we've already built this exact FullSnapshot when the player was mounted, and haven't built any other FullSnapshot since
+            this.firstFullSnapshot = true; // forget as we might need to re-execute this FullSnapshot later e.g. to rebuild after scrubbing
+            return;
           }
+          // Determine that we should never reuse the first full snapshot anymore.
+          this.firstFullSnapshot = true;
+
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
           this.styleMirror.reset();
