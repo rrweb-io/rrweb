@@ -1,17 +1,23 @@
-import { MaskInputOptions, maskInputValue, Mirror } from 'rrweb-snapshot';
+import {
+  MaskInputOptions,
+  maskInputValue,
+  Mirror,
+  getInputType,
+  toLowerCase,
+} from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
   on,
   hookSetter,
-  getInputType,
   getWindowScroll,
   getWindowHeight,
   getWindowWidth,
   isBlocked,
-  isTouchEvent,
+  legacy_isTouchEvent,
   patch,
   StyleSheetMirror,
+  nowTimestamp,
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
@@ -20,6 +26,7 @@ import {
   mousePosition,
   mouseInteractionCallBack,
   MouseInteractions,
+  PointerTypes,
   listenerHandler,
   scrollCallback,
   styleSheetRuleCallback,
@@ -170,17 +177,18 @@ function initMoveObserver({
     throttle<MouseEvent | TouchEvent | DragEvent>(
       callbackWrapper((evt) => {
         const target = getEventTarget(evt);
-        const { clientX, clientY } = isTouchEvent(evt)
+        // 'legacy' here as we could switch to https://developer.mozilla.org/en-US/docs/Web/API/Element/pointermove_event
+        const { clientX, clientY } = legacy_isTouchEvent(evt)
           ? evt.changedTouches[0]
           : evt;
         if (!timeBaseline) {
-          timeBaseline = Date.now();
+          timeBaseline = nowTimestamp();
         }
         positions.push({
           x: clientX,
           y: clientY,
           id: mirror.getId(target as Node),
-          timeOffset: Date.now() - timeBaseline,
+          timeOffset: nowTimestamp() - timeBaseline,
         });
         // it is possible DragEvent is undefined even on devices
         // that support event 'drag'
@@ -228,23 +236,70 @@ function initMouseInteractionObserver({
       : sampling.mouseInteraction;
 
   const handlers: listenerHandler[] = [];
+  let currentPointerType: PointerTypes | null = null;
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
-    return (event: MouseEvent | TouchEvent) => {
+    return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as Node;
       if (isBlocked(target, blockClass, blockSelector, true)) {
         return;
       }
-      const e = isTouchEvent(event) ? event.changedTouches[0] : event;
+      let pointerType: PointerTypes | null = null;
+      let thisEventKey = eventKey;
+      if ('pointerType' in event) {
+        switch (event.pointerType) {
+          case 'mouse':
+            pointerType = PointerTypes.Mouse;
+            break;
+          case 'touch':
+            pointerType = PointerTypes.Touch;
+            break;
+          case 'pen':
+            pointerType = PointerTypes.Pen;
+            break;
+        }
+        if (pointerType === PointerTypes.Touch) {
+          if (MouseInteractions[eventKey] === MouseInteractions.MouseDown) {
+            // we are actually listening on 'pointerdown'
+            thisEventKey = 'TouchStart';
+          } else if (
+            MouseInteractions[eventKey] === MouseInteractions.MouseUp
+          ) {
+            // we are actually listening on 'pointerup'
+            thisEventKey = 'TouchEnd';
+          }
+        } else if (pointerType === PointerTypes.Pen) {
+          // TODO: these will get incorrectly emitted as MouseDown/MouseUp
+        }
+      } else if (legacy_isTouchEvent(event)) {
+        pointerType = PointerTypes.Touch;
+      }
+      if (pointerType !== null) {
+        currentPointerType = pointerType;
+        if (
+          (thisEventKey.startsWith('Touch') &&
+            pointerType === PointerTypes.Touch) ||
+          (thisEventKey.startsWith('Mouse') &&
+            pointerType === PointerTypes.Mouse)
+        ) {
+          // don't output redundant info
+          pointerType = null;
+        }
+      } else if (MouseInteractions[eventKey] === MouseInteractions.Click) {
+        pointerType = currentPointerType;
+        currentPointerType = null; // cleanup as we've used it
+      }
+      const e = legacy_isTouchEvent(event) ? event.changedTouches[0] : event;
       if (!e) {
         return;
       }
       const id = mirror.getId(target);
       const { clientX, clientY } = e;
       callbackWrapper(mouseInteractionCb)({
-        type: MouseInteractions[eventKey],
+        type: MouseInteractions[thisEventKey],
         id,
         x: clientX,
         y: clientY,
+        ...(pointerType !== null && { pointerType }),
       });
     };
   };
@@ -256,8 +311,23 @@ function initMouseInteractionObserver({
         disableMap[key] !== false,
     )
     .forEach((eventKey: keyof typeof MouseInteractions) => {
-      const eventName = eventKey.toLowerCase();
+      let eventName = toLowerCase(eventKey);
       const handler = getHandler(eventKey);
+      if (window.PointerEvent) {
+        switch (MouseInteractions[eventKey]) {
+          case MouseInteractions.MouseDown:
+          case MouseInteractions.MouseUp:
+            eventName = eventName.replace(
+              'mouse',
+              'pointer',
+            ) as unknown as typeof eventName;
+            break;
+          case MouseInteractions.TouchStart:
+          case MouseInteractions.TouchEnd:
+            // these are handled by pointerdown/pointerup
+            return;
+        }
+      }
       handlers.push(on(eventName, handler, doc));
     });
   return callbackWrapper(() => {
@@ -391,6 +461,7 @@ function initInputObserver({
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
       text = maskInputValue({
+        element: target,
         maskInputOptions,
         tagName,
         type,

@@ -74,6 +74,7 @@ const events: eventWithTime[] = [
           node: {
             type: 2,
             tagName: 'select',
+            attributes: {},
             childNodes: [],
             id: 26,
           },

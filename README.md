@@ -64,14 +64,67 @@ Since we want the record and replay sides to share a strongly typed data structu
 2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
 3. Run `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
 4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
-5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything.
-6. Push the code and create a pull request.
+5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything. Add test cases in order to avoid future regression.
+6. If tests are failing, but the change in output is desirable, run `yarn test:update` and carefully commit the changes in test output.
+7. Push the code and create a pull request.
 
 Protip: You can run `yarn test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
 [Using the REPL tool](./guide.md#REPL-tool)
+
+## Sponsors
+
+[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
+
+### Gold Sponsors 🥇
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+
+</div>
+
+### Silver Sponsors 🥈
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+
+</div>
+
+### Bronze Sponsors 🥉
+
+<div dir="auto">
+
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+
+</div>
+
+### Backers
+
+<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
 
 ## Core Team Members
 
@@ -148,12 +201,22 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     <tr>
     <td align="center">
       <a href="https://recordonce.com/" target="_blank">
-        <img width="195px" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
+        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
       </a>
     </td>
     <td align="center">
       <a href="https://remsupp.com" target="_blank">
         <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://highlight.io" target="_blank">
+        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://analyzee.io" target="_blank">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
       </a>
     </td>
   </tr>

@@ -154,12 +154,14 @@ export function createMirror(): Mirror {
 }
 
 export function maskInputValue({
+  element,
   maskInputOptions,
   tagName,
   type,
   value,
   maskInputFn,
 }: {
+  element: HTMLElement;
   maskInputOptions: MaskInputOptions;
   tagName: string;
   type: string | null;
@@ -167,19 +169,23 @@ export function maskInputValue({
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
-  const actualType = type && type.toLowerCase();
+  const actualType = type && toLowerCase(type);
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
     (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
   ) {
     if (maskInputFn) {
-      text = maskInputFn(text);
+      text = maskInputFn(text, element);
     } else {
       text = '*'.repeat(text.length);
     }
   }
   return text;
+}
+
+export function toLowerCase<T extends string>(str: T): Lowercase<T> {
+  return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -247,4 +253,22 @@ export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
       a.needBlock === (b as elementNode).needBlock
     );
   return false;
+}
+
+/**
+ * Get the type of an input element.
+ * This takes care of the case where a password input is changed to a text input.
+ * In this case, we continue to consider this of type password, in order to avoid leaking sensitive data
+ * where passwords should be masked.
+ */
+export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  // when omitting the type of input element(e.g. <input />), the type is treated as text
+  const type = (element as HTMLInputElement).type;
+
+  return element.hasAttribute('data-rr-is-password')
+    ? 'password'
+    : type
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      toLowerCase(type)
+    : null;
 }

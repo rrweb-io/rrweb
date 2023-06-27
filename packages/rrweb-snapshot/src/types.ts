@@ -154,7 +154,7 @@ export type DataURLOptions = Partial<{
 }>;
 
 export type MaskTextFn = (text: string) => string;
-export type MaskInputFn = (text: string) => string;
+export type MaskInputFn = (text: string, element: HTMLElement) => string;
 
 export type KeepIframeSrcFn = (src: string) => boolean;
 

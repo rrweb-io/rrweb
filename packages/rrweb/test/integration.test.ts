@@ -62,6 +62,29 @@ describe('record integration tests', function (this: ISuite) {
     server.close();
   });
 
+  it('can record clicks', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'link.html'));
+    await page.click('span');
+
+    // also tap on the span
+    const span = await page.waitForSelector('span');
+    const center = await page.evaluate((el) => {
+      const { x, y, width, height } = el.getBoundingClientRect();
+      return {
+        x: Math.round(x + width / 2),
+        y: Math.round(y + height / 2),
+      };
+    }, span);
+    await page.touchscreen.tap(center.x, center.y);
+
+    await page.click('a');
+
+    const snapshots = await page.evaluate('window.snapshots');
+    assertSnapshot(snapshots);
+  });
+
   it('can record form interactions', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -305,6 +328,36 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should mask inputs via function call', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'form.html', {
+        maskAllInputs: true,
+        maskInputFn: (text: string, element: HTMLElement) => {
+          // If the element has the attribute "data-unmask-example", we don't mask it
+          if (element.hasAttribute('data-unmask-example')) {
+            return text;
+          }
+
+          return '*'.repeat(text.length);
+        },
+      }),
+    );
+
+    await page.type('input[type="text"]', 'test');
+    await page.click('input[type="radio"]');
+    await page.click('input[type="checkbox"]');
+    await page.type('input[type="password"]', 'password');
+    await page.type('textarea', 'textarea test');
+    await page.select('select', '1');
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should record input userTriggered values if userTriggeredOnInput is enabled', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -452,6 +505,30 @@ describe('record integration tests', function (this: ISuite) {
         });
       }
     }
+    assertSnapshot(snapshots);
+  });
+
+  it('should not record input values if dynamically added and maskAllInputs is true', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'empty.html', { maskAllInputs: true }),
+    );
+
+    await page.evaluate(() => {
+      const el = document.createElement('input');
+      el.id = 'input';
+      el.value = 'input should be masked';
+
+      const nextElement = document.querySelector('#one')!;
+      nextElement.parentNode!.insertBefore(el, nextElement);
+    });
+
+    await page.type('#input', 'moo');
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
 

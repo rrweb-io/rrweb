@@ -14,6 +14,7 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
+  nowTimestamp,
 } from '../utils';
 import type { recordOptions } from '../types';
 import {
@@ -42,7 +43,7 @@ import {
 function wrapEvent(e: event): eventWithTime {
   return {
     ...e,
-    timestamp: Date.now(),
+    timestamp: nowTimestamp(),
   };
 }
 

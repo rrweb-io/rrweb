@@ -8,6 +8,7 @@ import {
   createMirror,
   attributes,
   serializedElementNodeWithId,
+  toLowerCase,
 } from 'rrweb-snapshot';
 import {
   RRDocument,
@@ -1120,7 +1121,7 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const event = new Event(MouseInteractions[d.type].toLowerCase());
+        const event = new Event(toLowerCase(MouseInteractions[d.type]));
         const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
