@@ -577,7 +577,8 @@ export function getInlineCSSProperties(value: string | null): string[] {
   if (!value) {
     return [];
   }
-  return value.split(';').map(declaration =>
-    declaration.split(':')[0].trim()
-  ).filter(declaration => !!declaration);
+  return value
+    .split(';')
+    .map((declaration) => declaration.split(':')[0].trim())
+    .filter((declaration) => !!declaration);
 }

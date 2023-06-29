@@ -12,7 +12,7 @@ import {
   selectionData,
   styleAttributeValue,
   mutationData,
-} from '@rrweb/types'
+} from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,
@@ -298,11 +298,11 @@ describe('record', function (this: ISuite) {
 
       setTimeout(() => {
         div.setAttribute('style', 'background: var(--bg-orange)');
-      }, 5)
+      }, 5);
 
       setTimeout(() => {
         div.setAttribute('style', 'background-color: #000000');
-      }, 10)
+      }, 10);
     });
 
     await ctx.page.waitForTimeout(50);
@@ -311,19 +311,23 @@ describe('record', function (this: ISuite) {
       (e) =>
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.Mutation &&
-        e.data.attributes.length
+        e.data.attributes.length,
     );
 
-    const expectedShorthandBackground =
-      ((attributeMutationEvents[0].data as mutationData)?.attributes[0]?.attributes.style as styleAttributeValue)?.['background'];
-    const expectedLonghandBackground =
-      ((attributeMutationEvents[1].data as mutationData)?.attributes[0]?.attributes.style as styleAttributeValue)?.['background'];
+    const expectedShorthandBackground = (
+      (attributeMutationEvents[0].data as mutationData)?.attributes[0]
+        ?.attributes.style as styleAttributeValue
+    )?.['background'];
+    const expectedLonghandBackground = (
+      (attributeMutationEvents[1].data as mutationData)?.attributes[0]
+        ?.attributes.style as styleAttributeValue
+    )?.['background'];
 
     expect(attributeMutationEvents.length).toEqual(2);
     expect(expectedShorthandBackground).toEqual('var(--bg-orange)');
     expect(expectedLonghandBackground).toEqual(false);
     assertSnapshot(ctx.events);
-  })
+  });
 
   it('captures stylesheet rules', async () => {
     await ctx.page.evaluate(() => {

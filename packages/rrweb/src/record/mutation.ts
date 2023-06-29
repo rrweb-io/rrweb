@@ -32,7 +32,7 @@ import {
   inDom,
   getShadowHost,
   getInlineCSSProperties,
-} from '../utils'
+} from '../utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
