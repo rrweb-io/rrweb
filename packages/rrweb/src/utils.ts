@@ -12,7 +12,6 @@ import type {
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
-import * as cssom from "cssom"
 
 export function on(
   type: string,
