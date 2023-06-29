@@ -74,10 +74,7 @@ export default class rrwebPlayer extends SvelteComponent {
   setSpeed: (speed: number) => void;
   toggleSkipInactive: () => void;
   triggerResize: () => void;
-  $set: (options: {
-    width: number;
-    height: number;
-  }) => void;
+  $set: (options: { width: number; height: number }) => void;
   play: () => void;
   pause: () => void;
   goto: (timeOffset: number, play?: boolean) => void;
