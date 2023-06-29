@@ -574,7 +574,7 @@ export function inDom(n: Node): boolean {
   return doc.contains(n) || shadowHostInDom(n);
 }
 
-export function getCSSProperties(value: string | null): string[] {
+export function getInlineCSSProperties(value: string | null): string[] {
   if (!value) {
     return [];
   }

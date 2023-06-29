@@ -31,7 +31,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
-  getCSSProperties,
+  getInlineCSSProperties,
 } from '../utils'
 
 type DoubleLinkedListNode = {
@@ -578,7 +578,7 @@ export default class MutationBuffer {
           const targetStyle = target.getAttribute('style');
           const oldStyle = old.getAttribute('style');
 
-          for (const pname of getCSSProperties(targetStyle)) {
+          for (const pname of getInlineCSSProperties(targetStyle)) {
             const newValue = target.style.getPropertyValue(pname);
             const newPriority = target.style.getPropertyPriority(pname);
             if (
@@ -592,7 +592,7 @@ export default class MutationBuffer {
               }
             }
           }
-          for (const pname of getCSSProperties(oldStyle)) {
+          for (const pname of getInlineCSSProperties(oldStyle)) {
             if (target.style.getPropertyValue(pname) === '') {
               // "if not set, returns the empty string"
               styleObj[pname] = false; // delete
