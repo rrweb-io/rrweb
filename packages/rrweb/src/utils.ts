@@ -12,6 +12,7 @@ import type {
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
+import * as cssom from "cssom"
 
 export function on(
   type: string,
@@ -571,4 +572,13 @@ export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   return doc.contains(n) || shadowHostInDom(n);
+}
+
+export function getCSSProperties(value: string | null): string[] {
+  if (!value) {
+    return [];
+  }
+  return value.split(';').map(declaration =>
+    declaration.split(':')[0].trim()
+  ).filter(declaration => !!declaration);
 }
