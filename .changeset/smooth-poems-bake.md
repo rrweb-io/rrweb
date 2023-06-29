@@ -2,4 +2,4 @@
 'rrweb-player': patch
 ---
 
-Fix `player.getMirror` and `player.playRange` types in rrwebPlayer
+Fix `player.getMirror`, `player.playRange`, `player.$set` types in rrwebPlayer
