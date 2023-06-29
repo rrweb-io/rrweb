@@ -77,4 +77,10 @@ export default class rrwebPlayer extends SvelteComponent {
   play: () => void;
   pause: () => void;
   goto: (timeOffset: number, play?: boolean) => void;
+  playRange: (
+    timeOffset: number,
+    endTimeOffset: number,
+    startLooping: boolean,
+    afterHook: undefined | (() => void),
+  ) => void;
 }
