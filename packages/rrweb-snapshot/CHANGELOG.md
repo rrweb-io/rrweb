@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.9
+
+### Patch Changes
+
+- [#1183](https://github.com/rrweb-io/rrweb/pull/1183) [`d7c72bf`](https://github.com/rrweb-io/rrweb/commit/d7c72bff0724b46a6fa94af455220626a27104fe) Thanks [@mydea](https://github.com/mydea)! - fix: Ensure attributes are lowercased when checking
+
 ## 2.0.0-alpha.8
 
 ### Minor Changes
