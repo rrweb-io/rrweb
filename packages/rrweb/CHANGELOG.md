@@ -1,5 +1,18 @@
 # rrweb
 
+## 2.0.0-next.3
+
+### Minor Changes
+
+- [#7](https://github.com/Trail-Limited/rrweb/pull/7) [`37f7313`](https://github.com/Trail-Limited/rrweb/commit/37f731368a1ec39ad2690e8e963a27a4998792c5) Thanks [@trailbillylam](https://github.com/trailbillylam)! - Add support for network events capture
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-snapshot@2.0.0-next.3
+  - @trail-limited/rrdom@2.0.0-next.3
+  - @trail-limited/rrweb-types@2.0.0-next.3
+
 ## 2.0.0-next.2
 
 ### Patch Changes
