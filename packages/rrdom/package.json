@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Trail-Limited/rrweb.git"
   },
   "scripts": {
     "dev": "rollup -c -w",
