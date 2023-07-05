@@ -1,5 +1,15 @@
 # @rrweb/web-extension
 
+## 2.0.0-next.2
+
+### Patch Changes
+
+- [#5](https://github.com/Trail-Limited/rrweb/pull/5) [`53fc605`](https://github.com/Trail-Limited/rrweb/commit/53fc605f4e6bdffcd38df7e52d54e85ba47985b0) Thanks [@trailbillylam](https://github.com/trailbillylam)! - Fix types
+
+- Updated dependencies [[`53fc605`](https://github.com/Trail-Limited/rrweb/commit/53fc605f4e6bdffcd38df7e52d54e85ba47985b0)]:
+  - @trail-limited/rrweb-player@2.0.0-next.2
+  - @trail-limited/rrweb@2.0.0-next.2
+
 ## 2.0.0-next.1
 
 ### Patch Changes

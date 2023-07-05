@@ -1,7 +1,7 @@
 {
   "name": "@trail-limited/rrweb-web-extension",
   "private": true,
-  "version": "2.0.0-next.1",
+  "version": "2.0.0-next.2",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "prepublish": "npm run pack:chrome && npm run pack:firefox"
   },
   "devDependencies": {
-    "@trail-limited/rrweb-types": "2.0.0-next.1",
+    "@trail-limited/rrweb-types": "2.0.0-next.2",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "@vitejs/plugin-react": "^2.1.0",
@@ -43,7 +43,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "@trail-limited/rrweb": "2.0.0-next.1",
-    "@trail-limited/rrweb-player": "2.0.0-next.1"
+    "@trail-limited/rrweb": "2.0.0-next.2",
+    "@trail-limited/rrweb-player": "2.0.0-next.2"
   }
 }
