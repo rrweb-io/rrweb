@@ -1,6 +1,7 @@
 import { playerConfig } from 'rrweb/typings/types';
 import { eventWithTime } from '@rrweb/types';
-import { Replayer, mirror } from 'rrweb';
+import { Replayer } from '@trail-limited/rrweb';
+import { Mirror } from '@trail-limited/rrweb-snapshot';
 import { SvelteComponent } from 'svelte';
 
 export type RRwebPlayerOptions = {
@@ -67,13 +68,20 @@ export default class rrwebPlayer extends SvelteComponent {
   addEvent(event: eventWithTime): void;
   getMetaData: Replayer['getMetaData'];
   getReplayer: () => Replayer;
-  getMirror: () => typeof mirror;
+  getMirror: () => Mirror;
 
   toggle: () => void;
   setSpeed: (speed: number) => void;
   toggleSkipInactive: () => void;
   triggerResize: () => void;
+  $set: (options: { width: number; height: number }) => void;
   play: () => void;
   pause: () => void;
   goto: (timeOffset: number, play?: boolean) => void;
+  playRange: (
+    timeOffset: number,
+    endTimeOffset: number,
+    startLooping?: boolean,
+    afterHook?: undefined | (() => void),
+  ) => void;
 }

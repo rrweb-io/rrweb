@@ -8,7 +8,7 @@ import {
   serializedNodeWithId,
   createMirror,
   Mirror as NodeMirror,
-} from 'rrweb-snapshot';
+} from '@trail-limited/rrweb-snapshot';
 import {
   buildFromDom,
   getDefaultSN,
@@ -25,7 +25,7 @@ import {
   sameNodeType,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
-import { Replayer } from 'rrweb';
+import { Replayer } from '@trail-limited/rrweb';
 import type {
   eventWithTime,
   canvasMutationData,

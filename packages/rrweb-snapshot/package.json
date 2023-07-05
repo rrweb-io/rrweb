@@ -1,6 +1,6 @@
 {
-  "name": "rrweb-snapshot",
-  "version": "2.0.0-alpha.8",
+  "name": "@trail-limited/rrweb-snapshot",
+  "version": "2.0.0-next.1",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -16,9 +16,12 @@
     "lint": "yarn eslint src"
   },
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Trail-Limited/rrweb.git"
   },
   "keywords": [
     "rrweb",

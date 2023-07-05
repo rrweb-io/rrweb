@@ -1,6 +1,6 @@
 {
-  "name": "rrdom",
-  "version": "2.0.0-alpha.8",
+  "name": "@trail-limited/rrdom",
+  "version": "2.0.0-next.1",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "main": "lib/rrdom.cjs",
@@ -14,9 +14,12 @@
     "typings"
   ],
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Trail-Limited/rrweb.git"
   },
   "scripts": {
     "dev": "rollup -c -w",
@@ -32,7 +35,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
-    "@rrweb/types": "^2.0.0-alpha.8",
+    "@trail-limited/rrweb-types": "2.0.0-next.1",
     "@types/jest": "^27.4.1",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
@@ -47,6 +50,6 @@
     "ts-jest": "^27.1.3"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.8"
+    "@trail-limited/rrweb-snapshot": "2.0.0-next.1"
   }
 }

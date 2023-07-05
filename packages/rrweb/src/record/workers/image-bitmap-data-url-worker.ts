@@ -1,9 +1,9 @@
 import { encode } from 'base64-arraybuffer';
-import type { DataURLOptions } from 'rrweb-snapshot';
+import type { DataURLOptions } from '@trail-limited/rrweb-snapshot';
 import type {
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 
 const lastBlobMap: Map<number, string> = new Map();
 const transparentBlobMap: Map<string, string> = new Map();

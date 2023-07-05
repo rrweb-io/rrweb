@@ -8,10 +8,14 @@ import type {
   IWindow,
   DeprecatedMirror,
   textMutation,
-} from '@rrweb/types';
-import type { IMirror, Mirror } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+} from '@trail-limited/rrweb-types';
+import type { IMirror, Mirror } from '@trail-limited/rrweb-snapshot';
+import {
+  isShadowRoot,
+  IGNORED_NODE,
+  classMatchesRegex,
+} from '@trail-limited/rrweb-snapshot';
+import type { RRNode, RRIFrameElement } from '@trail-limited/rrdom';
 
 export function on(
   type: string,

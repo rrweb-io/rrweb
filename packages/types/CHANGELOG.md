@@ -1,5 +1,21 @@
 # @rrweb/types
 
+## 2.0.0-next.1
+
+### Patch Changes
+
+- Prepare for publish
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-snapshot@2.0.0-next.1
+
+## 2.0.0-alpha.9
+
+### Patch Changes
+
+- Updated dependencies [[`d7c72bf`](https://github.com/rrweb-io/rrweb/commit/d7c72bff0724b46a6fa94af455220626a27104fe)]:
+  - rrweb-snapshot@2.0.0-alpha.9
+
 ## 2.0.0-alpha.8
 
 ### Minor Changes
