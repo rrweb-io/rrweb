@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-next.1
+
+### Patch Changes
+
+- Prepare for publish
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-snapshot@2.0.0-next.1
+  - @trail-limited/rrdom@2.0.0-next.1
+  - @trail-limited/rrweb-types@2.0.0-next.1
+
 ## 2.0.0-alpha.9
 
 ### Patch Changes

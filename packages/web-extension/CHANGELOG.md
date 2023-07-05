@@ -1,5 +1,15 @@
 # @rrweb/web-extension
 
+## 2.0.0-next.1
+
+### Patch Changes
+
+- Prepare for publish
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-player@2.0.0-next.1
+  - @trail-limited/rrweb@2.0.0-next.1
+
 ## 2.0.0-alpha.9
 
 ### Patch Changes

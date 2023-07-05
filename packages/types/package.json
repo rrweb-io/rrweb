@@ -1,6 +1,6 @@
 {
   "name": "@trail-limited/rrweb-types",
-  "version": "0.0.0-network-plugin-20230705022935",
+  "version": "2.0.0-next.1",
   "keywords": [
     "rrweb",
     "@rrweb/types"
@@ -43,7 +43,7 @@
     "vite-plugin-dts": "^1.6.6"
   },
   "dependencies": {
-    "@trail-limited/rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
+    "@trail-limited/rrweb-snapshot": "2.0.0-next.1"
   },
   "browserslist": [
     "supports es6-class"

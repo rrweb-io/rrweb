@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-next.1
+
+### Patch Changes
+
+- Prepare for publish
+
 ## 2.0.0-alpha.9
 
 ### Patch Changes

@@ -1,6 +1,9 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "rrweb-io/rrweb" }],
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "Trail-Limited/rrweb" }
+  ],
   "commit": false,
   "fixed": [
     [
@@ -10,12 +13,12 @@
       "@trail-limited/rrdom-nodejs",
       "@trail-limited/rrweb-player",
       "@trail-limited/rrweb-types",
-      "@trail-limited/web-extension",
+      "@trail-limited/rrweb-web-extension",
       "@trail-limited/rrvideo"
     ]
   ],
   "linked": [],
-  "access": "public",
+  "access": "restricted",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "ignore": []
