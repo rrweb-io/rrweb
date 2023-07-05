@@ -5,7 +5,7 @@ import { EventType, eventWithTime } from '@trail-limited/rrweb-types';
 import type { RRwebPlayerOptions } from '@trail-limited/rrweb-player';
 
 const rrwebScriptPath = path.resolve(
-  require.resolve('rrweb-player'),
+  require.resolve('@trail-limited/rrweb-player'),
   '../../dist/index.js',
 );
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@trail-limited/rrweb-types';
 import type { recordOptions } from '../../src/types';
 import { launchPuppeteer, ISuite } from '../utils';
 

@@ -22,7 +22,7 @@ import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
-import { ReplayerEvents } from '@rrweb/types';
+import { ReplayerEvents } from '@trail-limited/rrweb-types';
 
 interface ISuite {
   code: string;

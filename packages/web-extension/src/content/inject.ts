@@ -1,5 +1,5 @@
 import { record } from '@trail-limited/rrweb';
-import type { recordOptions } from 'rrweb/typings/types';
+import type { recordOptions } from '@trail-limited/rrweb/typings/types';
 import type { eventWithTime } from '@trail-limited/rrweb-types';
 import { MessageName, RecordStartedMessage } from '~/types';
 import { isInCrossOriginIFrame } from '~/utils';

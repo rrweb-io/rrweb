@@ -10,7 +10,7 @@ import {
   IncrementalSource,
   styleSheetRuleData,
   selectionData,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import {
   assertSnapshot,
   getServerURL,

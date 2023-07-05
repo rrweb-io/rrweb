@@ -7,7 +7,7 @@ import {
   Optional,
   mouseInteractionData,
   event,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
