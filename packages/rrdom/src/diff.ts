@@ -10,7 +10,7 @@ import type {
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import type {
   IRRCDATASection,
   IRRComment,

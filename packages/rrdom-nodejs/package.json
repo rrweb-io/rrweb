@@ -1,6 +1,6 @@
 {
   "name": "rrdom-nodejs",
-  "version": "2.0.0-alpha.9",
+  "version": "0.0.0-network-plugin-20230705022935",
   "scripts": {
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
@@ -14,6 +14,9 @@
     "rrweb",
     "rrdom-nodejs"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "license": "MIT",
   "main": "lib/rrdom-nodejs.cjs",
   "module": "es/rrdom-nodejs.js",
@@ -48,8 +51,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "rrdom": "^2.0.0-alpha.9",
-    "rrweb-snapshot": "^2.0.0-alpha.9"
+    "rrdom": "0.0.0-network-plugin-20230705022935",
+    "rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
   },
   "browserslist": [
     "supports es6-class"

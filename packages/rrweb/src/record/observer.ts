@@ -46,7 +46,7 @@ import {
   IWindow,
   SelectionRange,
   selectionCallback,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 

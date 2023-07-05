@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { Replayer, unpack } from 'rrweb';
-  import type { eventWithTime } from '@rrweb/types';
+  import type { eventWithTime } from '@trail-limited/rrweb-types';
   import {
     inlineCss,
     openFullscreen,

@@ -4,7 +4,7 @@ import {
   canvasMutationCommand,
   canvasMutationData,
   canvasMutationParam,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
 

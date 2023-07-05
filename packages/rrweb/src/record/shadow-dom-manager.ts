@@ -3,7 +3,7 @@ import type {
   mutationCallBack,
   scrollCallback,
   SamplingStrategy,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import {
   initMutationObserver,
   initScrollObserver,

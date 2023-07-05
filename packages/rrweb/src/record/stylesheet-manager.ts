@@ -5,7 +5,7 @@ import type {
   adoptedStyleSheetParam,
   attributeMutation,
   mutationCallBack,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import { StyleSheetMirror } from '../utils';
 
 export class StylesheetManager {

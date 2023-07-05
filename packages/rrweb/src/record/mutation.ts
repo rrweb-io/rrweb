@@ -20,7 +20,7 @@ import type {
   addedNodeMutation,
   styleAttributeValue,
   Optional,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import {
   isBlocked,
   isAncestorRemoved,

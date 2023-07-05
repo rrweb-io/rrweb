@@ -1,9 +1,6 @@
 {
-  "name": "@rrweb/types",
-  "version": "2.0.0-alpha.9",
-  "publishConfig": {
-    "access": "public"
-  },
+  "name": "@trail-limited/rrweb-types",
+  "version": "0.0.0-network-plugin-20230705022935",
   "keywords": [
     "rrweb",
     "@rrweb/types"
@@ -18,6 +15,9 @@
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
@@ -43,7 +43,7 @@
     "vite-plugin-dts": "^1.6.6"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.9"
+    "rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
   },
   "browserslist": [
     "supports es6-class"

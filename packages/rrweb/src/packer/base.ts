@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@trail-limited/rrweb-types';
 
 export type PackFn = (event: eventWithTime) => string;
 export type UnpackFn = (raw: string) => eventWithTime;

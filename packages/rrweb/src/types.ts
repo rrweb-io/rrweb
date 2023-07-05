@@ -36,7 +36,7 @@ import type {
   styleDeclarationCallback,
   styleSheetRuleCallback,
   viewportResizeCallback,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 
 export type recordOptions<T> = {

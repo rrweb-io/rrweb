@@ -1,10 +1,13 @@
 {
-  "name": "@rrweb/web-extension",
+  "name": "@trail-limited/web-extension",
   "private": true,
-  "version": "2.0.0-alpha.9",
+  "version": "0.0.0-network-plugin-20230705022935",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "dev:chrome": "cross-env TARGET_BROWSER=chrome vite dev",
     "dev:firefox": "cross-env TARGET_BROWSER=firefox vite dev",
@@ -16,7 +19,7 @@
     "prepublish": "npm run pack:chrome && npm run pack:firefox"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.9",
+    "@trail-limited/rrweb-types": "0.0.0-network-plugin-20230705022935",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "@vitejs/plugin-react": "^2.1.0",
@@ -40,7 +43,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.9",
-    "rrweb-player": "^2.0.0-alpha.9"
+    "rrweb": "0.0.0-network-plugin-20230705022935",
+    "rrweb-player": "0.0.0-network-plugin-20230705022935"
   }
 }

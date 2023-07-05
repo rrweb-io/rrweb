@@ -27,7 +27,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';

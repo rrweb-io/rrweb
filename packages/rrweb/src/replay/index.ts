@@ -63,7 +63,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import {
   polyfill,
   queueToResolveTrees,

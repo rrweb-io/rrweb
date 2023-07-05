@@ -5,7 +5,7 @@ import {
   canvasManagerMutationCallback,
   IWindow,
   listenerHandler,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { serializeArgs } from './serialize-args';
 

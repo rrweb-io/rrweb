@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.0.0-alpha.9",
+  "version": "0.0.0-network-plugin-20230705022935",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -16,6 +16,9 @@
     "lint": "yarn eslint src"
   },
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"

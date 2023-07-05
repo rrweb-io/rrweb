@@ -8,9 +8,9 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
-} from '@rrweb/types';
+} from '@trail-limited/rrweb-types';
 import { isBlocked } from '../../../utils';
-import { CanvasContext } from '@rrweb/types';
+import { CanvasContext } from '@trail-limited/rrweb-types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
