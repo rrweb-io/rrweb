@@ -1,5 +1,8 @@
-import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
-import { genId, NodeType } from 'rrweb-snapshot';
+import type {
+  Mirror,
+  serializedNodeWithId,
+} from '@trail-limited/rrweb-snapshot';
+import { genId, NodeType } from '@trail-limited/rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, IncrementalSource } from '@trail-limited/rrweb-types';

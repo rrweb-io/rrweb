@@ -1,5 +1,5 @@
 {
-  "name": "rrweb-player",
+  "name": "@trail-limited/rrweb-player",
   "version": "0.0.0-network-plugin-20230705022935",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "rrweb": "0.0.0-network-plugin-20230705022935"
+    "@trail-limited/rrweb": "0.0.0-network-plugin-20230705022935"
   },
   "scripts": {
     "build": "rollup -c",

@@ -1,5 +1,5 @@
 {
-  "name": "rrweb",
+  "name": "@trail-limited/rrweb",
   "version": "0.0.0-network-plugin-20230705022935",
   "description": "record and replay the web",
   "scripts": {
@@ -90,7 +90,7 @@
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0",
-    "rrdom": "0.0.0-network-plugin-20230705022935",
-    "rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
+    "@trail-limited/rrdom": "0.0.0-network-plugin-20230705022935",
+    "@trail-limited/rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
   }
 }

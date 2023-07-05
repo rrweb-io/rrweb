@@ -1,5 +1,5 @@
 {
-  "name": "rrdom-nodejs",
+  "name": "@trail-limited/rrdom-nodejs",
   "version": "0.0.0-network-plugin-20230705022935",
   "scripts": {
     "dev": "rollup -c -w",
@@ -51,8 +51,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "rrdom": "0.0.0-network-plugin-20230705022935",
-    "rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
+    "@trail-limited/rrdom": "0.0.0-network-plugin-20230705022935",
+    "@trail-limited/rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
   },
   "browserslist": [
     "supports es6-class"

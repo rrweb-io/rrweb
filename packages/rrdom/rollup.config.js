@@ -24,8 +24,8 @@ const basePlugins = [
 const baseConfigs = [
   {
     input: './src/index.ts',
-    name: pkg.name,
-    path: pkg.name,
+    name: 'rrdom',
+    path: 'rrdom',
   },
 ];
 

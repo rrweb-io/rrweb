@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { EventType } from 'rrweb';
-  import type { Replayer } from 'rrweb';
+  import { EventType } from '@trail-limited/rrweb';
+  import type { Replayer } from '@trail-limited/rrweb';
   import type { playerMetaData } from '@trail-limited/rrweb-types';
   import type {
     PlayerMachineState,

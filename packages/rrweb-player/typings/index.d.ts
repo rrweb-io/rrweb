@@ -1,7 +1,7 @@
 import { playerConfig } from 'rrweb/typings/types';
 import { eventWithTime } from '@rrweb/types';
-import { Replayer } from 'rrweb';
-import { Mirror } from 'rrweb-snapshot';
+import { Replayer } from '@trail-limited/rrweb';
+import { Mirror } from '@trail-limited/rrweb-snapshot';
 import { SvelteComponent } from 'svelte';
 
 export type RRwebPlayerOptions = {

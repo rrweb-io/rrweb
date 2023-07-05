@@ -1,5 +1,5 @@
 {
-  "name": "rrweb-snapshot",
+  "name": "@trail-limited/rrweb-snapshot",
   "version": "0.0.0-network-plugin-20230705022935",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {

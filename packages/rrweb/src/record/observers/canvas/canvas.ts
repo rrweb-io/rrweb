@@ -1,4 +1,4 @@
-import type { ICanvas } from 'rrweb-snapshot';
+import type { ICanvas } from '@trail-limited/rrweb-snapshot';
 import type {
   blockClass,
   IWindow,

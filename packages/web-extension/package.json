@@ -43,7 +43,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "0.0.0-network-plugin-20230705022935",
-    "rrweb-player": "0.0.0-network-plugin-20230705022935"
+    "@trail-limited/rrweb": "0.0.0-network-plugin-20230705022935",
+    "@trail-limited/rrweb-player": "0.0.0-network-plugin-20230705022935"
   }
 }

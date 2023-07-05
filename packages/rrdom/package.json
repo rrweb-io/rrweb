@@ -1,5 +1,5 @@
 {
-  "name": "rrdom",
+  "name": "@trail-limited/rrdom",
   "version": "0.0.0-network-plugin-20230705022935",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
@@ -50,6 +50,6 @@
     "ts-jest": "^27.1.3"
   },
   "dependencies": {
-    "rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
+    "@trail-limited/rrweb-snapshot": "0.0.0-network-plugin-20230705022935"
   }
 }

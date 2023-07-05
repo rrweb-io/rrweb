@@ -13,7 +13,7 @@ import {
 } from './utils';
 import type { recordOptions } from '../src/types';
 import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { visitSnapshot, NodeType } from '@trail-limited/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   jest.setTimeout(10_000);

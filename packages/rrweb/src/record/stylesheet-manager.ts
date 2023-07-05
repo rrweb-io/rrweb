@@ -1,5 +1,8 @@
-import type { elementNode, serializedNodeWithId } from 'rrweb-snapshot';
-import { getCssRuleString } from 'rrweb-snapshot';
+import type {
+  elementNode,
+  serializedNodeWithId,
+} from '@trail-limited/rrweb-snapshot';
+import { getCssRuleString } from '@trail-limited/rrweb-snapshot';
 import type {
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
