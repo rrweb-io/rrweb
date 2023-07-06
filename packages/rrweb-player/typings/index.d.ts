@@ -1,4 +1,4 @@
-import { playerConfig } from 'rrweb/typings/types';
+import { playerConfig } from '@trail-limited/rrweb/typings/types';
 import { eventWithTime } from '@trail-limited/rrweb-types';
 import { Replayer } from '@trail-limited/rrweb';
 import { Mirror } from '@trail-limited/rrweb-snapshot';

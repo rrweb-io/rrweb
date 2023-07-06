@@ -5,7 +5,7 @@
   import type {
     PlayerMachineState,
     SpeedMachineState,
-  } from 'rrweb/typings/replay/machine';
+  } from '@trail-limited/rrweb/typings/replay/machine';
   import {
     onMount,
     onDestroy,
