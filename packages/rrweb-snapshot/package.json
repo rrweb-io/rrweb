@@ -1,6 +1,6 @@
 {
   "name": "@trail-limited/rrweb-snapshot",
-  "version": "2.0.0-next.4",
+  "version": "2.0.0-next.5",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",

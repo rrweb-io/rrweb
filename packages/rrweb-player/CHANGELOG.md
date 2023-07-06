@@ -1,5 +1,14 @@
 # rrweb-player
 
+## 2.0.0-next.5
+
+### Patch Changes
+
+- [#11](https://github.com/Trail-Limited/rrweb/pull/11) [`1e540b8`](https://github.com/Trail-Limited/rrweb/commit/1e540b8b29fdae8223f8bc99371339418490c83e) Thanks [@trailbillylam](https://github.com/trailbillylam)! - Fix replayer css
+
+- Updated dependencies []:
+  - @trail-limited/rrweb@2.0.0-next.5
+
 ## 2.0.0-next.4
 
 ### Patch Changes

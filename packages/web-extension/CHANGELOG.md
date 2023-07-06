@@ -1,5 +1,13 @@
 # @rrweb/web-extension
 
+## 2.0.0-next.5
+
+### Patch Changes
+
+- Updated dependencies [[`1e540b8`](https://github.com/Trail-Limited/rrweb/commit/1e540b8b29fdae8223f8bc99371339418490c83e)]:
+  - @trail-limited/rrweb-player@2.0.0-next.5
+  - @trail-limited/rrweb@2.0.0-next.5
+
 ## 2.0.0-next.4
 
 ### Patch Changes
