@@ -378,9 +378,10 @@ export function initScrollObserver({
   return on('scroll', updatePosition, doc);
 }
 
-function initViewportResizeObserver({
-  viewportResizeCb,
-}: observerParam): listenerHandler {
+function initViewportResizeObserver(
+  { viewportResizeCb }: observerParam,
+  { win }: { win: IWindow },
+): listenerHandler {
   let lastH = -1;
   let lastW = -1;
   const updateDimension = callbackWrapper(
@@ -400,7 +401,7 @@ function initViewportResizeObserver({
       200,
     ),
   );
-  return on('resize', updateDimension, window);
+  return on('resize', updateDimension, win);
 }
 
 function wrapEventWithUserTriggeredFlag(
@@ -1035,6 +1036,7 @@ function initMediaInteractionObserver({
   blockSelector,
   mirror,
   sampling,
+  doc,
 }: observerParam): listenerHandler {
   const handler = callbackWrapper((type: MediaInteractions) =>
     throttle(
@@ -1061,11 +1063,11 @@ function initMediaInteractionObserver({
     ),
   );
   const handlers = [
-    on('play', handler(MediaInteractions.Play)),
-    on('pause', handler(MediaInteractions.Pause)),
-    on('seeked', handler(MediaInteractions.Seeked)),
-    on('volumechange', handler(MediaInteractions.VolumeChange)),
-    on('ratechange', handler(MediaInteractions.RateChange)),
+    on('play', handler(MediaInteractions.Play), doc),
+    on('pause', handler(MediaInteractions.Pause), doc),
+    on('seeked', handler(MediaInteractions.Seeked), doc),
+    on('volumechange', handler(MediaInteractions.VolumeChange), doc),
+    on('ratechange', handler(MediaInteractions.RateChange), doc),
   ];
   return callbackWrapper(() => {
     handlers.forEach((h) => h());
@@ -1279,7 +1281,9 @@ export function initObservers(
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
   const scrollHandler = initScrollObserver(o);
-  const viewportResizeHandler = initViewportResizeObserver(o);
+  const viewportResizeHandler = initViewportResizeObserver(o, {
+    win: currentWindow,
+  });
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
