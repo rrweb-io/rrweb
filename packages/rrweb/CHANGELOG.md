@@ -1,5 +1,14 @@
 # rrweb
 
+## 2.0.0-next.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-snapshot@2.0.0-next.4
+  - @trail-limited/rrdom@2.0.0-next.4
+  - @trail-limited/rrweb-types@2.0.0-next.4
+
 ## 2.0.0-next.3
 
 ### Minor Changes

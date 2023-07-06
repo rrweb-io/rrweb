@@ -1,5 +1,14 @@
 # rrweb-player
 
+## 2.0.0-next.4
+
+### Patch Changes
+
+- [#9](https://github.com/Trail-Limited/rrweb/pull/9) [`9f57846`](https://github.com/Trail-Limited/rrweb/commit/9f57846d173a110b733f007da80cf3997ed5f34c) Thanks [@trailbillylam](https://github.com/trailbillylam)! - Fix replayer typing
+
+- Updated dependencies []:
+  - @trail-limited/rrweb@2.0.0-next.4
+
 ## 2.0.0-next.3
 
 ### Patch Changes

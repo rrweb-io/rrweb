@@ -1,13 +1,13 @@
 {
   "name": "@trail-limited/rrweb-player",
-  "version": "2.0.0-next.3",
+  "version": "2.0.0-next.4",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@trail-limited/rrweb-types": "2.0.0-next.3",
+    "@trail-limited/rrweb-types": "2.0.0-next.4",
     "@types/offscreencanvas": "^2019.6.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@trail-limited/rrweb": "2.0.0-next.3"
+    "@trail-limited/rrweb": "2.0.0-next.4"
   },
   "scripts": {
     "build": "rollup -c",

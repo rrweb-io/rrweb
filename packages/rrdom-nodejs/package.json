@@ -1,6 +1,6 @@
 {
   "name": "@trail-limited/rrdom-nodejs",
-  "version": "2.0.0-next.3",
+  "version": "2.0.0-next.4",
   "scripts": {
     "dev": "rollup -c -w",
     "bundle": "rollup --config",
@@ -51,8 +51,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "@trail-limited/rrdom": "2.0.0-next.3",
-    "@trail-limited/rrweb-snapshot": "2.0.0-next.3"
+    "@trail-limited/rrdom": "2.0.0-next.4",
+    "@trail-limited/rrweb-snapshot": "2.0.0-next.4"
   },
   "browserslist": [
     "supports es6-class"
