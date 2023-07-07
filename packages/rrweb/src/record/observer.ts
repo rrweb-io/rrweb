@@ -76,10 +76,11 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
     } else if ('path' in event && event.path.length) {
       return event.path[0];
     }
-    return event.target;
   } catch {
-    return event.target;
+    // fallback to `event.target` below
   }
+
+  return event && event.target;
 }
 
 export function initMutationObserver(
