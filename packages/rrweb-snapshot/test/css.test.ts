@@ -1,5 +1,5 @@
 import { parse, Rule, Media } from '../src/css';
-import { validateStringifiedCssRule } from './../src/snapshot';
+import { validateStringifiedCssRule } from './../src/utils';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
