@@ -54,7 +54,9 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
 function stringifyStyleSheet(sheet: CSSStyleSheet): string {
   return sheet.cssRules
     ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText ? validateStringifiedCssRule(rule.cssText) : '')
+        .map((rule) =>
+          rule.cssText ? validateStringifiedCssRule(rule.cssText) : '',
+        )
         .join('')
     : '';
 }

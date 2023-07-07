@@ -1,5 +1,5 @@
 import { parse, Rule, Media } from '../src/css';
-import {validateStringifiedCssRule} from './../src/snapshot';
+import { validateStringifiedCssRule } from './../src/snapshot';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
@@ -115,7 +115,9 @@ describe('css parser', () => {
     const out2 = validateStringifiedCssRule('[data-foo:other] { color: red; }');
     expect(out2).toEqual('[data-foo\\:other] { color: red; }');
 
-    const out3 = validateStringifiedCssRule('[data-aa\\:other] { color: red; }');
+    const out3 = validateStringifiedCssRule(
+      '[data-aa\\:other] { color: red; }',
+    );
     expect(out3).toEqual('[data-aa\\:other] { color: red; }');
-  })
+  });
 });
