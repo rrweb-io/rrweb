@@ -1311,8 +1311,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
                                   \\"type\\": \\"radio\\",
-                                  \\"name\\": \\"toggle\\",
-                                  \\"value\\": \\"on\\"
+                                  \\"name\\": \\"toggle\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -1351,7 +1350,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 \\"attributes\\": {
                                   \\"type\\": \\"radio\\",
                                   \\"name\\": \\"toggle\\",
-                                  \\"value\\": \\"off\\",
+                                  \\"value\\": \\"radio-on\\",
                                   \\"checked\\": true
                                 },
                                 \\"childNodes\\": [],
@@ -1377,9 +1376,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"label\\",
-                            \\"attributes\\": {
-                              \\"for\\": \\"checkbox\\"
-                            },
+                            \\"attributes\\": {},
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
@@ -1391,7 +1388,9 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"type\\": \\"checkbox\\"
+                                  \\"type\\": \\"radio\\",
+                                  \\"name\\": \\"toggle\\",
+                                  \\"value\\": \\"radio-off\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -1417,7 +1416,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                             \\"type\\": 2,
                             \\"tagName\\": \\"label\\",
                             \\"attributes\\": {
-                              \\"for\\": \\"textarea\\"
+                              \\"for\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [
                               {
@@ -1428,13 +1427,9 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               },
                               {
                                 \\"type\\": 2,
-                                \\"tagName\\": \\"textarea\\",
+                                \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"name\\": \\"\\",
-                                  \\"id\\": \\"\\",
-                                  \\"cols\\": \\"30\\",
-                                  \\"rows\\": \\"10\\",
-                                  \\"data-unmask-example\\": \\"true\\"
+                                  \\"type\\": \\"checkbox\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -1459,9 +1454,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"label\\",
-                            \\"attributes\\": {
-                              \\"for\\": \\"select\\"
-                            },
+                            \\"attributes\\": {},
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
@@ -1471,67 +1464,13 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                               },
                               {
                                 \\"type\\": 2,
-                                \\"tagName\\": \\"select\\",
+                                \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"name\\": \\"\\",
-                                  \\"id\\": \\"\\",
-                                  \\"value\\": \\"1\\"
+                                  \\"type\\": \\"checkbox\\",
+                                  \\"value\\": \\"check-on\\",
+                                  \\"checked\\": true
                                 },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"\\\\n          \\",
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 60
-                                  },
-                                  {
-                                    \\"type\\": 2,
-                                    \\"tagName\\": \\"option\\",
-                                    \\"attributes\\": {
-                                      \\"value\\": \\"1\\",
-                                      \\"selected\\": true
-                                    },
-                                    \\"childNodes\\": [
-                                      {
-                                        \\"type\\": 3,
-                                        \\"textContent\\": \\"1\\",
-                                        \\"rootId\\": 11,
-                                        \\"id\\": 62
-                                      }
-                                    ],
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 61
-                                  },
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"\\\\n          \\",
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 63
-                                  },
-                                  {
-                                    \\"type\\": 2,
-                                    \\"tagName\\": \\"option\\",
-                                    \\"attributes\\": {
-                                      \\"value\\": \\"2\\"
-                                    },
-                                    \\"childNodes\\": [
-                                      {
-                                        \\"type\\": 3,
-                                        \\"textContent\\": \\"2\\",
-                                        \\"rootId\\": 11,
-                                        \\"id\\": 65
-                                      }
-                                    ],
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 64
-                                  },
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"\\\\n        \\",
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 66
-                                  }
-                                ],
+                                \\"childNodes\\": [],
                                 \\"rootId\\": 11,
                                 \\"id\\": 59
                               },
@@ -1539,7 +1478,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
                                 \\"rootId\\": 11,
-                                \\"id\\": 67
+                                \\"id\\": 60
                               }
                             ],
                             \\"rootId\\": 11,
@@ -1549,7 +1488,145 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
                             \\"rootId\\": 11,
-                            \\"id\\": 68
+                            \\"id\\": 61
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"textarea\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 63
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"textarea\\",
+                                \\"attributes\\": {
+                                  \\"name\\": \\"\\",
+                                  \\"id\\": \\"\\",
+                                  \\"cols\\": \\"30\\",
+                                  \\"rows\\": \\"10\\",
+                                  \\"data-unmask-example\\": \\"true\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"rootId\\": 11,
+                                \\"id\\": 64
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 65
+                              }
+                            ],
+                            \\"rootId\\": 11,
+                            \\"id\\": 62
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 66
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"select\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 68
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"select\\",
+                                \\"attributes\\": {
+                                  \\"name\\": \\"\\",
+                                  \\"id\\": \\"\\",
+                                  \\"value\\": \\"AA\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 70
+                                  },
+                                  {
+                                    \\"type\\": 2,
+                                    \\"tagName\\": \\"option\\",
+                                    \\"attributes\\": {
+                                      \\"value\\": \\"AA\\",
+                                      \\"selected\\": true
+                                    },
+                                    \\"childNodes\\": [
+                                      {
+                                        \\"type\\": 3,
+                                        \\"textContent\\": \\"Option A\\",
+                                        \\"rootId\\": 11,
+                                        \\"id\\": 72
+                                      }
+                                    ],
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 71
+                                  },
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 73
+                                  },
+                                  {
+                                    \\"type\\": 2,
+                                    \\"tagName\\": \\"option\\",
+                                    \\"attributes\\": {
+                                      \\"value\\": \\"BB\\"
+                                    },
+                                    \\"childNodes\\": [
+                                      {
+                                        \\"type\\": 3,
+                                        \\"textContent\\": \\"Opt. B\\",
+                                        \\"rootId\\": 11,
+                                        \\"id\\": 75
+                                      }
+                                    ],
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 74
+                                  },
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n        \\",
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 76
+                                  }
+                                ],
+                                \\"rootId\\": 11,
+                                \\"id\\": 69
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 77
+                              }
+                            ],
+                            \\"rootId\\": 11,
+                            \\"id\\": 67
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 78
                           },
                           {
                             \\"type\\": 2,
@@ -1562,7 +1639,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
                                 \\"rootId\\": 11,
-                                \\"id\\": 70
+                                \\"id\\": 80
                               },
                               {
                                 \\"type\\": 2,
@@ -1572,23 +1649,23 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
-                                \\"id\\": 71
+                                \\"id\\": 81
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
                                 \\"rootId\\": 11,
-                                \\"id\\": 72
+                                \\"id\\": 82
                               }
                             ],
                             \\"rootId\\": 11,
-                            \\"id\\": 69
+                            \\"id\\": 79
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
                             \\"rootId\\": 11,
-                            \\"id\\": 73
+                            \\"id\\": 83
                           }
                         ],
                         \\"rootId\\": 11,
@@ -1598,7 +1675,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
                         \\"rootId\\": 11,
-                        \\"id\\": 74
+                        \\"id\\": 84
                       }
                     ],
                     \\"rootId\\": 11,
@@ -1708,7 +1785,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"id\\": 39
     }
@@ -1717,7 +1794,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"off\\",
+      \\"text\\": \\"radio-on\\",
       \\"isChecked\\": false,
       \\"id\\": 44
     }
@@ -1725,9 +1802,18 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"radio-off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 49
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 49
+      \\"id\\": 54
     }
   },
   {
@@ -1743,7 +1829,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 49
+      \\"id\\": 54
     }
   },
   {
@@ -1751,7 +1837,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 49
+      \\"id\\": 54
     }
   },
   {
@@ -1759,7 +1845,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 49,
+      \\"id\\": 54,
       \\"pointerType\\": 0
     }
   },
@@ -1767,9 +1853,9 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
-      \\"id\\": 49
+      \\"id\\": 54
     }
   },
   {
@@ -1777,7 +1863,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 49
+      \\"id\\": 54
     }
   },
   {
@@ -1785,7 +1871,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1794,7 +1880,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1803,7 +1889,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1812,7 +1898,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1821,7 +1907,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1830,7 +1916,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1839,7 +1925,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1848,7 +1934,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1857,7 +1943,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1865,7 +1951,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 71
+      \\"id\\": 81
     }
   },
   {
@@ -1873,7 +1959,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1882,7 +1968,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1891,7 +1977,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1900,7 +1986,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1909,7 +1995,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1918,7 +2004,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1927,7 +2013,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1936,7 +2022,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1945,7 +2031,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1954,7 +2040,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1963,7 +2049,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1972,7 +2058,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1981,7 +2067,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
@@ -1990,16 +2076,16 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
       \\"source\\": 5,
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
-      \\"id\\": 54
+      \\"id\\": 64
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"1\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   }
 ]"
@@ -2308,8 +2394,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
                                   \\"type\\": \\"radio\\",
-                                  \\"name\\": \\"toggle\\",
-                                  \\"value\\": \\"on\\"
+                                  \\"name\\": \\"toggle\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -2348,7 +2433,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 \\"attributes\\": {
                                   \\"type\\": \\"radio\\",
                                   \\"name\\": \\"toggle\\",
-                                  \\"value\\": \\"off\\",
+                                  \\"value\\": \\"radio-on\\",
                                   \\"checked\\": true
                                 },
                                 \\"childNodes\\": [],
@@ -2374,9 +2459,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"label\\",
-                            \\"attributes\\": {
-                              \\"for\\": \\"checkbox\\"
-                            },
+                            \\"attributes\\": {},
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
@@ -2388,7 +2471,9 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"type\\": \\"checkbox\\"
+                                  \\"type\\": \\"radio\\",
+                                  \\"name\\": \\"toggle\\",
+                                  \\"value\\": \\"radio-off\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -2414,7 +2499,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                             \\"type\\": 2,
                             \\"tagName\\": \\"label\\",
                             \\"attributes\\": {
-                              \\"for\\": \\"textarea\\"
+                              \\"for\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [
                               {
@@ -2425,13 +2510,9 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               },
                               {
                                 \\"type\\": 2,
-                                \\"tagName\\": \\"textarea\\",
+                                \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"name\\": \\"\\",
-                                  \\"id\\": \\"\\",
-                                  \\"cols\\": \\"30\\",
-                                  \\"rows\\": \\"10\\",
-                                  \\"data-unmask-example\\": \\"true\\"
+                                  \\"type\\": \\"checkbox\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -2456,9 +2537,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           {
                             \\"type\\": 2,
                             \\"tagName\\": \\"label\\",
-                            \\"attributes\\": {
-                              \\"for\\": \\"select\\"
-                            },
+                            \\"attributes\\": {},
                             \\"childNodes\\": [
                               {
                                 \\"type\\": 3,
@@ -2468,67 +2547,13 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                               },
                               {
                                 \\"type\\": 2,
-                                \\"tagName\\": \\"select\\",
+                                \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"name\\": \\"\\",
-                                  \\"id\\": \\"\\",
-                                  \\"value\\": \\"1\\"
+                                  \\"type\\": \\"checkbox\\",
+                                  \\"value\\": \\"check-on\\",
+                                  \\"checked\\": true
                                 },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"\\\\n          \\",
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 60
-                                  },
-                                  {
-                                    \\"type\\": 2,
-                                    \\"tagName\\": \\"option\\",
-                                    \\"attributes\\": {
-                                      \\"value\\": \\"1\\",
-                                      \\"selected\\": true
-                                    },
-                                    \\"childNodes\\": [
-                                      {
-                                        \\"type\\": 3,
-                                        \\"textContent\\": \\"1\\",
-                                        \\"rootId\\": 11,
-                                        \\"id\\": 62
-                                      }
-                                    ],
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 61
-                                  },
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"\\\\n          \\",
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 63
-                                  },
-                                  {
-                                    \\"type\\": 2,
-                                    \\"tagName\\": \\"option\\",
-                                    \\"attributes\\": {
-                                      \\"value\\": \\"2\\"
-                                    },
-                                    \\"childNodes\\": [
-                                      {
-                                        \\"type\\": 3,
-                                        \\"textContent\\": \\"2\\",
-                                        \\"rootId\\": 11,
-                                        \\"id\\": 65
-                                      }
-                                    ],
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 64
-                                  },
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"\\\\n        \\",
-                                    \\"rootId\\": 11,
-                                    \\"id\\": 66
-                                  }
-                                ],
+                                \\"childNodes\\": [],
                                 \\"rootId\\": 11,
                                 \\"id\\": 59
                               },
@@ -2536,7 +2561,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
                                 \\"rootId\\": 11,
-                                \\"id\\": 67
+                                \\"id\\": 60
                               }
                             ],
                             \\"rootId\\": 11,
@@ -2546,7 +2571,145 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
                             \\"rootId\\": 11,
-                            \\"id\\": 68
+                            \\"id\\": 61
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"textarea\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 63
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"textarea\\",
+                                \\"attributes\\": {
+                                  \\"name\\": \\"\\",
+                                  \\"id\\": \\"\\",
+                                  \\"cols\\": \\"30\\",
+                                  \\"rows\\": \\"10\\",
+                                  \\"data-unmask-example\\": \\"true\\"
+                                },
+                                \\"childNodes\\": [],
+                                \\"rootId\\": 11,
+                                \\"id\\": 64
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 65
+                              }
+                            ],
+                            \\"rootId\\": 11,
+                            \\"id\\": 62
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 66
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"label\\",
+                            \\"attributes\\": {
+                              \\"for\\": \\"select\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 68
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"select\\",
+                                \\"attributes\\": {
+                                  \\"name\\": \\"\\",
+                                  \\"id\\": \\"\\",
+                                  \\"value\\": \\"AA\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 70
+                                  },
+                                  {
+                                    \\"type\\": 2,
+                                    \\"tagName\\": \\"option\\",
+                                    \\"attributes\\": {
+                                      \\"value\\": \\"AA\\",
+                                      \\"selected\\": true
+                                    },
+                                    \\"childNodes\\": [
+                                      {
+                                        \\"type\\": 3,
+                                        \\"textContent\\": \\"Option A\\",
+                                        \\"rootId\\": 11,
+                                        \\"id\\": 72
+                                      }
+                                    ],
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 71
+                                  },
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n          \\",
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 73
+                                  },
+                                  {
+                                    \\"type\\": 2,
+                                    \\"tagName\\": \\"option\\",
+                                    \\"attributes\\": {
+                                      \\"value\\": \\"BB\\"
+                                    },
+                                    \\"childNodes\\": [
+                                      {
+                                        \\"type\\": 3,
+                                        \\"textContent\\": \\"Opt. B\\",
+                                        \\"rootId\\": 11,
+                                        \\"id\\": 75
+                                      }
+                                    ],
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 74
+                                  },
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"\\\\n        \\",
+                                    \\"rootId\\": 11,
+                                    \\"id\\": 76
+                                  }
+                                ],
+                                \\"rootId\\": 11,
+                                \\"id\\": 69
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n      \\",
+                                \\"rootId\\": 11,
+                                \\"id\\": 77
+                              }
+                            ],
+                            \\"rootId\\": 11,
+                            \\"id\\": 67
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 78
                           },
                           {
                             \\"type\\": 2,
@@ -2559,7 +2722,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n        \\",
                                 \\"rootId\\": 11,
-                                \\"id\\": 70
+                                \\"id\\": 80
                               },
                               {
                                 \\"type\\": 2,
@@ -2569,23 +2732,23 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
-                                \\"id\\": 71
+                                \\"id\\": 81
                               },
                               {
                                 \\"type\\": 3,
                                 \\"textContent\\": \\"\\\\n      \\",
                                 \\"rootId\\": 11,
-                                \\"id\\": 72
+                                \\"id\\": 82
                               }
                             ],
                             \\"rootId\\": 11,
-                            \\"id\\": 69
+                            \\"id\\": 79
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n    \\",
                             \\"rootId\\": 11,
-                            \\"id\\": 73
+                            \\"id\\": 83
                           }
                         ],
                         \\"rootId\\": 11,
@@ -2595,7 +2758,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
                         \\"rootId\\": 11,
-                        \\"id\\": 74
+                        \\"id\\": 84
                       }
                     ],
                     \\"rootId\\": 11,

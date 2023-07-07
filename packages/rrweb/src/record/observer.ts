@@ -3,7 +3,9 @@ import {
   maskInputValue,
   Mirror,
   getInputType,
+  getInputValue,
   toLowerCase,
+  toUpperCase,
 } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
@@ -431,15 +433,12 @@ function initInputObserver({
   function eventHandler(event: Event) {
     let target = getEventTarget(event) as HTMLElement | null;
     const userTriggered = event.isTrusted;
-    const tagName = target && target.tagName;
-
+    const tagName = target && toUpperCase((target as Element).tagName);
     /**
      * If a site changes the value 'selected' of an option element, the value of its parent element, usually a select element, will be changed as well.
      * We can treat this change as a value change of the select element the current target belongs to.
      */
-    if (target && tagName === 'OPTION') {
-      target = target.parentElement;
-    }
+    if (tagName === 'OPTION') target = (target as Element).parentElement;
     if (
       !target ||
       !tagName ||
@@ -449,18 +448,25 @@ function initInputObserver({
       return;
     }
 
-    if (target.classList.contains(ignoreClass)) {
+    const el = target as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement;
+
+    if (el.classList.contains(ignoreClass)) {
       return;
     }
-    let text = (target as HTMLInputElement).value;
+
+    const type = getInputType(target);
+    let text = getInputValue(el, tagName, type);
     let isChecked = false;
-    const type: Lowercase<string> = getInputType(target) || '';
 
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
-    } else if (
+    }
+    if (
       maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-      maskInputOptions[type as keyof MaskInputOptions]
+      (type && maskInputOptions[type as keyof MaskInputOptions])
     ) {
       text = maskInputValue({
         element: target,
@@ -486,11 +492,19 @@ function initInputObserver({
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
+            const text = maskInputValue({
+              element: el as HTMLInputElement,
+              maskInputOptions,
+              tagName,
+              type,
+              value: getInputValue(el as HTMLInputElement, tagName, type),
+              maskInputFn,
+            });
             cbWithDedup(
               el,
               callbackWrapper(wrapEventWithUserTriggeredFlag)(
                 {
-                  text: (el as HTMLInputElement).value,
+                  text,
                   isChecked: !isChecked,
                   userTriggered: false,
                 },
