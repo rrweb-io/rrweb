@@ -76,6 +76,17 @@ export function getCssRuleString(rule: CSSRule): string {
       // ignore
     }
   }
+  return validateStringifiedCssRule(cssStringified);
+}
+
+export function validateStringifiedCssRule(cssStringified: string): string {
+  // Safari does not escape selectors with : properly
+  if (cssStringified.includes(':')) {
+    // Replace e.g. [aa:bb] with [aa\\:bb]
+    const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
+    return cssStringified.replace(regex, '$1\\$2');
+  }
+
   return cssStringified;
 }
 
