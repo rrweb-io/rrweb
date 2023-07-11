@@ -1,5 +1,12 @@
 # rrdom
 
+## 2.0.0-next.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-snapshot@2.0.0-next.6
+
 ## 2.0.0-next.5
 
 ### Patch Changes

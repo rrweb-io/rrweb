@@ -13,6 +13,7 @@
     "@trail-limited/rrvideo": "2.0.0-next.0"
   },
   "changesets": [
+    "brown-pumas-greet",
     "cuddly-llamas-burn",
     "forty-elephants-relate",
     "serious-pugs-decide",

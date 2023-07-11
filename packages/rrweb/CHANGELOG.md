@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-next.6
+
+### Patch Changes
+
+- [#13](https://github.com/Trail-Limited/rrweb/pull/13) [`0293ae9`](https://github.com/Trail-Limited/rrweb/commit/0293ae955e221c326c9e078252bd4bcebdd0ac4b) Thanks [@trailbillylam](https://github.com/trailbillylam)! - Fix conflict with msw
+
+- Updated dependencies []:
+  - @trail-limited/rrweb-snapshot@2.0.0-next.6
+  - @trail-limited/rrdom@2.0.0-next.6
+  - @trail-limited/rrweb-types@2.0.0-next.6
+
 ## 2.0.0-next.5
 
 ### Patch Changes
