@@ -238,6 +238,11 @@ async function getRequestPerformanceEntry(
   return performanceEntry;
 }
 
+// We need to store the original send function in case it is overwritten
+// by a library such as MSW.
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const originalSend = window.XMLHttpRequest.prototype.send;
+
 function initXhrObserver(
   cb: networkCallback,
   win: IWindow,
@@ -256,6 +261,7 @@ function initXhrObserver(
     'response',
     options.recordHeaders,
   );
+
   const restorePatch = patch(
     win.XMLHttpRequest.prototype,
     'open',
@@ -281,7 +287,7 @@ function initXhrObserver(
         if (recordRequestHeaders) {
           networkRequest.requestHeaders = requestHeaders;
         }
-        const originalSend = xhr.send.bind(xhr);
+        const send = originalSend.bind(xhr);
         xhr.send = (body) => {
           if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
             if (body === undefined || body === null) {
@@ -291,7 +297,7 @@ function initXhrObserver(
             }
           }
           after = win.performance.now();
-          return originalSend(body);
+          return send(body);
         };
         xhr.addEventListener('readystatechange', () => {
           if (xhr.readyState !== xhr.DONE) {
