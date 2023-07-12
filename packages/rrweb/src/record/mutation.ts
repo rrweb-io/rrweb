@@ -175,6 +175,7 @@ export default class MutationBuffer {
   private maskTextSelector: observerParam['maskTextSelector'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
   private maskInputOptions: observerParam['maskInputOptions'];
+  private maskAttributeFn: observerParam['maskAttributeFn'];
   private maskTextFn: observerParam['maskTextFn'];
   private maskInputFn: observerParam['maskInputFn'];
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
@@ -200,6 +201,7 @@ export default class MutationBuffer {
         'maskTextSelector',
         'inlineStylesheet',
         'maskInputOptions',
+        'maskAttributeFn',
         'maskTextFn',
         'maskInputFn',
         'keepIframeSrcFn',
@@ -303,6 +305,7 @@ export default class MutationBuffer {
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
+        maskAttributeFn: this.maskAttributeFn,
         maskTextFn: this.maskTextFn,
         maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
@@ -601,6 +604,8 @@ export default class MutationBuffer {
             toLowerCase(target.tagName),
             toLowerCase(attributeName),
             value,
+            target,
+            this.maskAttributeFn,
           );
         }
         break;

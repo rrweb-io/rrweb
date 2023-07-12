@@ -1273,7 +1273,9 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"type\\": \\"text\\"
+                                  \\"type\\": \\"text\\",
+                                  \\"title\\": \\"title text\\",
+                                  \\"placeholder\\": \\"placeholder text\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -2270,7 +2272,9 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"type\\": \\"text\\"
+                                  \\"type\\": \\"text\\",
+                                  \\"title\\": \\"title text\\",
+                                  \\"placeholder\\": \\"placeholder text\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
