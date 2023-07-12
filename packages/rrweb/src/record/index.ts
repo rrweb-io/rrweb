@@ -79,6 +79,7 @@ function record<T = eventWithTime>(
     mousemoveWait,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    recordSafeCrossOrigin = '*',
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -208,7 +209,7 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, '*');
+      window.parent.postMessage(message, recordSafeCrossOrigin);
     }
 
     if (e.type === EventType.FullSnapshot) {
