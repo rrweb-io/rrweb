@@ -22,7 +22,7 @@
     "@vitejs/plugin-react": "^2.1.0",
     "cross-env": "^7.0.3",
     "type-fest": "^2.19.0",
-    "vite": "^3.1.8",
+    "vite": "^4.1.1",
     "vite-plugin-web-extension": "^1.4.5",
     "vite-plugin-zip-pack": "^1.0.5",
     "webextension-polyfill": "^0.10.0"

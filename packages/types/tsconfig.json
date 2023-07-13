@@ -12,8 +12,7 @@
     "outDir": "build",
     "lib": ["es6", "dom"],
     "skipLibCheck": true,
-    "declaration": true,
-    "importsNotUsedAsValues": "error"
+    "declaration": true
   },
   "compileOnSave": true,
   "exclude": ["test"],

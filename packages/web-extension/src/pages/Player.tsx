@@ -34,6 +34,7 @@ export default function Player() {
           'https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css';
         linkEl.rel = 'stylesheet';
         document.head.appendChild(linkEl);
+        console.log(`var events = ${JSON.stringify(events, null, 2)}`);
         playerRef.current = new Replayer({
           target: playerElRef.current as HTMLElement,
           props: {
