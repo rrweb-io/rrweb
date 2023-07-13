@@ -22,6 +22,7 @@ import {
   getCssRulesString,
   getInputType,
   toLowerCase,
+  validateStringifiedCssRule,
 } from './utils';
 
 let _id = 1;
@@ -53,7 +54,9 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
 function stringifyStyleSheet(sheet: CSSStyleSheet): string {
   return sheet.cssRules
     ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
+        .map((rule) =>
+          rule.cssText ? validateStringifiedCssRule(rule.cssText) : '',
+        )
         .join('')
     : '';
 }
