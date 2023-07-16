@@ -562,7 +562,10 @@ export default class MutationBuffer {
           target.setAttribute('data-rr-is-password', 'true');
         }
 
-        if (attributeName === 'style') {
+        if (attributeName === 'style' &&
+            (value as string).indexOf('var(') === -1 &&
+            typeof item.attributes.style !== 'string'
+           ) {
           const old = unattachedDoc.createElement('span');
           if (m.oldValue) {
             old.setAttribute('style', m.oldValue);

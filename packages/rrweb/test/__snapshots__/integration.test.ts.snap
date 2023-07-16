@@ -3391,6 +3391,134 @@ exports[`record integration tests can record node mutations 1`] = `
 ]"
 `;
 
+exports[`record integration tests can record style changes compactly and preserve css var() functions 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"background: var(--mystery)\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"background-color\\": \\"black\\",
+              \\"background-image\\": false,
+              \\"background-position-x\\": false,
+              \\"background-position-y\\": false,
+              \\"background-size\\": false,
+              \\"background-repeat-x\\": false,
+              \\"background-repeat-y\\": false,
+              \\"background-attachment\\": false,
+              \\"background-origin\\": false,
+              \\"background-clip\\": false
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  }
+]"
+`;
+
 exports[`record integration tests can use maskInputOptions to configure which type of inputs should be masked 1`] = `
 "[
   {

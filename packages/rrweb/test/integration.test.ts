@@ -209,6 +209,29 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can record style changes compactly and preserve css var() functions', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'), {
+      waitUntil: 'networkidle0',
+    });
+
+    // goal here is to ensure var(--mystery) ends up in the mutations
+    await page.evaluate(
+      'document.body.setAttribute("style", "background: var(--mystery)")',
+    );
+    await page.waitForTimeout(50);
+    // and here that we can revert to { background: false, background-color: 'black' } format (assuming we've used string format for above)
+    await page.evaluate(
+      'document.body.setAttribute("style", "background-color: black")',
+    );
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('can freeze mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
