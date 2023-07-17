@@ -1797,8 +1797,7 @@ exports[`record integration tests can record form interactions 1`] = `
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
-                              \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"on\\"
+                              \\"name\\": \\"toggle\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
@@ -1832,7 +1831,7 @@ exports[`record integration tests can record form interactions 1`] = `
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
                               \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"off\\",
+                              \\"value\\": \\"radio-on\\",
                               \\"checked\\": true
                             },
                             \\"childNodes\\": [],
@@ -1854,9 +1853,7 @@ exports[`record integration tests can record form interactions 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"checkbox\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -1867,7 +1864,9 @@ exports[`record integration tests can record form interactions 1`] = `
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"checkbox\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"radio-off\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 37
@@ -1889,7 +1888,7 @@ exports[`record integration tests can record form interactions 1`] = `
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
                         \\"attributes\\": {
-                          \\"for\\": \\"textarea\\"
+                          \\"for\\": \\"checkbox\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -1899,13 +1898,9 @@ exports[`record integration tests can record form interactions 1`] = `
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"textarea\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"cols\\": \\"30\\",
-                              \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -1926,9 +1921,7 @@ exports[`record integration tests can record form interactions 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"select\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -1937,66 +1930,19 @@ exports[`record integration tests can record form interactions 1`] = `
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"select\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"value\\": \\"1\\"
+                              \\"type\\": \\"checkbox\\",
+                              \\"value\\": \\"check-on\\",
+                              \\"checked\\": true
                             },
-                            \\"childNodes\\": [
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 48
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"1\\",
-                                  \\"selected\\": true
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"1\\",
-                                    \\"id\\": 50
-                                  }
-                                ],
-                                \\"id\\": 49
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 51
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"2\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"2\\",
-                                    \\"id\\": 53
-                                  }
-                                ],
-                                \\"id\\": 52
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 54
-                              }
-                            ],
+                            \\"childNodes\\": [],
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 55
+                            \\"id\\": 48
                           }
                         ],
                         \\"id\\": 45
@@ -2004,7 +1950,128 @@ exports[`record integration tests can record form interactions 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 56
+                        \\"id\\": 49
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"textarea\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 51
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"cols\\": \\"30\\",
+                              \\"rows\\": \\"10\\",
+                              \\"data-unmask-example\\": \\"true\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          }
+                        ],
+                        \\"id\\": 50
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 54
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"select\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 56
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"select\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"value\\": \\"AA\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 58
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"AA\\",
+                                  \\"selected\\": true
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"Option A\\",
+                                    \\"id\\": 60
+                                  }
+                                ],
+                                \\"id\\": 59
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 61
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"BB\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"Opt. B\\",
+                                    \\"id\\": 63
+                                  }
+                                ],
+                                \\"id\\": 62
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 64
+                              }
+                            ],
+                            \\"id\\": 57
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 65
+                          }
+                        ],
+                        \\"id\\": 55
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 2,
@@ -2016,7 +2083,7 @@ exports[`record integration tests can record form interactions 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 58
+                            \\"id\\": 68
                           },
                           {
                             \\"type\\": 2,
@@ -2025,20 +2092,20 @@ exports[`record integration tests can record form interactions 1`] = `
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 59
+                            \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 60
+                            \\"id\\": 70
                           }
                         ],
-                        \\"id\\": 57
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 61
+                        \\"id\\": 71
                       }
                     ],
                     \\"id\\": 18
@@ -2046,7 +2113,7 @@ exports[`record integration tests can record form interactions 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 62
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 2,
@@ -2056,15 +2123,15 @@ exports[`record integration tests can record form interactions 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 64
+                        \\"id\\": 74
                       }
                     ],
-                    \\"id\\": 63
+                    \\"id\\": 73
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 65
+                    \\"id\\": 75
                   }
                 ],
                 \\"id\\": 16
@@ -2170,7 +2237,7 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"id\\": 27
     }
@@ -2179,7 +2246,7 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"off\\",
+      \\"text\\": \\"radio-on\\",
       \\"isChecked\\": false,
       \\"id\\": 32
     }
@@ -2187,9 +2254,18 @@ exports[`record integration tests can record form interactions 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"radio-off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -2198,48 +2274,6 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 27
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"on\\",
-      \\"isChecked\\": true,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
     }
   },
   {
@@ -2248,6 +2282,48 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 42,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"\\",
+      \\"isChecked\\": true,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 52
     }
   },
   {
@@ -2256,7 +2332,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2265,7 +2341,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2274,7 +2350,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2283,7 +2359,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2292,7 +2368,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2301,7 +2377,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2310,7 +2386,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2319,7 +2395,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2328,7 +2404,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2337,7 +2413,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2346,7 +2422,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2355,7 +2431,7 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -2364,16 +2440,16 @@ exports[`record integration tests can record form interactions 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"1\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": false,
-      \\"id\\": 47
+      \\"id\\": 57
     }
   }
 ]"
@@ -3578,8 +3654,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
-                              \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"on\\"
+                              \\"name\\": \\"toggle\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
@@ -3613,7 +3688,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
                               \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"off\\",
+                              \\"value\\": \\"radio-on\\",
                               \\"checked\\": true
                             },
                             \\"childNodes\\": [],
@@ -3635,9 +3710,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"checkbox\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -3648,7 +3721,9 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"checkbox\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"radio-off\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 37
@@ -3670,7 +3745,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
                         \\"attributes\\": {
-                          \\"for\\": \\"textarea\\"
+                          \\"for\\": \\"checkbox\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -3680,13 +3755,9 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"textarea\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"cols\\": \\"30\\",
-                              \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -3707,9 +3778,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"select\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -3718,66 +3787,19 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"select\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"value\\": \\"1\\"
+                              \\"type\\": \\"checkbox\\",
+                              \\"value\\": \\"check-on\\",
+                              \\"checked\\": true
                             },
-                            \\"childNodes\\": [
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 48
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"1\\",
-                                  \\"selected\\": true
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"1\\",
-                                    \\"id\\": 50
-                                  }
-                                ],
-                                \\"id\\": 49
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 51
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"2\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"2\\",
-                                    \\"id\\": 53
-                                  }
-                                ],
-                                \\"id\\": 52
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 54
-                              }
-                            ],
+                            \\"childNodes\\": [],
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 55
+                            \\"id\\": 48
                           }
                         ],
                         \\"id\\": 45
@@ -3785,7 +3807,128 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 56
+                        \\"id\\": 49
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"textarea\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 51
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"cols\\": \\"30\\",
+                              \\"rows\\": \\"10\\",
+                              \\"data-unmask-example\\": \\"true\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          }
+                        ],
+                        \\"id\\": 50
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 54
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"select\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 56
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"select\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"value\\": \\"AA\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 58
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"AA\\",
+                                  \\"selected\\": true
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"Option A\\",
+                                    \\"id\\": 60
+                                  }
+                                ],
+                                \\"id\\": 59
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 61
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"BB\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"Opt. B\\",
+                                    \\"id\\": 63
+                                  }
+                                ],
+                                \\"id\\": 62
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 64
+                              }
+                            ],
+                            \\"id\\": 57
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 65
+                          }
+                        ],
+                        \\"id\\": 55
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 2,
@@ -3797,7 +3940,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 58
+                            \\"id\\": 68
                           },
                           {
                             \\"type\\": 2,
@@ -3806,20 +3949,20 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 59
+                            \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 60
+                            \\"id\\": 70
                           }
                         ],
-                        \\"id\\": 57
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 61
+                        \\"id\\": 71
                       }
                     ],
                     \\"id\\": 18
@@ -3827,7 +3970,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 62
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 2,
@@ -3837,15 +3980,15 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 64
+                        \\"id\\": 74
                       }
                     ],
-                    \\"id\\": 63
+                    \\"id\\": 73
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 65
+                    \\"id\\": 75
                   }
                 ],
                 \\"id\\": 16
@@ -3951,7 +4094,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"id\\": 27
     }
@@ -3960,7 +4103,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"off\\",
+      \\"text\\": \\"radio-on\\",
       \\"isChecked\\": false,
       \\"id\\": 32
     }
@@ -3968,9 +4111,18 @@ exports[`record integration tests can use maskInputOptions to configure which ty
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"radio-off\\",
+      \\"isChecked\\": false,
+      \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -3979,48 +4131,6 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 2,
       \\"type\\": 6,
       \\"id\\": 27
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"on\\",
-      \\"isChecked\\": true,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
     }
   },
   {
@@ -4029,6 +4139,48 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 0,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 42,
+      \\"pointerType\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"\\",
+      \\"isChecked\\": true,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 52
     }
   },
   {
@@ -4037,7 +4189,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4046,7 +4198,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4055,7 +4207,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4064,7 +4216,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4073,7 +4225,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4082,7 +4234,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4091,7 +4243,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4100,7 +4252,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4109,7 +4261,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4118,7 +4270,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4127,7 +4279,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4136,7 +4288,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4145,7 +4297,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4153,7 +4305,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -4161,7 +4313,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4170,7 +4322,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4179,7 +4331,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4188,7 +4340,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4197,7 +4349,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4206,7 +4358,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4215,7 +4367,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4224,7 +4376,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -4233,16 +4385,16 @@ exports[`record integration tests can use maskInputOptions to configure which ty
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"1\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": false,
-      \\"id\\": 47
+      \\"id\\": 57
     }
   }
 ]"
@@ -5579,8 +5731,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
-                              \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"on\\"
+                              \\"name\\": \\"toggle\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
@@ -5614,7 +5765,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
                               \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"off\\",
+                              \\"value\\": \\"********\\",
                               \\"checked\\": true
                             },
                             \\"childNodes\\": [],
@@ -5636,9 +5787,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"checkbox\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -5649,7 +5798,9 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"checkbox\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"*********\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 37
@@ -5671,7 +5822,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
                         \\"attributes\\": {
-                          \\"for\\": \\"textarea\\"
+                          \\"for\\": \\"checkbox\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -5681,13 +5832,9 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"textarea\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"cols\\": \\"30\\",
-                              \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -5708,9 +5855,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"select\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -5719,65 +5864,19 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"select\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"value\\": \\"*\\"
+                              \\"type\\": \\"checkbox\\",
+                              \\"value\\": \\"********\\",
+                              \\"checked\\": true
                             },
-                            \\"childNodes\\": [
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 48
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"1\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"1\\",
-                                    \\"id\\": 50
-                                  }
-                                ],
-                                \\"id\\": 49
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 51
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"2\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"2\\",
-                                    \\"id\\": 53
-                                  }
-                                ],
-                                \\"id\\": 52
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 54
-                              }
-                            ],
+                            \\"childNodes\\": [],
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 55
+                            \\"id\\": 48
                           }
                         ],
                         \\"id\\": 45
@@ -5785,7 +5884,127 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 56
+                        \\"id\\": 49
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"textarea\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 51
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"cols\\": \\"30\\",
+                              \\"rows\\": \\"10\\",
+                              \\"data-unmask-example\\": \\"true\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          }
+                        ],
+                        \\"id\\": 50
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 54
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"select\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 56
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"select\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"value\\": \\"**\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 58
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"**\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"********\\",
+                                    \\"id\\": 60
+                                  }
+                                ],
+                                \\"id\\": 59
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 61
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"**\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"******\\",
+                                    \\"id\\": 63
+                                  }
+                                ],
+                                \\"id\\": 62
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 64
+                              }
+                            ],
+                            \\"id\\": 57
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 65
+                          }
+                        ],
+                        \\"id\\": 55
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 2,
@@ -5797,7 +6016,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 58
+                            \\"id\\": 68
                           },
                           {
                             \\"type\\": 2,
@@ -5806,20 +6025,20 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 59
+                            \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 60
+                            \\"id\\": 70
                           }
                         ],
-                        \\"id\\": 57
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 61
+                        \\"id\\": 71
                       }
                     ],
                     \\"id\\": 18
@@ -5827,7 +6046,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 62
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 2,
@@ -5837,15 +6056,15 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 64
+                        \\"id\\": 74
                       }
                     ],
-                    \\"id\\": 63
+                    \\"id\\": 73
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 65
+                    \\"id\\": 75
                   }
                 ],
                 \\"id\\": 16
@@ -5951,147 +6170,9 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"id\\": 27
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"off\\",
-      \\"isChecked\\": false,
-      \\"id\\": 32
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 1,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"on\\",
-      \\"isChecked\\": true,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"**\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"***\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
     }
   },
   {
@@ -6100,7 +6181,24 @@ exports[`record integration tests should mask inputs via function call 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
-      \\"id\\": 59
+      \\"id\\": 32
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
+      \\"id\\": 42
     }
   },
   {
@@ -6108,7 +6206,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 59
+      \\"id\\": 27
     }
   },
   {
@@ -6122,118 +6220,43 @@ exports[`record integration tests should mask inputs via function call 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"t\\",
-      \\"isChecked\\": false,
+      \\"source\\": 2,
+      \\"type\\": 0,
       \\"id\\": 42
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"te\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 42,
+      \\"pointerType\\": 0
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"tex\\",
-      \\"isChecked\\": false,
+      \\"text\\": \\"\\",
+      \\"isChecked\\": true,
       \\"id\\": 42
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"text\\",
-      \\"isChecked\\": false,
+      \\"source\\": 2,
+      \\"type\\": 6,
       \\"id\\": 42
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"texta\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textar\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textare\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textarea\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textarea \\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textarea t\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textarea te\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textarea tes\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"textarea test\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 69
     }
   },
   {
@@ -6242,7 +6265,212 @@ exports[`record integration tests should mask inputs via function call 1`] = `
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 47
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"t\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"te\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"tex\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"text\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"texta\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textar\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textare\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea \\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea t\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea te\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea tes\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"textarea test\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"\\",
+      \\"isChecked\\": false,
+      \\"id\\": 57
     }
   }
 ]"
@@ -8844,6 +9072,15 @@ exports[`record integration tests should not record input values if dynamically 
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 3,
+      \\"id\\": 21,
+      \\"x\\": 24,
+      \\"y\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 5,
       \\"text\\": \\"*************************\\",
       \\"isChecked\\": false,
@@ -9040,8 +9277,7 @@ exports[`record integration tests should not record input values if maskAllInput
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
-                              \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"on\\"
+                              \\"name\\": \\"toggle\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
@@ -9075,7 +9311,7 @@ exports[`record integration tests should not record input values if maskAllInput
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
                               \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"off\\",
+                              \\"value\\": \\"********\\",
                               \\"checked\\": true
                             },
                             \\"childNodes\\": [],
@@ -9097,9 +9333,7 @@ exports[`record integration tests should not record input values if maskAllInput
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"checkbox\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -9110,7 +9344,9 @@ exports[`record integration tests should not record input values if maskAllInput
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"checkbox\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"*********\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 37
@@ -9132,7 +9368,7 @@ exports[`record integration tests should not record input values if maskAllInput
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
                         \\"attributes\\": {
-                          \\"for\\": \\"textarea\\"
+                          \\"for\\": \\"checkbox\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -9142,13 +9378,9 @@ exports[`record integration tests should not record input values if maskAllInput
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"textarea\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"cols\\": \\"30\\",
-                              \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -9169,9 +9401,7 @@ exports[`record integration tests should not record input values if maskAllInput
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"select\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -9180,65 +9410,19 @@ exports[`record integration tests should not record input values if maskAllInput
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"select\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"value\\": \\"*\\"
+                              \\"type\\": \\"checkbox\\",
+                              \\"value\\": \\"********\\",
+                              \\"checked\\": true
                             },
-                            \\"childNodes\\": [
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 48
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"1\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"1\\",
-                                    \\"id\\": 50
-                                  }
-                                ],
-                                \\"id\\": 49
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 51
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"2\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"2\\",
-                                    \\"id\\": 53
-                                  }
-                                ],
-                                \\"id\\": 52
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 54
-                              }
-                            ],
+                            \\"childNodes\\": [],
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 55
+                            \\"id\\": 48
                           }
                         ],
                         \\"id\\": 45
@@ -9246,7 +9430,127 @@ exports[`record integration tests should not record input values if maskAllInput
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 56
+                        \\"id\\": 49
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"textarea\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 51
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"cols\\": \\"30\\",
+                              \\"rows\\": \\"10\\",
+                              \\"data-unmask-example\\": \\"true\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          }
+                        ],
+                        \\"id\\": 50
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 54
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"select\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 56
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"select\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"value\\": \\"**\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 58
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"**\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"********\\",
+                                    \\"id\\": 60
+                                  }
+                                ],
+                                \\"id\\": 59
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 61
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"**\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"******\\",
+                                    \\"id\\": 63
+                                  }
+                                ],
+                                \\"id\\": 62
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 64
+                              }
+                            ],
+                            \\"id\\": 57
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 65
+                          }
+                        ],
+                        \\"id\\": 55
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 2,
@@ -9258,7 +9562,7 @@ exports[`record integration tests should not record input values if maskAllInput
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 58
+                            \\"id\\": 68
                           },
                           {
                             \\"type\\": 2,
@@ -9267,20 +9571,20 @@ exports[`record integration tests should not record input values if maskAllInput
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 59
+                            \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 60
+                            \\"id\\": 70
                           }
                         ],
-                        \\"id\\": 57
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 61
+                        \\"id\\": 71
                       }
                     ],
                     \\"id\\": 18
@@ -9288,7 +9592,7 @@ exports[`record integration tests should not record input values if maskAllInput
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 62
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 2,
@@ -9298,15 +9602,15 @@ exports[`record integration tests should not record input values if maskAllInput
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 64
+                        \\"id\\": 74
                       }
                     ],
-                    \\"id\\": 63
+                    \\"id\\": 73
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 65
+                    \\"id\\": 75
                   }
                 ],
                 \\"id\\": 16
@@ -9412,7 +9716,7 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"id\\": 27
     }
@@ -9421,235 +9725,9 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"off\\",
+      \\"text\\": \\"********\\",
       \\"isChecked\\": false,
       \\"id\\": 32
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 1,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 0,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 2,
-      \\"id\\": 37,
-      \\"pointerType\\": 0
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"on\\",
-      \\"isChecked\\": true,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"**\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"***\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"********\\",
-      \\"isChecked\\": false,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 59
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"**\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"***\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*****\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"*******\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"********\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
     }
   },
   {
@@ -9658,43 +9736,73 @@ exports[`record integration tests should not record input values if maskAllInput
       \\"source\\": 5,
       \\"text\\": \\"*********\\",
       \\"isChecked\\": false,
+      \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 1,
       \\"id\\": 42
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"**********\\",
-      \\"isChecked\\": false,
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
       \\"id\\": 42
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"***********\\",
-      \\"isChecked\\": false,
+      \\"source\\": 2,
+      \\"type\\": 0,
       \\"id\\": 42
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"************\\",
-      \\"isChecked\\": false,
-      \\"id\\": 42
+      \\"source\\": 2,
+      \\"type\\": 2,
+      \\"id\\": 42,
+      \\"pointerType\\": 0
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"*************\\",
-      \\"isChecked\\": false,
+      \\"text\\": \\"\\",
+      \\"isChecked\\": true,
       \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 42
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 69
     }
   },
   {
@@ -9703,7 +9811,212 @@ exports[`record integration tests should not record input values if maskAllInput
       \\"source\\": 5,
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
-      \\"id\\": 47
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 69
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*****\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*******\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***********\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 52
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"\\",
+      \\"isChecked\\": false,
+      \\"id\\": 57
     }
   }
 ]"
@@ -12748,8 +13061,7 @@ exports[`record integration tests should record input userTriggered values if us
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
-                              \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"on\\"
+                              \\"name\\": \\"toggle\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 27
@@ -12783,7 +13095,7 @@ exports[`record integration tests should record input userTriggered values if us
                             \\"attributes\\": {
                               \\"type\\": \\"radio\\",
                               \\"name\\": \\"toggle\\",
-                              \\"value\\": \\"off\\",
+                              \\"value\\": \\"radio-on\\",
                               \\"checked\\": true
                             },
                             \\"childNodes\\": [],
@@ -12805,9 +13117,7 @@ exports[`record integration tests should record input userTriggered values if us
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"checkbox\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -12818,7 +13128,9 @@ exports[`record integration tests should record input userTriggered values if us
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"checkbox\\"
+                              \\"type\\": \\"radio\\",
+                              \\"name\\": \\"toggle\\",
+                              \\"value\\": \\"radio-off\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 37
@@ -12840,7 +13152,7 @@ exports[`record integration tests should record input userTriggered values if us
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
                         \\"attributes\\": {
-                          \\"for\\": \\"textarea\\"
+                          \\"for\\": \\"checkbox\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -12850,13 +13162,9 @@ exports[`record integration tests should record input userTriggered values if us
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"textarea\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"cols\\": \\"30\\",
-                              \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"type\\": \\"checkbox\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -12877,9 +13185,7 @@ exports[`record integration tests should record input userTriggered values if us
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"select\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
@@ -12888,66 +13194,19 @@ exports[`record integration tests should record input userTriggered values if us
                           },
                           {
                             \\"type\\": 2,
-                            \\"tagName\\": \\"select\\",
+                            \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"name\\": \\"\\",
-                              \\"id\\": \\"\\",
-                              \\"value\\": \\"1\\"
+                              \\"type\\": \\"checkbox\\",
+                              \\"value\\": \\"check-on\\",
+                              \\"checked\\": true
                             },
-                            \\"childNodes\\": [
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 48
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"1\\",
-                                  \\"selected\\": true
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"1\\",
-                                    \\"id\\": 50
-                                  }
-                                ],
-                                \\"id\\": 49
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n          \\",
-                                \\"id\\": 51
-                              },
-                              {
-                                \\"type\\": 2,
-                                \\"tagName\\": \\"option\\",
-                                \\"attributes\\": {
-                                  \\"value\\": \\"2\\"
-                                },
-                                \\"childNodes\\": [
-                                  {
-                                    \\"type\\": 3,
-                                    \\"textContent\\": \\"2\\",
-                                    \\"id\\": 53
-                                  }
-                                ],
-                                \\"id\\": 52
-                              },
-                              {
-                                \\"type\\": 3,
-                                \\"textContent\\": \\"\\\\n        \\",
-                                \\"id\\": 54
-                              }
-                            ],
+                            \\"childNodes\\": [],
                             \\"id\\": 47
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 55
+                            \\"id\\": 48
                           }
                         ],
                         \\"id\\": 45
@@ -12955,7 +13214,128 @@ exports[`record integration tests should record input userTriggered values if us
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n      \\",
-                        \\"id\\": 56
+                        \\"id\\": 49
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"textarea\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 51
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"cols\\": \\"30\\",
+                              \\"rows\\": \\"10\\",
+                              \\"data-unmask-example\\": \\"true\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 52
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 53
+                          }
+                        ],
+                        \\"id\\": 50
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 54
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {
+                          \\"for\\": \\"select\\"
+                        },
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n        \\",
+                            \\"id\\": 56
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"select\\",
+                            \\"attributes\\": {
+                              \\"name\\": \\"\\",
+                              \\"id\\": \\"\\",
+                              \\"value\\": \\"AA\\"
+                            },
+                            \\"childNodes\\": [
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 58
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"AA\\",
+                                  \\"selected\\": true
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"Option A\\",
+                                    \\"id\\": 60
+                                  }
+                                ],
+                                \\"id\\": 59
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n          \\",
+                                \\"id\\": 61
+                              },
+                              {
+                                \\"type\\": 2,
+                                \\"tagName\\": \\"option\\",
+                                \\"attributes\\": {
+                                  \\"value\\": \\"BB\\"
+                                },
+                                \\"childNodes\\": [
+                                  {
+                                    \\"type\\": 3,
+                                    \\"textContent\\": \\"Opt. B\\",
+                                    \\"id\\": 63
+                                  }
+                                ],
+                                \\"id\\": 62
+                              },
+                              {
+                                \\"type\\": 3,
+                                \\"textContent\\": \\"\\\\n        \\",
+                                \\"id\\": 64
+                              }
+                            ],
+                            \\"id\\": 57
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 65
+                          }
+                        ],
+                        \\"id\\": 55
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      \\",
+                        \\"id\\": 66
                       },
                       {
                         \\"type\\": 2,
@@ -12967,7 +13347,7 @@ exports[`record integration tests should record input userTriggered values if us
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n        \\",
-                            \\"id\\": 58
+                            \\"id\\": 68
                           },
                           {
                             \\"type\\": 2,
@@ -12976,20 +13356,20 @@ exports[`record integration tests should record input userTriggered values if us
                               \\"type\\": \\"password\\"
                             },
                             \\"childNodes\\": [],
-                            \\"id\\": 59
+                            \\"id\\": 69
                           },
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"\\\\n      \\",
-                            \\"id\\": 60
+                            \\"id\\": 70
                           }
                         ],
-                        \\"id\\": 57
+                        \\"id\\": 67
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 61
+                        \\"id\\": 71
                       }
                     ],
                     \\"id\\": 18
@@ -12997,7 +13377,7 @@ exports[`record integration tests should record input userTriggered values if us
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 62
+                    \\"id\\": 72
                   },
                   {
                     \\"type\\": 2,
@@ -13007,15 +13387,15 @@ exports[`record integration tests should record input userTriggered values if us
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 64
+                        \\"id\\": 74
                       }
                     ],
-                    \\"id\\": 63
+                    \\"id\\": 73
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 65
+                    \\"id\\": 75
                   }
                 ],
                 \\"id\\": 16
@@ -13125,7 +13505,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"userTriggered\\": true,
       \\"id\\": 27
@@ -13135,7 +13515,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"off\\",
+      \\"text\\": \\"radio-on\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": false,
       \\"id\\": 32
@@ -13144,9 +13524,19 @@ exports[`record integration tests should record input userTriggered values if us
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"radio-off\\",
+      \\"isChecked\\": false,
+      \\"userTriggered\\": false,
+      \\"id\\": 37
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 1,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -13162,7 +13552,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -13170,7 +13560,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -13178,7 +13568,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 2,
-      \\"id\\": 37,
+      \\"id\\": 42,
       \\"pointerType\\": 0
     }
   },
@@ -13186,10 +13576,10 @@ exports[`record integration tests should record input userTriggered values if us
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"on\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": true,
       \\"userTriggered\\": true,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -13197,7 +13587,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 37
+      \\"id\\": 42
     }
   },
   {
@@ -13205,7 +13595,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13215,7 +13605,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"*\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13225,7 +13615,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"**\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13235,7 +13625,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"***\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13245,7 +13635,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"****\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13255,7 +13645,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"*****\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13265,7 +13655,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"******\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13275,7 +13665,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"*******\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13285,7 +13675,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"********\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13293,7 +13683,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 6,
-      \\"id\\": 59
+      \\"id\\": 69
     }
   },
   {
@@ -13301,7 +13691,7 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13311,7 +13701,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"t\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13321,7 +13711,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"te\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13331,7 +13721,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"tex\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13341,7 +13731,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"text\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13351,7 +13741,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"texta\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13361,7 +13751,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textar\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13371,7 +13761,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textare\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13381,7 +13771,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textarea\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13391,7 +13781,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textarea \\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13401,7 +13791,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textarea t\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13411,7 +13801,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textarea te\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13421,7 +13811,7 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textarea tes\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
@@ -13431,17 +13821,17 @@ exports[`record integration tests should record input userTriggered values if us
       \\"text\\": \\"textarea test\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": true,
-      \\"id\\": 42
+      \\"id\\": 52
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"1\\",
+      \\"text\\": \\"\\",
       \\"isChecked\\": false,
       \\"userTriggered\\": false,
-      \\"id\\": 47
+      \\"id\\": 57
     }
   }
 ]"

@@ -174,17 +174,21 @@ export function maskInputValue({
 }: {
   element: HTMLElement;
   maskInputOptions: MaskInputOptions;
-  tagName: string;
-  type: string | null;
+  tagName: Uppercase<string>;
+  type: Lowercase<string> | null;
   value: string | null;
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
-  const actualType = type && toLowerCase(type);
+
+  // Handle `option` like `select
+  if (tagName === 'OPTION') {
+    tagName = 'SELECT';
+  }
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
+    (type && maskInputOptions[type as keyof MaskInputOptions])
   ) {
     if (maskInputFn) {
       text = maskInputFn(text, element);
@@ -197,6 +201,10 @@ export function maskInputValue({
 
 export function toLowerCase<T extends string>(str: T): Lowercase<T> {
   return str.toLowerCase() as unknown as Lowercase<T>;
+}
+
+export function toUpperCase<T extends string>(str: T): Uppercase<T> {
+  return str.toUpperCase() as unknown as Uppercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -282,4 +290,22 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       toLowerCase(type)
     : null;
+}
+
+export function getInputValue(
+  el:
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | HTMLSelectElement
+    | HTMLOptionElement,
+  tagName: Uppercase<string>,
+  type: Lowercase<string> | null,
+): string {
+  if (tagName === 'INPUT' && (type === 'radio' || type === 'checkbox')) {
+    // checkboxes & radio buttons return `on` as their el.value when no value is specified
+    // we only want to get the value if it is specified as `value='xxx'`
+    return el.getAttribute('value') || '';
+  }
+
+  return el.value;
 }

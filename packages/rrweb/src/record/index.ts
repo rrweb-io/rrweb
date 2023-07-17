@@ -140,6 +140,8 @@ function record<T = eventWithTime>(
           textarea: true,
           select: true,
           password: true,
+          radio: true,
+          checkbox: true,
         }
       : _maskInputOptions !== undefined
       ? _maskInputOptions

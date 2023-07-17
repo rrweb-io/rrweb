@@ -21,7 +21,9 @@ import {
   isNativeShadowDom,
   getCssRulesString,
   getInputType,
+  getInputValue,
   toLowerCase,
+  toUpperCase,
   validateStringifiedCssRule,
 } from './utils';
 
@@ -514,6 +516,8 @@ function serializeNode(
         maskTextClass,
         maskTextSelector,
         maskTextFn,
+        maskInputOptions,
+        maskInputFn,
         rootId,
       });
     case n.CDATA_SECTION_NODE:
@@ -545,10 +549,19 @@ function serializeTextNode(
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     maskTextFn: MaskTextFn | undefined;
+    maskInputOptions: MaskInputOptions;
+    maskInputFn: MaskInputFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const {
+    maskTextClass,
+    maskTextSelector,
+    maskTextFn,
+    maskInputFn,
+    maskInputOptions,
+    rootId,
+  } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -588,6 +601,18 @@ function serializeTextNode(
     textContent = maskTextFn
       ? maskTextFn(textContent)
       : textContent.replace(/[\S]/g, '*');
+  }
+
+  // Handle <option> text like an input value
+  if (parentTagName === 'OPTION' && textContent) {
+    textContent = maskInputValue({
+      element: n as unknown as HTMLElement,
+      type: null,
+      tagName: parentTagName,
+      value: textContent,
+      maskInputOptions,
+      maskInputFn,
+    });
   }
 
   return {
@@ -677,26 +702,32 @@ function serializeElementNode(
     }
   }
   // form fields
-  if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
-    const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
+  if (
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select' ||
+    tagName === 'option'
+  ) {
+    const el = n as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement
+      | HTMLOptionElement;
+
+    const type = getInputType(el);
+    const value = getInputValue(el, toUpperCase(tagName), type);
     const checked = (n as HTMLInputElement).checked;
-    if (
-      attributes.type !== 'radio' &&
-      attributes.type !== 'checkbox' &&
-      attributes.type !== 'submit' &&
-      attributes.type !== 'button' &&
-      value
-    ) {
-      const type = getInputType(n);
+    if (type !== 'submit' && type !== 'button' && value) {
       attributes.value = maskInputValue({
-        element: n,
+        element: el,
         type,
-        tagName,
+        tagName: toUpperCase(tagName),
         value,
         maskInputOptions,
         maskInputFn,
       });
-    } else if (checked) {
+    }
+    if (checked) {
       attributes.checked = checked;
     }
   }

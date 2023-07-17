@@ -10,6 +10,7 @@ import {
   isNativeShadowDom,
   getInputType,
   toLowerCase,
+  getInputValue,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -504,6 +505,7 @@ export default class MutationBuffer {
         }
         break;
       }
+
       case 'attributes': {
         const target = m.target as HTMLElement;
         let attributeName = m.attributeName as string;
@@ -511,11 +513,13 @@ export default class MutationBuffer {
 
         if (attributeName === 'value') {
           const type = getInputType(target);
+          const tagName = target.tagName as unknown as Uppercase<string>;
+          value = getInputValue(target as HTMLInputElement, tagName, type);
 
           value = maskInputValue({
             element: target,
             maskInputOptions: this.maskInputOptions,
-            tagName: target.tagName,
+            tagName,
             type,
             value,
             maskInputFn: this.maskInputFn,
