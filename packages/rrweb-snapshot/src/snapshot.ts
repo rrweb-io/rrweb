@@ -586,7 +586,7 @@ function serializeTextNode(
     needMaskingText(n, maskTextClass, maskTextSelector)
   ) {
     textContent = maskTextFn
-      ? maskTextFn(textContent)
+      ? maskTextFn(textContent, n.parentNode as HTMLElement)
       : textContent.replace(/[\S]/g, '*');
   }
 

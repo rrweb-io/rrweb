@@ -496,7 +496,7 @@ export default class MutationBuffer {
                 this.maskTextSelector,
               ) && value
                 ? this.maskTextFn
-                  ? this.maskTextFn(value)
+                  ? this.maskTextFn(value, m.target)
                   : value.replace(/[\S]/g, '*')
                 : value,
             node: m.target,
