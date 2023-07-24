@@ -248,9 +248,11 @@ describe('record integration tests', function (this: ISuite) {
   it('should not record input events on ignored elements', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'ignore.html', {
-      ignoreSelector: '[data-rr-ignore]',
-    }));
+    await page.setContent(
+      getHtml.call(this, 'ignore.html', {
+        ignoreSelector: '[data-rr-ignore]',
+      }),
+    );
 
     await page.type('.rr-ignore', 'secret');
     await page.type('[data-rr-ignore]', 'secret');
