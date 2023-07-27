@@ -695,6 +695,45 @@ describe('record', function (this: ISuite) {
     assertSnapshot(ctx.events);
   });
 
+  it('no need for attribute mutations on adds', async () => {
+    await ctx.page.evaluate(() => {
+      const { record, freezePage } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      freezePage();
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.setAttribute('id', 'here');
+        div.innerText = 'as-created';
+        div.setAttribute('data-test', 'as-created');
+        document.body.appendChild(div);
+      }, 0);
+      setTimeout(() => {
+        const div = document.getElementById('here');
+        if (div) {
+          div.setAttribute('data-test', 'x');
+          (div.childNodes[0] as Text).replaceData(0, 'as-created'.length, 'y');
+        }
+      }, 10);
+      setTimeout(() => {
+        // 'unfreeze' happens upon a user event
+        document.body.click();
+      }, 20);
+    });
+    await ctx.page.waitForTimeout(50); // wait till setTimeout is called
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    const mutationEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation,
+    );
+    expect(mutationEvents.length).toEqual(1);
+
+    assertSnapshot(ctx.events);
+  });
+
   describe('loading stylesheets', () => {
     let server: Server;
     let serverURL: string;
