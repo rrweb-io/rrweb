@@ -35,6 +35,7 @@ interface IWindow extends Window {
       takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     };
 
+    freezePage(): void;
     addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
@@ -648,6 +649,49 @@ describe('record', function (this: ISuite) {
       });
     });
     await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
+  it('aggregates mutations', async () => {
+    await ctx.page.evaluate(() => {
+      const { record, freezePage } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      freezePage();
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.setAttribute('id', 'here-and-gone');
+        document.body.appendChild(div);
+      }, 0);
+      setTimeout(() => {
+        const div = document.getElementById('here-and-gone');
+        if (div) {
+          div.setAttribute('data-test', 'x');
+        }
+      }, 10);
+      setTimeout(() => {
+        const div = document.getElementById('here-and-gone');
+        if (div) {
+          div.parentNode?.removeChild(div as HTMLElement);
+        }
+      }, 15);
+      setTimeout(() => {
+        // 'unfreeze' happens upon a user event
+        // however, we expect none of the above mutations to produce any effect
+        document.body.click();
+      }, 20);
+    });
+    await ctx.page.waitForTimeout(50); // wait till setTimeout is called
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    const mutationEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation,
+    );
+    expect(mutationEvents.length).toEqual(0); // there was no aggregate effect
+
     assertSnapshot(ctx.events);
   });
 
