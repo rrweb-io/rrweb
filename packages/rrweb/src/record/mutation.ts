@@ -18,7 +18,7 @@ import type {
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
-  styleAttributeValue,
+  styleOMValue,
   Optional,
 } from '@rrweb/types';
 import {
@@ -438,10 +438,26 @@ export default class MutationBuffer {
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
       attributes: this.attributes
-        .map((attribute) => ({
-          id: this.mirror.getId(attribute.node),
-          attributes: attribute.attributes,
-        }))
+        .map((attribute) => {
+          const attributes = attribute.attributes;
+          if (typeof attributes.style === 'string') {
+            const somAsStr = JSON.stringify(attribute.styleOM);
+            const unchangedAsStr = JSON.stringify(attribute.styleOMUnchanged);
+            if (
+              somAsStr.length < attributes.style.length &&
+              (somAsStr + unchangedAsStr).split('var(').length ===
+                attributes.style.split('var(').length
+            ) {
+              // use the compact style mutation format #464
+              // (CSSOM fails badly when var() is present on shorthand properties)
+              attributes.style = attribute.styleOM;
+            }
+          }
+          return {
+            id: this.mirror.getId(attribute.node),
+            attributes: attributes,
+          };
+        })
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
       removes: this.removes,
@@ -548,6 +564,8 @@ export default class MutationBuffer {
           item = {
             node: m.target,
             attributes: {},
+            styleOM: {},
+            styleOMUnchanged: {},
           };
           this.attributes.push(item);
         }
@@ -562,42 +580,7 @@ export default class MutationBuffer {
           target.setAttribute('data-rr-is-password', 'true');
         }
 
-        if (attributeName === 'style' &&
-            (value as string).indexOf('var(') === -1 &&
-            typeof item.attributes.style !== 'string'
-           ) {
-          const old = unattachedDoc.createElement('span');
-          if (m.oldValue) {
-            old.setAttribute('style', m.oldValue);
-          }
-          if (
-            item.attributes.style === undefined ||
-            item.attributes.style === null
-          ) {
-            item.attributes.style = {};
-          }
-          const styleObj = item.attributes.style as styleAttributeValue;
-          for (const pname of Array.from(target.style)) {
-            const newValue = target.style.getPropertyValue(pname);
-            const newPriority = target.style.getPropertyPriority(pname);
-            if (
-              newValue !== old.style.getPropertyValue(pname) ||
-              newPriority !== old.style.getPropertyPriority(pname)
-            ) {
-              if (newPriority === '') {
-                styleObj[pname] = newValue;
-              } else {
-                styleObj[pname] = [newValue, newPriority];
-              }
-            }
-          }
-          for (const pname of Array.from(old.style)) {
-            if (target.style.getPropertyValue(pname) === '') {
-              // "if not set, returns the empty string"
-              styleObj[pname] = false; // delete
-            }
-          }
-        } else if (!ignoreAttribute(target.tagName, attributeName, value)) {
+        if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName] = transformAttribute(
             this.doc,
@@ -605,6 +588,35 @@ export default class MutationBuffer {
             toLowerCase(attributeName),
             value,
           );
+          if (attributeName === 'style') {
+            const old = unattachedDoc.createElement('span');
+            if (m.oldValue) {
+              old.setAttribute('style', m.oldValue);
+            }
+            for (const pname of Array.from(target.style)) {
+              const newValue = target.style.getPropertyValue(pname);
+              const newPriority = target.style.getPropertyPriority(pname);
+              if (
+                newValue !== old.style.getPropertyValue(pname) ||
+                newPriority !== old.style.getPropertyPriority(pname)
+              ) {
+                if (newPriority === '') {
+                  item.styleOM[pname] = newValue;
+                } else {
+                  item.styleOM[pname] = [newValue, newPriority];
+                }
+              } else {
+                // for checking
+                item.styleOMUnchanged[pname] = [newValue, newPriority];
+              }
+            }
+            for (const pname of Array.from(old.style)) {
+              if (target.style.getPropertyValue(pname) === '') {
+                // "if not set, returns the empty string"
+                item.styleOM[pname] = false; // delete
+              }
+            }
+          }
         }
         break;
       }

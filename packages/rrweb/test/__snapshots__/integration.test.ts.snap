@@ -3497,17 +3497,115 @@ exports[`record integration tests can record style changes compactly and preserv
         {
           \\"id\\": 4,
           \\"attributes\\": {
+            \\"style\\": \\"background: var(--mystery); background-color: black\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"display:block\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
             \\"style\\": {
-              \\"background-color\\": \\"black\\",
-              \\"background-image\\": false,
-              \\"background-position-x\\": false,
-              \\"background-position-y\\": false,
-              \\"background-size\\": false,
-              \\"background-repeat-x\\": false,
-              \\"background-repeat-y\\": false,
-              \\"background-attachment\\": false,
-              \\"background-origin\\": false,
-              \\"background-clip\\": false
+              \\"color\\": \\"var(--mystery-color)\\"
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"color:var(--mystery-color);display:block;margin:10px\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"margin-left\\": \\"Npx\\"
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"margin-top\\": \\"Npx\\",
+              \\"color\\": false
             }
           }
         }

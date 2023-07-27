@@ -216,14 +216,40 @@ describe('record integration tests', function (this: ISuite) {
       waitUntil: 'networkidle0',
     });
 
-    // goal here is to ensure var(--mystery) ends up in the mutations
+    // goal here is to ensure var(--mystery) ends up in the mutations (CSSOM fails in this case)
     await page.evaluate(
       'document.body.setAttribute("style", "background: var(--mystery)")',
     );
-    await page.waitForTimeout(50);
-    // and here that we can revert to { background: false, background-color: 'black' } format (assuming we've used string format for above)
+    await page.waitForTimeout(10);
+    // and in this change we can't use the shorter styleObj format either
     await page.evaluate(
-      'document.body.setAttribute("style", "background-color: black")',
+      'document.body.setAttribute("style", "background: var(--mystery); background-color: black")',
+    );
+
+    // reset is always shorter to be recorded as a sting rather than a styleObj
+    await page.evaluate('document.body.setAttribute("style", "")');
+    await page.waitForTimeout(10);
+
+    await page.evaluate('document.body.setAttribute("style", "display:block")');
+    await page.waitForTimeout(10);
+    // following should be recorded as an update of `{ color: 'var(--mystery-color)' }` without needing to include the display
+    await page.evaluate(
+      'document.body.setAttribute("style", "color:var(--mystery-color);display:block")',
+    );
+    await page.waitForTimeout(10);
+    // whereas this case, it's shorter to record the entire string than the longhands for margin
+    await page.evaluate(
+      'document.body.setAttribute("style", "color:var(--mystery-color);display:block;margin:10px")',
+    );
+    await page.waitForTimeout(10);
+    // and in this case, it's shorter to record just the change to the longhand margin-left;
+    await page.evaluate(
+      'document.body.setAttribute("style", "color:var(--mystery-color);display:block;margin:10px 10px 10px 0px;")',
+    );
+    await page.waitForTimeout(10);
+    // see what happens when we manipulate the style object directly (expecting a compact mutation with just these two changes)
+    await page.evaluate(
+      'document.body.style.marginTop = 0; document.body.style.color = null',
     );
 
     const snapshots = (await page.evaluate(
