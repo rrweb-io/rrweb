@@ -3514,20 +3514,8 @@ exports[`record no need for attribute mutations on adds 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
-      \\"texts\\": [
-        {
-          \\"id\\": 10,
-          \\"value\\": \\"y\\"
-        }
-      ],
-      \\"attributes\\": [
-        {
-          \\"id\\": 9,
-          \\"attributes\\": {
-            \\"data-test\\": \\"x\\"
-          }
-        }
-      ],
+      \\"texts\\": [],
+      \\"attributes\\": [],
       \\"removes\\": [],
       \\"adds\\": [
         {

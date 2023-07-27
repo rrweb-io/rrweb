@@ -265,6 +265,7 @@ export default class MutationBuffer {
     // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
 
     const adds: addedNodeMutation[] = [];
+    const addedIds = new Set<number>();
 
     /**
      * Sometimes child node may be pushed before its newly added
@@ -335,6 +336,7 @@ export default class MutationBuffer {
           nextId,
           node: sn,
         });
+        addedIds.add(sn.id);
       }
     };
 
@@ -434,6 +436,8 @@ export default class MutationBuffer {
           id: this.mirror.getId(text.node),
           value: text.value,
         }))
+        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+        .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
       attributes: this.attributes
@@ -460,6 +464,8 @@ export default class MutationBuffer {
             attributes: attributes,
           };
         })
+        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+        .filter((attribute) => !addedIds.has(attribute.id))
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
       removes: this.removes,
