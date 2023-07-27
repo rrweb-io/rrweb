@@ -2933,24 +2933,14 @@ exports[`record integration tests can record node mutations 1`] = `
           \\"id\\": 36,
           \\"attributes\\": {
             \\"id\\": \\"select2-drop\\",
-            \\"style\\": {
-              \\"left\\": \\"Npx\\",
-              \\"width\\": \\"Npx\\",
-              \\"top\\": \\"Npx\\",
-              \\"bottom\\": \\"auto\\",
-              \\"display\\": \\"block\\",
-              \\"position\\": false,
-              \\"visibility\\": false
-            },
+            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: block;\\",
             \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
           }
         },
         {
           \\"id\\": 70,
           \\"attributes\\": {
-            \\"style\\": {
-              \\"display\\": false
-            }
+            \\"style\\": \\"\\"
           }
         },
         {
