@@ -1,5 +1,5 @@
 ---
-"rrweb": patch
+'rrweb': patch
 ---
 
 feat: Add `ignoreSelector` option
