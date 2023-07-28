@@ -823,16 +823,6 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(
-  maybeAttr: string | number | boolean | undefined | null,
-): string {
-  if (maybeAttr === undefined || maybeAttr === null) {
-    return '';
-  } else {
-    return (maybeAttr as string).toLowerCase();
-  }
-}
-
 function slimDOMExcluded(
   sn: serializedNode,
   slimDOMOptions: SlimDOMOptions,
@@ -841,9 +831,14 @@ function slimDOMExcluded(
     // TODO: convert IE conditional comments to real nodes
     return true;
   } else if (sn.type === NodeType.Element) {
-    const snAttributeName = lowerIfExists(sn.attributes.name);
-    const snAttributeRel = lowerIfExists(sn.attributes.rel);
-    const snAttributeProperty = lowerIfExists(sn.attributes.property);
+    /* eslint-disable */
+    // @ts-ignore
+    const snAttributeName: string = sn.attributes.name ? sn.attributes.name.toLowerCase() : "";
+    // @ts-ignore
+    const snAttributeRel: string = sn.attributes.name ? sn.attributes.name.toLowerCase() : "";
+    // @ts-ignore
+    const snAttributeProperty: string = sn.attributes.property ? sn.attributes.property.toLowerCase() : "";
+    /* eslint-enable */
 
     if (
       slimDOMOptions.script &&
@@ -879,9 +874,9 @@ function slimDOMExcluded(
       ) {
         return true;
       } else if (
-        (slimDOMOptions.headMetaSocial && snAttributeName === 'pinterest') ||
+        (slimDOMOptions.headMetaSocial && (
         /^(og|twitter|fb):/.test(snAttributeProperty) || // og = opengraph (facebook)
-        /^(og|twitter):/.test(snAttributeName)
+        /^(og|twitter):/.test(snAttributeName)))
       ) {
         return true;
       } else if (
