@@ -567,12 +567,6 @@ exports[`record integration tests can freeze mutations 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 20,
-          \\"attributes\\": {
-            \\"foo\\": \\"bar\\"
-          }
-        },
-        {
           \\"id\\": 5,
           \\"attributes\\": {
             \\"test\\": \\"true\\"
@@ -2930,36 +2924,9 @@ exports[`record integration tests can record node mutations 1`] = `
           }
         },
         {
-          \\"id\\": 36,
-          \\"attributes\\": {
-            \\"id\\": \\"select2-drop\\",
-            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: block;\\",
-            \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
-          }
-        },
-        {
-          \\"id\\": 70,
-          \\"attributes\\": {
-            \\"style\\": \\"\\"
-          }
-        },
-        {
-          \\"id\\": 42,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-input select2-focused\\",
-            \\"aria-activedescendant\\": \\"select2-result-label-2\\"
-          }
-        },
-        {
           \\"id\\": 35,
           \\"attributes\\": {
             \\"disabled\\": \\"\\"
-          }
-        },
-        {
-          \\"id\\": 72,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\"
           }
         }
       ],
@@ -4615,15 +4582,7 @@ exports[`record integration tests handles null attribute values 1`] = `
     \\"data\\": {
       \\"source\\": 0,
       \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 20,
-          \\"attributes\\": {
-            \\"aria-label\\": \\"label\\",
-            \\"id\\": \\"test-li\\"
-          }
-        }
-      ],
+      \\"attributes\\": [],
       \\"removes\\": [],
       \\"adds\\": [
         {
