@@ -1,3 +1,4 @@
+import { text } from 'stream/consumers';
 import {
   serializedNode,
   serializedNodeWithId,
@@ -273,6 +274,10 @@ export function _isBlockedElement(
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
+  if(!blockClass && !blockSelector) {
+    return false
+  }
+
   try {
     if (typeof blockClass === 'string') {
       if (element.classList.contains(blockClass)) {
@@ -322,13 +327,17 @@ export function needMaskingText(
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
-  try {
-    const el: HTMLElement | null =
-      node.nodeType === node.ELEMENT_NODE
-        ? (node as HTMLElement)
-        : node.parentElement;
-    if (el === null) return false;
+  if (!maskTextClass && !maskTextSelector) {
+    return false;
+  }
 
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+
+  if (el === null) return false;
+  try {
     if (typeof maskTextClass === 'string') {
       if (el.classList.contains(maskTextClass)) return true;
       if (el.closest(`.${maskTextClass}`)) return true;
@@ -552,8 +561,8 @@ function serializeTextNode(
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
-  let textContent = n.textContent;
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
+  let textContent = n.textContent;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
   if (isStyle && textContent) {
     try {
@@ -579,15 +588,22 @@ function serializeTextNode(
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
   }
+
   if (
     !isStyle &&
     !isScript &&
     textContent &&
     needMaskingText(n, maskTextClass, maskTextSelector)
   ) {
-    textContent = maskTextFn
-      ? maskTextFn(textContent)
-      : textContent.replace(/[\S]/g, '*');
+    return {
+      type: NodeType.Text,
+      textContent:
+        (maskTextFn
+          ? maskTextFn(textContent)
+          : textContent.replace(/[\S]/g, '*')) || '',
+      isStyle,
+      rootId,
+    };
   }
 
   return {
@@ -832,12 +848,18 @@ function slimDOMExcluded(
     return true;
   } else if (sn.type === NodeType.Element) {
     /* eslint-disable */
-    // @ts-ignore
-    const snAttributeName: string = sn.attributes.name ? sn.attributes.name.toLowerCase() : "";
-    // @ts-ignore
-    const snAttributeRel: string = sn.attributes.name ? sn.attributes.name.toLowerCase() : "";
-    // @ts-ignore
-    const snAttributeProperty: string = sn.attributes.property ? sn.attributes.property.toLowerCase() : "";
+    const snAttributeName: string = sn.attributes.name
+      ? // @ts-ignore
+        sn.attributes.name.toLowerCase()
+      : '';
+    const snAttributeRel: string = sn.attributes.name
+      ? // @ts-ignore
+        sn.attributes.name.toLowerCase()
+      : '';
+    const snAttributeProperty: string = sn.attributes.property
+      ? // @ts-ignore
+        sn.attributes.property.toLowerCase()
+      : '';
     /* eslint-enable */
 
     if (
@@ -874,9 +896,9 @@ function slimDOMExcluded(
       ) {
         return true;
       } else if (
-        (slimDOMOptions.headMetaSocial && (
-        /^(og|twitter|fb):/.test(snAttributeProperty) || // og = opengraph (facebook)
-        /^(og|twitter):/.test(snAttributeName)))
+        slimDOMOptions.headMetaSocial &&
+        (/^(og|twitter|fb):/.test(snAttributeProperty) || // og = opengraph (facebook)
+          /^(og|twitter):/.test(snAttributeName))
       ) {
         return true;
       } else if (
@@ -1051,6 +1073,10 @@ export function serializeNodeWithId(
     ) {
       preserveWhiteSpace = false;
     }
+
+    const isEl = isElement(n);
+    const isShadow = isEl && n.shadowRoot && isNativeShadowDom(n.shadowRoot);
+
     const bypassOptions = {
       doc,
       mirror,
@@ -1075,22 +1101,24 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
     };
-    for (const childN of Array.from(n.childNodes)) {
+
+    n.childNodes.forEach((childN) => {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
-    }
+    });
 
     if (isElement(n) && n.shadowRoot) {
-      for (const childN of Array.from(n.shadowRoot.childNodes)) {
+      n.shadowRoot.childNodes.forEach((childN) => {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          isNativeShadowDom(n.shadowRoot) &&
-            (serializedChildNode.isShadow = true);
+          if(isNativeShadowDom(n.shadowRoot!)){
+            serializedChildNode.isShadow = true;
+          }
           serializedNode.childNodes.push(serializedChildNode);
         }
-      }
+      });
     }
   }
 
