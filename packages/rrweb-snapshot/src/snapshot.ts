@@ -1,4 +1,3 @@
-import { text } from 'stream/consumers';
 import {
   serializedNode,
   serializedNodeWithId,
@@ -53,13 +52,17 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
 }
 
 function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) =>
-          rule.cssText ? validateStringifiedCssRule(rule.cssText) : '',
-        )
-        .join('')
-    : '';
+  if(sheet.cssRules.length === 0) {
+    return "";
+  }
+
+  const buffer: string[] = new Array<string>(sheet.cssRules.length);
+
+  for(let i = 0; i < sheet.cssRules.length; i++) {
+    const rule = sheet.cssRules[i];
+    buffer[i] = rule.cssText ? validateStringifiedCssRule(rule.cssText) : '';
+  }
+  return buffer.join('');
 }
 
 function extractOrigin(url: string): string {
@@ -148,7 +151,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
 
   function collectCharacters(regEx: RegExp) {
     let chars: string;
-    const match = regEx.exec(attributeValue.substring(pos));
+    const match = attributeValue.substring(pos).match(regEx)
     if (match) {
       chars = match[0];
       pos += chars.length;
@@ -839,14 +842,25 @@ function serializeElementNode(
   };
 }
 
+const MS_APPLICATION_TILE_REGEXP = /^msapplication-tile(image|color)$/;
+const OG_TWITTER_OR_FB_REGEXP = /^(og|twitter|fb):/;
+const OG_TWITTER_REGEXP = /^(og|twitter):/;
+const ARTICLE_PRODUCT_REGEXP = /^(article|product):/;
+
 function slimDOMExcluded(
   sn: serializedNode,
   slimDOMOptions: SlimDOMOptions,
 ): boolean {
-  if (slimDOMOptions.comment && sn.type === NodeType.Comment) {
+  if(sn.type !== NodeType.Element && sn.type !== NodeType.Comment) {
+    return false
+  }
+
+  if (sn.type === NodeType.Comment && slimDOMOptions.comment) {
     // TODO: convert IE conditional comments to real nodes
     return true;
-  } else if (sn.type === NodeType.Element) {
+  }
+  
+  if (sn.type === NodeType.Element) {
     /* eslint-disable */
     const snAttributeName: string = sn.attributes.name
       ? // @ts-ignore
@@ -886,7 +900,7 @@ function slimDOMExcluded(
             snAttributeRel === 'icon' ||
             snAttributeRel === 'apple-touch-icon' ||
             snAttributeRel === 'shortcut icon' ||
-            /^msapplication-tile(image|color)$/.test(snAttributeName))))
+            MS_APPLICATION_TILE_REGEXP.test(snAttributeName))))
     ) {
       return true;
     } else if (sn.tagName === 'meta') {
@@ -897,8 +911,8 @@ function slimDOMExcluded(
         return true;
       } else if (
         slimDOMOptions.headMetaSocial &&
-        (/^(og|twitter|fb):/.test(snAttributeProperty) || // og = opengraph (facebook)
-          /^(og|twitter):/.test(snAttributeName))
+        (OG_TWITTER_OR_FB_REGEXP.test(snAttributeProperty) || // og = opengraph (facebook)
+          OG_TWITTER_REGEXP.test(snAttributeName))
       ) {
         return true;
       } else if (
@@ -922,7 +936,7 @@ function slimDOMExcluded(
           snAttributeName === 'framework' ||
           snAttributeName === 'publisher' ||
           snAttributeName === 'progid' ||
-          /^article|product:/.test(snAttributeProperty))
+          ARTICLE_PRODUCT_REGEXP.test(snAttributeProperty))
       ) {
         return true;
       } else if (
@@ -1073,9 +1087,6 @@ export function serializeNodeWithId(
     ) {
       preserveWhiteSpace = false;
     }
-
-    const isEl = isElement(n);
-    const isShadow = isEl && n.shadowRoot && isNativeShadowDom(n.shadowRoot);
 
     const bypassOptions = {
       doc,

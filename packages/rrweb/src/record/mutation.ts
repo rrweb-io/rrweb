@@ -133,6 +133,16 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
+const getNextId = (n: Node, mirror: observerParam['mirror']): number | null => {
+  let ns: Node | null = n;
+  let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
+  while (nextId === IGNORED_NODE) {
+    ns = ns && ns.nextSibling;
+    nextId = ns && mirror.getId(ns);
+  }
+  return nextId;
+};
+
 /**
  * controls behaviour of a MutationObserver
  */
@@ -272,15 +282,6 @@ export default class MutationBuffer {
      * parent, so we init a queue to store these nodes.
      */
     const addList = new DoubleLinkedList();
-    const getNextId = (n: Node): number | null => {
-      let ns: Node | null = n;
-      let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
-      while (nextId === IGNORED_NODE) {
-        ns = ns && ns.nextSibling;
-        nextId = ns && this.mirror.getId(ns);
-      }
-      return nextId;
-    };
     const pushAdd = (n: Node) => {
       if (!n.parentNode || !inDom(n)) {
         return;
@@ -288,7 +289,7 @@ export default class MutationBuffer {
       const parentId = isShadowRoot(n.parentNode)
         ? this.mirror.getId(getShadowHost(n))
         : this.mirror.getId(n.parentNode);
-      const nextId = getNextId(n);
+      const nextId = getNextId(n, this.mirror);
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
@@ -371,7 +372,7 @@ export default class MutationBuffer {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
         const parentId = this.mirror.getId(candidate.value.parentNode);
-        const nextId = getNextId(candidate.value);
+        const nextId = getNextId(candidate.value, this.mirror);
         if (parentId !== -1 && nextId !== -1) {
           node = candidate;
         }
@@ -384,7 +385,7 @@ export default class MutationBuffer {
           // ensure _node is defined before attempting to find value
           if (_node) {
             const parentId = this.mirror.getId(_node.value.parentNode);
-            const nextId = getNextId(_node.value);
+            const nextId = getNextId(_node.value, this.mirror);
 
             if (nextId === -1) continue;
             // nextId !== -1 && parentId !== -1
@@ -671,39 +672,51 @@ export default class MutationBuffer {
   /**
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
-  private genAdds = (n: Node, target?: Node) => {
-    // this node was already recorded in other buffer, ignore it
-    if (this.processedNodeManager.inOtherBuffer(n, this)) return;
+  private genAdds = (node: Node, t?: Node) => {
+    let rp = 0;
+    const queue: [Node, Node|undefined][] = new Array<[Node, Node|undefined]>(1000);
+    queue[0] = [node, t];
 
-    // if n is added to set, there is no need to travel it and its' children again
-    if (this.addedSet.has(n) || this.movedSet.has(n)) return;
+    while (queue[rp]) {
+      const next = queue[rp]
+      if(!next) break;
+      const [n, target] = next;
+      rp++;
+      // this node was already recorded in other buffer, ignore it
+      if (this.processedNodeManager.inOtherBuffer(n, this)) continue;
 
-    if (this.mirror.hasNode(n)) {
-      if (isIgnored(n, this.mirror)) {
-        return;
-      }
-      this.movedSet.add(n);
-      let targetId: number | null = null;
-      if (target && this.mirror.hasNode(target)) {
-        targetId = this.mirror.getId(target);
-      }
-      if (targetId && targetId !== -1) {
-        this.movedMap[moveKey(this.mirror.getId(n), targetId)] = true;
-      }
-    } else {
-      this.addedSet.add(n);
-      this.droppedSet.delete(n);
-    }
+      // if n is added to set, there is no need to travel it and its' children again
+      if (this.addedSet.has(n) || this.movedSet.has(n)) continue;
 
-    // if this node is blocked `serializeNode` will turn it into a placeholder element
-    // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
-      if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
-          this.processedNodeManager.add(childN, this);
-          this.genAdds(childN, n);
+      if (this.mirror.hasNode(n)) {
+        if (isIgnored(n, this.mirror)) {
+          continue
+        }
+        this.movedSet.add(n);
+        let targetId: number | null = null;
+        if (target && this.mirror.hasNode(target)) {
+          targetId = this.mirror.getId(target);
+        }
+        if (targetId && targetId !== -1) {
+          this.movedMap[moveKey(this.mirror.getId(n), targetId)] = true;
+        }
+      } else {
+        this.addedSet.add(n);
+        this.droppedSet.delete(n);
+      }
+
+      // if this node is blocked `serializeNode` will turn it into a placeholder element
+      // but we have to remove it's children otherwise they will be added as placeholders too
+      if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
+        n.childNodes.forEach((childN) => {
+          queue.push([childN, undefined])
         });
+        if (hasShadowRoot(n)) {
+          n.shadowRoot.childNodes.forEach((childN) => {
+            this.processedNodeManager.add(childN, this);
+            queue.push([childN, n])
+          });
+        }
       }
     }
   };

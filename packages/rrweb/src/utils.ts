@@ -229,9 +229,11 @@ export function isBlocked(
   blockSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
+  if(!blockClass && !blockSelector) return false;
   if (!node) {
     return false;
   }
+  
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
