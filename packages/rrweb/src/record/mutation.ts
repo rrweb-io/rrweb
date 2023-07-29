@@ -341,7 +341,7 @@ export default class MutationBuffer {
     };
 
     while (this.mapRemoves.length) {
-      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
+      this.mirror.removeNodeFromMap(this.mapRemoves.pop()!);
     }
 
     for (const n of this.movedSet) {
@@ -384,12 +384,13 @@ export default class MutationBuffer {
           tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value, this.mirror);
-
             if (nextId === -1) continue;
+            
+            const parentId = this.mirror.getId(_node.value.parentNode);
+
             // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
+            if (parentId !== -1) {
               node = _node;
               break;
             }
@@ -430,21 +431,33 @@ export default class MutationBuffer {
       pushAdd(node.value);
     }
 
+    const texts = [];
+    for(let i = 0; i < this.texts.length; i++){
+      if(!this.mirror.getId(this.texts[i].node)){
+        continue;
+      }
+      texts.push({
+        id: this.mirror.getId(this.texts[i].node),
+        value: this.texts[i].value,
+      });
+    }
+
+    const attributes = [];
+    for(let i = 0; i < this.attributes.length; i++){
+      if(!this.mirror.getId(this.attributes[i].node)){
+        continue;
+      }
+      attributes.push({
+        id: this.mirror.getId(this.attributes[i].node),
+        attributes: this.attributes[i].attributes,
+      });
+    }
+
     const payload = {
-      texts: this.texts
-        .map((text) => ({
-          id: this.mirror.getId(text.node),
-          value: text.value,
-        }))
+      texts,
         // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => this.mirror.has(text.id)),
-      attributes: this.attributes
-        .map((attribute) => ({
-          id: this.mirror.getId(attribute.node),
-          attributes: attribute.attributes,
-        }))
+      attributes,
         // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => this.mirror.has(attribute.id)),
       removes: this.removes,
       adds,
     };
@@ -462,9 +475,9 @@ export default class MutationBuffer {
     this.texts = [];
     this.attributes = [];
     this.removes = [];
-    this.addedSet = new Set<Node>();
-    this.movedSet = new Set<Node>();
-    this.droppedSet = new Set<Node>();
+    this.addedSet.clear();
+    this.movedSet.clear();
+    this.droppedSet.clear();
     this.movedMap = {};
 
     this.mutationCb(payload);
@@ -673,15 +686,18 @@ export default class MutationBuffer {
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
   private genAdds = (node: Node, t?: Node) => {
-    let rp = 0;
     const queue: [Node, Node|undefined][] = new Array<[Node, Node|undefined]>(1000);
-    queue[0] = [node, t];
+    let rp = -1;
+    let wp = -1;
+    queue[++wp] = [node, t];
 
-    while (queue[rp]) {
-      const next = queue[rp]
-      if(!next) break;
+    while (rp < wp) {
+      const next = queue[++rp]
+      if(!next){
+        throw new Error("Add queue is corrupt, there is no next item to process")
+      }
       const [n, target] = next;
-      rp++;
+
       // this node was already recorded in other buffer, ignore it
       if (this.processedNodeManager.inOtherBuffer(n, this)) continue;
 
@@ -709,12 +725,12 @@ export default class MutationBuffer {
       // but we have to remove it's children otherwise they will be added as placeholders too
       if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
         n.childNodes.forEach((childN) => {
-          queue.push([childN, undefined])
+          queue[++wp] = [childN, undefined]
         });
         if (hasShadowRoot(n)) {
           n.shadowRoot.childNodes.forEach((childN) => {
             this.processedNodeManager.add(childN, this);
-            queue.push([childN, n])
+            queue[++wp] = [childN, n]
           });
         }
       }
