@@ -23,7 +23,7 @@ export default class ProcessedNodeManager {
     const buffers = this.nodeMap.get(node);
     if(!buffers) return false;
 
-    return Array.from(buffers).some((buffer) => buffer !== thisBuffer)
+    return buffers.has(thisBuffer);
   }
 
   public add(node: Node, buffer: MutationBuffer) {

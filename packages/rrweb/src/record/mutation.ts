@@ -267,6 +267,66 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
+
+  private pushAdd(n: Node, adds: addedNodeMutation[], addList: DoubleLinkedList) {
+    if (!n.parentNode || !inDom(n)) {
+      return;
+    }
+    const parentId = isShadowRoot(n.parentNode)
+      ? this.mirror.getId(getShadowHost(n))
+      : this.mirror.getId(n.parentNode);
+    const nextId = getNextId(n, this.mirror);
+    if (parentId === -1 || nextId === -1) {
+      return addList.addNode(n);
+    }
+    const sn = serializeNodeWithId(n, {
+      doc: this.doc,
+      mirror: this.mirror,
+      blockClass: this.blockClass,
+      blockSelector: this.blockSelector,
+      maskTextClass: this.maskTextClass,
+      maskTextSelector: this.maskTextSelector,
+      skipChild: true,
+      newlyAddedElement: true,
+      inlineStylesheet: this.inlineStylesheet,
+      maskInputOptions: this.maskInputOptions,
+      maskTextFn: this.maskTextFn,
+      maskInputFn: this.maskInputFn,
+      slimDOMOptions: this.slimDOMOptions,
+      dataURLOptions: this.dataURLOptions,
+      recordCanvas: this.recordCanvas,
+      inlineImages: this.inlineImages,
+      onSerialize: (currentN) => {
+        if (isSerializedIframe(currentN, this.mirror)) {
+          this.iframeManager.addIframe(currentN as HTMLIFrameElement);
+        }
+        if (isSerializedStylesheet(currentN, this.mirror)) {
+          this.stylesheetManager.trackLinkElement(
+            currentN as HTMLLinkElement,
+          );
+        }
+        if (hasShadowRoot(n)) {
+          this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+        }
+      },
+      onIframeLoad: (iframe, childSn) => {
+        this.iframeManager.attachIframe(iframe, childSn);
+        this.shadowDomManager.observeAttachShadow(iframe);
+      },
+      onStylesheetLoad: (link, childSn) => {
+        this.stylesheetManager.attachLinkElement(link, childSn);
+      },
+    });
+    if (sn) {
+      adds.push({
+        parentId,
+        nextId,
+        node: sn,
+      });
+    }
+  }
+
+
   public emit = () => {
     if (this.frozen || this.locked) {
       return;
@@ -282,64 +342,7 @@ export default class MutationBuffer {
      * parent, so we init a queue to store these nodes.
      */
     const addList = new DoubleLinkedList();
-    const pushAdd = (n: Node) => {
-      if (!n.parentNode || !inDom(n)) {
-        return;
-      }
-      const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
-      const nextId = getNextId(n, this.mirror);
-      if (parentId === -1 || nextId === -1) {
-        return addList.addNode(n);
-      }
-      const sn = serializeNodeWithId(n, {
-        doc: this.doc,
-        mirror: this.mirror,
-        blockClass: this.blockClass,
-        blockSelector: this.blockSelector,
-        maskTextClass: this.maskTextClass,
-        maskTextSelector: this.maskTextSelector,
-        skipChild: true,
-        newlyAddedElement: true,
-        inlineStylesheet: this.inlineStylesheet,
-        maskInputOptions: this.maskInputOptions,
-        maskTextFn: this.maskTextFn,
-        maskInputFn: this.maskInputFn,
-        slimDOMOptions: this.slimDOMOptions,
-        dataURLOptions: this.dataURLOptions,
-        recordCanvas: this.recordCanvas,
-        inlineImages: this.inlineImages,
-        onSerialize: (currentN) => {
-          if (isSerializedIframe(currentN, this.mirror)) {
-            this.iframeManager.addIframe(currentN as HTMLIFrameElement);
-          }
-          if (isSerializedStylesheet(currentN, this.mirror)) {
-            this.stylesheetManager.trackLinkElement(
-              currentN as HTMLLinkElement,
-            );
-          }
-          if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
-          }
-        },
-        onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn);
-          this.shadowDomManager.observeAttachShadow(iframe);
-        },
-        onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachLinkElement(link, childSn);
-        },
-      });
-      if (sn) {
-        adds.push({
-          parentId,
-          nextId,
-          node: sn,
-        });
-      }
-    };
-
+    
     while (this.mapRemoves.length) {
       this.mirror.removeNodeFromMap(this.mapRemoves.pop()!);
     }
@@ -351,7 +354,7 @@ export default class MutationBuffer {
       ) {
         continue;
       }
-      pushAdd(n);
+      this.pushAdd(n, adds, addList);
     }
 
     for (const n of this.addedSet) {
@@ -359,9 +362,9 @@ export default class MutationBuffer {
         !isAncestorInSet(this.droppedSet, n) &&
         !isParentRemoved(this.removes, n, this.mirror)
       ) {
-        pushAdd(n);
+        this.pushAdd(n, adds, addList);
       } else if (isAncestorInSet(this.movedSet, n)) {
-        pushAdd(n);
+        this.pushAdd(n, adds, addList);
       } else {
         this.droppedSet.add(n);
       }
@@ -428,7 +431,7 @@ export default class MutationBuffer {
       }
       candidate = node.previous;
       addList.removeNode(node.value);
-      pushAdd(node.value);
+      this.pushAdd(node.value, adds, addList);
     }
 
     const texts = [];
@@ -487,28 +490,20 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
-    let unattachedDoc;
-    try {
-      // avoid upsetting original document from a Content Security point of view
-      unattachedDoc = document.implementation.createHTMLDocument();
-    } catch (e) {
-      // fallback to more direct method
-      unattachedDoc = this.doc;
-    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
         if (
-          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
-          value !== m.oldValue
+          value !== m.oldValue &&
+          !isBlocked(m.target, this.blockClass, this.blockSelector, false)
         ) {
           this.texts.push({
             value:
-              needMaskingText(
+              value && needMaskingText(
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
-              ) && value
+              )
                 ? this.maskTextFn
                   ? this.maskTextFn(value)
                   : value.replace(/[\S]/g, '*')
@@ -536,15 +531,12 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-          value === m.oldValue
+          value === m.oldValue ||
+          isBlocked(m.target, this.blockClass, this.blockSelector, false)
         ) {
           return;
         }
 
-        let item: attributeCursor | undefined = this.attributes.find(
-          (a) => a.node === m.target,
-        );
         if (
           target.tagName === 'IFRAME' &&
           attributeName === 'src' &&
@@ -558,6 +550,9 @@ export default class MutationBuffer {
             return;
           }
         }
+        let item: attributeCursor | undefined = this.attributes.find(
+          (a) => a.node === m.target,
+        );
         if (!item) {
           item = {
             node: m.target,
@@ -577,6 +572,14 @@ export default class MutationBuffer {
         }
 
         if (attributeName === 'style') {
+          let unattachedDoc;
+          try {
+            // avoid upsetting original document from a Content Security point of view
+            unattachedDoc = document.implementation.createHTMLDocument();
+          } catch (e) {
+            // fallback to more direct method
+            unattachedDoc = this.doc;
+          }
           const old = unattachedDoc.createElement('span');
           if (m.oldValue) {
             old.setAttribute('style', m.oldValue);
@@ -633,9 +636,9 @@ export default class MutationBuffer {
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
             isIgnored(n, this.mirror) ||
-            !isSerialized(n, this.mirror)
+            !isSerialized(n, this.mirror) ||
+            isBlocked(m.target, this.blockClass, this.blockSelector, false)
           ) {
             return;
           }
@@ -685,14 +688,14 @@ export default class MutationBuffer {
   /**
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
+  genAddsQueue: [Node, Node|undefined][] = new Array<[Node, Node|undefined]>(1000);
   private genAdds = (node: Node, t?: Node) => {
-    const queue: [Node, Node|undefined][] = new Array<[Node, Node|undefined]>(1000);
     let rp = -1;
     let wp = -1;
-    queue[++wp] = [node, t];
+    this.genAddsQueue[++wp] = [node, t];
 
     while (rp < wp) {
-      const next = queue[++rp]
+      const next = this.genAddsQueue[++rp]
       if(!next){
         throw new Error("Add queue is corrupt, there is no next item to process")
       }
@@ -721,18 +724,20 @@ export default class MutationBuffer {
         this.droppedSet.delete(n);
       }
 
+      const isNodeBlocked = isBlocked(n, this.blockClass, this.blockSelector, false);
+      if(isNodeBlocked){
+        return
+      }
       // if this node is blocked `serializeNode` will turn it into a placeholder element
       // but we have to remove it's children otherwise they will be added as placeholders too
-      if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-        n.childNodes.forEach((childN) => {
-          queue[++wp] = [childN, undefined]
+      n.childNodes.forEach((childN) => {
+        this.genAddsQueue[++wp] = [childN, undefined]
+      });
+      if (hasShadowRoot(n)) {
+        n.shadowRoot.childNodes.forEach((childN) => {
+          this.processedNodeManager.add(childN, this);
+          this.genAddsQueue[++wp] = [childN, n]
         });
-        if (hasShadowRoot(n)) {
-          n.shadowRoot.childNodes.forEach((childN) => {
-            this.processedNodeManager.add(childN, this);
-            queue[++wp] = [childN, n]
-          });
-        }
       }
     }
   };
@@ -745,8 +750,13 @@ export default class MutationBuffer {
  * that.
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
-  addsSet.delete(n);
-  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
+  const deleteQueue = [n];
+
+  while(deleteQueue.length) {
+    const node = deleteQueue.pop()!;
+    addsSet.delete(node);
+    node.childNodes.forEach((childN) => deleteQueue.push(childN));
+  }
 }
 
 function isParentRemoved(
@@ -755,23 +765,33 @@ function isParentRemoved(
   mirror: Mirror,
 ): boolean {
   if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
+  return _isParentRemoved(removes, n, mirror, undefined);
 }
 
 function _isParentRemoved(
   removes: removedNodeMutation[],
   n: Node,
   mirror: Mirror,
+  removeSet: Set<number> | undefined
 ): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
   }
-  const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
+  
+  const removedLookupSet = removeSet || new Set();
+  const parentId = mirror.getId(parentNode)
+  for(let i = 0; i < removes.length; i++){
+    const removedNode = removes[i];
+    if(removedNode.id === parentId){
+      return true
+    }
+    removedLookupSet.add(removedNode.id);
+  }
+  if (removedLookupSet.has(parentId)) {
     return true;
   }
-  return _isParentRemoved(removes, parentNode, mirror);
+  return _isParentRemoved(removes, parentNode, mirror, removedLookupSet);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {

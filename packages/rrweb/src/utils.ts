@@ -229,10 +229,10 @@ export function isBlocked(
   blockSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
-  if(!blockClass && !blockSelector) return false;
   if (!node) {
     return false;
   }
+  if(!blockClass && !blockSelector) return false;
   
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
@@ -242,17 +242,14 @@ export function isBlocked(
 
   try {
     if (typeof blockClass === 'string') {
-      if (el.classList.contains(blockClass)) return true;
-      if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
-    } else {
-      if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+      return el.classList.contains(blockClass) || (checkAncestors && el.matches(`.${blockClass} *`));
     }
+    return classMatchesRegex(el, blockClass, checkAncestors)
   } catch (e) {
     // e
   }
   if (blockSelector) {
-    if (el.matches(blockSelector)) return true;
-    if (checkAncestors && el.closest(blockSelector) !== null) return true;
+    return el.matches(blockSelector) || (checkAncestors && el.matches(`${blockSelector} *`));
   }
   return false;
 }

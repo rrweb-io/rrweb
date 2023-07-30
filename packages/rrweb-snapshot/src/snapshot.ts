@@ -343,14 +343,14 @@ export function needMaskingText(
   try {
     if (typeof maskTextClass === 'string') {
       if (el.classList.contains(maskTextClass)) return true;
-      if (el.closest(`.${maskTextClass}`)) return true;
+      if (el.matches(`.${maskTextClass} *`)) return true;
     } else {
       if (classMatchesRegex(el, maskTextClass, true)) return true;
     }
 
     if (maskTextSelector) {
       if (el.matches(maskTextSelector)) return true;
-      if (el.closest(maskTextSelector)) return true;
+      if (el.matches(`${maskTextSelector} *`)) return true;
     }
   } catch (e) {
     //
