@@ -232,8 +232,8 @@ export function isBlocked(
   if (!node) {
     return false;
   }
-  if(!blockClass && !blockSelector) return false;
-  
+  if (!blockClass && !blockSelector) return false;
+
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
@@ -242,14 +242,20 @@ export function isBlocked(
 
   try {
     if (typeof blockClass === 'string') {
-      return el.classList.contains(blockClass) || (checkAncestors && el.matches(`.${blockClass} *`));
+      return (
+        el.classList.contains(blockClass) ||
+        (checkAncestors && el.matches(`.${blockClass} *`))
+      );
     }
-    return classMatchesRegex(el, blockClass, checkAncestors)
+    return classMatchesRegex(el, blockClass, checkAncestors);
   } catch (e) {
     // e
   }
   if (blockSelector) {
-    return el.matches(blockSelector) || (checkAncestors && el.matches(`${blockSelector} *`));
+    return (
+      el.matches(blockSelector) ||
+      (checkAncestors && el.matches(`${blockSelector} *`))
+    );
   }
   return false;
 }

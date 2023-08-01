@@ -267,8 +267,11 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
-
-  private pushAdd(n: Node, adds: addedNodeMutation[], addList: DoubleLinkedList) {
+  private pushAdd(
+    n: Node,
+    adds: addedNodeMutation[],
+    addList: DoubleLinkedList,
+  ) {
     if (!n.parentNode || !inDom(n)) {
       return;
     }
@@ -301,9 +304,7 @@ export default class MutationBuffer {
           this.iframeManager.addIframe(currentN as HTMLIFrameElement);
         }
         if (isSerializedStylesheet(currentN, this.mirror)) {
-          this.stylesheetManager.trackLinkElement(
-            currentN as HTMLLinkElement,
-          );
+          this.stylesheetManager.trackLinkElement(currentN as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
           this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
@@ -326,7 +327,6 @@ export default class MutationBuffer {
     }
   }
 
-
   public emit = () => {
     if (this.frozen || this.locked) {
       return;
@@ -342,7 +342,7 @@ export default class MutationBuffer {
      * parent, so we init a queue to store these nodes.
      */
     const addList = new DoubleLinkedList();
-    
+
     while (this.mapRemoves.length) {
       this.mirror.removeNodeFromMap(this.mapRemoves.pop()!);
     }
@@ -389,7 +389,7 @@ export default class MutationBuffer {
           if (_node) {
             const nextId = getNextId(_node.value, this.mirror);
             if (nextId === -1) continue;
-            
+
             const parentId = this.mirror.getId(_node.value.parentNode);
 
             // nextId !== -1 && parentId !== -1
@@ -435,8 +435,8 @@ export default class MutationBuffer {
     }
 
     const texts = [];
-    for(let i = 0; i < this.texts.length; i++){
-      if(!this.mirror.getId(this.texts[i].node)){
+    for (let i = 0; i < this.texts.length; i++) {
+      if (!this.mirror.getId(this.texts[i].node)) {
         continue;
       }
       texts.push({
@@ -446,9 +446,9 @@ export default class MutationBuffer {
     }
 
     const attributes = [];
-    for(let i = 0; i < this.attributes.length; i++){
+    for (let i = 0; i < this.attributes.length; i++) {
       const id = this.mirror.getId(this.attributes[i].node);
-      if(!id && id !== 0){
+      if (!id && id !== 0) {
         continue;
       }
       attributes.push({
@@ -459,9 +459,9 @@ export default class MutationBuffer {
 
     const payload = {
       texts,
-        // text mutation's id was not in the mirror map means the target node has been removed
+      // text mutation's id was not in the mirror map means the target node has been removed
       attributes,
-        // attribute mutation's id was not in the mirror map means the target node has been removed
+      // attribute mutation's id was not in the mirror map means the target node has been removed
       removes: this.removes,
       adds,
     };
@@ -500,7 +500,8 @@ export default class MutationBuffer {
         ) {
           this.texts.push({
             value:
-              value && needMaskingText(
+              value &&
+              needMaskingText(
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
@@ -636,9 +637,10 @@ export default class MutationBuffer {
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
+
           if (
-            isIgnored(n, this.mirror) ||
-            !isSerialized(n, this.mirror) ||
+            nodeId === IGNORED_NODE ||
+            nodeId === -1 ||
             isBlocked(m.target, this.blockClass, this.blockSelector, false)
           ) {
             return;
@@ -689,16 +691,20 @@ export default class MutationBuffer {
   /**
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
-  genAddsQueue: [Node, Node|undefined][] = new Array<[Node, Node|undefined]>(1000);
+  genAddsQueue: [Node, Node | undefined][] = new Array<
+    [Node, Node | undefined]
+  >(1000);
   private genAdds = (node: Node, t?: Node) => {
     let rp = -1;
     let wp = -1;
     this.genAddsQueue[++wp] = [node, t];
 
     while (rp < wp) {
-      const next = this.genAddsQueue[++rp]
-      if(!next){
-        throw new Error("Add queue is corrupt, there is no next item to process")
+      const next = this.genAddsQueue[++rp];
+      if (!next) {
+        throw new Error(
+          'Add queue is corrupt, there is no next item to process',
+        );
       }
       const [n, target] = next;
 
@@ -710,7 +716,7 @@ export default class MutationBuffer {
 
       if (this.mirror.hasNode(n)) {
         if (isIgnored(n, this.mirror)) {
-          continue
+          continue;
         }
         this.movedSet.add(n);
         let targetId: number | null = null;
@@ -725,19 +731,24 @@ export default class MutationBuffer {
         this.droppedSet.delete(n);
       }
 
-      const isNodeBlocked = isBlocked(n, this.blockClass, this.blockSelector, false);
-      if(isNodeBlocked){
-        return
+      const isNodeBlocked = isBlocked(
+        n,
+        this.blockClass,
+        this.blockSelector,
+        false,
+      );
+      if (isNodeBlocked) {
+        return;
       }
       // if this node is blocked `serializeNode` will turn it into a placeholder element
       // but we have to remove it's children otherwise they will be added as placeholders too
       n.childNodes.forEach((childN) => {
-        this.genAddsQueue[++wp] = [childN, undefined]
+        this.genAddsQueue[++wp] = [childN, undefined];
       });
       if (hasShadowRoot(n)) {
         n.shadowRoot.childNodes.forEach((childN) => {
           this.processedNodeManager.add(childN, this);
-          this.genAddsQueue[++wp] = [childN, n]
+          this.genAddsQueue[++wp] = [childN, n];
         });
       }
     }
@@ -753,7 +764,7 @@ export default class MutationBuffer {
 function deepDelete(addsSet: Set<Node>, n: Node) {
   const deleteQueue = [n];
 
-  while(deleteQueue.length) {
+  while (deleteQueue.length) {
     const node = deleteQueue.pop()!;
     addsSet.delete(node);
     node.childNodes.forEach((childN) => deleteQueue.push(childN));
@@ -773,19 +784,19 @@ function _isParentRemoved(
   removes: removedNodeMutation[],
   n: Node,
   mirror: Mirror,
-  removeSet: Set<number> | undefined
+  removeSet: Set<number> | undefined,
 ): boolean {
   const { parentNode } = n;
   if (!parentNode) {
     return false;
   }
-  
+
   const removedLookupSet = removeSet || new Set();
-  const parentId = mirror.getId(parentNode)
-  for(let i = 0; i < removes.length; i++){
+  const parentId = mirror.getId(parentNode);
+  for (let i = 0; i < removes.length; i++) {
     const removedNode = removes[i];
-    if(removedNode.id === parentId){
-      return true
+    if (removedNode.id === parentId) {
+      return true;
     }
     removedLookupSet.add(removedNode.id);
   }

@@ -52,13 +52,13 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
 }
 
 function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  if(sheet.cssRules.length === 0) {
-    return "";
+  if (sheet.cssRules.length === 0) {
+    return '';
   }
 
   const buffer: string[] = new Array<string>(sheet.cssRules.length);
 
-  for(let i = 0; i < sheet.cssRules.length; i++) {
+  for (let i = 0; i < sheet.cssRules.length; i++) {
     const rule = sheet.cssRules[i];
     buffer[i] = rule.cssText ? validateStringifiedCssRule(rule.cssText) : '';
   }
@@ -277,8 +277,8 @@ export function _isBlockedElement(
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
-  if(!blockClass && !blockSelector) {
-    return false
+  if (!blockClass && !blockSelector) {
+    return false;
   }
 
   try {
@@ -851,15 +851,15 @@ function slimDOMExcluded(
   sn: serializedNode,
   slimDOMOptions: SlimDOMOptions,
 ): boolean {
-  if(sn.type !== NodeType.Element && sn.type !== NodeType.Comment) {
-    return false
+  if (sn.type !== NodeType.Element && sn.type !== NodeType.Comment) {
+    return false;
   }
 
   if (sn.type === NodeType.Comment && slimDOMOptions.comment) {
     // TODO: convert IE conditional comments to real nodes
     return true;
   }
-  
+
   if (sn.type === NodeType.Element) {
     /* eslint-disable */
     const snAttributeName: string = sn.attributes.name
@@ -1124,7 +1124,7 @@ export function serializeNodeWithId(
       n.shadowRoot.childNodes.forEach((childN) => {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          if(isNativeShadowDom(n.shadowRoot!)){
+          if (isNativeShadowDom(n.shadowRoot!)) {
             serializedChildNode.isShadow = true;
           }
           serializedNode.childNodes.push(serializedChildNode);
