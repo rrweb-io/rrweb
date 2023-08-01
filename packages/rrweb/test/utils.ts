@@ -7,6 +7,7 @@ import {
   Optional,
   mouseInteractionData,
   event,
+  pluginEvent,
 } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
@@ -20,7 +21,7 @@ export async function launchPuppeteer(
   options?: Parameters<(typeof puppeteer)['launch']>[0],
 ) {
   return await puppeteer.launch({
-    headless: process.env.PUPPETEER_HEADLESS ? true : false,
+    headless: process.env.PUPPETEER_HEADLESS ? 'new' : false,
     defaultViewport: {
       width: 1920,
       height: 1080,
@@ -108,7 +109,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
       .filter((s) => {
         if (
           s.type === EventType.IncrementalSnapshot &&
-          s.data.source === IncrementalSource.MouseMove
+          (s.data.source === IncrementalSource.MouseMove ||
+            s.data.source === IncrementalSource.ViewportResize)
         ) {
           return false;
         }
@@ -191,6 +193,27 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           // round the currentTime to 1 decimal place
           if (s.data.currentTime) {
             s.data.currentTime = Math.round(s.data.currentTime * 10) / 10;
+          }
+        } else if (
+          s.type === EventType.Plugin &&
+          s.data.plugin === 'rrweb/console@1'
+        ) {
+          const pluginPayload = (
+            s as pluginEvent<{
+              trace: string[];
+              payload: string[];
+            }>
+          ).data.payload;
+
+          if (pluginPayload?.trace.length) {
+            pluginPayload.trace = pluginPayload.trace.map((trace) => {
+              return trace.replace(/^pptr:evaluate;.*%2F/, 'pptr:evaluate;');
+            });
+          }
+          if (pluginPayload?.payload.length) {
+            pluginPayload.payload = pluginPayload.payload.map((payload) => {
+              return payload.replace(/pptr:evaluate;.*%2F/g, 'pptr:evaluate;');
+            });
           }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
@@ -585,6 +608,51 @@ export async function waitForRAF(
       });
     });
   });
+}
+
+export async function waitForIFrameLoad(
+  page: puppeteer.Frame | puppeteer.Page,
+  iframeSelector: string,
+  timeout = 10000,
+): Promise<puppeteer.Frame> {
+  const el = await page.waitForSelector(iframeSelector);
+  if (!el)
+    throw new Error('Waiting for iframe load has timed out - no element found');
+
+  let frame = await el.contentFrame();
+  if (frame && frame.isDetached()) {
+    throw new Error(
+      'Waiting for iframe load has timed out - frame is detached',
+    );
+  }
+  if (frame && frame.url() !== '') {
+    return frame;
+  }
+
+  await page.$eval(
+    iframeSelector,
+    (el, timeout) => {
+      const p = new Promise((resolve, reject) => {
+        (el as HTMLIFrameElement).onload = () => {
+          resolve(el as HTMLIFrameElement);
+        };
+        setTimeout(() => {
+          reject(
+            new Error(
+              'Waiting for iframe load has timed out - onload not fired',
+            ),
+          );
+        }, timeout);
+      });
+      return p;
+    },
+    timeout,
+  );
+
+  frame = await el.contentFrame();
+  if (!frame)
+    throw new Error('Waiting for iframe load has timed out - no frame found');
+  return frame;
 }
 
 export function generateRecordSnippet(options: recordOptions<eventWithTime>) {

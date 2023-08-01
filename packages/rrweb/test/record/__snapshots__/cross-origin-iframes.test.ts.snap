@@ -37,7 +37,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -202,7 +202,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -370,7 +370,7 @@ exports[`cross origin iframes blank.html should filter out forwarded cross origi
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -448,7 +448,7 @@ exports[`cross origin iframes blank.html should filter out forwarded cross origi
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -544,7 +544,7 @@ exports[`cross origin iframes blank.html should filter out forwarded cross origi
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -632,7 +632,7 @@ exports[`cross origin iframes blank.html should record same-origin iframe in cro
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -710,7 +710,7 @@ exports[`cross origin iframes blank.html should record same-origin iframe in cro
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -877,7 +877,7 @@ exports[`cross origin iframes blank.html should support packFn option in record(
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -956,7 +956,7 @@ exports[`cross origin iframes blank.html should support packFn option in record(
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -1045,7 +1045,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1211,7 +1211,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -2042,7 +2042,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -2208,7 +2208,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -2685,7 +2685,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -2771,7 +2771,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -3099,7 +3099,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -3185,7 +3185,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -3518,7 +3518,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -3604,7 +3604,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -3806,7 +3806,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -3892,7 +3892,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -4191,7 +4191,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -4277,7 +4277,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -4477,7 +4477,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -4563,7 +4563,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -4763,7 +4763,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -4849,7 +4849,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -5086,7 +5086,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -5172,7 +5172,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
                         \\"type\\": 2,
                         \\"tagName\\": \\"script\\",
                         \\"attributes\\": {
-                          \\"type\\": \\"\\"
+                          \\"type\\": \\"text/javascript\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -5368,7 +5368,7 @@ exports[`same origin iframes should emit contents of iframe once 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -5482,7 +5482,7 @@ exports[`same origin iframes should emit contents of iframe once 1`] = `
             \\"type\\": 2,
             \\"tagName\\": \\"script\\",
             \\"attributes\\": {
-              \\"type\\": \\"\\"
+              \\"type\\": \\"text/javascript\\"
             },
             \\"childNodes\\": [],
             \\"rootId\\": 11,
