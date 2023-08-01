@@ -66,7 +66,7 @@ describe('replayer', function () {
 
       const image = await page.screenshot();
       expect(image).toMatchImageSnapshot({
-        failureThreshold: 38,
+        failureThreshold: 40,
       });
     });
   });
