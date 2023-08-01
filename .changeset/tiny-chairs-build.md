@@ -1,5 +1,5 @@
 ---
-"rrweb": patch
+'rrweb': patch
 ---
 
 Canvas FPS recording: override `preserveDrawingBuffer: true` on canvas creation.
