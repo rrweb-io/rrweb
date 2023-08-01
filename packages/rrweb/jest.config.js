@@ -6,4 +6,8 @@ export default {
   moduleNameMapper: {
     '\\.css$': 'identity-obj-proxy',
   },
+  snapshotFormat: {
+    escapeString: true,
+    printBasicPrototype: true,
+  },
 };

@@ -5380,7 +5380,7 @@ exports[`record integration tests should handle recursive console messages 1`] =
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:20:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:20:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"Proxied object:\\\\\\"\\",
@@ -10724,7 +10724,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"assert\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:2:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:2:21\\"
         ],
         \\"payload\\": [
           \\"true\\",
@@ -10740,7 +10740,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"count\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:3:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:3:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"count\\\\\\"\\"
@@ -10755,7 +10755,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"countReset\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:4:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:4:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"count\\\\\\"\\"
@@ -10770,7 +10770,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"debug\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:5:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:5:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"debug\\\\\\"\\"
@@ -10785,7 +10785,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"dir\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:6:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:6:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"dir\\\\\\"\\"
@@ -10800,7 +10800,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"dirxml\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:7:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:7:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"dirxml\\\\\\"\\"
@@ -10815,7 +10815,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"group\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:8:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:8:21\\"
         ],
         \\"payload\\": []
       }
@@ -10828,7 +10828,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"groupCollapsed\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:9:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:9:21\\"
         ],
         \\"payload\\": []
       }
@@ -10841,7 +10841,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"info\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:10:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:10:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"info\\\\\\"\\"
@@ -10856,7 +10856,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:11:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:11:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"log\\\\\\"\\"
@@ -10871,7 +10871,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"table\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:12:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:12:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"table\\\\\\"\\"
@@ -10886,7 +10886,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"time\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:13:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:13:21\\"
         ],
         \\"payload\\": []
       }
@@ -10899,7 +10899,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"timeEnd\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:14:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:14:21\\"
         ],
         \\"payload\\": []
       }
@@ -10912,7 +10912,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"timeLog\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:15:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:15:21\\"
         ],
         \\"payload\\": []
       }
@@ -10925,7 +10925,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"trace\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:16:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:16:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"trace\\\\\\"\\"
@@ -10940,7 +10940,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"warn\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:17:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:17:21\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"warn\\\\\\"\\"
@@ -10955,7 +10955,7 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"clear\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:18:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:18:21\\"
         ],
         \\"payload\\": []
       }
@@ -10968,10 +10968,10 @@ exports[`record integration tests should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:19:21\\"
+          \\"pptr://__puppeteer_evaluation_script__:19:21\\"
         ],
         \\"payload\\": [
-          \\"\\\\\\"TypeError: a message\\\\\\\\n    at __puppeteer_evaluation_script__:19:25\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
+          \\"\\\\\\"TypeError: a message\\\\\\\\n    at pptr://__puppeteer_evaluation_script__:19:25\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
         ]
       }
     }

@@ -71,7 +71,7 @@ describe('record integration tests', function (this: ISuite) {
     // also tap on the span
     const span = await page.waitForSelector('span');
     const center = await page.evaluate((el) => {
-      const { x, y, width, height } = el.getBoundingClientRect();
+      const { x, y, width, height } = el!.getBoundingClientRect();
       return {
         x: Math.round(x + width / 2),
         y: Math.round(y + height / 2),
@@ -81,7 +81,9 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.click('a');
 
-    const snapshots = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
 
@@ -186,7 +188,9 @@ describe('record integration tests', function (this: ISuite) {
       li.removeAttribute('aria-label');
     });
 
-    const snapshots = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
 
