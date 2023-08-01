@@ -447,11 +447,12 @@ export default class MutationBuffer {
 
     const attributes = [];
     for(let i = 0; i < this.attributes.length; i++){
-      if(!this.mirror.getId(this.attributes[i].node)){
+      const id = this.mirror.getId(this.attributes[i].node);
+      if(!id && id !== 0){
         continue;
       }
       attributes.push({
-        id: this.mirror.getId(this.attributes[i].node),
+        id,
         attributes: this.attributes[i].attributes,
       });
     }

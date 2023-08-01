@@ -151,7 +151,7 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
 
   function collectCharacters(regEx: RegExp) {
     let chars: string;
-    const match = attributeValue.substring(pos).match(regEx)
+    const match = regEx.exec(attributeValue.substring(pos));
     if (match) {
       chars = match[0];
       pos += chars.length;
@@ -866,9 +866,9 @@ function slimDOMExcluded(
       ? // @ts-ignore
         sn.attributes.name.toLowerCase()
       : '';
-    const snAttributeRel: string = sn.attributes.name
+    const snAttributeRel: string = sn.attributes.rel
       ? // @ts-ignore
-        sn.attributes.name.toLowerCase()
+        sn.attributes.rel.toLowerCase()
       : '';
     const snAttributeProperty: string = sn.attributes.property
       ? // @ts-ignore
