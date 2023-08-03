@@ -443,13 +443,15 @@ export default class MutationBuffer {
           if (typeof attributes.style === 'string') {
             const somAsStr = JSON.stringify(attribute.styleOM);
             const unchangedAsStr = JSON.stringify(attribute.styleOMUnchanged);
+            // check if compact style mutation is actually shorter than string style mutation
+            // CSSOM fails badly when var() is present on shorthand properties, so ensure that there are the
+            // same number of variable strings present as compared with the style version before allowing it's use
             if (
               somAsStr.length < attributes.style.length &&
               (somAsStr + unchangedAsStr).split('var(').length ===
                 attributes.style.split('var(').length
             ) {
               // use the compact style mutation format #464
-              // (CSSOM fails badly when var() is present on shorthand properties)
               attributes.style = attribute.styleOM;
             }
           }
