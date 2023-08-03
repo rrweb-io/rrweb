@@ -567,12 +567,6 @@ exports[`record integration tests can freeze mutations 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 20,
-          \\"attributes\\": {
-            \\"foo\\": \\"bar\\"
-          }
-        },
-        {
           \\"id\\": 5,
           \\"attributes\\": {
             \\"test\\": \\"true\\"
@@ -2930,46 +2924,9 @@ exports[`record integration tests can record node mutations 1`] = `
           }
         },
         {
-          \\"id\\": 36,
-          \\"attributes\\": {
-            \\"id\\": \\"select2-drop\\",
-            \\"style\\": {
-              \\"left\\": \\"Npx\\",
-              \\"width\\": \\"Npx\\",
-              \\"top\\": \\"Npx\\",
-              \\"bottom\\": \\"auto\\",
-              \\"display\\": \\"block\\",
-              \\"position\\": false,
-              \\"visibility\\": false
-            },
-            \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
-          }
-        },
-        {
-          \\"id\\": 70,
-          \\"attributes\\": {
-            \\"style\\": {
-              \\"display\\": false
-            }
-          }
-        },
-        {
-          \\"id\\": 42,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-input select2-focused\\",
-            \\"aria-activedescendant\\": \\"select2-result-label-2\\"
-          }
-        },
-        {
           \\"id\\": 35,
           \\"attributes\\": {
             \\"disabled\\": \\"\\"
-          }
-        },
-        {
-          \\"id\\": 72,
-          \\"attributes\\": {
-            \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\"
           }
         }
       ],
@@ -3380,6 +3337,232 @@ exports[`record integration tests can record node mutations 1`] = `
                 \\"black\\",
                 \\"important\\"
               ]
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  }
+]"
+`;
+
+exports[`record integration tests can record style changes compactly and preserve css var() functions 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"background: var(--mystery)\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"background: var(--mystery); background-color: black\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"display:block\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"color\\": \\"var(--mystery-color)\\"
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": \\"color:var(--mystery-color);display:block;margin:10px\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"margin-left\\": \\"Npx\\"
+            }
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 4,
+          \\"attributes\\": {
+            \\"style\\": {
+              \\"margin-top\\": \\"Npx\\",
+              \\"color\\": false
             }
           }
         }
@@ -4399,15 +4582,7 @@ exports[`record integration tests handles null attribute values 1`] = `
     \\"data\\": {
       \\"source\\": 0,
       \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 20,
-          \\"attributes\\": {
-            \\"aria-label\\": \\"label\\",
-            \\"id\\": \\"test-li\\"
-          }
-        }
-      ],
+      \\"attributes\\": [],
       \\"removes\\": [],
       \\"adds\\": [
         {
