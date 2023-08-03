@@ -18,7 +18,6 @@ import type {
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
-  styleAttributeValue,
   Optional,
 } from '@rrweb/types';
 import {
@@ -438,10 +437,29 @@ export default class MutationBuffer {
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
       attributes: this.attributes
-        .map((attribute) => ({
-          id: this.mirror.getId(attribute.node),
-          attributes: attribute.attributes,
-        }))
+        .map((attribute) => {
+          const { attributes } = attribute;
+          if (typeof attributes.style === 'string') {
+            const diffAsStr = JSON.stringify(attribute.styleDiff);
+            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
+            // check if the style diff is actually shorter than the regular string based mutation
+            // (which was the whole point of #464 'compact style mutation').
+            if (diffAsStr.length < attributes.style.length) {
+              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+              // the compact style mutation if these have all been accounted for
+              if (
+                (diffAsStr + unchangedAsStr).split('var(').length ===
+                attributes.style.split('var(').length
+              ) {
+                attributes.style = attribute.styleDiff;
+              }
+            }
+          }
+          return {
+            id: this.mirror.getId(attribute.node),
+            attributes: attributes,
+          };
+        })
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
       removes: this.removes,
@@ -548,6 +566,8 @@ export default class MutationBuffer {
           item = {
             node: m.target,
             attributes: {},
+            styleDiff: {},
+            _unchangedStyles: {},
           };
           this.attributes.push(item);
         }
@@ -562,39 +582,7 @@ export default class MutationBuffer {
           target.setAttribute('data-rr-is-password', 'true');
         }
 
-        if (attributeName === 'style') {
-          const old = unattachedDoc.createElement('span');
-          if (m.oldValue) {
-            old.setAttribute('style', m.oldValue);
-          }
-          if (
-            item.attributes.style === undefined ||
-            item.attributes.style === null
-          ) {
-            item.attributes.style = {};
-          }
-          const styleObj = item.attributes.style as styleAttributeValue;
-          for (const pname of Array.from(target.style)) {
-            const newValue = target.style.getPropertyValue(pname);
-            const newPriority = target.style.getPropertyPriority(pname);
-            if (
-              newValue !== old.style.getPropertyValue(pname) ||
-              newPriority !== old.style.getPropertyPriority(pname)
-            ) {
-              if (newPriority === '') {
-                styleObj[pname] = newValue;
-              } else {
-                styleObj[pname] = [newValue, newPriority];
-              }
-            }
-          }
-          for (const pname of Array.from(old.style)) {
-            if (target.style.getPropertyValue(pname) === '') {
-              // "if not set, returns the empty string"
-              styleObj[pname] = false; // delete
-            }
-          }
-        } else if (!ignoreAttribute(target.tagName, attributeName, value)) {
+        if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName] = transformAttribute(
             this.doc,
@@ -602,6 +590,35 @@ export default class MutationBuffer {
             toLowerCase(attributeName),
             value,
           );
+          if (attributeName === 'style') {
+            const old = unattachedDoc.createElement('span');
+            if (m.oldValue) {
+              old.setAttribute('style', m.oldValue);
+            }
+            for (const pname of Array.from(target.style)) {
+              const newValue = target.style.getPropertyValue(pname);
+              const newPriority = target.style.getPropertyPriority(pname);
+              if (
+                newValue !== old.style.getPropertyValue(pname) ||
+                newPriority !== old.style.getPropertyPriority(pname)
+              ) {
+                if (newPriority === '') {
+                  item.styleDiff[pname] = newValue;
+                } else {
+                  item.styleDiff[pname] = [newValue, newPriority];
+                }
+              } else {
+                // for checking
+                item._unchangedStyles[pname] = [newValue, newPriority];
+              }
+            }
+            for (const pname of Array.from(old.style)) {
+              if (target.style.getPropertyValue(pname) === '') {
+                // "if not set, returns the empty string"
+                item.styleDiff[pname] = false; // delete
+              }
+            }
+          }
         }
         break;
       }

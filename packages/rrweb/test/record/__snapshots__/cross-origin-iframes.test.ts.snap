@@ -2625,10 +2625,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
         {
           \\"id\\": 9,
           \\"attributes\\": {
-            \\"style\\": {
-              \\"width\\": \\"Npx\\",
-              \\"height\\": \\"Npx\\"
-            }
+            \\"style\\": \\"width: Npx; height: Npx;\\"
           }
         }
       ],
