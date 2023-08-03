@@ -294,8 +294,8 @@ export type attributeCursor = {
   attributes: {
     [key: string]: string | styleOMValue | null;
   };
-  styleOM: styleOMValue;
-  styleOMUnchanged: styleOMValue;
+  styleDiff: styleOMValue;
+  _unchangedStyles: styleOMValue;
 };
 export type attributeMutation = {
   id: number;

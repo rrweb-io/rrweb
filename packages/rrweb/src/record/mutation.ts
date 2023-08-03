@@ -18,7 +18,6 @@ import type {
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
-  styleOMValue,
   Optional,
 } from '@rrweb/types';
 import {
@@ -441,18 +440,18 @@ export default class MutationBuffer {
         .map((attribute) => {
           const { attributes } = attribute;
           if (typeof attributes.style === 'string') {
-            const somAsStr = JSON.stringify(attribute.styleOM);
-            const unchangedAsStr = JSON.stringify(attribute.styleOMUnchanged);
-            // check if compact style mutation is actually shorter than string style mutation
-            // CSSOM fails badly when var() is present on shorthand properties, so ensure that there are the
-            // same number of variable strings present as compared with the style version before allowing it's use
-            if (
-              somAsStr.length < attributes.style.length &&
-              (somAsStr + unchangedAsStr).split('var(').length ===
-                attributes.style.split('var(').length
-            ) {
-              // use the compact style mutation format #464
-              attributes.style = attribute.styleOM;
+            const diffAsStr = JSON.stringify(attribute.styleDiff);
+            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
+            // check if the style diff is actually shorter than the regular string based mutation
+            // (which was the whole point of #464 'compact style mutation')
+            if (diffAsStr.length < attributes.style.length) {
+              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+              // the compact style mutation if these have all been accounted for
+              if ((diffAsStr + unchangedAsStr).split('var(').length ===
+                  attributes.style.split('var(').length
+                 ) {
+                attributes.style = attribute.styleDiff;
+              }
             }
           }
           return {
@@ -566,8 +565,8 @@ export default class MutationBuffer {
           item = {
             node: m.target,
             attributes: {},
-            styleOM: {},
-            styleOMUnchanged: {},
+            styleDiff: {},
+            _unchangedStyles: {},
           };
           this.attributes.push(item);
         }
@@ -603,19 +602,19 @@ export default class MutationBuffer {
                 newPriority !== old.style.getPropertyPriority(pname)
               ) {
                 if (newPriority === '') {
-                  item.styleOM[pname] = newValue;
+                  item.styleDiff[pname] = newValue;
                 } else {
-                  item.styleOM[pname] = [newValue, newPriority];
+                  item.styleDiff[pname] = [newValue, newPriority];
                 }
               } else {
                 // for checking
-                item.styleOMUnchanged[pname] = [newValue, newPriority];
+                item._unchangedStyles[pname] = [newValue, newPriority];
               }
             }
             for (const pname of Array.from(old.style)) {
               if (target.style.getPropertyValue(pname) === '') {
                 // "if not set, returns the empty string"
-                item.styleOM[pname] = false; // delete
+                item.styleDiff[pname] = false; // delete
               }
             }
           }
