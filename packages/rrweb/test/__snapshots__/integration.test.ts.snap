@@ -567,6 +567,12 @@ exports[`record integration tests can freeze mutations 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [
         {
+          \\"id\\": 20,
+          \\"attributes\\": {
+            \\"foo\\": \\"bar\\"
+          }
+        },
+        {
           \\"id\\": 5,
           \\"attributes\\": {
             \\"test\\": \\"true\\"
@@ -2924,9 +2930,36 @@ exports[`record integration tests can record node mutations 1`] = `
           }
         },
         {
+          \\"id\\": 36,
+          \\"attributes\\": {
+            \\"id\\": \\"select2-drop\\",
+            \\"style\\": \\"left: Npx; width: Npx; top: Npx; bottom: auto; display: block;\\",
+            \\"class\\": \\"select2-drop select2-display-none select2-with-searchbox select2-drop-active\\"
+          }
+        },
+        {
+          \\"id\\": 70,
+          \\"attributes\\": {
+            \\"style\\": \\"\\"
+          }
+        },
+        {
+          \\"id\\": 42,
+          \\"attributes\\": {
+            \\"class\\": \\"select2-input select2-focused\\",
+            \\"aria-activedescendant\\": \\"select2-result-label-2\\"
+          }
+        },
+        {
           \\"id\\": 35,
           \\"attributes\\": {
             \\"disabled\\": \\"\\"
+          }
+        },
+        {
+          \\"id\\": 72,
+          \\"attributes\\": {
+            \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\"
           }
         }
       ],
@@ -2984,15 +3017,6 @@ exports[`record integration tests can record node mutations 1`] = `
           }
         },
         {
-          \\"parentId\\": 28,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"A\\",
-            \\"id\\": 29
-          }
-        },
-        {
           \\"parentId\\": 26,
           \\"nextId\\": 31,
           \\"node\\": {
@@ -3026,6 +3050,15 @@ exports[`record integration tests can record node mutations 1`] = `
             },
             \\"childNodes\\": [],
             \\"id\\": 32
+          }
+        },
+        {
+          \\"parentId\\": 28,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"A\\",
+            \\"id\\": 29
           }
         },
         {
@@ -3076,6 +3109,30 @@ exports[`record integration tests can record node mutations 1`] = `
             },
             \\"childNodes\\": [],
             \\"id\\": 38
+          }
+        },
+        {
+          \\"parentId\\": 36,
+          \\"nextId\\": 45,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"   \\",
+            \\"id\\": 44
+          }
+        },
+        {
+          \\"parentId\\": 36,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"ul\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-results\\",
+              \\"role\\": \\"listbox\\",
+              \\"id\\": \\"select2-results-1\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 45
           }
         },
         {
@@ -3142,30 +3199,6 @@ exports[`record integration tests can record node mutations 1`] = `
             \\"type\\": 3,
             \\"textContent\\": \\"   \\",
             \\"id\\": 43
-          }
-        },
-        {
-          \\"parentId\\": 36,
-          \\"nextId\\": 45,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"   \\",
-            \\"id\\": 44
-          }
-        },
-        {
-          \\"parentId\\": 36,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"ul\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-results\\",
-              \\"role\\": \\"listbox\\",
-              \\"id\\": \\"select2-results-1\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 45
           }
         },
         {
@@ -4582,7 +4615,15 @@ exports[`record integration tests handles null attribute values 1`] = `
     \\"data\\": {
       \\"source\\": 0,
       \\"texts\\": [],
-      \\"attributes\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 20,
+          \\"attributes\\": {
+            \\"aria-label\\": \\"label\\",
+            \\"id\\": \\"test-li\\"
+          }
+        }
+      ],
       \\"removes\\": [],
       \\"adds\\": [
         {
@@ -9010,6 +9051,15 @@ exports[`record integration tests should not record input values if dynamically 
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 3,
+      \\"id\\": 21,
+      \\"x\\": 16.5,
+      \\"y\\": 0
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 5,
       \\"text\\": \\"************************\\",
       \\"isChecked\\": false,
@@ -10099,6 +10149,15 @@ exports[`record integration tests should record DOM node movement 1 1`] = `
           }
         },
         {
+          \\"parentId\\": 12,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n    \\",
+            \\"id\\": 19
+          }
+        },
+        {
           \\"parentId\\": 14,
           \\"nextId\\": 16,
           \\"node\\": {
@@ -10119,15 +10178,6 @@ exports[`record integration tests should record DOM node movement 1 1`] = `
           }
         },
         {
-          \\"parentId\\": 16,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"1\\",
-            \\"id\\": 17
-          }
-        },
-        {
           \\"parentId\\": 14,
           \\"nextId\\": null,
           \\"node\\": {
@@ -10137,12 +10187,12 @@ exports[`record integration tests should record DOM node movement 1 1`] = `
           }
         },
         {
-          \\"parentId\\": 12,
+          \\"parentId\\": 16,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n    \\",
-            \\"id\\": 19
+            \\"textContent\\": \\"1\\",
+            \\"id\\": 17
           }
         }
       ]
@@ -10355,6 +10405,15 @@ exports[`record integration tests should record DOM node movement 2 1`] = `
           }
         },
         {
+          \\"parentId\\": 12,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n    \\",
+            \\"id\\": 19
+          }
+        },
+        {
           \\"parentId\\": 14,
           \\"nextId\\": 16,
           \\"node\\": {
@@ -10375,15 +10434,6 @@ exports[`record integration tests should record DOM node movement 2 1`] = `
           }
         },
         {
-          \\"parentId\\": 16,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"1\\",
-            \\"id\\": 17
-          }
-        },
-        {
           \\"parentId\\": 14,
           \\"nextId\\": null,
           \\"node\\": {
@@ -10393,12 +10443,12 @@ exports[`record integration tests should record DOM node movement 2 1`] = `
           }
         },
         {
-          \\"parentId\\": 12,
+          \\"parentId\\": 16,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n    \\",
-            \\"id\\": 19
+            \\"textContent\\": \\"1\\",
+            \\"id\\": 17
           }
         },
         {
@@ -13721,18 +13771,6 @@ exports[`record integration tests should record moved shadow DOM 1`] = `
             \\"id\\": 9,
             \\"isShadowHost\\": true
           }
-        },
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 10,
-            \\"isShadow\\": true
-          }
         }
       ]
     }
@@ -13751,18 +13789,6 @@ exports[`record integration tests should record moved shadow DOM 1`] = `
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 10,
-            \\"isShadow\\": true
-          }
-        },
-        {
           \\"parentId\\": 4,
           \\"nextId\\": null,
           \\"node\\": {
@@ -13770,11 +13796,11 @@ exports[`record integration tests should record moved shadow DOM 1`] = `
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 10
           }
         },
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -13904,68 +13930,6 @@ exports[`record integration tests should record moved shadow DOM 2 1`] = `
             \\"childNodes\\": [],
             \\"id\\": 10,
             \\"isShadowHost\\": true
-          }
-        },
-        {
-          \\"parentId\\": 10,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"p\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 11,
-            \\"isShadow\\": true
-          }
-        },
-        {
-          \\"parentId\\": 10,
-          \\"nextId\\": 11,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 12,
-            \\"isShadow\\": true
-          }
-        },
-        {
-          \\"parentId\\": 12,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 13
-          }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"removes\\": [
-        {
-          \\"parentId\\": 12,
-          \\"id\\": 13
-        }
-      ],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 11,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 13
           }
         }
       ]
@@ -14606,6 +14570,14 @@ exports[`record integration tests should record nested iframes and shadow doms 1
   {
     \\"type\\": 3,
     \\"data\\": {
+      \\"source\\": 4,
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
       \\"source\\": 0,
       \\"texts\\": [],
       \\"attributes\\": [],
@@ -15179,18 +15151,6 @@ exports[`record integration tests should record shadow DOM 2 1`] = `
             \\"id\\": 9,
             \\"isShadowHost\\": true
           }
-        },
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 10,
-            \\"isShadow\\": true
-          }
         }
       ]
     }
@@ -15296,18 +15256,6 @@ exports[`record integration tests should record shadow DOM 3 1`] = `
             \\"childNodes\\": [],
             \\"id\\": 9,
             \\"isShadowHost\\": true
-          }
-        },
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 10,
-            \\"isShadow\\": true
           }
         }
       ]
@@ -15817,7 +15765,18 @@ exports[`record integration tests should record shadow doms polyfilled by synthe
             \\"id\\": 31,
             \\"isShadowHost\\": true
           }
-        },
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
         {
           \\"parentId\\": 31,
           \\"nextId\\": null,
