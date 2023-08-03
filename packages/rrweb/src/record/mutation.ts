@@ -455,7 +455,9 @@ export default class MutationBuffer {
       const { attributes: elAttributes } = this.attributes[i];
       if (typeof elAttributes.style === 'string') {
         const diffAsStr = JSON.stringify(this.attributes[i].styleDiff);
-        const unchangedAsStr = JSON.stringify(this.attributes[i]._unchangedStyles);
+        const unchangedAsStr = JSON.stringify(
+          this.attributes[i]._unchangedStyles,
+        );
         // check if the style diff is actually shorter than the regular string based mutation
         // (which was the whole point of #464 'compact style mutation').
         if (diffAsStr.length < elAttributes.style.length) {
@@ -602,13 +604,13 @@ export default class MutationBuffer {
           );
           if (attributeName === 'style') {
             let unattachedDoc;
-          try {
-            // avoid upsetting original document from a Content Security point of view
-            unattachedDoc = document.implementation.createHTMLDocument();
-          } catch (e) {
-            // fallback to more direct method
-            unattachedDoc = this.doc;
-          }
+            try {
+              // avoid upsetting original document from a Content Security point of view
+              unattachedDoc = document.implementation.createHTMLDocument();
+            } catch (e) {
+              // fallback to more direct method
+              unattachedDoc = this.doc;
+            }
             const old = unattachedDoc.createElement('span');
             if (m.oldValue) {
               old.setAttribute('style', m.oldValue);
