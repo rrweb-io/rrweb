@@ -24,7 +24,6 @@ import {
   isBlocked,
   isAncestorRemoved,
   isIgnored,
-  isSerialized,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
