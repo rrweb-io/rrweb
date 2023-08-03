@@ -443,7 +443,7 @@ export default class MutationBuffer {
             const diffAsStr = JSON.stringify(attribute.styleDiff);
             const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
             // check if the style diff is actually shorter than the regular string based mutation
-            // (which was the whole point of #464 'compact style mutation')
+            // (which was the whole point of #464 'compact style mutation').
             if (diffAsStr.length < attributes.style.length) {
               // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
               // the compact style mutation if these have all been accounted for
