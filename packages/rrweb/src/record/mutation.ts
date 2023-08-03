@@ -447,9 +447,10 @@ export default class MutationBuffer {
             if (diffAsStr.length < attributes.style.length) {
               // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
               // the compact style mutation if these have all been accounted for
-              if ((diffAsStr + unchangedAsStr).split('var(').length ===
-                  attributes.style.split('var(').length
-                 ) {
+              if (
+                (diffAsStr + unchangedAsStr).split('var(').length ===
+                attributes.style.split('var(').length
+              ) {
                 attributes.style = attribute.styleDiff;
               }
             }
