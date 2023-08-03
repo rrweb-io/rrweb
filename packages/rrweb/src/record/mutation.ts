@@ -439,7 +439,7 @@ export default class MutationBuffer {
         .filter((text) => this.mirror.has(text.id)),
       attributes: this.attributes
         .map((attribute) => {
-          const attributes = attribute.attributes;
+          const { attributes } = attribute;
           if (typeof attributes.style === 'string') {
             const somAsStr = JSON.stringify(attribute.styleOM);
             const unchangedAsStr = JSON.stringify(attribute.styleOMUnchanged);
