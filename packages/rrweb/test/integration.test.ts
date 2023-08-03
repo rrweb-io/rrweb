@@ -251,6 +251,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.evaluate(
       'document.body.style.marginTop = 0; document.body.style.color = null',
     );
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
