@@ -252,6 +252,8 @@ describe('record integration tests', function (this: ISuite) {
 
   it('should not record input events on ignored elements', async () => {
     const page: puppeteer.Page = await browser.newPage();
+    // needed for debugging, this test can be flaky at times
+    page.on('console', (msg) => console.log(msg.text()));
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'ignore.html'));
 
