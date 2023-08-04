@@ -494,6 +494,7 @@ describe('record integration tests', function (this: ISuite) {
         recordCanvas: true,
       }),
     );
+    await page.waitForFunction('window.canvasMutationApplied');
     await waitForRAF(page);
     const snapshots = (await page.evaluate(
       'window.snapshots',
