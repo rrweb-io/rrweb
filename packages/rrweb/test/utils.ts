@@ -597,6 +597,7 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     emit: event => {
       window.snapshots.push(event);
     },
+    ignoreSelector: ${options.ignoreSelector},
     maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
     maskAllInputs: ${options.maskAllInputs},
     maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
