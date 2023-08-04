@@ -7,6 +7,7 @@ import {
   Optional,
   mouseInteractionData,
   event,
+  pluginEvent,
 } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
@@ -20,7 +21,7 @@ export async function launchPuppeteer(
   options?: Parameters<(typeof puppeteer)['launch']>[0],
 ) {
   return await puppeteer.launch({
-    headless: process.env.PUPPETEER_HEADLESS ? true : false,
+    headless: process.env.PUPPETEER_HEADLESS ? 'new' : false,
     defaultViewport: {
       width: 1920,
       height: 1080,
@@ -108,7 +109,8 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
       .filter((s) => {
         if (
           s.type === EventType.IncrementalSnapshot &&
-          s.data.source === IncrementalSource.MouseMove
+          (s.data.source === IncrementalSource.MouseMove ||
+            s.data.source === IncrementalSource.ViewportResize)
         ) {
           return false;
         }
@@ -195,6 +197,33 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           if (s.data.currentTime) {
             s.data.currentTime = Math.round(s.data.currentTime * 10) / 10;
           }
+        } else if (
+          s.type === EventType.Plugin &&
+          s.data.plugin === 'rrweb/console@1'
+        ) {
+          const pluginPayload = (
+            s as pluginEvent<{
+              trace: string[];
+              payload: string[];
+            }>
+          ).data.payload;
+
+          if (pluginPayload?.trace.length) {
+            pluginPayload.trace = pluginPayload.trace.map((trace) => {
+              return trace.replace(
+                /^pptr:evaluate;.*?:(\d+:\d+)/,
+                '__puppeteer_evaluation_script__:$1',
+              );
+            });
+          }
+          if (pluginPayload?.payload.length) {
+            pluginPayload.payload = pluginPayload.payload.map((payload) => {
+              return payload.replace(
+                /pptr:evaluate;.*?:(\d+:\d+)/g,
+                '__puppeteer_evaluation_script__:$1',
+              );
+            });
+          }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
         return s as event;
@@ -260,7 +289,24 @@ function stringifyDomSnapshot(mhtml: string): string {
   return newResult.map((asset) => Object.values(asset).join('\n')).join('\n\n');
 }
 
-export function assertSnapshot(snapshots: eventWithTime[]) {
+export async function assertSnapshot(
+  snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+) {
+  let snapshots: eventWithTime[];
+  if (!Array.isArray(snapshotsOrPage)) {
+    // make sure page has finished executing js
+    await waitForRAF(snapshotsOrPage);
+    await snapshotsOrPage.waitForFunction(
+      'window.snapshots && window.snapshots.length > 0',
+    );
+
+    snapshots = (await snapshotsOrPage.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+  } else {
+    snapshots = snapshotsOrPage;
+  }
+
   expect(snapshots).toBeDefined();
   expect(stringifySnapshots(snapshots)).toMatchSnapshot();
 }
@@ -590,14 +636,59 @@ export async function waitForRAF(
   });
 }
 
+export async function waitForIFrameLoad(
+  page: puppeteer.Frame | puppeteer.Page,
+  iframeSelector: string,
+  timeout = 10000,
+): Promise<puppeteer.Frame> {
+  const el = await page.waitForSelector(iframeSelector);
+  if (!el)
+    throw new Error('Waiting for iframe load has timed out - no element found');
+
+  let frame = await el.contentFrame();
+  if (frame && frame.isDetached()) {
+    throw new Error(
+      'Waiting for iframe load has timed out - frame is detached',
+    );
+  }
+  if (frame && frame.url() !== '') {
+    return frame;
+  }
+
+  await page.$eval(
+    iframeSelector,
+    (el, timeout) => {
+      const p = new Promise((resolve, reject) => {
+        (el as HTMLIFrameElement).onload = () => {
+          resolve(el as HTMLIFrameElement);
+        };
+        setTimeout(() => {
+          reject(
+            new Error(
+              'Waiting for iframe load has timed out - onload not fired',
+            ),
+          );
+        }, timeout);
+      });
+      return p;
+    },
+    timeout,
+  );
+
+  frame = await el.contentFrame();
+  if (!frame)
+    throw new Error('Waiting for iframe load has timed out - no frame found');
+  return frame;
+}
+
 export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
   return `
-  window.snapshots = [];
   rrweb.record({
     emit: event => {
+      if (!window.snapshots) window.snapshots = [];
       window.snapshots.push(event);
     },
-    ignoreSelector: ${options.ignoreSelector},
+    ignoreSelector: ${JSON.stringify(options.ignoreSelector)},
     maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
     maskAllInputs: ${options.maskAllInputs},
     maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
