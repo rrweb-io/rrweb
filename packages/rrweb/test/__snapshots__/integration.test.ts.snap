@@ -8537,13 +8537,11 @@ exports[`record integration tests should not record input events on ignored elem
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"label\\",
-                        \\"attributes\\": {
-                          \\"for\\": \\"ignore text\\"
-                        },
+                        \\"attributes\\": {},
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\" \\",
+                            \\"textContent\\": \\"Input ignored here: \\",
                             \\"id\\": 21
                           },
                           {
@@ -8558,7 +8556,7 @@ exports[`record integration tests should not record input events on ignored elem
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\" \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"id\\": 23
                           }
                         ],
@@ -8566,8 +8564,41 @@ exports[`record integration tests should not record input events on ignored elem
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 24
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"label\\",
+                        \\"attributes\\": {},
+                        \\"childNodes\\": [
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"Input not ignored here: \\",
+                            \\"id\\": 26
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"text\\",
+                              \\"class\\": \\"dont-ignore\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"id\\": 27
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n      \\",
+                            \\"id\\": 28
+                          }
+                        ],
+                        \\"id\\": 25
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 29
                       }
                     ],
                     \\"id\\": 18
@@ -8575,7 +8606,7 @@ exports[`record integration tests should not record input events on ignored elem
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 25
+                    \\"id\\": 30
                   },
                   {
                     \\"type\\": 2,
@@ -8585,15 +8616,15 @@ exports[`record integration tests should not record input events on ignored elem
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 27
+                        \\"id\\": 32
                       }
                     ],
-                    \\"id\\": 26
+                    \\"id\\": 31
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 28
+                    \\"id\\": 33
                   }
                 ],
                 \\"id\\": 16
@@ -8616,6 +8647,112 @@ exports[`record integration tests should not record input events on ignored elem
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"n\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"no\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not \\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not s\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not se\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not sec\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not secr\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not secre\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"not secret\\",
+      \\"isChecked\\": false,
+      \\"id\\": 27
     }
   }
 ]"

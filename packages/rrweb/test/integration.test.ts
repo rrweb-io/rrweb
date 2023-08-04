@@ -258,6 +258,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.setContent(getHtml.call(this, 'ignore.html'));
 
     await page.type('.rr-ignore', 'secret');
+    await page.type('.dont-ignore', 'not secret');
 
     await assertSnapshot(page);
   });
