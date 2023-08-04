@@ -153,8 +153,8 @@ setInterval(save, 10 * 1000);
 | sampling                 | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | dataURLOptions           | {}                 | Canvas 图像快照的格式和质量,这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小                                                                    |
 | recordCanvas             | false              | 是否记录 canvas 内容, 可用选项：`false`, `true`                                                                                                                                       |
-| recordCrossOriginIframes | false              | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true`                                           |
-| recordSafeCrossOrigin              | '*'             | 当recordCrossOriginIframes设置为true时，可以使用recordSafeCrossOrigin来指定安全域名。                          |
+| recordCrossOriginIframes | false | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true` |
+| recordSafeCrossOrigin | '\*' | 当 recordCrossOriginIframes 设置为 true 时，可以使用 recordSafeCrossOrigin 来指定安全域名。 |
 | recordAfter              | 'load'             | 如果 document 还没有加载完成，recorder 将会在指定的事件触发后开始录制。可用选项： `DOMContentLoaded`, `load`                                                                          |
 | inlineImages             | false              | 是否将图片内容记内联录制                                                                                                                                                              |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
