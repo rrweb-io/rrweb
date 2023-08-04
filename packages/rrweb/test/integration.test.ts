@@ -214,6 +214,56 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can record style changes compactly and preserve css var() functions', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'), {
+      waitUntil: 'networkidle0',
+    });
+
+    // goal here is to ensure var(--mystery) ends up in the mutations (CSSOM fails in this case)
+    await page.evaluate(
+      'document.body.setAttribute("style", "background: var(--mystery)")',
+    );
+    await waitForRAF(page);
+    // and in this change we can't use the shorter styleObj format either
+    await page.evaluate(
+      'document.body.setAttribute("style", "background: var(--mystery); background-color: black")',
+    );
+
+    // reset is always shorter to be recorded as a sting rather than a styleObj
+    await page.evaluate('document.body.setAttribute("style", "")');
+    await waitForRAF(page);
+
+    await page.evaluate('document.body.setAttribute("style", "display:block")');
+    await waitForRAF(page);
+    // following should be recorded as an update of `{ color: 'var(--mystery-color)' }` without needing to include the display
+    await page.evaluate(
+      'document.body.setAttribute("style", "color:var(--mystery-color);display:block")',
+    );
+    await waitForRAF(page);
+    // whereas this case, it's shorter to record the entire string than the longhands for margin
+    await page.evaluate(
+      'document.body.setAttribute("style", "color:var(--mystery-color);display:block;margin:10px")',
+    );
+    await waitForRAF(page);
+    // and in this case, it's shorter to record just the change to the longhand margin-left;
+    await page.evaluate(
+      'document.body.setAttribute("style", "color:var(--mystery-color);display:block;margin:10px 10px 10px 0px;")',
+    );
+    await waitForRAF(page);
+    // see what happens when we manipulate the style object directly (expecting a compact mutation with just these two changes)
+    await page.evaluate(
+      'document.body.style.marginTop = 0; document.body.style.color = null',
+    );
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('can freeze mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -252,12 +302,15 @@ describe('record integration tests', function (this: ISuite) {
 
   it('should not record input events on ignored elements', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    // needed for debugging, this test can be flaky at times
-    page.on('console', (msg) => console.log(msg.text()));
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'ignore.html'));
+    await page.setContent(
+      getHtml.call(this, 'ignore.html', {
+        ignoreSelector: '[data-rr-ignore]',
+      }),
+    );
 
     await page.type('.rr-ignore', 'secret');
+    await page.type('[data-rr-ignore]', 'secret');
     await page.type('.dont-ignore', 'not secret');
 
     await assertSnapshot(page);

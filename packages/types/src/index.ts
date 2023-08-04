@@ -283,7 +283,7 @@ export type textMutation = {
   value: string | null;
 };
 
-export type styleAttributeValue = {
+export type styleOMValue = {
   [key: string]: styleValueWithPriority | string | false;
 };
 
@@ -292,13 +292,15 @@ export type styleValueWithPriority = [string, string];
 export type attributeCursor = {
   node: Node;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
+  styleDiff: styleOMValue;
+  _unchangedStyles: styleOMValue;
 };
 export type attributeMutation = {
   id: number;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
 };
 

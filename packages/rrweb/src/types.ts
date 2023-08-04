@@ -46,6 +46,7 @@ export type recordOptions<T> = {
   blockClass?: blockClass;
   blockSelector?: string;
   ignoreClass?: string;
+  ignoreSelector?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
   maskAllInputs?: boolean;
@@ -84,6 +85,7 @@ export type observerParam = {
   blockClass: blockClass;
   blockSelector: string | null;
   ignoreClass: string;
+  ignoreSelector: string | null;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
   maskInputOptions: MaskInputOptions;
