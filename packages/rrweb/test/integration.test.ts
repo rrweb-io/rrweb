@@ -257,12 +257,7 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.type('.rr-ignore', 'secret');
 
-    await waitForRAF(page);
-
-    const snapshots = (await page.evaluate(
-      'window.snapshots',
-    )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(page);
   });
 
   it('should not record input values if maskAllInputs is enabled', async () => {
@@ -533,10 +528,7 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.type('#input', 'moo');
 
-    const snapshots = (await page.evaluate(
-      'window.snapshots',
-    )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(page);
   });
 
   it('should record webgl canvas mutations', async () => {

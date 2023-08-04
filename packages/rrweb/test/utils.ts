@@ -286,7 +286,24 @@ function stringifyDomSnapshot(mhtml: string): string {
   return newResult.map((asset) => Object.values(asset).join('\n')).join('\n\n');
 }
 
-export function assertSnapshot(snapshots: eventWithTime[]) {
+export async function assertSnapshot(
+  snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+) {
+  let snapshots: eventWithTime[];
+  if (!Array.isArray(snapshotsOrPage)) {
+    // make sure page has finished executing js
+    await waitForRAF(snapshotsOrPage);
+    await snapshotsOrPage.waitForFunction(
+      'window.snapshots && window.snapshots.length > 0',
+    );
+
+    snapshots = (await snapshotsOrPage.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+  } else {
+    snapshots = snapshotsOrPage;
+  }
+
   expect(snapshots).toBeDefined();
   expect(stringifySnapshots(snapshots)).toMatchSnapshot();
 }
@@ -663,9 +680,9 @@ export async function waitForIFrameLoad(
 
 export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
   return `
-  window.snapshots = [];
   rrweb.record({
     emit: event => {
+      if (!window.snapshots) window.snapshots = [];
       window.snapshots.push(event);
     },
     maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
