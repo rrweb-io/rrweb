@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.10
+
+### Patch Changes
+
+- [#1253](https://github.com/rrweb-io/rrweb/pull/1253) [`c6600e7`](https://github.com/rrweb-io/rrweb/commit/c6600e742b8ec0b6295816bb5de9edcd624d975e) Thanks [@mydea](https://github.com/mydea)! - Fix CSS rules captured in Safari
+
 ## 2.0.0-alpha.9
 
 ### Patch Changes

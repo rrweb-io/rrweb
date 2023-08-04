@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "2.0.0-alpha.9",
+  "version": "2.0.0-alpha.10",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -81,13 +81,13 @@
     "tslib": "^2.3.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.9",
+    "@rrweb/types": "^2.0.0-alpha.10",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.9",
-    "rrweb-snapshot": "^2.0.0-alpha.9"
+    "rrdom": "^2.0.0-alpha.10",
+    "rrweb-snapshot": "^2.0.0-alpha.10"
   }
 }
