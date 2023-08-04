@@ -257,6 +257,8 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.type('.rr-ignore', 'secret');
 
+    await waitForRAF(page);
+
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
