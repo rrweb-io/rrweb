@@ -109,8 +109,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
       .filter((s) => {
         if (
           s.type === EventType.IncrementalSnapshot &&
-          (s.data.source === IncrementalSource.MouseMove ||
-            s.data.source === IncrementalSource.ViewportResize)
+          [IncrementalSource.MouseMove, IncrementalSource.Scroll, IncrementalSource.ViewportResize].includes(s.data.source)
         ) {
           return false;
         }
