@@ -1,6 +1,6 @@
 ---
-"rrweb-snapshot": patch
-"rrweb": patch
+'rrweb-snapshot': patch
+'rrweb': patch
 ---
 
 Extend to run fixBrowserCompatibilityIssuesInCSS over inline stylesheets
