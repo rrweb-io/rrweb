@@ -75,8 +75,7 @@ export function getCssRuleString(rule: CSSRule): string {
     } catch {
       // ignore
     }
-  }
-  if (rule.selectorText.includes(':')) {
+  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
     // Safari does not escape selectors with : properly
     cssStringified = fixSafariColons(cssStringified);
   }
@@ -91,6 +90,10 @@ export function fixSafariColons(cssStringified: string): string {
 
 export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
+}
+
+export function isCSSStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return 'selectorText' in rule;
 }
 
 export class Mirror implements IMirror<Node> {
