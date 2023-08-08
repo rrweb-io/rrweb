@@ -779,14 +779,8 @@ export default class MutationBuffer {
         this.droppedSet.delete(n);
       }
 
-      const isNodeBlocked = isBlocked(
-        n,
-        this.blockClass,
-        this.blockSelector,
-        false,
-      );
-      if (isNodeBlocked) {
-        return;
+      if (isBlocked(n, this.blockClass, this.blockSelector, false)) {
+        continue;
       }
       // if this node is blocked `serializeNode` will turn it into a placeholder element
       // but we have to remove it's children otherwise they will be added as placeholders too
