@@ -10,7 +10,6 @@ const suites: Array<
     title: string;
     eval: string;
     times?: number; // defaults to 5
-    options?: recordOptions<eventWithTime>
   } & ({ html: string } | { url: string })
 > = [
   // {
@@ -19,48 +18,30 @@ const suites: Array<
   //   eval: 'document.querySelector("button").click()',
   //   times: 10,
   // },
-  // {
-  //   title: 'create 1000x10 DOM nodes',
-  //   html: 'benchmark-dom-mutation.html',
-  //   eval: 'window.workload()',
-  //   times: 10,
-  // },
-  // {
-  //   title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
-  //   html: 'benchmark-dom-mutation-add-and-remove.html',
-  //   eval: 'window.workload()',
-  //   times: 10,
-  // },
-  // {
-  //   title: 'create 1000 DOM nodes and append into its previous looped node',
-  //   html: 'benchmark-dom-mutation-multiple-descendant-add.html',
-  //   eval: 'window.workload()',
-  //   times: 5,
-  // },
-  // {
-  //   title: 'create 10000 DOM nodes and move it to new container',
-  //   html: 'benchmark-dom-mutation-add-and-move.html',
-  //   eval: 'window.workload()',
-  //   times: 5,
-  // },
   {
-    title: 'Create 1000x10 DOM nodes that are blocked using blockClass',
-    html: 'benchmark-dom-mutation-add-blocked.html',
+    title: 'create 1000x10 DOM nodes',
+    html: 'benchmark-dom-mutation.html',
     eval: 'window.workload()',
-    times: 5,
-    options: {
-      blockClass: "blocked"
-    }
+    times: 10,
   },
   {
-    title: 'Create 1000x10 DOM nodes that are blocked using blockSelector',
-    html: 'benchmark-dom-mutation-add-blocked.html',
+    title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
+    html: 'benchmark-dom-mutation-add-and-remove.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
+  {
+    title: 'create 1000 DOM nodes and append into its previous looped node',
+    html: 'benchmark-dom-mutation-multiple-descendant-add.html',
     eval: 'window.workload()',
     times: 5,
-    options: {
-      blockSelector: ".blocked"
-    }
-  }
+  },
+  {
+    title: 'create 10000 DOM nodes and move it to new container',
+    html: 'benchmark-dom-mutation-add-and-move.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
 ];
 
 function avg(v: number[]): number {
@@ -125,7 +106,7 @@ describe('benchmark: mutation observer', () => {
       };
 
       const getDuration = async (): Promise<number> => {
-        return (await page.evaluate((triggerWorkloadScript, replayOptions) => {
+        return (await page.evaluate((triggerWorkloadScript) => {
           return new Promise((resolve, reject) => {
             let start = 0;
             let lastEvent: eventWithTime | null;
@@ -142,7 +123,6 @@ describe('benchmark: mutation observer', () => {
                 }
                 resolve(lastEvent.timestamp - start);
               },
-              ...replayOptions
             };
             const record = (window as any).rrweb.record;
             record(options);
@@ -154,7 +134,7 @@ describe('benchmark: mutation observer', () => {
               record.addCustomEvent('FTAG', {});
             });
           });
-        }, suite.eval, suite.options ?? {})) as number;
+        }, suite.eval)) as number;
       };
 
       // generate profile.json file
