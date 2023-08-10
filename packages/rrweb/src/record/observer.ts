@@ -423,6 +423,7 @@ function initInputObserver({
   blockClass,
   blockSelector,
   ignoreClass,
+  ignoreSelector,
   maskInputOptions,
   maskInputFn,
   sampling,
@@ -449,7 +450,10 @@ function initInputObserver({
       return;
     }
 
-    if (target.classList.contains(ignoreClass)) {
+    if (
+      target.classList.contains(ignoreClass) ||
+      (ignoreSelector && target.matches(ignoreSelector))
+    ) {
       return;
     }
     let text = (target as HTMLInputElement).value;

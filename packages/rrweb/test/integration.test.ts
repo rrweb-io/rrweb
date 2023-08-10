@@ -7,6 +7,7 @@ import {
   getServerURL,
   launchPuppeteer,
   waitForRAF,
+  waitForIFrameLoad,
   replaceLast,
   generateRecordSnippet,
   ISuite,
@@ -71,7 +72,7 @@ describe('record integration tests', function (this: ISuite) {
     // also tap on the span
     const span = await page.waitForSelector('span');
     const center = await page.evaluate((el) => {
-      const { x, y, width, height } = el.getBoundingClientRect();
+      const { x, y, width, height } = el!.getBoundingClientRect();
       return {
         x: Math.round(x + width / 2),
         y: Math.round(y + height / 2),
@@ -81,7 +82,9 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.click('a');
 
-    const snapshots = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
 
@@ -186,7 +189,9 @@ describe('record integration tests', function (this: ISuite) {
       li.removeAttribute('aria-label');
     });
 
-    const snapshots = await page.evaluate('window.snapshots');
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
 
@@ -298,14 +303,17 @@ describe('record integration tests', function (this: ISuite) {
   it('should not record input events on ignored elements', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'ignore.html'));
+    await page.setContent(
+      getHtml.call(this, 'ignore.html', {
+        ignoreSelector: '[data-rr-ignore]',
+      }),
+    );
 
     await page.type('.rr-ignore', 'secret');
+    await page.type('[data-rr-ignore]', 'secret');
+    await page.type('.dont-ignore', 'not secret');
 
-    const snapshots = (await page.evaluate(
-      'window.snapshots',
-    )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(page);
   });
 
   it('should not record input values if maskAllInputs is enabled', async () => {
@@ -542,6 +550,7 @@ describe('record integration tests', function (this: ISuite) {
         recordCanvas: true,
       }),
     );
+    await page.waitForFunction('window.canvasMutationApplied');
     await waitForRAF(page);
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -576,10 +585,7 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.type('#input', 'moo');
 
-    const snapshots = (await page.evaluate(
-      'window.snapshots',
-    )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(page);
   });
 
   it('should record webgl canvas mutations', async () => {
@@ -752,13 +758,9 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto(`${serverURL}/html`);
     await page.setContent(getHtml.call(this, 'main.html'));
 
-    await page.waitForSelector('#two');
-    const frameIdTwo = await page.frames()[2];
-    await frameIdTwo.waitForSelector('#four');
-    const frameIdFour = frameIdTwo.childFrames()[1];
-    await frameIdFour.waitForSelector('#five');
-
-    await page.waitForTimeout(50);
+    const frameIdTwo = await waitForIFrameLoad(page, '#two');
+    const frameIdFour = await waitForIFrameLoad(frameIdTwo, '#four');
+    await waitForIFrameLoad(frameIdFour, '#five');
 
     const snapshots = (await page.evaluate(
       'window.snapshots',

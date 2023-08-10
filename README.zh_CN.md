@@ -119,17 +119,51 @@ rrweb 主要由 3 部分组成：
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="260px" src="https://www.rrweb.io/logos/smartx.png">
+        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
       </a>
     </td>
     <td align="center">
       <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="260px" src="https://www.rrweb.io/logos/posthog.png">
+        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
       </a>
     </td>
     <td align="center">
       <a href="https://statcounter.com/session-replay/" target="_blank">
-        <img width="260px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
+        <img width="195px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://cux.io" target="_blank">
+        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
+      </a>
+    </td>
+  </tr>
+    <tr>
+    <td align="center">
+      <a href="https://recordonce.com/" target="_blank">
+        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://remsupp.com" target="_blank">
+        <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://highlight.io" target="_blank">
+        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://analyzee.io" target="_blank">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://requestly.io" target="_blank">
+        <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
       </a>
     </td>
   </tr>
