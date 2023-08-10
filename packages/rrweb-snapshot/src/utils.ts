@@ -101,11 +101,7 @@ export class Mirror implements IMirror<Node> {
   getId(n: Node | undefined | null): number {
     if (!n) return -1;
 
-    if(!this.nodeMetaMap.has(n)) {
-      return -1;
-    }
-
-    const id = this.getMetaId(n);
+    const id = this.getMeta(n)?.id;
 
     // if n is not a serialized Node, use -1 as its id.
     return id ?? -1;
@@ -123,26 +119,16 @@ export class Mirror implements IMirror<Node> {
     return this.nodeMetaMap.get(n) || null;
   }
 
-  getMetaId(n: Node): number | null {
-    return this.getMeta(n)?.id ?? null;
-  }
-
   // removes the node from idNodeMap
   // doesn't remove the node from nodeMetaMap
   removeNodeFromMap(n: Node) {
     const id = this.getId(n);
     this.idNodeMap.delete(id);
 
-    const removeQueue = [n];
-
-    while(removeQueue.length){
-      const node = removeQueue.pop()!;
-      this.idNodeMap.delete(this.getId(node));
-
-      if (node.childNodes) {
-        node.childNodes.forEach(c => removeQueue.push(c))
-      }
-
+    if (n.childNodes) {
+      n.childNodes.forEach((childNode) =>
+        this.removeNodeFromMap(childNode as unknown as Node),
+      );
     }
   }
   has(id: number): boolean {

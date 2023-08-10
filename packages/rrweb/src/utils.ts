@@ -238,21 +238,13 @@ export function isBlocked(
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
       : node.parentElement;
-
   if (!el) return false;
 
   try {
     if (typeof blockClass === 'string') {
-      if(!checkAncestors){
-        if(el.classList.length === 1) return el.classList[0] === blockClass;
-        return el.classList.length > 0 && el.classList.contains(blockClass);
-      }
-
-      if(el.classList.length === 1) return el.classList[0] === blockClass || el.matches(`.${blockClass} *`);
       return (
-        el.classList.length > 0 &&
         el.classList.contains(blockClass) ||
-        el.matches(`.${blockClass} *`)
+        (checkAncestors && el.matches(`.${blockClass} *`))
       );
     }
     return classMatchesRegex(el, blockClass, checkAncestors);

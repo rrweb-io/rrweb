@@ -769,39 +769,33 @@ function isParentRemoved(
   mirror: Mirror,
 ): boolean {
   if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror, new Set());
+  return _isParentRemoved(removes, n, mirror, undefined);
 }
 
 function _isParentRemoved(
   removes: removedNodeMutation[],
   n: Node,
   mirror: Mirror,
-  removeSet: Set<number>,
+  removeSet: Set<number> | undefined,
 ): boolean {
-  const queue = [n];
-  while (queue.length) {
-    const { parentNode } = queue.pop()!;
-    if (!parentNode) {
-      return false;
-    }
-
-    const parentId = mirror.getId(parentNode);
-    if (removeSet.has(parentId)) {
-      return true;
-    }
-
-    for (let i = 0; i < removes.length; i++) {
-      const removedNode = removes[i];
-      if (removedNode.id === parentId) {
-        return true;
-      }
-      removeSet.add(removedNode.id);
-    }
-
-    queue.push(parentNode);
+  const { parentNode } = n;
+  if (!parentNode) {
+    return false;
   }
 
-  return false;
+  const removedLookupSet = removeSet || new Set();
+  const parentId = mirror.getId(parentNode);
+  for (let i = 0; i < removes.length; i++) {
+    const removedNode = removes[i];
+    if (removedNode.id === parentId) {
+      return true;
+    }
+    removedLookupSet.add(removedNode.id);
+  }
+  if (removedLookupSet.has(parentId)) {
+    return true;
+  }
+  return _isParentRemoved(removes, parentNode, mirror, removedLookupSet);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
@@ -810,16 +804,12 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const queue = [n];
-  while (queue.length) {
-    const { parentNode } = queue.pop()!;
-    if (!parentNode) {
-      return false;
-    }
-    if (set.has(parentNode)) {
-      return true;
-    }
-    queue.push(parentNode);
+  const { parentNode } = n;
+  if (!parentNode) {
+    return false;
   }
-  return false;
+  if (set.has(parentNode)) {
+    return true;
+  }
+  return _isAncestorInSet(set, parentNode);
 }
