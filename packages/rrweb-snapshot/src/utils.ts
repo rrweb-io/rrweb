@@ -124,12 +124,12 @@ export class Mirror implements IMirror<Node> {
   removeNodeFromMap(n: Node) {
     const removeQueue = [n];
 
-    while(removeQueue.length){
+    while (removeQueue.length) {
       const node = removeQueue.pop()!;
       this.idNodeMap.delete(this.getId(node));
 
       if (node.childNodes) {
-        node.childNodes.forEach(c => removeQueue.push(c))
+        node.childNodes.forEach((c) => removeQueue.push(c));
       }
     }
   }
