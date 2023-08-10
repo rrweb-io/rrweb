@@ -283,6 +283,10 @@ export function _isBlockedElement(
 
   try {
     if (typeof blockClass === 'string') {
+      if(!element.classList.length) return false;
+      if(element.classList.length === 1 && element.classList[0] === blockClass) {
+        return true;
+      }
       if (element.classList.contains(blockClass)) {
         return true;
       }
@@ -339,9 +343,12 @@ export function needMaskingText(
       ? (node as HTMLElement)
       : node.parentElement;
 
-  if (el === null) return false;
+  if (!el) return false;
+
   try {
     if (typeof maskTextClass === 'string') {
+      if(!el.classList.length) return false;
+      if(el.classList.length === 1 && el.classList[0] === maskTextClass) return true;
       if (el.classList.contains(maskTextClass)) return true;
       if (el.matches(`.${maskTextClass} *`)) return true;
     } else {
@@ -657,14 +664,14 @@ function serializeElementNode(
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      attributes[attr.name] = transformAttribute(
-        doc,
-        tagName,
-        toLowerCase(attr.name),
-        attr.value,
-      );
-    }
+    if (ignoreAttribute(tagName, attr.name, attr.value)) continue;
+
+    attributes[attr.name] = transformAttribute(
+      doc,
+      tagName,
+      toLowerCase(attr.name),
+      attr.value,
+    );
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
@@ -1054,7 +1061,10 @@ export function serializeNodeWithId(
     id = genId();
   }
 
-  const serializedNode = Object.assign(_serializedNode, { id });
+  const serializedNode = {
+    ..._serializedNode,
+    id,
+  };
   // add IGNORED_NODE to mirror to track nextSiblings
   mirror.add(n, serializedNode);
 
