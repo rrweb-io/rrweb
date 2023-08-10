@@ -769,33 +769,39 @@ function isParentRemoved(
   mirror: Mirror,
 ): boolean {
   if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror, undefined);
+  return _isParentRemoved(removes, n, mirror, new Set());
 }
 
 function _isParentRemoved(
   removes: removedNodeMutation[],
   n: Node,
   mirror: Mirror,
-  removeSet: Set<number> | undefined,
+  removeSet: Set<number>,
 ): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
-  }
+  const queue = [n];
+  while (queue.length) {
+    const { parentNode } = queue.pop()!;
 
-  const removedLookupSet = removeSet || new Set();
-  const parentId = mirror.getId(parentNode);
-  for (let i = 0; i < removes.length; i++) {
-    const removedNode = removes[i];
-    if (removedNode.id === parentId) {
+    if (!parentNode) {
+      return false;
+    }
+
+    const parentId = mirror.getId(parentNode);
+    if (removeSet.has(parentId)) {
       return true;
     }
-    removedLookupSet.add(removedNode.id);
+    for (let i = 0; i < removes.length; i++) {
+      const removedNode = removes[i];
+      if (removedNode.id === parentId) {
+        return true;
+      }
+      removeSet.add(removedNode.id);
+    }
+
+    queue.push(parentNode);
   }
-  if (removedLookupSet.has(parentId)) {
-    return true;
-  }
-  return _isParentRemoved(removes, parentNode, mirror, removedLookupSet);
+
+  return false;
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
@@ -804,12 +810,16 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
+  const queue = [n];
+  while (queue.length) {
+    const { parentNode } = queue.pop()!;
+    if (!parentNode) {
+      return false;
+    }
+    if (set.has(parentNode)) {
+      return true;
+    }
+    queue.push(parentNode);
   }
-  if (set.has(parentNode)) {
-    return true;
-  }
-  return _isAncestorInSet(set, parentNode);
+  return false;
 }
