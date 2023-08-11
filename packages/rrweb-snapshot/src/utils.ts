@@ -54,6 +54,46 @@ function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
   return cssText;
 }
 
+// Remove this declaration once typescript has added `CSSImportRule.supportsText` to the lib.
+declare interface CSSImportRule extends CSSRule {
+  readonly href: string;
+  readonly layerName: string | null;
+  readonly media: MediaList;
+  readonly styleSheet: CSSStyleSheet;
+  /**
+   * experimental API, currently only supported in firefox
+   * https://developer.mozilla.org/en-US/docs/Web/API/CSSImportRule/supportsText
+   */
+  readonly supportsText?: string | null;
+}
+
+/**
+ * Browsers sometimes incorrectly escape `@import` on `.cssText` statements.
+ * This function tries to correct the escaping.
+ * more info: https://bugs.chromium.org/p/chromium/issues/detail?id=1472259
+ * @param cssImportRule
+ * @returns `cssText` with browser inconsistencies fixed, or null if not applicable.
+ */
+export function fixBrowserCompatibilityIssuesInCSSImports(
+  rule: CSSImportRule,
+): string | null {
+  if (rule.cssText.split('"').length < 3) return null;
+
+  const statement = ['@import', `url(${JSON.stringify(rule.href)})`];
+  if (rule.layerName === '') {
+    statement.push(`layer`);
+  } else if (rule.layerName) {
+    statement.push(`layer(${rule.layerName})`);
+  }
+  if (rule.supportsText) {
+    statement.push(`supports(${rule.supportsText})`);
+  }
+  if (rule.media.length) {
+    statement.push(rule.media.mediaText);
+  }
+  return statement.join(' ') + ';';
+}
+
 export function getCssRulesString(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
@@ -71,7 +111,14 @@ export function getCssRuleString(rule: CSSRule): string {
   let cssStringified = rule.cssText;
   if (isCSSImportRule(rule)) {
     try {
-      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
+      cssStringified =
+        getCssRulesString(rule.styleSheet) ||
+        // browser import didn't work due to CORS
+        // so we try to construct the import statement ourselves
+        // and check for browser compatibility issues
+        fixBrowserCompatibilityIssuesInCSSImports(rule) ||
+        // no compatibility issues, so we can just use the cssText
+        cssStringified;
     } catch {
       // ignore
     }
