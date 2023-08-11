@@ -110,15 +110,15 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 <div dir="auto">
 
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
-<a href="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/bronze-sponsor/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
 
 </div>
 
@@ -217,6 +217,13 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     <td align="center">
       <a href="https://analyzee.io" target="_blank">
         <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://requestly.io" target="_blank">
+        <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
       </a>
     </td>
   </tr>
