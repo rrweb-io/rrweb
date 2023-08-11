@@ -51,16 +51,6 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
   return processedTagName;
 }
 
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) =>
-          rule.cssText ? validateStringifiedCssRule(rule.cssText) : '',
-        )
-        .join('')
-    : '';
-}
-
 function extractOrigin(url: string): string {
   let origin = '';
   if (url.indexOf('//') > -1) {
@@ -564,7 +554,7 @@ function serializeTextNode(
         // to _only_ include the current rule(s) added by the text node.
         // So we'll be conservative and keep textContent as-is.
       } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStyleSheet(
+        textContent = getCssRulesString(
           (n.parentNode as HTMLStyleElement).sheet!,
         );
       }
