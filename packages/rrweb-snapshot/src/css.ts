@@ -345,7 +345,7 @@ export function parse(css: string, options: ParserOptions = {}) {
     whitespace();
     comments(rules);
     while (css.length && css.charAt(0) !== '}' && (node = atrule() || rule())) {
-      if (node !== false) {
+      if (node) {
         rules.push(node);
         comments(rules);
       }
@@ -383,7 +383,7 @@ export function parse(css: string, options: ParserOptions = {}) {
   function comments(rules: Rule[] = []) {
     let c: Comment | void;
     while ((c = comment())) {
-      if (c !== false) {
+      if (c) {
         rules.push(c);
       }
       c = comment();
@@ -831,6 +831,8 @@ export function parse(css: string, options: ParserOptions = {}) {
     if (css[0] !== '@') {
       return;
     }
+
+    console.log('atimport', JSON.stringify(atimport()), css);
 
     return (
       atkeyframes() ||
