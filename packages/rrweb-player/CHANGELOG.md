@@ -1,5 +1,14 @@
 # rrweb-player
 
+## 2.0.0-alpha.11
+
+### Patch Changes
+
+- [#1287](https://github.com/rrweb-io/rrweb/pull/1287) [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7) Thanks [@Juice10](https://github.com/Juice10)! - Upgrade all projects to typescript 4.9.5
+
+- Updated dependencies [[`11f6567`](https://github.com/rrweb-io/rrweb/commit/11f6567fd81ef9ed0f954a7b6d5e39653f56004f), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7)]:
+  - rrweb@2.0.0-alpha.11
+
 ## 2.0.0-alpha.10
 
 ### Patch Changes
