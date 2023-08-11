@@ -832,8 +832,6 @@ export function parse(css: string, options: ParserOptions = {}) {
       return;
     }
 
-    console.log('atimport', JSON.stringify(atimport()), css);
-
     return (
       atkeyframes() ||
       atmedia() ||
