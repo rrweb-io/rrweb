@@ -1,7 +1,7 @@
 import { parse, Rule, Media } from '../src/css';
 import {
   validateStringifiedCssRule,
-  fixBrowserCompatibilityIssuesInCSSImports,
+  escapeImportStatement,
 } from './../src/utils';
 
 describe('css parser', () => {
@@ -125,7 +125,7 @@ describe('css parser', () => {
   });
 
   it('parses imports with quotes correctly', () => {
-    const out1 = fixBrowserCompatibilityIssuesInCSSImports({
+    const out1 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"");`,
       href: '/foo.css;900;800"',
       media: {
@@ -136,7 +136,7 @@ describe('css parser', () => {
     } as unknown as CSSImportRule);
     expect(out1).toEqual(`@import url("/foo.css;900;800\\"");`);
 
-    const out2 = fixBrowserCompatibilityIssuesInCSSImports({
+    const out2 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"") supports(display: flex);`,
       href: '/foo.css;900;800"',
       media: {
@@ -149,7 +149,7 @@ describe('css parser', () => {
       `@import url("/foo.css;900;800\\"") supports(display: flex);`,
     );
 
-    const out3 = fixBrowserCompatibilityIssuesInCSSImports({
+    const out3 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"");`,
       href: '/foo.css;900;800"',
       media: {
@@ -161,7 +161,7 @@ describe('css parser', () => {
     } as unknown as CSSImportRule);
     expect(out3).toEqual(`@import url("/foo.css;900;800\\"") print, screen;`);
 
-    const out4 = fixBrowserCompatibilityIssuesInCSSImports({
+    const out4 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"") layer(layer-1);`,
       href: '/foo.css;900;800"',
       media: {
@@ -172,7 +172,7 @@ describe('css parser', () => {
     } as unknown as CSSImportRule);
     expect(out4).toEqual(`@import url("/foo.css;900;800\\"") layer(layer-1);`);
 
-    const out5 = fixBrowserCompatibilityIssuesInCSSImports({
+    const out5 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"") layer;`,
       href: '/foo.css;900;800"',
       media: {

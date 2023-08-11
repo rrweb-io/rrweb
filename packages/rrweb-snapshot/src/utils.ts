@@ -74,10 +74,9 @@ declare interface CSSImportRule extends CSSRule {
  * @param cssImportRule
  * @returns `cssText` with browser inconsistencies fixed, or null if not applicable.
  */
-export function fixBrowserCompatibilityIssuesInCSSImports(
-  rule: CSSImportRule,
-): string | null {
-  if (rule.cssText.split('"').length < 3) return null;
+export function escapeImportStatement(rule: CSSImportRule): string {
+  const { cssText } = rule;
+  if (cssText.split('"').length < 3) return cssText;
 
   const statement = ['@import', `url(${JSON.stringify(rule.href)})`];
   if (rule.layerName === '') {
@@ -94,12 +93,12 @@ export function fixBrowserCompatibilityIssuesInCSSImports(
   return statement.join(' ') + ';';
 }
 
-export function getCssRulesString(s: CSSStyleSheet): string | null {
+export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     return rules
       ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules).map(getCssRuleString).join(''),
+          Array.from(rules).map(stringifyRule).join(''),
         )
       : null;
   } catch (error) {
@@ -107,23 +106,22 @@ export function getCssRulesString(s: CSSStyleSheet): string | null {
   }
 }
 
-export function getCssRuleString(rule: CSSRule): string {
-  let cssStringified = rule.cssText;
+export function stringifyRule(rule: CSSRule): string {
+  let importStringified;
   if (isCSSImportRule(rule)) {
     try {
-      cssStringified =
-        getCssRulesString(rule.styleSheet) ||
-        // browser import didn't work due to CORS
-        // so we try to construct the import statement ourselves
-        // and check for browser compatibility issues
-        fixBrowserCompatibilityIssuesInCSSImports(rule) ||
-        // no compatibility issues, so we can just use the cssText
-        cssStringified;
-    } catch {
+      importStringified =
+        // for same-origin stylesheets,
+        // we can access the imported stylesheet rules directly
+        stringifyStylesheet(rule.styleSheet) ||
+        // work around browser issues with the raw string `@import url(...)` statement
+        escapeImportStatement(rule);
+    } catch (error) {
       // ignore
     }
   }
-  return validateStringifiedCssRule(cssStringified);
+
+  return validateStringifiedCssRule(importStringified || rule.cssText);
 }
 
 export function validateStringifiedCssRule(cssStringified: string): string {
