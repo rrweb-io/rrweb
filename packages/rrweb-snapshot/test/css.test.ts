@@ -1,8 +1,5 @@
 import { parse, Rule, Media } from '../src/css';
-import {
-  fixSafariColons,
-  escapeImportStatement,
-} from './../src/utils';
+import { fixSafariColons, escapeImportStatement } from './../src/utils';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
