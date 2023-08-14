@@ -22,7 +22,6 @@ import {
   stringifyStylesheet,
   getInputType,
   toLowerCase,
-  validateStringifiedCssRule,
 } from './utils';
 
 let _id = 1;

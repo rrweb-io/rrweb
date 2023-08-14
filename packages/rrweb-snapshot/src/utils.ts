@@ -119,24 +119,27 @@ export function stringifyRule(rule: CSSRule): string {
     } catch (error) {
       // ignore
     }
+  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+    // Safari does not escape selectors with : properly
+    // see https://bugs.webkit.org/show_bug.cgi?id=184604
+    return fixSafariColons(rule.cssText);
   }
 
-  return validateStringifiedCssRule(importStringified || rule.cssText);
+  return importStringified || rule.cssText;
 }
 
-export function validateStringifiedCssRule(cssStringified: string): string {
-  // Safari does not escape selectors with : properly
-  if (cssStringified.includes(':')) {
-    // Replace e.g. [aa:bb] with [aa\\:bb]
-    const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
-    return cssStringified.replace(regex, '$1\\$2');
-  }
-
-  return cssStringified;
+export function fixSafariColons(cssStringified: string): string {
+  // Replace e.g. [aa:bb] with [aa\\:bb]
+  const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
+  return cssStringified.replace(regex, '$1\\$2');
 }
 
 export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
+}
+
+export function isCSSStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return 'selectorText' in rule;
 }
 
 export class Mirror implements IMirror<Node> {

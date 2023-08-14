@@ -1,8 +1,5 @@
 import { parse, Rule, Media } from '../src/css';
-import {
-  validateStringifiedCssRule,
-  escapeImportStatement,
-} from './../src/utils';
+import { fixSafariColons, escapeImportStatement } from './../src/utils';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
@@ -112,15 +109,13 @@ describe('css parser', () => {
   });
 
   it('parses : in attribute selectors correctly', () => {
-    const out1 = validateStringifiedCssRule('[data-foo] { color: red; }');
+    const out1 = fixSafariColons('[data-foo] { color: red; }');
     expect(out1).toEqual('[data-foo] { color: red; }');
 
-    const out2 = validateStringifiedCssRule('[data-foo:other] { color: red; }');
+    const out2 = fixSafariColons('[data-foo:other] { color: red; }');
     expect(out2).toEqual('[data-foo\\:other] { color: red; }');
 
-    const out3 = validateStringifiedCssRule(
-      '[data-aa\\:other] { color: red; }',
-    );
+    const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
     expect(out3).toEqual('[data-aa\\:other] { color: red; }');
   });
 
