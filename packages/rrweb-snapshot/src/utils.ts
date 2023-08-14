@@ -122,7 +122,7 @@ export function stringifyRule(rule: CSSRule): string {
   } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
     // Safari does not escape selectors with : properly
     // see https://bugs.webkit.org/show_bug.cgi?id=184604
-    return fixSafariColons(cssStringified);
+    return fixSafariColons(rule.cssText);
   }
 
   return importStringified || rule.cssText;
