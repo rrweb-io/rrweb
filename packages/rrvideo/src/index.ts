@@ -3,6 +3,7 @@ import * as path from 'path';
 import { chromium } from 'playwright';
 import { EventType, eventWithTime } from '@rrweb/types';
 import type { RRwebPlayerOptions } from 'rrweb-player';
+import type { LaunchOptions } from "playwright";
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),
@@ -18,6 +19,7 @@ type RRvideoConfig = {
   input: string;
   output?: string;
   headless?: boolean;
+  launchOptions?: LaunchOptions;
   // A number between 0 and 1. The higher the value, the better the quality of the video.
   resolutionRatio?: number;
   // A callback function that will be called when the progress of the replay is updated.
@@ -29,6 +31,7 @@ const defaultConfig: Required<RRvideoConfig> = {
   input: '',
   output: 'rrvideo-output.webm',
   headless: true,
+  launchOptions: {},
   // A good trade-off value between quality and file size.
   resolutionRatio: 0.8,
   onProgressUpdate: () => {
@@ -126,6 +129,7 @@ export async function transformToVideo(options: RRvideoConfig) {
   Object.assign(config.rrwebPlayer, scaledViewport);
   const browser = await chromium.launch({
     headless: config.headless,
+    ...config.launchOptions
   });
   const context = await browser.newContext({
     viewport: scaledViewport,
