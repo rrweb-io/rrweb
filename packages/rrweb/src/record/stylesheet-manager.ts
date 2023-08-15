@@ -1,5 +1,5 @@
 import type { elementNode, serializedNodeWithId } from 'rrweb-snapshot';
-import { getCssRuleString } from 'rrweb-snapshot';
+import { stringifyRule } from 'rrweb-snapshot';
 import type {
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
@@ -66,7 +66,7 @@ export class StylesheetManager {
           styleId,
           rules: rules.map((r, index) => {
             return {
-              rule: getCssRuleString(r),
+              rule: stringifyRule(r),
               index,
             };
           }),

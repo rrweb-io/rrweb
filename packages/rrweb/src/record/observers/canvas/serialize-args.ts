@@ -125,7 +125,7 @@ export function serializeArg(
     };
   }
 
-  return value as CanvasArg;
+  return value as unknown as CanvasArg;
 }
 
 export const serializeArgs = (

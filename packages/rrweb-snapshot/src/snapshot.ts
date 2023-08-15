@@ -19,10 +19,9 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  getCssRulesString,
+  stringifyStylesheet,
   getInputType,
   toLowerCase,
-  validateStringifiedCssRule,
 } from './utils';
 
 let _id = 1;
@@ -49,16 +48,6 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
   }
 
   return processedTagName;
-}
-
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) =>
-          rule.cssText ? validateStringifiedCssRule(rule.cssText) : '',
-        )
-        .join('')
-    : '';
 }
 
 function extractOrigin(url: string): string {
@@ -564,7 +553,7 @@ function serializeTextNode(
         // to _only_ include the current rule(s) added by the text node.
         // So we'll be conservative and keep textContent as-is.
       } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStyleSheet(
+        textContent = stringifyStylesheet(
           (n.parentNode as HTMLStyleElement).sheet!,
         );
       }
@@ -654,7 +643,7 @@ function serializeElementNode(
     });
     let cssText: string | null = null;
     if (stylesheet) {
-      cssText = getCssRulesString(stylesheet);
+      cssText = stringifyStylesheet(stylesheet);
     }
     if (cssText) {
       delete attributes.rel;
@@ -669,7 +658,7 @@ function serializeElementNode(
     // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
     !(n.innerText || n.textContent || '').trim().length
   ) {
-    const cssText = getCssRulesString(
+    const cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {

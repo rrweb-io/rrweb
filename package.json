@@ -33,7 +33,7 @@
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
     "turbo": "^1.2.4",
-    "typescript": "^4.7.3"
+    "typescript": "^4.9.5"
   },
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
@@ -49,7 +49,8 @@
     "release": "yarn build:all && changeset publish"
   },
   "resolutions": {
-    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz"
+    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
+    "**/@types/dom-webcodecs": "0.1.5"
   },
   "browserslist": [
     "defaults",
