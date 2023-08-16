@@ -3,7 +3,7 @@ import * as path from 'path';
 import { chromium } from 'playwright';
 import { EventType, eventWithTime } from '@rrweb/types';
 import type { RRwebPlayerOptions } from 'rrweb-player';
-import type { LaunchOptions } from "playwright";
+import type { LaunchOptions } from 'playwright';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),
