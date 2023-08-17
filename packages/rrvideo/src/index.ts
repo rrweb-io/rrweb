@@ -102,6 +102,14 @@ export async function transformToVideo(options: RRvideoConfig) {
   if (!options.input) throw new Error('input is required');
   // If the output is not specified or undefined, use the default value.
   if (!options.output) delete options.output;
+  // rrvideo config file support set 'headless', if the headless is not boolean, use the default value.
+  if (
+    options.launchOptions &&
+    typeof options.launchOptions.headless === 'boolean'
+  ) {
+    config.headless = options.launchOptions.headless;
+    delete options.launchOptions.headless;
+  }
   Object.assign(config, options);
   if (config.resolutionRatio > 1) config.resolutionRatio = 1; // The max value is 1.
 
@@ -129,7 +137,7 @@ export async function transformToVideo(options: RRvideoConfig) {
   Object.assign(config.rrwebPlayer, scaledViewport);
   const browser = await chromium.launch({
     headless: config.headless,
-    ...config.launchOptions
+    ...config.launchOptions,
   });
   const context = await browser.newContext({
     viewport: scaledViewport,
