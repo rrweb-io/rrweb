@@ -19,19 +19,19 @@ export default function initCanvasContextObserver(
       'getContext',
       function (
         original: (
-          this: ICanvas,
+          this: ICanvas | HTMLCanvasElement,
           contextType: string,
           ...args: Array<unknown>
         ) => void,
       ) {
         return function (
-          this: ICanvas,
+          this: ICanvas | HTMLCanvasElement,
           contextType: string,
           ...args: Array<unknown>
         ) {
           if (!isBlocked(this, blockClass, blockSelector, true)) {
             const ctxName = getNormalizedContextName(contextType);
-            if (!('__context' in this)) this.__context = ctxName;
+            if (!('__context' in this)) (this as ICanvas).__context = ctxName;
 
             if (
               setPreserveDrawingBufferToTrue &&

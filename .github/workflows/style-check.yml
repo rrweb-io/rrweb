@@ -65,7 +65,7 @@ jobs:
           node-version: 16
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
       - name: Prettier Check
         run: yarn prettier --check '**/*.{ts,md}'
 
@@ -85,7 +85,7 @@ jobs:
           node-version: 16
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
       - name: Prettify Code
         run: yarn prettier --write '**/*.{ts,md}'
       - name: Commit Changes
