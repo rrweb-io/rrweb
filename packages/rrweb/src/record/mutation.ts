@@ -682,21 +682,23 @@ export default class MutationBuffer {
 
         const genAddsQueue: [Node, Node | undefined][] = new Array<
           [Node, Node | undefined]
-        >(1000);
+        >();
         m.addedNodes.forEach((n) => {
-          let rp = -1;
-          let wp = -1;
-          genAddsQueue[++wp] = [n, m.target];
+          genAddsQueue.push([n, m.target]);
 
           // iterate breadth first over new nodes (non recursive for performance)
-          while (rp < wp) {
-            const next = genAddsQueue[++rp];
+          while (genAddsQueue.length) {
+            const next = genAddsQueue.pop();
             if (!next) {
               throw new Error(
                 'Add queue is corrupt, there is no next item to process',
               );
             }
-            const [n, target] = next;
+
+            // Since this is an extremely hot path, do not destructure next
+            // in order to avoid invoking the iterator protocol
+            const n = next[0];
+            const target = next[1];
 
             // this node was already recorded in other buffer, ignore it
             if (this.processedNodeManager.inOtherBuffer(n, this)) continue;
@@ -727,12 +729,12 @@ export default class MutationBuffer {
               continue;
             }
             n.childNodes.forEach((childN) => {
-              genAddsQueue[++wp] = [childN, undefined];
+              genAddsQueue.push([childN, undefined]);
             });
             if (hasShadowRoot(n)) {
               n.shadowRoot.childNodes.forEach((childN) => {
                 this.processedNodeManager.add(childN, this);
-                genAddsQueue[++wp] = [childN, n];
+                genAddsQueue.push([childN, n]);
               });
             }
           }
