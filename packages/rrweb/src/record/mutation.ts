@@ -497,14 +497,6 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
-    let unattachedDoc;
-    try {
-      // avoid upsetting original document from a Content Security point of view
-      unattachedDoc = document.implementation.createHTMLDocument();
-    } catch (e) {
-      // fallback to more direct method
-      unattachedDoc = this.doc;
-    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
@@ -597,6 +589,14 @@ export default class MutationBuffer {
             value,
           );
           if (attributeName === 'style') {
+            let unattachedDoc;
+            try {
+              // avoid upsetting original document from a Content Security point of view
+              unattachedDoc = document.implementation.createHTMLDocument();
+            } catch (e) {
+              // fallback to more direct method
+              unattachedDoc = this.doc;
+            }
             const old = unattachedDoc.createElement('span');
             if (m.oldValue) {
               old.setAttribute('style', m.oldValue);
