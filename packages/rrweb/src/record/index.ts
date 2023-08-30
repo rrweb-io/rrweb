@@ -108,6 +108,11 @@ function record<T = eventWithTime>(
   if (inEmittingFrame && !emit) {
     throw new Error('emit function is required');
   }
+  if (!inEmittingFrame && !passEmitsToParent) {
+    return () => {
+      /* no-op since in this case we don't need to record anything from this frame in particular */
+    };
+  }
   // move departed options to new options
   if (mousemoveWait !== undefined && sampling.mousemove === undefined) {
     sampling.mousemove = mousemoveWait;
