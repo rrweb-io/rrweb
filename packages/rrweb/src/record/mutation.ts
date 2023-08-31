@@ -692,7 +692,7 @@ export default class MutationBuffer {
               );
             }
 
-            // Since this is an extremely hot path, do not destructure next 
+            // Since this is an extremely hot path, do not destructure next
             // in order to avoid invoking the iterator protocol
             const n = next[0];
             const target = next[1];
