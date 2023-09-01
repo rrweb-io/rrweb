@@ -3,6 +3,7 @@ import {
   maskInputValue,
   Mirror,
   getInputType,
+  toLowerCase,
 } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
@@ -16,6 +17,7 @@ import {
   legacy_isTouchEvent,
   patch,
   StyleSheetMirror,
+  nowTimestamp,
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
@@ -74,10 +76,11 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
     } else if ('path' in event && event.path.length) {
       return event.path[0];
     }
-    return event.target;
   } catch {
-    return event.target;
+    // fallback to `event.target` below
   }
+
+  return event && event.target;
 }
 
 export function initMutationObserver(
@@ -180,13 +183,13 @@ function initMoveObserver({
           ? evt.changedTouches[0]
           : evt;
         if (!timeBaseline) {
-          timeBaseline = Date.now();
+          timeBaseline = nowTimestamp();
         }
         positions.push({
           x: clientX,
           y: clientY,
           id: mirror.getId(target as Node),
-          timeOffset: Date.now() - timeBaseline,
+          timeOffset: nowTimestamp() - timeBaseline,
         });
         // it is possible DragEvent is undefined even on devices
         // that support event 'drag'
@@ -309,13 +312,16 @@ function initMouseInteractionObserver({
         disableMap[key] !== false,
     )
     .forEach((eventKey: keyof typeof MouseInteractions) => {
-      let eventName = eventKey.toLowerCase();
+      let eventName = toLowerCase(eventKey);
       const handler = getHandler(eventKey);
       if (window.PointerEvent) {
         switch (MouseInteractions[eventKey]) {
           case MouseInteractions.MouseDown:
           case MouseInteractions.MouseUp:
-            eventName = eventName.replace('mouse', 'pointer');
+            eventName = eventName.replace(
+              'mouse',
+              'pointer',
+            ) as unknown as typeof eventName;
             break;
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
@@ -373,9 +379,10 @@ export function initScrollObserver({
   return on('scroll', updatePosition, doc);
 }
 
-function initViewportResizeObserver({
-  viewportResizeCb,
-}: observerParam): listenerHandler {
+function initViewportResizeObserver(
+  { viewportResizeCb }: observerParam,
+  { win }: { win: IWindow },
+): listenerHandler {
   let lastH = -1;
   let lastW = -1;
   const updateDimension = callbackWrapper(
@@ -395,7 +402,7 @@ function initViewportResizeObserver({
       200,
     ),
   );
-  return on('resize', updateDimension, window);
+  return on('resize', updateDimension, win);
 }
 
 function wrapEventWithUserTriggeredFlag(
@@ -416,6 +423,7 @@ function initInputObserver({
   blockClass,
   blockSelector,
   ignoreClass,
+  ignoreSelector,
   maskInputOptions,
   maskInputFn,
   sampling,
@@ -442,7 +450,10 @@ function initInputObserver({
       return;
     }
 
-    if (target.classList.contains(ignoreClass)) {
+    if (
+      target.classList.contains(ignoreClass) ||
+      (ignoreSelector && target.matches(ignoreSelector))
+    ) {
       return;
     }
     let text = (target as HTMLInputElement).value;
@@ -1030,6 +1041,7 @@ function initMediaInteractionObserver({
   blockSelector,
   mirror,
   sampling,
+  doc,
 }: observerParam): listenerHandler {
   const handler = callbackWrapper((type: MediaInteractions) =>
     throttle(
@@ -1056,11 +1068,11 @@ function initMediaInteractionObserver({
     ),
   );
   const handlers = [
-    on('play', handler(MediaInteractions.Play)),
-    on('pause', handler(MediaInteractions.Pause)),
-    on('seeked', handler(MediaInteractions.Seeked)),
-    on('volumechange', handler(MediaInteractions.VolumeChange)),
-    on('ratechange', handler(MediaInteractions.RateChange)),
+    on('play', handler(MediaInteractions.Play), doc),
+    on('pause', handler(MediaInteractions.Pause), doc),
+    on('seeked', handler(MediaInteractions.Seeked), doc),
+    on('volumechange', handler(MediaInteractions.VolumeChange), doc),
+    on('ratechange', handler(MediaInteractions.RateChange), doc),
   ];
   return callbackWrapper(() => {
     handlers.forEach((h) => h());
@@ -1274,7 +1286,9 @@ export function initObservers(
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
   const scrollHandler = initScrollObserver(o);
-  const viewportResizeHandler = initViewportResizeObserver(o);
+  const viewportResizeHandler = initViewportResizeObserver(o, {
+    win: currentWindow,
+  });
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 

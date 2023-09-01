@@ -14,6 +14,7 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
+  nowTimestamp,
 } from '../utils';
 import type { recordOptions } from '../types';
 import {
@@ -42,7 +43,7 @@ import {
 function wrapEvent(e: event): eventWithTime {
   return {
     ...e,
-    timestamp: Date.now(),
+    timestamp: nowTimestamp(),
   };
 }
 
@@ -63,6 +64,7 @@ function record<T = eventWithTime>(
     blockClass = 'rr-block',
     blockSelector = null,
     ignoreClass = 'rr-ignore',
+    ignoreSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
@@ -521,6 +523,7 @@ function record<T = eventWithTime>(
           },
           blockClass,
           ignoreClass,
+          ignoreSelector,
           maskTextClass,
           maskTextSelector,
           maskInputOptions,

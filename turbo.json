@@ -7,8 +7,14 @@
       "outputs": ["lib/**", "es/**", "dist/**", "typings/**"]
     },
     "test": {},
-    "test:watch": {},
-    "dev": {},
+    "test:watch": {
+      "persistent": true
+    },
+    "test:update": {},
+    "dev": {
+      "dependsOn": ["^prepublish"],
+      "persistent": true
+    },
     "lint": {},
     "check-types": {}
   }

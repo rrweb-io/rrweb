@@ -1,5 +1,31 @@
 # rrdom
 
+## 2.0.0-alpha.11
+
+### Patch Changes
+
+- Updated dependencies [[`11f6567`](https://github.com/rrweb-io/rrweb/commit/11f6567fd81ef9ed0f954a7b6d5e39653f56004f), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7)]:
+  - rrweb-snapshot@2.0.0-alpha.11
+
+## 2.0.0-alpha.10
+
+### Patch Changes
+
+- Updated dependencies [[`c6600e7`](https://github.com/rrweb-io/rrweb/commit/c6600e742b8ec0b6295816bb5de9edcd624d975e)]:
+  - rrweb-snapshot@2.0.0-alpha.10
+
+## 2.0.0-alpha.9
+
+### Patch Changes
+
+- [#1222](https://github.com/rrweb-io/rrweb/pull/1222) [`b798f2d`](https://github.com/rrweb-io/rrweb/commit/b798f2dbc07b5a24dcaf40d164159200b6c0679d) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: rrdom bugs
+
+  1. Fix a bug in the diff algorithm.
+  2. Omit the 'srcdoc' attribute of iframes to avoid overwriting content.
+
+- Updated dependencies [[`d7c72bf`](https://github.com/rrweb-io/rrweb/commit/d7c72bff0724b46a6fa94af455220626a27104fe)]:
+  - rrweb-snapshot@2.0.0-alpha.9
+
 ## 2.0.0-alpha.8
 
 ### Patch Changes

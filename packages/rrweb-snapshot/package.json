@@ -1,17 +1,18 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.0.0-alpha.8",
+  "version": "2.0.0-alpha.11",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run bundle && npm run typings",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:update": "jest --updateSnapshot",
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "dev": "yarn bundle:es-only --watch",
     "typings": "tsc -d --declarationDir typings",
-    "prepublish": "npm run typings && npm run bundle",
+    "prepublish": "yarn typings && yarn bundle",
     "lint": "yarn eslint src"
   },
   "type": "module",

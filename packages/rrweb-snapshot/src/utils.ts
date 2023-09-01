@@ -54,12 +54,51 @@ function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
   return cssText;
 }
 
-export function getCssRulesString(s: CSSStyleSheet): string | null {
+// Remove this declaration once typescript has added `CSSImportRule.supportsText` to the lib.
+declare interface CSSImportRule extends CSSRule {
+  readonly href: string;
+  readonly layerName: string | null;
+  readonly media: MediaList;
+  readonly styleSheet: CSSStyleSheet;
+  /**
+   * experimental API, currently only supported in firefox
+   * https://developer.mozilla.org/en-US/docs/Web/API/CSSImportRule/supportsText
+   */
+  readonly supportsText?: string | null;
+}
+
+/**
+ * Browsers sometimes incorrectly escape `@import` on `.cssText` statements.
+ * This function tries to correct the escaping.
+ * more info: https://bugs.chromium.org/p/chromium/issues/detail?id=1472259
+ * @param cssImportRule
+ * @returns `cssText` with browser inconsistencies fixed, or null if not applicable.
+ */
+export function escapeImportStatement(rule: CSSImportRule): string {
+  const { cssText } = rule;
+  if (cssText.split('"').length < 3) return cssText;
+
+  const statement = ['@import', `url(${JSON.stringify(rule.href)})`];
+  if (rule.layerName === '') {
+    statement.push(`layer`);
+  } else if (rule.layerName) {
+    statement.push(`layer(${rule.layerName})`);
+  }
+  if (rule.supportsText) {
+    statement.push(`supports(${rule.supportsText})`);
+  }
+  if (rule.media.length) {
+    statement.push(rule.media.mediaText);
+  }
+  return statement.join(' ') + ';';
+}
+
+export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     return rules
       ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules).map(getCssRuleString).join(''),
+          Array.from(rules, stringifyRule).join(''),
         )
       : null;
   } catch (error) {
@@ -67,20 +106,40 @@ export function getCssRulesString(s: CSSStyleSheet): string | null {
   }
 }
 
-export function getCssRuleString(rule: CSSRule): string {
-  let cssStringified = rule.cssText;
+export function stringifyRule(rule: CSSRule): string {
+  let importStringified;
   if (isCSSImportRule(rule)) {
     try {
-      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
-    } catch {
+      importStringified =
+        // for same-origin stylesheets,
+        // we can access the imported stylesheet rules directly
+        stringifyStylesheet(rule.styleSheet) ||
+        // work around browser issues with the raw string `@import url(...)` statement
+        escapeImportStatement(rule);
+    } catch (error) {
       // ignore
     }
+  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+    // Safari does not escape selectors with : properly
+    // see https://bugs.webkit.org/show_bug.cgi?id=184604
+    return fixSafariColons(rule.cssText);
   }
-  return cssStringified;
+
+  return importStringified || rule.cssText;
+}
+
+export function fixSafariColons(cssStringified: string): string {
+  // Replace e.g. [aa:bb] with [aa\\:bb]
+  const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
+  return cssStringified.replace(regex, '$1\\$2');
 }
 
 export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
+}
+
+export function isCSSStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return 'selectorText' in rule;
 }
 
 export class Mirror implements IMirror<Node> {
@@ -169,7 +228,7 @@ export function maskInputValue({
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
-  const actualType = type && type.toLowerCase();
+  const actualType = type && toLowerCase(type);
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
@@ -182,6 +241,10 @@ export function maskInputValue({
     }
   }
   return text;
+}
+
+export function toLowerCase<T extends string>(str: T): Lowercase<T> {
+  return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -265,6 +328,6 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     ? 'password'
     : type
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (type.toLowerCase() as Lowercase<string>)
+      toLowerCase(type)
     : null;
 }
