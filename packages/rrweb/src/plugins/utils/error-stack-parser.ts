@@ -71,11 +71,7 @@ export const ErrorStackParser = {
     } else if (error.stack) {
       return this.parseFFOrSafari(error as { stack: string });
     } else {
-      console.warn(
-        '[console-record-plugin]: Failed to parse error object:',
-        error,
-      );
-      return [];
+      throw new Error('Cannot parse given Error object');
     }
   },
   // Separate line and column numbers from a string of the form: (URI:Line:Column)
