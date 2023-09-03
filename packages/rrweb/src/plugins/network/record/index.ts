@@ -458,9 +458,11 @@ function initNetworkObserver(
       //
     };
   }
-  const networkOptions = (options
-    ? Object.assign({}, defaultNetworkOptions, options)
-    : defaultNetworkOptions) as Required<NetworkRecordOptions>;
+  const networkOptions = (
+    options
+      ? Object.assign({}, defaultNetworkOptions, options)
+      : defaultNetworkOptions
+  ) as Required<NetworkRecordOptions>;
 
   const cb: networkCallback = (data) => {
     const requests = data.requests.filter(
