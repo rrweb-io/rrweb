@@ -10,6 +10,9 @@ export {
   ReplayerEvents,
 } from '@rrweb/types';
 
+export * from './plugins/network/record';
+export * from './plugins/network/replay';
+
 export type { recordOptions } from './types';
 
 const { addCustomEvent } = record;
