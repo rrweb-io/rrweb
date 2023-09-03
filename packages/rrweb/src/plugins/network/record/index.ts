@@ -139,8 +139,6 @@ function initPerformanceObserver(
       })),
       isInitial: true,
     });
-
-    checkForNewPerformanceEntries(win, cb, initialPerformanceEntries.length);
   }
   const observer = new win.PerformanceObserver((entries) => {
     const performanceEntries = entries
@@ -484,37 +482,6 @@ function initNetworkObserver(
     xhrObserver();
     fetchObserver();
   };
-}
-
-function checkForNewPerformanceEntries(
-  win: IWindow,
-  cb: networkCallback,
-  previousEntryCount = 0,
-) {
-  const entries = win.performance
-    .getEntries()
-    .filter((entry): entry is ObservedPerformanceEntry => {
-      return isNavigationTiming(entry) || isResourceTiming(entry);
-    });
-
-  const currentEntryCount = entries.length;
-
-  if (currentEntryCount > previousEntryCount) {
-    cb({
-      requests: entries.slice(previousEntryCount).map((entry) => ({
-        url: entry.name,
-        initiatorType: entry.initiatorType as InitiatorType,
-        status: 'responseStatus' in entry ? entry.responseStatus : undefined,
-        startTime: Math.round(entry.startTime),
-        endTime: Math.round(entry.responseEnd),
-      })),
-      isInitial: true,
-    });
-  }
-
-  setTimeout(() => {
-    checkForNewPerformanceEntries(win, cb, currentEntryCount);
-  }, 1000);
 }
 
 export const NETWORK_PLUGIN_NAME = 'rrweb/network@1';
