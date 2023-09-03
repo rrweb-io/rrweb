@@ -78,7 +78,7 @@ type Body =
   | ReadableStream<Uint8Array>
   | null;
 
-type NetworkRequest = {
+export type NetworkRequest = {
   url: string;
   method?: string;
   initiatorType: InitiatorType;
