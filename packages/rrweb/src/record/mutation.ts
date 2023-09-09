@@ -699,7 +699,13 @@ export default class MutationBuffer {
     if (this.processedNodeManager.inOtherBuffer(n, this)) return;
 
     // if n is added to set, there is no need to travel it and its' children again
-    if (this.addedSet.has(n) || this.movedSet.has(n)) return;
+    if (this.addedSet.has(n)) {
+      // update the order of added nodes in addedSet for the `emit` phase
+      this.addedSet.delete(n);
+      this.addedSet.add(n);
+      return;
+    }
+    if (this.movedSet.has(n)) return;
 
     if (this.mirror.hasNode(n)) {
       if (isIgnored(n, this.mirror)) {
