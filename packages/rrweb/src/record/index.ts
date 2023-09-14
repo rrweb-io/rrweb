@@ -395,6 +395,14 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
+      onNodeMutation: (mutation) => {
+        wrappedMutationEmit({
+          adds: [],
+          removes: [],
+          texts: [],
+          attributes: [mutation],
+        })
+      },
     });
 
     if (!node) {
