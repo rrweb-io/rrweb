@@ -1760,16 +1760,16 @@ export class Replayer {
                 } catch (e) {
                   // for safe
                 }
-              } else if (attributeName === 'rr_dataURL' && target.nodeName === 'IMG') {
+              } else if (
+                attributeName === 'rr_dataURL' &&
+                target.nodeName === 'IMG'
+              ) {
                 const image = target as HTMLImageElement;
                 const src = image.getAttribute('src');
                 if (src && !src.startsWith('data:')) {
                   const oldsrc = image.currentSrc;
                   // Backup original img src. It may not have been set yet.
-                  image.setAttribute(
-                    'rrweb-original-src',
-                    oldsrc,
-                  );
+                  image.setAttribute('rrweb-original-src', oldsrc);
                   image.setAttribute('src', value.toString());
                 }
                 continue;

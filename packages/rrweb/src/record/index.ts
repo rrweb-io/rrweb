@@ -401,7 +401,7 @@ function record<T = eventWithTime>(
           removes: [],
           texts: [],
           attributes: [mutation],
-        })
+        });
       },
     });
 

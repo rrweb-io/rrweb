@@ -440,9 +440,12 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
+    onNodeMutation?: (args: {
+      id: number;
+      attributes: {
+        [key: string]: string;
+      };
+    }) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -595,7 +598,11 @@ function serializeTextNode(
 
 const mapSrcToDataUrl = new Map<string, string>();
 
-const loadCrossOriginImage = (doc: Document, image: HTMLImageElement, onLoad: (e: HTMLImageElement) => void) => {
+const loadCrossOriginImage = (
+  doc: Document,
+  image: HTMLImageElement,
+  onLoad: (e: HTMLImageElement) => void,
+) => {
   const copy = doc.createElement('img');
   const handler = () => {
     copy.removeEventListener('load', handler);
@@ -607,7 +614,7 @@ const loadCrossOriginImage = (doc: Document, image: HTMLImageElement, onLoad: (e
     const attribute = image.attributes[i];
     if (attribute.name === 'crossOrigin') continue;
     copy.setAttribute(attribute.name, attribute.value);
-  }   
+  }
 };
 
 function serializeElementNode(
@@ -629,9 +636,12 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
+    onNodeMutation?: (args: {
+      id: number;
+      attributes: {
+        [key: string]: string;
+      };
+    }) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -984,9 +994,12 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
+    onNodeMutation?: (args: {
+      id: number;
+      attributes: {
+        [key: string]: string;
+      };
+    }) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1031,7 +1044,7 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
-    onNodeMutation
+    onNodeMutation,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1172,7 +1185,7 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
-            onNodeMutation
+            onNodeMutation,
           });
 
           if (serializedIframeNode) {
@@ -1220,7 +1233,7 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
-            onNodeMutation
+            onNodeMutation,
           });
 
           if (serializedLinkNode) {
@@ -1267,9 +1280,12 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
+    onNodeMutation?: (args: {
+      id: number;
+      attributes: {
+        [key: string]: string;
+      };
+    }) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
