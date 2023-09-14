@@ -440,9 +440,6 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -461,7 +458,6 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
-    onNodeMutation,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -490,7 +486,6 @@ function serializeNode(
     case n.ELEMENT_NODE:
       return serializeElementNode(n as HTMLElement, {
         doc,
-        mirror,
         blockClass,
         blockSelector,
         inlineStylesheet,
@@ -502,7 +497,6 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
-        onNodeMutation,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -593,28 +587,10 @@ function serializeTextNode(
   };
 }
 
-const mapSrcToDataUrl = new Map<string, string>();
-
-const loadCrossOriginImage = (doc: Document, image: HTMLImageElement, onLoad: (e: HTMLImageElement) => void) => {
-  const copy = doc.createElement('img');
-  const handler = () => {
-    copy.removeEventListener('load', handler);
-    onLoad(copy);
-  };
-  copy.addEventListener('load', handler);
-  copy.crossOrigin = 'anonymous';
-  for (let i = 0; i < image.attributes.length; i++) {
-    const attribute = image.attributes[i];
-    if (attribute.name === 'crossOrigin') continue;
-    copy.setAttribute(attribute.name, attribute.value);
-  }   
-};
-
 function serializeElementNode(
   n: HTMLElement,
   options: {
     doc: Document;
-    mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
     inlineStylesheet: boolean;
@@ -629,14 +605,10 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
   },
 ): serializedNode | false {
   const {
     doc,
-    mirror,
     blockClass,
     blockSelector,
     inlineStylesheet,
@@ -648,7 +620,6 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
-    onNodeMutation,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
@@ -765,12 +736,16 @@ function serializeElementNode(
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
     }
-    const getDataUrl = (i: HTMLImageElement) => {
+    const image = n as HTMLImageElement;
+    const oldValue = image.crossOrigin;
+    image.crossOrigin = 'anonymous';
+    const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
       try {
-        canvasService!.width = i.naturalWidth;
-        canvasService!.height = i.naturalHeight;
-        canvasCtx!.drawImage(i, 0, 0);
-        return canvasService!.toDataURL(
+        canvasService!.width = image.naturalWidth;
+        canvasService!.height = image.naturalHeight;
+        canvasCtx!.drawImage(image, 0, 0);
+        attributes.rr_dataURL = canvasService!.toDataURL(
           dataURLOptions.type,
           dataURLOptions.quality,
         );
@@ -779,26 +754,13 @@ function serializeElementNode(
           `Cannot inline img src=${image.currentSrc}! Error: ${err as string}`,
         );
       }
+      oldValue
+        ? (attributes.crossOrigin = oldValue)
+        : image.removeAttribute('crossorigin');
     };
-    const image = n as HTMLImageElement;
-    if (mapSrcToDataUrl.has(image.src)) {
-      attributes.rr_dataURL = mapSrcToDataUrl.get(image.src) as string;
-    } else {
-      loadCrossOriginImage(doc, image, (i) => {
-        const durl = getDataUrl(i);
-        if (durl) {
-          mapSrcToDataUrl.set(image.src, durl);
-          if (onNodeMutation && mirror.hasNode(n)) {
-            onNodeMutation({
-              id: mirror.getId(n),
-              attributes: {
-                rr_dataURL: durl,
-              },
-            });
-          }
-        }
-      });
-    }
+    // The image content may not have finished loading yet.
+    if (image.complete && image.naturalWidth !== 0) recordInlineImage();
+    else image.addEventListener('load', recordInlineImage);
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
@@ -984,9 +946,6 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1012,7 +971,6 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
-    onNodeMutation,
   } = options;
   let { preserveWhiteSpace = true } = options;
   const _serializedNode = serializeNode(n, {
@@ -1031,7 +989,6 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
-    onNodeMutation
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1111,7 +1068,6 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
-      onNodeMutation,
     };
     for (const childN of Array.from(n.childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
@@ -1172,7 +1128,6 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
-            onNodeMutation
           });
 
           if (serializedIframeNode) {
@@ -1220,7 +1175,6 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
-            onNodeMutation
           });
 
           if (serializedLinkNode) {
@@ -1267,9 +1221,6 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
-    onNodeMutation?: (args: { id: number, attributes: {
-      [key: string]: string;
-    }}) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1293,7 +1244,6 @@ function snapshot(
     onStylesheetLoad,
     stylesheetLoadTimeout,
     keepIframeSrcFn = () => false,
-    onNodeMutation,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
@@ -1362,7 +1312,6 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
-    onNodeMutation,
   });
 }
 
