@@ -21,6 +21,7 @@ export class IframeManager {
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
+  private takeFullSnapshot: (isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
@@ -31,9 +32,11 @@ export class IframeManager {
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
     wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
+    takeFullSnapshot: (isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
+    this.takeFullSnapshot = options.takeFullSnapshot;
     this.stylesheetManager = options.stylesheetManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
     this.crossOriginIframeStyleMirror = new CrossOriginIframeMirror(
@@ -51,6 +54,16 @@ export class IframeManager {
     this.iframes.set(iframeEl, true);
     if (iframeEl.contentWindow)
       this.crossOriginIframeMap.set(iframeEl.contentWindow, iframeEl);
+
+    if (!iframeEl.contentDocument && iframeEl.contentWindow)
+      iframeEl.contentWindow.postMessage(
+        {
+          type: 'rrweb',
+          origin: window.location.origin,
+          snapshot: true,
+        },
+        '*',
+      );
   }
 
   public addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
@@ -95,10 +108,21 @@ export class IframeManager {
     )
       return;
 
-    const iframeSourceWindow = message.source;
+    const iframeSourceWindow = crossOriginMessageEvent.source;
     if (!iframeSourceWindow) return;
 
-    const iframeEl = this.crossOriginIframeMap.get(message.source);
+    if (
+      iframeSourceWindow == window.parent &&
+      window != window.parent &&
+      crossOriginMessageEvent.data.snapshot
+    ) {
+      this.takeFullSnapshot();
+      return;
+    }
+
+    const iframeEl = this.crossOriginIframeMap.get(
+      crossOriginMessageEvent.source,
+    );
     if (!iframeEl) return;
 
     const transformedEvent = this.transformCrossOriginEvent(

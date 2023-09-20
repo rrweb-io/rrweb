@@ -278,6 +278,7 @@ function record<T = eventWithTime>(
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
     wrappedEmit,
+    takeFullSnapshot,
   });
 
   /**
