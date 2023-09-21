@@ -2,8 +2,8 @@
   "$schema": "https://turborepo.org/schema.json",
   "baseBranch": "origin/master",
   "pipeline": {
-    "prepublish": {
-      "dependsOn": ["^prepublish"],
+    "prepare": {
+      "dependsOn": ["^prepare"],
       "outputs": ["lib/**", "es/**", "dist/**", "typings/**"]
     },
     "test": {},
@@ -12,7 +12,7 @@
     },
     "test:update": {},
     "dev": {
-      "dependsOn": ["^prepublish"],
+      "dependsOn": ["^prepare"],
       "persistent": true
     },
     "lint": {},

@@ -20,13 +20,13 @@
   },
   "references": [
     {
-      "path": "../types"
-    },
-    {
       "path": "../rrdom"
     },
     {
       "path": "../rrweb-snapshot"
+    },
+    {
+      "path": "../types"
     }
   ],
   "exclude": [

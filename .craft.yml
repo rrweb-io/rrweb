@@ -1,0 +1,15 @@
+github:
+  owner: getsentry
+  repo: rrweb
+changelogPolicy: none
+preReleaseCommand: bash scripts/craft-pre-release.sh
+requireNames:
+  - /^sentry-internal-rrweb-snapshot-.*\.tgz$/
+  - /^sentry-internal-rrweb-player-.*\.tgz$/
+  - /^sentry-internal-rrweb-.*\.tgz$/
+  - /^sentry-internal-rrdom-.*\.tgz$/
+targets:
+  - name: github
+    includeNames: /^sentry-.*.tgz$/
+  - name: npm
+    includeNames: /^sentry-.*.tgz$/

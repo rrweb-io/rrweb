@@ -1,10 +1,13 @@
 import {
-  MaskInputOptions,
   maskInputValue,
   Mirror,
   getInputType,
+  getInputValue,
+  shouldMaskInput,
   toLowerCase,
-} from 'rrweb-snapshot';
+  needMaskingText,
+  toUpperCase,
+} from '@sentry-internal/rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -46,7 +49,8 @@ import {
   IWindow,
   SelectionRange,
   selectionCallback,
-} from '@rrweb/types';
+  customElementCallback,
+} from '@sentry-internal/rrweb-types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 
@@ -118,7 +122,14 @@ export function initMutationObserver(
   const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
-    callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
+    callbackWrapper((mutations) => {
+      // If this callback returns `false`, we do not want to process the mutations
+      // This can be used to e.g. do a manual full snapshot when mutations become too large, or similar.
+      if (options.onMutation && options.onMutation(mutations) === false) {
+        return;
+      }
+      mutationBuffer.processMutations.bind(mutationBuffer)(mutations);
+    }),
   );
   observer.observe(rootEl, {
     attributes: true,
@@ -223,6 +234,7 @@ function initMouseInteractionObserver({
   mirror,
   blockClass,
   blockSelector,
+  unblockSelector,
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
@@ -241,7 +253,7 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target, blockClass, blockSelector, true)) {
+      if (isBlocked(target, blockClass, blockSelector, unblockSelector, true)) {
         return;
       }
       let pointerType: PointerTypes | null = null;
@@ -342,10 +354,17 @@ export function initScrollObserver({
   mirror,
   blockClass,
   blockSelector,
+  unblockSelector,
   sampling,
 }: Pick<
   observerParam,
-  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'blockSelector' | 'sampling'
+  | 'scrollCb'
+  | 'doc'
+  | 'mirror'
+  | 'blockClass'
+  | 'blockSelector'
+  | 'unblockSelector'
+  | 'sampling'
 >): listenerHandler {
   const updatePosition = callbackWrapper(
     throttle<UIEvent>(
@@ -353,7 +372,13 @@ export function initScrollObserver({
         const target = getEventTarget(evt);
         if (
           !target ||
-          isBlocked(target as Node, blockClass, blockSelector, true)
+          isBlocked(
+            target as Node,
+            blockClass,
+            blockSelector,
+            unblockSelector,
+            true,
+          )
         ) {
           return;
         }
@@ -422,59 +447,84 @@ function initInputObserver({
   mirror,
   blockClass,
   blockSelector,
+  unblockSelector,
   ignoreClass,
   ignoreSelector,
   maskInputOptions,
   maskInputFn,
   sampling,
   userTriggeredOnInput,
+  maskTextClass,
+  unmaskTextClass,
+  maskTextSelector,
+  unmaskTextSelector,
 }: observerParam): listenerHandler {
   function eventHandler(event: Event) {
     let target = getEventTarget(event) as HTMLElement | null;
     const userTriggered = event.isTrusted;
-    const tagName = target && target.tagName;
-
+    const tagName = target && toUpperCase((target as Element).tagName);
     /**
      * If a site changes the value 'selected' of an option element, the value of its parent element, usually a select element, will be changed as well.
      * We can treat this change as a value change of the select element the current target belongs to.
      */
-    if (target && tagName === 'OPTION') {
-      target = target.parentElement;
-    }
+    if (tagName === 'OPTION') target = (target as Element).parentElement;
     if (
       !target ||
       !tagName ||
       INPUT_TAGS.indexOf(tagName) < 0 ||
-      isBlocked(target as Node, blockClass, blockSelector, true)
+      isBlocked(
+        target as Node,
+        blockClass,
+        blockSelector,
+        unblockSelector,
+        true,
+      )
     ) {
       return;
     }
 
+    const el = target as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement;
+
     if (
-      target.classList.contains(ignoreClass) ||
-      (ignoreSelector && target.matches(ignoreSelector))
+      el.classList.contains(ignoreClass) ||
+      (ignoreSelector && el.matches(ignoreSelector))
     ) {
       return;
     }
-    let text = (target as HTMLInputElement).value;
+
+    const type = getInputType(target);
+    let text = getInputValue(el, tagName, type);
     let isChecked = false;
-    const type: Lowercase<string> = getInputType(target) || '';
+
+    const isInputMasked = shouldMaskInput({
+      maskInputOptions,
+      tagName,
+      type,
+    });
+
+    const forceMask = needMaskingText(
+      target as Node,
+      maskTextClass,
+      maskTextSelector,
+      unmaskTextClass,
+      unmaskTextSelector,
+      isInputMasked,
+    );
 
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
-    } else if (
-      maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-      maskInputOptions[type as keyof MaskInputOptions]
-    ) {
-      text = maskInputValue({
-        element: target,
-        maskInputOptions,
-        tagName,
-        type,
-        value: text,
-        maskInputFn,
-      });
     }
+
+    text = maskInputValue({
+      isMasked: forceMask,
+      element: target,
+      value: text,
+      maskInputFn,
+    });
+
     cbWithDedup(
       target,
       callbackWrapper(wrapEventWithUserTriggeredFlag)(
@@ -490,11 +540,18 @@ function initInputObserver({
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
+            const text = maskInputValue({
+              // share mask behavior of `target`
+              isMasked: forceMask,
+              element: el as HTMLInputElement,
+              value: getInputValue(el as HTMLInputElement, tagName, type),
+              maskInputFn,
+            });
             cbWithDedup(
               el,
               callbackWrapper(wrapEventWithUserTriggeredFlag)(
                 {
-                  text: (el as HTMLInputElement).value,
+                  text,
                   isChecked: !isChecked,
                   userTriggered: false,
                 },
@@ -1039,6 +1096,7 @@ function initMediaInteractionObserver({
   mediaInteractionCb,
   blockClass,
   blockSelector,
+  unblockSelector,
   mirror,
   sampling,
   doc,
@@ -1049,7 +1107,13 @@ function initMediaInteractionObserver({
         const target = getEventTarget(event);
         if (
           !target ||
-          isBlocked(target as Node, blockClass, blockSelector, true)
+          isBlocked(
+            target as Node,
+            blockClass,
+            blockSelector,
+            unblockSelector,
+            true,
+          )
         ) {
           return;
         }
@@ -1141,7 +1205,14 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { doc, mirror, blockClass, blockSelector, selectionCb } = param;
+  const {
+    doc,
+    mirror,
+    blockClass,
+    blockSelector,
+    unblockSelector,
+    selectionCb,
+  } = param;
   let collapsed = true;
 
   const updateSelection = callbackWrapper(() => {
@@ -1160,8 +1231,20 @@ function initSelectionObserver(param: observerParam): listenerHandler {
       const { startContainer, startOffset, endContainer, endOffset } = range;
 
       const blocked =
-        isBlocked(startContainer, blockClass, blockSelector, true) ||
-        isBlocked(endContainer, blockClass, blockSelector, true);
+        isBlocked(
+          startContainer,
+          blockClass,
+          blockSelector,
+          unblockSelector,
+          true,
+        ) ||
+        isBlocked(
+          endContainer,
+          blockClass,
+          blockSelector,
+          unblockSelector,
+          true,
+        );
 
       if (blocked) continue;
 
@@ -1181,6 +1264,48 @@ function initSelectionObserver(param: observerParam): listenerHandler {
   return on('selectionchange', updateSelection);
 }
 
+function initCustomElementObserver({
+  doc,
+  customElementCb,
+}: observerParam): listenerHandler {
+  const win = doc.defaultView as IWindow;
+  if (!win || !win.customElements) {
+    return () => {
+      // do nothing
+    };
+  }
+
+  const restoreHandler = patch(
+    win.customElements,
+    'define',
+    function (
+      original: (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) => void,
+    ) {
+      return function (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) {
+        try {
+          customElementCb({
+            define: {
+              name,
+            },
+          });
+        } catch (e) {
+          // do nothing
+        }
+        return original.apply(this, [name, constructor, options]);
+      };
+    },
+  );
+  return restoreHandler;
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -1195,6 +1320,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     canvasMutationCb,
     fontCb,
     selectionCb,
+    customElementCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -1268,6 +1394,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     selectionCb(...p);
   };
+  o.customElementCb = (...c: Arguments<customElementCallback>) => {
+    if (hooks.customElement) {
+      hooks.customElement(...c);
+    }
+    customElementCb(...c);
+  };
 }
 
 export function initObservers(
@@ -1303,6 +1435,7 @@ export function initObservers(
         //
       };
   const selectionObserver = initSelectionObserver(o);
+  const customElementObserver = initCustomElementObserver(o);
 
   // plugins
   const pluginHandlers: listenerHandler[] = [];
@@ -1326,6 +1459,7 @@ export function initObservers(
     styleDeclarationObserver();
     fontObserver();
     selectionObserver();
+    customElementObserver();
     pluginHandlers.forEach((h) => h());
   });
 }

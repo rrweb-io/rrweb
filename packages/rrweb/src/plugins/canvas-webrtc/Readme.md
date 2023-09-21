@@ -13,7 +13,7 @@ https://user-images.githubusercontent.com/4106/186701616-fd71a107-5d53-423c-ba09
 ```js
 // Record side
 
-import rrweb from 'rrweb';
+import rrweb from '@sentry-internal/rrweb';
 import { RRWebPluginCanvasWebRTCRecord } from 'rrweb-plugin-canvas-webrtc-record';
 
 const webRTCRecordPlugin = new RRWebPluginCanvasWebRTCRecord({
@@ -42,7 +42,7 @@ rrweb.record({
 
 ```js
 // Replay side
-import rrweb from 'rrweb';
+import rrweb from '@sentry-internal/rrweb';
 import { RRWebPluginCanvasWebRTCReplay } from 'rrweb-plugin-canvas-webrtc-replay';
 
 const webRTCReplayPlugin = new RRWebPluginCanvasWebRTCReplay({

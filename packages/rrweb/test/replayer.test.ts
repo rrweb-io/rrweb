@@ -22,7 +22,8 @@ import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
-import { ReplayerEvents } from '@rrweb/types';
+import customElementDefineClass from './events/custom-element-define-class';
+import { ReplayerEvents } from '@sentry-internal/rrweb-types';
 
 interface ISuite {
   code: string;
@@ -1075,5 +1076,20 @@ describe('replayer', function () {
         () => document.querySelector('span')?.className,
       ),
     ).toBe(':hover');
+  });
+
+  it('should replay styles with :define pseudo-class', async () => {
+    await page.evaluate(`events = ${JSON.stringify(customElementDefineClass)}`);
+
+    const displayValue = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(200);
+      const customElement = replayer.iframe.contentDocument.querySelector('custom-element');
+      window.getComputedStyle(customElement).display;
+    `);
+    // If the custom element is not defined, the display value will be 'none'.
+    // If the custom element is defined, the display value will be 'block'.
+    expect(displayValue).toEqual('block');
   });
 });

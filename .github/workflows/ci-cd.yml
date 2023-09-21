@@ -1,11 +1,16 @@
-name: Tests
+name: Build & Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - release/**
+  pull_request:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
+  job_test:
     name: Tests
     runs-on: ubuntu-latest
     steps:
@@ -19,6 +24,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
+          cache: 'yarn'
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
@@ -39,3 +45,34 @@ jobs:
           name: image-diff
           path: packages/rrweb/test/*/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore
+
+  job_artifacts:
+    needs: job_test
+    name: Upload Artifacts
+    runs-on: ubuntu-latest
+    # Build artifacts are only needed for releasing workflow.
+    if: startsWith(github.ref, 'refs/heads/release/')
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Tarballs
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+        run: yarn build:tarball
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.sha }}
+          path: |
+            ${{ github.workspace }}/packages/**/*.tgz

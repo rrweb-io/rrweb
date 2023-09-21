@@ -212,39 +212,58 @@ export function createMirror(): Mirror {
   return new Mirror();
 }
 
-export function maskInputValue({
-  element,
+export function shouldMaskInput({
   maskInputOptions,
   tagName,
   type,
+}: {
+  maskInputOptions: MaskInputOptions;
+  tagName: Uppercase<string>;
+  type: Lowercase<string> | null;
+}): boolean {
+  // Handle `option` like `select
+  if (tagName === 'OPTION') {
+    tagName = 'SELECT';
+  }
+  return Boolean(
+    maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
+      (type && maskInputOptions[type as keyof MaskInputOptions]) ||
+      type === 'password' ||
+      // Default to "text" option for inputs without a "type" attribute defined
+      (tagName === 'INPUT' && !type && maskInputOptions['text']),
+  );
+}
+
+export function maskInputValue({
+  isMasked,
+  element,
   value,
   maskInputFn,
 }: {
+  isMasked: boolean;
   element: HTMLElement;
-  maskInputOptions: MaskInputOptions;
-  tagName: string;
-  type: string | null;
   value: string | null;
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
-  const actualType = type && toLowerCase(type);
 
-  if (
-    maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
-  ) {
-    if (maskInputFn) {
-      text = maskInputFn(text, element);
-    } else {
-      text = '*'.repeat(text.length);
-    }
+  if (!isMasked) {
+    return text;
   }
-  return text;
+
+  if (maskInputFn) {
+    text = maskInputFn(text, element);
+  }
+
+  return '*'.repeat(text.length);
 }
 
 export function toLowerCase<T extends string>(str: T): Lowercase<T> {
   return str.toLowerCase() as unknown as Lowercase<T>;
+}
+
+export function toUpperCase<T extends string>(str: T): Uppercase<T> {
+  return str.toUpperCase() as unknown as Uppercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -330,4 +349,22 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       toLowerCase(type)
     : null;
+}
+
+export function getInputValue(
+  el:
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | HTMLSelectElement
+    | HTMLOptionElement,
+  tagName: Uppercase<string>,
+  type: Lowercase<string> | null,
+): string {
+  if (tagName === 'INPUT' && (type === 'radio' || type === 'checkbox')) {
+    // checkboxes & radio buttons return `on` as their el.value when no value is specified
+    // we only want to get the value if it is specified as `value='xxx'`
+    return el.getAttribute('value') || '';
+  }
+
+  return el.value;
 }

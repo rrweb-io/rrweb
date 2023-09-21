@@ -62,6 +62,34 @@
       i1Div.appendChild(i1i2Div);
       visibleCollection[0].appendChild(i1Div);
     }
+    function mutate3() {
+      const bClassDiv = document.getElementById('b-class-3');
+      bClassDiv.className = 'notB';
+
+      const removeBlockedButton = document.getElementById('remove3');
+      const innerButton = document.createElement('button');
+      innerButton.innerHTML = 'INNER BLOCKED';
+      removeBlockedButton.appendChild(innerButton);
+      removeBlockedButton.remove();
+
+      const visibleCollection = document.getElementsByClassName('visible3');
+      const i1Div = document.createElement('div');
+      const i1i1P = document.createElement('p');
+      const i1i2Div = document.createElement('div');
+
+      const i1i1Button = document.createElement('button');
+      i1i1P.className = 'rr-unblock';
+      i1i1Button.innerHTML = 'I1I1 VISIBLE';
+      i1i1P.appendChild(i1i1Button);
+
+      const i1i2Button = document.createElement('button');
+      i1i2Button.innerHTML = 'I1I2 VISIBLE';
+      i1i2Div.appendChild(i1i2Button);
+
+      i1Div.appendChild(i1i1P);
+      i1Div.appendChild(i1i2Div);
+      visibleCollection[0].appendChild(i1Div);
+    }
   </script>
   <br />
   <h1>Verify that block class bugs are fixed</h1>
@@ -88,5 +116,16 @@
     </div>
     <br /><br /><br />
     <button onclick="mutate2()">MUTATE</button>
+  </div>
+  <div class="third">
+    <p class="visible3">
+      <button>VISIBLE</button>
+    </p>
+    <br /><br /><br />
+    <div class="rr-block" id="b-class-3">
+      <button id="remove3">BLOCKED</button>
+    </div>
+    <br /><br /><br />
+    <button onclick="mutate3()">MUTATE</button>
   </div>
 </body>

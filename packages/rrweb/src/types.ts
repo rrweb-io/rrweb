@@ -5,18 +5,20 @@ import type {
   MaskInputFn,
   MaskTextFn,
   DataURLOptions,
-} from 'rrweb-snapshot';
+  MaskAttributeFn,
+} from '@sentry-internal/rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom';
+import type { RRNode } from '@sentry-internal/rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,
+  customElementCallback,
   eventWithTime,
   fontCallback,
   hooksParam,
@@ -25,6 +27,7 @@ import type {
   KeepIframeSrcFn,
   listenerHandler,
   maskTextClass,
+  unmaskTextClass,
   mediaInteractionCallback,
   mouseInteractionCallBack,
   mousemoveCallBack,
@@ -36,7 +39,7 @@ import type {
   styleDeclarationCallback,
   styleSheetRuleCallback,
   viewportResizeCallback,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 
 export type recordOptions<T> = {
@@ -45,12 +48,17 @@ export type recordOptions<T> = {
   checkoutEveryNms?: number;
   blockClass?: blockClass;
   blockSelector?: string;
+  unblockSelector?: string;
   ignoreClass?: string;
   ignoreSelector?: string;
+  maskAllText?: boolean;
   maskTextClass?: maskTextClass;
+  unmaskTextClass?: unmaskTextClass;
   maskTextSelector?: string;
+  unmaskTextSelector?: string;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
+  maskAttributeFn?: MaskAttributeFn;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
@@ -71,9 +79,11 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  onMutation?: (mutations: MutationRecord[]) => boolean;
 };
 
 export type observerParam = {
+  onMutation?: (mutations: MutationRecord[]) => boolean;
   mutationCb: mutationCallBack;
   mousemoveCb: mousemoveCallBack;
   mouseInteractionCb: mouseInteractionCallBack;
@@ -84,11 +94,16 @@ export type observerParam = {
   selectionCb: selectionCallback;
   blockClass: blockClass;
   blockSelector: string | null;
+  unblockSelector: string | null;
   ignoreClass: string;
   ignoreSelector: string | null;
+  maskAllText: boolean;
   maskTextClass: maskTextClass;
+  unmaskTextClass: unmaskTextClass;
   maskTextSelector: string | null;
+  unmaskTextSelector: string | null;
   maskInputOptions: MaskInputOptions;
+  maskAttributeFn?: MaskAttributeFn;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   keepIframeSrcFn: KeepIframeSrcFn;
@@ -96,6 +111,7 @@ export type observerParam = {
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
+  customElementCb: customElementCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordCanvas: boolean;
@@ -125,13 +141,19 @@ export type observerParam = {
 
 export type MutationBufferParam = Pick<
   observerParam,
+  | 'onMutation'
   | 'mutationCb'
   | 'blockClass'
   | 'blockSelector'
+  | 'maskAllText'
+  | 'unblockSelector'
   | 'maskTextClass'
+  | 'unmaskTextClass'
   | 'maskTextSelector'
+  | 'unmaskTextSelector'
   | 'inlineStylesheet'
   | 'maskInputOptions'
+  | 'maskAttributeFn'
   | 'maskTextFn'
   | 'maskInputFn'
   | 'keepIframeSrcFn'

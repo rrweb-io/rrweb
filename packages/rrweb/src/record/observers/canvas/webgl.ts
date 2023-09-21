@@ -1,4 +1,4 @@
-import type { Mirror } from 'rrweb-snapshot';
+import type { Mirror } from '@sentry-internal/rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
@@ -6,7 +6,7 @@ import {
   canvasMutationWithType,
   IWindow,
   listenerHandler,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
@@ -16,6 +16,7 @@ function patchGLPrototype(
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
   blockSelector: string | null,
+  unblockSelector: string | null,
   mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
@@ -51,7 +52,13 @@ function patchGLPrototype(
             saveWebGLVar(result, win, this);
             if (
               'tagName' in this.canvas &&
-              !isBlocked(this.canvas, blockClass, blockSelector, true)
+              !isBlocked(
+                this.canvas,
+                blockClass,
+                blockSelector,
+                unblockSelector,
+                true,
+              )
             ) {
               const recordArgs = serializeArgs([...args], win, this);
               const mutation: canvasMutationWithType = {
@@ -93,6 +100,7 @@ export default function initCanvasWebGLMutationObserver(
   win: IWindow,
   blockClass: blockClass,
   blockSelector: string | null,
+  unblockSelector: string | null,
   mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
@@ -104,6 +112,7 @@ export default function initCanvasWebGLMutationObserver(
       cb,
       blockClass,
       blockSelector,
+      unblockSelector,
       mirror,
       win,
     ),
@@ -117,6 +126,7 @@ export default function initCanvasWebGLMutationObserver(
         cb,
         blockClass,
         blockSelector,
+        unblockSelector,
         mirror,
         win,
       ),

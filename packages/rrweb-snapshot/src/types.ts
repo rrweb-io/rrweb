@@ -38,6 +38,8 @@ export type elementNode = {
   childNodes: serializedNodeWithId[];
   isSVG?: true;
   needBlock?: boolean;
+  // This is a custom element or not.
+  isCustom?: true;
 };
 
 export type textNode = {
@@ -132,7 +134,9 @@ export type MaskInputOptions = Partial<{
   // unify textarea and select element with text input
   textarea: boolean;
   select: boolean;
-  password: boolean;
+  // password is _always_ masked, can't opt out of this
+  radio: boolean;
+  checkbox: boolean;
 }>;
 
 export type SlimDOMOptions = Partial<{
@@ -155,6 +159,11 @@ export type DataURLOptions = Partial<{
 
 export type MaskTextFn = (text: string) => string;
 export type MaskInputFn = (text: string, element: HTMLElement) => string;
+export type MaskAttributeFn = (
+  attributeName: string,
+  attributeValue: string,
+  element: HTMLElement,
+) => string;
 
 export type KeepIframeSrcFn = (src: string) => boolean;
 

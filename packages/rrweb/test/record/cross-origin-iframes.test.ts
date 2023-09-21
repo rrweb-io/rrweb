@@ -6,8 +6,8 @@ import type {
   listenerHandler,
   eventWithTime,
   mutationData,
-} from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
+import { EventType, IncrementalSource } from '@sentry-internal/rrweb-types';
 import {
   assertSnapshot,
   getServerURL,
@@ -230,10 +230,7 @@ describe('cross origin iframes', function (this: ISuite) {
       await frame.type('textarea', 'textarea test');
       await frame.select('select', '1');
 
-      const snapshots = (await ctx.page.evaluate(
-        'window.snapshots',
-      )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(ctx.page);
     });
 
     it('should map scroll events correctly', async () => {
@@ -256,7 +253,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      assertSnapshot(snapshots, { includeScroll: true });
     });
   });
 

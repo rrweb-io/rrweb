@@ -1,10 +1,8 @@
 {
-  "name": "rrweb",
+  "name": "@sentry-internal/rrweb",
   "version": "2.0.0-alpha.11",
   "description": "record and replay the web",
   "scripts": {
-    "prepare": "npm run prepack",
-    "prepack": "npm run bundle",
     "retest": "jest --testPathIgnorePatterns test/benchmark",
     "build-and-test": "yarn bundle:browser && yarn retest",
     "test:headless": "PUPPETEER_HEADLESS=true yarn build-and-test",
@@ -15,11 +13,12 @@
     "repl": "yarn bundle:browser && node scripts/repl.js",
     "live-stream": "yarn bundle:browser && node scripts/stream.js",
     "dev": "yarn bundle:browser --watch",
+    "build:tarball": "npm pack",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
     "typings": "tsc -d --declarationDir typings",
+    "prepare": "npm run typings && npm run bundle",
     "check-types": "tsc -noEmit",
-    "prepublish": "npm run typings && npm run bundle",
     "lint": "yarn eslint src",
     "benchmark": "jest test/benchmark"
   },
@@ -81,13 +80,13 @@
     "tslib": "^2.3.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.11",
+    "@sentry-internal/rrdom": "^2.0.0-alpha.11",
+    "@sentry-internal/rrweb-snapshot": "^2.0.0-alpha.11",
+    "@sentry-internal/rrweb-types": "^2.0.0-alpha.11",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "fflate": "^0.4.4",
-    "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.11",
-    "rrweb-snapshot": "^2.0.0-alpha.11"
+    "mitt": "^3.0.0"
   }
 }

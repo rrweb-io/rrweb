@@ -1,6 +1,6 @@
 import { LogLevel, LogData, PLUGIN_NAME } from '../record';
-import type { eventWithTime } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import type { eventWithTime } from '@sentry-internal/rrweb-types';
+import { EventType, IncrementalSource } from '@sentry-internal/rrweb-types';
 import type { ReplayPlugin } from '../../../types';
 
 /**

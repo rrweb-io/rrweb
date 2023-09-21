@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Page } from 'puppeteer';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@sentry-internal/rrweb-types';
 import type { recordOptions } from '../../src/types';
 import { startServer, launchPuppeteer, ISuite, getServerURL } from '../utils';
 
@@ -10,6 +10,10 @@ const suites: Array<
     title: string;
     eval: string;
     times?: number; // defaults to 5
+    recordOptions?: {
+      maskTextClass?: string;
+      unmaskTextClass?: string;
+    };
   } & ({ html: string } | { url: string })
 > = [
   // {
@@ -41,6 +45,25 @@ const suites: Array<
     html: 'benchmark-dom-mutation-add-and-move.html',
     eval: 'window.workload()',
     times: 5,
+  },
+  {
+    title: 'mask 1000x10 DOM nodes',
+    html: 'benchmark-text-masking.html',
+    eval: 'window.workload()',
+    times: 10,
+    recordOptions: {
+      maskTextClass: 'rr-mask',
+    },
+  },
+  {
+    title: 'unmask 1000x10 DOM nodes',
+    html: 'benchmark-text-masking.html',
+    eval: 'window.workload()',
+    times: 10,
+    recordOptions: {
+      maskTextClass: 'rr-mask',
+      unmaskTextClass: 'rr-unmask',
+    },
   },
 ];
 
@@ -106,35 +129,40 @@ describe('benchmark: mutation observer', () => {
       };
 
       const getDuration = async (): Promise<number> => {
-        return (await page.evaluate((triggerWorkloadScript) => {
-          return new Promise((resolve, reject) => {
-            let start = 0;
-            let lastEvent: eventWithTime | null;
-            const options: recordOptions<eventWithTime> = {
-              emit: (event) => {
-                // console.log(event.type, event.timestamp);
-                if (event.type !== 5 || event.data.tag !== 'FTAG') {
-                  lastEvent = event;
-                  return;
-                }
-                if (!lastEvent) {
-                  reject('no events recorded');
-                  return;
-                }
-                resolve(lastEvent.timestamp - start);
-              },
-            };
-            const record = (window as any).rrweb.record;
-            record(options);
+        return (await page.evaluate(
+          (triggerWorkloadScript, recordOptions) => {
+            return new Promise((resolve, reject) => {
+              let start = 0;
+              let lastEvent: eventWithTime | null;
+              const options: recordOptions<eventWithTime> = {
+                ...recordOptions,
+                emit: (event) => {
+                  // console.log(event.type, event.timestamp);
+                  if (event.type !== 5 || event.data.tag !== 'FTAG') {
+                    lastEvent = event;
+                    return;
+                  }
+                  if (!lastEvent) {
+                    reject('no events recorded');
+                    return;
+                  }
+                  resolve(lastEvent.timestamp - start);
+                },
+              };
+              const record = (window as any).rrweb.record;
+              record(options);
 
-            start = Date.now();
-            eval(triggerWorkloadScript);
+              start = Date.now();
+              eval(triggerWorkloadScript);
 
-            requestAnimationFrame(() => {
-              record.addCustomEvent('FTAG', {});
+              requestAnimationFrame(() => {
+                record.addCustomEvent('FTAG', {});
+              });
             });
-          });
-        }, suite.eval)) as number;
+          },
+          suite.eval,
+          suite.recordOptions || {},
+        )) as number;
       };
 
       // generate profile.json file

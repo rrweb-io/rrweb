@@ -1,39 +1,30 @@
-name: Release
-
+name: Prepare Release
 on:
-  push:
-    branches:
-      - master
-
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release
+        required: true
+      force:
+        description: Force a release even when there are release-blockers (optional)
+        required: false
+      merge_target:
+        description: Target branch to merge into. Uses the default branch, sentry-v1, as a fallback (optional)
+        required: false
 jobs:
   release:
-    name: Release
     runs-on: ubuntu-latest
+    name: 'Release a new version'
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js lts/*
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
         with:
-          node-version: lts/*
-
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: yarn run release
+          token: ${{ secrets.GH_RELEASE_PAT }}
+          fetch-depth: 0
+      - name: Prepare release
+        uses: getsentry/action-prepare-release@v1
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # - name: Send a Slack notification if a publish happens
-      #   if: steps.changesets.outputs.published == 'true'
-      #   # You can do something when a publish happens.
-      #   run: my-slack-bot send-notification --message "A new version of ${GITHUB_REPOSITORY} was published!"
+          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_PAT }}
+        with:
+          version: ${{ github.event.inputs.version }}
+          force: ${{ github.event.inputs.force }}
+          merge_target: ${{ github.event.inputs.merge_target }}

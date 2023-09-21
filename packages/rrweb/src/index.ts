@@ -8,7 +8,14 @@ export {
   IncrementalSource,
   MouseInteractions,
   ReplayerEvents,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
+
+export type {
+  fullSnapshotEvent,
+  incrementalSnapshotEvent,
+  inputData,
+  eventWithTime,
+} from '@sentry-internal/rrweb-types';
 
 export type { recordOptions } from './types';
 

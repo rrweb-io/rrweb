@@ -1,7 +1,7 @@
-import { playerConfig } from 'rrweb/typings/types';
-import { eventWithTime } from '@rrweb/types';
-import { Replayer } from 'rrweb';
-import { Mirror } from 'rrweb-snapshot';
+import { playerConfig } from '@sentry-internal/rrweb/typings/types';
+import { eventWithTime } from '@sentry-internal/rrweb-types';
+import { Replayer } from '@sentry-internal/rrweb';
+import { Mirror } from '@sentry-internal/rrweb-snapshot';
 import { SvelteComponent } from 'svelte';
 
 export type RRwebPlayerOptions = {

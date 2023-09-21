@@ -2,7 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import type { recordOptions } from '../../src/types';
-import { listenerHandler, eventWithTime, EventType } from '@rrweb/types';
+import {
+  listenerHandler,
+  eventWithTime,
+  EventType,
+} from '@sentry-internal/rrweb-types';
 import { launchPuppeteer } from '../utils';
 import {
   callbackWrapper,

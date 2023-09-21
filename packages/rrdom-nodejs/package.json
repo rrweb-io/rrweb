@@ -1,5 +1,5 @@
 {
-  "name": "rrdom-nodejs",
+  "name": "@sentry-internal/rrdom-nodejs",
   "version": "2.0.0-alpha.11",
   "scripts": {
     "dev": "rollup -c -w",
@@ -7,7 +7,7 @@
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "check-types": "tsc -noEmit",
     "test": "jest",
-    "prepublish": "npm run bundle",
+    "prepare": "npm run bundle",
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
@@ -48,8 +48,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "rrdom": "^2.0.0-alpha.11",
-    "rrweb-snapshot": "^2.0.0-alpha.11"
+    "@sentry-internal/rrdom": "^2.0.0-alpha.11",
+    "@sentry-internal/rrweb-snapshot": "^2.0.0-alpha.11"
   },
   "browserslist": [
     "supports es6-class"

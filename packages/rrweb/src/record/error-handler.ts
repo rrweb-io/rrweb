@@ -25,7 +25,9 @@ export const callbackWrapper = <T extends Callback>(cb: T): T => {
       return cb(...rest);
     } catch (error) {
       if (errorHandler && errorHandler(error) === true) {
-        return;
+        return () => {
+          // This will get called by `record()`'s cleanup function
+        };
       }
 
       throw error;

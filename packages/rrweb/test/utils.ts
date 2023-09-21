@@ -1,4 +1,4 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType } from '@sentry-internal/rrweb-snapshot';
 import {
   EventType,
   IncrementalSource,
@@ -8,7 +8,7 @@ import {
   mouseInteractionData,
   event,
   pluginEvent,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
@@ -103,14 +103,18 @@ export function getServerURL(server: http.Server): string {
  * Also remove timestamp from event.
  * @param snapshots incrementalSnapshotEvent[]
  */
-function stringifySnapshots(snapshots: eventWithTime[]): string {
+function stringifySnapshots(
+  snapshots: eventWithTime[],
+  { includeScroll }: { includeScroll: boolean },
+): string {
   return JSON.stringify(
     snapshots
       .filter((s) => {
         if (
           s.type === EventType.IncrementalSnapshot &&
           (s.data.source === IncrementalSource.MouseMove ||
-            s.data.source === IncrementalSource.ViewportResize)
+            s.data.source === IncrementalSource.ViewportResize ||
+            (!includeScroll && s.data.source === IncrementalSource.Scroll))
         ) {
           return false;
         }
@@ -291,6 +295,7 @@ function stringifyDomSnapshot(mhtml: string): string {
 
 export async function assertSnapshot(
   snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+  options: { includeScroll: boolean } = { includeScroll: false },
 ) {
   let snapshots: eventWithTime[];
   if (!Array.isArray(snapshotsOrPage)) {
@@ -308,7 +313,7 @@ export async function assertSnapshot(
   }
 
   expect(snapshots).toBeDefined();
-  expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+  expect(stringifySnapshots(snapshots, options)).toMatchSnapshot();
 }
 
 export function replaceLast(str: string, find: string, replace: string) {
@@ -689,10 +694,17 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
       window.snapshots.push(event);
     },
     ignoreSelector: ${JSON.stringify(options.ignoreSelector)},
+    blockSelector: ${JSON.stringify(options.blockSelector)},
+    unblockSelector: ${JSON.stringify(options.unblockSelector)},
     maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
+    unmaskTextSelector: ${JSON.stringify(options.unmaskTextSelector)},
     maskAllInputs: ${options.maskAllInputs},
+    maskAllText: ${options.maskAllText},
     maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
+    maskInputFn: ${options.maskInputFn},
     userTriggeredOnInput: ${options.userTriggeredOnInput},
+    onMutation: ${options.onMutation || undefined},
+    maskAttributeFn: ${options.maskAttributeFn},
     maskTextFn: ${options.maskTextFn},
     maskInputFn: ${options.maskInputFn},
     recordCanvas: ${options.recordCanvas},

@@ -3,7 +3,7 @@
  */
 import { NodeType, serializedNode } from '../src/types';
 import { isNodeMetaEqual } from '../src/utils';
-import { serializedNodeWithId } from 'rrweb-snapshot';
+import { serializedNodeWithId } from '@sentry-internal/rrweb-snapshot';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

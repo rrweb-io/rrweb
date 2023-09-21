@@ -1,8 +1,12 @@
 # Changelog
 
+## 2.0.0-beta11.0
+
+- Sentry fork of rrweb@2.0.0-alpha.11 with additional masking features
+
 ## v1.0.0
 
-### Featrues & Improvements
+### Features & Improvements
 
 - Support record same-origin non-sandboxed iframe.
 - Support record open-mode shadow DOM.

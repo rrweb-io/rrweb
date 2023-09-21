@@ -1,4 +1,8 @@
-import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
+import type {
+  ICanvas,
+  Mirror,
+  DataURLOptions,
+} from '@sentry-internal/rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,
@@ -8,9 +12,9 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import { isBlocked } from '../../../utils';
-import { CanvasContext } from '@rrweb/types';
+import { CanvasContext } from '@sentry-internal/rrweb-types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
@@ -61,6 +65,7 @@ export class CanvasManager {
     win: IWindow;
     blockClass: blockClass;
     blockSelector: string | null;
+    unblockSelector: string | null;
     mirror: Mirror;
     sampling?: 'all' | number;
     dataURLOptions: DataURLOptions;
@@ -70,6 +75,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      unblockSelector,
       recordCanvas,
       dataURLOptions,
     } = options;
@@ -77,11 +83,23 @@ export class CanvasManager {
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass, blockSelector);
+      this.initCanvasMutationObserver(
+        win,
+        blockClass,
+        blockSelector,
+        unblockSelector,
+      );
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
-        dataURLOptions,
-      });
+      this.initCanvasFPSObserver(
+        sampling,
+        win,
+        blockClass,
+        blockSelector,
+        unblockSelector,
+        {
+          dataURLOptions,
+        },
+      );
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -106,6 +124,7 @@ export class CanvasManager {
     win: IWindow,
     blockClass: blockClass,
     blockSelector: string | null,
+    unblockSelector: string | null,
     options: {
       dataURLOptions: DataURLOptions;
     },
@@ -114,6 +133,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      unblockSelector,
       true,
     );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
@@ -162,7 +182,9 @@ export class CanvasManager {
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
       win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (!isBlocked(canvas, blockClass, blockSelector, true)) {
+        if (
+          !isBlocked(canvas, blockClass, blockSelector, unblockSelector, true)
+        ) {
           matchedCanvas.push(canvas);
         }
       });
@@ -234,6 +256,7 @@ export class CanvasManager {
     win: IWindow,
     blockClass: blockClass,
     blockSelector: string | null,
+    unblockSelector: string | null,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
@@ -242,6 +265,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      unblockSelector,
       false,
     );
     const canvas2DReset = initCanvas2DMutationObserver(
@@ -249,6 +273,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      unblockSelector,
     );
 
     const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
@@ -256,6 +281,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      unblockSelector,
       this.mirror,
     );
 

@@ -10,24 +10,42 @@
   <body>
     <form>
       <label for="text">
-        <input type="text" />
+        <input type="text" title="title text" placeholder="placeholder text"/>
       </label>
       <label>
-        <input type="radio" name="toggle" value="on" />
+        <input type="color" />
       </label>
       <label>
-        <input type="radio" name="toggle" value="off" checked />
+        <input type="radio" name="toggle" />
+      </label>
+      <label>
+        <input type="radio" name="toggle" value="radio-on" checked />
+      </label>
+      <label>
+        <input type="radio" name="toggle" value="radio-off" />
       </label>
       <label for="checkbox">
         <input type="checkbox" />
       </label>
+      <label>
+        <input type="checkbox" value="check-on" checked />
+      </label>
       <label for="textarea">
         <textarea name="" id="" cols="30" rows="10" data-unmask-example="true"></textarea>
       </label>
+      <label for="textarea-value">
+        <textarea name="" id="" cols="30" rows="10" value="textarea-value"></textarea>
+      </label>
+      <label for="textarea-text-content">
+        <textarea name="" id="" cols="30" rows="10">textarea textcontent</textarea>
+      </label>
+      <label for="textarea-value-and-text">
+        <textarea name="" id="" cols="30" rows="10" value="textarea text">textarea text</textarea>
+      </label>
       <label for="select">
-        <select name="" id="">
-          <option value="1">1</option>
-          <option value="2">2</option>
+        <select name="" id="" value="AA">
+          <option value="AA">Option A</option>
+          <option value="BB">Opt. B</option>
         </select>
       </label>
       <label for="password">

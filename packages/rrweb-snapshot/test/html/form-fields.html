@@ -19,7 +19,10 @@
         <input type="checkbox" />
       </label>
       <label for="textarea">
-        <textarea name="" id="" cols="30" rows="10"></textarea>
+        <textarea name="" id="textarea1" cols="30" rows="10"></textarea>
+      </label>
+      <label for="textarea">
+        <textarea name="" id="textarea2" cols="30" rows="10"></textarea>
       </label>
       <label for="select">
         <select name="" id="">
@@ -36,7 +39,8 @@
     document.querySelector('input[type="text"]').value = '1';
     document.querySelector('input[type="radio"]').checked = true;
     document.querySelector('input[type="checkbox"]').checked = true;
-    document.querySelector('textarea').value = '1234';
+    document.querySelector('#textarea1').value = '1234';
+    document.querySelector('#textarea2').textContent = '5678';
     document.querySelector('select').value = '2';
   </script>
 </html>

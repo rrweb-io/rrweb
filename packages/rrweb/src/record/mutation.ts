@@ -10,7 +10,9 @@ import {
   isNativeShadowDom,
   getInputType,
   toLowerCase,
-} from 'rrweb-snapshot';
+  getInputValue,
+  shouldMaskInput,
+} from '@sentry-internal/rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
   mutationRecord,
@@ -19,7 +21,7 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import {
   isBlocked,
   isAncestorRemoved,
@@ -170,10 +172,15 @@ export default class MutationBuffer {
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
   private blockSelector: observerParam['blockSelector'];
+  private unblockSelector: observerParam['unblockSelector'];
+  private maskAllText: observerParam['maskAllText'];
   private maskTextClass: observerParam['maskTextClass'];
+  private unmaskTextClass: observerParam['unmaskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
+  private unmaskTextSelector: observerParam['unmaskTextSelector'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
   private maskInputOptions: observerParam['maskInputOptions'];
+  private maskAttributeFn: observerParam['maskAttributeFn'];
   private maskTextFn: observerParam['maskTextFn'];
   private maskInputFn: observerParam['maskInputFn'];
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
@@ -195,10 +202,15 @@ export default class MutationBuffer {
         'mutationCb',
         'blockClass',
         'blockSelector',
+        'unblockSelector',
+        'maskAllText',
         'maskTextClass',
+        'unmaskTextClass',
         'maskTextSelector',
+        'unmaskTextSelector',
         'inlineStylesheet',
         'maskInputOptions',
+        'maskAttributeFn',
         'maskTextFn',
         'maskInputFn',
         'keepIframeSrcFn',
@@ -297,12 +309,17 @@ export default class MutationBuffer {
         mirror: this.mirror,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
+        maskAllText: this.maskAllText,
+        unblockSelector: this.unblockSelector,
         maskTextClass: this.maskTextClass,
+        unmaskTextClass: this.unmaskTextClass,
         maskTextSelector: this.maskTextSelector,
+        unmaskTextSelector: this.unmaskTextSelector,
         skipChild: true,
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
         maskInputOptions: this.maskInputOptions,
+        maskAttributeFn: this.maskAttributeFn,
         maskTextFn: this.maskTextFn,
         maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
@@ -509,7 +526,13 @@ export default class MutationBuffer {
       case 'characterData': {
         const value = m.target.textContent;
         if (
-          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
+          !isBlocked(
+            m.target,
+            this.blockClass,
+            this.blockSelector,
+            this.unblockSelector,
+            false,
+          ) &&
           value !== m.oldValue
         ) {
           this.texts.push({
@@ -518,6 +541,9 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
+                this.unmaskTextClass,
+                this.unmaskTextSelector,
+                this.maskAllText,
               ) && value
                 ? this.maskTextFn
                   ? this.maskTextFn(value)
@@ -528,6 +554,7 @@ export default class MutationBuffer {
         }
         break;
       }
+
       case 'attributes': {
         const target = m.target as HTMLElement;
         let attributeName = m.attributeName as string;
@@ -535,18 +562,39 @@ export default class MutationBuffer {
 
         if (attributeName === 'value') {
           const type = getInputType(target);
+          const tagName = target.tagName as unknown as Uppercase<string>;
+          value = getInputValue(target as HTMLInputElement, tagName, type);
+
+          const isInputMasked = shouldMaskInput({
+            maskInputOptions: this.maskInputOptions,
+            tagName,
+            type,
+          });
+
+          const forceMask = needMaskingText(
+            m.target,
+            this.maskTextClass,
+            this.maskTextSelector,
+            this.unmaskTextClass,
+            this.unmaskTextSelector,
+            isInputMasked,
+          );
 
           value = maskInputValue({
+            isMasked: forceMask,
             element: target,
-            maskInputOptions: this.maskInputOptions,
-            tagName: target.tagName,
-            type,
             value,
             maskInputFn: this.maskInputFn,
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+          isBlocked(
+            m.target,
+            this.blockClass,
+            this.blockSelector,
+            this.unblockSelector,
+            false,
+          ) ||
           value === m.oldValue
         ) {
           return;
@@ -595,6 +643,8 @@ export default class MutationBuffer {
             toLowerCase(target.tagName),
             toLowerCase(attributeName),
             value,
+            target,
+            this.maskAttributeFn,
           );
           if (attributeName === 'style') {
             const old = unattachedDoc.createElement('span');
@@ -632,8 +682,17 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
+        if (
+          isBlocked(
+            m.target,
+            this.blockClass,
+            this.blockSelector,
+            this.unblockSelector,
+            true,
+          )
+        ) {
           return;
+        }
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
@@ -642,7 +701,13 @@ export default class MutationBuffer {
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+            isBlocked(
+              m.target,
+              this.blockClass,
+              this.blockSelector,
+              this.unblockSelector,
+              false,
+            ) ||
             isIgnored(n, this.mirror) ||
             !isSerialized(n, this.mirror)
           ) {
@@ -720,7 +785,15 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
+    if (
+      !isBlocked(
+        n,
+        this.blockClass,
+        this.blockSelector,
+        this.unblockSelector,
+        false,
+      )
+    ) {
       n.childNodes.forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
         n.shadowRoot.childNodes.forEach((childN) => {

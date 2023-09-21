@@ -15,8 +15,8 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@sentry-internal/rrweb';
+import type { eventWithTime } from '@sentry-internal/rrweb-types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
   let style = '';

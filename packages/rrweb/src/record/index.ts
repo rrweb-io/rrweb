@@ -3,7 +3,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
-} from 'rrweb-snapshot';
+} from '@sentry-internal/rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,
@@ -27,7 +27,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -63,14 +63,19 @@ function record<T = eventWithTime>(
     checkoutEveryNth,
     blockClass = 'rr-block',
     blockSelector = null,
+    unblockSelector = null,
     ignoreClass = 'rr-ignore',
     ignoreSelector = null,
+    maskAllText = false,
     maskTextClass = 'rr-mask',
+    unmaskTextClass = null,
     maskTextSelector = null,
+    unmaskTextSelector = null,
     inlineStylesheet = true,
     maskAllInputs,
     maskInputOptions: _maskInputOptions,
     slimDOMOptions: _slimDOMOptions,
+    maskAttributeFn,
     maskInputFn,
     maskTextFn,
     hooks,
@@ -90,6 +95,7 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
+    onMutation,
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -140,11 +146,12 @@ function record<T = eventWithTime>(
           week: true,
           textarea: true,
           select: true,
-          password: true,
+          radio: true,
+          checkbox: true,
         }
       : _maskInputOptions !== undefined
       ? _maskInputOptions
-      : { password: true };
+      : {};
 
   const slimDOMOptions: SlimDOMOptions =
     _slimDOMOptions === true || _slimDOMOptions === 'all'
@@ -313,6 +320,7 @@ function record<T = eventWithTime>(
     win: window,
     blockClass,
     blockSelector,
+    unblockSelector,
     mirror,
     sampling: sampling.canvas,
     dataURLOptions,
@@ -322,13 +330,19 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
     bypassOptions: {
+      onMutation,
       blockClass,
       blockSelector,
+      unblockSelector,
+      maskAllText,
       maskTextClass,
+      unmaskTextClass,
       maskTextSelector,
+      unmaskTextSelector,
       inlineStylesheet,
       maskInputOptions,
       dataURLOptions,
+      maskAttributeFn,
       maskTextFn,
       maskInputFn,
       recordCanvas,
@@ -367,10 +381,16 @@ function record<T = eventWithTime>(
       mirror,
       blockClass,
       blockSelector,
+      unblockSelector,
+      maskAllText,
       maskTextClass,
+      unmaskTextClass,
       maskTextSelector,
+      unmaskTextSelector,
       inlineStylesheet,
       maskAllInputs: maskInputOptions,
+      maskAttributeFn,
+      maskInputFn,
       maskTextFn,
       slimDOM: slimDOMOptions,
       dataURLOptions,
@@ -427,6 +447,7 @@ function record<T = eventWithTime>(
     const observe = (doc: Document) => {
       return callbackWrapper(initObservers)(
         {
+          onMutation,
           mutationCb: wrappedMutationEmit,
           mousemoveCb: (positions, source) =>
             wrappedEmit(
@@ -521,11 +542,25 @@ function record<T = eventWithTime>(
               }),
             );
           },
+          customElementCb: (c) => {
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.CustomElement,
+                  ...c,
+                },
+              }),
+            );
+          },
           blockClass,
           ignoreClass,
           ignoreSelector,
+          maskAllText,
           maskTextClass,
+          unmaskTextClass,
           maskTextSelector,
+          unmaskTextSelector,
           maskInputOptions,
           inlineStylesheet,
           sampling,
@@ -534,10 +569,12 @@ function record<T = eventWithTime>(
           userTriggeredOnInput,
           collectFonts,
           doc,
+          maskAttributeFn,
           maskInputFn,
           maskTextFn,
           keepIframeSrcFn,
           blockSelector,
+          unblockSelector,
           slimDOMOptions,
           dataURLOptions,
           mirror,

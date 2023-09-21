@@ -1,10 +1,10 @@
 {
-  "name": "rrweb-player",
+  "name": "@sentry-internal/rrweb-player",
   "version": "2.0.0-alpha.11",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@rrweb/types": "^2.0.0-alpha.11",
+    "@sentry-internal/rrweb-types": "^2.0.0-alpha.11",
     "@types/offscreencanvas": "^2019.6.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -23,16 +23,17 @@
     "tslib": "^2.0.0"
   },
   "dependencies": {
-    "@tsconfig/svelte": "^1.0.0",
-    "rrweb": "^2.0.0-alpha.11"
+    "@sentry-internal/rrweb": "^2.0.0-alpha.11",
+    "@tsconfig/svelte": "^1.0.0"
   },
   "scripts": {
     "build": "rollup -c",
+    "build:tarball": "npm pack",
     "dev": "rollup -c -w",
-    "prepublishOnly": "yarn build",
     "start": "sirv public",
     "validate": "svelte-check",
-    "prepublish": "yarn build",
+    "typings": "tsc -d --declarationDir typings",
+    "prepare": "yarn typings && yarn build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",

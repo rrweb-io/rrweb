@@ -9,7 +9,7 @@ import {
   attributes,
   serializedElementNodeWithId,
   toLowerCase,
-} from 'rrweb-snapshot';
+} from '@sentry-internal/rrweb-snapshot';
 import {
   RRDocument,
   createOrGetNode,
@@ -17,7 +17,7 @@ import {
   buildFromDom,
   diff,
   getDefaultSN,
-} from 'rrdom';
+} from '@sentry-internal/rrdom';
 import type {
   RRNode,
   RRElement,
@@ -27,7 +27,7 @@ import type {
   RRCanvasElement,
   ReplayerHandler,
   Mirror as RRDOMMirror,
-} from 'rrdom';
+} from '@sentry-internal/rrdom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -63,7 +63,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
-} from '@rrweb/types';
+} from '@sentry-internal/rrweb-types';
 import {
   polyfill,
   queueToResolveTrees,
