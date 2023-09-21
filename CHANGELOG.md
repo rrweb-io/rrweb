@@ -1,8 +1,8 @@
 # Changelog
 
-## 2.0.0-beta11.0
+## 2.0.0
 
-- Sentry fork of rrweb@2.0.0-alpha.11 with additional masking features
+- Sentry fork of rrweb@2.0.0-alpha.11 with enhanced privacy features
 
 ## v1.0.0
 
