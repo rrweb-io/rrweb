@@ -37,7 +37,7 @@
     "cross-env": "7.0.3"
   },
   "scripts": {
-    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run --concurrency=1 prepublish'",
+    "build:all": "cross-env NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run --concurrency=1 prepublish'",
     "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test'",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
