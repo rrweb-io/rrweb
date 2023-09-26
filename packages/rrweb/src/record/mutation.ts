@@ -30,6 +30,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
+  getElementFromNode,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -508,6 +509,8 @@ export default class MutationBuffer {
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
+        const el = getElementFromNode(m.target)
+
         if (
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
@@ -520,7 +523,7 @@ export default class MutationBuffer {
                 this.maskTextSelector,
               ) && value
                 ? this.maskTextFn
-                  ? this.maskTextFn(value)
+                  ? this.maskTextFn(value, el)
                   : value.replace(/[\S]/g, '*')
                 : value,
             node: m.target,
