@@ -221,7 +221,7 @@ export function getWindowWidth(): number {
  * @returns HTMLElement or null
  */
 
-export function getElementFromNode(node: Node | null,): HTMLElement | null {
+export function getElementFromNode(node: Node | null): HTMLElement | null {
   if (!node) {
     return null;
   }
@@ -229,7 +229,7 @@ export function getElementFromNode(node: Node | null,): HTMLElement | null {
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
       : node.parentElement;
-  return el
+  return el;
 }
 
 /**
@@ -249,10 +249,10 @@ export function isBlocked(
   if (!node) {
     return false;
   }
-  const el = getElementFromNode(node)
+  const el = getElementFromNode(node);
 
   if (!el) {
-    return false
+    return false;
   }
 
   try {
