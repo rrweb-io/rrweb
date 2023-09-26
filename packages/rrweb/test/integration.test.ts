@@ -1177,7 +1177,9 @@ describe('record integration tests', function (this: ISuite) {
       getHtml.call(this, 'mask-text.html', {
         maskTextSelector: '*',
         maskTextFn: (t: string, el: HTMLElement) => {
-          return el.matches('[data-unmask-example="true"]') ? t : t.replace(/[a-z]/g, '*');
+          return el.matches('[data-unmask-example="true"]')
+            ? t
+            : t.replace(/[a-z]/g, '*');
         },
       }),
     );
