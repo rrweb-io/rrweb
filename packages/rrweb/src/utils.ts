@@ -104,7 +104,14 @@ export function hookSetter<T>(
   isRevoked?: boolean,
   win = window,
 ): hookResetter {
+  const isAlreadyHooked = Object.prototype.hasOwnProperty.call(target, '__hooked__' + String(key));
+
+  // If already hooked, avoid re-hooking.
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  if (isAlreadyHooked && !isRevoked) return () => {};
+
   const original = win.Object.getOwnPropertyDescriptor(target, key);
+
   win.Object.defineProperty(
     target,
     key,
@@ -112,7 +119,6 @@ export function hookSetter<T>(
       ? d
       : {
           set(value) {
-            // put hooked setter into event loop to avoid of set latency
             setTimeout(() => {
               d.set!.call(this, value);
             }, 0);
@@ -122,7 +128,21 @@ export function hookSetter<T>(
           },
         },
   );
-  return () => hookSetter(target, key, original || {}, true);
+
+  if (!isRevoked) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (target as any)['__hooked__' + String(key)] = true;
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (target as any)['__hooked__' + String(key)];
+  }
+
+  return () => {
+    if (isRevoked) return;  // Ensure that you can't reset multiple times
+    win.Object.defineProperty(target, key, original || {});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (target as any)['__hooked__' + String(key)];
+  };
 }
 
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
