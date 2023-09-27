@@ -104,7 +104,10 @@ export function hookSetter<T>(
   isRevoked?: boolean,
   win = window,
 ): hookResetter {
-  const isAlreadyHooked = Object.prototype.hasOwnProperty.call(target, '__hooked__' + String(key));
+  const isAlreadyHooked = Object.prototype.hasOwnProperty.call(
+    target,
+    '__hooked__' + String(key),
+  );
 
   // If already hooked, avoid re-hooking.
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -138,7 +141,7 @@ export function hookSetter<T>(
   }
 
   return () => {
-    if (isRevoked) return;  // Ensure that you can't reset multiple times
+    if (isRevoked) return; // Ensure that you can't reset multiple times
     win.Object.defineProperty(target, key, original || {});
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete (target as any)['__hooked__' + String(key)];
