@@ -380,8 +380,14 @@ function initFetchObserver(
     ) {
       // return originalFetch(url);
 
+      // TEST 02.10.2023.
+      return originalFetch(url, init).then((response) => {
+        console.log('GOT RESPONSE');
+        return response;
+      });
+
       const req = new Request(url, init);
-      let res: Response | undefined;
+      let status: number;
       const networkRequest: Partial<NetworkRequest> = {};
       const requestHeaders: Headers = {};
       req.headers.forEach((value, header) => {
@@ -403,6 +409,7 @@ function initFetchObserver(
       return originalFetch(url, init)
         .then(async (res) => {
           before = win.performance.now();
+          status = res.status;
           const responseHeaders: Headers = {};
           res.headers.forEach((value, header) => {
             responseHeaders[header] = value;
@@ -413,17 +420,20 @@ function initFetchObserver(
           if (
             shouldRecordBody('response', options.recordBody, responseHeaders)
           ) {
-            let body: string | undefined;
-            try {
-              body = await res.clone().text();
-            } catch {
-              //
-            }
-            if (res.body === undefined || res.body === null) {
-              networkRequest.responseBody = null;
-            } else {
-              networkRequest.responseBody = body;
-            }
+            res
+              .clone()
+              .text()
+              .then((body) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                if ([undefined, null].includes(body as unknown as any)) {
+                  networkRequest.responseBody = null;
+                } else {
+                  networkRequest.responseBody = body;
+                }
+              })
+              .catch((error) => {
+                // ignore
+              });
           }
           return res;
         })
@@ -434,7 +444,7 @@ function initFetchObserver(
                 url: entry.name,
                 method: req.method,
                 initiatorType: entry.initiatorType as InitiatorType,
-                status: res?.status,
+                status,
                 startTime: Math.round(entry.startTime),
                 endTime: Math.round(entry.responseEnd),
                 requestHeaders: networkRequest.requestHeaders,
