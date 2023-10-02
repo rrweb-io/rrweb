@@ -378,71 +378,76 @@ function initFetchObserver(
       url: URL | RequestInfo,
       init?: RequestInit | undefined,
     ) {
+      // return originalFetch(url);
+
       const req = new Request(url, init);
       let res: Response | undefined;
       const networkRequest: Partial<NetworkRequest> = {};
-      let after: number | undefined;
-      let before: number | undefined;
-      try {
-        const requestHeaders: Headers = {};
-        req.headers.forEach((value, header) => {
-          requestHeaders[header] = value;
-        });
-        if (recordRequestHeaders) {
-          networkRequest.requestHeaders = requestHeaders;
-        }
-        if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
-          if (req.body === undefined || req.body === null) {
-            networkRequest.requestBody = null;
-          } else {
-            networkRequest.requestBody = req.body;
-          }
-        }
-        after = win.performance.now();
-        res = await originalFetch(req);
-        before = win.performance.now();
-        const responseHeaders: Headers = {};
-        res.headers.forEach((value, header) => {
-          responseHeaders[header] = value;
-        });
-        if (recordResponseHeaders) {
-          networkRequest.responseHeaders = responseHeaders;
-        }
-        if (shouldRecordBody('response', options.recordBody, responseHeaders)) {
-          let body: string | undefined;
-          try {
-            body = await res.clone().text();
-          } catch {
-            //
-          }
-          if (res.body === undefined || res.body === null) {
-            networkRequest.responseBody = null;
-          } else {
-            networkRequest.responseBody = body;
-          }
-        }
-        return res;
-      } finally {
-        getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
-          .then((entry) => {
-            const request: NetworkRequest = {
-              url: entry.name,
-              method: req.method,
-              initiatorType: entry.initiatorType as InitiatorType,
-              status: res?.status,
-              startTime: Math.round(entry.startTime),
-              endTime: Math.round(entry.responseEnd),
-              requestHeaders: networkRequest.requestHeaders,
-              requestBody: networkRequest.requestBody,
-              responseHeaders: networkRequest.responseHeaders,
-              responseBody: networkRequest.responseBody,
-            };
-            cb({ requests: [request] });
-          })
-          .catch(() => {
-            //
-          });
+      const requestHeaders: Headers = {};
+      req.headers.forEach((value, header) => {
+        requestHeaders[header] = value;
+      });
+      if (recordRequestHeaders) {
+        networkRequest.requestHeaders = requestHeaders;
       }
+      if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
+        if (req.body === undefined || req.body === null) {
+          networkRequest.requestBody = null;
+        } else {
+          networkRequest.requestBody = req.body;
+        }
+      }
+      const after = win.performance.now();
+      let before: number | undefined;
+
+      return originalFetch(url, init)
+        .then(async (res) => {
+          before = win.performance.now();
+          const responseHeaders: Headers = {};
+          res.headers.forEach((value, header) => {
+            responseHeaders[header] = value;
+          });
+          if (recordResponseHeaders) {
+            networkRequest.responseHeaders = responseHeaders;
+          }
+          if (
+            shouldRecordBody('response', options.recordBody, responseHeaders)
+          ) {
+            let body: string | undefined;
+            try {
+              body = await res.clone().text();
+            } catch {
+              //
+            }
+            if (res.body === undefined || res.body === null) {
+              networkRequest.responseBody = null;
+            } else {
+              networkRequest.responseBody = body;
+            }
+          }
+          return res;
+        })
+        .finally(() => {
+          getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
+            .then((entry) => {
+              const request: NetworkRequest = {
+                url: entry.name,
+                method: req.method,
+                initiatorType: entry.initiatorType as InitiatorType,
+                status: res?.status,
+                startTime: Math.round(entry.startTime),
+                endTime: Math.round(entry.responseEnd),
+                requestHeaders: networkRequest.requestHeaders,
+                requestBody: networkRequest.requestBody,
+                responseHeaders: networkRequest.responseHeaders,
+                responseBody: networkRequest.responseBody,
+              };
+              cb({ requests: [request] });
+            })
+            .catch(() => {
+              //
+            });
+        });
     };
   });
   return () => {
