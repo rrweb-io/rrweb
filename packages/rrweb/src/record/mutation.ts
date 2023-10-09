@@ -24,7 +24,6 @@ import {
   isBlocked,
   isAncestorRemoved,
   isIgnored,
-  isSerialized,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
@@ -131,6 +130,16 @@ class DoubleLinkedList {
 }
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
+
+const getNextId = (n: Node, mirror: observerParam['mirror']): number | null => {
+  let ns: Node | null = n;
+  let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
+  while (nextId === IGNORED_NODE) {
+    ns = ns && ns.nextSibling;
+    nextId = ns && mirror.getId(ns);
+  }
+  return nextId;
+};
 
 /**
  * controls behaviour of a MutationObserver
@@ -256,6 +265,66 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
+  private pushAdd(
+    n: Node,
+    adds: addedNodeMutation[],
+    addList: DoubleLinkedList,
+  ) {
+    if (!n.parentNode || !inDom(n)) {
+      return;
+    }
+    const parentId = isShadowRoot(n.parentNode)
+      ? this.mirror.getId(getShadowHost(n))
+      : this.mirror.getId(n.parentNode);
+    const nextId = getNextId(n, this.mirror);
+    if (parentId === -1 || nextId === -1) {
+      return addList.addNode(n);
+    }
+    const sn = serializeNodeWithId(n, {
+      doc: this.doc,
+      mirror: this.mirror,
+      blockClass: this.blockClass,
+      blockSelector: this.blockSelector,
+      maskTextClass: this.maskTextClass,
+      maskTextSelector: this.maskTextSelector,
+      skipChild: true,
+      newlyAddedElement: true,
+      inlineStylesheet: this.inlineStylesheet,
+      maskInputOptions: this.maskInputOptions,
+      maskTextFn: this.maskTextFn,
+      maskInputFn: this.maskInputFn,
+      slimDOMOptions: this.slimDOMOptions,
+      dataURLOptions: this.dataURLOptions,
+      recordCanvas: this.recordCanvas,
+      inlineImages: this.inlineImages,
+      onSerialize: (currentN) => {
+        if (isSerializedIframe(currentN, this.mirror)) {
+          this.iframeManager.addIframe(currentN as HTMLIFrameElement);
+        }
+        if (isSerializedStylesheet(currentN, this.mirror)) {
+          this.stylesheetManager.trackLinkElement(currentN as HTMLLinkElement);
+        }
+        if (hasShadowRoot(n)) {
+          this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+        }
+      },
+      onIframeLoad: (iframe, childSn) => {
+        this.iframeManager.attachIframe(iframe, childSn);
+        this.shadowDomManager.observeAttachShadow(iframe);
+      },
+      onStylesheetLoad: (link, childSn) => {
+        this.stylesheetManager.attachLinkElement(link, childSn);
+      },
+    });
+    if (sn) {
+      adds.push({
+        parentId,
+        nextId,
+        node: sn,
+      });
+    }
+  }
+
   public emit = () => {
     if (this.frozen || this.locked) {
       return;
@@ -272,76 +341,9 @@ export default class MutationBuffer {
      * parent, so we init a queue to store these nodes.
      */
     const addList = new DoubleLinkedList();
-    const getNextId = (n: Node): number | null => {
-      let ns: Node | null = n;
-      let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
-      while (nextId === IGNORED_NODE) {
-        ns = ns && ns.nextSibling;
-        nextId = ns && this.mirror.getId(ns);
-      }
-      return nextId;
-    };
-    const pushAdd = (n: Node) => {
-      if (!n.parentNode || !inDom(n)) {
-        return;
-      }
-      const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
-      const nextId = getNextId(n);
-      if (parentId === -1 || nextId === -1) {
-        return addList.addNode(n);
-      }
-      const sn = serializeNodeWithId(n, {
-        doc: this.doc,
-        mirror: this.mirror,
-        blockClass: this.blockClass,
-        blockSelector: this.blockSelector,
-        maskTextClass: this.maskTextClass,
-        maskTextSelector: this.maskTextSelector,
-        skipChild: true,
-        newlyAddedElement: true,
-        inlineStylesheet: this.inlineStylesheet,
-        maskInputOptions: this.maskInputOptions,
-        maskTextFn: this.maskTextFn,
-        maskInputFn: this.maskInputFn,
-        slimDOMOptions: this.slimDOMOptions,
-        dataURLOptions: this.dataURLOptions,
-        recordCanvas: this.recordCanvas,
-        inlineImages: this.inlineImages,
-        onSerialize: (currentN) => {
-          if (isSerializedIframe(currentN, this.mirror)) {
-            this.iframeManager.addIframe(currentN as HTMLIFrameElement);
-          }
-          if (isSerializedStylesheet(currentN, this.mirror)) {
-            this.stylesheetManager.trackLinkElement(
-              currentN as HTMLLinkElement,
-            );
-          }
-          if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
-          }
-        },
-        onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn);
-          this.shadowDomManager.observeAttachShadow(iframe);
-        },
-        onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachLinkElement(link, childSn);
-        },
-      });
-      if (sn) {
-        adds.push({
-          parentId,
-          nextId,
-          node: sn,
-        });
-        addedIds.add(sn.id);
-      }
-    };
 
     while (this.mapRemoves.length) {
-      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
+      this.mirror.removeNodeFromMap(this.mapRemoves.pop()!);
     }
 
     for (const n of this.movedSet) {
@@ -351,7 +353,7 @@ export default class MutationBuffer {
       ) {
         continue;
       }
-      pushAdd(n);
+      this.pushAdd(n, adds, addList);
     }
 
     for (const n of this.addedSet) {
@@ -359,9 +361,9 @@ export default class MutationBuffer {
         !isAncestorInSet(this.droppedSet, n) &&
         !isParentRemoved(this.removes, n, this.mirror)
       ) {
-        pushAdd(n);
+        this.pushAdd(n, adds, addList);
       } else if (isAncestorInSet(this.movedSet, n)) {
-        pushAdd(n);
+        this.pushAdd(n, adds, addList);
       } else {
         this.droppedSet.add(n);
       }
@@ -372,7 +374,7 @@ export default class MutationBuffer {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
         const parentId = this.mirror.getId(candidate.value.parentNode);
-        const nextId = getNextId(candidate.value);
+        const nextId = getNextId(candidate.value, this.mirror);
         if (parentId !== -1 && nextId !== -1) {
           node = candidate;
         }
@@ -384,12 +386,13 @@ export default class MutationBuffer {
           tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
-            const nextId = getNextId(_node.value);
-
+            const nextId = getNextId(_node.value, this.mirror);
             if (nextId === -1) continue;
+
+            const parentId = this.mirror.getId(_node.value.parentNode);
+
             // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
+            if (parentId !== -1) {
               node = _node;
               break;
             }
@@ -427,47 +430,57 @@ export default class MutationBuffer {
       }
       candidate = node.previous;
       addList.removeNode(node.value);
-      pushAdd(node.value);
+      this.pushAdd(node.value, adds, addList);
+    }
+
+    const texts = [];
+    for (let i = 0; i < this.texts.length; i++) {
+      const id = this.mirror.getId(this.texts[i].node);
+      if (addedIds.has(id) || !this.mirror.has(id)) {
+        continue;
+      }
+      texts.push({
+        id,
+        value: this.texts[i].value,
+      });
+    }
+
+    const attributes = [];
+    for (let i = 0; i < this.attributes.length; i++) {
+      const id = this.mirror.getId(this.attributes[i].node);
+      if (addedIds.has(id) || !this.mirror.has(id)) {
+        continue;
+      }
+
+      const { attributes: elAttributes } = this.attributes[i];
+      if (typeof elAttributes.style === 'string') {
+        const diffAsStr = JSON.stringify(this.attributes[i].styleDiff);
+        const unchangedAsStr = JSON.stringify(
+          this.attributes[i]._unchangedStyles,
+        );
+        // check if the style diff is actually shorter than the regular string based mutation
+        // (which was the whole point of #464 'compact style mutation').
+        if (diffAsStr.length < elAttributes.style.length) {
+          // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+          // the compact style mutation if these have all been accounted for
+          if (
+            (diffAsStr + unchangedAsStr).split('var(').length ===
+            elAttributes.style.split('var(').length
+          ) {
+            elAttributes.style = this.attributes[i].styleDiff;
+          }
+        }
+      }
+
+      attributes.push({
+        id,
+        attributes: this.attributes[i].attributes,
+      });
     }
 
     const payload = {
-      texts: this.texts
-        .map((text) => ({
-          id: this.mirror.getId(text.node),
-          value: text.value,
-        }))
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((text) => !addedIds.has(text.id))
-        // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => this.mirror.has(text.id)),
-      attributes: this.attributes
-        .map((attribute) => {
-          const { attributes } = attribute;
-          if (typeof attributes.style === 'string') {
-            const diffAsStr = JSON.stringify(attribute.styleDiff);
-            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
-            // check if the style diff is actually shorter than the regular string based mutation
-            // (which was the whole point of #464 'compact style mutation').
-            if (diffAsStr.length < attributes.style.length) {
-              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
-              // the compact style mutation if these have all been accounted for
-              if (
-                (diffAsStr + unchangedAsStr).split('var(').length ===
-                attributes.style.split('var(').length
-              ) {
-                attributes.style = attribute.styleDiff;
-              }
-            }
-          }
-          return {
-            id: this.mirror.getId(attribute.node),
-            attributes: attributes,
-          };
-        })
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((attribute) => !addedIds.has(attribute.id))
-        // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => this.mirror.has(attribute.id)),
+      texts,
+      attributes,
       removes: this.removes,
       adds,
     };
@@ -485,9 +498,9 @@ export default class MutationBuffer {
     this.texts = [];
     this.attributes = [];
     this.removes = [];
-    this.addedSet = new Set<Node>();
-    this.movedSet = new Set<Node>();
-    this.droppedSet = new Set<Node>();
+    this.addedSet.clear();
+    this.movedSet.clear();
+    this.droppedSet.clear();
     this.movedMap = {};
 
     this.mutationCb(payload);
@@ -497,28 +510,21 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
-    let unattachedDoc;
-    try {
-      // avoid upsetting original document from a Content Security point of view
-      unattachedDoc = document.implementation.createHTMLDocument();
-    } catch (e) {
-      // fallback to more direct method
-      unattachedDoc = this.doc;
-    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
         if (
-          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
-          value !== m.oldValue
+          value !== m.oldValue &&
+          !isBlocked(m.target, this.blockClass, this.blockSelector, false)
         ) {
           this.texts.push({
             value:
+              value &&
               needMaskingText(
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
-              ) && value
+              )
                 ? this.maskTextFn
                   ? this.maskTextFn(value)
                   : value.replace(/[\S]/g, '*')
@@ -546,15 +552,12 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-          value === m.oldValue
+          value === m.oldValue ||
+          isBlocked(m.target, this.blockClass, this.blockSelector, false)
         ) {
           return;
         }
 
-        let item: attributeCursor | undefined = this.attributes.find(
-          (a) => a.node === m.target,
-        );
         if (
           target.tagName === 'IFRAME' &&
           attributeName === 'src' &&
@@ -568,6 +571,9 @@ export default class MutationBuffer {
             return;
           }
         }
+        let item: attributeCursor | undefined = this.attributes.find(
+          (a) => a.node === m.target,
+        );
         if (!item) {
           item = {
             node: m.target,
@@ -597,6 +603,14 @@ export default class MutationBuffer {
             value,
           );
           if (attributeName === 'style') {
+            let unattachedDoc;
+            try {
+              // avoid upsetting original document from a Content Security point of view
+              unattachedDoc = document.implementation.createHTMLDocument();
+            } catch (e) {
+              // fallback to more direct method
+              unattachedDoc = this.doc;
+            }
             const old = unattachedDoc.createElement('span');
             if (m.oldValue) {
               old.setAttribute('style', m.oldValue);
@@ -641,10 +655,11 @@ export default class MutationBuffer {
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
+
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-            isIgnored(n, this.mirror) ||
-            !isSerialized(n, this.mirror)
+            nodeId === IGNORED_NODE ||
+            nodeId === -1 ||
+            isBlocked(m.target, this.blockClass, this.blockSelector, false)
           ) {
             return;
           }
@@ -739,8 +754,13 @@ export default class MutationBuffer {
  * that.
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
-  addsSet.delete(n);
-  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
+  const deleteQueue = [n];
+
+  while (deleteQueue.length) {
+    const node = deleteQueue.pop()!;
+    addsSet.delete(node);
+    node.childNodes.forEach((childN) => deleteQueue.push(childN));
+  }
 }
 
 function isParentRemoved(
@@ -749,23 +769,39 @@ function isParentRemoved(
   mirror: Mirror,
 ): boolean {
   if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
+  return _isParentRemoved(removes, n, mirror, new Set());
 }
 
 function _isParentRemoved(
   removes: removedNodeMutation[],
   n: Node,
   mirror: Mirror,
+  removeSet: Set<number>,
 ): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
+  const queue = [n];
+  while (queue.length) {
+    const { parentNode } = queue.pop()!;
+
+    if (!parentNode) {
+      return false;
+    }
+
+    const parentId = mirror.getId(parentNode);
+    if (removeSet.has(parentId)) {
+      return true;
+    }
+    for (let i = 0; i < removes.length; i++) {
+      const removedNode = removes[i];
+      if (removedNode.id === parentId) {
+        return true;
+      }
+      removeSet.add(removedNode.id);
+    }
+
+    queue.push(parentNode);
   }
-  const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
-    return true;
-  }
-  return _isParentRemoved(removes, parentNode, mirror);
+
+  return false;
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
@@ -774,12 +810,16 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
+  const queue = [n];
+  while (queue.length) {
+    const { parentNode } = queue.pop()!;
+    if (!parentNode) {
+      return false;
+    }
+    if (set.has(parentNode)) {
+      return true;
+    }
+    queue.push(parentNode);
   }
-  if (set.has(parentNode)) {
-    return true;
-  }
-  return _isAncestorInSet(set, parentNode);
+  return false;
 }

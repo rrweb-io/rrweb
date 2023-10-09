@@ -4070,6 +4070,16 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           }
         },
         {
+          \\"parentId\\": 24,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n    \\",
+            \\"rootId\\": 11,
+            \\"id\\": 31
+          }
+        },
+        {
           \\"parentId\\": 26,
           \\"nextId\\": 28,
           \\"node\\": {
@@ -4092,16 +4102,6 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           }
         },
         {
-          \\"parentId\\": 28,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"1\\",
-            \\"rootId\\": 11,
-            \\"id\\": 29
-          }
-        },
-        {
           \\"parentId\\": 26,
           \\"nextId\\": null,
           \\"node\\": {
@@ -4112,13 +4112,13 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
           }
         },
         {
-          \\"parentId\\": 24,
+          \\"parentId\\": 28,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n    \\",
+            \\"textContent\\": \\"1\\",
             \\"rootId\\": 11,
-            \\"id\\": 31
+            \\"id\\": 29
           }
         },
         {

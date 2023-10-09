@@ -262,6 +262,10 @@ export function _isBlockedElement(
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
+  if (!blockClass && !blockSelector) {
+    return false;
+  }
+
   try {
     if (typeof blockClass === 'string') {
       if (element.classList.contains(blockClass)) {
@@ -311,23 +315,27 @@ export function needMaskingText(
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
-  try {
-    const el: HTMLElement | null =
-      node.nodeType === node.ELEMENT_NODE
-        ? (node as HTMLElement)
-        : node.parentElement;
-    if (el === null) return false;
+  if (!maskTextClass && !maskTextSelector) {
+    return false;
+  }
 
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+
+  if (el === null) return false;
+  try {
     if (typeof maskTextClass === 'string') {
       if (el.classList.contains(maskTextClass)) return true;
-      if (el.closest(`.${maskTextClass}`)) return true;
+      if (el.matches(`.${maskTextClass} *`)) return true;
     } else {
       if (classMatchesRegex(el, maskTextClass, true)) return true;
     }
 
     if (maskTextSelector) {
       if (el.matches(maskTextSelector)) return true;
-      if (el.closest(maskTextSelector)) return true;
+      if (el.matches(`${maskTextSelector} *`)) return true;
     }
   } catch (e) {
     //
@@ -541,8 +549,8 @@ function serializeTextNode(
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
-  let textContent = n.textContent;
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
+  let textContent = n.textContent;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
   if (isStyle && textContent) {
     try {
@@ -568,15 +576,22 @@ function serializeTextNode(
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
   }
+
   if (
     !isStyle &&
     !isScript &&
     textContent &&
     needMaskingText(n, maskTextClass, maskTextSelector)
   ) {
-    textContent = maskTextFn
-      ? maskTextFn(textContent)
-      : textContent.replace(/[\S]/g, '*');
+    return {
+      type: NodeType.Text,
+      textContent:
+        (maskTextFn
+          ? maskTextFn(textContent)
+          : textContent.replace(/[\S]/g, '*')) || '',
+      isStyle,
+      rootId,
+    };
   }
 
   return {
@@ -812,24 +827,40 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(
-  maybeAttr: string | number | boolean | undefined | null,
-): string {
-  if (maybeAttr === undefined || maybeAttr === null) {
-    return '';
-  } else {
-    return (maybeAttr as string).toLowerCase();
-  }
-}
+const MS_APPLICATION_TILE_REGEXP = /^msapplication-tile(image|color)$/;
+const OG_TWITTER_OR_FB_REGEXP = /^(og|twitter|fb):/;
+const OG_TWITTER_REGEXP = /^(og|twitter):/;
+const ARTICLE_PRODUCT_REGEXP = /^(article|product):/;
 
 function slimDOMExcluded(
   sn: serializedNode,
   slimDOMOptions: SlimDOMOptions,
 ): boolean {
-  if (slimDOMOptions.comment && sn.type === NodeType.Comment) {
+  if (sn.type !== NodeType.Element && sn.type !== NodeType.Comment) {
+    return false;
+  }
+
+  if (sn.type === NodeType.Comment && slimDOMOptions.comment) {
     // TODO: convert IE conditional comments to real nodes
     return true;
-  } else if (sn.type === NodeType.Element) {
+  }
+
+  if (sn.type === NodeType.Element) {
+    /* eslint-disable */
+    const snAttributeName: string = sn.attributes.name
+      ? // @ts-ignore
+        sn.attributes.name.toLowerCase()
+      : '';
+    const snAttributeRel: string = sn.attributes.rel
+      ? // @ts-ignore
+        sn.attributes.rel.toLowerCase()
+      : '';
+    const snAttributeProperty: string = sn.attributes.property
+      ? // @ts-ignore
+        sn.attributes.property.toLowerCase()
+      : '';
+    /* eslint-enable */
+
     if (
       slimDOMOptions.script &&
       // script tag
@@ -850,33 +881,30 @@ function slimDOMExcluded(
       slimDOMOptions.headFavicon &&
       ((sn.tagName === 'link' && sn.attributes.rel === 'shortcut icon') ||
         (sn.tagName === 'meta' &&
-          (lowerIfExists(sn.attributes.name).match(
-            /^msapplication-tile(image|color)$/,
-          ) ||
-            lowerIfExists(sn.attributes.name) === 'application-name' ||
-            lowerIfExists(sn.attributes.rel) === 'icon' ||
-            lowerIfExists(sn.attributes.rel) === 'apple-touch-icon' ||
-            lowerIfExists(sn.attributes.rel) === 'shortcut icon')))
+          (snAttributeName === 'application-name' ||
+            snAttributeRel === 'icon' ||
+            snAttributeRel === 'apple-touch-icon' ||
+            snAttributeRel === 'shortcut icon' ||
+            MS_APPLICATION_TILE_REGEXP.test(snAttributeName))))
     ) {
       return true;
     } else if (sn.tagName === 'meta') {
       if (
         slimDOMOptions.headMetaDescKeywords &&
-        lowerIfExists(sn.attributes.name).match(/^description|keywords$/)
+        (snAttributeName === 'description' || snAttributeName === 'keywords')
       ) {
         return true;
       } else if (
         slimDOMOptions.headMetaSocial &&
-        (lowerIfExists(sn.attributes.property).match(/^(og|twitter|fb):/) || // og = opengraph (facebook)
-          lowerIfExists(sn.attributes.name).match(/^(og|twitter):/) ||
-          lowerIfExists(sn.attributes.name) === 'pinterest')
+        (OG_TWITTER_OR_FB_REGEXP.test(snAttributeProperty) || // og = opengraph (facebook)
+          OG_TWITTER_REGEXP.test(snAttributeName))
       ) {
         return true;
       } else if (
         slimDOMOptions.headMetaRobots &&
-        (lowerIfExists(sn.attributes.name) === 'robots' ||
-          lowerIfExists(sn.attributes.name) === 'googlebot' ||
-          lowerIfExists(sn.attributes.name) === 'bingbot')
+        (snAttributeName === 'robots' ||
+          snAttributeName === 'googlebot' ||
+          snAttributeName === 'bingbot')
       ) {
         return true;
       } else if (
@@ -888,24 +916,23 @@ function slimDOMExcluded(
         return true;
       } else if (
         slimDOMOptions.headMetaAuthorship &&
-        (lowerIfExists(sn.attributes.name) === 'author' ||
-          lowerIfExists(sn.attributes.name) === 'generator' ||
-          lowerIfExists(sn.attributes.name) === 'framework' ||
-          lowerIfExists(sn.attributes.name) === 'publisher' ||
-          lowerIfExists(sn.attributes.name) === 'progid' ||
-          lowerIfExists(sn.attributes.property).match(/^article:/) ||
-          lowerIfExists(sn.attributes.property).match(/^product:/))
+        (snAttributeName === 'author' ||
+          snAttributeName === 'generator' ||
+          snAttributeName === 'framework' ||
+          snAttributeName === 'publisher' ||
+          snAttributeName === 'progid' ||
+          ARTICLE_PRODUCT_REGEXP.test(snAttributeProperty))
       ) {
         return true;
       } else if (
         slimDOMOptions.headMetaVerification &&
-        (lowerIfExists(sn.attributes.name) === 'google-site-verification' ||
-          lowerIfExists(sn.attributes.name) === 'yandex-verification' ||
-          lowerIfExists(sn.attributes.name) === 'csrf-token' ||
-          lowerIfExists(sn.attributes.name) === 'p:domain_verify' ||
-          lowerIfExists(sn.attributes.name) === 'verify-v1' ||
-          lowerIfExists(sn.attributes.name) === 'verification' ||
-          lowerIfExists(sn.attributes.name) === 'shopify-checkout-api-token')
+        (snAttributeName === 'google-site-verification' ||
+          snAttributeName === 'yandex-verification' ||
+          snAttributeName === 'csrf-token' ||
+          snAttributeName === 'p:domain_verify' ||
+          snAttributeName === 'verify-v1' ||
+          snAttributeName === 'verification' ||
+          snAttributeName === 'shopify-checkout-api-token')
       ) {
         return true;
       }
@@ -1045,6 +1072,7 @@ export function serializeNodeWithId(
     ) {
       preserveWhiteSpace = false;
     }
+
     const bypassOptions = {
       doc,
       mirror,
@@ -1069,22 +1097,24 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
     };
-    for (const childN of Array.from(n.childNodes)) {
+
+    n.childNodes.forEach((childN) => {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
       if (serializedChildNode) {
         serializedNode.childNodes.push(serializedChildNode);
       }
-    }
+    });
 
     if (isElement(n) && n.shadowRoot) {
-      for (const childN of Array.from(n.shadowRoot.childNodes)) {
+      n.shadowRoot.childNodes.forEach((childN) => {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          isNativeShadowDom(n.shadowRoot) &&
-            (serializedChildNode.isShadow = true);
+          if (isNativeShadowDom(n.shadowRoot!)) {
+            serializedChildNode.isShadow = true;
+          }
           serializedNode.childNodes.push(serializedChildNode);
         }
-      }
+      });
     }
   }
 
