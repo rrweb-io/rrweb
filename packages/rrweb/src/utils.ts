@@ -344,6 +344,7 @@ export function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[] {
     queueNodeMap[m.node.id] = nodeInTree;
     return nodeInTree;
   };
+  const rootNexts = new Set<number>();
 
   const queueNodeTrees: ResolveTree[] = [];
   for (const mutation of queue) {
@@ -368,7 +369,16 @@ export function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[] {
       parentInTree.children.push(putIntoMap(mutation, parentInTree));
       continue;
     }
-    queueNodeTrees.push(putIntoMap(mutation, null));
+    if (nextId) {
+      rootNexts.add(nextId);
+    }
+    const rootTree = putIntoMap(mutation, null);
+    if (rootNexts.has(mutation.node.id)) {
+      // some existing tree can't be inserted until this one is (nextNotInDOM check)
+      queueNodeTrees.unshift(rootTree);
+    } else {
+      queueNodeTrees.push(rootTree);
+    }
   }
 
   return queueNodeTrees;
