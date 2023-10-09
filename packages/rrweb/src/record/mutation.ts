@@ -188,6 +188,7 @@ export default class MutationBuffer {
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+  private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
     (
@@ -589,15 +590,17 @@ export default class MutationBuffer {
             value,
           );
           if (attributeName === 'style') {
-            let unattachedDoc;
-            try {
-              // avoid upsetting original document from a Content Security point of view
-              unattachedDoc = document.implementation.createHTMLDocument();
-            } catch (e) {
-              // fallback to more direct method
-              unattachedDoc = this.doc;
+            if (!this.unattachedDoc) {
+              try {
+                // avoid upsetting original document from a Content Security point of view
+                this.unattachedDoc =
+                  document.implementation.createHTMLDocument();
+              } catch (e) {
+                // fallback to more direct method
+                this.unattachedDoc = this.doc;
+              }
             }
-            const old = unattachedDoc.createElement('span');
+            const old = this.unattachedDoc.createElement('span');
             if (m.oldValue) {
               old.setAttribute('style', m.oldValue);
             }
