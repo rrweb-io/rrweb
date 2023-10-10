@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animation defined via variable</title>
+    <style>
+      :root {
+          --duration-extra-long: 1.6s;
+          --animation-fade-in: fadeIn var(--duration-extra-long) cubic-bezier(0, 0, .3, 1) forwards;
+      }
+      @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+      }
+      #one {
+          background-color: red;
+          width: 200px;
+          height: 200px;
+          opacity: 0;
+      }
+      #one:not(.good) {
+          animation: var(--animation-fade-in);
+          animation-delay: 0.2s;
+      }
+      #one.ok {
+          animation: var(--animation-fade-in);
+      }
+    </style>
+    <link rel="stylesheet" type="text/css" href="assets/animation-var.css">
+  </head>
+  <body>
+    <div id="one"></div>
+  </body>
+</html>
