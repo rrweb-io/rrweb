@@ -221,7 +221,7 @@ export function getWindowWidth(): number {
  * @returns HTMLElement or null
  */
 
-export function getElementFromNode(node: Node | null): HTMLElement | null {
+export function closestElementOfNode(node: Node | null): HTMLElement | null {
   if (!node) {
     return null;
   }
