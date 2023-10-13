@@ -30,7 +30,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
-  getElementFromNode,
+  closestElementOfNode,
 } from '../utils';
 
 type DoubleLinkedListNode = {
