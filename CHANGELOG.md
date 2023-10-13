@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- fix: Fix checking for patchTarget in initAdoptedStyleSheetObserver [#110](https://github.com/getsentry/rrweb/pull/110)
+
 ## 2.0.0
 
 - Sentry fork of rrweb@2.0.0-alpha.11 with enhanced privacy features
