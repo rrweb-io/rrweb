@@ -25,6 +25,7 @@ import type {
   KeepIframeSrcFn,
   listenerHandler,
   maskTextClass,
+  maskTextRule,
   mediaInteractionCallback,
   mouseInteractionCallBack,
   mousemoveCallBack,
@@ -49,6 +50,12 @@ export type recordOptions<T> = {
   ignoreSelector?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
+  /**
+   * only the first matched rule will be applied
+   * customMaskTextRule has higher priority than maskTextSelector & maskTextFn
+   * once one of customMaskTextRule match, maskTextSelector & maskTextFn won't be applied
+   */
+  customMaskTextRule?: maskTextRule[];
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
@@ -89,6 +96,7 @@ export type observerParam = {
   ignoreSelector: string | null;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
+  customMaskTextRule: maskTextRule[];
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
@@ -132,6 +140,7 @@ export type MutationBufferParam = Pick<
   | 'blockSelector'
   | 'maskTextClass'
   | 'maskTextSelector'
+  | 'customMaskTextRule'
   | 'inlineStylesheet'
   | 'maskInputOptions'
   | 'maskTextFn'
