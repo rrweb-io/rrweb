@@ -900,10 +900,12 @@ export function initAdoptedStyleSheetObserver(
     host.nodeName === '#document'
       ? (host as Document).defaultView?.Document
       : host.ownerDocument?.defaultView?.ShadowRoot;
-  const originalPropertyDescriptor = Object.getOwnPropertyDescriptor(
-    patchTarget?.prototype,
-    'adoptedStyleSheets',
-  );
+  const originalPropertyDescriptor = patchTarget?.prototype
+    ? Object.getOwnPropertyDescriptor(
+        patchTarget?.prototype,
+        'adoptedStyleSheets',
+      )
+    : undefined;
   if (
     hostId === null ||
     hostId === -1 ||
