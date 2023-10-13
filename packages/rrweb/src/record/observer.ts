@@ -1321,9 +1321,7 @@ export function initObservers(
 
   return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
-    if (mutationObserver) {
-      mutationObserver.disconnect();
-    }
+    mutationObserver?.disconnect();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();
