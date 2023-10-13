@@ -182,22 +182,11 @@ function buildNode(
           continue;
         }
 
-        const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
         if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
           value = addHoverClass(value, cache);
         }
-        if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          const child = doc.createTextNode(value);
-          // https://github.com/rrweb-io/rrweb/issues/112
-          for (const c of Array.from(node.childNodes)) {
-            if (c.nodeType === node.TEXT_NODE) {
-              node.removeChild(c);
-            }
-          }
-          node.appendChild(child);
-          continue;
-        }
+        // https://github.com/rrweb-io/rrweb/issues/1301 and This content is not required
 
         try {
           if (n.isSVG && name === 'xlink:href') {
