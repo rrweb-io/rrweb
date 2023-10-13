@@ -249,7 +249,7 @@ export function isBlocked(
   if (!node) {
     return false;
   }
-  const el = getElementFromNode(node);
+  const el = closestElementOfNode(node);
 
   if (!el) {
     return false;
