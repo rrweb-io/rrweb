@@ -1,36 +1,36 @@
-import {
-  serializeNodeWithId,
-  transformAttribute,
-  IGNORED_NODE,
-  ignoreAttribute,
-  isShadowRoot,
-  needMaskingText,
-  maskInputValue,
-  Mirror,
-  isNativeShadowDom,
-  getInputType,
-  toLowerCase,
-} from 'rrweb-snapshot';
-import type { observerParam, MutationBufferParam } from '../types';
 import type {
-  mutationRecord,
-  textCursor,
-  attributeCursor,
-  removedNodeMutation,
-  addedNodeMutation,
   Optional,
+  addedNodeMutation,
+  attributeCursor,
+  mutationRecord,
+  removedNodeMutation,
+  textCursor,
 } from '@rrweb/types';
 import {
-  isBlocked,
+  IGNORED_NODE,
+  Mirror,
+  getInputType,
+  ignoreAttribute,
+  isNativeShadowDom,
+  isShadowRoot,
+  maskInputValue,
+  needMaskingText,
+  serializeNodeWithId,
+  toLowerCase,
+  transformAttribute,
+} from 'rrweb-snapshot';
+import type { MutationBufferParam, observerParam } from '../types';
+import {
+  closestElementOfNode,
+  getShadowHost,
+  hasShadowRoot,
+  inDom,
   isAncestorRemoved,
+  isBlocked,
   isIgnored,
   isSerialized,
-  hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
-  inDom,
-  getShadowHost,
-  closestElementOfNode,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -498,14 +498,6 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
-    let unattachedDoc;
-    try {
-      // avoid upsetting original document from a Content Security point of view
-      unattachedDoc = document.implementation.createHTMLDocument();
-    } catch (e) {
-      // fallback to more direct method
-      unattachedDoc = this.doc;
-    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
@@ -599,6 +591,14 @@ export default class MutationBuffer {
             value,
           );
           if (attributeName === 'style') {
+            let unattachedDoc;
+            try {
+              // avoid upsetting original document from a Content Security point of view
+              unattachedDoc = document.implementation.createHTMLDocument();
+            } catch (e) {
+              // fallback to more direct method
+              unattachedDoc = this.doc;
+            }
             const old = unattachedDoc.createElement('span');
             if (m.oldValue) {
               old.setAttribute('style', m.oldValue);
