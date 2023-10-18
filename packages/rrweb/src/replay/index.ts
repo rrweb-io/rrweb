@@ -679,10 +679,6 @@ export class Replayer {
             // do not check skip in sync
             return;
           }
-          if (event === this.nextUserInteractionEvent) {
-            this.nextUserInteractionEvent = null;
-            this.backToNormal();
-          }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
             for (const _event of this.service.state.context.events) {
               if (_event.timestamp <= event.timestamp) {
@@ -704,14 +700,8 @@ export class Replayer {
               const skipTime =
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.nextUserInteractionEvent.delay! - event.delay!;
-              const payload = {
-                speed: Math.min(
-                  Math.round(skipTime / SKIP_TIME_INTERVAL),
-                  this.config.maxSpeed,
-                ),
-              };
-              this.speedService.send({ type: 'FAST_FORWARD', payload });
-              this.emitter.emit(ReplayerEvents.SkipStart, payload);
+              this.play(this.getCurrentTime() + skipTime)
+              this.nextUserInteractionEvent = null;
             }
           }
         };
