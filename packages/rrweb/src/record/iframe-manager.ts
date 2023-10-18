@@ -12,7 +12,37 @@ import type {
 } from '@sentry-internal/rrweb-types';
 import type { StylesheetManager } from './stylesheet-manager';
 
-export class IframeManager {
+export interface IframeManagerInterface {
+  crossOriginIframeMirror: CrossOriginIframeMirror;
+  crossOriginIframeStyleMirror: CrossOriginIframeMirror;
+  crossOriginIframeRootIdMap: WeakMap<HTMLIFrameElement, number>;
+
+  addIframe(iframeEl: HTMLIFrameElement): void;
+  addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown): void;
+  attachIframe(
+    iframeEl: HTMLIFrameElement,
+    childSn: serializedNodeWithId,
+  ): void;
+}
+
+export class IframeManagerNoop implements IframeManagerInterface {
+  public crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
+  public crossOriginIframeStyleMirror: CrossOriginIframeMirror;
+  public crossOriginIframeRootIdMap: WeakMap<HTMLIFrameElement, number> =
+    new WeakMap();
+
+  public addIframe() {
+    // noop
+  }
+  public addLoadListener() {
+    // noop
+  }
+  public attachIframe() {
+    // noop
+  }
+}
+
+export class IframeManager implements IframeManagerInterface {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
   private crossOriginIframeMap: WeakMap<MessageEventSource, HTMLIFrameElement> =
     new WeakMap();

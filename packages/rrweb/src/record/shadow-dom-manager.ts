@@ -20,7 +20,29 @@ type BypassOptions = Omit<
   sampling: SamplingStrategy;
 };
 
-export class ShadowDomManager {
+export interface ShadowDomManagerInterface {
+  init(): void;
+  addShadowRoot(shadowRoot: ShadowRoot, doc: Document): void;
+  observeAttachShadow(iframeElement: HTMLIFrameElement): void;
+  reset(): void;
+}
+
+export class ShadowDomManagerNoop implements ShadowDomManagerInterface {
+  public init() {
+    // noop
+  }
+  public addShadowRoot() {
+    // noop
+  }
+  public observeAttachShadow() {
+    // noop
+  }
+  public reset() {
+    // noop
+  }
+}
+
+export class ShadowDomManager implements ShadowDomManagerInterface {
   private shadowDoms = new WeakSet<ShadowRoot>();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;

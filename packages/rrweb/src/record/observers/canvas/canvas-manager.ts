@@ -28,7 +28,33 @@ type pendingCanvasMutationsMap = Map<
   canvasMutationWithType[]
 >;
 
-export class CanvasManager {
+export interface CanvasManagerInterface {
+  reset(): void;
+  freeze(): void;
+  unfreeze(): void;
+  lock(): void;
+  unlock(): void;
+}
+
+export class CanvasManagerNoop implements CanvasManagerInterface {
+  public reset() {
+    // noop
+  }
+  public freeze() {
+    // noop
+  }
+  public unfreeze() {
+    // noop
+  }
+  public lock() {
+    // noop
+  }
+  public unlock() {
+    // noop
+  }
+}
+
+export class CanvasManager implements CanvasManagerInterface {
   private pendingCanvasMutations: pendingCanvasMutationsMap = new Map();
   private rafStamps: RafStamps = { latestId: 0, invokeId: null };
   private mirror: Mirror;
