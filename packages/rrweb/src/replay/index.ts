@@ -700,7 +700,7 @@ export class Replayer {
               const skipTime =
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.nextUserInteractionEvent.delay! - event.delay!;
-              this.play(this.getCurrentTime() + skipTime)
+              this.play(this.getCurrentTime() + skipTime);
               this.nextUserInteractionEvent = null;
             }
           }
