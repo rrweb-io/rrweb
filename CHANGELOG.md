@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.0
+
+- feat: Add build flags to allow noop iframe/canvas/shadow dom managers [#114](https://github.com/getsentry/rrweb/pull/114)
+
 ## 2.0.1
 
 - fix: Fix checking for patchTarget in initAdoptedStyleSheetObserver [#110](https://github.com/getsentry/rrweb/pull/110)
