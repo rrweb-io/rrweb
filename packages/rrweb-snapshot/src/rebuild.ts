@@ -300,9 +300,9 @@ function buildNode(
         }
 
         if (name === 'rr_width') {
-          (node as HTMLElement).style.width = value.toString();
+          (node as HTMLElement).style.setProperty('width', value.toString());
         } else if (name === 'rr_height') {
-          (node as HTMLElement).style.height = value.toString();
+          (node as HTMLElement).style.setProperty('height', value.toString());
         } else if (
           name === 'rr_mediaCurrentTime' &&
           typeof value === 'number'
