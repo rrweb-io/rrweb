@@ -47,6 +47,32 @@ describe('rebuild', function () {
     });
   });
 
+  describe('rr_width/rr_height', function () {
+    it('rebuild blocked element with correct dimensions', function () {
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'svg',
+          type: NodeType.Element,
+          isSVG: true,
+          attributes: {
+            rr_width: '50px',
+            rr_height: '50px',
+          },
+          childNodes: [],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLDivElement;
+      expect(node.style.width).toBe('50px');
+      expect(node.style.height).toBe('50px');
+    });
+  });
+
   describe('shadowDom', function () {
     it('rebuild shadowRoot without siblings', function () {
       const node = buildNodeWithSN(
