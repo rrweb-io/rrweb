@@ -216,6 +216,23 @@ export function getWindowWidth(): number {
 }
 
 /**
+ * Returns the given node as an HTMLElement if it is one, otherwise the parent node as an HTMLElement
+ * @param node - node to check
+ * @returns HTMLElement or null
+ */
+
+export function closestElementOfNode(node: Node | null): HTMLElement | null {
+  if (!node) {
+    return null;
+  }
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  return el;
+}
+
+/**
  * Checks if the given element set to be blocked by rrweb
  * @param node - node to check
  * @param blockClass - class name to check
@@ -232,11 +249,11 @@ export function isBlocked(
   if (!node) {
     return false;
   }
-  const el: HTMLElement | null =
-    node.nodeType === node.ELEMENT_NODE
-      ? (node as HTMLElement)
-      : node.parentElement;
-  if (!el) return false;
+  const el = closestElementOfNode(node);
+
+  if (!el) {
+    return false;
+  }
 
   try {
     if (typeof blockClass === 'string') {
