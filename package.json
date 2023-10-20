@@ -2,18 +2,18 @@
   "description": "record and replay the web",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/amplitude/rrweb.git"
   },
   "keywords": [
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "Amplitude Inc",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/amplitude/rrweb/issues"
   },
   "private": true,
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/amplitude/rrweb#readme",
   "workspaces": [
     "packages/*"
   ],
