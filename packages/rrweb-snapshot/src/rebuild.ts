@@ -477,7 +477,7 @@ export function buildNodeWithSN(
 }
 
 function visit(mirror: Mirror, onVisit: (node: Node) => void) {
-  function walk(node: Node|null) {
+  function walk(node: Node | null) {
     if (!node) {
       return;
     }
