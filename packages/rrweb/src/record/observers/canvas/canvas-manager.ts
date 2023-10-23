@@ -280,7 +280,7 @@ export class CanvasManager {
 
   flushPendingCanvasMutations() {
     this.pendingCanvasMutations.forEach(
-      (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
+      (_values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
         const id = this.mirror.getId(canvas);
         this.flushPendingCanvasMutationFor(canvas, id);
       },
@@ -297,7 +297,7 @@ export class CanvasManager {
     if (!valuesWithType || id === -1) return;
 
     const values = valuesWithType.map((value) => {
-      const { type, ...rest } = value;
+      const { type: _type, ...rest } = value;
       return rest;
     });
     const { type } = valuesWithType[0];

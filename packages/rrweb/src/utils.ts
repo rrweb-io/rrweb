@@ -30,7 +30,7 @@ const DEPARTED_MIRROR_ACCESS_WARNING =
   'now you can use replayer.getMirror() to access the mirror instance of a replayer,' +
   '\r\n' +
   'or you can use record.mirror to access the mirror instance during recording.';
-/** @deprecated */
+/** @deprecated Use `replayer.getMirror()` or `record.mirror` to access mirror instance in their respective environments */
 export let _mirror: DeprecatedMirror = {
   map: {},
   getId() {
@@ -114,7 +114,7 @@ export function hookSetter<T>(
           set(value) {
             // put hooked setter into event loop to avoid of set latency
             setTimeout(() => {
-              d.set!.call(this, value);
+              d.set && d.set.call(this, value);
             }, 0);
             if (original && original.set) {
               original.set.call(this, value);

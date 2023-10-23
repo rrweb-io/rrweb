@@ -882,9 +882,10 @@ export class Replayer {
       const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
         sn?.type === NodeType.Element &&
-        sn?.tagName.toUpperCase() === 'HTML'
+        sn?.tagName.toUpperCase() === 'HTML' &&
+        iframeEl.contentDocument
       ) {
-        const { documentElement, head } = iframeEl.contentDocument!;
+        const { documentElement, head } = iframeEl.contentDocument;
         this.insertStyleRules(
           documentElement as HTMLElement | RRElement,
           head as HTMLElement | RRElement,
@@ -902,15 +903,18 @@ export class Replayer {
       }
     };
 
-    buildNodeWithSN(mutation.node, {
-      doc: iframeEl.contentDocument! as Document,
-      mirror: mirror as Mirror,
-      hackCss: true,
-      skipChild: false,
-      afterAppend,
-      cache: this.cache,
-    });
-    afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
+    if (iframeEl.contentDocument) {
+      buildNodeWithSN(mutation.node, {
+        // TODO: this cast is problematic as `iframEl.contentDocument` can be a `RRDocument`
+        doc: iframeEl.contentDocument as Document,
+        mirror: mirror as Mirror,
+        hackCss: true,
+        skipChild: false,
+        afterAppend,
+        cache: this.cache,
+      });
+      afterAppend(iframeEl.contentDocument as Document, mutation.node.id);
+    }
 
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
@@ -1033,7 +1037,7 @@ export class Replayer {
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
       let d = imgd?.data;
       d = JSON.parse(data.args[0]) as Uint8ClampedArray;
-      ctx?.putImageData(imgd!, 0, 0);
+      imgd && ctx?.putImageData(imgd, 0, 0);
     }
   }
   private async deserializeAndPreloadCanvasEvents(

@@ -71,7 +71,7 @@ declare interface CSSImportRule extends CSSRule {
  * Browsers sometimes incorrectly escape `@import` on `.cssText` statements.
  * This function tries to correct the escaping.
  * more info: https://bugs.chromium.org/p/chromium/issues/detail?id=1472259
- * @param cssImportRule
+ * @param cssImportRule - A CSSImportRule
  * @returns `cssText` with browser inconsistencies fixed, or null if not applicable.
  */
 export function escapeImportStatement(rule: CSSImportRule): string {
