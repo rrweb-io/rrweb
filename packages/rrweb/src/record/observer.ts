@@ -1297,10 +1297,10 @@ export function initObservers(
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
-  let styleSheetObserver = () => {};
-  let adoptedStyleSheetObserver = () => {};
-  let styleDeclarationObserver = () => {};
-  let fontObserver = () => {};
+  let styleSheetObserver = () => { /* noop if !recordDOM */ };
+  let adoptedStyleSheetObserver = () => { /* noop if !recordDOM */ };
+  let styleDeclarationObserver = () => { /* noop if !recordDOM */ };
+  let fontObserver = () => { /* noop if !recordDOM */ };
   if (o.recordDOM) {
     styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
     adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
