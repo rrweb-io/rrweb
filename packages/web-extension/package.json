@@ -1,9 +1,9 @@
 {
-  "name": "@rrweb/web-extension",
+  "name": "@amplitude/rrweb-web-extension",
   "private": true,
   "version": "2.0.0-alpha.11",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
-  "author": "rrweb-io",
+  "author": "Amplitude Inc",
   "license": "MIT",
   "scripts": {
     "dev:chrome": "cross-env TARGET_BROWSER=chrome vite dev",
