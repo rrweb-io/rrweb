@@ -5,7 +5,6 @@ import {
   tagMap,
   elementNode,
   BuildCache,
-  attributes,
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
@@ -478,13 +477,16 @@ export function buildNodeWithSN(
 }
 
 function visit(mirror: Mirror, onVisit: (node: Node) => void) {
-  function walk(node: Node) {
+  function walk(node: Node|null) {
+    if (!node) {
+      return;
+    }
     onVisit(node);
   }
 
   for (const id of mirror.getIds()) {
     if (mirror.has(id)) {
-      walk(mirror.getNode(id)!);
+      walk(mirror.getNode(id));
     }
   }
 }

@@ -5,7 +5,7 @@ import type { ReplayPlugin } from '../../../types';
 
 /**
  * define an interface to replay log records
- * (data: logData) => void> function to display the log data
+ * (data: logData) => void - function to display the log data
  */
 type ReplayLogger = Partial<Record<LogLevel, (data: LogData) => void>>;
 
