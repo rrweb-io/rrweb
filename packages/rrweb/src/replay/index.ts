@@ -1001,9 +1001,10 @@ export class Replayer {
    * pause when there are some canvas drawImage args need to be loaded
    */
   private async preloadAllImages(): Promise<void[]> {
-    let beforeLoadState = this.service.state;
+    // TODO `_beforeLoadState` here does not seem to be used?
+    let _beforeLoadState = this.service.state;
     const stateHandler = () => {
-      beforeLoadState = this.service.state;
+      _beforeLoadState = this.service.state;
     };
     this.emitter.on(ReplayerEvents.Start, stateHandler);
     this.emitter.on(ReplayerEvents.Pause, stateHandler);
@@ -1035,8 +1036,9 @@ export class Replayer {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
-      let d = imgd?.data;
-      d = JSON.parse(data.args[0]) as Uint8ClampedArray;
+      // TODO: `_d` is not being used, unless there are some side-effects
+      let _d = imgd?.data;
+      _d = JSON.parse(data.args[0]) as Uint8ClampedArray;
       imgd && ctx?.putImageData(imgd, 0, 0);
     }
   }
