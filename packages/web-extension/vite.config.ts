@@ -19,10 +19,10 @@ function useSpecialFormat(
       if (typeof entry === 'string') {
         shouldUse = entriesToUse.includes(entry);
       } else if (Array.isArray(entry)) {
-        shouldUse = entriesToUse.some(e => entry.includes(e));
+        shouldUse = entriesToUse.some((e) => entry.includes(e));
       } else if (entry && typeof entry === 'object') {
         const entryKeys = Object.keys(entry);
-        shouldUse = entriesToUse.some(e => entryKeys.includes(e));
+        shouldUse = entriesToUse.some((e) => entryKeys.includes(e));
       }
 
       if (shouldUse) {
