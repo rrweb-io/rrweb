@@ -10,7 +10,6 @@ function getContext(
   // if `preserveDrawingBuffer` is set to true,
   // you might have to do `ctx.flush()` before every webgl canvas event
   try {
-    const foo = target.getContext('webgl');
     if (type === CanvasContext.WebGL) {
       return (
         target.getContext('webgl') ||
