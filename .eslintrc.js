@@ -21,5 +21,9 @@ module.exports = {
   plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc', 'jest', 'compat'],
   rules: {
     'tsdoc/syntax': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn', {
+      varsIgnorePattern: '^_',
+      argsIgnorePattern: '^_',
+    }],
   },
 };
