@@ -1,4 +1,3 @@
-import type { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
