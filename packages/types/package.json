@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/types",
+  "name": "@amplitude/rrweb-types",
   "version": "2.0.0-alpha.11",
   "publishConfig": {
     "access": "public"
@@ -15,13 +15,13 @@
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
+  "homepage": "https://github.com/amplitude/rrweb/tree/main/packages/@rrweb/types#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/amplitude/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/amplitude/rrweb.git"
   },
   "license": "MIT",
   "type": "module",

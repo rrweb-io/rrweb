@@ -1,5 +1,5 @@
 {
-  "name": "rrdom",
+  "name": "@amplitude/rrdom",
   "version": "2.0.0-alpha.11",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",

@@ -1,5 +1,5 @@
 {
-  "name": "rrvideo",
+  "name": "@amplitude/rrvideo",
   "version": "2.0.0-alpha.11",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
@@ -17,7 +17,7 @@
     "check-types": "tsc -noEmit",
     "prepublish": "yarn build"
   },
-  "author": "yanzhen@smartx.com",
+  "author": "Amplitude Inc",
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "11.0.1",

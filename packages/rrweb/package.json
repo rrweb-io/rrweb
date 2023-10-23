@@ -1,5 +1,5 @@
 {
-  "name": "rrweb",
+  "name": "@amplitude/rrweb",
   "version": "2.0.0-alpha.11",
   "description": "record and replay the web",
   "scripts": {
@@ -26,7 +26,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/amplitude/rrweb.git"
   },
   "keywords": [
     "rrweb"
@@ -42,12 +42,12 @@
     "es",
     "typings"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "Amplitude",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/amplitude/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/amplitude/rrweb#readme",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@types/chai": "^4.1.6",

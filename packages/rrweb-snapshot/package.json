@@ -1,5 +1,5 @@
 {
-  "name": "rrweb-snapshot",
+  "name": "@amplitude/rrweb-snapshot",
   "version": "2.0.0-alpha.11",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
@@ -18,7 +18,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/amplitude/rrweb.git"
   },
   "keywords": [
     "rrweb",
@@ -35,12 +35,12 @@
     "es",
     "typings"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "Amplitude Inc",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/amplitude/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "homepage": "https://github.com/amplitude/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
     "@types/chai": "^4.1.4",
     "@types/jest": "^27.0.2",
