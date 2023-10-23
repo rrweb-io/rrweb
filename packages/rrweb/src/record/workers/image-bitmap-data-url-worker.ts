@@ -30,6 +30,7 @@ async function getTransparentBlobFor(
 ): Promise<string> {
   const id = `${width}-${height}`;
   if ('OffscreenCanvas' in globalThis) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (transparentBlobMap.has(id)) return transparentBlobMap.get(id)!;
     const offscreen = new OffscreenCanvas(width, height);
     offscreen.getContext('2d'); // creates rendering context for `converToBlob`
@@ -58,9 +59,9 @@ worker.onmessage = async function (e) {
     );
 
     const offscreen = new OffscreenCanvas(width, height);
-    const ctx = offscreen.getContext('2d')!;
+    const ctx = offscreen.getContext('2d');
 
-    ctx.drawImage(bitmap, 0, 0);
+    ctx && ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
     const blob = await offscreen.convertToBlob(dataURLOptions); // takes a while
     const type = blob.type;
