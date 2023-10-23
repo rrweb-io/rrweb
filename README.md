@@ -227,4 +227,11 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
   </tr>
+  <tr>
+    <td align="center">
+      <a href="https://gleap.io" target="_blank">
+        <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
+      </a>
+    </td>
+  </tr>
 </table>
