@@ -1,5 +1,7 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.12
+
 ## 2.0.0-alpha.11
 
 ### Patch Changes

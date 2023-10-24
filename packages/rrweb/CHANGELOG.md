@@ -1,5 +1,18 @@
 # rrweb
 
+## 2.0.0-alpha.12
+
+### Patch Changes
+
+- [`2dd990c`](https://github.com/amplitude/rrweb/commit/2dd990cbcfbaf5e552816379115608a9762e1b45) Thanks [@kwalker3690](https://github.com/kwalker3690)! - feat: skip through inactive periods instead of fast forward
+
+- [`2dd990c`](https://github.com/amplitude/rrweb/commit/2dd990cbcfbaf5e552816379115608a9762e1b45) Thanks [@kwalker3690](https://github.com/kwalker3690)! - perf: only call createHTMLDocument when it is needed
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.12
+  - @amplitude/rrdom@2.0.0-alpha.12
+  - @amplitude/rrweb-types@2.0.0-alpha.12
+
 ## 2.0.0-alpha.11
 
 ### Patch Changes

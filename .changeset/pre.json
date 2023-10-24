@@ -11,5 +11,8 @@
     "@amplitude/rrweb-web-extension": "2.0.0-alpha.11",
     "@amplitude/rrvideo": "2.0.0-alpha.11"
   },
-  "changesets": []
+  "changesets": [
+    "octopus-orange",
+    "popular-spies-fetch"
+  ]
 }
