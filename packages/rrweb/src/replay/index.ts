@@ -1,86 +1,86 @@
-import {
-  rebuild,
-  buildNodeWithSN,
-  NodeType,
-  BuildCache,
-  createCache,
-  Mirror,
-  createMirror,
-  attributes,
-  serializedElementNodeWithId,
-  toLowerCase,
-} from 'rrweb-snapshot';
-import {
-  RRDocument,
-  createOrGetNode,
-  buildFromNode,
-  buildFromDom,
-  diff,
-  getDefaultSN,
-} from 'rrdom';
 import type {
-  RRNode,
+  RRCanvasElement,
+  Mirror as RRDOMMirror,
   RRElement,
-  RRStyleElement,
   RRIFrameElement,
   RRMediaElement,
-  RRCanvasElement,
+  RRNode,
+  RRStyleElement,
   ReplayerHandler,
-  Mirror as RRDOMMirror,
-} from 'rrdom';
-import * as mittProxy from 'mitt';
-import { polyfill as smoothscrollPolyfill } from './smoothscroll';
-import { Timer } from './timer';
-import { createPlayerService, createSpeedService } from './machine';
-import type { playerConfig, missingNodeMap } from '../types';
+} from '@amplitude/rrdom';
 import {
-  EventType,
-  IncrementalSource,
-  fullSnapshotEvent,
-  eventWithTime,
-  MouseInteractions,
-  playerMetaData,
-  viewportResizeDimension,
-  addedNodeMutation,
-  incrementalSnapshotEvent,
-  incrementalData,
-  ReplayerEvents,
-  Handler,
+  RRDocument,
+  buildFromDom,
+  buildFromNode,
+  createOrGetNode,
+  diff,
+  getDefaultSN,
+} from '@amplitude/rrdom';
+import {
+  BuildCache,
+  Mirror,
+  NodeType,
+  attributes,
+  buildNodeWithSN,
+  createCache,
+  createMirror,
+  rebuild,
+  serializedElementNodeWithId,
+  toLowerCase,
+} from '@amplitude/rrweb-snapshot';
+import {
   Emitter,
-  MediaInteractions,
-  metaEvent,
-  mutationData,
-  scrollData,
-  inputData,
-  canvasMutationData,
-  styleValueWithPriority,
-  mouseMovePos,
+  EventType,
+  Handler,
   IWindow,
-  canvasMutationCommand,
-  canvasMutationParam,
-  canvasEventWithTime,
-  selectionData,
-  styleSheetRuleData,
-  styleDeclarationData,
+  IncrementalSource,
+  MediaInteractions,
+  MouseInteractions,
+  ReplayerEvents,
+  addedNodeMutation,
   adoptedStyleSheetData,
-} from '@rrweb/types';
+  canvasEventWithTime,
+  canvasMutationCommand,
+  canvasMutationData,
+  canvasMutationParam,
+  eventWithTime,
+  fullSnapshotEvent,
+  incrementalData,
+  incrementalSnapshotEvent,
+  inputData,
+  metaEvent,
+  mouseMovePos,
+  mutationData,
+  playerMetaData,
+  scrollData,
+  selectionData,
+  styleDeclarationData,
+  styleSheetRuleData,
+  styleValueWithPriority,
+  viewportResizeDimension,
+} from '@amplitude/rrweb-types';
+import * as mittProxy from 'mitt';
+import type { missingNodeMap, playerConfig } from '../types';
 import {
-  polyfill,
-  queueToResolveTrees,
-  iterateResolveTree,
   AppendedIframe,
+  StyleSheetMirror,
   getBaseDimension,
-  hasShadowRoot,
-  isSerializedIframe,
   getNestedRule,
   getPositionsAndIndex,
+  hasShadowRoot,
+  isSerializedIframe,
+  iterateResolveTree,
+  polyfill,
+  queueToResolveTrees,
   uniqueTextMutations,
-  StyleSheetMirror,
 } from '../utils';
-import getInjectStyleRules from './styles/inject-style';
-import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
+import { createPlayerService, createSpeedService } from './machine';
+import { polyfill as smoothscrollPolyfill } from './smoothscroll';
+import getInjectStyleRules from './styles/inject-style';
+import './styles/style.css';
+import { Timer } from './timer';
 
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;

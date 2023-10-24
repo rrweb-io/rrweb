@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import _Player from './Player.svelte';
 
 type PlayerProps = {

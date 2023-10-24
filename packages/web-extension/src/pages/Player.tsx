@@ -1,6 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import Replayer from 'rrweb-player';
+import Replayer from '@amplitude/rrweb-player';
 import {
   Box,
   Breadcrumb,
@@ -8,6 +6,8 @@ import {
   BreadcrumbLink,
   Center,
 } from '@chakra-ui/react';
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { getEvents, getSession } from '~/utils/storage';
 
 export default function Player() {

@@ -15,8 +15,8 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@amplitude/rrweb';
+import type { eventWithTime } from '@amplitude/rrweb-types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
   let style = '';
@@ -146,7 +146,7 @@ export function typeOf(
 }
 
 /**
- * Forked from 'rrweb' replay/index.ts. The original function is not exported.
+ * Forked from '@amplitude/rrweb' replay/index.ts. The original function is not exported.
  * Determine whether the event is a user interaction event
  * @param event - event to be determined
  * @returns true if the event is a user interaction event
@@ -161,7 +161,7 @@ function isUserInteraction(event: eventWithTime): boolean {
   );
 }
 
-// Forked from 'rrweb' replay/index.ts. A const threshold of inactive time.
+// Forked from '@amplitude/rrweb' replay/index.ts. A const threshold of inactive time.
 const SKIP_TIME_THRESHOLD = 10 * 1000;
 
 /**

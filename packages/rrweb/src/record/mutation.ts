@@ -1,11 +1,3 @@
-import type {
-  Optional,
-  addedNodeMutation,
-  attributeCursor,
-  mutationRecord,
-  removedNodeMutation,
-  textCursor,
-} from '@rrweb/types';
 import {
   IGNORED_NODE,
   Mirror,
@@ -18,7 +10,15 @@ import {
   serializeNodeWithId,
   toLowerCase,
   transformAttribute,
-} from 'rrweb-snapshot';
+} from '@amplitude/rrweb-snapshot';
+import type {
+  Optional,
+  addedNodeMutation,
+  attributeCursor,
+  mutationRecord,
+  removedNodeMutation,
+  textCursor,
+} from '@amplitude/rrweb-types';
 import type { MutationBufferParam, observerParam } from '../types';
 import {
   closestElementOfNode,

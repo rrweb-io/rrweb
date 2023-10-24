@@ -1,10 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-import * as fs from 'fs';
-import * as path from 'path';
-import * as puppeteer from 'puppeteer';
-import { JSDOM } from 'jsdom';
 import {
   cdataNode,
   commentNode,
@@ -15,7 +11,11 @@ import {
   NodeType,
   NodeType as RRNodeType,
   textNode,
-} from 'rrweb-snapshot';
+} from '@amplitude/rrweb-snapshot';
+import * as fs from 'fs';
+import { JSDOM } from 'jsdom';
+import * as path from 'path';
+import * as puppeteer from 'puppeteer';
 import {
   buildFromDom,
   buildFromNode,

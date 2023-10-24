@@ -1,6 +1,6 @@
+import { EventType } from '@amplitude/rrweb-types';
 import { discardPriorSnapshots } from '../src/replay/machine';
 import { sampleEvents } from './utils';
-import { EventType } from '@rrweb/types';
 
 const events = sampleEvents.filter(
   (e) => ![EventType.DomContentLoaded, EventType.Load].includes(e.type),

@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { NodeType as RRNodeType } from 'rrweb-snapshot';
-import type { NWSAPI } from 'nwsapi';
-import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
 import {
   BaseRRCDATASectionImpl,
   BaseRRCommentImpl,
@@ -11,10 +8,13 @@ import {
   BaseRRMediaElementImpl,
   BaseRRNode,
   BaseRRTextImpl,
+  CSSStyleDeclaration,
   ClassList,
   IRRDocument,
-  CSSStyleDeclaration,
-} from 'rrdom';
+} from '@amplitude/rrdom';
+import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
+import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
+import type { NWSAPI } from 'nwsapi';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const nwsapi = require('nwsapi');
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires

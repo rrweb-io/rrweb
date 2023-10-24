@@ -1,44 +1,46 @@
 import {
-  snapshot,
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
-} from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+  snapshot,
+} from '@amplitude/rrweb-snapshot';
 import {
-  on,
-  getWindowWidth,
+  EventType,
+  IncrementalSource,
+  adoptedStyleSheetParam,
+  canvasMutationParam,
+  event,
+  eventWithTime,
+  listenerHandler,
+  mutationCallbackParam,
+  scrollCallback,
+} from '@amplitude/rrweb-types';
+import type {
+  CrossOriginIframeMessageEventContent,
+  recordOptions,
+} from '../types';
+import {
   getWindowHeight,
   getWindowScroll,
-  polyfill,
+  getWindowWidth,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
+  on,
+  polyfill,
 } from '../utils';
-import type { recordOptions } from '../types';
-import {
-  EventType,
-  event,
-  eventWithTime,
-  IncrementalSource,
-  listenerHandler,
-  mutationCallbackParam,
-  scrollCallback,
-  canvasMutationParam,
-  adoptedStyleSheetParam,
-} from '@rrweb/types';
-import type { CrossOriginIframeMessageEventContent } from '../types';
-import { IframeManager } from './iframe-manager';
-import { ShadowDomManager } from './shadow-dom-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
-import { StylesheetManager } from './stylesheet-manager';
-import ProcessedNodeManager from './processed-node-manager';
 import {
   callbackWrapper,
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import { IframeManager } from './iframe-manager';
+import { initObservers, mutationBuffers } from './observer';
+import { CanvasManager } from './observers/canvas/canvas-manager';
+import ProcessedNodeManager from './processed-node-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
+import { StylesheetManager } from './stylesheet-manager';
 
 function wrapEvent(e: event): eventWithTime {
   return {

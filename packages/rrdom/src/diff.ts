@@ -1,16 +1,25 @@
 import {
-  NodeType as RRNodeType,
   Mirror as NodeMirror,
+  NodeType as RRNodeType,
   elementNode,
-} from 'rrweb-snapshot';
+} from '@amplitude/rrweb-snapshot';
 import type {
-  canvasMutationData,
   canvasEventWithTime,
+  canvasMutationData,
   inputData,
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
-} from '@rrweb/types';
+} from '@amplitude/rrweb-types';
+import type {
+  Mirror,
+  RRCanvasElement,
+  RRDocument,
+  RRElement,
+  RRIFrameElement,
+  RRMediaElement,
+  RRStyleElement,
+} from '.';
 import type {
   IRRCDATASection,
   IRRComment,
@@ -19,15 +28,6 @@ import type {
   IRRNode,
   IRRText,
 } from './document';
-import type {
-  RRCanvasElement,
-  RRElement,
-  RRIFrameElement,
-  RRMediaElement,
-  RRStyleElement,
-  RRDocument,
-  Mirror,
-} from '.';
 
 const NAMESPACES: Record<string, string> = {
   svg: 'http://www.w3.org/2000/svg',
@@ -88,11 +88,11 @@ export type ReplayerHandler = {
     data: styleDeclarationData | styleSheetRuleData,
     styleSheet: CSSStyleSheet,
   ) => void;
-  // Similar to the `afterAppend` callback in the `rrweb-snapshot` package. It's a postorder traversal of the newly appended nodes.
+  // Similar to the `afterAppend` callback in the `@amplitude/rrweb-snapshot` package. It's a postorder traversal of the newly appended nodes.
   afterAppend?(node: Node, id: number): void;
 };
 
-// A set contains newly appended nodes. It's used to make sure the afterAppend callback can iterate newly appended nodes in the same traversal order as that in the `rrweb-snapshot` package.
+// A set contains newly appended nodes. It's used to make sure the afterAppend callback can iterate newly appended nodes in the same traversal order as that in the `@amplitude/rrweb-snapshot` package.
 let createdNodeSet: WeakSet<Node> | null = null;
 
 /**

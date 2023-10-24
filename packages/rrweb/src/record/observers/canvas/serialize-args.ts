@@ -1,5 +1,5 @@
+import type { CanvasArg, IWindow } from '@amplitude/rrweb-types';
 import { encode } from 'base64-arraybuffer';
-import type { IWindow, CanvasArg } from '@rrweb/types';
 
 // TODO: unify with `replay/webgl.ts`
 type CanvasVarMap = Map<string, unknown[]>;

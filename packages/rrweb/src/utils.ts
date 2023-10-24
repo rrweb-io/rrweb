@@ -1,17 +1,21 @@
+import type { RRIFrameElement, RRNode } from '@amplitude/rrdom';
+import type { IMirror, Mirror } from '@amplitude/rrweb-snapshot';
+import {
+  IGNORED_NODE,
+  classMatchesRegex,
+  isShadowRoot,
+} from '@amplitude/rrweb-snapshot';
 import type {
-  throttleOptions,
-  listenerHandler,
-  hookResetter,
-  blockClass,
-  addedNodeMutation,
+  DeprecatedMirror,
   DocumentDimension,
   IWindow,
-  DeprecatedMirror,
+  addedNodeMutation,
+  blockClass,
+  hookResetter,
+  listenerHandler,
   textMutation,
-} from '@rrweb/types';
-import type { IMirror, Mirror } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+  throttleOptions,
+} from '@amplitude/rrweb-types';
 
 export function on(
   type: string,
@@ -278,7 +282,7 @@ export function isSerialized(n: Node, mirror: Mirror): boolean {
 
 export function isIgnored(n: Node, mirror: Mirror): boolean {
   // The main part of the slimDOM check happens in
-  // rrweb-snapshot::serializeNodeWithId
+  // @amplitude/rrweb-snapshot::serializeNodeWithId
   return mirror.getId(n) === IGNORED_NODE;
 }
 

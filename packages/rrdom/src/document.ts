@@ -1,5 +1,5 @@
-import { NodeType as RRNodeType } from 'rrweb-snapshot';
-import { parseCSSText, camelize, toCSSText } from './style';
+import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
+import { camelize, parseCSSText, toCSSText } from './style';
 export interface IRRNode {
   parentElement: IRRNode | null;
   parentNode: IRRNode | null;
@@ -308,7 +308,7 @@ export function BaseRRDocumentImpl<
     }
 
     /**
-     * Adhoc implementation for setting xhtml namespace in rebuilt.ts (rrweb-snapshot).
+     * Adhoc implementation for setting xhtml namespace in rebuilt.ts (@amplitude/rrweb-snapshot).
      * There are two lines used this function:
      * 1. doc.write('\<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" ""\>')
      * 2. doc.write('\<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" ""\>')

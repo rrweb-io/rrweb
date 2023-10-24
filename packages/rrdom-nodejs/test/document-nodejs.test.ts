@@ -1,9 +1,10 @@
 /**
  * @jest-environment jsdom
  */
+import { buildFromDom } from '@amplitude/rrdom';
+import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
 import * as fs from 'fs';
 import * as path from 'path';
-import { NodeType as RRNodeType } from 'rrweb-snapshot';
 import {
   RRCanvasElement,
   RRCDATASection,
@@ -16,7 +17,6 @@ import {
   RRStyleElement,
   RRText,
 } from '../src/document-nodejs';
-import { buildFromDom } from 'rrdom';
 
 describe('RRDocument for nodejs environment', () => {
   describe('RRDocument API', () => {

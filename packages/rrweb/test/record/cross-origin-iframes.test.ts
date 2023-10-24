@@ -1,13 +1,15 @@
+import type {
+  eventWithTime,
+  listenerHandler,
+  mutationData,
+} from '@amplitude/rrweb-types';
+import { EventType, IncrementalSource } from '@amplitude/rrweb-types';
 import * as fs from 'fs';
+import type * as http from 'http';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { unpack } from '../../src/packer/unpack';
 import type { recordOptions } from '../../src/types';
-import type {
-  listenerHandler,
-  eventWithTime,
-  mutationData,
-} from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,
@@ -15,8 +17,6 @@ import {
   startServer,
   waitForRAF,
 } from '../utils';
-import { unpack } from '../../src/packer/unpack';
-import type * as http from 'http';
 
 interface ISuite {
   code: string;

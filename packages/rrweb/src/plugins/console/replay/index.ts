@@ -1,7 +1,7 @@
-import { LogLevel, LogData, PLUGIN_NAME } from '../record';
-import type { eventWithTime } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import type { eventWithTime } from '@amplitude/rrweb-types';
+import { EventType, IncrementalSource } from '@amplitude/rrweb-types';
 import type { ReplayPlugin } from '../../../types';
+import { LogData, LogLevel, PLUGIN_NAME } from '../record';
 
 /**
  * define an interface to replay log records

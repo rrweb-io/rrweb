@@ -3058,13 +3058,6 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
-"@rrweb/types@^2.0.0-alpha.11":
-  version "2.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/@rrweb/types/-/types-2.0.0-alpha.11.tgz#30730ac4b619a698d910f391992be8682286b8c8"
-  integrity sha512-8ccocIkT5J/bfNRQY85qR/g6p5YQFpgFO2cMt4+Ex7w31Lq0yqZBRaoYEsawQKpLrn5KOHkdn2UTUrna7WMQuA==
-  dependencies:
-    rrweb-snapshot "^2.0.0-alpha.11"
-
 "@rushstack/node-core-library@3.59.0":
   version "3.59.0"
   resolved "https://registry.yarnpkg.com/@rushstack/node-core-library/-/node-core-library-3.59.0.tgz#f04db22575a242c30114b4723ba0580b6f2d8c85"
@@ -13071,40 +13064,6 @@ rollup@~2.78.0:
   integrity sha512-VeeCgtGi4P+o9hIg+xz4qQpRl6R401LWEXBmxYKOV4zlF82lyhgh2hTZnheFUbANE8l2A41F458iwj2vEYaXJg==
   optionalDependencies:
     fsevents "~2.3.2"
-
-rrdom@^2.0.0-alpha.11:
-  version "2.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/rrdom/-/rrdom-2.0.0-alpha.11.tgz#4f0ca9ecbf22afd317e759762a354350cd4d9986"
-  integrity sha512-U37m0t4jTz63wnVRcOQ5qFzSTrI5RdNgeXnHAha2Fmh9+1K+XuCx421a8D1wZk3WcDc2sFz/04FVdM0OD2caHg==
-  dependencies:
-    rrweb-snapshot "^2.0.0-alpha.11"
-
-rrweb-player@^2.0.0-alpha.11:
-  version "2.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/rrweb-player/-/rrweb-player-2.0.0-alpha.11.tgz#fa3676b81253c7d09147c5a32c05b1efa1b14d4b"
-  integrity sha512-l4PV5RvZ31TqbT3BhgNFmYgI7863xHlqqI+eItXnHmsmwc4JMBig0sq7/JnH8Z7tTnd6lJUgU2lZ8YfY29sKaw==
-  dependencies:
-    "@tsconfig/svelte" "^1.0.0"
-    rrweb "^2.0.0-alpha.11"
-
-rrweb-snapshot@^2.0.0-alpha.11:
-  version "2.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.11.tgz#5ce031181ac1ac182ce6706369f77824e2bea17a"
-  integrity sha512-N0dzeJA2VhrlSOadkKwCVmV/DuNOwBH+Lhx89hAf9PQK4lCS8AP4AaylhqUdZOYHqwVjqsYel/uZ4hN79vuLhw==
-
-rrweb@^2.0.0-alpha.11:
-  version "2.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-2.0.0-alpha.11.tgz#1f8a1944e20fd5f3ddc11634a25df2f3832914d7"
-  integrity sha512-vJ2gNvF+pUG9C2aaau7iSNqhWBSc4BwtUO4FpegOtDObuH4PIaxNJOlgHz82+WxKr9XPm93ER0LqmNpy0KYdKg==
-  dependencies:
-    "@rrweb/types" "^2.0.0-alpha.11"
-    "@types/css-font-loading-module" "0.0.7"
-    "@xstate/fsm" "^1.4.0"
-    base64-arraybuffer "^1.0.1"
-    fflate "^0.4.4"
-    mitt "^3.0.0"
-    rrdom "^2.0.0-alpha.11"
-    rrweb-snapshot "^2.0.0-alpha.11"
 
 run-async@^2.4.0:
   version "2.4.1"

@@ -1,6 +1,9 @@
-import type { Mirror } from 'rrweb-snapshot';
+import type { Mirror } from '@amplitude/rrweb-snapshot';
+import type {
+  ICrossOriginIframeMirror,
+  RecordPlugin,
+} from '@amplitude/rrweb-types';
 import SimplePeer from 'simple-peer-light';
-import type { RecordPlugin, ICrossOriginIframeMirror } from '@rrweb/types';
 import type { WebRTCDataChannel } from '../types';
 
 export const PLUGIN_NAME = 'rrweb/canvas-webrtc@1';

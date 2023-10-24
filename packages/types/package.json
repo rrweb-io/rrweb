@@ -25,13 +25,13 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/types.umd.cjs",
-  "module": "./dist/types.js",
+  "main": "./dist/rrweb-types.umd.cjs",
+  "module": "./dist/rrweb-types.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/types.js",
-      "require": "./dist/types.umd.cjs"
+      "import": "./dist/rrweb-types.js",
+      "require": "./dist/rrweb-types.umd.cjs"
     }
   },
   "files": [
@@ -43,7 +43,7 @@
     "vite-plugin-dts": "^1.7.3"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.11"
+    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.11"
   },
   "browserslist": [
     "supports es6-class"

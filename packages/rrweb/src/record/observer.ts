@@ -1,54 +1,54 @@
 import {
   MaskInputOptions,
-  maskInputValue,
   Mirror,
   getInputType,
+  maskInputValue,
   toLowerCase,
-} from 'rrweb-snapshot';
-import type { FontFaceSet } from 'css-font-loading-module';
+} from '@amplitude/rrweb-snapshot';
 import {
-  throttle,
-  on,
-  hookSetter,
-  getWindowScroll,
-  getWindowHeight,
-  getWindowWidth,
-  isBlocked,
-  legacy_isTouchEvent,
-  patch,
-  StyleSheetMirror,
-  nowTimestamp,
-} from '../utils';
-import type { observerParam, MutationBufferParam } from '../types';
-import {
-  mutationCallBack,
-  mousemoveCallBack,
-  mousePosition,
-  mouseInteractionCallBack,
+  Arguments,
+  IWindow,
+  IncrementalSource,
+  MediaInteractions,
   MouseInteractions,
   PointerTypes,
-  listenerHandler,
-  scrollCallback,
-  styleSheetRuleCallback,
-  viewportResizeCallback,
-  inputValue,
-  inputCallback,
-  hookResetter,
-  IncrementalSource,
-  hooksParam,
-  Arguments,
-  mediaInteractionCallback,
-  MediaInteractions,
+  SelectionRange,
   canvasMutationCallback,
   fontCallback,
   fontParam,
-  styleDeclarationCallback,
-  IWindow,
-  SelectionRange,
+  hookResetter,
+  hooksParam,
+  inputCallback,
+  inputValue,
+  listenerHandler,
+  mediaInteractionCallback,
+  mouseInteractionCallBack,
+  mousePosition,
+  mousemoveCallBack,
+  mutationCallBack,
+  scrollCallback,
   selectionCallback,
-} from '@rrweb/types';
-import MutationBuffer from './mutation';
+  styleDeclarationCallback,
+  styleSheetRuleCallback,
+  viewportResizeCallback,
+} from '@amplitude/rrweb-types';
+import type { FontFaceSet } from 'css-font-loading-module';
+import type { MutationBufferParam, observerParam } from '../types';
+import {
+  StyleSheetMirror,
+  getWindowHeight,
+  getWindowScroll,
+  getWindowWidth,
+  hookSetter,
+  isBlocked,
+  legacy_isTouchEvent,
+  nowTimestamp,
+  on,
+  patch,
+  throttle,
+} from '../utils';
 import { callbackWrapper } from './error-handler';
+import MutationBuffer from './mutation';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;

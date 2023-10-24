@@ -1,20 +1,20 @@
+import { NodeType, visitSnapshot } from '@amplitude/rrweb-snapshot';
+import { EventType, RecordPlugin, eventWithTime } from '@amplitude/rrweb-types';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import type { recordOptions } from '../src/types';
 import {
+  ISuite,
   assertSnapshot,
-  startServer,
+  generateRecordSnippet,
   getServerURL,
   launchPuppeteer,
-  waitForRAF,
-  waitForIFrameLoad,
   replaceLast,
-  generateRecordSnippet,
-  ISuite,
+  startServer,
+  waitForIFrameLoad,
+  waitForRAF,
 } from './utils';
-import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   jest.setTimeout(10_000);

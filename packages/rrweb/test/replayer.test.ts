@@ -1,28 +1,28 @@
+import { ReplayerEvents } from '@amplitude/rrweb-types';
+import 'construct-style-sheets-polyfill';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import 'construct-style-sheets-polyfill';
+import adoptedStyleSheet from './events/adopted-style-sheet';
+import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
+import canvasInIframe from './events/canvas-in-iframe';
+import documentReplacementEvents from './events/document-replacement';
+import iframeEvents from './events/iframe';
+import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
+import inputEvents from './events/input';
+import orderingEvents from './events/ordering';
+import scrollEvents from './events/scroll';
+import selectionEvents from './events/selection';
+import shadowDomEvents from './events/shadow-dom';
+import styleSheetRuleEvents from './events/style-sheet-rule-events';
+import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import {
   assertDomSnapshot,
-  launchPuppeteer,
   sampleEvents as events,
+  launchPuppeteer,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
   waitForRAF,
 } from './utils';
-import styleSheetRuleEvents from './events/style-sheet-rule-events';
-import orderingEvents from './events/ordering';
-import scrollEvents from './events/scroll';
-import inputEvents from './events/input';
-import iframeEvents from './events/iframe';
-import selectionEvents from './events/selection';
-import shadowDomEvents from './events/shadow-dom';
-import StyleSheetTextMutation from './events/style-sheet-text-mutation';
-import canvasInIframe from './events/canvas-in-iframe';
-import adoptedStyleSheet from './events/adopted-style-sheet';
-import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
-import documentReplacementEvents from './events/document-replacement';
-import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
-import { ReplayerEvents } from '@rrweb/types';
 
 interface ISuite {
   code: string;

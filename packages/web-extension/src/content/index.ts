@@ -1,19 +1,19 @@
-import Browser, { Storage } from 'webextension-polyfill';
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import { nanoid } from 'nanoid';
-import type { eventWithTime } from '@rrweb/types';
+import Browser, { Storage } from 'webextension-polyfill';
 import {
+  EmitEventMessage,
   LocalData,
   LocalDataKey,
+  MessageName,
+  RecordStartedMessage,
+  RecordStoppedMessage,
   RecorderStatus,
   ServiceName,
   Session,
-  RecordStartedMessage,
-  RecordStoppedMessage,
-  MessageName,
-  EmitEventMessage,
 } from '~/types';
-import Channel from '~/utils/channel';
 import { isInCrossOriginIFrame } from '~/utils';
+import Channel from '~/utils/channel';
 
 const channel = new Channel();
 

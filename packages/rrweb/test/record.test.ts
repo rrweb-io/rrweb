@@ -1,16 +1,17 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import type * as puppeteer from 'puppeteer';
-import 'construct-style-sheets-polyfill';
-import type { recordOptions } from '../src/types';
 import {
-  listenerHandler,
-  eventWithTime,
   EventType,
   IncrementalSource,
-  styleSheetRuleData,
+  eventWithTime,
+  listenerHandler,
   selectionData,
-} from '@rrweb/types';
+  styleSheetRuleData,
+} from '@amplitude/rrweb-types';
+import 'construct-style-sheets-polyfill';
+import * as fs from 'fs';
+import type { Server } from 'http';
+import * as path from 'path';
+import type * as puppeteer from 'puppeteer';
+import type { recordOptions } from '../src/types';
 import {
   assertSnapshot,
   getServerURL,
@@ -18,7 +19,6 @@ import {
   startServer,
   waitForRAF,
 } from './utils';
-import type { Server } from 'http';
 
 interface ISuite {
   code: string;

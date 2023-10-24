@@ -1,4 +1,4 @@
-import { IncrementalSource, MouseInteractions } from '@rrweb/types';
+import { IncrementalSource, MouseInteractions } from '@amplitude/rrweb-types';
 import type { eventWithTime } from '../../../types/src';
 
 const events: eventWithTime[] = [

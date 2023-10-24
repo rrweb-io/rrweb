@@ -1,14 +1,18 @@
+import {
+  EventType,
+  eventWithTime,
+  listenerHandler,
+} from '@amplitude/rrweb-types';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import type { recordOptions } from '../../src/types';
-import { listenerHandler, eventWithTime, EventType } from '@rrweb/types';
-import { launchPuppeteer } from '../utils';
 import {
   callbackWrapper,
   registerErrorHandler,
   unregisterErrorHandler,
 } from '../../src/record/error-handler';
+import type { recordOptions } from '../../src/types';
+import { launchPuppeteer } from '../utils';
 
 interface ISuite {
   code: string;

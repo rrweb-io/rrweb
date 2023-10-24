@@ -1,38 +1,38 @@
 /**
  * @jest-environment jsdom
  */
+import { Replayer } from '@amplitude/rrweb';
+import {
+  Mirror as NodeMirror,
+  NodeType as RRNodeType,
+  createMirror,
+  serializedNodeWithId,
+} from '@amplitude/rrweb-snapshot';
+import type {
+  canvasMutationData,
+  eventWithTime,
+  styleDeclarationData,
+  styleSheetRuleData,
+} from '@amplitude/rrweb-types';
+import { EventType, IncrementalSource } from '@amplitude/rrweb-types';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import {
-  NodeType as RRNodeType,
-  serializedNodeWithId,
-  createMirror,
-  Mirror as NodeMirror,
-} from 'rrweb-snapshot';
-import {
-  buildFromDom,
-  getDefaultSN,
-  Mirror as RRNodeMirror,
   RRDocument,
   RRMediaElement,
+  Mirror as RRNodeMirror,
+  buildFromDom,
+  getDefaultSN,
   printRRDom,
 } from '../src';
 import {
+  ReplayerHandler,
   createOrGetNode,
   diff,
-  ReplayerHandler,
   nodeMatching,
   sameNodeType,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
-import { Replayer } from 'rrweb';
-import type {
-  eventWithTime,
-  canvasMutationData,
-  styleDeclarationData,
-  styleSheetRuleData,
-} from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
 import { compileTSCode } from './utils';
 
 const elementSn = {

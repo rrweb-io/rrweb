@@ -1,21 +1,21 @@
+import type { ICanvas } from '@amplitude/rrweb-snapshot';
+import {
+  CanvasContext,
+  EventType,
+  IncrementalSource,
+  eventWithTime,
+  listenerHandler,
+} from '@amplitude/rrweb-types';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import type { recordOptions } from '../../src/types';
-import {
-  listenerHandler,
-  eventWithTime,
-  EventType,
-  IncrementalSource,
-  CanvasContext,
-} from '@rrweb/types';
 import {
   assertSnapshot,
   launchPuppeteer,
   stripBase64,
   waitForRAF,
 } from '../utils';
-import type { ICanvas } from 'rrweb-snapshot';
 
 interface ISuite {
   code: string;

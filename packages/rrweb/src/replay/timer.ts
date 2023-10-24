@@ -1,9 +1,9 @@
 import {
-  actionWithDelay,
-  eventWithTime,
   EventType,
   IncrementalSource,
-} from '@rrweb/types';
+  actionWithDelay,
+  eventWithTime,
+} from '@amplitude/rrweb-types';
 
 export class Timer {
   public timeOffset = 0;

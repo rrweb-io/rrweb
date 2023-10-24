@@ -1,11 +1,10 @@
-import type { Mirror } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
   canvasManagerMutationCallback,
   IWindow,
   listenerHandler,
-} from '@rrweb/types';
+} from '@amplitude/rrweb-types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { serializeArgs } from './serialize-args';
 

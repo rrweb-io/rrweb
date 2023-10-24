@@ -1,5 +1,5 @@
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import Browser from 'webextension-polyfill';
-import type { eventWithTime } from '@rrweb/types';
 
 import {
   LocalData,
@@ -9,8 +9,8 @@ import {
   RecordStoppedMessage,
   ServiceName,
 } from '~/types';
-import type Channel from './channel';
 import { isFirefox } from '.';
+import type Channel from './channel';
 
 /**
  * Some commonly used functions for session recording.

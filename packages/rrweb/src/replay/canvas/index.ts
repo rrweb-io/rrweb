@@ -1,12 +1,12 @@
-import type { Replayer } from '..';
 import {
   CanvasContext,
   canvasMutationCommand,
   canvasMutationData,
   canvasMutationParam,
-} from '@rrweb/types';
-import webglMutation from './webgl';
+} from '@amplitude/rrweb-types';
+import type { Replayer } from '..';
 import canvas2DMutation from './2d';
+import webglMutation from './webgl';
 
 export default async function canvasMutation({
   event,

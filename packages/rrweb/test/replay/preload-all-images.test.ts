@@ -4,14 +4,14 @@
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
-import { Replayer } from '../../src/replay';
 import {
-  CanvasContext,
   CanvasArg,
-  IncrementalSource,
+  CanvasContext,
   EventType,
+  IncrementalSource,
   eventWithTime,
-} from '@rrweb/types';
+} from '@amplitude/rrweb-types';
+import { Replayer } from '../../src/replay';
 
 let replayer: Replayer;
 

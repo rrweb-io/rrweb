@@ -1,22 +1,21 @@
+import type {
+  IMirror,
+  Mirror as NodeMirror,
+  serializedNodeWithId,
+} from '@amplitude/rrweb-snapshot';
 import {
   NodeType as RRNodeType,
   createMirror as createNodeMirror,
-} from 'rrweb-snapshot';
+} from '@amplitude/rrweb-snapshot';
 import type {
-  Mirror as NodeMirror,
-  IMirror,
-  serializedNodeWithId,
-} from 'rrweb-snapshot';
-import type {
-  canvasMutationData,
   canvasEventWithTime,
+  canvasMutationData,
   inputData,
   scrollData,
-  styleSheetRuleData,
   styleDeclarationData,
-} from '@rrweb/types';
+  styleSheetRuleData,
+} from '@amplitude/rrweb-types';
 import {
-  BaseRRNode as RRNode,
   BaseRRCDATASectionImpl,
   BaseRRCommentImpl,
   BaseRRDocumentImpl,
@@ -24,13 +23,14 @@ import {
   BaseRRElementImpl,
   BaseRRMediaElementImpl,
   BaseRRTextImpl,
+  IRRComment,
   IRRDocument,
+  IRRDocumentType,
   IRRElement,
   IRRNode,
-  NodeType,
-  IRRDocumentType,
   IRRText,
-  IRRComment,
+  NodeType,
+  BaseRRNode as RRNode,
 } from './document';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
@@ -198,7 +198,7 @@ type RRElementType<K extends keyof HTMLElementTagNameMap> =
   K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
 
 function getValidTagName(element: HTMLElement): string {
-  // https://github.com/rrweb-io/rrweb-snapshot/issues/56
+  // https://github.com/rrweb-io/@amplitude/rrweb-snapshot/issues/56
   if (element instanceof HTMLFormElement) {
     return 'FORM';
   }
@@ -338,7 +338,7 @@ export function createMirror(): Mirror {
   return new Mirror();
 }
 
-// based on Mirror from rrweb-snapshots
+// based on Mirror from @amplitude/rrweb-snapshots
 export class Mirror implements IMirror<RRNode> {
   private idNodeMap: Map<number, RRNode> = new Map();
   private nodeMetaMap: WeakMap<RRNode, serializedNodeWithId> = new WeakMap();
@@ -483,5 +483,5 @@ function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
 
 export { RRNode };
 
-export { diff, createOrGetNode, ReplayerHandler } from './diff';
+export { ReplayerHandler, createOrGetNode, diff } from './diff';
 export * from './document';

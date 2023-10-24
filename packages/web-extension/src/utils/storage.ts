@@ -1,5 +1,5 @@
+import { eventWithTime } from '@amplitude/rrweb-types';
 import { openDB } from 'idb';
-import { eventWithTime } from '@rrweb/types';
 import { Session } from '~/types';
 
 /**

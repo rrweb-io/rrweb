@@ -1,17 +1,17 @@
-import type { MutationBufferParam } from '../types';
+import type { Mirror } from '@amplitude/rrweb-snapshot';
+import { isNativeShadowDom } from '@amplitude/rrweb-snapshot';
 import type {
+  SamplingStrategy,
   mutationCallBack,
   scrollCallback,
-  SamplingStrategy,
-} from '@rrweb/types';
+} from '@amplitude/rrweb-types';
+import type { MutationBufferParam } from '../types';
+import { inDom, patch } from '../utils';
 import {
+  initAdoptedStyleSheetObserver,
   initMutationObserver,
   initScrollObserver,
-  initAdoptedStyleSheetObserver,
 } from './observer';
-import { patch, inDom } from '../utils';
-import type { Mirror } from 'rrweb-snapshot';
-import { isNativeShadowDom } from 'rrweb-snapshot';
 
 type BypassOptions = Omit<
   MutationBufferParam,

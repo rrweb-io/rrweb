@@ -1,6 +1,5 @@
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import Browser from 'webextension-polyfill';
-import type { eventWithTime } from '@rrweb/types';
-import Channel from '~/utils/channel';
 import {
   LocalData,
   LocalDataKey,
@@ -9,6 +8,7 @@ import {
   SyncData,
   SyncDataKey,
 } from '~/types';
+import Channel from '~/utils/channel';
 import { pauseRecording, resumeRecording } from '~/utils/recording';
 
 const channel = new Channel();

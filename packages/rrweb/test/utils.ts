@@ -1,21 +1,21 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType } from '@amplitude/rrweb-snapshot';
 import {
   EventType,
   IncrementalSource,
-  eventWithTime,
   MouseInteractions,
   Optional,
-  mouseInteractionData,
   event,
+  eventWithTime,
+  mouseInteractionData,
   pluginEvent,
-} from '@rrweb/types';
-import type { recordOptions } from '../src/types';
-import * as puppeteer from 'puppeteer';
-import { format } from 'prettier';
-import * as path from 'path';
-import * as http from 'http';
-import * as url from 'url';
+} from '@amplitude/rrweb-types';
 import * as fs from 'fs';
+import * as http from 'http';
+import * as path from 'path';
+import { format } from 'prettier';
+import * as puppeteer from 'puppeteer';
+import * as url from 'url';
+import type { recordOptions } from '../src/types';
 
 export async function launchPuppeteer(
   options?: Parameters<(typeof puppeteer)['launch']>[0],

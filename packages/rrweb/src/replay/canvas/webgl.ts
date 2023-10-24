@@ -1,5 +1,5 @@
+import { CanvasContext, canvasMutationCommand } from '@amplitude/rrweb-types';
 import type { Replayer } from '../';
-import { CanvasContext, canvasMutationCommand } from '@rrweb/types';
 import { deserializeArg, variableListFor } from './deserialize-args';
 
 function getContext(

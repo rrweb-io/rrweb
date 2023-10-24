@@ -2,9 +2,9 @@
   "name": "@amplitude/rrweb-player",
   "version": "2.0.0-alpha.11",
   "devDependencies": {
+    "@amplitude/rrweb-types": "^2.0.0-alpha.11",
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@rrweb/types": "^2.0.0-alpha.11",
     "@types/offscreencanvas": "^2019.6.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "rrweb": "^2.0.0-alpha.11"
+    "@amplitude/rrweb": "^2.0.0-alpha.11"
   },
   "scripts": {
     "build": "rollup -c",

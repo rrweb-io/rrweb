@@ -1,21 +1,25 @@
-import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
 import type {
+  DataURLOptions,
+  ICanvas,
+  Mirror,
+} from '@amplitude/rrweb-snapshot';
+import type {
+  CanvasArg,
+  IWindow,
   blockClass,
   canvasManagerMutationCallback,
   canvasMutationCallback,
   canvasMutationCommand,
   canvasMutationWithType,
-  IWindow,
   listenerHandler,
-  CanvasArg,
-} from '@rrweb/types';
+} from '@amplitude/rrweb-types';
+import { CanvasContext } from '@amplitude/rrweb-types';
+import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import { isBlocked } from '../../../utils';
-import { CanvasContext } from '@rrweb/types';
+import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
-import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 

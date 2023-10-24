@@ -1,9 +1,9 @@
 import type {
-  serializedNodeWithId,
-  Mirror,
-  INode,
   DataURLOptions,
-} from 'rrweb-snapshot';
+  INode,
+  Mirror,
+  serializedNodeWithId,
+} from '@amplitude/rrweb-snapshot';
 
 export enum EventType {
   DomContentLoaded,

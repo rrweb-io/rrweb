@@ -1,18 +1,18 @@
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import * as fs from 'fs';
+import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import {
-  startServer,
-  launchPuppeteer,
-  getServerURL,
-  replaceLast,
-  waitForRAF,
-  generateRecordSnippet,
-  ISuite,
-} from '../utils';
 import type { recordOptions } from '../../src/types';
-import type { eventWithTime } from '@rrweb/types';
-import { toMatchImageSnapshot } from 'jest-image-snapshot';
+import {
+  ISuite,
+  generateRecordSnippet,
+  getServerURL,
+  launchPuppeteer,
+  replaceLast,
+  startServer,
+  waitForRAF,
+} from '../utils';
 expect.extend({ toMatchImageSnapshot });
 
 describe('e2e webgl', () => {

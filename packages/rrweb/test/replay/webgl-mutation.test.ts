@@ -5,9 +5,9 @@
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
-import webglMutation from '../../src/replay/canvas/webgl';
-import { CanvasContext } from '@rrweb/types';
+import { CanvasContext } from '@amplitude/rrweb-types';
 import { variableListFor } from '../../src/replay/canvas/deserialize-args';
+import webglMutation from '../../src/replay/canvas/webgl';
 
 let canvas: HTMLCanvasElement;
 describe('webglMutation', () => {

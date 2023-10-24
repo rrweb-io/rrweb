@@ -1,6 +1,6 @@
+import type { CanvasArg, SerializedCanvasArg } from '@amplitude/rrweb-types';
 import { decode } from 'base64-arraybuffer';
 import type { Replayer } from '../';
-import type { CanvasArg, SerializedCanvasArg } from '@rrweb/types';
 
 // TODO: add ability to wipe this list
 type GLVarMap = Map<string, any[]>;

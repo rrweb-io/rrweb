@@ -1,11 +1,11 @@
+import type { RRwebPlayerOptions } from '@amplitude/rrweb-player';
+import { EventType, eventWithTime } from '@amplitude/rrweb-types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium } from 'playwright';
-import { EventType, eventWithTime } from '@rrweb/types';
-import type { RRwebPlayerOptions } from 'rrweb-player';
 
 const rrwebScriptPath = path.resolve(
-  require.resolve('rrweb-player'),
+  require.resolve('@amplitude/rrweb-player'),
   '../../dist/index.js',
 );
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');

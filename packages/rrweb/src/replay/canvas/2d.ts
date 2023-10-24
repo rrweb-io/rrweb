@@ -1,5 +1,5 @@
+import type { canvasMutationCommand } from '@amplitude/rrweb-types';
 import type { Replayer } from '../';
-import type { canvasMutationCommand } from '@rrweb/types';
 import { deserializeArg } from './deserialize-args';
 
 export default async function canvasMutation({
