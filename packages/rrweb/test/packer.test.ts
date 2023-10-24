@@ -16,16 +16,14 @@ describe('pack', () => {
   it('can pack with default options', () => {
     const packedData = pack(event);
     const unpackedData = unpack(packedData);
-    expect(unpackedData)
-      .toEqual(expect.objectContaining(event));
+    expect(unpackedData).toEqual(expect.objectContaining(event));
   });
   it('can pack with different compression levels', () => {
     for (let i = 0; i <= 9; i++) {
       const packedData = pack(event, { level: i as any });
       const unpackedData = unpack(packedData);
-      expect(unpackedData)
-        .toEqual(expect.objectContaining(event));
-      }
+      expect(unpackedData).toEqual(expect.objectContaining(event));
+    }
   });
 });
 
