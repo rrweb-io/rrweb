@@ -440,6 +440,7 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
+    maskCurrentNode?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -458,6 +459,7 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
+    maskCurrentNode,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -504,6 +506,7 @@ function serializeNode(
         maskTextSelector,
         maskTextFn,
         rootId,
+        maskCurrentNode,
       });
     case n.CDATA_SECTION_NODE:
       return {
@@ -535,9 +538,16 @@ function serializeTextNode(
     maskTextSelector: string | null;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
+    maskCurrentNode?: boolean;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const {
+    maskTextClass,
+    maskTextSelector,
+    maskTextFn,
+    rootId,
+    maskCurrentNode,
+  } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -568,15 +578,18 @@ function serializeTextNode(
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
   }
-  if (
-    !isStyle &&
-    !isScript &&
-    textContent &&
-    needMaskingText(n, maskTextClass, maskTextSelector)
-  ) {
-    textContent = maskTextFn
-      ? maskTextFn(textContent, n.parentElement)
-      : textContent.replace(/[\S]/g, '*');
+  if (!isStyle && !isScript && textContent) {
+    let mask = false;
+    if (typeof maskCurrentNode === 'undefined') {
+      mask = needMaskingText(n, maskTextClass, maskTextSelector);
+    } else {
+      mask = maskCurrentNode;
+    }
+    if (mask) {
+      textContent = maskTextFn
+        ? maskTextFn(textContent, n.parentElement)
+        : textContent.replace(/[\S]/g, '*');
+    }
   }
 
   return {
@@ -946,6 +959,8 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
+    maskCurrentNode?: boolean;
+    maskedElements?: Element[];
   },
 ): serializedNodeWithId | null {
   const {
@@ -971,8 +986,12 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
+    maskedElements = [],
   } = options;
-  let { preserveWhiteSpace = true } = options;
+  let { preserveWhiteSpace = true, maskCurrentNode } = options;
+  if (maskCurrentNode === false) {
+    maskCurrentNode = maskedElements.includes(n as Element);
+  }
   const _serializedNode = serializeNode(n, {
     doc,
     mirror,
@@ -989,6 +1008,7 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
+    maskCurrentNode,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1068,6 +1088,8 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
+      maskCurrentNode,
+      maskedElements,
     };
     for (const childN of Array.from(n.childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
@@ -1128,6 +1150,8 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            maskCurrentNode,
+            maskedElements,
           });
 
           if (serializedIframeNode) {
@@ -1175,6 +1199,8 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            maskCurrentNode,
+            maskedElements,
           });
 
           if (serializedLinkNode) {
@@ -1288,6 +1314,23 @@ function snapshot(
       : slimDOM === false
       ? {}
       : slimDOM;
+  // Select elements to mask and pass the masking flag as an argument to a recursive function.
+  // This should help avoid expensive `closest` look-ups when deciding whether a text node should be masked.
+  // It makes sense to do this if maskTextClass is a string.
+  // If maskTextClass is a RegExp the procedure is more complex.
+  let maskCurrentNode: boolean | undefined;
+  let maskedElements: Element[] | undefined;
+  let isMaskTextClassString = typeof maskTextClass === 'string';
+  if (isMaskTextClassString) {
+    maskCurrentNode = false;
+    maskedElements = [];
+    const elements = n.querySelectorAll('.' + maskTextClass);
+    maskedElements = maskedElements.concat(Array.from(elements));
+    if (maskTextSelector) {
+      const elements = n.querySelectorAll(maskTextSelector);
+      maskedElements = maskedElements.concat(Array.from(elements));
+    }
+  }
   return serializeNodeWithId(n, {
     doc: n,
     mirror,
@@ -1312,6 +1355,8 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    maskCurrentNode,
+    maskedElements,
   });
 }
 
