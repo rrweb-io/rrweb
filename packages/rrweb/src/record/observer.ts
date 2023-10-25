@@ -478,9 +478,16 @@ function initInputObserver({
     if (type === 'radio' && name && isChecked) {
       doc
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
-        .forEach((el) => {
+        .forEach((el: HTMLInputElement) => {
           if (el !== target) {
-            const text = (el as HTMLInputElement).value;
+            const text = maskInputValue({
+              element: el,
+              maskInputOptions,
+              tagName,
+              type,
+              value: el.value,
+              maskInputFn,
+            });
             cbWithDedup(
               el,
               userTriggeredOnInput
