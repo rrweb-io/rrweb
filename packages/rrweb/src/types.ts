@@ -8,20 +8,11 @@ import type {
   MaskAttributeFn,
 } from '@sentry-internal/rrweb-snapshot';
 import type { PackFn, UnpackFn } from './packer/base';
-import type {
-  IframeManager,
-  IframeManagerInterface,
-} from './record/iframe-manager';
-import type {
-  ShadowDomManager,
-  ShadowDomManagerInterface,
-} from './record/shadow-dom-manager';
+import type { IframeManagerInterface } from './record/iframe-manager';
+import type { ShadowDomManagerInterface } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
 import type { RRNode } from '@sentry-internal/rrdom';
-import type {
-  CanvasManager,
-  CanvasManagerInterface,
-} from './record/observers/canvas/canvas-manager';
+import type { CanvasManagerInterface } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   addedNodeMutation,

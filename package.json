@@ -21,6 +21,8 @@
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.26.0",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.10.2",
+    "@size-limit/preset-small-lib": "~8.2.6",
+    "@size-limit/webpack": "~8.2.6",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "browserslist": "^4.21.4",
@@ -33,6 +35,7 @@
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
+    "size-limit": "~8.2.6",
     "turbo": "^1.2.4",
     "typescript": "^4.9.5"
   },
@@ -52,7 +55,8 @@
   },
   "resolutions": {
     "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
-    "**/@types/dom-webcodecs": "0.1.5"
+    "**/@types/dom-webcodecs": "0.1.5",
+    "**/@types/estree": "^1.0.0"
   },
   "browserslist": [
     "defaults",

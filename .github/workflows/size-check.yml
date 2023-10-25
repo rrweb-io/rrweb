@@ -1,0 +1,38 @@
+name: Size Check
+
+on:
+  push:
+    branches:
+      - master
+      - release/**
+  pull_request:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  job_size_check:
+    name: Size Check
+    timeout-minutes: 15
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build Project
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+      - name: Check bundle sizes
+        uses: getsentry/size-limit-action@runForBranch
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_step: build
+          main_branch: sentry-v2
+        
