@@ -53,10 +53,9 @@ import {
 } from './error-handler';
 
 function wrapEvent(e: event): eventWithTime {
-  return {
-    ...e,
-    timestamp: nowTimestamp(),
-  };
+  const eWithTime = e as eventWithTime;
+  eWithTime.timestamp = nowTimestamp();
+  return eWithTime;
 }
 
 declare global {
