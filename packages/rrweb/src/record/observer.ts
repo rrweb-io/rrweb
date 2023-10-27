@@ -1440,12 +1440,7 @@ export function initObservers(
   const customElementObserver = initCustomElementObserver(o);
 
   // plugins
-  const pluginHandlers: listenerHandler[] = [];
-  for (const plugin of o.plugins) {
-    pluginHandlers.push(
-      plugin.observer(plugin.callback, currentWindow, plugin.options),
-    );
-  }
+  // we ignore plugins here, as we don't have any
 
   return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
@@ -1462,7 +1457,6 @@ export function initObservers(
     fontObserver();
     selectionObserver();
     customElementObserver();
-    pluginHandlers.forEach((h) => h());
   });
 }
 

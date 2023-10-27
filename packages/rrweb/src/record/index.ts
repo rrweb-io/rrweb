@@ -109,7 +109,6 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
-    plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
@@ -197,11 +196,7 @@ function record<T = eventWithTime>(
   let incrementalSnapshotCount = 0;
 
   const eventProcessor = (e: eventWithTime): T => {
-    for (const plugin of plugins || []) {
-      if (plugin.eventProcessor) {
-        e = plugin.eventProcessor(e);
-      }
-    }
+    // We ignore plugins here, as we do not have any
     if (
       packFn &&
       // Disable packing events which will be emitted to parent frames.
@@ -322,16 +317,8 @@ function record<T = eventWithTime>(
 
   /**
    * Exposes mirror to the plugins
+   * We ignore plugins here, as we don't use any
    */
-  for (const plugin of plugins || []) {
-    if (plugin.getMirror)
-      plugin.getMirror({
-        nodeMirror: mirror,
-        crossOriginIframeMirror: iframeManager.crossOriginIframeMirror,
-        crossOriginIframeStyleMirror:
-          iframeManager.crossOriginIframeStyleMirror,
-      });
-  }
 
   const processedNodeManager = new ProcessedNodeManager();
 
@@ -612,23 +599,7 @@ function record<T = eventWithTime>(
           processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
-          plugins:
-            plugins
-              ?.filter((p) => p.observer)
-              ?.map((p) => ({
-                observer: p.observer!,
-                options: p.options,
-                callback: (payload: object) =>
-                  wrappedEmit(
-                    wrapEvent({
-                      type: EventType.Plugin,
-                      data: {
-                        plugin: p.name,
-                        payload,
-                      },
-                    }),
-                  ),
-              })) || [],
+          plugins: [],
         },
         hooks,
       );
