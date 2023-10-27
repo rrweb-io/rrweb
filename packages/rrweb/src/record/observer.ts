@@ -430,15 +430,6 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, win);
 }
 
-function wrapEventWithUserTriggeredFlag(
-  v: inputValue,
-  enable: boolean,
-): inputValue {
-  const value = { ...v };
-  if (!enable) delete value.userTriggered;
-  return value;
-}
-
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver({
@@ -527,10 +518,9 @@ function initInputObserver({
 
     cbWithDedup(
       target,
-      callbackWrapper(wrapEventWithUserTriggeredFlag)(
-        { text, isChecked, userTriggered },
-        userTriggeredOnInput,
-      ),
+      userTriggeredOnInput
+        ? { text, isChecked, userTriggered }
+        : { text, isChecked },
     );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
@@ -549,14 +539,9 @@ function initInputObserver({
             });
             cbWithDedup(
               el,
-              callbackWrapper(wrapEventWithUserTriggeredFlag)(
-                {
-                  text,
-                  isChecked: !isChecked,
-                  userTriggered: false,
-                },
-                userTriggeredOnInput,
-              ),
+              userTriggeredOnInput
+                ? { text, isChecked: !isChecked, userTriggered: false }
+                : { text, isChecked: !isChecked },
             );
           }
         });

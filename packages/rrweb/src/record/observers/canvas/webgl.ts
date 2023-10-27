@@ -60,7 +60,7 @@ function patchGLPrototype(
                 true,
               )
             ) {
-              const recordArgs = serializeArgs([...args], win, this);
+              const recordArgs = serializeArgs(args, win, this);
               const mutation: canvasMutationWithType = {
                 type,
                 property: prop,

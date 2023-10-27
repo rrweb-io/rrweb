@@ -133,7 +133,7 @@ export const serializeArgs = (
   win: IWindow,
   ctx: RenderingContext,
 ) => {
-  return [...args].map((arg) => serializeArg(arg, win, ctx));
+  return args.map((arg) => serializeArg(arg, win, ctx));
 };
 
 export const isInstanceOfWebGLObject = (
