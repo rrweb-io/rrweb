@@ -96,7 +96,6 @@ function record<T = eventWithTime>(
     maskAttributeFn,
     maskInputFn,
     maskTextFn,
-    hooks,
     packFn,
     sampling = {},
     dataURLOptions = {},
@@ -462,149 +461,146 @@ function record<T = eventWithTime>(
     const handlers: listenerHandler[] = [];
 
     const observe = (doc: Document) => {
-      return callbackWrapper(initObservers)(
-        {
-          onMutation,
-          mutationCb: wrappedMutationEmit,
-          mousemoveCb: (positions, source) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source,
-                  positions,
-                },
-              }),
-            ),
-          mouseInteractionCb: (d) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MouseInteraction,
-                  ...d,
-                },
-              }),
-            ),
-          scrollCb: wrappedScrollEmit,
-          viewportResizeCb: (d) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.ViewportResize,
-                  ...d,
-                },
-              }),
-            ),
-          inputCb: (v) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Input,
-                  ...v,
-                },
-              }),
-            ),
-          mediaInteractionCb: (p) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.MediaInteraction,
-                  ...p,
-                },
-              }),
-            ),
-          styleSheetRuleCb: (r) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.StyleSheetRule,
-                  ...r,
-                },
-              }),
-            ),
-          styleDeclarationCb: (r) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.StyleDeclaration,
-                  ...r,
-                },
-              }),
-            ),
-          canvasMutationCb: wrappedCanvasMutationEmit,
-          fontCb: (p) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Font,
-                  ...p,
-                },
-              }),
-            ),
-          selectionCb: (p) => {
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.Selection,
-                  ...p,
-                },
-              }),
-            );
-          },
-          customElementCb: (c) => {
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.CustomElement,
-                  ...c,
-                },
-              }),
-            );
-          },
-          blockClass,
-          ignoreClass,
-          ignoreSelector,
-          maskAllText,
-          maskTextClass,
-          unmaskTextClass,
-          maskTextSelector,
-          unmaskTextSelector,
-          maskInputOptions,
-          inlineStylesheet,
-          sampling,
-          recordCanvas,
-          inlineImages,
-          userTriggeredOnInput,
-          collectFonts,
-          doc,
-          maskAttributeFn,
-          maskInputFn,
-          maskTextFn,
-          keepIframeSrcFn,
-          blockSelector,
-          unblockSelector,
-          slimDOMOptions,
-          dataURLOptions,
-          mirror,
-          iframeManager,
-          stylesheetManager,
-          shadowDomManager,
-          processedNodeManager,
-          canvasManager,
-          ignoreCSSAttributes,
-          plugins: [],
+      return callbackWrapper(initObservers)({
+        onMutation,
+        mutationCb: wrappedMutationEmit,
+        mousemoveCb: (positions, source) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source,
+                positions,
+              },
+            }),
+          ),
+        mouseInteractionCb: (d) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MouseInteraction,
+                ...d,
+              },
+            }),
+          ),
+        scrollCb: wrappedScrollEmit,
+        viewportResizeCb: (d) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.ViewportResize,
+                ...d,
+              },
+            }),
+          ),
+        inputCb: (v) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Input,
+                ...v,
+              },
+            }),
+          ),
+        mediaInteractionCb: (p) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.MediaInteraction,
+                ...p,
+              },
+            }),
+          ),
+        styleSheetRuleCb: (r) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.StyleSheetRule,
+                ...r,
+              },
+            }),
+          ),
+        styleDeclarationCb: (r) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.StyleDeclaration,
+                ...r,
+              },
+            }),
+          ),
+        canvasMutationCb: wrappedCanvasMutationEmit,
+        fontCb: (p) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Font,
+                ...p,
+              },
+            }),
+          ),
+        selectionCb: (p) => {
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.Selection,
+                ...p,
+              },
+            }),
+          );
         },
-        hooks,
-      );
+        customElementCb: (c) => {
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.CustomElement,
+                ...c,
+              },
+            }),
+          );
+        },
+        blockClass,
+        ignoreClass,
+        ignoreSelector,
+        maskAllText,
+        maskTextClass,
+        unmaskTextClass,
+        maskTextSelector,
+        unmaskTextSelector,
+        maskInputOptions,
+        inlineStylesheet,
+        sampling,
+        recordCanvas,
+        inlineImages,
+        userTriggeredOnInput,
+        collectFonts,
+        doc,
+        maskAttributeFn,
+        maskInputFn,
+        maskTextFn,
+        keepIframeSrcFn,
+        blockSelector,
+        unblockSelector,
+        slimDOMOptions,
+        dataURLOptions,
+        mirror,
+        iframeManager,
+        stylesheetManager,
+        shadowDomManager,
+        processedNodeManager,
+        canvasManager,
+        ignoreCSSAttributes,
+        plugins: [],
+      });
     };
 
     iframeManager.addLoadListener((iframeEl) => {

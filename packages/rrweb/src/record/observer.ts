@@ -24,32 +24,17 @@ import {
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
-  mutationCallBack,
-  mousemoveCallBack,
   mousePosition,
-  mouseInteractionCallBack,
   MouseInteractions,
   PointerTypes,
   listenerHandler,
-  scrollCallback,
-  styleSheetRuleCallback,
-  viewportResizeCallback,
   inputValue,
-  inputCallback,
   hookResetter,
   IncrementalSource,
-  hooksParam,
-  Arguments,
-  mediaInteractionCallback,
   MediaInteractions,
-  canvasMutationCallback,
-  fontCallback,
   fontParam,
-  styleDeclarationCallback,
   IWindow,
   SelectionRange,
-  selectionCallback,
-  customElementCallback,
 } from '@sentry-internal/rrweb-types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
@@ -1293,106 +1278,7 @@ function initCustomElementObserver({
   return restoreHandler;
 }
 
-function mergeHooks(o: observerParam, hooks: hooksParam) {
-  const {
-    mutationCb,
-    mousemoveCb,
-    mouseInteractionCb,
-    scrollCb,
-    viewportResizeCb,
-    inputCb,
-    mediaInteractionCb,
-    styleSheetRuleCb,
-    styleDeclarationCb,
-    canvasMutationCb,
-    fontCb,
-    selectionCb,
-    customElementCb,
-  } = o;
-  o.mutationCb = (...p: Arguments<mutationCallBack>) => {
-    if (hooks.mutation) {
-      hooks.mutation(...p);
-    }
-    mutationCb(...p);
-  };
-  o.mousemoveCb = (...p: Arguments<mousemoveCallBack>) => {
-    if (hooks.mousemove) {
-      hooks.mousemove(...p);
-    }
-    mousemoveCb(...p);
-  };
-  o.mouseInteractionCb = (...p: Arguments<mouseInteractionCallBack>) => {
-    if (hooks.mouseInteraction) {
-      hooks.mouseInteraction(...p);
-    }
-    mouseInteractionCb(...p);
-  };
-  o.scrollCb = (...p: Arguments<scrollCallback>) => {
-    if (hooks.scroll) {
-      hooks.scroll(...p);
-    }
-    scrollCb(...p);
-  };
-  o.viewportResizeCb = (...p: Arguments<viewportResizeCallback>) => {
-    if (hooks.viewportResize) {
-      hooks.viewportResize(...p);
-    }
-    viewportResizeCb(...p);
-  };
-  o.inputCb = (...p: Arguments<inputCallback>) => {
-    if (hooks.input) {
-      hooks.input(...p);
-    }
-    inputCb(...p);
-  };
-  o.mediaInteractionCb = (...p: Arguments<mediaInteractionCallback>) => {
-    if (hooks.mediaInteaction) {
-      hooks.mediaInteaction(...p);
-    }
-    mediaInteractionCb(...p);
-  };
-  o.styleSheetRuleCb = (...p: Arguments<styleSheetRuleCallback>) => {
-    if (hooks.styleSheetRule) {
-      hooks.styleSheetRule(...p);
-    }
-    styleSheetRuleCb(...p);
-  };
-  o.styleDeclarationCb = (...p: Arguments<styleDeclarationCallback>) => {
-    if (hooks.styleDeclaration) {
-      hooks.styleDeclaration(...p);
-    }
-    styleDeclarationCb(...p);
-  };
-  o.canvasMutationCb = (...p: Arguments<canvasMutationCallback>) => {
-    if (hooks.canvasMutation) {
-      hooks.canvasMutation(...p);
-    }
-    canvasMutationCb(...p);
-  };
-  o.fontCb = (...p: Arguments<fontCallback>) => {
-    if (hooks.font) {
-      hooks.font(...p);
-    }
-    fontCb(...p);
-  };
-  o.selectionCb = (...p: Arguments<selectionCallback>) => {
-    if (hooks.selection) {
-      hooks.selection(...p);
-    }
-    selectionCb(...p);
-  };
-  o.customElementCb = (...c: Arguments<customElementCallback>) => {
-    if (hooks.customElement) {
-      hooks.customElement(...c);
-    }
-    customElementCb(...c);
-  };
-}
-
-export function initObservers(
-  o: observerParam,
-  hooks: hooksParam = {},
-): listenerHandler {
+export function initObservers(o: observerParam): listenerHandler {
   const currentWindow = o.doc.defaultView; // basically document.window
   if (!currentWindow) {
     return () => {
@@ -1400,7 +1286,7 @@ export function initObservers(
     };
   }
 
-  mergeHooks(o, hooks);
+  // We do not use hooks, so we skip this
   const mutationObserver = initMutationObserver(o, o.doc);
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
