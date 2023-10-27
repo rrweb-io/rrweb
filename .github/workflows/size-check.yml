@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - sentry-v2
       - release/**
   pull_request:
 
