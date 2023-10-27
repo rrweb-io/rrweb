@@ -29,12 +29,10 @@ interface ISuite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: ((
+    record: (
       options: recordOptions<eventWithTime>,
-    ) => listenerHandler | undefined) & {
-      takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
-    };
-
+    ) => listenerHandler | undefined;
+    takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     freezePage(): void;
     addCustomEvent<T>(tag: string, payload: T): void;
   };
@@ -611,7 +609,7 @@ describe('record', function (this: ISuite) {
 
         setTimeout(() => {
           // When a full snapshot is checked out manually, all adoptedStylesheets should also be captured.
-          rrweb.record.takeFullSnapshot(true);
+          rrweb.takeFullSnapshot(true);
           resolve(undefined);
         }, 10);
       });
