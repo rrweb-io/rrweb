@@ -15,6 +15,14 @@ From this monorepo, Sentry maintains and publishes the following NPM packages:
 - `@sentry-internal/rrweb-player` (corresponds to the [original `rrweb-player` package](https://www.npmjs.com/package/rrweb-player))
 - `@sentry-internal/rrweb-snapshot` (corresponds to the [original `rrweb-snapshot` package](https://www.npmjs.com/package/rrweb-snapshot))
 
+## Major changes from upstream branch
+
+Apart from some small fixes/changes in this fork, these are the main relevant changes compared to the upstream rrweb repository:
+
+- Removed `hooks` related code, so passing `hooks: myHooks` to `record()` will have no effect
+- Removed `plugins` related code, so passing `plugins: myPlugins` to `record()` will have no effect
+- Added build flags to allow to disable iframe, canvas & shadow dom recording (in order to get bundle size optimizations)
+
 # rrweb
 
 <p align="center">

@@ -35,6 +35,7 @@ import {
   fontParam,
   IWindow,
   SelectionRange,
+  hooksParam,
 } from '@sentry-internal/rrweb-types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
@@ -1278,7 +1279,10 @@ function initCustomElementObserver({
   return restoreHandler;
 }
 
-export function initObservers(o: observerParam): listenerHandler {
+export function initObservers(
+  o: observerParam,
+  _hooks: hooksParam = {},
+): listenerHandler {
   const currentWindow = o.doc.defaultView; // basically document.window
   if (!currentWindow) {
     return () => {
