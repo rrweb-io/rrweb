@@ -17,6 +17,7 @@ import {
 } from '../utils';
 import { unpack } from '../../src/packer/unpack';
 import type * as http from 'http';
+import type { CanvasManagerInterface } from '../../src/record/observers/canvas/canvas-manager';
 
 interface ISuite {
   code: string;
@@ -34,6 +35,7 @@ interface IWindow extends Window {
     ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
     pack: (e: eventWithTime) => string;
+    getCanvasManager: () => CanvasManagerInterface;
   };
   emit: (e: eventWithTime) => undefined;
   snapshots: eventWithTime[];
@@ -52,10 +54,12 @@ async function injectRecordScript(
   options = options || {};
   await frame.evaluate((options) => {
     (window as unknown as IWindow).snapshots = [];
-    const { record, pack } = (window as unknown as IWindow).rrweb;
+    const { record, pack, getCanvasManager } = (window as unknown as IWindow)
+      .rrweb;
     const config: recordOptions<eventWithTime> = {
       recordCrossOriginIframes: true,
       recordCanvas: true,
+      getCanvasManager,
       emit(event) {
         (window as unknown as IWindow).snapshots.push(event);
         (window as unknown as IWindow).emit(event);

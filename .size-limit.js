@@ -7,6 +7,12 @@ module.exports = [
     gzip: true
   },
   {
+    name: 'rrweb - record & getCanvasManager only (gzipped)',
+    path: 'packages/rrweb/es/rrweb/packages/rrweb/src/entries/all.js',
+    import: '{ record, getCanvasManager }',
+    gzip: true
+  },
+  {
     name: 'rrweb - record only (min)',
     path: 'packages/rrweb/es/rrweb/packages/rrweb/src/entries/all.js',
     import: '{ record }',
@@ -21,7 +27,6 @@ module.exports = [
       const webpack = require('webpack');
       config.plugins.push(
         new webpack.DefinePlugin({
-          __RRWEB_EXCLUDE_CANVAS__: true,
           __RRWEB_EXCLUDE_SHADOW_DOM__: true,
           __RRWEB_EXCLUDE_IFRAME__: true,
         }),

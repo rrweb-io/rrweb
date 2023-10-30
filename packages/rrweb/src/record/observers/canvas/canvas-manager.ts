@@ -36,6 +36,18 @@ export interface CanvasManagerInterface {
   unlock(): void;
 }
 
+export interface CanvasManagerConstructorOptions {
+  recordCanvas: boolean;
+  mutationCb: canvasMutationCallback;
+  win: IWindow;
+  blockClass: blockClass;
+  blockSelector: string | null;
+  unblockSelector: string | null;
+  mirror: Mirror;
+  sampling?: 'all' | number;
+  dataURLOptions: DataURLOptions;
+}
+
 export class CanvasManagerNoop implements CanvasManagerInterface {
   public reset() {
     // noop
@@ -85,17 +97,7 @@ export class CanvasManager implements CanvasManagerInterface {
     this.locked = false;
   }
 
-  constructor(options: {
-    recordCanvas: boolean;
-    mutationCb: canvasMutationCallback;
-    win: IWindow;
-    blockClass: blockClass;
-    blockSelector: string | null;
-    unblockSelector: string | null;
-    mirror: Mirror;
-    sampling?: 'all' | number;
-    dataURLOptions: DataURLOptions;
-  }) {
+  constructor(options: CanvasManagerConstructorOptions) {
     const {
       sampling = 'all',
       win,

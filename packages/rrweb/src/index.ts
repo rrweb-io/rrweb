@@ -1,4 +1,5 @@
 import record from './record';
+
 import { Replayer } from './replay';
 import * as utils from './utils';
 
@@ -20,4 +21,10 @@ export type { recordOptions } from './types';
 
 export { record, Replayer, utils };
 
-export { takeFullSnapshot, mirror, freezePage, addCustomEvent } from './record';
+export {
+  takeFullSnapshot,
+  mirror,
+  freezePage,
+  addCustomEvent,
+  getCanvasManager,
+} from './record';

@@ -12,7 +12,10 @@ import type { IframeManagerInterface } from './record/iframe-manager';
 import type { ShadowDomManagerInterface } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
 import type { RRNode } from '@sentry-internal/rrdom';
-import type { CanvasManagerInterface } from './record/observers/canvas/canvas-manager';
+import type {
+  CanvasManagerConstructorOptions,
+  CanvasManagerInterface,
+} from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   addedNodeMutation,
@@ -80,6 +83,12 @@ export type recordOptions<T> = {
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
   onMutation?: (mutations: MutationRecord[]) => boolean;
+  getCanvasManager?: (
+    options: Omit<
+      CanvasManagerConstructorOptions,
+      'mutationCb' | 'win' | 'mirror'
+    >,
+  ) => CanvasManagerInterface;
 };
 
 export type observerParam = {
