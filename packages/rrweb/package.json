@@ -1,6 +1,6 @@
 {
   "name": "@sentry-internal/rrweb",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "record and replay the web",
   "scripts": {
     "retest": "jest --testPathIgnorePatterns test/benchmark",
@@ -80,9 +80,9 @@
     "tslib": "^2.3.1"
   },
   "dependencies": {
-    "@sentry-internal/rrdom": "2.1.1",
-    "@sentry-internal/rrweb-snapshot": "2.1.1",
-    "@sentry-internal/rrweb-types": "2.1.1",
+    "@sentry-internal/rrdom": "2.2.0",
+    "@sentry-internal/rrweb-snapshot": "2.2.0",
+    "@sentry-internal/rrweb-types": "2.2.0",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
