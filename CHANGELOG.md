@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.2.0
+
+- feat: Export getCanvasManager & allow passing it to record() [#122](https://github.com/getsentry/rrweb/pull/122)
+- feat: Remove hooks related code, which is not used [#126](https://github.com/getsentry/rrweb/pull/126)
+- feat: Remove plugins related code, which is not used [#123](https://github.com/getsentry/rrweb/pull/123)
+- feat: Refactor module scope vars & export mirror & `takeFullSnapshot` directly [#113](https://github.com/getsentry/rrweb/pull/113)
+- fix(rrweb): Fix rule.style being undefined [#121](https://github.com/getsentry/rrweb/pull/121)
+- ref: Avoid unnecessary cloning of objects or arrays [#125](https://github.com/getsentry/rrweb/pull/125)
+- ref: Avoid cloning events to add timestamp [#124](https://github.com/getsentry/rrweb/pull/124)
+
+## 2.1.1
+
+- fix: dimensions not being applied [#117](https://github.com/getsentry/rrweb/pull/117)
+
 ## 2.1.0
 
 - feat: Add build flags to allow noop iframe/canvas/shadow dom managers [#114](https://github.com/getsentry/rrweb/pull/114)
