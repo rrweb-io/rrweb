@@ -8,6 +8,7 @@ export {
   IncrementalSource,
   MouseInteractions,
   ReplayerEvents,
+  type eventWithTime
 } from '@amplitude/rrweb-types';
 
 export type { recordOptions } from './types';
