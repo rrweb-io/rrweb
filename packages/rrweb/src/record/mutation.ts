@@ -284,16 +284,15 @@ export default class MutationBuffer {
       }
       return nextId;
     };
+    const getParentId = (n: Node): number | null => {
+      if (!n.parentNode) return null;
+      return isShadowRoot(n.parentNode)
+          ? this.mirror.getId(getShadowHost(n))
+          : this.mirror.getId(n.parentNode);
+    };
     const pushAdd = (n: Node) => {
       if (!n.parentNode || !inDom(n)) {
         return;
-      }
-      const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
-      const nextId = getNextId(n);
-      if (parentId === -1 || nextId === -1) {
-        return addList.addNode(n);
       }
       const sn = serializeNodeWithId(n, {
         doc: this.doc,
@@ -334,12 +333,18 @@ export default class MutationBuffer {
         },
       });
       if (sn) {
-        adds.push({
-          parentId,
-          nextId,
-          node: sn,
-        });
-        addedIds.add(sn.id);
+        const parentId = getParentId(n);
+        const nextId = getNextId(n);
+        if (parentId === -1 || nextId === -1) {
+          return addList.addNode(n);
+        } else if (parentId) {
+          adds.push({
+            parentId,
+            nextId,
+            node: sn,
+          });
+          addedIds.add(sn.id);
+        }
       }
     };
 
@@ -370,67 +375,22 @@ export default class MutationBuffer {
       }
     }
 
-    let candidate: DoubleLinkedListNode | null = null;
     while (addList.length) {
-      let node: DoubleLinkedListNode | null = null;
-      if (candidate) {
-        const parentId = this.mirror.getId(candidate.value.parentNode);
-        const nextId = getNextId(candidate.value);
-        if (parentId !== -1 && nextId !== -1) {
-          node = candidate;
+      const current = addList.head as DoubleLinkedListNode;
+      const addedNode = current.value;
+      const sn = this.mirror.getMeta(addedNode);
+      if (sn) {
+        const parentId = getParentId(addedNode);
+        if (parentId) {
+          adds.push({
+            parentId,
+            nextId: getNextId(addedNode),
+            node: sn
+          });
+          addedIds.add(sn.id);
         }
       }
-      if (!node) {
-        let tailNode = addList.tail;
-        while (tailNode) {
-          const _node = tailNode;
-          tailNode = tailNode.previous;
-          // ensure _node is defined before attempting to find value
-          if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
-            const nextId = getNextId(_node.value);
-
-            if (nextId === -1) continue;
-            // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
-              node = _node;
-              break;
-            }
-            // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
-            else {
-              const unhandledNode = _node.value;
-              // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-              if (
-                unhandledNode.parentNode &&
-                unhandledNode.parentNode.nodeType ===
-                  Node.DOCUMENT_FRAGMENT_NODE
-              ) {
-                const shadowHost = (unhandledNode.parentNode as ShadowRoot)
-                  .host;
-                const parentId = this.mirror.getId(shadowHost);
-                if (parentId !== -1) {
-                  node = _node;
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-      if (!node) {
-        /**
-         * If all nodes in queue could not find a serialized parent,
-         * it may be a bug or corner case. We need to escape the
-         * dead while loop at once.
-         */
-        while (addList.head) {
-          addList.removeNode(addList.head.value);
-        }
-        break;
-      }
-      candidate = node.previous;
-      addList.removeNode(node.value);
-      pushAdd(node.value);
+      addList.removeNode(addedNode);
     }
 
     const payload = {
