@@ -1,0 +1,21 @@
+<html>
+  <body></body>
+  <script>
+    function init() {
+      const count = 10000;
+      for (let i = 0; i < count; ++i) {
+        const div = document.createElement('div');
+        document.body.appendChild(div);
+      }
+    }
+
+    init();
+
+    window.workload = () => {
+      const divs = document.getElementsByTagName('div');
+      for (let div of divs) {
+        div.classList.add('foo');
+      }
+    };
+  </script>
+</html>
