@@ -1297,9 +1297,13 @@ export function initObservers(
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let styleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let adoptedStyleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let styleDeclarationObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let fontObserver = () => {};
   if (o.recordDOM) {
     styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
