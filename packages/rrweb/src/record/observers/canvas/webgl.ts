@@ -53,7 +53,7 @@ function patchGLPrototype(
               'tagName' in this.canvas &&
               !isBlocked(this.canvas, blockClass, blockSelector, true)
             ) {
-              const recordArgs = serializeArgs([...args], win, this);
+              const recordArgs = serializeArgs(args, win, this);
               const mutation: canvasMutationWithType = {
                 type,
                 property: prop,
