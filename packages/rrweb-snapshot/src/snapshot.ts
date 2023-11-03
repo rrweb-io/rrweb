@@ -285,31 +285,76 @@ export function _isBlockedElement(
   return false;
 }
 
+function elementClassMatchesRegex(el: HTMLElement, regex: RegExp): boolean {
+  for (let eIndex = el.classList.length; eIndex--; ) {
+    const className = el.classList[eIndex];
+    if (regex.test(className)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function classMatchesRegex(
   node: Node | null,
   regex: RegExp,
   checkAncestors: boolean,
 ): boolean {
   if (!node) return false;
-  if (node.nodeType !== node.ELEMENT_NODE) {
-    if (!checkAncestors) return false;
-    return classMatchesRegex(node.parentNode, regex, checkAncestors);
+  if (checkAncestors) {
+    return (
+      distanceToMatch(node, (node) =>
+        elementClassMatchesRegex(node as HTMLElement, regex),
+      ) >= 0
+    );
+  } else if (node.nodeType === node.ELEMENT_NODE) {
+    return elementClassMatchesRegex(node as HTMLElement, regex);
   }
+  return false;
+}
 
-  for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
-    const className = (node as HTMLElement).classList[eIndex];
-    if (regex.test(className)) {
-      return true;
+function distanceToMatch(
+  node: Node | null,
+  matchPredicate: (node: Node) => boolean,
+  limit = Infinity,
+  distance = 0,
+): number {
+  if (!node) return -1;
+  if (node.nodeType !== node.ELEMENT_NODE) return -1;
+  if (distance > limit) return -1;
+  if (matchPredicate(node)) return distance;
+  return distanceToMatch(node.parentNode, matchPredicate, limit, distance + 1);
+}
+
+function createMatchPredicate(
+  className: string | RegExp | null,
+  selector: string | null,
+): (node: Node) => boolean {
+  return (node: Node) => {
+    const el = node as HTMLElement;
+    if (el === null) return false;
+
+    if (className) {
+      if (typeof className === 'string') {
+        if (el.matches(`.${className}`)) return true;
+      } else if (elementClassMatchesRegex(el, className)) {
+        return true;
+      }
     }
-  }
-  if (!checkAncestors) return false;
-  return classMatchesRegex(node.parentNode, regex, checkAncestors);
+
+    if (selector && el.matches(selector)) return true;
+
+    return false;
+  };
 }
 
 export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  unmaskTextClass: string | RegExp | null,
+  unmaskTextSelector: string | null,
+  maskAllText: boolean,
 ): boolean {
   try {
     const el: HTMLElement | null =
@@ -318,21 +363,53 @@ export function needMaskingText(
         : node.parentElement;
     if (el === null) return false;
 
-    if (typeof maskTextClass === 'string') {
-      if (el.classList.contains(maskTextClass)) return true;
-      if (el.closest(`.${maskTextClass}`)) return true;
+    let maskDistance = -1;
+    let unmaskDistance = -1;
+
+    if (maskAllText) {
+      unmaskDistance = distanceToMatch(
+        el,
+        createMatchPredicate(unmaskTextClass, unmaskTextSelector),
+      );
+
+      if (unmaskDistance < 0) {
+        return true;
+      }
+
+      maskDistance = distanceToMatch(
+        el,
+        createMatchPredicate(maskTextClass, maskTextSelector),
+        unmaskDistance >= 0 ? unmaskDistance : Infinity,
+      );
     } else {
-      if (classMatchesRegex(el, maskTextClass, true)) return true;
+      maskDistance = distanceToMatch(
+        el,
+        createMatchPredicate(maskTextClass, maskTextSelector),
+      );
+
+      if (maskDistance < 0) {
+        return false;
+      }
+
+      unmaskDistance = distanceToMatch(
+        el,
+        createMatchPredicate(unmaskTextClass, unmaskTextSelector),
+        maskDistance >= 0 ? maskDistance : Infinity,
+      );
     }
 
-    if (maskTextSelector) {
-      if (el.matches(maskTextSelector)) return true;
-      if (el.closest(maskTextSelector)) return true;
-    }
+    return maskDistance >= 0
+      ? unmaskDistance >= 0
+        ? maskDistance <= unmaskDistance
+        : true
+      : unmaskDistance >= 0
+      ? false
+      : !!maskAllText;
   } catch (e) {
     //
   }
-  return false;
+
+  return !!maskAllText;
 }
 
 // https://stackoverflow.com/a/36155560
@@ -426,8 +503,11 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    maskAllText: boolean;
     maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp | null;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -447,8 +527,11 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
@@ -497,12 +580,22 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        maskAllText,
+        maskTextClass,
+        unmaskTextClass,
+        maskTextSelector,
+        unmaskTextSelector,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
+        maskAllText,
         maskTextClass,
+        unmaskTextClass,
         maskTextSelector,
+        unmaskTextSelector,
         maskTextFn,
+        maskInputOptions,
+        maskInputFn,
         rootId,
       });
     case n.CDATA_SECTION_NODE:
@@ -531,19 +624,35 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
+    maskAllText: boolean;
     maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp | null;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     maskTextFn: MaskTextFn | undefined;
+    maskInputOptions: MaskInputOptions;
+    maskInputFn: MaskInputFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const {
+    maskAllText,
+    maskTextClass,
+    unmaskTextClass,
+    maskTextSelector,
+    unmaskTextSelector,
+    maskTextFn,
+    maskInputOptions,
+    maskInputFn,
+    rootId,
+  } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
   let textContent = n.textContent;
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
+  const isTextarea = parentTagName === 'TEXTAREA' ? true : undefined;
   if (isStyle && textContent) {
     try {
       // try to read style sheet
@@ -572,10 +681,22 @@ function serializeTextNode(
     !isStyle &&
     !isScript &&
     textContent &&
-    needMaskingText(n, maskTextClass, maskTextSelector)
+    needMaskingText(
+      n,
+      maskTextClass,
+      maskTextSelector,
+      unmaskTextClass,
+      unmaskTextSelector,
+      maskAllText,
+    )
   ) {
     textContent = maskTextFn
       ? maskTextFn(textContent, n.parentElement)
+      : textContent.replace(/[\S]/g, '*');
+  }
+  if (isTextarea && textContent && maskInputOptions.textarea) {
+    textContent = maskInputFn
+      ? maskInputFn(textContent, n.parentNode as HTMLElement)
       : textContent.replace(/[\S]/g, '*');
   }
 
@@ -605,6 +726,11 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    maskAllText: boolean;
+    maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp | null;
+    maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
   },
 ): serializedNode | false {
   const {
@@ -620,6 +746,11 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    maskAllText,
+    maskTextClass,
+    unmaskTextClass,
+    maskTextSelector,
+    unmaskTextSelector,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
@@ -677,6 +808,15 @@ function serializeElementNode(
       value
     ) {
       const type = getInputType(n);
+      const forceMask = needMaskingText(
+        n,
+        maskTextClass,
+        maskTextSelector,
+        unmaskTextClass,
+        unmaskTextSelector,
+        maskAllText,
+      );
+
       attributes.value = maskInputValue({
         element: n,
         type,
@@ -684,6 +824,7 @@ function serializeElementNode(
         value,
         maskInputOptions,
         maskInputFn,
+        forceMask,
       });
     } else if (checked) {
       attributes.checked = checked;
@@ -922,11 +1063,14 @@ export function serializeNodeWithId(
     blockClass: string | RegExp;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
+    unmaskTextClass: string | RegExp | null;
     maskTextSelector: string | null;
+    unmaskTextSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
+    maskAllText: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
@@ -953,8 +1097,11 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     skipChild = false,
     inlineStylesheet = true,
     maskInputOptions = {},
@@ -978,8 +1125,11 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
@@ -1050,8 +1200,11 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
+      maskAllText,
       maskTextClass,
+      unmaskTextClass,
       maskTextSelector,
+      unmaskTextSelector,
       skipChild,
       inlineStylesheet,
       maskInputOptions,
@@ -1110,8 +1263,11 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            maskAllText,
             maskTextClass,
+            unmaskTextClass,
             maskTextSelector,
+            unmaskTextSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1157,8 +1313,11 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            maskAllText,
             maskTextClass,
+            unmaskTextClass,
             maskTextSelector,
+            unmaskTextSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1198,12 +1357,15 @@ function snapshot(
     mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
+    maskAllText?: boolean;
     maskTextClass?: string | RegExp;
+    unmaskTextClass?: string | RegExp | null;
     maskTextSelector?: string | null;
+    unmaskTextSelector?: string | null;
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
-    maskInputFn?: MaskTextFn;
+    maskInputFn?: MaskInputFn;
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
@@ -1227,8 +1389,11 @@ function snapshot(
     mirror = new Mirror(),
     blockClass = 'rr-block',
     blockSelector = null,
+    maskAllText = false,
     maskTextClass = 'rr-mask',
+    unmaskTextClass = null,
     maskTextSelector = null,
+    unmaskTextSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,
@@ -1293,8 +1458,11 @@ function snapshot(
     mirror,
     blockClass,
     blockSelector,
+    maskAllText,
     maskTextClass,
+    unmaskTextClass,
     maskTextSelector,
+    unmaskTextSelector,
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,

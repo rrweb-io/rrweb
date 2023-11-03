@@ -171,8 +171,11 @@ export default class MutationBuffer {
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
   private blockSelector: observerParam['blockSelector'];
+  private maskAllText: observerParam['maskAllText'];
   private maskTextClass: observerParam['maskTextClass'];
+  private unmaskTextClass: observerParam['unmaskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
+  private unmaskTextSelector: observerParam['unmaskTextSelector'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
@@ -196,8 +199,11 @@ export default class MutationBuffer {
         'mutationCb',
         'blockClass',
         'blockSelector',
+        'maskAllText',
         'maskTextClass',
+        'unmaskTextClass',
         'maskTextSelector',
+        'unmaskTextSelector',
         'inlineStylesheet',
         'maskInputOptions',
         'maskTextFn',
@@ -298,8 +304,11 @@ export default class MutationBuffer {
         mirror: this.mirror,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
+        maskAllText: this.maskAllText,
         maskTextClass: this.maskTextClass,
+        unmaskTextClass: this.unmaskTextClass,
         maskTextSelector: this.maskTextSelector,
+        unmaskTextSelector: this.unmaskTextSelector,
         skipChild: true,
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
@@ -520,6 +529,9 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
+                this.unmaskTextClass,
+                this.unmaskTextSelector,
+                this.maskAllText,
               ) && value
                 ? this.maskTextFn
                   ? this.maskTextFn(value, closestElementOfNode(m.target))
@@ -538,6 +550,15 @@ export default class MutationBuffer {
         if (attributeName === 'value') {
           const type = getInputType(target);
 
+          const forceMask = needMaskingText(
+            m.target,
+            this.maskTextClass,
+            this.maskTextSelector,
+            this.unmaskTextClass,
+            this.unmaskTextSelector,
+            this.maskAllText,
+          );
+
           value = maskInputValue({
             element: target,
             maskInputOptions: this.maskInputOptions,
@@ -545,6 +566,7 @@ export default class MutationBuffer {
             type,
             value,
             maskInputFn: this.maskInputFn,
+            forceMask,
           });
         }
         if (
