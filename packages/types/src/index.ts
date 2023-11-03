@@ -289,7 +289,7 @@ export type textMutation = {
   value: string | null;
 };
 
-export type styleAttributeValue = {
+export type styleOMValue = {
   [key: string]: styleValueWithPriority | string | false;
 };
 
@@ -298,13 +298,15 @@ export type styleValueWithPriority = [string, string];
 export type attributeCursor = {
   node: Node;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
+  styleDiff: styleOMValue;
+  _unchangedStyles: styleOMValue;
 };
 export type attributeMutation = {
   id: number;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
 };
 
@@ -368,6 +370,12 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum PointerTypes {
+  Mouse,
+  Pen,
+  Touch,
+}
+
 export enum CanvasContext {
   '2D',
   WebGL,
@@ -410,6 +418,7 @@ type mouseInteractionParam = {
   id: number;
   x: number;
   y: number;
+  pointerType?: PointerTypes;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;

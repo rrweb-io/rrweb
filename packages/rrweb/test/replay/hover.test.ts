@@ -65,7 +65,9 @@ describe('replayer', function () {
       await waitForRAF(page);
 
       const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+      expect(image).toMatchImageSnapshot({
+        failureThreshold: 40,
+      });
     });
   });
 });

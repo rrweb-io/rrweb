@@ -14,6 +14,7 @@ import {
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
+  nowTimestamp,
 } from '../utils';
 import type { recordOptions } from '../types';
 import {
@@ -42,7 +43,7 @@ import {
 function wrapEvent(e: event): eventWithTime {
   return {
     ...e,
-    timestamp: Date.now(),
+    timestamp: nowTimestamp(),
   };
 }
 
@@ -63,6 +64,7 @@ function record<T = eventWithTime>(
     blockClass = 'rr-block',
     blockSelector = null,
     ignoreClass = 'rr-ignore',
+    ignoreSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
@@ -76,6 +78,7 @@ function record<T = eventWithTime>(
     sampling = {},
     dataURLOptions = {},
     mousemoveWait,
+    recordDOM = true,
     recordCanvas = false,
     recordCrossOriginIframes = false,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
@@ -343,6 +346,9 @@ function record<T = eventWithTime>(
   });
 
   takeFullSnapshot = (isCheckout = false) => {
+    if (!recordDOM) {
+      return;
+    }
     wrappedEmit(
       wrapEvent({
         type: EventType.Meta,
@@ -532,11 +538,13 @@ function record<T = eventWithTime>(
           },
           blockClass,
           ignoreClass,
+          ignoreSelector,
           maskTextClass,
           maskTextSelector,
           maskInputOptions,
           inlineStylesheet,
           sampling,
+          recordDOM,
           recordCanvas,
           inlineImages,
           userTriggeredOnInput,

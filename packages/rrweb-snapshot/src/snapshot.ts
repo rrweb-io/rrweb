@@ -19,7 +19,9 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  getCssRulesString,
+  stringifyStylesheet,
+  getInputType,
+  toLowerCase,
 } from './utils';
 
 let _id = 1;
@@ -31,12 +33,12 @@ export function genId(): number {
   return _id++;
 }
 
-function getValidTagName(element: HTMLElement): string {
+function getValidTagName(element: HTMLElement): Lowercase<string> {
   if (element instanceof HTMLFormElement) {
     return 'form';
   }
 
-  const processedTagName = element.tagName.toLowerCase().trim();
+  const processedTagName = toLowerCase(element.tagName);
 
   if (tagNameRegex.test(processedTagName)) {
     // if the tag name is odd and we cannot extract
@@ -46,14 +48,6 @@ function getValidTagName(element: HTMLElement): string {
   }
 
   return processedTagName;
-}
-
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
-        .join('')
-    : '';
 }
 
 function extractOrigin(url: string): string {
@@ -221,8 +215,8 @@ function getHref() {
 
 export function transformAttribute(
   doc: Document,
-  tagName: string,
-  name: string,
+  tagName: Lowercase<string>,
+  name: Lowercase<string>,
   value: string | null,
 ): string | null {
   if (!value) {
@@ -268,20 +262,24 @@ export function _isBlockedElement(
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
-  if (typeof blockClass === 'string') {
-    if (element.classList.contains(blockClass)) {
-      return true;
-    }
-  } else {
-    for (let eIndex = element.classList.length; eIndex--; ) {
-      const className = element.classList[eIndex];
-      if (blockClass.test(className)) {
+  try {
+    if (typeof blockClass === 'string') {
+      if (element.classList.contains(blockClass)) {
         return true;
       }
+    } else {
+      for (let eIndex = element.classList.length; eIndex--; ) {
+        const className = element.classList[eIndex];
+        if (blockClass.test(className)) {
+          return true;
+        }
+      }
     }
-  }
-  if (blockSelector) {
-    return element.matches(blockSelector);
+    if (blockSelector) {
+      return element.matches(blockSelector);
+    }
+  } catch (e) {
+    //
   }
 
   return false;
@@ -313,22 +311,26 @@ export function needMaskingText(
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
-  const el: HTMLElement | null =
-    node.nodeType === node.ELEMENT_NODE
-      ? (node as HTMLElement)
-      : node.parentElement;
-  if (el === null) return false;
+  try {
+    const el: HTMLElement | null =
+      node.nodeType === node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
+    if (el === null) return false;
 
-  if (typeof maskTextClass === 'string') {
-    if (el.classList.contains(maskTextClass)) return true;
-    if (el.closest(`.${maskTextClass}`)) return true;
-  } else {
-    if (classMatchesRegex(el, maskTextClass, true)) return true;
-  }
+    if (typeof maskTextClass === 'string') {
+      if (el.classList.contains(maskTextClass)) return true;
+      if (el.closest(`.${maskTextClass}`)) return true;
+    } else {
+      if (classMatchesRegex(el, maskTextClass, true)) return true;
+    }
 
-  if (maskTextSelector) {
-    if (el.matches(maskTextSelector)) return true;
-    if (el.closest(maskTextSelector)) return true;
+    if (maskTextSelector) {
+      if (el.matches(maskTextSelector)) return true;
+      if (el.closest(maskTextSelector)) return true;
+    }
+  } catch (e) {
+    //
   }
   return false;
 }
@@ -551,7 +553,7 @@ function serializeTextNode(
         // to _only_ include the current rule(s) added by the text node.
         // So we'll be conservative and keep textContent as-is.
       } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStyleSheet(
+        textContent = stringifyStylesheet(
           (n.parentNode as HTMLStyleElement).sheet!,
         );
       }
@@ -573,7 +575,7 @@ function serializeTextNode(
     needMaskingText(n, maskTextClass, maskTextSelector)
   ) {
     textContent = maskTextFn
-      ? maskTextFn(textContent)
+      ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
   }
 
@@ -629,7 +631,7 @@ function serializeElementNode(
       attributes[attr.name] = transformAttribute(
         doc,
         tagName,
-        attr.name,
+        toLowerCase(attr.name),
         attr.value,
       );
     }
@@ -641,7 +643,7 @@ function serializeElementNode(
     });
     let cssText: string | null = null;
     if (stylesheet) {
-      cssText = getCssRulesString(stylesheet);
+      cssText = stringifyStylesheet(stylesheet);
     }
     if (cssText) {
       delete attributes.rel;
@@ -656,7 +658,7 @@ function serializeElementNode(
     // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
     !(n.innerText || n.textContent || '').trim().length
   ) {
-    const cssText = getCssRulesString(
+    const cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
@@ -674,12 +676,9 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
-      const type: string | null = n.hasAttribute('data-rr-is-password')
-        ? 'password'
-        : typeof attributes.type === 'string'
-        ? attributes.type.toLowerCase()
-        : null;
+      const type = getInputType(n);
       attributes.value = maskInputValue({
+        element: n,
         type,
         tagName,
         value,

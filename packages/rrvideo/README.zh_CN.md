@@ -2,11 +2,12 @@
 
 rrvideo 是用于将 [rrweb](https://github.com/rrweb-io/rrweb) 录制的数据转为视频格式的工具。
 
+![Demo Video](./demo/demo.gif)
+
 ## 安装 rrvideo
 
-1. 安装 [ffmpeg](https://ffmpeg.org/download.html)。
-2. 安装 [Node.JS](https://nodejs.org/en/download/)。
-3. 执行 `npm i -g rrvideo` 以安装 rrvideo CLI。
+1. 安装 [Node.JS](https://nodejs.org/en/download/)。
+2. 执行 `npm i -g rrvideo` 以安装 rrvideo CLI。
 
 ## 使用 rrvideo
 
@@ -16,7 +17,7 @@ rrvideo 是用于将 [rrweb](https://github.com/rrweb-io/rrweb) 录制的数据�
 rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_FILE
 ```
 
-运行以上命令会在执行文件夹中生成一个 `rrvideo-output.mp4` 文件。
+运行以上命令会在执行文件夹中生成一个 `rrvideo-output.webm` 文件。
 
 ### 指定输出路径
 

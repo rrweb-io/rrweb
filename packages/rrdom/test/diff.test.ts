@@ -15,6 +15,7 @@ import {
   Mirror as RRNodeMirror,
   RRDocument,
   RRMediaElement,
+  printRRDom,
 } from '../src';
 import {
   createOrGetNode,
@@ -106,6 +107,7 @@ function shuffle(list: number[]) {
 describe('diff algorithm for rrdom', () => {
   let mirror: NodeMirror;
   let replayer: ReplayerHandler;
+  let warn: jest.SpyInstance;
 
   beforeEach(() => {
     mirror = createMirror();
@@ -118,6 +120,14 @@ describe('diff algorithm for rrdom', () => {
       afterAppend: () => {},
     };
     document.write('<!DOCTYPE html><html><head></head><body></body></html>');
+    // Mock the original console.warn function to make the test fail once console.warn is called.
+    warn = jest.spyOn(console, 'warn');
+  });
+
+  afterEach(() => {
+    // Check that warn was not called (fail on warning)
+    expect(warn).not.toBeCalled();
+    warn.mockRestore();
   });
 
   describe('diff single node', () => {
@@ -436,6 +446,19 @@ describe('diff algorithm for rrdom', () => {
       diff(element, rrCanvas, replayer);
       expect(document.createElement).toHaveBeenCalledWith('img');
       jest.restoreAllMocks();
+    });
+
+    it('can omit srcdoc attribute of iframe element', () => {
+      // If srcdoc attribute is set, the content of iframe recorded by rrweb will be override.
+      const element = document.createElement('iframe');
+      const rrDocument = new RRDocument();
+      const rrIframe = rrDocument.createElement('iframe');
+      const sn = Object.assign({}, elementSn, { tagName: 'iframe' });
+      rrDocument.mirror.add(rrIframe, sn);
+      rrIframe.attributes['srcdoc'] = '<html></html>';
+
+      diff(element, rrIframe, replayer);
+      expect(element.getAttribute('srcdoc')).toBe(null);
     });
   });
 
@@ -1053,6 +1076,57 @@ describe('diff algorithm for rrdom', () => {
 
       const liChild = spanChild.childNodes[0] as HTMLElement;
       expect(liChild.tagName).toEqual('LI');
+    });
+
+    it('should handle corner case with children removed during diff process', () => {
+      /**
+       * This test case is to simulate the following scenario:
+       * The old tree structure:
+       * 0 P
+       *  1 SPAN
+       *  2 SPAN
+       * The new tree structure:
+       * 0 P
+       *  1 SPAN
+       *   2 SPAN
+       *  3 SPAN
+       */
+      const node = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [1, 2].map((c) => ({ tagName: 'span', id: c })),
+        },
+        undefined,
+        mirror,
+      ) as Node;
+      expect(node.childNodes.length).toEqual(2);
+      const rrdom = new RRDocument();
+      const rrNode = createTree(
+        {
+          tagName: 'p',
+          id: 0,
+          children: [
+            { tagName: 'span', id: 1, children: [{ tagName: 'span', id: 2 }] },
+            { tagName: 'span', id: 3 },
+          ],
+        },
+        rrdom,
+      ) as RRNode;
+      expect(printRRDom(rrNode, rrdom.mirror)).toMatchInlineSnapshot(`
+        "0 P 
+          1 SPAN 
+            2 SPAN 
+          3 SPAN 
+        "
+      `);
+      diff(node, rrNode, replayer);
+
+      expect(node.childNodes.length).toEqual(2);
+      expect(node.childNodes[0].childNodes.length).toEqual(1);
+      expect(mirror.getId(node.childNodes[1])).toEqual(3);
+      expect(node.childNodes[0].childNodes.length).toEqual(1);
+      expect(mirror.getId(node.childNodes[0].childNodes[0])).toEqual(2);
     });
   });
 

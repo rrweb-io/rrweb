@@ -114,6 +114,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      true,
     );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
     const worker =
@@ -198,9 +199,12 @@ export class CanvasManager {
             ) {
               // Hack to load canvas back into memory so `createImageBitmap` can grab it's contents.
               // Context: https://twitter.com/Juice10/status/1499775271758704643
-              // This hack might change the background color of the canvas in the unlikely event that
+              // Preferably we set `preserveDrawingBuffer` to true, but that's not always possible,
+              // especially when canvas is loaded before rrweb.
+              // This hack can wipe the background color of the canvas in the (unlikely) event that
               // the canvas background was changed but clear was not called directly afterwards.
-              context?.clear(context.COLOR_BUFFER_BIT);
+              // Example of this hack having negative side effect: https://visgl.github.io/react-map-gl/examples/layers
+              context.clear(context.COLOR_BUFFER_BIT);
             }
           }
           const bitmap = await createImageBitmap(canvas);
@@ -238,6 +242,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      false,
     );
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
