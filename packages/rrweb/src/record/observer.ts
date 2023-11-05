@@ -406,15 +406,6 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, win);
 }
 
-function wrapEventWithUserTriggeredFlag(
-  v: inputValue,
-  enable: boolean,
-): inputValue {
-  const value = { ...v };
-  if (!enable) delete value.userTriggered;
-  return value;
-}
-
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver({
@@ -478,10 +469,9 @@ function initInputObserver({
     }
     cbWithDedup(
       target,
-      callbackWrapper(wrapEventWithUserTriggeredFlag)(
-        { text, isChecked, userTriggered },
-        userTriggeredOnInput,
-      ),
+      userTriggeredOnInput
+        ? { text, isChecked, userTriggered }
+        : { text, isChecked },
     );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
@@ -491,16 +481,12 @@ function initInputObserver({
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
+            const text = (el as HTMLInputElement).value;
             cbWithDedup(
               el,
-              callbackWrapper(wrapEventWithUserTriggeredFlag)(
-                {
-                  text: (el as HTMLInputElement).value,
-                  isChecked: !isChecked,
-                  userTriggered: false,
-                },
-                userTriggeredOnInput,
-              ),
+              userTriggeredOnInput
+                ? { text, isChecked: !isChecked, userTriggered: false }
+                : { text, isChecked: !isChecked },
             );
           }
         });
@@ -1340,9 +1326,13 @@ export function initObservers(
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let styleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let adoptedStyleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let styleDeclarationObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let fontObserver = () => {};
   if (o.recordDOM) {
     styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
