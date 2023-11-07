@@ -1197,7 +1197,9 @@ function initCustomElementObserver({
               name,
             },
           });
-        } catch (e) {}
+        } catch (e) {
+          console.warn(`Custom element callback failed for ${name}`);
+        }
         return original.apply(this, [name, constructor, options]);
       };
     },
