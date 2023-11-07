@@ -1175,6 +1175,7 @@ function initCustomElementObserver({
   customElementCb,
 }: observerParam): listenerHandler {
   const win = doc.defaultView as IWindow;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   if (!win || !win.customElements) return () => {};
   const restoreHandler = patch(
     win.customElements,
