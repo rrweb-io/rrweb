@@ -46,6 +46,7 @@ import {
   IWindow,
   SelectionRange,
   selectionCallback,
+  customElementCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
@@ -1169,6 +1170,44 @@ function initSelectionObserver(param: observerParam): listenerHandler {
   return on('selectionchange', updateSelection);
 }
 
+function initCustomElementObserver({
+  doc,
+  customElementCb,
+}: observerParam): listenerHandler {
+  const win = doc.defaultView as IWindow;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  if (!win || !win.customElements) return () => {};
+  const restoreHandler = patch(
+    win.customElements,
+    'define',
+    function (
+      original: (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) => void,
+    ) {
+      return function (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) {
+        try {
+          customElementCb({
+            define: {
+              name,
+            },
+          });
+        } catch (e) {
+          console.warn(`Custom element callback failed for ${name}`);
+        }
+        return original.apply(this, [name, constructor, options]);
+      };
+    },
+  );
+  return restoreHandler;
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -1183,6 +1222,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     canvasMutationCb,
     fontCb,
     selectionCb,
+    customElementCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -1256,6 +1296,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     selectionCb(...p);
   };
+  o.customElementCb = (...c: Arguments<customElementCallback>) => {
+    if (hooks.customElement) {
+      hooks.customElement(...c);
+    }
+    customElementCb(...c);
+  };
 }
 
 export function initObservers(
@@ -1302,6 +1348,7 @@ export function initObservers(
     }
   }
   const selectionObserver = initSelectionObserver(o);
+  const customElementObserver = initCustomElementObserver(o);
 
   // plugins
   const pluginHandlers: listenerHandler[] = [];
@@ -1325,6 +1372,7 @@ export function initObservers(
     styleDeclarationObserver();
     fontObserver();
     selectionObserver();
+    customElementObserver();
     pluginHandlers.forEach((h) => h());
   });
 }

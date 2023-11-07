@@ -235,6 +235,7 @@ export class IframeManager {
         }
       }
     }
+    return false;
   }
 
   private replace<T extends Record<string, unknown>>(
