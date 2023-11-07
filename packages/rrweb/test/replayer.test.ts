@@ -23,6 +23,7 @@ import {
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
   waitForRAF,
 } from './utils';
+import customElementDefineClass from './events/custom-element-define-class';
 
 interface ISuite {
   code: string;
@@ -1075,5 +1076,20 @@ describe('replayer', function () {
         () => document.querySelector('span')?.className,
       ),
     ).toBe(':hover');
+  });
+
+  it('should replay styles with :define pseudo-class', async () => {
+    await page.evaluate(`events = ${JSON.stringify(customElementDefineClass)}`);
+
+    const displayValue = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(200);
+      const customElement = replayer.iframe.contentDocument.querySelector('custom-element');
+      window.getComputedStyle(customElement).display;
+    `);
+    // If the custom element is not defined, the display value will be 'none'.
+    // If the custom element is defined, the display value will be 'block'.
+    expect(displayValue).toEqual('block');
   });
 });

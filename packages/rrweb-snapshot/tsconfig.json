@@ -3,6 +3,7 @@
     "target": "ES6",
     "composite": true,
     "module": "ESNext",
+    "target": "ES6",
     "moduleResolution": "Node",
     "noImplicitAny": true,
     "strictNullChecks": true,
