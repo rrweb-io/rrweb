@@ -320,7 +320,6 @@ export function needMaskingText(
     if (el === null) return false;
     if (typeof maskTextClass === 'string') {
       if (checkAncestors) {
-        // we haven't already checked parents
         if (el.closest(`.${maskTextClass}`)) return true;
       } else {
         if (el.classList.contains(maskTextClass)) return true;
@@ -330,7 +329,6 @@ export function needMaskingText(
     }
     if (maskTextSelector) {
       if (checkAncestors) {
-        // we haven't already checked parents
         if (el.closest(maskTextSelector)) return true;
       } else {
         if (el.matches(maskTextSelector)) return true;
