@@ -66,8 +66,7 @@ import {
 } from '@rrweb/types';
 import {
   polyfill,
-  queueToResolveTrees,
-  iterateResolveTree,
+  ResolveTree,
   AppendedIframe,
   getBaseDimension,
   hasShadowRoot,
@@ -1448,7 +1447,6 @@ export class Replayer {
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
-    const queue: addedNodeMutation[] = [];
 
     // next not present at this moment
     const nextNotInDOM = (mutation: addedNodeMutation) => {
@@ -1468,7 +1466,37 @@ export class Replayer {
       return false;
     };
 
-    const appendNode = (mutation: addedNodeMutation) => {
+    const queue = new Set<ResolveTree>();
+    const idMap = new Map<number, ResolveTree>();
+
+    const getOrCreateNode = (nodeId: number) => {
+      let nodeInTree = idMap.get(nodeId);
+      if (!nodeInTree) {
+        nodeInTree = {
+          id: nodeId,
+          children: new Map<number | null, ResolveTree>(),
+          value: null,
+        };
+        idMap.set(nodeId, nodeInTree);
+      }
+      return nodeInTree;
+    };
+    const addToQueue = (mutation: addedNodeMutation) => {
+      const nodeInTree = getOrCreateNode(mutation.node.id);
+      nodeInTree.value = mutation;
+      const parentExists = idMap.has(mutation.parentId);
+      const parent = getOrCreateNode(mutation.parentId);
+      parent.children.set(mutation.nextId || null, nodeInTree);
+
+      if (queue.has(nodeInTree)) {
+        queue.delete(nodeInTree);
+      }
+      if (!queue.has(parent) && !parentExists) {
+        queue.add(parent);
+      }
+    };
+
+    const appendNode = (mutation: addedNodeMutation, allowQueue = true) => {
       if (!this.iframe.contentDocument) {
         return this.warn('Looks like your replayer has been destroyed.');
       }
@@ -1480,7 +1508,7 @@ export class Replayer {
           // is newly added document, maybe the document node of an iframe
           return this.newDocumentQueue.push(mutation);
         }
-        return queue.push(mutation);
+        return allowQueue ? addToQueue(mutation) : false
       }
 
       if (mutation.node.isShadow) {
@@ -1500,7 +1528,7 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId);
       }
       if (nextNotInDOM(mutation)) {
-        return queue.push(mutation);
+        return allowQueue ? addToQueue(mutation) : false
       }
 
       if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
@@ -1659,32 +1687,38 @@ export class Replayer {
       appendNode(mutation);
     });
 
+    const iterateResolveTree = (tree: ResolveTree, mirror: RRDOMMirror | Mirror, cb: (mutation: addedNodeMutation) => unknown) => {
+      if (tree.value) {
+        cb(tree.value);
+      }
+      let nextChild = tree.children.get(null);
+      if (!nextChild) {
+        const parentNode = mirror.getNode(tree.id);
+        if (parentNode && parentNode.firstChild) {
+          const nextId = mirror.getId(parentNode.firstChild as RRNode & Node);
+          nextChild = tree.children.get(nextId);
+        }
+      }
+      while (nextChild) {
+        iterateResolveTree(nextChild, mirror, cb);
+        nextChild = nextChild.value ? tree.children.get(nextChild.value.node.id) : undefined;
+      }
+    }
     const startTime = Date.now();
-    while (queue.length) {
-      // transform queue to resolve tree
-      const resolveTrees = queueToResolveTrees(queue);
-      queue.length = 0;
+    for (const tree of queue) {
+      iterateResolveTree(tree, mirror, (mutation: addedNodeMutation) => {
+        appendNode(mutation, false);
+      });
       if (Date.now() - startTime > 500) {
         this.warn(
           'Timeout in the loop, please check the resolve tree data:',
-          resolveTrees,
+          queue,
         );
         break;
       }
-      for (const tree of resolveTrees) {
-        const parent = mirror.getNode(tree.value.parentId);
-        if (!parent) {
-          this.debug(
-            'Drop resolve tree since there is no parent for the root node.',
-            tree,
-          );
-        } else {
-          iterateResolveTree(tree, (mutation) => {
-            appendNode(mutation);
-          });
-        }
-      }
     }
+    queue.clear();
+    idMap.clear();
 
     if (Object.keys(legacy_missingNodeMap).length) {
       Object.assign(this.legacy_missingNodeRetryMap, legacy_missingNodeMap);
