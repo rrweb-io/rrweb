@@ -2,7 +2,7 @@
 
 ## 2.3.0
 
-- feat: Skip addHoverClass when stylesheet is >= 1MB [#130](https://github.com/getsentry/rrweb/pull/130) 
+- feat: Skip addHoverClass when stylesheet is >= 1MB [#130](https://github.com/getsentry/rrweb/pull/130)
 
 ## 2.2.0
 
