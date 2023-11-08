@@ -1207,6 +1207,12 @@ describe('record integration tests', function (this: ISuite) {
       p.innerText = 'mutated';
     });
 
+    await page.evaluate(() => {
+      // generate a characterData mutation; innerText doesn't do that
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      (p.childNodes[0] as Text).insertData(0, 'doubly ');
+    });
+
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
@@ -1232,6 +1238,12 @@ describe('record integration tests', function (this: ISuite) {
       ul.appendChild(li);
       li.innerText = 'new list item';
       p.innerText = 'mutated';
+    });
+
+    await page.evaluate(() => {
+      // generate a characterData mutation; innerText doesn't do that
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      (p.childNodes[0] as Text).insertData(0, 'doubly ');
     });
 
     const snapshots = (await page.evaluate(

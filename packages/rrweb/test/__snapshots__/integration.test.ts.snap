@@ -793,6 +793,21 @@ exports[`record integration tests can mask character data mutations 1`] = `
         }
       ]
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [
+        {
+          \\"id\\": 22,
+          \\"value\\": \\"****** *******\\"
+        }
+      ],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
   }
 ]"
 `;
@@ -995,6 +1010,21 @@ exports[`record integration tests can mask character data mutations with regexp 
           }
         }
       ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [
+        {
+          \\"id\\": 22,
+          \\"value\\": \\"****** *******\\"
+        }
+      ],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": []
     }
   }
 ]"
