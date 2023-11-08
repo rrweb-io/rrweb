@@ -306,28 +306,44 @@ export function classMatchesRegex(
   return classMatchesRegex(node.parentNode, regex, checkAncestors);
 }
 
+// used on newly added mutations
 export function needMaskingText(
-  node: Node,
+  node: Text,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
 ): boolean {
   try {
-    const el: HTMLElement | null =
-      node.nodeType === node.ELEMENT_NODE
-        ? (node as HTMLElement)
-        : node.parentElement;
+    const el = node.parentElement;
     if (el === null) return false;
+    if (typeof maskTextClass === 'string') {
+      if (el.closest(`.${maskTextClass}`)) return true;
+    } else {
+      // TODO: this doesn't check ancestors for mutations
+      if (classMatchesRegex(el, maskTextClass, true)) return true;
+    }
+    if (maskTextSelector) {
+      if (el.closest(maskTextSelector)) return true;
+    }
+  } catch (e) {
+    //
+  }
+  return false;
+}
 
+// used upon first serialization
+function elementNeedsTextMasked(
+  el: Element,
+  maskTextClass: string | RegExp,
+  maskTextSelector: string | null,
+): boolean {
+  try {
     if (typeof maskTextClass === 'string') {
       if (el.classList.contains(maskTextClass)) return true;
-      if (el.closest(`.${maskTextClass}`)) return true;
     } else {
       if (classMatchesRegex(el, maskTextClass, true)) return true;
     }
-
     if (maskTextSelector) {
       if (el.matches(maskTextSelector)) return true;
-      if (el.closest(maskTextSelector)) return true;
     }
   } catch (e) {
     //
@@ -426,8 +442,7 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
-    maskTextClass: string | RegExp;
-    maskTextSelector: string | null;
+    needsMask: boolean;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -447,8 +462,7 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
-    maskTextClass,
-    maskTextSelector,
+    needsMask,
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
@@ -500,8 +514,7 @@ function serializeNode(
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
-        maskTextClass,
-        maskTextSelector,
+        needsMask,
         maskTextFn,
         rootId,
       });
@@ -531,13 +544,12 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
-    maskTextClass: string | RegExp;
-    maskTextSelector: string | null;
+    needsMask: boolean;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const { needsMask, maskTextFn, rootId } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -568,12 +580,7 @@ function serializeTextNode(
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
   }
-  if (
-    !isStyle &&
-    !isScript &&
-    textContent &&
-    needMaskingText(n, maskTextClass, maskTextSelector)
-  ) {
+  if (!isStyle && !isScript && textContent && needsMask) {
     textContent = maskTextFn
       ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
@@ -935,6 +942,7 @@ export function serializeNodeWithId(
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
+    needsMask: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
@@ -980,14 +988,14 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
   } = options;
+  let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
   const _serializedNode = serializeNode(n, {
     doc,
     mirror,
     blockClass,
     blockSelector,
-    maskTextClass,
-    maskTextSelector,
+    needsMask,
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
@@ -1039,6 +1047,16 @@ export function serializeNodeWithId(
     const shadowRoot = (n as HTMLElement).shadowRoot;
     if (shadowRoot && isNativeShadowDom(shadowRoot))
       serializedNode.isShadowHost = true;
+    if (!needsMask) {
+      // we've already serialized this Element, but that's okay as masking
+      // is only relevant for child Text nodes.
+      // perf: if true, children won't also need to check
+      needsMask = elementNeedsTextMasked(
+        n as Element,
+        maskTextClass,
+        maskTextSelector,
+      );
+    }
   }
   if (
     (serializedNode.type === NodeType.Document ||
@@ -1058,6 +1076,7 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
+      needsMask,
       maskTextClass,
       maskTextSelector,
       skipChild,
@@ -1118,6 +1137,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            needsMask,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
@@ -1165,6 +1185,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            needsMask,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
@@ -1306,6 +1327,7 @@ function snapshot(
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,
+    needsMask: false,
     maskTextFn,
     maskInputFn,
     slimDOMOptions,
