@@ -965,6 +965,12 @@ exports[`record integration tests can mask character data mutations with regexp 
       \\"texts\\": [],
       \\"attributes\\": [
         {
+          \\"id\\": 10,
+          \\"attributes\\": {
+            \\"class\\": \\"custom-mask\\"
+          }
+        },
+        {
           \\"id\\": 7,
           \\"attributes\\": {
             \\"class\\": \\"custom-mask\\"
@@ -984,9 +990,7 @@ exports[`record integration tests can mask character data mutations with regexp 
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"li\\",
-            \\"attributes\\": {
-              \\"class\\": \\"custom-mask\\"
-            },
+            \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 20
           }
@@ -1018,8 +1022,8 @@ exports[`record integration tests can mask character data mutations with regexp 
       \\"source\\": 0,
       \\"texts\\": [
         {
-          \\"id\\": 22,
-          \\"value\\": \\"****** *******\\"
+          \\"id\\": 21,
+          \\"value\\": \\"********** ****** ** ****** *** **** ****\\"
         }
       ],
       \\"attributes\\": [],

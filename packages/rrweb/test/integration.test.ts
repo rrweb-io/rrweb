@@ -1232,7 +1232,7 @@ describe('record integration tests', function (this: ISuite) {
       const li = document.createElement('li');
       const ul = document.querySelector('ul') as HTMLUListElement;
       const p = document.querySelector('p') as HTMLParagraphElement;
-      [li, p].forEach((element) => {
+      [ul, p].forEach((element) => {
         element.className = 'custom-mask';
       });
       ul.appendChild(li);
@@ -1242,8 +1242,8 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.evaluate(() => {
       // generate a characterData mutation; innerText doesn't do that
-      const p = document.querySelector('p') as HTMLParagraphElement;
-      (p.childNodes[0] as Text).insertData(0, 'doubly ');
+      const li = document.querySelector('li:not(:empty)') as HTMLLIElement;
+      (li.childNodes[0] as Text).insertData(0, 'descendent should be masked ');
     });
 
     const snapshots = (await page.evaluate(
