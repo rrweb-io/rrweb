@@ -1213,6 +1213,33 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can mask character data mutations with regexp', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'mutation-observer.html', {
+        maskTextClass: /custom/,
+      }),
+    );
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      [li, p].forEach((element) => {
+        element.className = 'custom-mask';
+      });
+      ul.appendChild(li);
+      li.innerText = 'new list item';
+      p.innerText = 'mutated';
+    });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should record after DOMContentLoaded event', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');

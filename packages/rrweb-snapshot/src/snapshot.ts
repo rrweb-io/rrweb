@@ -306,44 +306,35 @@ export function classMatchesRegex(
   return classMatchesRegex(node.parentNode, regex, checkAncestors);
 }
 
-// used on newly added mutations
 export function needMaskingText(
-  node: Text,
+  node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  checkAncestors: boolean,
 ): boolean {
   try {
-    const el = node.parentElement;
+    const el: HTMLElement | null =
+      node.nodeType === node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
     if (el === null) return false;
     if (typeof maskTextClass === 'string') {
-      if (el.closest(`.${maskTextClass}`)) return true;
+      if (checkAncestors) {
+        // we haven't already checked parents
+        if (el.closest(`.${maskTextClass}`)) return true;
+      } else {
+        if (el.classList.contains(maskTextClass)) return true;
+      }
     } else {
-      // TODO: this doesn't check ancestors for mutations
-      if (classMatchesRegex(el, maskTextClass, true)) return true;
+      if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
     }
     if (maskTextSelector) {
-      if (el.closest(maskTextSelector)) return true;
-    }
-  } catch (e) {
-    //
-  }
-  return false;
-}
-
-// used upon first serialization
-function elementNeedsTextMasked(
-  el: Element,
-  maskTextClass: string | RegExp,
-  maskTextSelector: string | null,
-): boolean {
-  try {
-    if (typeof maskTextClass === 'string') {
-      if (el.classList.contains(maskTextClass)) return true;
-    } else {
-      if (classMatchesRegex(el, maskTextClass, true)) return true;
-    }
-    if (maskTextSelector) {
-      if (el.matches(maskTextSelector)) return true;
+      if (checkAncestors) {
+        // we haven't already checked parents
+        if (el.closest(maskTextSelector)) return true;
+      } else {
+        if (el.matches(maskTextSelector)) return true;
+      }
     }
   } catch (e) {
     //
@@ -942,7 +933,7 @@ export function serializeNodeWithId(
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
-    needsMask: boolean;
+    needsMask?: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
@@ -990,6 +981,18 @@ export function serializeNodeWithId(
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
+
+  if (!needsMask) {
+    // perf: if needsMask = true, children won't also need to check
+    let checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
+    needsMask = needMaskingText(
+      n as Element,
+      maskTextClass,
+      maskTextSelector,
+      checkAncestors,
+    );
+  }
+
   const _serializedNode = serializeNode(n, {
     doc,
     mirror,
@@ -1047,16 +1050,6 @@ export function serializeNodeWithId(
     const shadowRoot = (n as HTMLElement).shadowRoot;
     if (shadowRoot && isNativeShadowDom(shadowRoot))
       serializedNode.isShadowHost = true;
-    if (!needsMask) {
-      // we've already serialized this Element, but that's okay as masking
-      // is only relevant for child Text nodes.
-      // perf: if true, children won't also need to check
-      needsMask = elementNeedsTextMasked(
-        n as Element,
-        maskTextClass,
-        maskTextSelector,
-      );
-    }
   }
   if (
     (serializedNode.type === NodeType.Document ||
@@ -1327,7 +1320,6 @@ function snapshot(
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,
-    needsMask: false,
     maskTextFn,
     maskInputFn,
     slimDOMOptions,

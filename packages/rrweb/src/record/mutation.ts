@@ -300,7 +300,6 @@ export default class MutationBuffer {
         mirror: this.mirror,
         blockClass: this.blockClass,
         blockSelector: this.blockSelector,
-        needsMask: false,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
         skipChild: true,
@@ -513,7 +512,7 @@ export default class MutationBuffer {
           this.texts.push({
             value:
               needMaskingText(
-                m.target as Text,
+                m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
               ) && value
