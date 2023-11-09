@@ -109,6 +109,9 @@ describe('record integration tests', function (this: ISuite) {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'empty.html'));
+
+    await new Promise((resolve) => setTimeout(resolve, 20)); // ensure mutations aren't included in fullsnapshot
+
     await page.evaluate(() => {
       const ta = document.createElement('textarea');
       ta.innerText = 'pre value'; // this mutation should be recorded
@@ -147,7 +150,7 @@ describe('record integration tests', function (this: ISuite) {
       const replayer = new Replayer(window.snapshots);
       replayer.pause(100);
       let val = replayer.iframe.contentDocument.querySelector('textarea').value + '|';
-      replayer.pause(250);
+      replayer.pause(300);
       val + replayer.iframe.contentDocument.querySelector('textarea').value;
     `);
     expect(replayResult).toEqual('pre value ok|12pre value ok'); // test at 2 times
