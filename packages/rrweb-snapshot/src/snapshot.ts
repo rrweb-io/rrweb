@@ -10,6 +10,7 @@ import {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
+  elementNode,
   serializedElementNodeWithId,
 } from './types';
 import {
@@ -680,10 +681,9 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
-      const type = getInputType(n);
       attributes.value = maskInputValue({
         element: n,
-        type,
+        type: getInputType(n),
         tagName,
         value,
         maskInputOptions,
@@ -1099,17 +1099,30 @@ export function serializeNodeWithId(
       keepIframeSrcFn,
     };
 
-    if (
+    let isTextarea =
       serializedNode.type === NodeType.Element &&
-      serializedNode.tagName === 'textarea' &&
-      serializedNode.attributes.value !== undefined
+      serializedNode.tagName === 'textarea';
+
+    if (
+      isTextarea &&
+      (serializedNode as elementNode).attributes.value !== undefined
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
     } else {
       for (const childN of Array.from(n.childNodes)) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
-        if (serializedChildNode) {
-          serializedNode.childNodes.push(serializedChildNode);
+        const serializedChildN = serializeNodeWithId(childN, bypassOptions);
+        if (serializedChildN) {
+          if (isTextarea && serializedChildN.type === NodeType.Text) {
+            serializedChildN.textContent = maskInputValue({
+              element: (n as HTMLElement), // pass in textarea as the element so it can be treated same as if .value was set
+              type: 'textarea',
+              tagName: 'textarea',
+              value: serializedChildN.textContent,
+              maskInputOptions,
+              maskInputFn,
+            });
+          }
+          serializedNode.childNodes.push(serializedChildN);
         }
       }
     }
