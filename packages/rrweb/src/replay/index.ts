@@ -1564,6 +1564,8 @@ export class Replayer {
         const childNodeArray = Array.isArray(parent.childNodes)
           ? parent.childNodes
           : Array.from(parent.childNodes);
+        // This should be redundant now as we are either recording the value or the childNode, and not both
+        // keeping around for backwards compatibility with old bad double data, see
 
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value

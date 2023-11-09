@@ -666,6 +666,14 @@ function serializeElementNode(
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
     const checked = (n as HTMLInputElement).checked;
     if (
+      tagName === 'textarea' &&
+      value &&
+      n.childNodes.length === 1 &&
+      n.childNodes[0].nodeType === n.TEXT_NODE &&
+      (n.childNodes[0] as Text).data === value
+    ) {
+      // value will be recorded via the childNode instead
+    } else if (
       attributes.type !== 'radio' &&
       attributes.type !== 'checkbox' &&
       attributes.type !== 'submit' &&
@@ -1090,10 +1098,19 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
     };
-    for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
-      if (serializedChildNode) {
-        serializedNode.childNodes.push(serializedChildNode);
+
+    if (
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'textarea' &&
+      serializedNode.attributes.value !== undefined
+    ) {
+      // value parameter in DOM reflects the correct value, so ignore childNode
+    } else {
+      for (const childN of Array.from(n.childNodes)) {
+        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+        if (serializedChildNode) {
+          serializedNode.childNodes.push(serializedChildNode);
+        }
       }
     }
 

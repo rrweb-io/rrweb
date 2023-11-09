@@ -105,6 +105,54 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can record textarea mutations correctly', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'empty.html'));
+    await page.evaluate(() => {
+      const ta = document.createElement('textarea');
+      ta.innerText = 'pre value'; // this mutation should be recorded
+      document.body.append(ta);
+    });
+
+    await page.evaluate(() => {
+      const t = document.querySelector('textarea') as HTMLTextAreaElement;
+      (t.childNodes[0] as Text).appendData(' ok'); // this mutation is also valid
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 101)); // we will check replay before this
+
+    await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
+
+    await page.evaluate(() => {
+      const t = document.querySelector('textarea') as HTMLTextAreaElement;
+      // user has typed so childNode content should now be ignored
+      (t.childNodes[0] as Text).data = 'igno';
+      (t.childNodes[0] as Text).appendData('re');
+      // this mutation is currently emitted, and shows up in snapshot
+      // but we will check that it doesn't have any effect on the value
+      // there is nothing explicit in rrweb which enforces this, but this test may protect against
+      // a future change where a mutation on a textarea incorrectly updates the .value
+    });
+
+    await page.type('textarea', '2'); // cursor is at index 1
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+
+    const replayResult = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      replayer.pause(100);
+      let val = replayer.iframe.contentDocument.querySelector('textarea').value + '|';
+      replayer.pause(250);
+      val + replayer.iframe.contentDocument.querySelector('textarea').value;
+    `);
+    expect(replayResult).toEqual('pre value ok|12pre value ok'); // test at 2 times
+  });
+
   it('can record childList mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');

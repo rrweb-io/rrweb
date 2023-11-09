@@ -247,6 +247,7 @@ exports[`integration tests [html file]: form-fields.html 1`] = `
       </label>
       <label for=\\"textarea\\">
         <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
+        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
       </label>
       <label for=\\"select\\">
         <select name=\\"\\" id=\\"\\" value=\\"2\\">
