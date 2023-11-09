@@ -194,6 +194,15 @@ function diffBeforeUpdatingChildren(
           rrnodeMirror,
         );
       }
+      /**
+       * Edge case where `applyScroll` may fail in `diffAfterUpdatingChildren`:
+       * the height of a node when `applyScroll` is called may be incorrect if
+       * 1. its parent node contains styles that affects the targeted node's height
+       * 2. the CSS selector is targeting an attribute of the parent node
+       * by running `diffProps` on the parent node before `diffChildren` is called,
+       * we can ensure that the correct attributes (and therefore styles) have applied to parent nodes
+       */
+      diffProps(oldElement, newRRElement, rrnodeMirror);
       break;
     }
   }
