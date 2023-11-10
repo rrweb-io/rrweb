@@ -2274,20 +2274,16 @@ exports[`record integration tests can record form interactions 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"textarea\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"pre value\\",
-                            \\"id\\": 63
-                          }
-                        ],
+                        \\"attributes\\": {
+                          \\"value\\": \\"pre value\\"
+                        },
+                        \\"childNodes\\": [],
                         \\"id\\": 62
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 64
+                        \\"id\\": 63
                       }
                     ],
                     \\"id\\": 18
@@ -2295,7 +2291,7 @@ exports[`record integration tests can record form interactions 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 65
+                    \\"id\\": 64
                   },
                   {
                     \\"type\\": 2,
@@ -2305,15 +2301,15 @@ exports[`record integration tests can record form interactions 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 67
+                        \\"id\\": 66
                       }
                     ],
-                    \\"id\\": 66
+                    \\"id\\": 65
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 68
+                    \\"id\\": 67
                   }
                 ],
                 \\"id\\": 16
@@ -4003,18 +3999,11 @@ exports[`record integration tests can record textarea mutations correctly 1`] = 
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"textarea\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"value\\": \\"pre value\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 21
-          }
-        },
-        {
-          \\"parentId\\": 21,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"pre value\\",
-            \\"id\\": 22
           }
         }
       ]
@@ -4024,13 +4013,32 @@ exports[`record integration tests can record textarea mutations correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
-      \\"texts\\": [
+      \\"texts\\": [],
+      \\"attributes\\": [
         {
-          \\"id\\": 22,
-          \\"value\\": \\"pre value ok\\"
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"ok\\"
+          }
         }
       ],
-      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"ok3\\"
+          }
+        }
+      ],
       \\"removes\\": [],
       \\"adds\\": []
     }
@@ -4047,7 +4055,7 @@ exports[`record integration tests can record textarea mutations correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"1pre value ok\\",
+      \\"text\\": \\"1ok3\\",
       \\"isChecked\\": false,
       \\"id\\": 21
     }
@@ -4056,17 +4064,15 @@ exports[`record integration tests can record textarea mutations correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
-      \\"texts\\": [
+      \\"texts\\": [],
+      \\"attributes\\": [
         {
-          \\"id\\": 22,
-          \\"value\\": \\"ignore\\"
-        },
-        {
-          \\"id\\": 22,
-          \\"value\\": \\"ignore\\"
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"ignore\\"
+          }
         }
       ],
-      \\"attributes\\": [],
       \\"removes\\": [],
       \\"adds\\": []
     }
@@ -4075,7 +4081,7 @@ exports[`record integration tests can record textarea mutations correctly 1`] = 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"12pre value ok\\",
+      \\"text\\": \\"12ok3\\",
       \\"isChecked\\": false,
       \\"id\\": 21
     }
@@ -4516,20 +4522,16 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"textarea\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"pre value\\",
-                            \\"id\\": 63
-                          }
-                        ],
+                        \\"attributes\\": {
+                          \\"value\\": \\"pre value\\"
+                        },
+                        \\"childNodes\\": [],
                         \\"id\\": 62
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 64
+                        \\"id\\": 63
                       }
                     ],
                     \\"id\\": 18
@@ -4537,7 +4539,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 65
+                    \\"id\\": 64
                   },
                   {
                     \\"type\\": 2,
@@ -4547,15 +4549,15 @@ exports[`record integration tests can use maskInputOptions to configure which ty
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 67
+                        \\"id\\": 66
                       }
                     ],
-                    \\"id\\": 66
+                    \\"id\\": 65
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 68
+                    \\"id\\": 67
                   }
                 ],
                 \\"id\\": 16
@@ -6526,20 +6528,16 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"textarea\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"*********\\",
-                            \\"id\\": 63
-                          }
-                        ],
+                        \\"attributes\\": {
+                          \\"value\\": \\"*********\\"
+                        },
+                        \\"childNodes\\": [],
                         \\"id\\": 62
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 64
+                        \\"id\\": 63
                       }
                     ],
                     \\"id\\": 18
@@ -6547,7 +6545,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 65
+                    \\"id\\": 64
                   },
                   {
                     \\"type\\": 2,
@@ -6557,15 +6555,15 @@ exports[`record integration tests should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 67
+                        \\"id\\": 66
                       }
                     ],
-                    \\"id\\": 66
+                    \\"id\\": 65
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 68
+                    \\"id\\": 67
                   }
                 ],
                 \\"id\\": 16
@@ -10231,20 +10229,16 @@ exports[`record integration tests should not record input values if maskAllInput
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"textarea\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"*********\\",
-                            \\"id\\": 63
-                          }
-                        ],
+                        \\"attributes\\": {
+                          \\"value\\": \\"*********\\"
+                        },
+                        \\"childNodes\\": [],
                         \\"id\\": 62
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 64
+                        \\"id\\": 63
                       }
                     ],
                     \\"id\\": 18
@@ -10252,7 +10246,7 @@ exports[`record integration tests should not record input values if maskAllInput
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 65
+                    \\"id\\": 64
                   },
                   {
                     \\"type\\": 2,
@@ -10262,15 +10256,15 @@ exports[`record integration tests should not record input values if maskAllInput
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 67
+                        \\"id\\": 66
                       }
                     ],
-                    \\"id\\": 66
+                    \\"id\\": 65
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 68
+                    \\"id\\": 67
                   }
                 ],
                 \\"id\\": 16
@@ -13958,20 +13952,16 @@ exports[`record integration tests should record input userTriggered values if us
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"textarea\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"pre value\\",
-                            \\"id\\": 63
-                          }
-                        ],
+                        \\"attributes\\": {
+                          \\"value\\": \\"pre value\\"
+                        },
+                        \\"childNodes\\": [],
                         \\"id\\": 62
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n    \\",
-                        \\"id\\": 64
+                        \\"id\\": 63
                       }
                     ],
                     \\"id\\": 18
@@ -13979,7 +13969,7 @@ exports[`record integration tests should record input userTriggered values if us
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 65
+                    \\"id\\": 64
                   },
                   {
                     \\"type\\": 2,
@@ -13989,15 +13979,15 @@ exports[`record integration tests should record input userTriggered values if us
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 67
+                        \\"id\\": 66
                       }
                     ],
-                    \\"id\\": 66
+                    \\"id\\": 65
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 68
+                    \\"id\\": 67
                   }
                 ],
                 \\"id\\": 16

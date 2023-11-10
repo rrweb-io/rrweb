@@ -285,7 +285,11 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (!n.parentNode || !inDom(n)) {
+      if (
+        !n.parentNode ||
+        !inDom(n) ||
+        (n.parentNode as Element).tagName === 'TEXTAREA'
+      ) {
         return;
       }
       const parentId = isShadowRoot(n.parentNode)
@@ -435,10 +439,17 @@ export default class MutationBuffer {
 
     const payload = {
       texts: this.texts
-        .map((text) => ({
-          id: this.mirror.getId(text.node),
-          value: text.value,
-        }))
+        .map((text) => {
+          const n = text.node;
+          if ((n.parentNode as Element).tagName === 'TEXTAREA') {
+            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+            this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
+          }
+          return {
+            id: this.mirror.getId(n),
+            value: text.value,
+          };
+        })
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
         .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
@@ -495,6 +506,24 @@ export default class MutationBuffer {
     this.movedMap = {};
 
     this.mutationCb(payload);
+  };
+
+  private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
+    let item = this.attributeMap.get(textarea);
+    if (!item) {
+      item = {
+        node: textarea,
+        attributes: {},
+        styleDiff: {},
+        _unchangedStyles: {},
+      };
+      this.attributes.push(item);
+      this.attributeMap.set(textarea, item);
+    }
+    item.attributes.value = Array.from(
+      textarea.childNodes,
+      (cn) => cn.textContent || '',
+    ).join('');
   };
 
   private processMutation = (m: mutationRecord) => {
@@ -641,6 +670,12 @@ export default class MutationBuffer {
          */
         if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
           return;
+
+        if ((m.target as Element).tagName === 'TEXTAREA') {
+          // children would be ignored in genAdds as they aren't in the mirror
+          this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
+          return; // any removedNodes won't have been in mirror either
+        }
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {

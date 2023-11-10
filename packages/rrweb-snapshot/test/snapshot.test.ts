@@ -245,14 +245,11 @@ describe('form', () => {
   it('should record textarea values once', () => {
     const el = render(`<textarea>Lorem ipsum</textarea>`);
     const sel = serializeNode(el) as elementNode;
-    expect(sel?.attributes).toEqual({}); // shouldn't be stored in .value
     expect(sel).toMatchObject({
-      childNodes: [
-        {
-          type: 3,
-          textContent: 'Lorem ipsum',
-        },
-      ],
+      attributes: {
+        value: 'Lorem ipsum',
+      },
     });
+    expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
   });
 });

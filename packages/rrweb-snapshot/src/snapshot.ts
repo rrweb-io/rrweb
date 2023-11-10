@@ -667,14 +667,6 @@ function serializeElementNode(
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
     const checked = (n as HTMLInputElement).checked;
     if (
-      tagName === 'textarea' &&
-      value &&
-      n.childNodes.length === 1 &&
-      n.childNodes[0].nodeType === n.TEXT_NODE &&
-      (n.childNodes[0] as Text).data === value
-    ) {
-      // value will be recorded via the childNode instead
-    } else if (
       attributes.type !== 'radio' &&
       attributes.type !== 'checkbox' &&
       attributes.type !== 'submit' &&
@@ -1099,30 +1091,17 @@ export function serializeNodeWithId(
       keepIframeSrcFn,
     };
 
-    let isTextarea =
-      serializedNode.type === NodeType.Element &&
-      serializedNode.tagName === 'textarea';
-
     if (
-      isTextarea &&
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'textarea' &&
       (serializedNode as elementNode).attributes.value !== undefined
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
     } else {
       for (const childN of Array.from(n.childNodes)) {
-        const serializedChildN = serializeNodeWithId(childN, bypassOptions);
-        if (serializedChildN) {
-          if (isTextarea && serializedChildN.type === NodeType.Text) {
-            serializedChildN.textContent = maskInputValue({
-              element: (n as HTMLElement), // pass in textarea as the element so it can be treated same as if .value was set
-              type: 'textarea',
-              tagName: 'textarea',
-              value: serializedChildN.textContent,
-              maskInputOptions,
-              maskInputFn,
-            });
-          }
-          serializedNode.childNodes.push(serializedChildN);
+        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+        if (serializedChildNode) {
+          serializedNode.childNodes.push(serializedChildNode);
         }
       }
     }

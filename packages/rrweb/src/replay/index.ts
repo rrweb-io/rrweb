@@ -1763,10 +1763,18 @@ export class Replayer {
                   // for safe
                 }
               }
-              (target as Element | RRElement).setAttribute(
-                attributeName,
-                value,
-              );
+              if (attributeName === 'value' && target.nodeName === 'TEXTAREA') {
+                // this may or may not have an effect on the value property (which is what is displayed)
+                // depending on whether the textarea has been modified by the user yet
+                (target as Element | RRElement).replaceChildren(
+                  document.createTextNode(value),
+                );
+              } else {
+                (target as Element | RRElement).setAttribute(
+                  attributeName,
+                  value,
+                );
+              }
             } catch (error) {
               this.warn(
                 'An error occurred may due to the checkout feature.',

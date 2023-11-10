@@ -114,16 +114,17 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.evaluate(() => {
       const ta = document.createElement('textarea');
-      ta.innerText = 'pre value'; // this mutation should be recorded
+      ta.innerText = 'pre value';
       document.body.append(ta);
     });
-
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
-      (t.childNodes[0] as Text).appendData(' ok'); // this mutation is also valid
+      t.innerText = 'ok'; // this mutation should be recorded
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 101)); // we will check replay before this
+    await page.evaluate(() => {
+      const t = document.querySelector('textarea') as HTMLTextAreaElement;
+      (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
+    });
 
     await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
 
@@ -145,15 +146,26 @@ describe('record integration tests', function (this: ISuite) {
     )) as eventWithTime[];
     assertSnapshot(snapshots);
 
-    const replayResult = await page.evaluate(`
+    // check after each mutation and text input
+    const replayTextareaValues = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(window.snapshots);
-      replayer.pause(100);
-      let val = replayer.iframe.contentDocument.querySelector('textarea').value + '|';
-      replayer.pause(300);
-      val + replayer.iframe.contentDocument.querySelector('textarea').value;
+      const vals = [];
+      window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
+        replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
+        let ts = replayer.iframe.contentDocument.querySelector('textarea');
+        vals.push((e.data.source === 0 ? 'Mutation' : 'User') + ':' + ts.value);
+      });
+      vals;
     `);
-    expect(replayResult).toEqual('pre value ok|12pre value ok'); // test at 2 times
+    expect(replayTextareaValues).toEqual([
+      'Mutation:pre value',
+      'Mutation:ok',
+      'Mutation:ok3',
+      'User:1ok3',
+      'Mutation:1ok3', // if this gets set to 'ignore', it's an error, as the 'user' has modified the textarea
+      'User:12ok3',
+    ]);
   });
 
   it('can record childList mutations', async () => {
