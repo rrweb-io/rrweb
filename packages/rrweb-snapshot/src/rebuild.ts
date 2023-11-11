@@ -5,7 +5,6 @@ import {
   tagMap,
   elementNode,
   BuildCache,
-  attributes,
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
