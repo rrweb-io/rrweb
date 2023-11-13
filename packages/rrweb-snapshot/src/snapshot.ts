@@ -982,7 +982,7 @@ export function serializeNodeWithId(
 
   if (!needsMask) {
     // perf: if needsMask = true, children won't also need to check
-    let checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
+    const checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
     needsMask = needMaskingText(
       n as Element,
       maskTextClass,
