@@ -12,6 +12,7 @@ import {
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
+import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import selectionEvents from './events/selection';
@@ -401,6 +402,51 @@ describe('replayer', function () {
     // remove the "#container" element at 2000
     expect(await contentDocument!.$('#container')).toBeNull();
     expect(await contentDocument!.$('#block')).toBeNull();
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(0);
+  });
+
+  it('can fast forward scroll events w/ a parent node that affects a child nodes height', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(scrollWithParentStylesEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add the ".container" element at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('.container')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        '.container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(0);
+
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    await page.evaluate('replayer.pause(1050);');
+    // scroll the ".container" div' at 1000
+    expect(
+      await contentDocument!.$eval(
+        '.container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(800);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(2050);');
+    // remove the ".container" element at 2000
+    expect(await contentDocument!.$('.container')).toBeNull();
     expect(
       await page.$eval(
         'iframe',
