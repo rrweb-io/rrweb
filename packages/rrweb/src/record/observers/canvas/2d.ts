@@ -1,4 +1,5 @@
 import type { Mirror } from 'rrweb-snapshot';
+import { nativeSetTimeout } from 'rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,
@@ -44,7 +45,7 @@ export default function initCanvas2DMutationObserver(
             if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
-              setTimeout(() => {
+              nativeSetTimeout(() => {
                 const recordArgs = serializeArgs(args, win, this);
                 cb(this.canvas, {
                   type: CanvasContext['2D'],
