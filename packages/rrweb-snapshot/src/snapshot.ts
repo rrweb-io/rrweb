@@ -1082,12 +1082,12 @@ export function serializeNodeWithId(
       // filter out nodes that are assigned to a slot other places.
       (childN) => !(childN as HTMLElement).assignedSlot,
     );
-    if (n.nodeName === 'SLOT') {
-      // add nodes that are assigned to this slot and treat them as normal children.
+
+    if ('assignedNodes' in n)
+      // If this is a slot element, add nodes that are assigned to this slot and treat them as normal children.
       childNodes = childNodes.concat(
         Array.from((n as HTMLSlotElement).assignedNodes()),
       );
-    }
     for (const childN of Array.from(childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
       if (serializedChildNode) {
