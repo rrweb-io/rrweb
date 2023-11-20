@@ -381,7 +381,7 @@ function diffChildren(
       nodeMatching(oldStartNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
-        oldTree.insertBefore(oldStartNode, oldEndNode.nextSibling);
+        handleInsertBefore(oldTree, oldStartNode, oldEndNode.nextSibling);
       } catch (e) {
         console.warn(e);
       }
@@ -392,7 +392,7 @@ function diffChildren(
       nodeMatching(oldEndNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
-        oldTree.insertBefore(oldEndNode, oldStartNode);
+        handleInsertBefore(oldTree, oldEndNode, oldStartNode);
       } catch (e) {
         console.warn(e);
       }
@@ -417,7 +417,7 @@ function diffChildren(
         nodeMatching(nodeToMove, newStartNode, replayer.mirror, rrnodeMirror)
       ) {
         try {
-          oldTree.insertBefore(nodeToMove, oldStartNode);
+          handleInsertBefore(oldTree, nodeToMove, oldStartNode);
         } catch (e) {
           console.warn(e);
         }
@@ -451,7 +451,7 @@ function diffChildren(
         }
 
         try {
-          oldTree.insertBefore(newNode, oldStartNode || null);
+          handleInsertBefore(oldTree, newNode, oldStartNode || null);
         } catch (e) {
           console.warn(e);
         }
@@ -473,7 +473,7 @@ function diffChildren(
         rrnodeMirror,
       );
       try {
-        oldTree.insertBefore(newNode, referenceNode);
+        handleInsertBefore(oldTree, newNode, referenceNode);
       } catch (e) {
         console.warn(e);
       }
@@ -580,4 +580,65 @@ export function nodeMatching(
   // thats why below we always check if an id is negative.
   if (node1Id === -1 || node1Id !== node2Id) return false;
   return sameNodeType(node1, node2);
+}
+
+/**
+ * Copies CSSRules and their position from HTML style element which don't exist in it's innerText
+ */
+function getInsertedStylesFromElement(
+  styleElement: HTMLStyleElement,
+): Array<{ index: number; cssRuleText: string }> | undefined {
+  const elementCssRules = styleElement.sheet?.cssRules;
+  if (!elementCssRules || !elementCssRules.length) return;
+  // style sheet w/ innerText styles to diff with actual and get only inserted styles
+  const tempStyleSheet = new CSSStyleSheet();
+  tempStyleSheet.replaceSync(styleElement.innerText);
+
+  const innerTextStylesMap: { [key: string]: CSSRule } = {};
+
+  for (let i = 0; i < tempStyleSheet.cssRules.length; i++) {
+    innerTextStylesMap[tempStyleSheet.cssRules[i].cssText] =
+      tempStyleSheet.cssRules[i];
+  }
+
+  const insertedStylesStyleSheet = [];
+
+  for (let i = 0; i < elementCssRules?.length; i++) {
+    const cssRuleText = elementCssRules[i].cssText;
+
+    if (!innerTextStylesMap[cssRuleText]) {
+      insertedStylesStyleSheet.push({
+        index: i,
+        cssRuleText,
+      });
+    }
+  }
+
+  return insertedStylesStyleSheet;
+}
+
+/**
+ * Conditionally copy insertedStyles for STYLE nodes and apply after calling insertBefore'
+ * For non-STYLE nodes, just insertBefore
+ */
+export function handleInsertBefore(
+  oldTree: Node,
+  nodeToMove: Node,
+  insertBeforeNode: Node | null,
+): void {
+  let insertedStyles;
+
+  if (nodeToMove.nodeName === 'STYLE') {
+    insertedStyles = getInsertedStylesFromElement(
+      nodeToMove as HTMLStyleElement,
+    );
+  }
+
+  oldTree.insertBefore(nodeToMove, insertBeforeNode);
+
+  if (insertedStyles && insertedStyles.length) {
+    insertedStyles.forEach(({ cssRuleText, index }) => {
+      (nodeToMove as HTMLStyleElement).sheet?.insertRule(cssRuleText, index);
+    });
+  }
 }
