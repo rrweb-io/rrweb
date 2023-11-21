@@ -1078,16 +1078,18 @@ export function serializeNodeWithId(
       keepIframeSrcFn,
     };
     let childNodes = Array.from(n.childNodes) as Node[];
-    childNodes = childNodes.filter(
-      // filter out nodes that are assigned to a slot other places.
-      (childN) => !(childN as HTMLElement).assignedSlot,
-    );
 
-    if ('assignedNodes' in n)
-      // If this is a slot element, add nodes that are assigned to this slot and treat them as normal children.
+    if (
+      n.nodeName === 'SLOT' &&
+      isShadowRoot(n.getRootNode()) &&
+      !isNativeShadowDom(n.getRootNode() as ShadowRoot) &&
+      !(n as HTMLSlotElement).hasAttribute('name')
+    )
+      // If this is a slot element in LWC framework, add nodes that are assigned to this slot and treat them as normal children.
       childNodes = childNodes.concat(
         Array.from((n as HTMLSlotElement).assignedNodes()),
       );
+
     for (const childN of Array.from(childNodes)) {
       const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
       if (serializedChildNode) {
