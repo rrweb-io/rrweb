@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { launchPuppeteer } from '../utils';
+import { launchPuppeteer, waitForRAF } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
 import events from '../events/assets';
@@ -62,5 +62,31 @@ describe('replayer', function () {
       const image = await page.screenshot();
       expect(image).toMatchImageSnapshot();
     });
+
+    // FIXME: test not finished yet
+    it('should incorporate assets streamed later', async () => {
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+    `);
+
+      await waitForRAF(page);
+
+      await page.evaluate(`
+        window.replayer.addEvent(events[2]);
+      `);
+
+      await waitForRAF(page);
+
+      const image = await page.screenshot();
+      expect(image).toMatchImageSnapshot();
+    });
+
+    test.todo('should support video');
   });
 });
