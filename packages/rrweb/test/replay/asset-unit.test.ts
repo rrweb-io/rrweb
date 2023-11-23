@@ -33,6 +33,7 @@ describe('AssetManager', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   afterAll(() => {
@@ -96,5 +97,47 @@ describe('AssetManager', () => {
     const url = 'https://example.com/image.png';
 
     expect(assetManager.get(url)).toEqual({ status: 'unknown' });
+  });
+
+  it('should execute hook when an asset is added', async () => {
+    jest.useFakeTimers();
+    const url = 'https://example.com/image.png';
+    const event: assetEvent = {
+      type: EventType.Asset,
+      data: {
+        url,
+        payload: examplePayload,
+      },
+    };
+    void assetManager.add(event);
+    const promise = assetManager.whenReady(url);
+
+    jest.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
+
+    jest.runAllTimers();
+
+    await expect(promise).resolves.toEqual({
+      status: 'loaded',
+      url: 'objectURL',
+    });
+  });
+
+  it('should send status reset to callbacks when reset', async () => {
+    jest.useFakeTimers();
+    const url = 'https://example.com/image.png';
+    const event: assetEvent = {
+      type: EventType.Asset,
+      data: {
+        url,
+        payload: examplePayload,
+      },
+    };
+    void assetManager.add(event);
+    const promise = assetManager.whenReady(url);
+
+    assetManager.reset();
+    jest.runAllTimers();
+
+    await expect(promise).resolves.toEqual({ status: 'reset' });
   });
 });
