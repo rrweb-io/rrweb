@@ -145,6 +145,9 @@ export class Replayer {
   private cache: BuildCache = createCache();
 
   private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
+
+  private assetManager = new AssetManager();
+
   private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
   private mirror: Mirror = createMirror();
@@ -747,6 +750,11 @@ export class Replayer {
           }
         };
         break;
+      case EventType.Asset:
+        castFn = () => {
+          void this.assetManager.add(event);
+        };
+        break;
       default:
     }
     const wrappedCastFn = () => {
@@ -829,6 +837,8 @@ export class Replayer {
       }
     };
 
+    void this.preloadAllAssets();
+
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
      * But if the order of data events has some issues, it might be possible.
@@ -845,6 +855,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
+      assetManager: this.assetManager,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
@@ -869,7 +880,6 @@ export class Replayer {
     if (this.config.UNSAFE_replayCanvas) {
       void this.preloadAllImages();
     }
-    void this.preloadAllAssets();
   }
 
   private insertStyleRules(
@@ -1049,11 +1059,10 @@ export class Replayer {
    * Process all asset events and preload them
    */
   private async preloadAllAssets(): Promise<void[]> {
-    const assetManager = new AssetManager();
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (event.type === EventType.Asset) {
-        promises.push(assetManager.add(event));
+        promises.push(this.assetManager.add(event));
       }
     }
     return Promise.all(promises);

@@ -729,16 +729,25 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
 
-export abstract class RebuildAssetManagerInterface {
-  abstract add(event: assetEvent): Promise<void>;
+export type RebuildAssetManagerResetStatus = { status: 'reset' };
+export type RebuildAssetManagerUnknownStatus = { status: 'unknown' };
+export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
+export type RebuildAssetManagerLoadedStatus = { status: 'loaded'; url: string };
+export type RebuildAssetManagerFailedStatus = { status: 'failed' };
+export type RebuildAssetManagerFinalStatus =
+  | RebuildAssetManagerLoadedStatus
+  | RebuildAssetManagerFailedStatus
+  | RebuildAssetManagerResetStatus;
+export type RebuildAssetManagerStatus =
+  | RebuildAssetManagerUnknownStatus
+  | RebuildAssetManagerLoadingStatus
+  | RebuildAssetManagerFinalStatus;
 
-  abstract get(
-    url: string,
-  ):
-    | { status: 'loading' }
-    | { status: 'loaded'; url: string }
-    | { status: 'failed' }
-    | { status: 'unknown' };
+export declare abstract class RebuildAssetManagerInterface {
+  abstract add(event: assetEvent): Promise<void>;
+  abstract get(url: string): RebuildAssetManagerStatus;
+  abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
+  abstract reset(): void;
 }
 
 export enum NodeType {
