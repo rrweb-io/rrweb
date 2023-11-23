@@ -1,16 +1,26 @@
-import type { RebuildAssetManagerInterface, assetEvent } from '@rrweb/types';
+import type {
+  RebuildAssetManagerFinalStatus,
+  RebuildAssetManagerInterface,
+  RebuildAssetManagerStatus,
+  assetEvent,
+} from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
   private loadingURLs: Set<string> = new Set();
   private failedURLs: Set<string> = new Set();
+  private callbackMap: Map<
+    string,
+    Array<(status: RebuildAssetManagerFinalStatus) => void>
+  > = new Map();
 
   public async add(event: assetEvent) {
     const { data } = event;
     const { url, payload, failed } = { payload: false, failed: false, ...data };
     if (failed) {
       this.failedURLs.add(url);
+      this.executeCallbacks(url, { status: 'failed' });
       return;
     }
     this.loadingURLs.add(url);
@@ -28,15 +38,45 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     const objectURL = URL.createObjectURL(result);
     this.originalToObjectURLMap.set(url, objectURL);
     this.loadingURLs.delete(url);
+    this.executeCallbacks(url, { status: 'loaded', url: objectURL });
   }
 
-  public get(
+  private executeCallbacks(
     url: string,
-  ):
-    | { status: 'loading' }
-    | { status: 'loaded'; url: string }
-    | { status: 'failed' }
-    | { status: 'unknown' } {
+    status: RebuildAssetManagerFinalStatus,
+  ) {
+    const callbacks = this.callbackMap.get(url);
+    while (callbacks && callbacks.length > 0) {
+      const callback = callbacks.pop();
+      if (!callback) {
+        break;
+      }
+      callback(status);
+    }
+  }
+
+  public async whenReady(url: string): Promise<RebuildAssetManagerFinalStatus> {
+    const currentStatus = this.get(url);
+    if (
+      currentStatus.status === 'loaded' ||
+      currentStatus.status === 'failed'
+    ) {
+      return currentStatus;
+    }
+    let resolve: (status: RebuildAssetManagerFinalStatus) => void;
+    const promise = new Promise<RebuildAssetManagerFinalStatus>((r) => {
+      resolve = r;
+    });
+    if (!this.callbackMap.has(url)) {
+      this.callbackMap.set(url, []);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.callbackMap.get(url)!.push(resolve!);
+
+    return promise;
+  }
+
+  public get(url: string): RebuildAssetManagerStatus {
     const result = this.originalToObjectURLMap.get(url);
 
     if (result) {
@@ -61,5 +101,21 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     return {
       status: 'unknown',
     };
+  }
+
+  public reset(): void {
+    this.originalToObjectURLMap.forEach((objectURL) => {
+      URL.revokeObjectURL(objectURL);
+    });
+    this.originalToObjectURLMap.clear();
+    this.loadingURLs.clear();
+    this.failedURLs.clear();
+    this.callbackMap.forEach((callbacks) => {
+      while (callbacks.length > 0) {
+        const cb = callbacks.pop();
+        if (cb) cb({ status: 'reset' });
+      }
+    });
+    this.callbackMap.clear();
   }
 }
