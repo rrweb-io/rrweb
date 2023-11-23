@@ -62,7 +62,6 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot();
     });
 
-    // FIXME: test not finished yet
     it('should incorporate assets streamed later', async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;
@@ -86,6 +85,14 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot();
     });
 
-    test.todo('should support video');
+    test.todo('should support urls src modified via mutation');
+
+    test.todo('should support video elements');
+    test.todo('should support audio elements');
+    test.todo('should support embed elements');
+    test.todo('should support source elements');
+    test.todo('should support track elements');
+    test.todo('should support input#type=image elements');
+    test.todo('should support img srcset');
   });
 });
