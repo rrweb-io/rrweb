@@ -10,7 +10,7 @@
       "path": "../rrdom"
     },
     {
-      "path": "../types"
+      "path": "../rrweb-snapshot"
     }
   ]
 }
