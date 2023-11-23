@@ -283,9 +283,10 @@ function buildNode(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
             );
+            continue;
           } else if (
             tagName === 'img' &&
-            n.attributes.src &&
+            name === 'src' &&
             options.assetManager
           ) {
             // TODO: do something with the asset manager
