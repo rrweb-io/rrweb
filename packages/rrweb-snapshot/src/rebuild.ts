@@ -375,8 +375,22 @@ function buildNode(
             name === 'src' &&
             options.assetManager
           ) {
-            // TODO: do something with the asset manager
-            console.log('WIP! Please implement me!');
+            const originalValue = value.toString();
+            node.setAttribute(name, originalValue);
+            void options.assetManager
+              .whenReady(value.toString())
+              .then((status) => {
+                if (
+                  status.status === 'loaded' &&
+                  node.getAttribute('src') === originalValue
+                ) {
+                  node.setAttribute(name, status.url);
+                } else {
+                  console.log(
+                    `failed to load asset: ${originalValue}, ${status.status}`,
+                  );
+                }
+              });
           } else {
             node.setAttribute(name, value.toString());
           }
@@ -510,6 +524,7 @@ export function buildNodeWithSN(
     hackCss = true,
     afterAppend,
     cache,
+    assetManager,
   } = options;
   /**
    * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
@@ -524,7 +539,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, { doc, hackCss, cache, assetManager });
   if (!node) {
     return null;
   }
@@ -576,6 +591,7 @@ export function buildNodeWithSN(
         hackCss,
         afterAppend,
         cache,
+        assetManager,
       });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
@@ -664,6 +680,7 @@ function rebuild(
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
     mirror: Mirror;
+    assetManager?: RebuildAssetManagerInterface;
   },
 ): Node | null {
   const {
@@ -673,6 +690,7 @@ function rebuild(
     afterAppend,
     cache,
     mirror = new Mirror(),
+    assetManager,
   } = options;
   const node = buildNodeWithSN(n, {
     doc,
@@ -681,6 +699,7 @@ function rebuild(
     hackCss,
     afterAppend,
     cache,
+    assetManager,
   });
   visit(mirror, (visitedNode) => {
     if (onVisit) {
