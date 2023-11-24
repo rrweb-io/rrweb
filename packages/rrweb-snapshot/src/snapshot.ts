@@ -125,7 +125,11 @@ export function absoluteToStylesheet(
 const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/; // Don't use \s, to avoid matching non-breaking space
 // eslint-disable-next-line no-control-regex
 const SRCSET_COMMAS_OR_SPACES = /^[, \t\n\r\u000c]+/;
-function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+function parseSrcsetString(
+  doc: Document,
+  attributeValue: string,
+  urlCallback: (doc: Document, url: string) => string,
+) {
   /*
     run absoluteToDoc over every url in the srcset
 
@@ -162,13 +166,13 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     let url = collectCharacters(SRCSET_NOT_SPACES);
     if (url.slice(-1) === ',') {
       // aside: according to spec more than one comma at the end is a parse error, but we ignore that
-      url = absoluteToDoc(doc, url.substring(0, url.length - 1));
+      url = urlCallback(doc, url.substring(0, url.length - 1));
       // the trailing comma splits the srcset, so the interpretion is that
       // another url will follow, and the descriptor is empty
       output.push(url);
     } else {
       let descriptorsStr = '';
-      url = absoluteToDoc(doc, url);
+      url = urlCallback(doc, url);
       let inParens = false;
       // eslint-disable-next-line no-constant-condition
       while (true) {
@@ -199,7 +203,20 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   return output.join(', ');
 }
 
-const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
+function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+  return parseSrcsetString(doc, attributeValue, (doc, url) =>
+    absoluteToDoc(doc, url),
+  );
+}
+
+export function getSourcesFromSrcset(attributeValue: string): string[] {
+  const urls = new Set<string>();
+  parseSrcsetString(document, attributeValue, (_, url) => {
+    urls.add(url);
+    return url;
+  });
+  return Array.from(urls);
+}
 
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
   if (!attributeValue || attributeValue.trim() === '') {
@@ -213,6 +230,7 @@ function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
+const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
 function getHref(doc: Document, customHref?: string) {
   let a = cachedDocument.get(doc);
   if (!a) {
