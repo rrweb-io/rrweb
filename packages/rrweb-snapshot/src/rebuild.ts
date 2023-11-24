@@ -284,29 +284,12 @@ function buildNode(
               n.attributes.srcset as string,
             );
             continue;
-          } else if (
-            tagName === 'img' &&
-            name === 'src' &&
-            options.assetManager
-          ) {
-            const originalValue = value.toString();
-            node.setAttribute(name, originalValue);
-            void options.assetManager
-              .whenReady(value.toString())
-              .then((status) => {
-                if (
-                  status.status === 'loaded' &&
-                  node.getAttribute('src') === originalValue
-                ) {
-                  node.setAttribute(name, status.url);
-                } else {
-                  console.log(
-                    `failed to load asset: ${originalValue}, ${status.status}`,
-                  );
-                }
-              });
           } else {
             node.setAttribute(name, value.toString());
+
+            if (options.assetManager?.isAttributeCacheable(node, name)) {
+              options.assetManager.manageAttribute(node, name);
+            }
           }
         } catch (error) {
           // skip invalid attribute
