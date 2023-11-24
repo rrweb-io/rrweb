@@ -5,6 +5,9 @@ import type {
   assetEvent,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
+import { isAttributeCacheable } from '../../utils';
+import { getSourcesFromSrcset } from 'rrweb-snapshot';
+import type { RRElement } from 'rrdom';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
@@ -55,6 +58,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     }
   }
 
+  // TODO: turn this into a true promise that throws if the asset fails to load
   public async whenReady(url: string): Promise<RebuildAssetManagerFinalStatus> {
     const currentStatus = this.get(url);
     if (
@@ -101,6 +105,43 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     return {
       status: 'unknown',
     };
+  }
+
+  public isAttributeCacheable(
+    n: RRElement | Element,
+    attribute: string,
+  ): boolean {
+    return isAttributeCacheable(n as Element, attribute);
+  }
+
+  public async manageAttribute(
+    node: RRElement | Element,
+    attribute: string,
+  ): Promise<unknown> {
+    const originalValue = node.getAttribute(attribute);
+    if (!originalValue) return false;
+
+    const promises = [];
+
+    const values =
+      attribute === 'srcset'
+        ? getSourcesFromSrcset(originalValue)
+        : [originalValue];
+    for (const value of values) {
+      promises.push(
+        this.whenReady(value).then((status) => {
+          if (
+            status.status === 'loaded' &&
+            node.getAttribute(attribute) === originalValue
+          ) {
+            node.setAttribute(attribute, status.url);
+          } else {
+            // failed to load asset, or the attribute was changed
+          }
+        }),
+      );
+    }
+    return Promise.all(promises);
   }
 
   public reset(): void {

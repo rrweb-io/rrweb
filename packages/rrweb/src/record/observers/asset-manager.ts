@@ -7,7 +7,7 @@ import type {
 import type { assetCallback } from '@rrweb/types';
 import { encode } from 'base64-arraybuffer';
 
-import { patch } from '../../utils';
+import { isAttributeCacheable, patch } from '../../utils';
 import type { recordOptions } from '../../types';
 
 export default class AssetManager {
@@ -190,5 +190,9 @@ export default class AssetManager {
       });
 
     return { status: 'capturing' };
+  }
+
+  public isAttributeCacheable(n: Element, attribute: string): boolean {
+    return isAttributeCacheable(n, attribute);
   }
 }
