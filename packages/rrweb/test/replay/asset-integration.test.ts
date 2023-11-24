@@ -4,6 +4,7 @@ import { launchPuppeteer, waitForRAF } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
 import events from '../events/assets';
+import mutationEvents from '../events/assets-mutation';
 import { vi } from 'vitest';
 
 interface ISuite {
@@ -38,6 +39,7 @@ describe('replayer', function () {
     });
     await page.evaluate(code);
     await page.evaluate(`let events = ${JSON.stringify(events)}`);
+    await page.evaluate(`let events2 = ${JSON.stringify(mutationEvents)}`);
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
@@ -86,7 +88,29 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot();
     });
 
-    test.todo('should support urls src modified via mutation');
+    it('should support urls src modified via incremental mutation', async () => {
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events2[0]);
+      window.replayer.addEvent(events2[1]);
+      window.replayer.addEvent(events2[2]);
+    `);
+
+      await waitForRAF(page);
+
+      await page.evaluate(`
+        window.replayer.addEvent(events2[3]);
+      `);
+
+      await waitForRAF(page);
+
+      const image = await page.screenshot();
+      expect(image).toMatchImageSnapshot();
+    });
 
     test.todo('should support video elements');
     test.todo('should support audio elements');
