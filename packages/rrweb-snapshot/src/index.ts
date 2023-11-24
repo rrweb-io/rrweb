@@ -9,6 +9,7 @@ import snapshot, {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  getSourcesFromSrcset,
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
@@ -40,4 +41,5 @@ export {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  getSourcesFromSrcset,
 };
