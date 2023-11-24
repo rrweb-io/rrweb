@@ -748,6 +748,8 @@ export declare abstract class RebuildAssetManagerInterface {
   abstract get(url: string): RebuildAssetManagerStatus;
   abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
   abstract reset(): void;
+  abstract isAttributeCacheable(n: Element, attribute: string): boolean;
+  abstract manageAttribute(n: Element, attribute: string): void;
 }
 
 export enum NodeType {
