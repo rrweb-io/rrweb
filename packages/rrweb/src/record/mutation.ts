@@ -10,6 +10,7 @@ import {
   isNativeShadowDom,
   getInputType,
   toLowerCase,
+  getSourcesFromSrcset,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -602,12 +603,6 @@ export default class MutationBuffer {
           } else {
             return;
           }
-        } else if (
-          target.tagName === 'IMG' &&
-          (attributeName === 'src' || attributeName === 'srcset') &&
-          value
-        ) {
-          this.assetManager.capture(value);
         }
         if (!item) {
           item = {
@@ -632,12 +627,26 @@ export default class MutationBuffer {
 
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName] = transformAttribute(
-            this.doc,
-            toLowerCase(target.tagName),
-            toLowerCase(attributeName),
-            value,
-          );
+          const transformedValue = (item.attributes[attributeName] =
+            transformAttribute(
+              this.doc,
+              toLowerCase(target.tagName),
+              toLowerCase(attributeName),
+              value,
+            ));
+          if (
+            transformedValue &&
+            this.assetManager.isAttributeCacheable(target, attributeName)
+          ) {
+            if (attributeName === 'srcset') {
+              getSourcesFromSrcset(transformedValue).forEach((url) => {
+                this.assetManager.capture(url);
+              });
+            } else {
+              this.assetManager.capture(transformedValue);
+            }
+          }
+
           if (attributeName === 'style') {
             if (!this.unattachedDoc) {
               try {
