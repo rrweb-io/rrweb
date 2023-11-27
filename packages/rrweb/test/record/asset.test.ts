@@ -638,8 +638,11 @@ describe('asset caching', function (this: ISuite) {
         expect.objectContaining({
           type: EventType.Meta,
           data: {
+            href: expect.any(String),
+            width: expect.any(Number),
+            height: expect.any(Number),
             assetCapture: {
-              origins: ['{SERVER_URL}'],
+              origins: [ctx.serverURL],
               objectURLs: false,
             },
           },

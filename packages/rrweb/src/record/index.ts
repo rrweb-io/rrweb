@@ -384,6 +384,7 @@ function record<T = eventWithTime>(
           href: window.location.href,
           width: getWindowWidth(),
           height: getWindowHeight(),
+          assetCapture,
         },
       },
       isCheckout,
