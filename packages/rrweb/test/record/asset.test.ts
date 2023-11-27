@@ -105,13 +105,12 @@ const setup = function (
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
     if (
-      options?.assetCapture?.captureOrigins &&
-      Array.isArray(options.assetCapture.captureOrigins)
+      options?.assetCapture?.origins &&
+      Array.isArray(options.assetCapture.origins)
     ) {
-      options.assetCapture.captureOrigins =
-        options.assetCapture.captureOrigins.map((origin) =>
-          origin.replace(/\{SERVER_URL\}/g, ctx.serverURL),
-        );
+      options.assetCapture.origins = options.assetCapture.origins.map(
+        (origin) => origin.replace(/\{SERVER_URL\}/g, ctx.serverURL),
+      );
     }
     await injectRecordScript(ctx.page.mainFrame(), options);
   });
@@ -132,7 +131,7 @@ const setup = function (
 describe('asset caching', function (this: ISuite) {
   vi.setConfig({ testTimeout: 100_000 });
 
-  describe('captureObjectURLs: true with incremental snapshots', function (this: ISuite) {
+  describe('objectURLs: true with incremental snapshots', function (this: ISuite) {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -143,8 +142,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureObjectURLs: true,
-          captureOrigins: false,
+          objectURLs: true,
+          origins: false,
         },
       },
     );
@@ -244,7 +243,7 @@ describe('asset caching', function (this: ISuite) {
     });
   });
 
-  describe('captureObjectURLs: true with fullSnapshot', function (this: ISuite) {
+  describe('objectURLs: true with fullSnapshot', function (this: ISuite) {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -285,8 +284,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureObjectURLs: true,
-          captureOrigins: false,
+          objectURLs: true,
+          origins: false,
         },
       },
     );
@@ -319,7 +318,7 @@ describe('asset caching', function (this: ISuite) {
       expect(events[events.length - 1]).toMatchObject(expected);
     });
   });
-  describe('captureObjectURLs: false', () => {
+  describe('objectURLs: false', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -330,8 +329,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureObjectURLs: false,
-          captureOrigins: false,
+          objectURLs: false,
+          origins: false,
         },
       },
     );
@@ -397,7 +396,7 @@ describe('asset caching', function (this: ISuite) {
       );
     });
   });
-  describe('captureOrigins: false', () => {
+  describe('origins: false', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -410,8 +409,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureOrigins: false,
-          captureObjectURLs: false,
+          origins: false,
+          objectURLs: false,
         },
       },
     );
@@ -429,7 +428,7 @@ describe('asset caching', function (this: ISuite) {
       );
     });
   });
-  describe('captureOrigins: []', () => {
+  describe('origins: []', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -442,8 +441,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureOrigins: [],
-          captureObjectURLs: false,
+          origins: [],
+          objectURLs: false,
         },
       },
     );
@@ -461,7 +460,7 @@ describe('asset caching', function (this: ISuite) {
       );
     });
   });
-  describe('captureOrigins: true', () => {
+  describe('origins: true', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -474,8 +473,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureOrigins: true,
-          captureObjectURLs: false,
+          origins: true,
+          objectURLs: false,
         },
       },
     );
@@ -497,7 +496,7 @@ describe('asset caching', function (this: ISuite) {
     });
   });
 
-  describe('captureOrigins: true with invalid urls', () => {
+  describe('origins: true with invalid urls', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -511,8 +510,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureOrigins: true,
-          captureObjectURLs: false,
+          origins: true,
+          objectURLs: false,
         },
       },
     );
@@ -567,7 +566,7 @@ describe('asset caching', function (this: ISuite) {
     });
   });
 
-  describe('captureOrigins: ["http://localhost:xxxxx/"]', () => {
+  describe('origins: ["http://localhost:xxxxx/"]', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -581,8 +580,8 @@ describe('asset caching', function (this: ISuite) {
       `,
       {
         assetCapture: {
-          captureOrigins: ['{SERVER_URL}'],
-          captureObjectURLs: false,
+          origins: ['{SERVER_URL}'],
+          objectURLs: false,
         },
       },
     );
@@ -625,5 +624,35 @@ describe('asset caching', function (this: ISuite) {
         }),
       );
     });
+
+    it('add recorded origins to meta event', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      // expect an event to be emitted with `event.type` === EventType.Asset
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Meta,
+          data: {
+            assetCapture: {
+              origins: ['{SERVER_URL}'],
+              objectURLs: false,
+            },
+          },
+        }),
+      );
+    });
   });
+
+  test.todo('should support video elements');
+  test.todo('should support audio elements');
+  test.todo('should support embed elements');
+  test.todo('should support source elements');
+  test.todo('should support track elements');
+  test.todo('should support input#type=image elements');
+  test.todo('should support img srcset');
 });

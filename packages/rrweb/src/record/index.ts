@@ -99,8 +99,8 @@ function record<T = eventWithTime>(
     collectFonts = false,
     inlineImages = false,
     assetCapture = {
-      captureObjectURLs: true,
-      captureOrigins: false,
+      objectURLs: true,
+      origins: false,
     },
     plugins,
     keepIframeSrcFn = () => false,
