@@ -922,7 +922,7 @@ describe('record integration tests', function (this: ISuite) {
     page.setContent(
       getHtml.call(this, 'image-blob-url.html', {
         inlineImages: true,
-        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+        assetCapture: { objectURLs: false, origins: false },
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
@@ -942,7 +942,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.setContent(
       getHtml.call(this, 'frame-image-blob-url.html', {
         inlineImages: true,
-        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+        assetCapture: { objectURLs: false, origins: false },
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
@@ -962,7 +962,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.setContent(
       getHtml.call(this, 'frame2.html', {
         inlineImages: true,
-        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+        assetCapture: { objectURLs: false, origins: false },
       }),
     );
     await page.waitForSelector('iframe'); // wait for iframe to get added
