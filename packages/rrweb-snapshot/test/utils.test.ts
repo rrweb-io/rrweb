@@ -1,9 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType, serializedNode } from '../src/types';
 import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
-import { serializedNodeWithId } from 'rrweb-snapshot';
+import { NodeType, serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
