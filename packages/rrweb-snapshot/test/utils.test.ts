@@ -2,9 +2,9 @@
  * @vitest-environment jsdom
  */
 import { describe, it, test, expect } from 'vitest';
-import { NodeType, serializedNode } from '@rrweb/types';
+import { NodeType } from '@rrweb/types';
 import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
-import type { serializedNodeWithId } from '@rrweb/types';
+import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
