@@ -41,6 +41,7 @@ export type metaEvent = {
     href: string;
     width: number;
     height: number;
+    assetCapture?: assetCaptureParam;
   };
 };
 
@@ -58,6 +59,22 @@ export type pluginEvent<T = unknown> = {
     plugin: string;
     payload: T;
   };
+};
+
+export type assetCaptureParam = {
+  /**
+   * Captures object URLs (blobs, files, media sources).
+   * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+   */
+  objectURLs: boolean;
+  /**
+   * Allowlist of origins to capture object URLs from.
+   * [origin, origin, ...] to capture from specific origins.
+   *   e.g. ['https://example.com', 'https://www.example.com']
+   * Set to `true` capture from all origins.
+   * Set to `false` or `[]` to disable capturing from any origin apart from object URLs.
+   */
+  origins: string[] | true | false;
 };
 
 export type assetEvent = {

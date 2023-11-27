@@ -10,12 +10,12 @@ The `inlineImages` configuration option is deprecated and should not be used any
 
 The `assetCapture` configuration option allows you to customize the asset capture process. It is an object with the following properties:
 
-- `captureObjectURLs` (default: `true`): This property specifies whether to capture same-origin `blob:` assets using object URLs. Object URLs are created using the `URL.createObjectURL()` method. Setting `captureObjectURLs` to `true` enables the capture of object URLs.
+- `objectURLs` (default: `true`): This property specifies whether to capture same-origin `blob:` assets using object URLs. Object URLs are created using the `URL.createObjectURL()` method. Setting `objectURLs` to `true` enables the capture of object URLs.
 
-- `captureOrigins` (default: `false`): This property determines which origins to capture assets from. It can have the following values:
+- `origins` (default: `false`): This property determines which origins to capture assets from. It can have the following values:
   - `false` or `[]`: Disables capturing any assets apart from object URLs.
   - `true`: Captures assets from all origins.
-  - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `captureOrigins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
+  - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
 
 ## TypeScript Type Definition
 
@@ -26,14 +26,14 @@ export type recordOptions<T> = {
   // Other configuration options...
   inlineImages?: boolean;
   assetCapture?: {
-    captureObjectURLs: boolean;
-    captureOrigins: string[] | true | false;
+    objectURLs: boolean;
+    origins: string[] | true | false;
   };
   // Other configuration options...
 };
 ```
 
-This type definition shows that `assetCapture` is an optional property of the `recordOptions` object. It contains the `captureObjectURLs` and `captureOrigins` properties, which have the same meanings as described above.
+This type definition shows that `assetCapture` is an optional property of the `recordOptions` object. It contains the `objectURLs` and `origins` properties, which have the same meanings as described above.
 
 ## Conclusion
 
