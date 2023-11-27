@@ -7,7 +7,7 @@ import {
   serializeNodeWithId,
   _isBlockedElement,
 } from '../src/snapshot';
-import { serializedNodeWithId, elementNode } from '../src/types';
+import { serializedNodeWithId, elementNode } from '@rrweb/types';
 import { Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {

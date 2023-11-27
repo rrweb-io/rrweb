@@ -43,7 +43,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.8"
+    "@rrweb/types": "^2.0.0-alpha.11"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",

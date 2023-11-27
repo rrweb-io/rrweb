@@ -22,14 +22,17 @@ import {
 import type { IRRElement, IRRNode } from '../src/document';
 import { Replayer } from 'rrweb';
 import type {
-  NodeType as RRNodeType,
   serializedNodeWithId,
   eventWithTime,
   canvasMutationData,
   styleDeclarationData,
   styleSheetRuleData,
 } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import {
+  NodeType as RRNodeType,
+  EventType,
+  IncrementalSource,
+} from '@rrweb/types';
 import { compileTSCode } from './utils';
 
 const elementSn = {
