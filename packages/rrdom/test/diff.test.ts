@@ -23,12 +23,15 @@ import {
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
 import type {
-  NodeType as RRNodeType,
   serializedNodeWithId,
   canvasMutationData,
   styleSheetRuleData,
 } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import {
+  NodeType as RRNodeType,
+  EventType,
+  IncrementalSource,
+} from '@rrweb/types';
 
 const elementSn = {
   type: RRNodeType.Element,
