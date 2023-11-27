@@ -4,6 +4,7 @@
     "module": "ESNext",
     "target": "ES6",
     "moduleResolution": "Node",
+    "esModuleInterop": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
