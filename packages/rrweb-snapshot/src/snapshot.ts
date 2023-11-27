@@ -754,9 +754,19 @@ function serializeElementNode(
         ? (attributes.crossOrigin = oldValue)
         : image.removeAttribute('crossorigin');
     };
+    // if image is cors, it will go onerror,there have to remove crossorigin
+    const recordInlineImageError = () => {
+      image.removeEventListener('error', recordInlineImageError);
+      oldValue
+        ? (attributes.crossOrigin = oldValue)
+        : image.removeAttribute('crossorigin');
+    }
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.addEventListener('load', recordInlineImage);
+    else {
+      image.addEventListener('load', recordInlineImage);
+      image.addEventListener('error', recordInlineImageError);
+    }
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
