@@ -45,7 +45,7 @@ export default class AssetManager {
 
     const urlObjectMap = this.urlObjectMap;
 
-    if (this.config.captureObjectURLs) {
+    if (this.config.objectURLs) {
       try {
         const restoreHandler = patch(
           win.URL,
@@ -86,15 +86,15 @@ export default class AssetManager {
     const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
 
     // Check if url is a blob and we should ignore blobs
-    if (urlIsBlob) return !this.config.captureObjectURLs;
+    if (urlIsBlob) return !this.config.objectURLs;
 
     // Check if url matches any ignorable origins
     for (const origin of originsToIgnore) {
       if (url.startsWith(origin)) return true;
     }
 
-    // Check the captureOrigins
-    const captureOrigins = this.config.captureOrigins;
+    // Check the origins
+    const captureOrigins = this.config.origins;
     if (typeof captureOrigins === 'boolean') {
       return !captureOrigins;
     } else if (Array.isArray(captureOrigins)) {
