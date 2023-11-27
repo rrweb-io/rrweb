@@ -13,8 +13,8 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { eventWithTime, NodeType, EventType, RecordPlugin } from '@rrweb/types';
+import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   jest.setTimeout(10_000);
@@ -838,7 +838,7 @@ describe('record integration tests', function (this: ISuite) {
     page.setContent(
       getHtml.call(this, 'image-blob-url.html', {
         inlineImages: true,
-        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+        assetCapture: { objectURLs: false, origins: false },
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
@@ -858,7 +858,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.setContent(
       getHtml.call(this, 'frame-image-blob-url.html', {
         inlineImages: true,
-        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+        assetCapture: { objectURLs: false, origins: false },
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
@@ -878,7 +878,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.setContent(
       getHtml.call(this, 'frame2.html', {
         inlineImages: true,
-        assetCapture: { captureObjectURLs: false, captureOrigins: false },
+        assetCapture: { objectURLs: false, origins: false },
       }),
     );
     await page.waitForSelector('iframe'); // wait for iframe to get added
