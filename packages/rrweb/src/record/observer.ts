@@ -46,6 +46,7 @@ import {
   IWindow,
   SelectionRange,
   selectionCallback,
+  customElementCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
@@ -405,15 +406,6 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, win);
 }
 
-function wrapEventWithUserTriggeredFlag(
-  v: inputValue,
-  enable: boolean,
-): inputValue {
-  const value = { ...v };
-  if (!enable) delete value.userTriggered;
-  return value;
-}
-
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver({
@@ -477,10 +469,9 @@ function initInputObserver({
     }
     cbWithDedup(
       target,
-      callbackWrapper(wrapEventWithUserTriggeredFlag)(
-        { text, isChecked, userTriggered },
-        userTriggeredOnInput,
-      ),
+      userTriggeredOnInput
+        ? { text, isChecked, userTriggered }
+        : { text, isChecked },
     );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
@@ -490,16 +481,12 @@ function initInputObserver({
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
+            const text = (el as HTMLInputElement).value;
             cbWithDedup(
               el,
-              callbackWrapper(wrapEventWithUserTriggeredFlag)(
-                {
-                  text: (el as HTMLInputElement).value,
-                  isChecked: !isChecked,
-                  userTriggered: false,
-                },
-                userTriggeredOnInput,
-              ),
+              userTriggeredOnInput
+                ? { text, isChecked: !isChecked, userTriggered: false }
+                : { text, isChecked: !isChecked },
             );
           }
         });
@@ -900,10 +887,12 @@ export function initAdoptedStyleSheetObserver(
     host.nodeName === '#document'
       ? (host as Document).defaultView?.Document
       : host.ownerDocument?.defaultView?.ShadowRoot;
-  const originalPropertyDescriptor = Object.getOwnPropertyDescriptor(
-    patchTarget?.prototype,
-    'adoptedStyleSheets',
-  );
+  const originalPropertyDescriptor = patchTarget?.prototype
+    ? Object.getOwnPropertyDescriptor(
+        patchTarget?.prototype,
+        'adoptedStyleSheets',
+      )
+    : undefined;
   if (
     hostId === null ||
     hostId === -1 ||
@@ -1181,6 +1170,44 @@ function initSelectionObserver(param: observerParam): listenerHandler {
   return on('selectionchange', updateSelection);
 }
 
+function initCustomElementObserver({
+  doc,
+  customElementCb,
+}: observerParam): listenerHandler {
+  const win = doc.defaultView as IWindow;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  if (!win || !win.customElements) return () => {};
+  const restoreHandler = patch(
+    win.customElements,
+    'define',
+    function (
+      original: (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) => void,
+    ) {
+      return function (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) {
+        try {
+          customElementCb({
+            define: {
+              name,
+            },
+          });
+        } catch (e) {
+          console.warn(`Custom element callback failed for ${name}`);
+        }
+        return original.apply(this, [name, constructor, options]);
+      };
+    },
+  );
+  return restoreHandler;
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -1195,6 +1222,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     canvasMutationCb,
     fontCb,
     selectionCb,
+    customElementCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -1268,6 +1296,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     selectionCb(...p);
   };
+  o.customElementCb = (...c: Arguments<customElementCallback>) => {
+    if (hooks.customElement) {
+      hooks.customElement(...c);
+    }
+    customElementCb(...c);
+  };
 }
 
 export function initObservers(
@@ -1282,7 +1316,10 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  const mutationObserver = initMutationObserver(o, o.doc);
+  let mutationObserver: MutationObserver | undefined;
+  if (o.recordDOM) {
+    mutationObserver = initMutationObserver(o, o.doc);
+  }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
   const scrollHandler = initScrollObserver(o);
@@ -1292,17 +1329,26 @@ export function initObservers(
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
-  const styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
-  const adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
-  const styleDeclarationObserver = initStyleDeclarationObserver(o, {
-    win: currentWindow,
-  });
-  const fontObserver = o.collectFonts
-    ? initFontObserver(o)
-    : () => {
-        //
-      };
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let styleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let adoptedStyleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let styleDeclarationObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let fontObserver = () => {};
+  if (o.recordDOM) {
+    styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
+    adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
+    styleDeclarationObserver = initStyleDeclarationObserver(o, {
+      win: currentWindow,
+    });
+    if (o.collectFonts) {
+      fontObserver = initFontObserver(o);
+    }
+  }
   const selectionObserver = initSelectionObserver(o);
+  const customElementObserver = initCustomElementObserver(o);
 
   // plugins
   const pluginHandlers: listenerHandler[] = [];
@@ -1314,7 +1360,7 @@ export function initObservers(
 
   return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
-    mutationObserver.disconnect();
+    mutationObserver?.disconnect();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();
@@ -1326,6 +1372,7 @@ export function initObservers(
     styleDeclarationObserver();
     fontObserver();
     selectionObserver();
+    customElementObserver();
     pluginHandlers.forEach((h) => h());
   });
 }

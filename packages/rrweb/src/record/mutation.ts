@@ -30,6 +30,7 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
+  closestElementOfNode,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -141,6 +142,7 @@ export default class MutationBuffer {
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
+  private attributeMap = new WeakMap<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
   private mapRemoves: Node[] = [];
 
@@ -188,6 +190,7 @@ export default class MutationBuffer {
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+  private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
     (
@@ -484,6 +487,7 @@ export default class MutationBuffer {
     // reset
     this.texts = [];
     this.attributes = [];
+    this.attributeMap = new WeakMap<Node, attributeCursor>();
     this.removes = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
@@ -497,17 +501,10 @@ export default class MutationBuffer {
     if (isIgnored(m.target, this.mirror)) {
       return;
     }
-    let unattachedDoc;
-    try {
-      // avoid upsetting original document from a Content Security point of view
-      unattachedDoc = document.implementation.createHTMLDocument();
-    } catch (e) {
-      // fallback to more direct method
-      unattachedDoc = this.doc;
-    }
     switch (m.type) {
       case 'characterData': {
         const value = m.target.textContent;
+
         if (
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
@@ -518,9 +515,10 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
+                true, // checkAncestors
               ) && value
                 ? this.maskTextFn
-                  ? this.maskTextFn(value)
+                  ? this.maskTextFn(value, closestElementOfNode(m.target))
                   : value.replace(/[\S]/g, '*')
                 : value,
             node: m.target,
@@ -552,9 +550,7 @@ export default class MutationBuffer {
           return;
         }
 
-        let item: attributeCursor | undefined = this.attributes.find(
-          (a) => a.node === m.target,
-        );
+        let item = this.attributeMap.get(m.target);
         if (
           target.tagName === 'IFRAME' &&
           attributeName === 'src' &&
@@ -576,6 +572,7 @@ export default class MutationBuffer {
             _unchangedStyles: {},
           };
           this.attributes.push(item);
+          this.attributeMap.set(m.target, item);
         }
 
         // Keep this property on inputs that used to be password inputs
@@ -597,7 +594,17 @@ export default class MutationBuffer {
             value,
           );
           if (attributeName === 'style') {
-            const old = unattachedDoc.createElement('span');
+            if (!this.unattachedDoc) {
+              try {
+                // avoid upsetting original document from a Content Security point of view
+                this.unattachedDoc =
+                  document.implementation.createHTMLDocument();
+              } catch (e) {
+                // fallback to more direct method
+                this.unattachedDoc = this.doc;
+              }
+            }
+            const old = this.unattachedDoc.createElement('span');
             if (m.oldValue) {
               old.setAttribute('style', m.oldValue);
             }

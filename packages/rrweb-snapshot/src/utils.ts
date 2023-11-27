@@ -98,7 +98,7 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
     const rules = s.rules || s.cssRules;
     return rules
       ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules).map(stringifyRule).join(''),
+          Array.from(rules, stringifyRule).join(''),
         )
       : null;
   } catch (error) {

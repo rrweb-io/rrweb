@@ -42,6 +42,12 @@ const suites: Array<
     eval: 'window.workload()',
     times: 5,
   },
+  {
+    title: 'modify attributes on 10000 DOM nodes',
+    html: 'benchmark-dom-mutation-attributes.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
 ];
 
 function avg(v: number[]): number {

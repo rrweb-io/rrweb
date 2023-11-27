@@ -61,15 +61,12 @@ export class StylesheetManager {
       let styleId;
       if (!this.styleMirror.has(sheet)) {
         styleId = this.styleMirror.add(sheet);
-        const rules = Array.from(sheet.rules || CSSRule);
         styles.push({
           styleId,
-          rules: rules.map((r, index) => {
-            return {
-              rule: stringifyRule(r),
-              index,
-            };
-          }),
+          rules: Array.from(sheet.rules || CSSRule, (r, index) => ({
+            rule: stringifyRule(r),
+            index,
+          })),
         });
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);

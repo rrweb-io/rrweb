@@ -38,6 +38,8 @@ export type elementNode = {
   childNodes: serializedNodeWithId[];
   isSVG?: true;
   needBlock?: boolean;
+  // This is a custom element or not.
+  isCustom?: true;
 };
 
 export type textNode = {
@@ -153,7 +155,7 @@ export type DataURLOptions = Partial<{
   quality: number;
 }>;
 
-export type MaskTextFn = (text: string) => string;
+export type MaskTextFn = (text: string, element: HTMLElement | null) => string;
 export type MaskInputFn = (text: string, element: HTMLElement) => string;
 
 export type KeepIframeSrcFn = (src: string) => boolean;
