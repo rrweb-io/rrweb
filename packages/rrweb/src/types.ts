@@ -38,6 +38,7 @@ import type {
   viewportResizeCallback,
   PackFn,
   UnpackFn,
+  assetCaptureParam,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 import type AssetManager from './record/observers/asset-manager';
@@ -70,21 +71,7 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   inlineImages?: boolean;
-  assetCapture?: {
-    /**
-     * Captures object URLs (blobs, files, media sources).
-     * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
-     */
-    captureObjectURLs: boolean;
-    /**
-     * Allowlist of origins to capture object URLs from.
-     * [origin, origin, ...] to capture from specific origins.
-     *   e.g. ['https://example.com', 'https://www.example.com']
-     * Set to `true` capture from all origins.
-     * Set to `false` or `[]` to disable capturing from any origin apart from object URLs.
-     */
-    captureOrigins: string[] | true | false;
-  };
+  assetCapture?: assetCaptureParam;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
