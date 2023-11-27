@@ -2,12 +2,6 @@
  * @vitest-environment jsdom
  */
 import { describe, it, test, expect } from 'vitest';
-<<<<<<< HEAD
-||||||| parent of a5097a7cb (NodeType was moved to @rrweb/types)
-import { NodeType, serializedNode } from '@rrweb/types';
-=======
-import { NodeType } from '@rrweb/types';
->>>>>>> a5097a7cb (NodeType was moved to @rrweb/types)
 import {
   escapeImportStatement,
   extractFileExtension,
@@ -15,14 +9,8 @@ import {
   isNodeMetaEqual,
   stringifyStylesheet,
 } from '../src/utils';
-<<<<<<< HEAD
 import { NodeType } from '@rrweb/types';
 import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
-||||||| parent of a5097a7cb (NodeType was moved to @rrweb/types)
-import type { serializedNodeWithId } from '@rrweb/types';
-=======
-import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
->>>>>>> a5097a7cb (NodeType was moved to @rrweb/types)
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
