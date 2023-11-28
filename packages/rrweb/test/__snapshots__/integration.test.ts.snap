@@ -15,7 +15,11 @@ exports[`record integration tests can correctly serialize a shader and multiple 
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -429,7 +433,11 @@ exports[`record integration tests can freeze mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -609,7 +617,11 @@ exports[`record integration tests can mask character data mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -1049,7 +1061,11 @@ exports[`record integration tests can record and replay style mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -1364,7 +1380,11 @@ exports[`record integration tests can record and replay textarea mutations corre
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -1628,7 +1648,11 @@ exports[`record integration tests can record attribute mutation 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -1799,7 +1823,11 @@ exports[`record integration tests can record character data muatations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -1977,7 +2005,11 @@ exports[`record integration tests can record childList mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -2153,7 +2185,11 @@ exports[`record integration tests can record clicks 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -2440,7 +2476,11 @@ exports[`record integration tests can record form interactions 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -3223,7 +3263,11 @@ exports[`record integration tests can record node mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -4198,7 +4242,11 @@ exports[`record integration tests can record style changes compactly and preserv
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -4424,7 +4472,11 @@ exports[`record integration tests can use maskInputOptions to configure which ty
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -5295,7 +5347,11 @@ exports[`record integration tests handles null attribute values 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -5486,7 +5542,11 @@ exports[`record integration tests mutations should work when blocked class is un
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -6252,7 +6312,11 @@ exports[`record integration tests should handle recursive console messages 1`] =
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -6432,7 +6496,11 @@ exports[`record integration tests should mask inputs via function call 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -7302,7 +7370,11 @@ exports[`record integration tests should mask password value attribute with mask
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -7749,7 +7821,11 @@ exports[`record integration tests should mask texts 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -8047,7 +8123,11 @@ exports[`record integration tests should mask texts using maskTextFn 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -8345,7 +8425,11 @@ exports[`record integration tests should nest record iframe 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -9105,7 +9189,11 @@ exports[`record integration tests should not record blocked elements and its chi
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -9285,7 +9373,11 @@ exports[`record integration tests should not record blocked elements dynamically
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -9491,7 +9583,11 @@ exports[`record integration tests should not record input events on ignored elem
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -9902,7 +9998,11 @@ exports[`record integration tests should not record input values if dynamically 
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -10134,7 +10234,11 @@ exports[`record integration tests should not record input values if maskAllInput
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -11004,7 +11108,11 @@ exports[`record integration tests should record DOM node movement 1 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -11271,7 +11379,11 @@ exports[`record integration tests should record DOM node movement 2 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -11545,7 +11657,11 @@ exports[`record integration tests should record after DOMContentLoaded event 1`]
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -11632,7 +11748,11 @@ exports[`record integration tests should record canvas mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -11851,7 +11971,11 @@ exports[`record integration tests should record console messages 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -12357,7 +12481,11 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -12753,7 +12881,11 @@ exports[`record integration tests should record images inside iframe with blob u
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": false,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -13112,7 +13244,11 @@ exports[`record integration tests should record images inside iframe with blob u
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": false,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -13546,7 +13682,11 @@ exports[`record integration tests should record images with blob url 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": false,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -13753,7 +13893,11 @@ exports[`record integration tests should record input userTriggered values if us
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -14653,7 +14797,11 @@ exports[`record integration tests should record moved shadow DOM 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -14822,7 +14970,11 @@ exports[`record integration tests should record moved shadow DOM 2 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -15005,7 +15157,11 @@ exports[`record integration tests should record mutations in iframes accross pag
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -15314,7 +15470,11 @@ exports[`record integration tests should record nested iframes and shadow doms 1
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -15661,7 +15821,11 @@ exports[`record integration tests should record shadow DOM 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -16113,7 +16277,11 @@ exports[`record integration tests should record shadow DOM 2 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -16231,7 +16399,11 @@ exports[`record integration tests should record shadow DOM 3 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -16349,7 +16521,11 @@ exports[`record integration tests should record shadow doms polyfilled by shadyd
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -16595,7 +16771,11 @@ exports[`record integration tests should record shadow doms polyfilled by synthe
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -16869,7 +17049,11 @@ exports[`record integration tests should record webgl canvas mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -17084,7 +17268,11 @@ exports[`record integration tests should unmask texts using maskTextFn 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -17382,7 +17570,11 @@ exports[`record integration tests will serialize node before record 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"assetCapture\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
