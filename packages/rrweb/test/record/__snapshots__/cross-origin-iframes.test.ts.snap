@@ -8,7 +8,7 @@ exports[`cross origin iframes > audio.html > should emit contents of iframe once
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -350,7 +350,7 @@ exports[`cross origin iframes > blank.html > should filter out forwarded cross o
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -616,7 +616,7 @@ exports[`cross origin iframes > blank.html > should record same-origin iframe in
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -864,7 +864,7 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1881,7 +1881,7 @@ exports[`cross origin iframes > form.html > should map scroll events correctly 1
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2541,7 +2541,7 @@ exports[`cross origin iframes > move-node.html > captures mutations on adopted s
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2959,7 +2959,7 @@ exports[`cross origin iframes > move-node.html > captures mutations on styleshee
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -3382,7 +3382,7 @@ exports[`cross origin iframes > move-node.html > should record DOM attribute cha
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -3674,7 +3674,7 @@ exports[`cross origin iframes > move-node.html > should record DOM node movement
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -4063,7 +4063,7 @@ exports[`cross origin iframes > move-node.html > should record DOM node removal 
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -4353,7 +4353,7 @@ exports[`cross origin iframes > move-node.html > should record DOM text changes 
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -4643,7 +4643,7 @@ exports[`cross origin iframes > move-node.html > should record canvas elements 1
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -4970,7 +4970,7 @@ exports[`cross origin iframes > move-node.html > should record custom events 1`]
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -5248,184 +5248,6 @@ exports[`cross origin iframes > move-node.html > should record custom events 1`]
 ]"
 `;
 
-exports[`same origin iframes > should emit contents of iframe once 1`] = `
-"[
-  {
-    \\"type\\": 4,
-    \\"data\\": {
-      \\"href\\": \\"about:blank\\",
-      \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"assetCapture\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
-    }
-  },
-  {
-    \\"type\\": 2,
-    \\"data\\": {
-      \\"node\\": {
-        \\"type\\": 0,
-        \\"childNodes\\": [
-          {
-            \\"type\\": 1,
-            \\"name\\": \\"html\\",
-            \\"publicId\\": \\"\\",
-            \\"systemId\\": \\"\\",
-            \\"id\\": 2
-          },
-          {
-            \\"type\\": 2,
-            \\"tagName\\": \\"html\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"head\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"text/javascript\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"iframe\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"id\\": 9
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
-                  }
-                ],
-                \\"id\\": 7
-              }
-            ],
-            \\"id\\": 3
-          }
-        ],
-        \\"id\\": 1
-      },
-      \\"initialOffset\\": {
-        \\"left\\": 0,
-        \\"top\\": 0
-      }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 0,
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"html\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"head\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 11,
-                    \\"id\\": 13
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"body\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"rootId\\": 11,
-                    \\"id\\": 14
-                  }
-                ],
-                \\"rootId\\": 11,
-                \\"id\\": 12
-              }
-            ],
-            \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 11
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"isAttachIframe\\": true
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"removes\\": [],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 13,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"script\\",
-            \\"attributes\\": {
-              \\"type\\": \\"text/javascript\\"
-            },
-            \\"childNodes\\": [],
-            \\"rootId\\": 11,
-            \\"id\\": 15
-          }
-        },
-        {
-          \\"parentId\\": 15,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-            \\"rootId\\": 11,
-            \\"id\\": 16
-          }
-        }
-      ]
-    }
-  }
-]"
-`;
-
 exports[`same origin iframes > should record cross-origin iframe in same-origin iframe 1`] = `
 "[
   {
@@ -5434,7 +5256,7 @@ exports[`same origin iframes > should record cross-origin iframe in same-origin 
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }

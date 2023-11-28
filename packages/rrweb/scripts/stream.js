@@ -49,7 +49,7 @@ async function injectRecording(frame, serverURL) {
           recordCanvas: false,
           recordCrossOriginIframes: true,
           collectFonts: true,
-          assetCapture: {
+          captureAssets: {
             objectURLs: true,
             origins: false,
           },
