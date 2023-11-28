@@ -24,11 +24,11 @@ Here is the TypeScript type definition for the `recordOptions` object, which inc
 ```typescript
 export type recordOptions<T> = {
   // Other configuration options...
-  inlineImages?: boolean;
   assetCapture?: {
     objectURLs: boolean;
     origins: string[] | true | false;
   };
+  inlineImages?: boolean; // Deprecated, don't use it anymore
   // Other configuration options...
 };
 ```
