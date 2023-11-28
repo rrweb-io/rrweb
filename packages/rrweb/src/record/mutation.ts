@@ -182,7 +182,7 @@ export default class MutationBuffer {
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
   /**
-   * @deprecated please use `assetCapture` instead
+   * @deprecated please use `captureAssets` instead
    */
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
