@@ -75,8 +75,7 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   /**
-   * @deprecated Since 2.0.0. This option is still supported, but is planned to
-   * be superseded by future captureAssets asset recording APIs.
+   * @deprecated Since 2.0.0. please use `assetCapture` instead (captureAssets.images)
    */
   inlineImages?: boolean;
   assetCapture?: assetCaptureParam;
@@ -115,6 +114,9 @@ export type observerParam = {
   sampling: SamplingStrategy;
   recordDOM: boolean;
   recordCanvas: boolean;
+  /**
+   * @deprecated please use `assetCapture` instead
+   */
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
