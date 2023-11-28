@@ -183,6 +183,9 @@ export default class MutationBuffer {
   private maskInputFn: observerParam['maskInputFn'];
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
+  /**
+   * @deprecated please use `assetCapture` instead
+   */
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
   private dataURLOptions: observerParam['dataURLOptions'];
@@ -315,6 +318,7 @@ export default class MutationBuffer {
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
+
       const sn = serializeNodeWithId(n, {
         doc: this.doc,
         mirror: this.mirror,
