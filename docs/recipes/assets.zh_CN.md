@@ -4,11 +4,11 @@
 
 ## 内联图像（已弃用）
 
-`inlineImages` 配置选项已被弃用，不应再使用。它存在一些问题，即重写已经发出的事件，这可能使您错过已发送到服务器的内联图像。相反，请使用 `assetCapture` 选项来配置资源捕获。
+`inlineImages` 配置选项已被弃用，不应再使用。它存在一些问题，即重写已经发出的事件，这可能使您错过已发送到服务器的内联图像。相反，请使用 `captureAssets` 选项来配置资源捕获。
 
 ## 资源捕获配置
 
-`assetCapture` 配置选项允许您自定义资源捕获过程。它是一个具有以下属性的对象：
+`captureAssets` 配置选项允许您自定义资源捕获过程。它是一个具有以下属性的对象：
 
 - `objectURLs`（默认值：`true`）：此属性指定是否使用对象 URL 捕获同源 `blob:` 资源。对象 URL 是使用 `URL.createObjectURL()` 方法创建的。将 `objectURLs` 设置为 `true` 可以启用对象 URL 的捕获。
 
@@ -24,7 +24,7 @@
 ```typescript
 export type recordOptions<T> = {
   // 其他配置选项...
-  assetCapture?: {
+  captureAssets?: {
     objectURLs: boolean;
     origins: string[] | true | false;
   };
@@ -33,8 +33,8 @@ export type recordOptions<T> = {
 };
 ```
 
-这种类型定义表明 assetCapture 是 recordOptions 对象的一个可选属性。它包含 objectURLs 和 origins 属性，其含义与上述相同。
+这种类型定义表明 captureAssets 是 recordOptions 对象的一个可选属性。它包含 objectURLs 和 origins 属性，其含义与上述相同。
 
 ## 结论
 
-通过在 rrweb 中配置 assetCapture 选项，您可以控制在记录过程中如何捕获像图像这样的资源。这允许您
+通过在 rrweb 中配置 captureAssets 选项，您可以控制在记录过程中如何捕获像图像这样的资源。这允许您
