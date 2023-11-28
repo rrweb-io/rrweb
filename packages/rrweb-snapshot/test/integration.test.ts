@@ -280,7 +280,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         onIframeLoad: function(iframe, sn) {
           window.snapshot = sn;
         },
-        assetCapture: {
+        captureAssets: {
           origin: false,
           objectURLs: false
         }

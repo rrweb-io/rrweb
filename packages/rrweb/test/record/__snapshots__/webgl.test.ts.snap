@@ -8,7 +8,7 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -171,7 +171,7 @@ exports[`record webgl should batch events by RAF 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -320,7 +320,7 @@ exports[`record webgl will record changes to a canvas element 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -417,7 +417,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -549,7 +549,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -681,7 +681,7 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -778,7 +778,7 @@ exports[`record webgl will record webgl variables 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -895,7 +895,7 @@ exports[`record webgl will record webgl variables in reverse order 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }

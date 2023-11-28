@@ -41,7 +41,7 @@ export type metaEvent = {
     href: string;
     width: number;
     height: number;
-    assetCapture?: assetCaptureParam;
+    captureAssets?: captureAssetsParam;
   };
 };
 
@@ -61,7 +61,7 @@ export type pluginEvent<T = unknown> = {
   };
 };
 
-export type assetCaptureParam = {
+export type captureAssetsParam = {
   /**
    * Captures object URLs (blobs, files, media sources).
    * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
