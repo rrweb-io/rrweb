@@ -38,7 +38,7 @@ import type {
   viewportResizeCallback,
   PackFn,
   UnpackFn,
-  assetCaptureParam,
+  captureAssetsParam,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 import type AssetManager from './record/observers/asset-manager';
@@ -71,10 +71,10 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   /**
-   * @deprecated please use `assetCapture` instead
+   * @deprecated please use `captureAssets` instead
    */
   inlineImages?: boolean;
-  assetCapture?: assetCaptureParam;
+  captureAssets?: captureAssetsParam;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -111,7 +111,7 @@ export type observerParam = {
   recordDOM: boolean;
   recordCanvas: boolean;
   /**
-   * @deprecated please use `assetCapture` instead
+   * @deprecated please use `captureAssets` instead
    */
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
