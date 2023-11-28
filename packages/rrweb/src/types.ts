@@ -70,6 +70,9 @@ export type recordOptions<T> = {
   recordAfter?: 'DOMContentLoaded' | 'load';
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
+  /**
+   * @deprecated please use `assetCapture` instead
+   */
   inlineImages?: boolean;
   assetCapture?: assetCaptureParam;
   plugins?: RecordPlugin[];
@@ -107,6 +110,9 @@ export type observerParam = {
   sampling: SamplingStrategy;
   recordDOM: boolean;
   recordCanvas: boolean;
+  /**
+   * @deprecated please use `assetCapture` instead
+   */
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
