@@ -315,7 +315,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('data:image/webp;base64,'));
   });
 
-  it('correctly saves blob:images in iframes offline', async () => {
+  it('[deprecated] correctly saves blob:images in iframes offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
     await page.goto('http://localhost:3030/html/picture-blob-in-frame.html', {
@@ -330,6 +330,10 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false,
         onIframeLoad: function(iframe, sn) {
           window.snapshot = sn;
+        },
+        assetCapture: {
+          origins: false,
+          objectURLs: false
         }
     })`);
     await waitForRAF(page);
