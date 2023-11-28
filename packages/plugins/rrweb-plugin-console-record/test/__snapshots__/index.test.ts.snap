@@ -8,7 +8,7 @@ exports[`rrweb-plugin-console-record > should handle recursive console messages 
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -196,7 +196,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }

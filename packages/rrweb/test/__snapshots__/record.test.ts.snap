@@ -8,7 +8,7 @@ exports[`record > aggregates mutations 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -98,7 +98,7 @@ exports[`record > can add custom event 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -196,7 +196,7 @@ exports[`record > captures CORS stylesheets that are still loading 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -303,7 +303,7 @@ exports[`record > captures adopted stylesheets in nested shadow doms and iframes
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -773,7 +773,7 @@ exports[`record > captures adopted stylesheets in shadow doms and iframe 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1173,7 +1173,7 @@ exports[`record > captures adopted stylesheets of shadow doms in checkout full s
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1277,7 +1277,7 @@ exports[`record > captures adopted stylesheets of shadow doms in checkout full s
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1386,7 +1386,7 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1520,7 +1520,7 @@ exports[`record > captures mutations on adopted stylesheets 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1824,7 +1824,7 @@ exports[`record > captures nested stylesheet rules 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -1977,7 +1977,7 @@ exports[`record > captures style property changes 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2110,7 +2110,7 @@ exports[`record > captures stylesheet rules 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2252,7 +2252,7 @@ exports[`record > captures stylesheets in iframes with \`blob:\` url 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2400,7 +2400,7 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2492,7 +2492,7 @@ exports[`record > is safe to checkout during async callbacks 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2627,7 +2627,7 @@ exports[`record > is safe to checkout during async callbacks 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -2748,346 +2748,6 @@ exports[`record > is safe to checkout during async callbacks 1`] = `
 ]"
 `;
 
-exports[`record > loading stylesheets > captures stylesheets in iframes that are still loading 1`] = `
-"[
-  {
-    \\"type\\": 4,
-    \\"data\\": {
-      \\"href\\": \\"about:blank\\",
-      \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"assetCapture\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
-    }
-  },
-  {
-    \\"type\\": 2,
-    \\"data\\": {
-      \\"node\\": {
-        \\"type\\": 0,
-        \\"childNodes\\": [
-          {
-            \\"type\\": 1,
-            \\"name\\": \\"html\\",
-            \\"publicId\\": \\"\\",
-            \\"systemId\\": \\"\\",
-            \\"id\\": 2
-          },
-          {
-            \\"type\\": 2,
-            \\"tagName\\": \\"html\\",
-            \\"attributes\\": {
-              \\"lang\\": \\"en\\"
-            },
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"head\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 5
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"charset\\": \\"UTF-8\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 6
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 7
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"http-equiv\\": \\"X-UA-Compatible\\",
-                      \\"content\\": \\"IE=edge\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 8
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 9
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"name\\": \\"viewport\\",
-                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 10
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 11
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"title\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"Hello World!\\",
-                        \\"id\\": 13
-                      }
-                    ],
-                    \\"id\\": 12
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 14
-                  }
-                ],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 15
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    Hello world!\\\\n  \\\\n\\\\n\\",
-                    \\"id\\": 17
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"iframe\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [],
-                    \\"id\\": 18
-                  }
-                ],
-                \\"id\\": 16
-              }
-            ],
-            \\"id\\": 3
-          }
-        ],
-        \\"id\\": 1
-      },
-      \\"initialOffset\\": {
-        \\"left\\": 0,
-        \\"top\\": 0
-      }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [
-        {
-          \\"parentId\\": 18,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 0,
-            \\"childNodes\\": [
-              {
-                \\"type\\": 1,
-                \\"name\\": \\"html\\",
-                \\"publicId\\": \\"\\",
-                \\"systemId\\": \\"\\",
-                \\"rootId\\": 19,
-                \\"id\\": 20
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"html\\",
-                \\"attributes\\": {
-                  \\"lang\\": \\"en\\"
-                },
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"head\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 19,
-                        \\"id\\": 23
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"meta\\",
-                        \\"attributes\\": {
-                          \\"charset\\": \\"UTF-8\\"
-                        },
-                        \\"childNodes\\": [],
-                        \\"rootId\\": 19,
-                        \\"id\\": 24
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 19,
-                        \\"id\\": 25
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"meta\\",
-                        \\"attributes\\": {
-                          \\"http-equiv\\": \\"X-UA-Compatible\\",
-                          \\"content\\": \\"IE=edge\\"
-                        },
-                        \\"childNodes\\": [],
-                        \\"rootId\\": 19,
-                        \\"id\\": 26
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 19,
-                        \\"id\\": 27
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"meta\\",
-                        \\"attributes\\": {
-                          \\"name\\": \\"viewport\\",
-                          \\"content\\": \\"width=device-width, initial-scale=1.0\\"
-                        },
-                        \\"childNodes\\": [],
-                        \\"rootId\\": 19,
-                        \\"id\\": 28
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
-                        \\"rootId\\": 19,
-                        \\"id\\": 29
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"title\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"Hello World!\\",
-                            \\"rootId\\": 19,
-                            \\"id\\": 31
-                          }
-                        ],
-                        \\"rootId\\": 19,
-                        \\"id\\": 30
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n  \\",
-                        \\"rootId\\": 19,
-                        \\"id\\": 32
-                      }
-                    ],
-                    \\"rootId\\": 19,
-                    \\"id\\": 22
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
-                    \\"rootId\\": 19,
-                    \\"id\\": 33
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"body\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    Hello world!\\\\n  \\\\n\\\\n\\",
-                        \\"rootId\\": 19,
-                        \\"id\\": 35
-                      }
-                    ],
-                    \\"rootId\\": 19,
-                    \\"id\\": 34
-                  }
-                ],
-                \\"rootId\\": 19,
-                \\"id\\": 21
-              }
-            ],
-            \\"id\\": 19
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"isAttachIframe\\": true
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"removes\\": [],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 22,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"link\\",
-            \\"attributes\\": {
-              \\"rel\\": \\"stylesheet\\",
-              \\"href\\": \\"http://localhost:3030/html/assets/style.css\\"
-            },
-            \\"childNodes\\": [],
-            \\"rootId\\": 19,
-            \\"id\\": 36
-          }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 36,
-          \\"attributes\\": {
-            \\"_cssText\\": \\"body { color: pink; }\\"
-          }
-        }
-      ]
-    }
-  }
-]"
-`;
-
 exports[`record > loading stylesheets > captures stylesheets that are still loading 1`] = `
 "[
   {
@@ -3096,7 +2756,7 @@ exports[`record > loading stylesheets > captures stylesheets that are still load
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -3280,7 +2940,7 @@ exports[`record > no need for attribute mutations on adds 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -3404,7 +3064,7 @@ exports[`record > should record scroll position 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -3528,7 +3188,7 @@ exports[`record > without CSSGroupingRule support > captures nested stylesheet r
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }
@@ -3681,7 +3341,7 @@ exports[`record iframes > captures stylesheet mutations in iframes 1`] = `
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
       \\"height\\": 1080,
-      \\"assetCapture\\": {
+      \\"captureAssets\\": {
         \\"objectURLs\\": true,
         \\"origins\\": false
       }

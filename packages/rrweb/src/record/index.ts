@@ -97,7 +97,7 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
-    assetCapture = {
+    captureAssets = {
       objectURLs: true,
       origins: false,
     },
@@ -342,7 +342,7 @@ function record<T = eventWithTime>(
   assetManager = new AssetManager({
     mutationCb: wrappedAssetEmit,
     win: window,
-    assetCapture,
+    captureAssets,
   });
 
   const shadowDomManager = new ShadowDomManager({
@@ -383,7 +383,7 @@ function record<T = eventWithTime>(
           href: window.location.href,
           width: getWindowWidth(),
           height: getWindowHeight(),
-          assetCapture,
+          captureAssets,
         },
       },
       isCheckout,
