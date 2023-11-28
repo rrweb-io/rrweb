@@ -116,7 +116,6 @@ export default class AssetManager {
     try {
       const response = await fetch(url);
       const blob = await response.blob();
-      console.log('getURLObject', url, blob);
       return blob;
     } catch (e) {
       console.warn(`getURLObject failed for ${url}`);
@@ -127,7 +126,6 @@ export default class AssetManager {
   public capture(url: string): {
     status: 'capturing' | 'captured' | 'error' | 'refused';
   } {
-    console.log('capture', url, this.shouldIgnore(url));
     if (this.shouldIgnore(url)) return { status: 'refused' };
 
     if (this.capturedURLs.has(url)) {
@@ -138,10 +136,8 @@ export default class AssetManager {
       return { status: 'error' };
     }
     this.capturingURLs.add(url);
-    console.log('capturing');
     void this.getURLObject(url)
       .then(async (object) => {
-        console.log('captured', url);
         if (object) {
           let payload: SerializedCanvasArg;
           if (object instanceof File || object instanceof Blob) {
