@@ -27,6 +27,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
+    "@rollup/plugin-terser": "^0.4.3",
     "@types/cssom": "^0.4.1",
     "@types/cssstyle": "^2.2.1",
     "@types/jest": "^27.4.1",
@@ -39,7 +40,6 @@
     "jest": "^27.5.1",
     "puppeteer": "^9.1.1",
     "rollup": "^2.56.3",
-    "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
     "rollup-plugin-web-worker-loader": "^1.6.1",
     "ts-jest": "^27.1.3"
