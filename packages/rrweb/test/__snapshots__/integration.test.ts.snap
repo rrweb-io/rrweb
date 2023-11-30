@@ -14341,7 +14341,7 @@ exports[`record integration tests should record images inside iframe with blob u
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"blob:http://localhost:3030/2191dd12-9b7d-440a-88a1-60451e2cbae5\\",
+      \\"url\\": \\"blob:http://localhost:3030/...\\",
       \\"payload\\": {
         \\"rr_type\\": \\"Blob\\",
         \\"type\\": \\"text/plain\\",
@@ -14794,7 +14794,7 @@ exports[`record integration tests should record images inside iframe with blob u
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"blob:http://localhost:3030/1786bb8a-e2e5-4c5c-b2a5-ba9875e40c65\\",
+      \\"url\\": \\"blob:http://localhost:3030/...\\",
       \\"payload\\": {
         \\"rr_type\\": \\"Blob\\",
         \\"type\\": \\"text/plain\\",
@@ -15020,7 +15020,7 @@ exports[`record integration tests should record images with blob url 1`] = `
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"blob:http://localhost:3030/ed823e22-cc3c-436a-a460-d6dce1bd1ee9\\",
+      \\"url\\": \\"blob:http://localhost:3030/...\\",
       \\"payload\\": {
         \\"rr_type\\": \\"Blob\\",
         \\"type\\": \\"text/plain\\",
