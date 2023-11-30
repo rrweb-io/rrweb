@@ -798,9 +798,10 @@ function serializeElementNode(
     if (attributes.srcset) {
       assets.push(...getUrlsFromSrcset(attributes.srcset.toString()));
     }
-    // TODO: decide if inlineImages should still be supported,
-    // and if so if it should be moved into `rrweb` package.
-  } else if (tagName === 'img' && inlineImages) {
+  }
+
+  // `inlineImages` is deprecated and will be removed in rrweb 3.x.
+  if (tagName === 'img' && inlineImages) {
     if (!canvasService) {
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
