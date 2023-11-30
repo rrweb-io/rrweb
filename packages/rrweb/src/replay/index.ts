@@ -1818,17 +1818,7 @@ export class Replayer {
               } else {
                 const targetEl = target as Element | RRElement;
                 targetEl.setAttribute(attributeName, value);
-                if (
-                  this.assetManager.isAttributeCacheable(
-                    targetEl,
-                    attributeName,
-                  )
-                ) {
-                  void this.assetManager.manageAttribute(
-                    targetEl,
-                    attributeName,
-                  );
-                }
+                void this.assetManager.manageAttribute(targetEl, attributeName);
               }
             } catch (error) {
               this.warn(
