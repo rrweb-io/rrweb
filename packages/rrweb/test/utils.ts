@@ -132,6 +132,9 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
           delete (s.data as Optional<mouseInteractionData, 'x'>).x;
           delete (s.data as Optional<mouseInteractionData, 'y'>).y;
         }
+        if (s.type === EventType.Asset) {
+          s.data.url = s.data.url.replace(/\/[a-f0-9\-]+$/, '/...');
+        }
         if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.Mutation
