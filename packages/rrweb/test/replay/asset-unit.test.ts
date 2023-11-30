@@ -3,7 +3,12 @@
  */
 
 import AssetManager from '../../src/replay/assets';
-import { EventType, SerializedBlobArg, assetEvent } from '@rrweb/types';
+import {
+  EventType,
+  SerializedBlobArg,
+  assetEvent,
+  captureAssetsParam,
+} from '@rrweb/types';
 
 describe('AssetManager', () => {
   let assetManager: AssetManager;
@@ -28,7 +33,10 @@ describe('AssetManager', () => {
   });
 
   beforeEach(() => {
-    assetManager = new AssetManager();
+    assetManager = new AssetManager({
+      origins: true,
+      objectURLs: true,
+    });
   });
 
   afterEach(() => {
@@ -141,7 +149,7 @@ describe('AssetManager', () => {
     await expect(promise).resolves.toEqual({ status: 'reset' });
   });
 
-  const validCombinations = [
+  const validAttributeCombinations = [
     ['img', ['src', 'srcset']],
     ['video', ['src']],
     ['audio', ['src']],
@@ -153,7 +161,7 @@ describe('AssetManager', () => {
     ['object', ['src']],
   ] as const;
 
-  const invalidCombinations = [
+  const invalidAttributeCombinations = [
     ['img', ['href']],
     ['script', ['href']],
     ['link', ['src']],
@@ -167,7 +175,7 @@ describe('AssetManager', () => {
     ['object', ['href']],
   ] as const;
 
-  validCombinations.forEach(([tagName, attributes]) => {
+  validAttributeCombinations.forEach(([tagName, attributes]) => {
     const element = document.createElement(tagName);
     attributes.forEach((attribute) => {
       it(`should correctly identify <${tagName} ${attribute}> as cacheable`, () => {
@@ -178,13 +186,55 @@ describe('AssetManager', () => {
     });
   });
 
-  invalidCombinations.forEach(([tagName, attributes]) => {
+  invalidAttributeCombinations.forEach(([tagName, attributes]) => {
     const element = document.createElement(tagName);
     attributes.forEach((attribute) => {
       it(`should correctly identify <${tagName} ${attribute}> as NOT cacheable`, () => {
         expect(assetManager.isAttributeCacheable(element, attribute)).toBe(
           false,
         );
+      });
+    });
+  });
+
+  const validOriginCombinations: Array<
+    [captureAssetsParam['origins'], string[]]
+  > = [
+    [['http://example.com'], ['http://example.com/image.png']],
+    [['https://example.com'], ['https://example.com/image.png']],
+    [['https://example.com:80'], ['https://example.com:80/cgi-bin/image.png']],
+    [true, ['https://example.com:80/cgi-bin/image.png']],
+  ];
+
+  const invalidOriginCombinations: Array<
+    [captureAssetsParam['origins'], string[]]
+  > = [
+    [['http://example.com'], ['https://example.com/image.png']],
+    [['https://example.com'], ['https://example.org/image.png']],
+    [['https://example.com:80'], ['https://example.com:81/image.png']],
+    [false, ['https://example.com:81/image.png']],
+  ];
+
+  validOriginCombinations.forEach(([origin, urls]) => {
+    const assetManager = new AssetManager({
+      origins: origin,
+      objectURLs: false,
+    });
+    urls.forEach((url) => {
+      it(`should correctly identify ${url} as cacheable for origin ${origin}`, () => {
+        expect(assetManager.isURLOfCacheableOrigin(url)).toBe(true);
+      });
+    });
+  });
+
+  invalidOriginCombinations.forEach(([origin, urls]) => {
+    const assetManager = new AssetManager({
+      origins: origin,
+      objectURLs: false,
+    });
+    urls.forEach((url) => {
+      it(`should correctly identify ${url} as NOT cacheable for origin ${origin}`, () => {
+        expect(assetManager.isURLOfCacheableOrigin(url)).toBe(false);
       });
     });
   });

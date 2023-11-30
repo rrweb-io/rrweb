@@ -287,9 +287,7 @@ function buildNode(
           } else {
             node.setAttribute(name, value.toString());
 
-            if (options.assetManager?.isAttributeCacheable(node, name)) {
-              options.assetManager.manageAttribute(node, name);
-            }
+            options.assetManager?.manageAttribute(node, name);
           }
         } catch (error) {
           // skip invalid attribute
