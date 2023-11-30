@@ -3,6 +3,7 @@ import type {
   RebuildAssetManagerInterface,
   RebuildAssetManagerStatus,
   assetEvent,
+  captureAssetsParam,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
 import { isAttributeCacheable } from '../../utils';
@@ -17,6 +18,11 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     string,
     Array<(status: RebuildAssetManagerFinalStatus) => void>
   > = new Map();
+  private config: captureAssetsParam;
+
+  constructor(config: captureAssetsParam) {
+    this.config = config;
+  }
 
   public async add(event: assetEvent) {
     const { data } = event;
@@ -114,10 +120,32 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     return isAttributeCacheable(n as Element, attribute);
   }
 
+  public isURLOfCacheableOrigin(url: string): boolean {
+    if (url.startsWith('data:')) return false;
+
+    const { origins: cachedOrigins, objectURLs } = this.config;
+    if (objectURLs && url.startsWith(`blob:`)) {
+      return true;
+    }
+
+    if (Array.isArray(cachedOrigins)) {
+      try {
+        const { origin } = new URL(url);
+        return cachedOrigins.some((o) => o === origin);
+      } catch {
+        return false;
+      }
+    }
+
+    return cachedOrigins;
+  }
+
   public async manageAttribute(
     node: RRElement | Element,
     attribute: string,
   ): Promise<unknown> {
+    if (!this.isAttributeCacheable(node, attribute)) return false;
+
     const originalValue = node.getAttribute(attribute);
     if (!originalValue) return false;
 
@@ -128,6 +156,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         ? getSourcesFromSrcset(originalValue)
         : [originalValue];
     for (const value of values) {
+      if (!this.isURLOfCacheableOrigin(value)) continue;
+
       promises.push(
         this.whenReady(value).then((status) => {
           if (
