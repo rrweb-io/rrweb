@@ -478,6 +478,30 @@ describe('asset caching', function (this: ISuite) {
       },
     );
 
+    it('adds captureAssets config to meta event', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Meta,
+          data: {
+            href: expect.any(String),
+            width: expect.any(Number),
+            height: expect.any(Number),
+            captureAssets: {
+              origins: true,
+              objectURLs: false,
+            },
+          },
+        }),
+      );
+    });
+
     it('capture all urls', async () => {
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
       await waitForRAF(ctx.page);
