@@ -7,6 +7,10 @@ const events: eventWithTime[] = [
       href: '',
       width: 1600,
       height: 900,
+      captureAssets: {
+        origins: ['ftp://example.com'],
+        objectURLs: false,
+      },
     },
     timestamp: 1636379531385,
   },
@@ -109,7 +113,7 @@ const events: eventWithTime[] = [
         {
           id: 16,
           attributes: {
-            src: 'httpx://example.com/image.png',
+            src: 'ftp://example.com/image.png',
           },
         },
       ],
@@ -121,7 +125,7 @@ const events: eventWithTime[] = [
   {
     type: EventType.Asset,
     data: {
-      url: 'httpx://example.com/image.png',
+      url: 'ftp://example.com/image.png',
       payload: {
         rr_type: 'Blob',
         type: 'image/png',
