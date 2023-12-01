@@ -368,3 +368,25 @@ export function getUrlsFromSrcset(srcset: string): string[] {
   }
   return urls;
 }
+
+export const CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
+  ['IMG', new Set(['src', 'srcset'])],
+  ['VIDEO', new Set(['src'])],
+  ['AUDIO', new Set(['src'])],
+  ['EMBED', new Set(['src'])],
+  ['SOURCE', new Set(['src'])],
+  ['TRACK', new Set(['src'])],
+  ['INPUT', new Set(['src'])],
+  ['IFRAME', new Set(['src'])],
+  ['OBJECT', new Set(['src'])],
+]);
+
+export function isAttributeCacheable(n: Element, attribute: string): boolean {
+  const acceptedAttributesSet = CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
+    n.nodeName,
+  );
+  if (!acceptedAttributesSet) {
+    return false;
+  }
+  return acceptedAttributesSet.has(attribute);
+}
