@@ -51,7 +51,7 @@ async function injectRecording(frame, serverURL) {
           collectFonts: true,
           captureAssets: {
             objectURLs: true,
-            origins: false,
+            origins: true,
           },
         });
       })();
