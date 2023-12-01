@@ -63,6 +63,8 @@ describe('replayer', function () {
       replayer.pause(0);
     `);
 
+      await waitForRAF(page);
+
       const image = await page.screenshot();
       expect(image).toMatchImageSnapshot();
     });

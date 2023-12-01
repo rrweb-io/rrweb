@@ -7,8 +7,10 @@ import type {
 import type { assetCallback } from '@rrweb/types';
 import { encode } from 'base64-arraybuffer';
 
-import { isAttributeCacheable, patch } from '../../utils';
+import { patch } from '../../utils';
+
 import type { recordOptions } from '../../types';
+import { isAttributeCacheable } from 'rrweb-snapshot';
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
