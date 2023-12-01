@@ -596,8 +596,15 @@ describe('asset caching', function (this: ISuite) {
         <!DOCTYPE html>
         <html>
           <body>
-            <img src="{SERVER_URL}/html/assets/robot.png" />
-            <img src="{SERVER_B_URL}/html/assets/robot.png" />
+            <img src="{SERVER_URL}/html/assets/robot.png?img" />
+            <video><track default kind="captions" srclang="en" src="{SERVER_URL}/html/assets/subtitles.vtt" /><source src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source" /></video>
+            <video src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video" type="audio/mp3" />
+            <audio src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio" type="audio/mp3" />
+            <embed type="video/webm" src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed" width="250" height="200" />
+            <img srcset="{SERVER_URL}/html/assets/robot.png?1x, {SERVER_URL}/html/assets/robot.png?2x 2x" />
+            <img src="{SERVER_B_URL}/html/assets/robot.png?img" />
+            <input type="image" id="image" alt="Login" src="{SERVER_URL}/html/assets/robot.png?input-type-image" />
+            <iframe src="{SERVER_URL}/html/assets/robot.png?iframe" />
           </body>
         </html>
       `,
@@ -609,25 +616,41 @@ describe('asset caching', function (this: ISuite) {
       },
     );
 
-    it('should capture assets with origin defined in config', async () => {
-      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
-      await waitForRAF(ctx.page);
+    [
+      `{SERVER_URL}/html/assets/robot.png?img`,
+      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio`,
+      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video`,
+      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source`,
+      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed`,
+      '{SERVER_URL}/html/assets/subtitles.vtt',
+      '{SERVER_URL}/html/assets/robot.png?1x',
+      '{SERVER_URL}/html/assets/robot.png?2x',
+      '{SERVER_URL}/html/assets/robot.png?input-type-image',
+      '{SERVER_URL}/html/assets/robot.png?iframe',
+    ].forEach((u) => {
+      it(`should capture ${u} with origin defined in config`, async () => {
+        const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
+        console.log(url, ctx.serverURL);
+        await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+        await waitForRAF(ctx.page);
 
-      const events = await ctx.page?.evaluate(
-        () => (window as unknown as IWindow).snapshots,
-      );
+        const events = await ctx.page?.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        );
 
-      // expect an event to be emitted with `event.type` === EventType.Asset
-      expect(events).toContainEqual(
-        expect.objectContaining({
-          type: EventType.Asset,
-          data: {
-            url: `${ctx.serverURL}/html/assets/robot.png`,
-            payload: expect.any(Object),
-          },
-        }),
-      );
+        // expect an event to be emitted with `event.type` === EventType.Asset
+        expect(events).toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+            data: {
+              url,
+              payload: expect.any(Object),
+            },
+          }),
+        );
+      });
     });
+
     it("shouldn't capture assets with origin not defined in config", async () => {
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
       await waitForRAF(ctx.page);
@@ -641,7 +664,7 @@ describe('asset caching', function (this: ISuite) {
         expect.objectContaining({
           type: EventType.Asset,
           data: {
-            url: `${ctx.serverBURL}/html/assets/robot.png`,
+            url: `${ctx.serverBURL}/html/assets/robot.png?img`,
             payload: expect.any(Object),
           },
         }),
