@@ -1106,6 +1106,6 @@ describe('replayer', function () {
     `);
     // If the custom element is not defined, the display value will be 'none'.
     // If the custom element is defined, the display value will be 'block'.
-    expect(displayValue).toEqual('dupe');
+    expect(displayValue).toEqual('this value is used for replay');
   });
 });

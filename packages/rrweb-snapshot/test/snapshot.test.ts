@@ -245,6 +245,10 @@ describe('form', () => {
   it('should record textarea values once', () => {
     const el = render(`<textarea>Lorem ipsum</textarea>`);
     const sel = serializeNode(el) as elementNode;
+
+    // we serialize according to where the DOM stores the value, not how
+    // the HTML stores it (this is so that maskInputValue can work over
+    // inputs/textareas/selects in a uniform way)
     expect(sel).toMatchObject({
       attributes: {
         value: 'Lorem ipsum',

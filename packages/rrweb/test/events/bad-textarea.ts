@@ -54,12 +54,12 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'textarea',
                     attributes: {
-                      value: 'dupe',
+                      value: 'this value is used for replay',
                     },
                     childNodes: [
                       {
                         type: 3,
-                        textContent: 'dupe should ignore',
+                        textContent: 'this value is IGNORED for replay (but was present as a duplicte in legacy recordings)',
                         id: 7,
                       },
                     ],
