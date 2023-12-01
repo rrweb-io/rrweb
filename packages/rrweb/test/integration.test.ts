@@ -110,7 +110,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'empty.html'));
 
-    await new Promise((resolve) => setTimeout(resolve, 20)); // ensure mutations aren't included in fullsnapshot
+    await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
 
     await page.evaluate(() => {
       const ta = document.createElement('textarea');
