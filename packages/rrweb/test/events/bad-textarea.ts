@@ -59,7 +59,8 @@ const events: eventWithTime[] = [
                     childNodes: [
                       {
                         type: 3,
-                        textContent: 'this value is IGNORED for replay (but was present as a duplicte in legacy recordings)',
+                        textContent:
+                          'this value is IGNORED for replay (but was present as a duplicte in legacy recordings)',
                         id: 7,
                       },
                     ],
