@@ -6,8 +6,7 @@ import type {
   captureAssetsParam,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
-import { isAttributeCacheable } from '../../utils';
-import { getSourcesFromSrcset } from 'rrweb-snapshot';
+import { getSourcesFromSrcset, isAttributeCacheable } from 'rrweb-snapshot';
 import type { RRElement } from 'rrdom';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
@@ -18,9 +17,9 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     string,
     Array<(status: RebuildAssetManagerFinalStatus) => void>
   > = new Map();
-  private config: captureAssetsParam;
+  private config: captureAssetsParam | undefined;
 
-  constructor(config: captureAssetsParam) {
+  constructor(config: captureAssetsParam | undefined) {
     this.config = config;
   }
 
@@ -123,7 +122,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   public isURLOfCacheableOrigin(url: string): boolean {
     if (url.startsWith('data:')) return false;
 
-    const { origins: cachedOrigins, objectURLs } = this.config;
+    const { origins: cachedOrigins = false, objectURLs = false } =
+      this.config || {};
     if (objectURLs && url.startsWith(`blob:`)) {
       return true;
     }
@@ -149,14 +149,13 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     const originalValue = node.getAttribute(attribute);
     if (!originalValue) return false;
 
-    const promises = [];
+    const promises: Promise<unknown>[] = [];
 
     const values =
       attribute === 'srcset'
         ? getSourcesFromSrcset(originalValue)
         : [originalValue];
-    for (const value of values) {
-      if (!this.isURLOfCacheableOrigin(value)) continue;
+    values.forEach((value) => {
 
       promises.push(
         this.whenReady(value).then((status) => {
@@ -170,11 +169,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           }
         }),
       );
-    }
+    });
     return Promise.all(promises);
   }
 
-  public reset(): void {
+  public reset(config: captureAssetsParam | undefined): void {
+    this.config = config;
     this.originalToObjectURLMap.forEach((objectURL) => {
       URL.revokeObjectURL(objectURL);
     });
