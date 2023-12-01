@@ -5,7 +5,6 @@ import {
   tagMap,
   elementNode,
   BuildCache,
-  attributes,
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
@@ -200,14 +199,9 @@ function buildNode(
           value = addHoverClass(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          const child = doc.createTextNode(value);
+          node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
-          for (const c of Array.from(node.childNodes)) {
-            if (c.nodeType === node.TEXT_NODE) {
-              node.removeChild(c);
-            }
-          }
-          node.appendChild(child);
+          n.childNodes = []; // value overrides childNodes
           continue;
         }
 

@@ -16,6 +16,7 @@ import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
+import textareaEvents from './events/bad-textarea';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
@@ -1091,5 +1092,20 @@ describe('replayer', function () {
     // If the custom element is not defined, the display value will be 'none'.
     // If the custom element is defined, the display value will be 'block'.
     expect(displayValue).toEqual('block');
+  });
+
+  it('can deal with legacy duplicate/conflicting values on textareas', async () => {
+    await page.evaluate(`events = ${JSON.stringify(textareaEvents)}`);
+
+    const displayValue = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(100);
+      const textarea = replayer.iframe.contentDocument.querySelector('textarea');
+      textarea.value;
+    `);
+    // If the custom element is not defined, the display value will be 'none'.
+    // If the custom element is defined, the display value will be 'block'.
+    expect(displayValue).toEqual('this value is used for replay');
   });
 });

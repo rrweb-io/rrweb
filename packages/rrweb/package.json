@@ -12,6 +12,7 @@
     "test": "yarn test:headless",
     "test:watch": "yarn test:headless -- --watch",
     "test:update": "yarn test:headless -- --updateSnapshot",
+    "retest:update": "PUPPETEER_HEADLESS=true yarn retest -- --updateSnapshot",
     "repl": "yarn bundle:browser && node scripts/repl.js",
     "live-stream": "yarn bundle:browser && node scripts/stream.js",
     "dev": "yarn bundle:browser --watch",

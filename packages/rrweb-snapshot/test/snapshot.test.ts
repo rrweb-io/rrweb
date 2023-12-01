@@ -7,7 +7,7 @@ import {
   serializeNodeWithId,
   _isBlockedElement,
 } from '../src/snapshot';
-import { serializedNodeWithId } from '../src/types';
+import { serializedNodeWithId, elementNode } from '../src/types';
 import { Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
@@ -216,5 +216,44 @@ describe('scrollTop/scrollLeft', () => {
         rr_scrollLeft: 20,
       },
     });
+  });
+});
+
+describe('form', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+    });
+  };
+
+  const render = (html: string): HTMLTextAreaElement => {
+    document.write(html);
+    return document.querySelector('textarea')!;
+  };
+
+  it('should record textarea values once', () => {
+    const el = render(`<textarea>Lorem ipsum</textarea>`);
+    const sel = serializeNode(el) as elementNode;
+
+    // we serialize according to where the DOM stores the value, not how
+    // the HTML stores it (this is so that maskInputValue can work over
+    // inputs/textareas/selects in a uniform way)
+    expect(sel).toMatchObject({
+      attributes: {
+        value: 'Lorem ipsum',
+      },
+    });
+    expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
   });
 });
