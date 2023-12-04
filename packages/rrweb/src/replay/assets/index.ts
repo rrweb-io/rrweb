@@ -173,7 +173,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     return Promise.all(promises);
   }
 
-  public reset(config: captureAssetsParam | undefined): void {
+  public reset(config?: captureAssetsParam | undefined): void {
     this.config = config;
     this.originalToObjectURLMap.forEach((objectURL) => {
       URL.revokeObjectURL(objectURL);
