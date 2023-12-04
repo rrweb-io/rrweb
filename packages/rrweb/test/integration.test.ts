@@ -640,6 +640,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.evaluate(() => {
       const el = document.createElement('input');
       el.id = 'input';
+      el.setAttribute('size', '50');
       el.value = 'input should be masked';
 
       const nextElement = document.querySelector('#one')!;

@@ -10914,6 +10914,7 @@ exports[`record integration tests should not record input values if dynamically 
             \\"tagName\\": \\"input\\",
             \\"attributes\\": {
               \\"id\\": \\"input\\",
+              \\"size\\": \\"50\\",
               \\"value\\": \\"**********************\\"
             },
             \\"childNodes\\": [],
