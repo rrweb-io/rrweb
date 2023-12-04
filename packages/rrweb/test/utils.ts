@@ -44,7 +44,7 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort: number = 3031) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
