@@ -207,7 +207,6 @@ export default class MutationBuffer {
         'maskInputFn',
         'keepIframeSrcFn',
         'recordCanvas',
-        'inlineImages',
         'slimDOMOptions',
         'dataURLOptions',
         'doc',
