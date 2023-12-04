@@ -191,7 +191,6 @@ describe('asset caching', function (this: ISuite) {
           },
         },
       };
-      console.log(events);
       expect(events[events.length - 1]).toMatchObject(expected);
     });
 
@@ -237,7 +236,6 @@ describe('asset caching', function (this: ISuite) {
           },
         },
       };
-      console.log(events);
       expect(events[events.length - 1]).toMatchObject(expected);
     });
   });
@@ -387,7 +385,6 @@ describe('asset caching', function (this: ISuite) {
       );
 
       // expect no event to be emitted with `event.type` === EventType.Asset
-      console.log(events);
       expect(events).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
@@ -656,7 +653,6 @@ describe('asset caching', function (this: ISuite) {
     ].forEach((u) => {
       it(`should capture ${u} with origin defined in config`, async () => {
         const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
-        console.log(url, ctx.serverURL);
         await ctx.page.waitForNetworkIdle({ idleTime: 100 });
         await waitForRAF(ctx.page);
 
