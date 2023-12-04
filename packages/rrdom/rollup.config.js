@@ -18,6 +18,7 @@ const basePlugins = [
 
   typescript({
     tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
+    cacheRoot: `./node_modules/.cache/rrdom/`,
   }),
 ];
 
