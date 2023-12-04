@@ -5,7 +5,6 @@ import {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
-  elementNode,
   serializedElementNodeWithId,
   type mediaAttributes,
 } from './types';
@@ -14,6 +13,7 @@ import {
   serializedNodeWithId,
   NodeType,
   attributes,
+  elementNode,
   DataURLOptions,
 } from '@rrweb/types';
 import {
