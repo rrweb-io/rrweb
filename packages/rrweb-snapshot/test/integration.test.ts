@@ -4,10 +4,12 @@ import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
-import * as typescript from 'rollup-plugin-typescript2';
-import * as assert from 'assert';
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from 'rollup-plugin-typescript2';
+import assert from 'assert';
 import { waitForRAF } from './utils';
 
+const _resolve = resolve as unknown as () => rollup.Plugin;
 const _typescript = typescript as unknown as () => rollup.Plugin;
 
 const htmlFolder = path.join(__dirname, 'html');
@@ -74,7 +76,7 @@ describe('integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
+      plugins: [_resolve(), _typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -341,7 +343,7 @@ describe('iframe integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
+      plugins: [_resolve(), _typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -389,7 +391,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
+      plugins: [_resolve(), _typescript()],
     });
     const {
       output: [{ code: _code }],
