@@ -595,16 +595,33 @@ describe('asset caching', function (this: ISuite) {
       `
         <!DOCTYPE html>
         <html>
-          <body>
+          <body background="{SERVER_URL}/html/assets/robot.png?body">
             <img src="{SERVER_URL}/html/assets/robot.png?img" />
             <video><track default kind="captions" srclang="en" src="{SERVER_URL}/html/assets/subtitles.vtt" /><source src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source" /></video>
-            <video src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video" type="audio/mp3" />
-            <audio src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio" type="audio/mp3" />
+            <video src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video" type="audio/mp3"></video>
+            <audio src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio" type="audio/mp3"></audio>
             <embed type="video/webm" src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed" width="250" height="200" />
             <img srcset="{SERVER_URL}/html/assets/robot.png?1x, {SERVER_URL}/html/assets/robot.png?2x 2x" />
             <img src="{SERVER_B_URL}/html/assets/robot.png?img" />
             <input type="image" id="image" alt="Login" src="{SERVER_URL}/html/assets/robot.png?input-type-image" />
-            <iframe src="{SERVER_URL}/html/assets/robot.png?iframe" />
+            <iframe src="{SERVER_URL}/html/assets/robot.png?iframe"></iframe>
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+              <image href="{SERVER_URL}/html/assets/robot.png?svg" xlink:href="{SERVER_URL}/html/assets/robot.png?svg2" width="100" height="100" />
+                <defs>
+                <filter id="image">
+                  <feImage href="{SERVER_URL}/html/assets/robot.png?svg3" xlink:href="{SERVER_URL}/html/assets/robot.png?svg4" />
+                </filter>
+              </defs>
+              <cursor href="{SERVER_URL}/html/assets/robot.png?svg5" xlink:href="{SERVER_URL}/html/assets/robot.png?svg6" >
+              <rect x="10%" y="10%" width="80%" height="80%" style="filter:url(#image);" />
+              </cursor>
+            </svg>
+            <table background="{SERVER_URL}/html/assets/robot.png?table">
+              <tr>
+                <td background="{SERVER_URL}/html/assets/robot.png?td">foo</td>
+                <td>bar</td>
+              </tr>
+            </table>
           </body>
         </html>
       `,
@@ -617,6 +634,7 @@ describe('asset caching', function (this: ISuite) {
     );
 
     [
+      '{SERVER_URL}/html/assets/robot.png?body',
       `{SERVER_URL}/html/assets/robot.png?img`,
       `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio`,
       `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video`,
@@ -627,6 +645,14 @@ describe('asset caching', function (this: ISuite) {
       '{SERVER_URL}/html/assets/robot.png?2x',
       '{SERVER_URL}/html/assets/robot.png?input-type-image',
       '{SERVER_URL}/html/assets/robot.png?iframe',
+      '{SERVER_URL}/html/assets/robot.png?svg',
+      '{SERVER_URL}/html/assets/robot.png?svg2',
+      '{SERVER_URL}/html/assets/robot.png?svg3',
+      '{SERVER_URL}/html/assets/robot.png?svg4',
+      '{SERVER_URL}/html/assets/robot.png?svg5',
+      '{SERVER_URL}/html/assets/robot.png?svg6',
+      '{SERVER_URL}/html/assets/robot.png?table',
+      '{SERVER_URL}/html/assets/robot.png?td',
     ].forEach((u) => {
       it(`should capture ${u} with origin defined in config`, async () => {
         const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
@@ -696,12 +722,4 @@ describe('asset caching', function (this: ISuite) {
       );
     });
   });
-
-  test.todo('should support video elements');
-  test.todo('should support audio elements');
-  test.todo('should support embed elements');
-  test.todo('should support source elements');
-  test.todo('should support track elements');
-  test.todo('should support input#type=image elements');
-  test.todo('should support img srcset');
 });
