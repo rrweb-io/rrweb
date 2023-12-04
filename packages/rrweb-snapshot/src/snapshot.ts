@@ -480,7 +480,7 @@ function serializeNode(
     /**
      * @deprecated please use `captureAssets` instead
      */
-    inlineImages: boolean;
+    inlineImages?: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -650,7 +650,7 @@ function serializeElementNode(
     /**
      * @deprecated please use `captureAssets` instead
      */
-    inlineImages: boolean;
+    inlineImages?: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
