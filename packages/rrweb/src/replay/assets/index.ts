@@ -19,7 +19,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   > = new Map();
   private config: captureAssetsParam | undefined;
 
-  constructor(config: captureAssetsParam | undefined) {
+  constructor(config?: captureAssetsParam | undefined) {
     this.config = config;
   }
 
