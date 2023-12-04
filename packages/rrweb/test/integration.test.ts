@@ -147,6 +147,7 @@ describe('record integration tests', function (this: ISuite) {
     });
     await waitForRAF(page);
     await page.type('textarea', '2'); // cursor is at index 1
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
