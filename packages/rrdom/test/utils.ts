@@ -14,6 +14,7 @@ export async function compileTSCode(inputFilePath: string) {
       _typescript({
         tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
         clean: true,
+        cacheRoot: `./node_modules/.cache/rrdom-test/${Date.now()}/`,
       }) as unknown as rollup.Plugin,
     ],
   });
