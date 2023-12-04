@@ -156,7 +156,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         ? getSourcesFromSrcset(originalValue)
         : [originalValue];
     values.forEach((value) => {
-
       promises.push(
         this.whenReady(value).then((status) => {
           if (
