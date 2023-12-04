@@ -761,11 +761,11 @@ export type RebuildAssetManagerStatus =
   | RebuildAssetManagerFinalStatus;
 
 export declare abstract class RebuildAssetManagerInterface {
-  constructor(config: captureAssetsParam | undefined);
+  constructor(config?: captureAssetsParam | undefined);
   abstract add(event: assetEvent): Promise<void>;
   abstract get(url: string): RebuildAssetManagerStatus;
   abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
-  abstract reset(config: captureAssetsParam | undefined): void;
+  abstract reset(config?: captureAssetsParam | undefined): void;
   abstract isAttributeCacheable(n: Element, attribute: string): boolean;
   abstract isURLOfCacheableOrigin(url: string): boolean;
   abstract manageAttribute(n: Element, attribute: string): void;
