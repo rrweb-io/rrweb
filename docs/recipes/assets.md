@@ -4,7 +4,7 @@
 
 ## Inline Images (Deprecated)
 
-The `inlineImages` configuration option is deprecated and should not be used anymore. It has some issues, namely rewriting events that are already emitted which might make you miss the inlined image if the event has already been sent to the server. Instead, use the `captureAssets` option to configure asset capture.
+The `inlineImages` configuration option is deprecated and should not be used anymore. The previous implementation had some issues, namely rewriting events that are already emitted which might make you miss the inlined image if the event has already been sent to the server. Currently it just turns on `captureAssets`, so use please directly use the `captureAssets` option to configure asset capture.
 
 ## Asset Capture Configuration
 
