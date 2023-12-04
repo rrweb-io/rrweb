@@ -29,9 +29,6 @@
     },
     {
       "path": "../rrweb-snapshot"
-    },
-    {
-      "path": "../types"
     }
   ]
 }
