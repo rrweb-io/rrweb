@@ -156,6 +156,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         ? getSourcesFromSrcset(originalValue)
         : [originalValue];
     values.forEach((value) => {
+      if (!this.isURLOfCacheableOrigin(value)) return;
+
       promises.push(
         this.whenReady(value).then((status) => {
           if (
