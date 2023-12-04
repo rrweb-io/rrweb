@@ -639,6 +639,7 @@ describe('record integration tests', function (this: ISuite) {
       const el = document.createElement('input');
       el.size = 50;
       el.id = 'input';
+      el.setAttribute('size', '50');
       el.value = 'input should be masked';
 
       const nextElement = document.querySelector('#one')!;
