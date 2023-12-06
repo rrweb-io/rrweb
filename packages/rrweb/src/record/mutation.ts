@@ -144,6 +144,7 @@ export default class MutationBuffer {
   private attributes: attributeCursor[] = [];
   private attributeMap = new WeakMap<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
+  private removesMap = new Map<number, number>();
   private mapRemoves: Node[] = [];
 
   private movedMap: Record<string, true> = {};
@@ -349,7 +350,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n, this.mirror) &&
+        isParentRemoved(this.removesMap, n, this.mirror) &&
         !this.movedSet.has(n.parentNode!)
       ) {
         continue;
@@ -360,7 +361,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n, this.mirror)
+        !isParentRemoved(this.removesMap, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -489,6 +490,7 @@ export default class MutationBuffer {
     this.attributes = [];
     this.attributeMap = new WeakMap<Node, attributeCursor>();
     this.removes = [];
+    this.removesMap = new Map<number, number>();
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
@@ -688,6 +690,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            this.removesMap.set(nodeId, this.removes.length - 1);
           }
           this.mapRemoves.push(n);
         });
@@ -751,16 +754,16 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
 }
 
 function isParentRemoved(
-  removes: removedNodeMutation[],
+  removesMap: Map<number, number>,
   n: Node,
   mirror: Mirror,
 ): boolean {
-  if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
+  if (removesMap.size === 0) return false;
+  return _isParentRemoved(removesMap, n, mirror);
 }
 
 function _isParentRemoved(
-  removes: removedNodeMutation[],
+  removesMap: Map<number, number>,
   n: Node,
   mirror: Mirror,
 ): boolean {
@@ -769,10 +772,10 @@ function _isParentRemoved(
     return false;
   }
   const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
+  if (removesMap.has(parentId)) {
     return true;
   }
-  return _isParentRemoved(removes, parentNode, mirror);
+  return _isParentRemoved(removesMap, parentNode, mirror);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
