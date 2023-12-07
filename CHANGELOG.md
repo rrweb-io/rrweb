@@ -3,7 +3,7 @@
 ## 2.4.0
 
 - revert: feat: Remove plugins related code, which is not used [#123](https://github.com/getsentry/rrweb/pull/123)
-- feat: Export additional canvas-related types and functions (#134) 
+- feat: Export additional canvas-related types and functions (#134)
 
 ## 2.3.0
 
