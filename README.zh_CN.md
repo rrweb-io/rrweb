@@ -166,5 +166,10 @@ rrweb 主要由 3 部分组成：
         <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
       </a>
     </td>
+    <td align="center">
+      <a href="https://uxwizz.com" target="_blank">
+        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
+      </a>
+    </td>
   </tr>
 </table>
