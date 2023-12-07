@@ -1,6 +1,7 @@
 import record from './record';
 
 import { Replayer } from './replay';
+import canvasMutation from './replay/canvas';
 import * as utils from './utils';
 
 export {
@@ -11,15 +12,19 @@ export {
 } from '@sentry-internal/rrweb-types';
 
 export type {
+  canvasMutationParam,
+  canvasMutationData,
+  eventWithTime,
   fullSnapshotEvent,
   incrementalSnapshotEvent,
   inputData,
-  eventWithTime,
 } from '@sentry-internal/rrweb-types';
 
-export type { recordOptions } from './types';
+export type { ReplayPlugin, recordOptions } from './types';
 
-export { record, Replayer, utils };
+export { record, Replayer, utils, canvasMutation };
+
+export { deserializeArg } from './replay/canvas/deserialize-args';
 
 export {
   takeFullSnapshot,
