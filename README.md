@@ -231,5 +231,10 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
       </a>
     </td>
+    <td align="center">
+      <a href="https://uxwizz.com" target="_blank">
+        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
+      </a>
+    </td>
   </tr>
 </table>
