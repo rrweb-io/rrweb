@@ -202,8 +202,10 @@ export class Replayer {
 
     /**
      * Exposes mirror to the plugins
-     * We ignore plugins here, as we don't have any
      */
+    for (const plugin of this.config.plugins || []) {
+      if (plugin.getMirror) plugin.getMirror({ nodeMirror: this.mirror });
+    }
 
     this.emitter.on(ReplayerEvents.Flush, () => {
       if (this.usingVirtualDom) {
@@ -234,7 +236,11 @@ export class Replayer {
             else if (data.source === IncrementalSource.StyleDeclaration)
               this.applyStyleDeclaration(data, styleSheet);
           },
-          // we ignore plugins here, as we don't have any
+          afterAppend: (node: Node, id: number) => {
+            for (const plugin of this.config.plugins || []) {
+              if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
+            }
+          },
         };
         if (this.iframe.contentDocument)
           try {
@@ -717,7 +723,9 @@ export class Replayer {
         castFn();
       }
 
-      // we ignore plugins here, as we don't have any
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.handler) plugin.handler(event, isSync, { replayer: this });
+      }
 
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
 
@@ -770,7 +778,13 @@ export class Replayer {
     const collected: AppendedIframe[] = [];
     const afterAppend = (builtNode: Node, id: number) => {
       this.collectIframeAndAttachDocument(collected, builtNode);
-      // we ignore plugins here, as we don't have any
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.onBuild)
+          plugin.onBuild(builtNode, {
+            id,
+            replayer: this,
+          });
+      }
     };
 
     /**
@@ -863,7 +877,7 @@ export class Replayer {
     type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
 
     const collected: AppendedIframe[] = [];
-    const afterAppend = (builtNode: Node, _id: number) => {
+    const afterAppend = (builtNode: Node, id: number) => {
       this.collectIframeAndAttachDocument(collected, builtNode);
       const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
@@ -878,7 +892,14 @@ export class Replayer {
       }
 
       // Skip the plugin onBuild callback in the virtual dom mode
-      // we ignore plugins here, as we don't have any
+      if (this.usingVirtualDom) return;
+      for (const plugin of this.config.plugins || []) {
+        if (plugin.onBuild)
+          plugin.onBuild(builtNode, {
+            id,
+            replayer: this,
+          });
+      }
     };
 
     buildNodeWithSN(mutation.node, {
@@ -1498,7 +1519,13 @@ export class Replayer {
         );
         return;
       }
-      // we ignore plugins here, as we don't have any
+      const afterAppend = (node: Node | RRNode, id: number) => {
+        // Skip the plugin onBuild callback for virtual dom
+        if (this.usingVirtualDom) return;
+        for (const plugin of this.config.plugins || []) {
+          if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
+        }
+      };
 
       const target = buildNodeWithSN(mutation.node, {
         doc: targetDoc as Document, // can be Document or RRDocument
@@ -1510,6 +1537,7 @@ export class Replayer {
          * caveat: `afterAppend` only gets called on child nodes of target
          * we have to call it again below when this target was added to the DOM
          */
+        afterAppend,
       }) as Node | RRNode;
 
       // legacy data, we should not have -1 siblings any more
@@ -1584,7 +1612,10 @@ export class Replayer {
       } else {
         (parent as TNode).appendChild(target as TNode);
       }
-      // we ignore plugins here, as we don't have any
+      /**
+       * target was added, execute plugin hooks
+       */
+      afterAppend(target, mutation.node.id);
 
       /**
        * https://github.com/rrweb-io/rrweb/pull/887
