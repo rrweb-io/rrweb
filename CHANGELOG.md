@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.5.0
 
 - Revert "fix: isCheckout is not included in fullsnapshot event (#1141)"
 
