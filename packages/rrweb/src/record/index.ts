@@ -455,7 +455,6 @@ function record<T = eventWithTime>(
           initialOffset: getWindowScroll(window),
         },
       }),
-      isCheckout,
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
