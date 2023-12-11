@@ -8,6 +8,7 @@ const _typescript = typescript as unknown as typeof typescript.default;
  */
 export async function compileTSCode(inputFilePath: string) {
   const bundle = await rollup.rollup({
+    cache: false, // caching causes failures on github actions
     input: inputFilePath,
     plugins: [
       resolve() as unknown as rollup.Plugin,

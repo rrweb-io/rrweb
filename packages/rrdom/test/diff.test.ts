@@ -1380,7 +1380,9 @@ describe('diff algorithm for rrdom', () => {
       warn.mockRestore();
     });
 
-    it('selectors should be case-sensitive for matching in iframe dom', async () => {
+    // XXX: This fails frequently in GHA due to caching (in `compileTSCode()`)
+    // ENOENT: no such file or directory, open '/home/runner/work/rrweb/rrweb/packages/rrdom/node_modules/.cache/rollup-plugin-typescript2/rpt2_63b53bcefb703a361889e909184eab6d1d585390/code/cache_/b2cbb4fcc9b1d34215bac12e22f86314e38adc84'
+    it.skip('selectors should be case-sensitive for matching in iframe dom', async () => {
       /**
        * If the selector match is case insensitive, it will cause some CSS style problems in the replayer.
        * This test result executed in JSDom is different from that in real browser so we use puppeteer as test environment.

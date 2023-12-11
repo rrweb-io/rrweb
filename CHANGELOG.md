@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Revert "fix: isCheckout is not included in fullsnapshot event (#1141)"
+
 ## 2.4.0
 
 - revert: feat: Remove plugins related code, which is not used [#123](https://github.com/getsentry/rrweb/pull/123)

@@ -1,7 +1,7 @@
 github:
   owner: getsentry
   repo: rrweb
-changelogPolicy: none
+changelogPolicy: auto
 preReleaseCommand: bash scripts/craft-pre-release.sh
 requireNames:
   - /^sentry-internal-rrweb-snapshot-.*\.tgz$/
