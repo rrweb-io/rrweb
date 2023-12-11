@@ -144,17 +144,6 @@ const events: eventWithTime[] = [
   {
     type: EventType.Asset,
     data: {
-      url: 'ftp://example.com/original-image.png',
-      failed: {
-        status: 404,
-        message: 'Not Found',
-      },
-    },
-    timestamp: 1636379531391,
-  },
-  {
-    type: EventType.Asset,
-    data: {
       url: 'ftp://example.com/new-image.png',
       payload: {
         rr_type: 'Blob',
