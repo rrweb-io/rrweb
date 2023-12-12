@@ -334,13 +334,15 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
 
 /**
  * Extracts the file extension from an a path, considering search parameters and fragments.
- * @param path Path to file
- * @param [baseURL] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
+ * @param path - Path to file
+ * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
  */
-export function extractFileExtension(path: string, baseURL?: string): string | null {
+export function extractFileExtension(
+  path: string,
+  baseURL?: string,
+): string | null {
   const url = new URL(path, baseURL ?? window.location.href);
-  const regex = /\.([0-9a-z]+)(?:[\?#]|$)/i;
+  const regex = /\.([0-9a-z]+)(?:[?#]|$)/i;
   const match = url.pathname.match(regex);
-  console.log(url.pathname)
   return match?.[1] ?? null;
 }

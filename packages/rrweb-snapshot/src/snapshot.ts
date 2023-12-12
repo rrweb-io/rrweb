@@ -1175,12 +1175,15 @@ export function serializeNodeWithId(
   }
 
   // <link rel=stylesheet href=...>
-  if (serializedNode.type === NodeType.Element &&
+  if (
+    serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'link' &&
     typeof serializedNode.attributes.rel === 'string' &&
-    (serializedNode.attributes.rel === 'stylesheet' || (serializedNode.attributes.rel === 'preload' &&
-      typeof serializedNode.attributes.href === 'string' &&
-      extractFileExtension(serializedNode.attributes.href) === 'css'))) {
+    (serializedNode.attributes.rel === 'stylesheet' ||
+      (serializedNode.attributes.rel === 'preload' &&
+        typeof serializedNode.attributes.href === 'string' &&
+        extractFileExtension(serializedNode.attributes.href) === 'css'))
+  ) {
     onceStylesheetLoaded(
       n as HTMLLinkElement,
       () => {
