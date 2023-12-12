@@ -331,7 +331,7 @@ function buildNode(
           } else {
             node.setAttribute(name, value.toString());
 
-            options.assetManager?.manageAttribute(node, name);
+            options.assetManager?.manageAttribute(node, n.id, name);
           }
         } catch (error) {
           // skip invalid attribute
