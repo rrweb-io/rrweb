@@ -3229,6 +3229,11 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/quickjs-emscripten/-/quickjs-emscripten-0.23.0.tgz#db4ecfd499a9765ab24002c3b696d02e6d32a12c"
   integrity sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==
 
+"@total-typescript/shoehorn@^0.1.0":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@total-typescript/shoehorn/-/shoehorn-0.1.1.tgz#72d3ba9364faa4f6b8e66c57b7a9094457e3652b"
+  integrity sha512-XSPcazQsC2Cr7eCiAI+M2bTmMziBvFWYTYMgUDKLbU6i+7m3I2BF5gXF5vKDO8577fONs9CvmTvVa7+nMHMfxg==
+
 "@ts-morph/common@~0.18.0":
   version "0.18.1"
   resolved "https://registry.yarnpkg.com/@ts-morph/common/-/common-0.18.1.tgz#ca40c3a62c3f9e17142e0af42633ad63efbae0ec"

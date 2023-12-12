@@ -761,14 +761,17 @@ export type RebuildAssetManagerStatus =
   | RebuildAssetManagerFinalStatus;
 
 export declare abstract class RebuildAssetManagerInterface {
-  constructor(config?: captureAssetsParam | undefined);
+  constructor(
+    playerConfig: { liveMode: boolean },
+    assetManagerConfig?: captureAssetsParam | undefined,
+  );
   abstract add(event: assetEvent): Promise<void>;
   abstract get(url: string): RebuildAssetManagerStatus;
   abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
   abstract reset(config?: captureAssetsParam | undefined): void;
-  abstract isAttributeCacheable(n: Element, attribute: string): boolean;
+  abstract isCacheable(n: Element, attribute: string, value: string): boolean;
   abstract isURLOfCacheableOrigin(url: string): boolean;
-  abstract manageAttribute(n: Element, attribute: string): void;
+  abstract manageAttribute(n: Element, id: number, attribute: string): void;
 }
 
 export enum NodeType {

@@ -37,6 +37,7 @@
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
+    "@total-typescript/shoehorn": "^0.1.0",
     "eslint": "^8.15.0",
     "jest": "^27.5.1",
     "puppeteer": "^17.1.3",
