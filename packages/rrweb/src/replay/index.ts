@@ -137,7 +137,7 @@ export class Replayer {
 
   private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
 
-  private assetManager = new AssetManager();
+  private assetManager: AssetManager;
 
   private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
@@ -199,6 +199,7 @@ export class Replayer {
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    this.assetManager = new AssetManager({ liveMode: this.config.liveMode });
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -218,6 +219,7 @@ export class Replayer {
       if (this.usingVirtualDom) {
         const replayerHandler: ReplayerHandler = {
           mirror: this.mirror,
+          assetManager: this.assetManager,
           applyCanvas: (
             canvasEvent: canvasEventWithTime,
             canvasMutationData: canvasMutationData,
@@ -829,7 +831,7 @@ export class Replayer {
       }
     };
 
-    void this.preloadAllAssets();
+    void this.preloadAllAssets(event.timestamp);
 
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
@@ -1042,9 +1044,11 @@ export class Replayer {
   /**
    * Process all asset events and preload them
    */
-  private async preloadAllAssets(): Promise<void[]> {
+  private async preloadAllAssets(timestamp: number): Promise<void[]> {
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
+      if (event.timestamp <= timestamp) continue;
+      if (event.type === EventType.Meta && event.timestamp !== timestamp) break;
       if (event.type === EventType.Asset) {
         promises.push(this.assetManager.add(event));
       }
@@ -1817,6 +1821,11 @@ export class Replayer {
                 }
               } else {
                 targetEl.setAttribute(attributeName, value);
+                void this.assetManager.manageAttribute(
+                  targetEl,
+                  mutation.id,
+                  attributeName,
+                );
               }
               void this.assetManager.manageAttribute(targetEl, attributeName);
             } catch (error) {

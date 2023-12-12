@@ -120,7 +120,7 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot();
     });
 
-    it('on mutation should wait with adding src attribute until the asset is loaded', async () => {
+    it("on mutation should add bogus src attribute until the asset is loaded so chrome doesn't display broken image icon", async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer([], {
@@ -134,11 +134,16 @@ describe('replayer', function () {
 
       await waitForRAF(page);
 
+      const loadingImage = await page.screenshot();
+      expect(loadingImage).toMatchImageSnapshot({
+        customSnapshotIdentifier: 'asset-integration-test-ts-loading',
+      });
+
       expect(
         await page.evaluate(
           `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('src')`,
         ),
-      ).toBe(null);
+      ).toBe('//:0');
 
       await page.evaluate(`
         window.replayer.addEvent(mutationEvents[3]);
@@ -167,7 +172,7 @@ describe('replayer', function () {
         await page.evaluate(
           `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('src')`,
         ),
-      ).toBe(null);
+      ).toBe('//:0');
 
       await page.evaluate(`
         window.replayer.addEvent(events[2]);
@@ -203,7 +208,8 @@ describe('replayer', function () {
       await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(assetsChangedEvents);
-      replayer.pause(assetsChangedEvents[1].timestamp);
+      console.log('pausing at', (assetsChangedEvents[2].timestamp - assetsChangedEvents[0].timestamp) + 1)
+      replayer.pause((assetsChangedEvents[2].timestamp - assetsChangedEvents[0].timestamp) + 1);
     `);
 
       await waitForRAF(page);
@@ -216,8 +222,9 @@ describe('replayer', function () {
       await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(assetsChangedEvents);
-      replayer.pause(assetsChangedEvents[2].timestamp);
-    `);
+      console.log('pausing at', (assetsChangedEvents[1].timestamp - assetsChangedEvents[0].timestamp) + 1)
+      replayer.pause((assetsChangedEvents[1].timestamp - assetsChangedEvents[0].timestamp) + 1);
+  `);
 
       await waitForRAF(page);
 
@@ -242,7 +249,7 @@ describe('replayer', function () {
       const failedEvent: assetEvent & { timestamp: number } = {
         type: 7,
         data: {
-          url: 'ftp://example.com/original-image.png',
+          url: 'ftp://example.com/red.png',
           failed: {
             status: 404,
             message: 'Not Found',
@@ -267,7 +274,7 @@ describe('replayer', function () {
         await page.evaluate(
           `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('src')`,
         ),
-      ).toMatchInlineSnapshot(`"ftp://example.com/original-image.png"`);
+      ).toMatchInlineSnapshot(`"ftp://example.com/red.png"`);
     });
   });
 });
