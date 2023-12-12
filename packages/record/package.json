@@ -17,6 +17,7 @@
     "retest": "vitest run",
     "test": "yarn build && vitest run",
     "test:watch": "vitest watch",
+    "test:update": "vitest run --update",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
