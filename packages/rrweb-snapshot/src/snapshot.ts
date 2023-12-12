@@ -1174,11 +1174,12 @@ export function serializeNodeWithId(
   }
 
   // <link rel=stylesheet href=...>
-  if (
-    serializedNode.type === NodeType.Element &&
+  if (serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'link' &&
-    serializedNode.attributes.rel === 'stylesheet'
-  ) {
+    typeof serializedNode.attributes.rel === 'string' &&
+    (serializedNode.attributes.rel === 'stylesheet' || (serializedNode.attributes.rel === 'preload' &&
+      typeof serializedNode.attributes.href === 'string' &&
+      serializedNode.attributes.href.endsWith('.css')))) {
     onceStylesheetLoaded(
       n as HTMLLinkElement,
       () => {
