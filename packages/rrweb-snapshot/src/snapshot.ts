@@ -23,6 +23,7 @@ import {
   stringifyStylesheet,
   getInputType,
   toLowerCase,
+  extractFileExtension,
 } from './utils';
 
 let _id = 1;
@@ -847,7 +848,7 @@ function slimDOMExcluded(
         (sn.tagName === 'link' &&
           sn.attributes.rel === 'prefetch' &&
           typeof sn.attributes.href === 'string' &&
-          sn.attributes.href.endsWith('.js')))
+          extractFileExtension(sn.attributes.href) === 'js'))
     ) {
       return true;
     } else if (
@@ -1179,7 +1180,7 @@ export function serializeNodeWithId(
     typeof serializedNode.attributes.rel === 'string' &&
     (serializedNode.attributes.rel === 'stylesheet' || (serializedNode.attributes.rel === 'preload' &&
       typeof serializedNode.attributes.href === 'string' &&
-      serializedNode.attributes.href.endsWith('.css')))) {
+      extractFileExtension(serializedNode.attributes.href) === 'css'))) {
     onceStylesheetLoaded(
       n as HTMLLinkElement,
       () => {
