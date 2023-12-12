@@ -7,6 +7,7 @@
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest watch",
+    "test:update": "vitest run --update",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },

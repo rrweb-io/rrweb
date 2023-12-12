@@ -11,6 +11,8 @@ import type { RRElement } from 'rrdom';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
+  private nodeIdAttributeHijackedMap: Map<number, Map<string, string>> =
+    new Map();
   private loadingURLs: Set<string> = new Set();
   private failedURLs: Set<string> = new Set();
   private callbackMap: Map<
@@ -18,8 +20,13 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     Array<(status: RebuildAssetManagerFinalStatus) => void>
   > = new Map();
   private config: captureAssetsParam | undefined;
+  private liveMode: boolean;
 
-  constructor(config?: captureAssetsParam | undefined) {
+  constructor(
+    { liveMode }: { liveMode: boolean },
+    config?: captureAssetsParam | undefined,
+  ) {
+    this.liveMode = liveMode;
     this.config = config;
   }
 
@@ -112,11 +119,20 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     };
   }
 
-  public isAttributeCacheable(
+  public isCacheable(
     n: RRElement | Element,
     attribute: string,
+    value: string,
   ): boolean {
-    return isAttributeCacheable(n as Element, attribute);
+    if (!isAttributeCacheable(n as Element, attribute)) return false;
+
+    if (attribute === 'srcset') {
+      return getSourcesFromSrcset(value).some((source) =>
+        this.isURLOfCacheableOrigin(source),
+      );
+    } else {
+      return this.isURLOfCacheableOrigin(value);
+    }
   }
 
   public isURLOfCacheableOrigin(url: string): boolean {
@@ -142,35 +158,65 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
   public async manageAttribute(
     node: RRElement | Element,
+    nodeId: number,
     attribute: string,
   ): Promise<unknown> {
-    if (!this.isAttributeCacheable(node, attribute)) return false;
-
     const originalValue = node.getAttribute(attribute);
-    if (!originalValue) return false;
+    if (node.nodeName === 'IMG')
+      console.log(
+        'AssetManager.manageAttribute',
+        node.nodeName,
+        attribute,
+        originalValue,
+        'livemode',
+        this.liveMode,
+      );
+    if (!originalValue || !this.isCacheable(node, attribute, originalValue))
+      return false;
 
     const promises: Promise<unknown>[] = [];
 
-    const values =
-      attribute === 'srcset'
-        ? getSourcesFromSrcset(originalValue)
-        : [originalValue];
-    values.forEach((value) => {
-      if (!this.isURLOfCacheableOrigin(value)) return;
+    if (attribute === 'srcset') {
+      const values = getSourcesFromSrcset(originalValue);
+      values.forEach((value) => {
+        if (!this.isURLOfCacheableOrigin(value)) return;
+        // FIXME... this doesn't do anything yet...
+        // TODO: hijack also doesn't work for srcset
+      });
+    } else {
+      // In live mode we removes the attribute while it loads so it doesn't show the broken image icon
+      if (this.liveMode && nodeId > 0) {
+        let hijackedAttributes = this.nodeIdAttributeHijackedMap.get(nodeId);
+        if (!hijackedAttributes) {
+          hijackedAttributes = new Map();
+          this.nodeIdAttributeHijackedMap.set(nodeId, hijackedAttributes);
+        }
+        hijackedAttributes.set(attribute, originalValue);
+        if (node.tagName === 'IMG' && attribute === 'src') {
+          node.setAttribute('src', '//:0');
+        } else {
+          node.removeAttribute(attribute);
+        }
+      }
 
       promises.push(
-        this.whenReady(value).then((status) => {
-          if (
-            status.status === 'loaded' &&
-            node.getAttribute(attribute) === originalValue
-          ) {
-            node.setAttribute(attribute, status.url);
-          } else {
-            // failed to load asset, or the attribute was changed
-          }
+        this.whenReady(originalValue).then((status) => {
+          const isLoaded = status.status === 'loaded';
+          if (!isLoaded) return; // failed to load asset
+
+          const attributeUnchanged = this.liveMode
+            ? originalValue ===
+              this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
+            : node.getAttribute(attribute) === originalValue;
+
+          if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
+
+          // TODO: use setAttributeNS for svg, see rrdom's diff for example
+          node.setAttribute(attribute, status.url);
         }),
       );
-    });
+    }
+
     return Promise.all(promises);
   }
 
@@ -182,6 +228,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     this.originalToObjectURLMap.clear();
     this.loadingURLs.clear();
     this.failedURLs.clear();
+    this.nodeIdAttributeHijackedMap.clear();
     this.callbackMap.forEach((callbacks) => {
       while (callbacks.length > 0) {
         const cb = callbacks.pop();
