@@ -342,7 +342,7 @@ export function polyfill(win = window) {
 }
 
 export type ResolveTree = {
-  id: number,
+  id: number;
   value: addedNodeMutation | null;
   children: Map<number | null, ResolveTree>;
 };

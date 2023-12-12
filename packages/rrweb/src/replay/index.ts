@@ -1508,7 +1508,7 @@ export class Replayer {
           // is newly added document, maybe the document node of an iframe
           return this.newDocumentQueue.push(mutation);
         }
-        return allowQueue ? addToQueue(mutation) : false
+        return allowQueue ? addToQueue(mutation) : false;
       }
 
       if (mutation.node.isShadow) {
@@ -1528,7 +1528,7 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId);
       }
       if (nextNotInDOM(mutation)) {
-        return allowQueue ? addToQueue(mutation) : false
+        return allowQueue ? addToQueue(mutation) : false;
       }
 
       if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
@@ -1687,7 +1687,11 @@ export class Replayer {
       appendNode(mutation);
     });
 
-    const iterateResolveTree = (tree: ResolveTree, mirror: RRDOMMirror | Mirror, cb: (mutation: addedNodeMutation) => unknown) => {
+    const iterateResolveTree = (
+      tree: ResolveTree,
+      mirror: RRDOMMirror | Mirror,
+      cb: (mutation: addedNodeMutation) => unknown,
+    ) => {
       if (tree.value) {
         cb(tree.value);
       }
@@ -1701,9 +1705,11 @@ export class Replayer {
       }
       while (nextChild) {
         iterateResolveTree(nextChild, mirror, cb);
-        nextChild = nextChild.value ? tree.children.get(nextChild.value.node.id) : undefined;
+        nextChild = nextChild.value
+          ? tree.children.get(nextChild.value.node.id)
+          : undefined;
       }
-    }
+    };
     const startTime = Date.now();
     for (const tree of queue) {
       iterateResolveTree(tree, mirror, (mutation: addedNodeMutation) => {

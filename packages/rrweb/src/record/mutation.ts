@@ -287,8 +287,8 @@ export default class MutationBuffer {
     const getParentId = (n: Node): number | null => {
       if (!n.parentNode) return null;
       return isShadowRoot(n.parentNode)
-          ? this.mirror.getId(getShadowHost(n))
-          : this.mirror.getId(n.parentNode);
+        ? this.mirror.getId(getShadowHost(n))
+        : this.mirror.getId(n.parentNode);
     };
     const pushAdd = (n: Node) => {
       if (!n.parentNode || !inDom(n)) {
@@ -385,7 +385,7 @@ export default class MutationBuffer {
           adds.push({
             parentId,
             nextId: getNextId(addedNode),
-            node: sn
+            node: sn,
           });
           addedIds.add(sn.id);
         }
