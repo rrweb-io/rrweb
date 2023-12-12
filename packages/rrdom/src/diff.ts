@@ -8,6 +8,7 @@ import type {
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
+  RebuildAssetManagerInterface,
 } from '@rrweb/types';
 import type {
   IRRCDATASection,
@@ -76,6 +77,7 @@ const SVGTagMap: Record<string, string> = {
 
 export type ReplayerHandler = {
   mirror: NodeMirror;
+  assetManager: RebuildAssetManagerInterface;
   applyCanvas: (
     canvasEvent: canvasEventWithTime,
     canvasMutationData: canvasMutationData,
@@ -201,7 +203,7 @@ function diffBeforeUpdatingChildren(
        * by running `diffProps` on the parent node before `diffChildren` is called,
        * we can ensure that the correct attributes (and therefore styles) have applied to parent nodes
        */
-      diffProps(oldElement, newRRElement, rrnodeMirror);
+      diffProps(oldElement, newRRElement, rrnodeMirror, replayer.assetManager);
       break;
     }
   }
@@ -333,6 +335,7 @@ function diffProps(
   oldTree: HTMLElement,
   newTree: IRRElement,
   rrnodeMirror: Mirror,
+  assetManager?: RebuildAssetManagerInterface,
 ) {
   const oldAttributes = oldTree.attributes;
   const newAttributes = newTree.attributes;
@@ -361,6 +364,11 @@ function diffProps(
         // the `ReplayerEvents.Flush` listener and break rendering
         console.warn(err);
       }
+    }
+
+    if (assetManager && assetManager.isCacheable(oldTree, name, newValue)) {
+      // can possibly remove the attribute again if it hasn't loaded yet
+      assetManager.manageAttribute(oldTree, rrnodeMirror.getId(newTree), name);
     }
   }
 
