@@ -10736,7 +10736,6 @@ exports[`record integration tests > should not record input values if dynamicall
             \\"attributes\\": {
               \\"size\\": \\"50\\",
               \\"id\\": \\"input\\",
-              \\"size\\": \\"50\\",
               \\"value\\": \\"**********************\\"
             },
             \\"childNodes\\": [],
