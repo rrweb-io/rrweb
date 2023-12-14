@@ -76,7 +76,7 @@ const SVGTagMap: Record<string, string> = {
 
 export type ReplayerHandler = {
   mirror: NodeMirror;
-  assetManager: RebuildAssetManagerInterface;
+  assetManager?: RebuildAssetManagerInterface;
   applyCanvas: (
     canvasEvent: canvasEventWithTime,
     canvasMutationData: canvasMutationData,
@@ -333,7 +333,7 @@ function diffProps(
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
     else oldTree.setAttribute(name, newValue);
 
-    if (assetManager && assetManager.isCacheable(oldTree, name, newValue)) {
+    if (assetManager?.isCacheable(oldTree, name, newValue)) {
       // can possibly remove the attribute again if it hasn't loaded yet
       assetManager.manageAttribute(oldTree, rrnodeMirror.getId(newTree), name);
     }
