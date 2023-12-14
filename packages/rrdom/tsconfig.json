@@ -8,6 +8,8 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "build",
