@@ -1,6 +1,6 @@
 {
   "name": "@sentry-internal/rrdom",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "main": "lib/rrdom.cjs",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
-    "@sentry-internal/rrweb-types": "2.5.0",
+    "@sentry-internal/rrweb-types": "2.6.0",
     "@types/jest": "^27.4.1",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
@@ -49,6 +49,6 @@
     "ts-jest": "^27.1.3"
   },
   "dependencies": {
-    "@sentry-internal/rrweb-snapshot": "2.5.0"
+    "@sentry-internal/rrweb-snapshot": "2.6.0"
   }
 }
