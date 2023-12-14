@@ -3,6 +3,7 @@
     "composite": true,
     "target": "ES6",
     "module": "commonjs",
+    "moduleResolution": "Node",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
