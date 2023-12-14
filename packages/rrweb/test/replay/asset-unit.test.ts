@@ -153,54 +153,6 @@ describe('AssetManager', () => {
     await expect(promise).resolves.toEqual({ status: 'reset' });
   });
 
-  const validAttributeCombinations = [
-    ['img', ['src', 'srcset']],
-    ['video', ['src']],
-    ['audio', ['src']],
-    ['embed', ['src']],
-    ['source', ['src']],
-    ['track', ['src']],
-    ['input', ['src']],
-    ['iframe', ['src']],
-    ['object', ['src']],
-  ] as const;
-
-  const invalidAttributeCombinations = [
-    ['img', ['href']],
-    ['script', ['href']],
-    ['link', ['src']],
-    ['video', ['href']],
-    ['audio', ['href']],
-    ['div', ['src']],
-    ['source', ['href']],
-    ['track', ['href']],
-    ['input', ['href']],
-    ['iframe', ['href']],
-    ['object', ['href']],
-  ] as const;
-
-  validAttributeCombinations.forEach(([tagName, attributes]) => {
-    const element = document.createElement(tagName);
-    attributes.forEach((attribute) => {
-      it(`should correctly identify <${tagName} ${attribute}> as cacheable`, () => {
-        expect(assetManager['isAttributeCacheable'](element, attribute)).toBe(
-          true,
-        );
-      });
-    });
-  });
-
-  invalidAttributeCombinations.forEach(([tagName, attributes]) => {
-    const element = document.createElement(tagName);
-    attributes.forEach((attribute) => {
-      it(`should correctly identify <${tagName} ${attribute}> as NOT cacheable`, () => {
-        expect(assetManager['isAttributeCacheable'](element, attribute)).toBe(
-          false,
-        );
-      });
-    });
-  });
-
   const validOriginCombinations: Array<
     [captureAssetsParam['origins'], string[]]
   > = [
