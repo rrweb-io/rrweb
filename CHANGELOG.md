@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0
+
+### Various fixes & improvements
+
+- feat(canvas): Bind `mutationCb` outside of `getCanvasManager` (#141) by @billyvg
+
 ## 2.5.0
 
 - Revert "fix: isCheckout is not included in fullsnapshot event (#1141)"
