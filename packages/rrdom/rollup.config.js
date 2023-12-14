@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import typescript from 'rollup-plugin-typescript2';
 import webWorkerLoader from 'rollup-plugin-web-worker-loader';
-import pkg from './package.json';
+import pkg from './package.json' assert { type: 'json' };
 
 function toMinPath(path) {
   return path.replace(/\.js$/, '.min.js');
