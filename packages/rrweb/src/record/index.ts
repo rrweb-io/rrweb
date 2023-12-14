@@ -337,16 +337,17 @@ function record<T = eventWithTime>(
 
   const processedNodeManager = new ProcessedNodeManager();
 
-  const canvasManager: CanvasManagerInterface = getCanvasManager
-    ? getCanvasManager({
-        recordCanvas,
-        blockClass,
-        blockSelector,
-        unblockSelector,
-        sampling: sampling['canvas'],
-        dataURLOptions,
-      })
-    : new CanvasManagerNoop();
+  const canvasManager: CanvasManagerInterface = _getCanvasManager(
+    getCanvasManager,
+    {
+      recordCanvas,
+      blockClass,
+      blockSelector,
+      unblockSelector,
+      sampling: sampling['canvas'],
+      dataURLOptions,
+    },
+  );
 
   const shadowDomManager: ShadowDomManagerInterface =
     typeof __RRWEB_EXCLUDE_SHADOW_DOM__ === 'boolean' &&
@@ -733,27 +734,43 @@ record.takeFullSnapshot = takeFullSnapshot;
 
 export default record;
 
-const wrappedCanvasMutationEmit = (p: canvasMutationParam) =>
-  wrappedEmit(
-    wrapEvent({
-      type: EventType.IncrementalSnapshot,
-      data: {
-        source: IncrementalSource.CanvasMutation,
-        ...p,
-      },
-    }),
-  );
+type PrivateOptions = 'mutationCb' | 'win' | 'mirror';
+type PublicGetCanvasManagerOptions = Omit<
+  CanvasManagerConstructorOptions,
+  PrivateOptions
+>;
+
+interface PrivateGetCanvasManagerOptions
+  extends PublicGetCanvasManagerOptions,
+    Pick<CanvasManagerConstructorOptions, PrivateOptions> {}
+
+function _getCanvasManager(
+  getCanvasManagerFn:
+    | undefined
+    | ((options: PrivateGetCanvasManagerOptions) => CanvasManagerInterface),
+  options: PublicGetCanvasManagerOptions,
+) {
+  return getCanvasManagerFn
+    ? getCanvasManagerFn({
+        ...options,
+        mirror,
+        win: window,
+        mutationCb: (p: canvasMutationParam) =>
+          wrappedEmit(
+            wrapEvent({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.CanvasMutation,
+                ...p,
+              },
+            }),
+          ),
+      })
+    : new CanvasManagerNoop();
+}
 
 export function getCanvasManager(
-  options: Omit<
-    CanvasManagerConstructorOptions,
-    'mutationCb' | 'win' | 'mirror'
-  >,
+  options: PublicGetCanvasManagerOptions,
 ): CanvasManagerInterface {
-  return new CanvasManager({
-    ...options,
-    mutationCb: wrappedCanvasMutationEmit,
-    win: window,
-    mirror,
-  });
+  return new CanvasManager(options as CanvasManagerConstructorOptions);
 }
