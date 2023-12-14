@@ -81,7 +81,7 @@ import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
 import { MediaManager } from './media';
-import AssetManager from './assets';
+import AssetManager from './asset-manager';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
