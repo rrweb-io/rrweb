@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
+import { extractFileExtension, isAttributeCacheable, isNodeMetaEqual } from '../src/utils';
 import { NodeType, serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
@@ -195,6 +195,52 @@ describe('utils', () => {
       const path = 'https://example.com/scripts/app.min.js?version=1.0';
       const extension = extractFileExtension(path);
       expect(extension).toBe('js');
+    });
+  });
+
+  describe('isAttributeCacheable()', () => {
+    const validAttributeCombinations = [
+      ['img', ['src', 'srcset']],
+      ['video', ['src']],
+      ['audio', ['src']],
+      ['embed', ['src']],
+      ['source', ['src']],
+      ['track', ['src']],
+      ['input', ['src']],
+      ['iframe', ['src']],
+      ['object', ['src']],
+    ] as const;
+
+    const invalidAttributeCombinations = [
+      ['img', ['href']],
+      ['script', ['href']],
+      ['link', ['src']],
+      ['video', ['href']],
+      ['audio', ['href']],
+      ['div', ['src']],
+      ['source', ['href']],
+      ['track', ['href']],
+      ['input', ['href']],
+      ['iframe', ['href']],
+      ['object', ['href']],
+    ] as const;
+
+    validAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as cacheable`, () => {
+          expect(isAttributeCacheable(element, attribute)).toBe(true);
+        });
+      });
+    });
+
+    invalidAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as NOT cacheable`, () => {
+          expect(isAttributeCacheable(element, attribute)).toBe(false);
+        });
+      });
     });
   });
 });
