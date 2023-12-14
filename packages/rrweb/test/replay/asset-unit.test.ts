@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import AssetManager from '../../src/replay/assets';
+import AssetManager from '../../src/replay/asset-manager';
 import {
   EventType,
   SerializedBlobArg,
