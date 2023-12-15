@@ -185,6 +185,13 @@ describe('utils', () => {
       expect(extension).toBeNull();
     });
 
+    test('invalid URL', () => {
+      const path = '!@#$%^&*()';
+      const baseURL = 'invalid';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBeNull();
+    });
+
     test('path with multiple dots', () => {
       const path = 'https://example.com/scripts/app.min.js?version=1.0';
       const extension = extractFileExtension(path);
