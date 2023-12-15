@@ -386,9 +386,9 @@ export const CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['TH', new Set(['background'])],
   ['TBODY', new Set(['background'])],
   ['THEAD', new Set(['background'])],
-  ['image', new Set(['href', 'xlink:href'])],
-  ['feImage', new Set(['href', 'xlink:href'])],
-  ['cursor', new Set(['href', 'xlink:href'])],
+  ['image', new Set(['href'])],
+  ['feImage', new Set(['href'])],
+  ['cursor', new Set(['href'])],
 ]);
 
 export function isAttributeCacheable(n: Element, attribute: string): boolean {
