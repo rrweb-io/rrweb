@@ -50,5 +50,8 @@
   },
   "dependencies": {
     "rrweb-snapshot": "^2.0.0-alpha.13"
+  },
+  "resolutions": {
+    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz"
   }
 }
