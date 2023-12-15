@@ -163,15 +163,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     attribute: string,
   ): Promise<unknown> {
     const originalValue = node.getAttribute(attribute);
-    if (node.nodeName === 'IMG')
-      console.log(
-        'AssetManager.manageAttribute',
-        node.nodeName,
-        attribute,
-        originalValue,
-        'livemode',
-        this.liveMode,
-      );
     if (!originalValue || !this.isCacheable(node, attribute, originalValue))
       return false;
 
