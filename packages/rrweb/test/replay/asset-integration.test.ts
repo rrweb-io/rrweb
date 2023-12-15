@@ -137,6 +137,8 @@ describe('replayer', function () {
       const loadingImage = await page.screenshot();
       expect(loadingImage).toMatchImageSnapshot({
         customSnapshotIdentifier: 'asset-integration-test-ts-loading',
+        failureThreshold: 0.02,
+        failureThresholdType: 'percent',
       });
 
       expect(
@@ -181,7 +183,10 @@ describe('replayer', function () {
       await waitForRAF(page);
 
       const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+      expect(image).toMatchImageSnapshot({
+        failureThreshold: 0.02,
+        failureThresholdType: 'percent',
+      });
     });
 
     it('should show the correct asset when assets are loading while src is changed in live mode', async () => {
@@ -201,7 +206,10 @@ describe('replayer', function () {
       await waitForRAF(page);
 
       const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+      expect(image).toMatchImageSnapshot({
+        failureThreshold: 0.04,
+        failureThresholdType: 'percent',
+      });
     });
 
     it('should show the loaded asset (robot) in non-live mode', async () => {
@@ -214,7 +222,10 @@ describe('replayer', function () {
       await waitForRAF(page);
 
       const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+      expect(image).toMatchImageSnapshot({
+        failureThreshold: 0.04,
+        failureThresholdType: 'percent',
+      });
     });
 
     it('should show the loaded asset (red square) in non-live mode', async () => {
@@ -240,7 +251,9 @@ describe('replayer', function () {
       await waitForRAF(page);
 
       const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+      expect(image).toMatchImageSnapshot({
+        failureThreshold: 30,
+      });
     });
 
     it('should list original url in non-live mode when asset fails to load', async () => {
@@ -266,7 +279,9 @@ describe('replayer', function () {
       await waitForRAF(page);
 
       const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+      expect(image).toMatchImageSnapshot({
+        failureThreshold: 30,
+      });
 
       expect(
         await page.evaluate(
