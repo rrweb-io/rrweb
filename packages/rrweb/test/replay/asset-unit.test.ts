@@ -9,6 +9,7 @@ import {
   assetEvent,
   captureAssetsParam,
 } from '@rrweb/types';
+import { updateSrcset } from '../../src/replay/asset-manager/update-srcset';
 import { vi } from 'vitest';
 
 describe('AssetManager', () => {
@@ -328,7 +329,7 @@ describe('AssetManager', () => {
     expect(element.getAttribute('src')).toBe('objectURL');
   });
 
-  it("should be able to modify a node's attribute for previously loaded assets", async () => {
+  it('should be support srcset for previously loaded assets', async () => {
     const url = 'https://example.com/image.png';
     const event: assetEvent = {
       type: EventType.Asset,
@@ -346,6 +347,62 @@ describe('AssetManager', () => {
     await assetManager.manageAttribute(element, 1, 'srcset');
 
     expect(element.getAttribute('srcset')).toBe('objectURL');
+  });
+
+  it('should be support partial srcset updates for previously loaded assets', async () => {
+    const url = 'https://example.com/image.png';
+    const event: assetEvent = {
+      type: EventType.Asset,
+      data: {
+        url,
+        payload: examplePayload,
+      },
+    };
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
+    await assetManager.add(event);
+
+    const element = document.createElement('img');
+    element.setAttribute('srcset', `${url} x2, ${url}?x3 x3`);
+
+    void assetManager.manageAttribute(element, 1, 'srcset');
+    await assetManager.whenReady(url);
+
+    expect(element.getAttribute('srcset')).toBe(`objectURL x2, ${url}?x3 x3`);
+  });
+
+  it('should support updating srcset in chunks for every time an asset is loaded', async () => {
+    const url = 'https://example.com/image.png';
+    const url2 = `${url}?x3`;
+    const element = document.createElement('img');
+    element.setAttribute('srcset', `${url} x2, ${url2} x3`);
+
+    vi.spyOn(URL, 'createObjectURL')
+      .mockReturnValueOnce('objectURL1')
+      .mockReturnValueOnce('objectURL2');
+    await assetManager.add({
+      type: EventType.Asset,
+      data: {
+        url,
+        payload: examplePayload,
+      },
+    });
+
+    void assetManager.manageAttribute(element, 1, 'srcset');
+    await assetManager.whenReady(url);
+
+    expect(element.getAttribute('srcset')).toBe(`objectURL1 x2, ${url2} x3`);
+
+    await assetManager.add({
+      type: EventType.Asset,
+      data: {
+        url: url2,
+        payload: examplePayload,
+      },
+    });
+
+    await assetManager.whenReady(url2);
+
+    expect(element.getAttribute('srcset')).toBe(`objectURL1 x2, objectURL2 x3`);
   });
 
   describe('live mode', () => {
@@ -451,6 +508,61 @@ describe('AssetManager', () => {
 
       await Promise.all(promises);
       expect(element.getAttribute('src')).toBe('objectURL2');
+    });
+  });
+
+  describe('updateSrcset()', () => {
+    it('should update srcset attribute', () => {
+      const element = document.createElement('img');
+      element.setAttribute(
+        'srcset',
+        'https://example.com/image.png x2, https://example.com/image2.png x3',
+      );
+      const oldURL = 'https://example.com/image.png';
+      const newURL = 'https://other-url.com/image.png';
+      updateSrcset(element, oldURL, newURL);
+      expect(element.getAttribute('srcset')).toBe(
+        'https://other-url.com/image.png x2, https://example.com/image2.png x3',
+      );
+    });
+
+    it('should update singular srcset attribute', () => {
+      const element = document.createElement('img');
+      element.setAttribute('srcset', 'https://example.com/image.png');
+      const oldURL = 'https://example.com/image.png';
+      const newURL = 'https://other-url.com/image.png';
+      updateSrcset(element, oldURL, newURL);
+      expect(element.getAttribute('srcset')).toBe(
+        'https://other-url.com/image.png',
+      );
+    });
+
+    it('should update srcset attribute with similar urls', () => {
+      const element = document.createElement('img');
+      element.setAttribute(
+        'srcset',
+        'https://example.com/image.png x2, https://example.com/image.png?x=3 x3',
+      );
+      const oldURL = 'https://example.com/image.png';
+      const newURL = 'https://other-url.com/image.png';
+      updateSrcset(element, oldURL, newURL);
+      expect(element.getAttribute('srcset')).toBe(
+        'https://other-url.com/image.png x2, https://example.com/image.png?x=3 x3',
+      );
+    });
+
+    it('should update srcset attribute with similar urls - second url', () => {
+      const element = document.createElement('img');
+      element.setAttribute(
+        'srcset',
+        'https://example.com/image.png?x=2 x2, https://example.com/image.png x3',
+      );
+      const oldURL = 'https://example.com/image.png';
+      const newURL = 'https://other-url.com/image.png';
+      updateSrcset(element, oldURL, newURL);
+      expect(element.getAttribute('srcset')).toBe(
+        'https://example.com/image.png?x=2 x2, https://other-url.com/image.png x3',
+      );
     });
   });
 });
