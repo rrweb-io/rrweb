@@ -224,7 +224,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
           if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
 
-          // TODO: use setAttributeNS for svg, see rrdom's diff for example
           node.setAttribute(attribute, status.url);
         }),
       );
