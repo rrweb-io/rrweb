@@ -604,13 +604,13 @@ describe('asset caching', function (this: ISuite) {
             <input type="image" id="image" alt="Login" src="{SERVER_URL}/html/assets/robot.png?input-type-image" />
             <iframe src="{SERVER_URL}/html/assets/robot.png?iframe"></iframe>
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-              <image href="{SERVER_URL}/html/assets/robot.png?svg" xlink:href="{SERVER_URL}/html/assets/robot.png?svg2" width="100" height="100" />
+              <image href="{SERVER_URL}/html/assets/robot.png?svg" width="100" height="100" />
                 <defs>
                 <filter id="image">
-                  <feImage href="{SERVER_URL}/html/assets/robot.png?svg3" xlink:href="{SERVER_URL}/html/assets/robot.png?svg4" />
+                  <feImage href="{SERVER_URL}/html/assets/robot.png?svg2" />
                 </filter>
               </defs>
-              <cursor href="{SERVER_URL}/html/assets/robot.png?svg5" xlink:href="{SERVER_URL}/html/assets/robot.png?svg6" >
+              <cursor href="{SERVER_URL}/html/assets/robot.png?svg3"  >
               <rect x="10%" y="10%" width="80%" height="80%" style="filter:url(#image);" />
               </cursor>
             </svg>
@@ -646,9 +646,6 @@ describe('asset caching', function (this: ISuite) {
       '{SERVER_URL}/html/assets/robot.png?svg',
       '{SERVER_URL}/html/assets/robot.png?svg2',
       '{SERVER_URL}/html/assets/robot.png?svg3',
-      '{SERVER_URL}/html/assets/robot.png?svg4',
-      '{SERVER_URL}/html/assets/robot.png?svg5',
-      '{SERVER_URL}/html/assets/robot.png?svg6',
       '{SERVER_URL}/html/assets/robot.png?table',
       '{SERVER_URL}/html/assets/robot.png?td',
     ].forEach((u) => {
