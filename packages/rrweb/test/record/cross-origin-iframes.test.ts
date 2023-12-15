@@ -214,6 +214,7 @@ describe('cross origin iframes', function (this: ISuite) {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
         iframe.src = `${url}/html/form.html?2`;
       }, ctx.serverURL);
+      await ctx.page.waitForResponse(`${ctx.serverURL}/html/form.html?2`);
       await waitForRAF(ctx.page); // loads iframe
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
@@ -594,8 +595,8 @@ describe('same origin iframes', function (this: ISuite) {
     await waitForRAF(ctx.page);
     // two events (full snapshot + meta) from main frame,
     // and two (full snapshot + mutation) from iframe
-    expect(events.length).toBe(4);
     await assertSnapshot(events);
+    expect(events.length).toBe(4);
   });
 
   it('should record cross-origin iframe in same-origin iframe', async () => {
