@@ -209,6 +209,8 @@ describe('cross origin iframes', function (this: ISuite) {
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
 
+      await waitForRAF(ctx.page); // wait till script is loaded
+
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
       );
