@@ -257,7 +257,6 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot({
         failureThreshold: 30,
       });
-      });
     });
 
     it('should list original url in non-live mode when asset fails to load', async () => {
