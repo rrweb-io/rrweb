@@ -405,6 +405,30 @@ describe('AssetManager', () => {
     expect(element.getAttribute('srcset')).toBe(`objectURL1 x2, objectURL2 x3`);
   });
 
+  it('should support svg elements', async () => {
+    const url = 'https://example.com/image.png';
+    const event: assetEvent = {
+      type: EventType.Asset,
+      data: {
+        url,
+        payload: examplePayload,
+      },
+    };
+    jest.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
+    await assetManager.add(event);
+
+    // create svg element `feImage`
+    const feImage = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'feImage',
+    );
+    feImage.setAttribute('href', url);
+
+    await assetManager.manageAttribute(feImage, 1, 'href');
+
+    expect(feImage.getAttribute('href')).toBe('objectURL');
+  });
+
   describe('live mode', () => {
     beforeEach(() => {
       assetManager = new AssetManager(
