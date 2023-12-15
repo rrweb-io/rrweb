@@ -8,6 +8,7 @@ import type {
 import { deserializeArg } from '../canvas/deserialize-args';
 import { getSourcesFromSrcset, isAttributeCacheable } from 'rrweb-snapshot';
 import type { RRElement } from 'rrdom';
+import { updateSrcset } from './update-srcset';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
@@ -177,11 +178,23 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     const promises: Promise<unknown>[] = [];
 
     if (attribute === 'srcset') {
+      let expectedValue: string | void = originalValue;
       const values = getSourcesFromSrcset(originalValue);
       values.forEach((value) => {
         if (!this.isURLOfCacheableOrigin(value)) return;
-        // FIXME... this doesn't do anything yet...
-        // TODO: hijack also doesn't work for srcset
+        promises.push(
+          this.whenReady(value).then((status) => {
+            const isLoaded = status.status === 'loaded';
+            if (!isLoaded) return; // failed to load asset
+
+            const attributeUnchanged =
+              node.getAttribute(attribute) === expectedValue;
+
+            if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
+
+            expectedValue = updateSrcset(node, value, status.url);
+          }),
+        );
       });
     } else {
       // In live mode we removes the attribute while it loads so it doesn't show the broken image icon
