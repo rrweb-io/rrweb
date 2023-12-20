@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.7.0
+
+- ref: Avoid async in canvas (#143)
+- feat: Bundle canvas worker manually (#144)
+- build: Build for ES2020 (#142)
+
 ## 2.6.0
 
 ### Various fixes & improvements
