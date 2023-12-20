@@ -10,26 +10,17 @@
     "rootDir": "src",
     "outDir": "build",
     "lib": [
-      "es6",
-      "dom"
+      "webworker",
+      "scripthost"
     ],
-    "downlevelIteration": true,
-    "importsNotUsedAsValues": "error",
-    "strictBindCallApply": true,
+    "allowSyntheticDefaultImports": true,
+    "declarationMap": false,
+    "skipLibCheck": true,
     "composite": true
   },
   "references": [
     {
-      "path": "../rrweb-worker"
-    },
-    {
-      "path": "../rrdom"
-    },
-    {
       "path": "../rrweb-snapshot"
-    },
-    {
-      "path": "../types"
     }
   ],
   "exclude": [
@@ -37,8 +28,6 @@
     "scripts"
   ],
   "include": [
-    "src",
-    "node_modules/@types/css-font-loading-module/index.d.ts",
-    "node_modules/@types/jest-image-snapshot/index.d.ts"
+    "src/**/*.ts"
   ]
 }

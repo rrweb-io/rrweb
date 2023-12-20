@@ -28,7 +28,7 @@ async function getTransparentBlobFor(
   height: number,
   dataURLOptions: DataURLOptions,
 ): Promise<string> {
-  const id = `${width}-${height}`;
+  const id = width + '-' + height;
   if ('OffscreenCanvas' in globalThis) {
     if (transparentBlobMap.has(id)) return transparentBlobMap.get(id)!;
     const offscreen = new OffscreenCanvas(width, height);

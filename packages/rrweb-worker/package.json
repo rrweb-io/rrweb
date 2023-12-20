@@ -1,0 +1,35 @@
+{
+  "name": "@sentry-internal/rrweb-worker",
+  "version": "2.6.0",
+  "description": "Worker for rrweb",
+  "main": "lib/rrweb-worker/index.cjs",
+  "module": "es/rrweb-worker/index.js",
+  "types": "typings/index.d.ts",
+  "sideEffects": false,
+  "private": true,
+  "scripts": {
+    "dev": "yarn bundle --watch",
+    "build:tarball": "npm pack",
+    "bundle": "rollup --config",
+    "typings": "tsc -p tsconfig.types.json",
+    "prepare": "npm run typings && npm run bundle",
+    "check-types": "tsc -noEmit",
+    "lint": "yarn eslint src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getsentry/rrweb.git"
+  },
+  "author": "Sentry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/getsentry/rrweb/issues"
+  },
+  "dependencies": {
+    "@sentry-internal/rrweb-snapshot": "2.6.0",
+    "@sentry-internal/rrweb-types": "2.6.0"
+  },
+  "engines": {
+    "node": ">=12"
+  }
+}

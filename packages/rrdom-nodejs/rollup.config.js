@@ -2,7 +2,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { terser } from 'rollup-plugin-terser';
 import typescript from 'rollup-plugin-typescript2';
-import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import pkg from './package.json';
 
 function toMinPath(path) {
@@ -12,10 +11,6 @@ function toMinPath(path) {
 const basePlugins = [
   resolve({ browser: true }),
   commonjs(),
-
-  // supports bundling `web-worker:..filename` from rrweb
-  webWorkerLoader(),
-
   typescript({
     tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
   }),

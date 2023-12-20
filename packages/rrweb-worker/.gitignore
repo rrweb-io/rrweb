@@ -1,0 +1,18 @@
+.vscode
+.idea
+node_modules
+package-lock.json
+# yarn.lock
+*.tsbuildinfo
+build
+dist
+es
+lib
+typings
+
+temp
+
+*.log
+
+.env
+__diff_output__

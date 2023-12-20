@@ -12,14 +12,15 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
+  ImageBitmapDataURLWorkerResponse,
 } from '@sentry-internal/rrweb-types';
 import { isBlocked } from '../../../utils';
 import { CanvasContext } from '@sentry-internal/rrweb-types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
-import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
+import { getImageBitmapDataUrlWorkerURL } from '@sentry-internal/rrweb-worker';
+import { callbackWrapper } from '../../error-handler';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -110,24 +111,26 @@ export class CanvasManager implements CanvasManagerInterface {
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
-    if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(
-        win,
-        blockClass,
-        blockSelector,
-        unblockSelector,
-      );
-    if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(
-        sampling,
-        win,
-        blockClass,
-        blockSelector,
-        unblockSelector,
-        {
-          dataURLOptions,
-        },
-      );
+    callbackWrapper(() => {
+      if (recordCanvas && sampling === 'all')
+        this.initCanvasMutationObserver(
+          win,
+          blockClass,
+          blockSelector,
+          unblockSelector,
+        );
+      if (recordCanvas && typeof sampling === 'number')
+        this.initCanvasFPSObserver(
+          sampling,
+          win,
+          blockClass,
+          blockSelector,
+          unblockSelector,
+          {
+            dataURLOptions,
+          },
+        );
+    })();
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -165,15 +168,15 @@ export class CanvasManager implements CanvasManagerInterface {
       true,
     );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
-    const worker =
-      new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
+    const worker = new Worker(getImageBitmapDataUrlWorkerURL());
     worker.onmessage = (e) => {
-      const { id } = e.data;
+      const data = e.data as ImageBitmapDataURLWorkerResponse;
+      const { id } = data;
       snapshotInProgressMap.set(id, false);
 
-      if (!('base64' in e.data)) return;
+      if (!('base64' in data)) return;
 
-      const { base64, type, width, height } = e.data;
+      const { base64, type, width, height } = data;
       this.mutationCb({
         id,
         type: CanvasContext['2D'],

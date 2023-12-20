@@ -23,7 +23,10 @@
     },
     {
       "path": "packages/web-extension"
-    }
+    },
+    {
+      "path": "packages/rrweb-worker"
+    },
   ],
   "files": [],
   "include": [],
