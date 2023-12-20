@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.1
+
+- build: Do not build rrweb-worker package (#147)
+
 ## 2.7.0
 
 - ref: Avoid async in canvas (#143)
