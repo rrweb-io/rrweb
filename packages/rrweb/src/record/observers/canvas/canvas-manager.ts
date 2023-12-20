@@ -232,46 +232,52 @@ export class CanvasManager implements CanvasManagerInterface {
       }
       lastSnapshotTime = timestamp;
 
-      getCanvas()
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        .forEach(async (canvas: HTMLCanvasElement) => {
-          const id = this.mirror.getId(canvas);
-          if (snapshotInProgressMap.get(id)) return;
-          snapshotInProgressMap.set(id, true);
-          if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
-            // if the canvas hasn't been modified recently,
-            // its contents won't be in memory and `createImageBitmap`
-            // will return a transparent imageBitmap
+      getCanvas().forEach((canvas: HTMLCanvasElement) => {
+        const id = this.mirror.getId(canvas);
+        if (snapshotInProgressMap.get(id)) return;
+        snapshotInProgressMap.set(id, true);
+        if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
+          // if the canvas hasn't been modified recently,
+          // its contents won't be in memory and `createImageBitmap`
+          // will return a transparent imageBitmap
 
-            const context = canvas.getContext((canvas as ICanvas).__context) as
-              | WebGLRenderingContext
-              | WebGL2RenderingContext
-              | null;
-            if (
-              context?.getContextAttributes()?.preserveDrawingBuffer === false
-            ) {
-              // Hack to load canvas back into memory so `createImageBitmap` can grab it's contents.
-              // Context: https://twitter.com/Juice10/status/1499775271758704643
-              // Preferably we set `preserveDrawingBuffer` to true, but that's not always possible,
-              // especially when canvas is loaded before rrweb.
-              // This hack can wipe the background color of the canvas in the (unlikely) event that
-              // the canvas background was changed but clear was not called directly afterwards.
-              // Example of this hack having negative side effect: https://visgl.github.io/react-map-gl/examples/layers
-              context.clear(context.COLOR_BUFFER_BIT);
-            }
+          const context = canvas.getContext((canvas as ICanvas).__context) as
+            | WebGLRenderingContext
+            | WebGL2RenderingContext
+            | null;
+          if (
+            context?.getContextAttributes()?.preserveDrawingBuffer === false
+          ) {
+            // Hack to load canvas back into memory so `createImageBitmap` can grab it's contents.
+            // Context: https://twitter.com/Juice10/status/1499775271758704643
+            // Preferably we set `preserveDrawingBuffer` to true, but that's not always possible,
+            // especially when canvas is loaded before rrweb.
+            // This hack can wipe the background color of the canvas in the (unlikely) event that
+            // the canvas background was changed but clear was not called directly afterwards.
+            // Example of this hack having negative side effect: https://visgl.github.io/react-map-gl/examples/layers
+            context.clear(context.COLOR_BUFFER_BIT);
           }
-          const bitmap = await createImageBitmap(canvas);
-          worker.postMessage(
-            {
-              id,
-              bitmap,
-              width: canvas.width,
-              height: canvas.height,
-              dataURLOptions: options.dataURLOptions,
-            },
-            [bitmap],
-          );
-        });
+        }
+
+        createImageBitmap(canvas)
+          .then((bitmap) => {
+            worker.postMessage(
+              {
+                id,
+                bitmap,
+                width: canvas.width,
+                height: canvas.height,
+                dataURLOptions: options.dataURLOptions,
+              },
+              [bitmap],
+            );
+          })
+          .catch((error) => {
+            callbackWrapper(() => {
+              throw error;
+            })();
+          });
+      });
       rafId = requestAnimationFrame(takeCanvasSnapshots);
     };
 
