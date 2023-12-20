@@ -9,7 +9,6 @@
   "private": true,
   "scripts": {
     "dev": "yarn bundle --watch",
-    "build:tarball": "npm pack",
     "bundle": "rollup --config",
     "typings": "tsc -p tsconfig.types.json",
     "prepare": "npm run typings && npm run bundle",
