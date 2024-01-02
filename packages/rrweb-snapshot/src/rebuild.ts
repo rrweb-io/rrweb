@@ -62,6 +62,24 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+// Check if parentheses are balanced
+function areParenthesesBalanced(str: string) {
+  let balance = 0;
+
+  for (const char of str) {
+      if (char === '(') {
+          balance++;
+      } else if (char === ')') {
+          balance--;
+          if (balance < 0) {
+              return false;
+          }
+      }
+  }
+
+  return balance === 0; // Balanced if balance is 0
+}
+
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
 export function addHoverClass(cssText: string, cache: BuildCache): string {
@@ -81,7 +99,9 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
     if ('selectors' in rule) {
       (rule.selectors || []).forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
-          selectors.push(selector);
+          if (areParenthesesBalanced(selector)) {
+            selectors.push(selector);
+          }
         }
       });
     }

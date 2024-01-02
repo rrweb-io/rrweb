@@ -124,6 +124,11 @@ describe('rebuild', function () {
       expect(addHoverClass(cssText, cache)).toEqual(cssText);
     });
 
+    it('check that parentheses are balanced', () => {
+      const cssText = '[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }';
+      expect(addHoverClass(cssText, cache)).toEqual(cssText);
+    });
+
     // this benchmark is unreliable when run in parallel with other tests
     it.skip('benchmark', () => {
       const cssText = fs.readFileSync(
