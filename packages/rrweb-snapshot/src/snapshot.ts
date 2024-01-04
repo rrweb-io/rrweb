@@ -194,23 +194,45 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   return output.join(', ');
 }
 
+const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
+
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
   if (!attributeValue || attributeValue.trim() === '') {
     return attributeValue;
   }
-  const a: HTMLAnchorElement = doc.createElement('a');
-  a.href = attributeValue;
-  return a.href;
+
+  return getHref(doc, attributeValue);
 }
 
 function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
-function getHref() {
-  // return a href without hash
-  const a = document.createElement('a');
+function getHref(doc: Document, customHref?: string) {
+  let a = cachedDocument.get(doc);
+
+  if (!a) {
+    a = doc.createElement('a');
+    cachedDocument.set(doc, a);
+  }
+
+  /**
+   * This is needed for SPAs.
+   *
+   * Basically, the cached a link stores the URL when the element is created.
+   * SPAs will not update the page but it can change the URL, this makes the cached a link unusable.
+   *
+   * In order to prevent that, I need to reset the cache by defining the URL to any value,
+   * then I need to reset again to set the URL to '' to support relative paths like ./image.png
+   * to be correctly displayed.
+   *
+   * URLs are not updated if you set the same value, that's why I need to reset the value twice.
+   */
+  a.href = './clear-current';
   a.href = '';
+
+  if (customHref) a.href = customHref;
+
   return a.href;
 }
 
@@ -242,7 +264,7 @@ export function transformAttribute(
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style') {
-    return absoluteToStylesheet(value, getHref());
+    return absoluteToStylesheet(value, getHref(doc));
   } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
   }
@@ -565,7 +587,7 @@ function serializeTextNode(
         n,
       );
     }
-    textContent = absoluteToStylesheet(textContent, getHref());
+    textContent = absoluteToStylesheet(textContent, getHref(document));
   }
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
@@ -659,7 +681,7 @@ function serializeElementNode(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref());
+      attributes._cssText = absoluteToStylesheet(cssText, getHref(doc));
     }
   }
   // form fields
