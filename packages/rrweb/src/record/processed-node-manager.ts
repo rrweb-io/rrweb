@@ -1,3 +1,4 @@
+import { onRequestAnimationFrame } from '../utils';
 import type MutationBuffer from './mutation';
 
 /**
@@ -13,7 +14,7 @@ export default class ProcessedNodeManager {
   }
 
   private periodicallyClear() {
-    requestAnimationFrame(() => {
+    onRequestAnimationFrame(() => {
       this.clear();
       if (this.loop) this.periodicallyClear();
     });

@@ -14,7 +14,7 @@ import type {
   CanvasArg,
   ImageBitmapDataURLWorkerResponse,
 } from '@sentry-internal/rrweb-types';
-import { isBlocked } from '../../../utils';
+import { isBlocked, onRequestAnimationFrame } from '../../../utils';
 import { CanvasContext } from '@sentry-internal/rrweb-types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
@@ -227,7 +227,7 @@ export class CanvasManager implements CanvasManagerInterface {
         lastSnapshotTime &&
         timestamp - lastSnapshotTime < timeBetweenSnapshots
       ) {
-        rafId = requestAnimationFrame(takeCanvasSnapshots);
+        rafId = onRequestAnimationFrame(takeCanvasSnapshots);
         return;
       }
       lastSnapshotTime = timestamp;
@@ -278,10 +278,10 @@ export class CanvasManager implements CanvasManagerInterface {
             })();
           });
       });
-      rafId = requestAnimationFrame(takeCanvasSnapshots);
+      rafId = onRequestAnimationFrame(takeCanvasSnapshots);
     };
 
-    rafId = requestAnimationFrame(takeCanvasSnapshots);
+    rafId = onRequestAnimationFrame(takeCanvasSnapshots);
 
     this.resetObservers = () => {
       canvasContextReset();
@@ -330,15 +330,15 @@ export class CanvasManager implements CanvasManagerInterface {
   }
 
   private startPendingCanvasMutationFlusher() {
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    onRequestAnimationFrame(() => this.flushPendingCanvasMutations());
   }
 
   private startRAFTimestamping() {
     const setLatestRAFTimestamp = (timestamp: DOMHighResTimeStamp) => {
       this.rafStamps.latestId = timestamp;
-      requestAnimationFrame(setLatestRAFTimestamp);
+      onRequestAnimationFrame(setLatestRAFTimestamp);
     };
-    requestAnimationFrame(setLatestRAFTimestamp);
+    onRequestAnimationFrame(setLatestRAFTimestamp);
   }
 
   flushPendingCanvasMutations() {
@@ -348,7 +348,7 @@ export class CanvasManager implements CanvasManagerInterface {
         this.flushPendingCanvasMutationFor(canvas, id);
       },
     );
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    onRequestAnimationFrame(() => this.flushPendingCanvasMutations());
   }
 
   flushPendingCanvasMutationFor(canvas: HTMLCanvasElement, id: number) {

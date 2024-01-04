@@ -589,3 +589,46 @@ export function inDom(n: Node): boolean {
   if (!doc) return false;
   return doc.contains(n) || shadowHostInDom(n);
 }
+
+let cachedRequestAnimationFrameImplementation:
+  | undefined
+  | typeof requestAnimationFrame;
+
+/**
+ * We generally want to use window.requestAnimationFrame.
+ * However, in some cases this may be wrapped (e.g. by Zone.js for Angular),
+ * so we try to get an unpatched version of this from a sandboxed iframe.
+ */
+function getRequestAnimationFrameImplementation(): typeof requestAnimationFrame {
+  if (cachedRequestAnimationFrameImplementation) {
+    return cachedRequestAnimationFrameImplementation;
+  }
+
+  const document = window.document;
+  let requestAnimationFrameImplementation = window.requestAnimationFrame;
+  if (document && typeof document.createElement === 'function') {
+    try {
+      const sandbox = document.createElement('iframe');
+      sandbox.hidden = true;
+      document.head.appendChild(sandbox);
+      const contentWindow = sandbox.contentWindow;
+      if (contentWindow && contentWindow.requestAnimationFrame) {
+        requestAnimationFrameImplementation =
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          contentWindow.requestAnimationFrame;
+      }
+      document.head.removeChild(sandbox);
+    } catch (e) {
+      // Could not create sandbox iframe, just use window.requestAnimationFrame
+    }
+  }
+
+  return (cachedRequestAnimationFrameImplementation =
+    requestAnimationFrameImplementation.bind(window));
+}
+
+export function onRequestAnimationFrame(
+  ...rest: Parameters<typeof requestAnimationFrame>
+): ReturnType<typeof requestAnimationFrame> {
+  return getRequestAnimationFrameImplementation()(...rest);
+}
