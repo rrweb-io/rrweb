@@ -21,6 +21,9 @@
   "references": [
     {
       "path": "../rrweb-snapshot"
+    },
+    {
+      "path": "../types"
     }
   ],
   "exclude": [

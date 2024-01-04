@@ -20,9 +20,6 @@
   },
   "references": [
     {
-      "path": "../rrweb-worker"
-    },
-    {
       "path": "../rrdom"
     },
     {
@@ -30,6 +27,9 @@
     },
     {
       "path": "../types"
+    },
+    {
+      "path": "../rrweb-worker"
     }
   ],
   "exclude": [
