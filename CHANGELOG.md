@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.2
+
+- fix(rrweb): Use unpatched requestAnimationFrame when possible [#150](https://github.com/getsentry/rrweb/pull/150)
+
 ## 2.7.1
 
 - build: Do not build rrweb-worker package (#147)
