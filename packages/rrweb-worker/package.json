@@ -1,6 +1,6 @@
 {
   "name": "@sentry-internal/rrweb-worker",
-  "version": "2.6.0",
+  "version": "2.7.2",
   "description": "Worker for rrweb",
   "main": "lib/rrweb-worker/index.cjs",
   "module": "es/rrweb-worker/index.js",
@@ -25,8 +25,8 @@
     "url": "https://github.com/getsentry/rrweb/issues"
   },
   "dependencies": {
-    "@sentry-internal/rrweb-snapshot": "2.6.0",
-    "@sentry-internal/rrweb-types": "2.6.0"
+    "@sentry-internal/rrweb-snapshot": "2.7.2",
+    "@sentry-internal/rrweb-types": "2.7.2"
   },
   "engines": {
     "node": ">=12"
