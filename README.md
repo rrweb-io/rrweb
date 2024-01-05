@@ -27,6 +27,8 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 [**🍳 Recipes 🍳**](./docs/recipes/index.md)
 
+[**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
+
 ## Project Structure
 
 rrweb is mainly composed of 3 parts:
@@ -138,6 +140,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Yuyz0112</b></sub>
+        <br /><br />
       </a>
     </td>
     <td align="center">
@@ -148,6 +151,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Yun Feng</b></sub>
+        <br /><br />
       </a>
     </td>
     <td align="center">
@@ -158,6 +162,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>eoghanmurray</b></sub>
+        <br /><br />
       </a>
     </td>
     <td align="center">
@@ -168,6 +173,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Juice10</b></sub>
+        <br /><sub>open for rrweb consulting</sub>
       </a>
     </td>
   </tr>
