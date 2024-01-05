@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**<br />
 
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
@@ -26,6 +26,8 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 [**📚 Read the rrweb guide here. 📚**](./guide.md)
 
 [**🍳 Recipes 🍳**](./docs/recipes/index.md)
+
+[**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
 
 ## Project Structure
 
@@ -169,6 +171,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         />
         <br /><sub><b>Juice10</b></sub>
       </a>
+      <br /><a href="https://twitter.com/messages/compose?recipient_id=14274717"><sub>open for rrweb consulting</sub></a>
     </td>
   </tr>
 </table>
