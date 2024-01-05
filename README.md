@@ -169,9 +169,9 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           width="100px;"
           alt=""
         />
-        <br /><sub><b>Juice10</b></sub>
+        <br /><sub><b>Juice10</b></sub><br />
+        <br /><sub>open for rrweb consulting</sub>
       </a>
-      <br /><a href="https://twitter.com/messages/compose?recipient_id=14274717"><sub>open for rrweb consulting</sub></a>
     </td>
   </tr>
 </table>
