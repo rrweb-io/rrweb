@@ -4,4 +4,4 @@ The event data recorded by rrweb is a performant, easy to compress, text-based f
 
 But if you really need to convert it into a video format, there are some tools that can do this work.
 
-Use [rrvideo](https://github.com/rrweb-io/rrvideo).
+Use [rrvideo](https://github.com/rrweb-io/rrweb/blob/master/packages/rrvideo/README.md).
