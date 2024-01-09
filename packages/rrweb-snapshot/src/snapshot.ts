@@ -66,7 +66,7 @@ let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
-const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+-]+:)?\/\//i;
 const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
 export function absoluteToStylesheet(
@@ -95,9 +95,8 @@ export function absoluteToStylesheet(
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (filePath[0] === '/') {
-        return `url(${maybeQuote}${
-          extractOrigin(href) + filePath
-        }${maybeQuote})`;
+        return `url(${maybeQuote}${extractOrigin(href) + filePath
+          }${maybeQuote})`;
       }
       const stack = href.split('/');
       const parts = filePath.split('/');
@@ -269,7 +268,7 @@ export function _isBlockedElement(
         return true;
       }
     } else {
-      for (let eIndex = element.classList.length; eIndex--; ) {
+      for (let eIndex = element.classList.length; eIndex--;) {
         const className = element.classList[eIndex];
         if (blockClass.test(className)) {
           return true;
@@ -297,7 +296,7 @@ export function classMatchesRegex(
     return classMatchesRegex(node.parentNode, regex, checkAncestors);
   }
 
-  for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
+  for (let eIndex = (node as HTMLElement).classList.length; eIndex--;) {
     const className = (node as HTMLElement).classList[eIndex];
     if (regex.test(className)) {
       return true;
@@ -1280,46 +1279,46 @@ function snapshot(
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
-          color: true,
-          date: true,
-          'datetime-local': true,
-          email: true,
-          month: true,
-          number: true,
-          range: true,
-          search: true,
-          tel: true,
-          text: true,
-          time: true,
-          url: true,
-          week: true,
-          textarea: true,
-          select: true,
-          password: true,
-        }
+        color: true,
+        date: true,
+        'datetime-local': true,
+        email: true,
+        month: true,
+        number: true,
+        range: true,
+        search: true,
+        tel: true,
+        text: true,
+        time: true,
+        url: true,
+        week: true,
+        textarea: true,
+        select: true,
+        password: true,
+      }
       : maskAllInputs === false
-      ? {
+        ? {
           password: true,
         }
-      : maskAllInputs;
+        : maskAllInputs;
   const slimDOMOptions: SlimDOMOptions =
     slimDOM === true || slimDOM === 'all'
       ? // if true: set of sensible options that should not throw away any information
-        {
-          script: true,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaDescKeywords: slimDOM === 'all', // destructive
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaAuthorship: true,
-          headMetaVerification: true,
-        }
+      {
+        script: true,
+        comment: true,
+        headFavicon: true,
+        headWhitespace: true,
+        headMetaDescKeywords: slimDOM === 'all', // destructive
+        headMetaSocial: true,
+        headMetaRobots: true,
+        headMetaHttpEquiv: true,
+        headMetaAuthorship: true,
+        headMetaVerification: true,
+      }
       : slimDOM === false
-      ? {}
-      : slimDOM;
+        ? {}
+        : slimDOM;
   return serializeNodeWithId(n, {
     doc: n,
     mirror,
