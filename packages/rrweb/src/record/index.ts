@@ -750,23 +750,28 @@ function _getCanvasManager(
     | ((options: PrivateGetCanvasManagerOptions) => CanvasManagerInterface),
   options: PublicGetCanvasManagerOptions,
 ) {
-  return getCanvasManagerFn
-    ? getCanvasManagerFn({
-        ...options,
-        mirror,
-        win: window,
-        mutationCb: (p: canvasMutationParam) =>
-          wrappedEmit(
-            wrapEvent({
-              type: EventType.IncrementalSnapshot,
-              data: {
-                source: IncrementalSource.CanvasMutation,
-                ...p,
-              },
-            }),
-          ),
-      })
-    : new CanvasManagerNoop();
+  try {
+    return getCanvasManagerFn
+      ? getCanvasManagerFn({
+          ...options,
+          mirror,
+          win: window,
+          mutationCb: (p: canvasMutationParam) =>
+            wrappedEmit(
+              wrapEvent({
+                type: EventType.IncrementalSnapshot,
+                data: {
+                  source: IncrementalSource.CanvasMutation,
+                  ...p,
+                },
+              }),
+            ),
+        })
+      : new CanvasManagerNoop();
+  } catch {
+    console.warn('Unable to initialize CanvasManager');
+    return new CanvasManagerNoop();
+  }
 }
 
 export function getCanvasManager(
