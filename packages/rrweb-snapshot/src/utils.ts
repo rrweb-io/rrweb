@@ -139,6 +139,44 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   }
 }
 
+function replaceChromeGridTemplateAreas(rule: CSSStyleRule): string {
+  const hasGridTemplateInCSSText = rule.cssText.includes('grid-template:');
+  const hasGridTemplateAreaInStyleRules =
+    rule.style.getPropertyValue('grid-template-areas') !== '';
+  const hasGridTemplateAreaInCSSText = rule.cssText.includes(
+    'grid-template-areas:',
+  );
+  if (
+    isCSSStyleRule(rule) &&
+    hasGridTemplateInCSSText &&
+    hasGridTemplateAreaInStyleRules &&
+    !hasGridTemplateAreaInCSSText
+  ) {
+    // chrome does not correctly provide the grid template areas in the rules cssText
+    // e.g. https://bugs.chromium.org/p/chromium/issues/detail?id=1303968
+    // we remove the grid-template rule from the text... so everything from grid-template: to the next semicolon
+    // and then add each grid-template-x rule into the css text because Chrome isn't doing this correctly
+    const parts = rule.cssText
+      .split(';')
+      .filter((s) => !s.includes('grid-template:'))
+      .map((s) => s.trim());
+
+    const gridStyles: string[] = [];
+
+    for (let i = 0; i < rule.style.length; i++) {
+      const styleName = rule.style[i];
+      if (styleName.startsWith('grid-template')) {
+        gridStyles.push(
+          `${styleName}: ${rule.style.getPropertyValue(styleName)}`,
+        );
+      }
+    }
+    parts.splice(parts.length - 1, 0, gridStyles.join('; '));
+    return parts.join('; ');
+  }
+  return rule.cssText;
+}
+
 export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
   if (isCSSImportRule(rule)) {
     let importStringified;
@@ -163,6 +201,9 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
       // Safari does not escape selectors with : properly
       // see https://bugs.webkit.org/show_bug.cgi?id=184604
       ruleStringified = fixSafariColons(ruleStringified);
+    }
+    if (isCSSStyleRule(rule)) {
+      ruleStringified = replaceChromeGridTemplateAreas(rule);
     }
     if (sheetHref) {
       return absolutifyURLs(ruleStringified, sheetHref);
