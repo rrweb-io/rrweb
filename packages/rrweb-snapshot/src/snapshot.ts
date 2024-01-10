@@ -350,17 +350,21 @@ export function createMatchPredicate(
     const el = node as HTMLElement;
     if (el === null) return false;
 
-    if (className) {
-      if (typeof className === 'string') {
-        if (el.matches(`.${className}`)) return true;
-      } else if (elementClassMatchesRegex(el, className)) {
-        return true;
+    try {
+      if (className) {
+        if (typeof className === 'string') {
+          if (el.matches(`.${className}`)) return true;
+        } else if (elementClassMatchesRegex(el, className)) {
+          return true;
+        }
       }
+
+      if (selector && el.matches(selector)) return true;
+
+      return false;
+    } catch {
+      return false;
     }
-
-    if (selector && el.matches(selector)) return true;
-
-    return false;
   };
 }
 
