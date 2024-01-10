@@ -135,7 +135,7 @@ describe('css parser', () => {
   it('fixes incorrectly parsed grid template rules', () => {
     const cssText =
       '#wrapper { display: grid; grid-template: "header header" max-content / repeat(2, 1fr); margin: 0px auto; }';
-    // to avoid using JSDom we can fake as much of the CSSStyleDeclaration as we ned
+    // to avoid using JSDom we can fake as much of the CSSStyleDeclaration as we need
     const cssStyleDeclaration: Record<string | number, any> = {
       length: 3,
       0: 'grid-template-areas',
