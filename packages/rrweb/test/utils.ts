@@ -712,7 +712,9 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     inlineImages: ${options.inlineImages},
     plugins: ${options.plugins},
     getCanvasManager: ${
-      options.recordCanvas ? 'rrweb.getCanvasManager' : 'undefined'
+      options.recordCanvas
+        ? '(opts) => new rrweb.CanvasManager(opts)'
+        : 'undefined'
     }
   });
   `;

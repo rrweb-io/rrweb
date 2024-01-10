@@ -27,9 +27,10 @@ export { record, Replayer, utils, canvasMutation };
 export { deserializeArg } from './replay/canvas/deserialize-args';
 
 export {
+  CanvasManager,
   takeFullSnapshot,
   mirror,
   freezePage,
   addCustomEvent,
-  getCanvasManager,
 } from './record';
+export type { CanvasManagerConstructorOptions } from './record';

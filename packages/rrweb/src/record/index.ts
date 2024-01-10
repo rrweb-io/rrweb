@@ -3,7 +3,6 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
-  DataURLOptions,
 } from '@sentry-internal/rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
@@ -53,6 +52,7 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+export type { CanvasManagerConstructorOptions } from './observers/canvas/canvas-manager';
 
 function wrapEvent(e: event): eventWithTime {
   const eWithTime = e as eventWithTime;
@@ -340,6 +340,18 @@ function record<T = eventWithTime>(
   const canvasManager: CanvasManagerInterface = _getCanvasManager(
     getCanvasManager,
     {
+      mirror,
+      win: window,
+      mutationCb: (p: canvasMutationParam) =>
+        wrappedEmit(
+          wrapEvent({
+            type: EventType.IncrementalSnapshot,
+            data: {
+              source: IncrementalSource.CanvasMutation,
+              ...p,
+            },
+          }),
+        ),
       recordCanvas,
       blockClass,
       blockSelector,
@@ -717,14 +729,6 @@ export function takeFullSnapshot(isCheckout?: boolean) {
   _takeFullSnapshot(isCheckout);
 }
 
-function wrappedEmit(e: eventWithTime) {
-  if (!_wrappedEmit) {
-    return;
-  }
-
-  _wrappedEmit(e);
-}
-
 // record.addCustomEvent is removed because Sentry Session Replay does not use it
 // record.freezePage is removed because Sentry Session Replay does not use it
 
@@ -734,39 +738,17 @@ record.takeFullSnapshot = takeFullSnapshot;
 
 export default record;
 
-type PrivateOptions = 'mutationCb' | 'win' | 'mirror';
-type PublicGetCanvasManagerOptions = Omit<
-  CanvasManagerConstructorOptions,
-  PrivateOptions
->;
-
-interface PrivateGetCanvasManagerOptions
-  extends PublicGetCanvasManagerOptions,
-    Pick<CanvasManagerConstructorOptions, PrivateOptions> {}
-
 function _getCanvasManager(
   getCanvasManagerFn:
     | undefined
-    | ((options: PrivateGetCanvasManagerOptions) => CanvasManagerInterface),
-  options: PublicGetCanvasManagerOptions,
+    | ((
+        options: Partial<CanvasManagerConstructorOptions>,
+      ) => CanvasManagerInterface),
+  options: CanvasManagerConstructorOptions,
 ) {
   try {
     return getCanvasManagerFn
-      ? getCanvasManagerFn({
-          ...options,
-          mirror,
-          win: window,
-          mutationCb: (p: canvasMutationParam) =>
-            wrappedEmit(
-              wrapEvent({
-                type: EventType.IncrementalSnapshot,
-                data: {
-                  source: IncrementalSource.CanvasMutation,
-                  ...p,
-                },
-              }),
-            ),
-        })
+      ? getCanvasManagerFn(options)
       : new CanvasManagerNoop();
   } catch {
     console.warn('Unable to initialize CanvasManager');
@@ -774,8 +756,4 @@ function _getCanvasManager(
   }
 }
 
-export function getCanvasManager(
-  options: PublicGetCanvasManagerOptions,
-): CanvasManagerInterface {
-  return new CanvasManager(options as CanvasManagerConstructorOptions);
-}
+export { CanvasManager };

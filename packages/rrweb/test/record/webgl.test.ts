@@ -16,7 +16,7 @@ import {
   waitForRAF,
 } from '../utils';
 import type { ICanvas } from '@sentry-internal/rrweb-snapshot';
-import type { CanvasManagerInterface } from '../../src/record/observers/canvas/canvas-manager';
+import type { CanvasManager } from '../../src/record/observers/canvas/canvas-manager';
 
 interface ISuite {
   code: string;
@@ -31,7 +31,7 @@ interface IWindow extends Window {
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
-    getCanvasManager: () => CanvasManagerInterface;
+    CanvasManager: typeof CanvasManager;
   };
   emit: (e: eventWithTime) => undefined;
 }
@@ -66,10 +66,10 @@ const setup = function (
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
     await ctx.page.evaluate((canvasSample) => {
-      const { record, getCanvasManager } = (window as unknown as IWindow).rrweb;
+      const { record, CanvasManager } = (window as unknown as IWindow).rrweb;
       record({
         recordCanvas: true,
-        getCanvasManager,
+        getCanvasManager: (options) => new CanvasManager(options),
         sampling: {
           canvas: canvasSample,
         },

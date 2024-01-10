@@ -7,9 +7,9 @@ module.exports = [
     gzip: true
   },
   {
-    name: 'rrweb - record & getCanvasManager only (gzipped)',
+    name: 'rrweb - record & CanvasManager only (gzipped)',
     path: 'packages/rrweb/es/rrweb/packages/rrweb/src/entries/all.js',
-    import: '{ record, getCanvasManager }',
+    import: '{ record, CanvasManager }',
     gzip: true
   },
   {
