@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.8.0
+
+- feat: Add manual canvas snapshot function (#149)
+- feat: Remove getCanvasManager, export CanvasManager class directly (#153)
+- fix: Protect against `matches()` being undefined (#154)
+
 ## 2.7.3
 
 - Fix build issue with rrweb & rrweb-worker
