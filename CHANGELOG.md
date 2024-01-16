@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.0
+
+- fix: Rename isManualSnapshot to enableManualSnapshot (#158)
+
 ## 2.8.0
 
 - feat: Add manual canvas snapshot function (#149)
