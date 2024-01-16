@@ -414,7 +414,7 @@ describe('AssetManager', () => {
         payload: examplePayload,
       },
     };
-    jest.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
     await assetManager.add(event);
 
     // create svg element `feImage`
