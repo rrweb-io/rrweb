@@ -40,7 +40,7 @@ export interface CanvasManagerInterface {
 
 export interface CanvasManagerConstructorOptions {
   recordCanvas: boolean;
-  isManualSnapshot?: boolean;
+  enableManualSnapshot?: boolean;
   mutationCb: canvasMutationCallback;
   win: IWindow;
   blockClass: blockClass;
@@ -118,7 +118,7 @@ export class CanvasManager implements CanvasManagerInterface {
     this.mirror = options.mirror;
     this.options = options;
 
-    if (options.isManualSnapshot) {
+    if (options.enableManualSnapshot) {
       return;
     }
 
