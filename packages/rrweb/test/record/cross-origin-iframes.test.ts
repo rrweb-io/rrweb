@@ -539,7 +539,7 @@ describe('cross origin iframes', function (this: ISuite) {
     it('should filter out forwarded cross origin rrweb messages', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
       const iframe2URL = `${ctx.serverBURL}/html/blank.html`;
-      await frame.evaluate((iframe2URL) => {
+      frame.evaluate((iframe2URL) => {
         // Add a message proxy to forward messages from child frames to its parent frame.
         window.addEventListener('message', (event) => {
           if (event.source !== window)
@@ -551,7 +551,7 @@ describe('cross origin iframes', function (this: ISuite) {
       }, iframe2URL);
 
       // Wait for iframe2 to load
-      await ctx.page.waitForFrame(iframe2URL);
+      await ctx.page.waitForFrame((iframe) => iframe.url() === iframe2URL);
       const iframe2 = frame.childFrames()[0];
       // Record iframe2
       await injectRecordScript(iframe2);
