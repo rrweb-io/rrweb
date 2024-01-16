@@ -206,11 +206,13 @@ describe('cross origin iframes', function (this: ISuite) {
     });
 
     it('should replace the existing DOM nodes on iframe navigation with `isAttachIframe`', async () => {
-      await ctx.page.evaluate((url) => {
+      const newUrl = `${ctx.serverURL}/html/form.html?2`;
+      ctx.page.evaluate((url) => {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-        iframe.src = `${url}/html/form.html?2`;
-      }, ctx.serverURL);
-      await ctx.page.waitForResponse(`${ctx.serverURL}/html/form.html?2`);
+        iframe.src = url;
+      }, newUrl);
+      await ctx.page.waitForFrame((iframe) => iframe.url() === newUrl);
+
       await waitForRAF(ctx.page); // loads iframe
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
