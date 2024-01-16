@@ -728,12 +728,15 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
+      for (let i = n.childNodes.length - 1; i >= 0; --i) {
+        this.genAdds(n.childNodes[i]);
+      }
       if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
+        for (let j = n.shadowRoot.childNodes.length - 1; j >= 0; --j) {
+          let childN = n.shadowRoot.childNodes[j];
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
-        });
+        }
       }
     }
   };
