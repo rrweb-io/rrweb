@@ -1,5 +1,6 @@
 import record from './record';
 import { Replayer } from './replay';
+import canvasMutation from './replay/canvas';
 import * as utils from './utils';
 import { _mirror } from './utils';
 
@@ -20,6 +21,7 @@ export {
   Replayer,
   addCustomEvent,
   freezePage,
+  canvasMutation,
   _mirror as mirror,
   record,
   utils,
