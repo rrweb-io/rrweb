@@ -982,7 +982,9 @@ export function serializeNodeWithId(
 
   if (
     !needsMask &&
-    n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
+    n.childNodes?.length > 0
+    // we can avoid the check on leaf elements, as masking is applied to child text nodes only
+    // The needsMask check should also be ignored when the childNode array length is 0
   ) {
     // perf: if needsMask = true, children won't also need to check
     const checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
