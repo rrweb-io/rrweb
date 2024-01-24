@@ -50,6 +50,7 @@ class DoubleLinkedList {
   public length = 0;
   public head: DoubleLinkedListNode | null = null;
   public tail: DoubleLinkedListNode | null = null;
+  public reordered = false;
 
   public get(position: number) {
     if (position >= this.length) {
@@ -128,6 +129,34 @@ class DoubleLinkedList {
       delete (n as Optional<NodeInLinkedList, '__ln'>).__ln;
     }
     this.length--;
+  }
+
+  public needsReorder(_node: DoubleLinkedListNode) {
+    if (!this.reordered &&
+      _node.value.previousSibling &&
+      isNodeInLinkedList(_node.value.previousSibling) &&
+      _node.previous &&
+      _node.previous.value !== _node.value.previousSibling) {
+      return true;
+    }
+    return false;
+  }
+
+  public reorder() {
+    if (this.reordered) return false;
+    let current = this.tail;
+    const head = this.head;
+    while (current) {
+      const prev = current.previous;
+      this.removeNode(current.value);
+      this.addNode(current.value);
+      if (current === head) {
+        break;
+      }
+      current = prev;
+    }
+    this.reordered = true;
+    return true;
   }
 }
 
@@ -395,9 +424,13 @@ export default class MutationBuffer {
             const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value);
 
-            if (nextId === -1) continue;
-            // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
+            if (nextId === -1) {
+              if (addList.needsReorder(_node) && addList.reorder()) {
+                tailNode = addList.tail;
+              }
+              continue;
+            } else if (parentId !== -1) {
+              // nextId !== -1 && parentId !== -1
               node = _node;
               break;
             }
