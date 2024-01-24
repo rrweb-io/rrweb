@@ -464,12 +464,12 @@ export function parse(css: string, options: ParserOptions = {}) {
    */
 
   function customSplit(input: string) {
-    let result = [];
+    const result = [];
     let currentSegment = '';
     let depthParentheses = 0; // Track depth of parentheses
     let depthBrackets = 0; // Track depth of square brackets
 
-    for (let char of input) {
+    for (const char of input) {
       if (char === '(') {
         depthParentheses++;
       } else if (char === ')') {
