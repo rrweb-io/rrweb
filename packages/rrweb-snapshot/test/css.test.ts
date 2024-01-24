@@ -99,11 +99,11 @@ describe('css parser', () => {
   it('parses { and } in attribute selectors correctly', () => {
     const result = parse('foo[someAttr~="{someId}"] { color: red; }');
     const rules = result.stylesheet!.rules;
-  
+
     expect(rules.length).toEqual(1);
-  
+
     const rule = rules[0] as Rule;
-  
+
     expect(rule.selectors![0]).toEqual('foo[someAttr~="{someId}"]');
   });
 
