@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { stringify } from '../../../src/plugins/console/record/stringify';
 
 describe('console record plugin', () => {
