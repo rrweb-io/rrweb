@@ -2624,8 +2624,8 @@
 
 "@rrweb/types@npm:@fullview/rrweb-types@2.0.0-alpha.7.15":
   version "2.0.0-alpha.7.15"
-  resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.7.15.tgz#eb920713d2370680bd50bf02590528f675a317e7"
-  integrity sha512-8/4hNVOkppsEgd43Mtg+MbbsAIHXzV39nxMUCKmBw0aJyP2eYM4HQqz5Cq0/d8RVOrdMKW7/48ztTB3Lbdpbxg==
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-types/-/rrweb-types-2.0.0-alpha.7.15.tgz#323e468c01d8f417de338e3b368609a7d7a80c24"
+  integrity sha512-BDhLQDH04GJa4N6ikxbt/IMsgbpx/YAnMSAdVBVn9BS42dW5B+8if1+P92ypToNUyYxO59dPMG2tYLdEOCVfdw==
   dependencies:
     rrweb-snapshot "npm:@fullview/rrweb-snapshot@2.0.0-alpha.7.15"
 
@@ -11828,8 +11828,8 @@ rrdom@^2.0.0-alpha.7:
 
 "rrdom@npm:@fullview/rrdom@2.0.0-alpha.7.15":
   version "2.0.0-alpha.7.15"
-  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.7.15.tgz#f3bbf3709e38aaa3112b5196889d0a73bd6aad95"
-  integrity sha512-kUXlJjbiuXZQCUPOy+Ze4zKQH9mAixM64lSf15jUztJ2BpFioX18GAO1B3qqsCRlGfinfksBHUZ1UYk/4kL2PQ==
+  resolved "https://registry.yarnpkg.com/@fullview/rrdom/-/rrdom-2.0.0-alpha.7.15.tgz#81d299f03b7b27d07236f021ef13c95894cb01ae"
+  integrity sha512-BdeabqCAD9UPAjbpdLgyqr67SjRYR8CugUshaoCCvMfqWu4DGKpA88wk4zxgx5Xr7xfmG5xRow4xIjj930FfpA==
   dependencies:
     rrweb-snapshot "npm:@fullview/rrweb-snapshot@2.0.0-alpha.7.15"
 
@@ -11845,8 +11845,8 @@ rrweb-snapshot@^2.0.0-alpha.7:
 
 "rrweb-snapshot@npm:@fullview/rrweb-snapshot@2.0.0-alpha.7.15":
   version "2.0.0-alpha.7.15"
-  resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.7.15.tgz#d3381ae0aac753fa9525ea8fa54076fba7473a37"
-  integrity sha512-3YZw5gVJbBixFfxms6aKFTSjpC20aMCqNQ1Xj0sQ/CPLf1dlrsWLva+/HhYEnaDygv92sIIhnYJngHLtrBaJNQ==
+  resolved "https://registry.yarnpkg.com/@fullview/rrweb-snapshot/-/rrweb-snapshot-2.0.0-alpha.7.15.tgz#c456534e4b55b45c68e703034c9f14d72b3058fe"
+  integrity sha512-4+yZ5D+zAvVCd80EMRqR3b032a2JOGa9MPRHLKwUK/W/zeVi50bJoNsTFlrM6PFBjW2azITFe2f8XMn5e0o1UQ==
 
 rrweb@^2.0.0-alpha.7:
   version "2.0.0-alpha.7"
