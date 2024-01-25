@@ -158,12 +158,14 @@ export function maskInputValue({
   tagName,
   type,
   value,
+  matchesTextSelector,
   maskInputFn,
 }: {
   maskInputOptions: MaskInputOptions;
   tagName: string;
   type: string | null;
   value: string | null;
+  matchesTextSelector: boolean;
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
@@ -171,7 +173,8 @@ export function maskInputValue({
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
+    (actualType && maskInputOptions[actualType as keyof MaskInputOptions]) ||
+    matchesTextSelector
   ) {
     if (maskInputFn) {
       text = maskInputFn(text);

@@ -501,6 +501,7 @@ function serializeNode(
         blockSelector,
         deleteSelector,
         inlineStylesheet,
+        maskTextSelector,
         maskInputOptions,
         maskInputFn,
         dataURLOptions,
@@ -607,6 +608,7 @@ function serializeElementNode(
     blockSelector: string | null;
     deleteSelector: string | null;
     inlineStylesheet: boolean;
+    maskTextSelector: string | null;
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
@@ -626,6 +628,7 @@ function serializeElementNode(
     blockSelector,
     deleteSelector,
     inlineStylesheet,
+    maskTextSelector,
     maskInputOptions = {},
     maskInputFn,
     dataURLOptions = {},
@@ -696,11 +699,17 @@ function serializeElementNode(
         : typeof attributes.type === 'string'
         ? attributes.type.toLowerCase()
         : null;
+
+      const matchesTextSelector = maskTextSelector
+        ? n.matches(maskTextSelector)
+        : false;
+
       attributes.value = maskInputValue({
         type,
         tagName,
         value,
         maskInputOptions,
+        matchesTextSelector,
         maskInputFn,
       });
     } else if (checked) {

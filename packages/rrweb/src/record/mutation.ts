@@ -496,11 +496,16 @@ export default class MutationBuffer {
         if (attributeName === 'value') {
           const type = getInputType(target);
 
+          const matchesTextSelector = this.maskTextSelector
+            ? target.matches(this.maskTextSelector)
+            : false;
+
           value = maskInputValue({
             maskInputOptions: this.maskInputOptions,
             tagName: target.tagName,
             type,
             value,
+            matchesTextSelector,
             maskInputFn: this.maskInputFn,
           });
         }

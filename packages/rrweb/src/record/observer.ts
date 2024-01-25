@@ -351,6 +351,7 @@ function initInputObserver({
   blockClass,
   blockSelector,
   ignoreClass,
+  maskTextSelector,
   maskInputOptions,
   maskInputFn,
   sampling,
@@ -384,17 +385,23 @@ function initInputObserver({
     let isChecked = false;
     const type: Lowercase<string> = getInputType(target) || '';
 
+    const matchesTextSelector = maskTextSelector
+      ? target.matches(maskTextSelector)
+      : false;
+
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
     } else if (
       maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-      maskInputOptions[type as keyof MaskInputOptions]
+      maskInputOptions[type as keyof MaskInputOptions] ||
+      matchesTextSelector
     ) {
       text = maskInputValue({
         maskInputOptions,
         tagName,
         type,
         value: text,
+        matchesTextSelector,
         maskInputFn,
       });
     }
