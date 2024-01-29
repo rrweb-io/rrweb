@@ -132,11 +132,13 @@ class DoubleLinkedList {
   }
 
   public needsReorder(_node: DoubleLinkedListNode) {
-    if (!this.reordered &&
+    if (
+      !this.reordered &&
       _node.value.previousSibling &&
       isNodeInLinkedList(_node.value.previousSibling) &&
       _node.previous &&
-      _node.previous.value !== _node.value.previousSibling) {
+      _node.previous.value !== _node.value.previousSibling
+    ) {
       return true;
     }
     return false;
