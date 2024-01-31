@@ -20,7 +20,8 @@ import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import { getImageBitmapDataUrlWorkerURL } from '@sentry-internal/rrweb-worker';
-import { callbackWrapper } from '../../error-handler';
+import { callbackWrapper, registerErrorHandler } from '../../error-handler';
+import type { ErrorHandler } from '../../../types';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -47,8 +48,9 @@ export interface CanvasManagerConstructorOptions {
   blockSelector: string | null;
   unblockSelector: string | null;
   mirror: Mirror;
-  sampling?: 'all' | number;
   dataURLOptions: DataURLOptions;
+  errorHandler?: ErrorHandler;
+  sampling?: 'all' | number;
 }
 
 export class CanvasManagerNoop implements CanvasManagerInterface {
@@ -113,10 +115,15 @@ export class CanvasManager implements CanvasManagerInterface {
       unblockSelector,
       recordCanvas,
       dataURLOptions,
+      errorHandler,
     } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
     this.options = options;
+
+    if (errorHandler) {
+      registerErrorHandler(errorHandler);
+    }
 
     if (options.enableManualSnapshot) {
       return;
