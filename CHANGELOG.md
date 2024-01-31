@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.10.0
+
+### Various fixes & improvements
+
+- fix(replayer): `<style>` node `rules` attr can be undefined (#162) by @billyvg
+- feat: Register `errorHandler` inside of CanvasManager (#161) by @billyvg
+- fix(snaptshot): Ensure `attr.name` is defined when collecting element attributes (#160) by @Lms24
+
 ## 2.9.0
 
 - fix: Rename isManualSnapshot to enableManualSnapshot (#158)
