@@ -271,7 +271,6 @@ export class IframeManager implements IframeManagerInterface {
         }
       }
     }
-
     return false;
   }
 
