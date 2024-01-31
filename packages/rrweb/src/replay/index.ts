@@ -1299,7 +1299,7 @@ export class Replayer {
           else if (d.id)
             (
               this.virtualDom.mirror.getNode(d.id) as RRStyleElement | null
-            )?.rules.push(d);
+            )?.rules?.push(d);
         } else this.applyStyleSheetMutation(d);
         break;
       }
