@@ -277,25 +277,25 @@ exports[`integration tests [html file]: form-fields-sensitive.html 1`] = `
         <input type=\\"password\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"current-password\\" value=\\"initial\\" />
+        <input autocomplete=\\"current-password\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"new-password\\" value=\\"initial\\" />
+        <input autocomplete=\\"new-password\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-number\\" value=\\"initial\\" />
+        <input autocomplete=\\"cc-number\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-exp\\" value=\\"initial\\" />
+        <input autocomplete=\\"cc-exp\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-exp-month\\" value=\\"initial\\" />
+        <input autocomplete=\\"cc-exp-month\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-exp-year\\" value=\\"initial\\" />
+        <input autocomplete=\\"cc-exp-year\\" value=\\"*******\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-csc\\" value=\\"initial\\" />
+        <input autocomplete=\\"cc-csc\\" value=\\"*******\\" />
       </label>
     </form>
   </body></html>"
@@ -313,25 +313,25 @@ exports[`integration tests [html file]: form-fields-sensitive-update.html 1`] = 
         <input type=\\"password\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"current-password\\" value=\\"new value\\" />
+        <input autocomplete=\\"current-password\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"new-password\\" value=\\"new value\\" />
+        <input autocomplete=\\"new-password\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-number\\" value=\\"new value\\" />
+        <input autocomplete=\\"cc-number\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-exp\\" value=\\"new value\\" />
+        <input autocomplete=\\"cc-exp\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-exp-month\\" value=\\"new value\\" />
+        <input autocomplete=\\"cc-exp-month\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-exp-year\\" value=\\"new value\\" />
+        <input autocomplete=\\"cc-exp-year\\" value=\\"*********\\" />
       </label>
       <label>
-        <input autocomplete=\\"cc-csc\\" value=\\"new value\\" />
+        <input autocomplete=\\"cc-csc\\" value=\\"*********\\" />
       </label>
     </form>
   

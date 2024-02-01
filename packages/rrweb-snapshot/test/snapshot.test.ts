@@ -497,4 +497,34 @@ describe('needMaskingText', () => {
       ),
     ).toEqual(false);
   });
+
+  describe('enforced masking', () => {
+    it.each([
+      'current-password',
+      'new-password',
+      'cc-number',
+      'cc-exp',
+      'cc-exp-month',
+      'cc-exp-year',
+      'cc-csc',
+    ])('enforces masking for autocomplete="%s"', (autocompleteValue) => {
+      document.write(
+        `<input autocomplete='${autocompleteValue}' value='initial' class='unmaskmask'></input>`,
+      );
+      const el = document.querySelector('input')!;
+      expect(
+        needMaskingText(el, 'maskmask', '.foo', 'unmaskmask', null, false),
+      ).toEqual(true);
+    });
+
+    it('does not mask other autocomplete values', () => {
+      document.write(
+        `<input autocomplete='name' value='initial' class='unmaskmask'></input>`,
+      );
+      const el = document.querySelector('input')!;
+      expect(
+        needMaskingText(el, 'maskmask', '.foo', 'unmaskmask', null, false),
+      ).toEqual(false);
+    });
+  });
 });

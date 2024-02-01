@@ -12643,6 +12643,656 @@ exports[`record integration tests should not record input events on ignored elem
 ]"
 `;
 
+exports[`record integration tests should not record input values for inputs we enforce 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 3
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 4
+              }
+            ],
+            \\"id\\": 2
+          }
+        ],
+        \\"compatMode\\": \\"BackCompat\\",
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"name\\",
+              \\"value\\": \\"allowed value\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 9
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 9,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"cc-csc\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 10
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 10,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"cc-exp-year\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 11
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 11,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"cc-exp-month\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 12
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 12,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"cc-exp\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 13
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 13,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"cc-number\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 14
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 14,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"new-password\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 15
+          }
+        },
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": 15,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"input\\",
+            \\"attributes\\": {
+              \\"autocomplete\\": \\"current-password\\",
+              \\"value\\": \\"*************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 16
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 16
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 14
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 13
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 12
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 11
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 10
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed value\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 16
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 16
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 16
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 16
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 16
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 15
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 14
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 14
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 14
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 14
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 14
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 13
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 13
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 13
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 13
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 13
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 12
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 12
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 12
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 12
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 12
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 11
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 11
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 11
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 11
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 11
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 10
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 10
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 10
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"****************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 10
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 10
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valuea\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valueal\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valueall\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valueallo\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valueallow\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valueallowe\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"allowed valueallowed\\",
+      \\"isChecked\\": false,
+      \\"id\\": 9
+    }
+  }
+]"
+`;
+
 exports[`record integration tests should not record input values if dynamically added and maskAllInputs is true 1`] = `
 "[
   {

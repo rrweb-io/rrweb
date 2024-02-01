@@ -401,6 +401,52 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('should not record input values for inputs we enforce', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'blank.html'));
+
+    // Dynamically add elements to page
+    await page.evaluate(() => {
+      const autocompleteValues = [
+        'current-password',
+        'new-password',
+        'cc-number',
+        'cc-exp',
+        'cc-exp-month',
+        'cc-exp-year',
+        'cc-csc',
+      ];
+      const parent = document.body;
+      autocompleteValues.forEach((autocomplete) => {
+        const el = document.createElement('input');
+        el.setAttribute('autocomplete', autocomplete);
+        el.value = 'initial value';
+        parent.appendChild(el);
+      });
+
+      // this one is allowed
+      const el = document.createElement('input');
+      el.setAttribute('autocomplete', 'name');
+      el.value = 'allowed value';
+      parent.appendChild(el);
+    });
+
+    await page.type('input[autocomplete="current-password"]', 'new');
+    await page.type('input[autocomplete="new-password"]', 'new');
+    await page.type('input[autocomplete="cc-number"]', 'new');
+    await page.type('input[autocomplete="cc-exp"]', 'new');
+    await page.type('input[autocomplete="cc-exp-month"]', 'new');
+    await page.type('input[autocomplete="cc-exp-year"]', 'new');
+    await page.type('input[autocomplete="cc-csc"]', 'new');
+    await page.type('input[autocomplete="name"]', 'allowed');
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('can use maskInputOptions to configure which type of inputs should be masked', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');

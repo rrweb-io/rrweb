@@ -383,6 +383,24 @@ export function needMaskingText(
         : node.parentElement;
     if (el === null) return false;
 
+    if (el.tagName === 'INPUT') {
+      // Special cases: We want to enforce some masking for password & credit-card related fields,
+      // no matter the settings
+      const autocomplete = el.getAttribute('autocomplete');
+      const disallowedAutocompleteValues = [
+        'current-password',
+        'new-password',
+        'cc-number',
+        'cc-exp',
+        'cc-exp-month',
+        'cc-exp-year',
+        'cc-csc',
+      ];
+      if (disallowedAutocompleteValues.includes(autocomplete as string)) {
+        return true;
+      }
+    }
+
     let maskDistance = -1;
     let unmaskDistance = -1;
 
