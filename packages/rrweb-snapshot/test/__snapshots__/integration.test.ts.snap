@@ -265,6 +265,79 @@ exports[`integration tests [html file]: form-fields.html 1`] = `
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
+exports[`integration tests [html file]: form-fields-sensitive.html 1`] = `
+"<!DOCTYPE html><html lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>form fields</title>
+  </head>  <body>
+    <form>
+      <label>
+        <input type=\\"password\\" value=\\"*******\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"current-password\\" value=\\"initial\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"new-password\\" value=\\"initial\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-number\\" value=\\"initial\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-exp\\" value=\\"initial\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-exp-month\\" value=\\"initial\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-exp-year\\" value=\\"initial\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-csc\\" value=\\"initial\\" />
+      </label>
+    </form>
+  </body></html>"
+`;
+
+exports[`integration tests [html file]: form-fields-sensitive-update.html 1`] = `
+"<!DOCTYPE html><html lang=\\"en\\"><head>
+    <meta charset=\\"UTF-8\\" />
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
+    <title>form fields</title>
+  </head>  <body>
+    <form>
+      <label>
+        <input type=\\"password\\" value=\\"*********\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"current-password\\" value=\\"new value\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"new-password\\" value=\\"new value\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-number\\" value=\\"new value\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-exp\\" value=\\"new value\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-exp-month\\" value=\\"new value\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-exp-year\\" value=\\"new value\\" />
+      </label>
+      <label>
+        <input autocomplete=\\"cc-csc\\" value=\\"new value\\" />
+      </label>
+    </form>
+  
+  <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
+`;
+
 exports[`integration tests [html file]: hover.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
