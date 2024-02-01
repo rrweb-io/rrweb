@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.11.0
+
+- feat: Enforce masking of credit card fields (https://github.com/getsentry/rrweb/pull/166)
+- upstream: Feat: Add support for replaying :defined pseudo-class of custom elements (rrweb-io#1155) (https://github.com/getsentry/rrweb/pull/138)
+
 ## 2.10.0
 
 ### Various fixes & improvements
