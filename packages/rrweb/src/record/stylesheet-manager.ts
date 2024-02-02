@@ -5,6 +5,7 @@ import type {
   adoptedStyleSheetParam,
   attributeMutation,
   mutationCallBack,
+  styleSheetAddRule,
 } from '@rrweb/types';
 import { StyleSheetMirror } from '../utils';
 
@@ -61,12 +62,16 @@ export class StylesheetManager {
       let styleId;
       if (!this.styleMirror.has(sheet)) {
         styleId = this.styleMirror.add(sheet);
+        const rules = [] as styleSheetAddRule[];
+        for (let i = 0; i < sheet.rules.length; ++i) {
+          rules.push({
+            rule: stringifyRule(sheet.rules[i]),
+            index: i,
+          });
+        }
         styles.push({
           styleId,
-          rules: Array.from(sheet.rules || CSSRule, (r, index) => ({
-            rule: stringifyRule(r),
-            index,
-          })),
+          rules,
         });
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);

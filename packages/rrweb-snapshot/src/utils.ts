@@ -125,10 +125,12 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
+    const stringifiedRules = [] as string[];
+    for (let i = 0; i < rules.length; ++i) {
+      stringifiedRules.push(stringifyRule(rules[i]));
+    }
     return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules, stringifyRule).join(''),
-        )
+      ? fixBrowserCompatibilityIssuesInCSS(stringifiedRules.join(''))
       : null;
   } catch (error) {
     return null;
