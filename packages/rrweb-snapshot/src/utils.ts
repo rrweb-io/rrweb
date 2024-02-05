@@ -355,6 +355,31 @@ export function extractFileExtension(
   return match?.[1] ?? null;
 }
 
+/**
+ * Extracts the file extension from an a path, considering search parameters and fragments.
+ * @param path - Path to file
+ * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
+ */
+export function extractFileExtension(
+  path: string,
+  baseURL?: string,
+): string | null {
+  let url;
+  try {
+    url = new URL(path, baseURL ?? window.location.href);
+  } catch (err) {
+    return null;
+  }
+  const regex = /\.([0-9a-z]+)(?:$)/i;
+  const match = url.pathname.match(regex);
+  return match?.[1] ?? null;
+}
+
+/**
+ * Extracts the URLs from a srcset attribute.
+ * @param srcset - The srcset attribute value. eg. `image.jpg 2x, image2.jpg 3x`
+ * @returns An array of URLs. eg. `['image.jpg', 'image2.jpg']`
+ */
 export function getUrlsFromSrcset(srcset: string): string[] {
   const urls: string[] = [];
   const parts = srcset.split(',');
@@ -363,11 +388,13 @@ export function getUrlsFromSrcset(srcset: string): string[] {
     const spaceIndex = trimmed.indexOf(' ');
     if (spaceIndex === -1) {
       // If no descriptor is specified, it's a single URL.
+      // eg. `image.jpg`
       urls.push(trimmed);
     } else {
-      // Otherwise, it's one or more URLs followed by a single descriptor.
+      // Otherwise, it's a URL followed by a single descriptor.
       // Since we don't know how long the URL will be, we'll assume it's everything
-      // after the first space.
+      // before the first space.
+      // eg. `image.jpg 2x`
       urls.push(trimmed.substring(0, spaceIndex));
     }
   }
