@@ -199,20 +199,29 @@ export function absoluteToDoc(doc: Document, attributeValue: string): string {
   if (!attributeValue || attributeValue.trim() === '') {
     return attributeValue;
   }
-  const a: HTMLAnchorElement = doc.createElement('a');
-  a.href = attributeValue;
-  return a.href;
+  try {
+    return new URL(attributeValue, doc.location.href).href;
+  } catch (e) {
+    const a = doc.createElement('a');
+    a.setAttribute('href', attributeValue);
+    return a.href;
+  }
 }
 
 function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
-function getHref() {
-  // return a href without hash
-  const a = document.createElement('a');
-  a.href = '';
-  return a.href;
+function getHrefWithoutHash(doc: Document) {
+  try {
+    const url = new URL(doc.location.href);
+    url.hash = '';
+    return url.href;
+  } catch (e) {
+    const a = doc.createElement('a');
+    a.setAttribute('href', ''); // this also removes the hash
+    return a.href;
+  }
 }
 
 export function transformAttribute(
@@ -243,7 +252,7 @@ export function transformAttribute(
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style') {
-    return absoluteToStylesheet(value, getHref());
+    return absoluteToStylesheet(value, getHrefWithoutHash(doc));
   } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
   }
@@ -505,6 +514,7 @@ function serializeNode(
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
+        doc,
         needsMask,
         maskTextFn,
         rootId,
@@ -535,6 +545,7 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
+    doc: Document;
     needsMask: boolean | undefined;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
@@ -566,7 +577,7 @@ function serializeTextNode(
         n,
       );
     }
-    textContent = absoluteToStylesheet(textContent, getHref());
+    textContent = absoluteToStylesheet(textContent, getHrefWithoutHash(options.doc));
   }
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
@@ -660,7 +671,7 @@ function serializeElementNode(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref());
+      attributes._cssText = absoluteToStylesheet(cssText, getHrefWithoutHash(doc));
     }
   }
   // form fields
