@@ -1161,8 +1161,8 @@ export class Replayer {
                 this.lastMouseDownEvent = null;
               }
               this.mousePos = {
-                x: d.x,
-                y: d.y,
+                x: d.x || 0,
+                y: d.y || 0,
                 id: d.id,
                 debugData: d,
               };
@@ -1171,7 +1171,7 @@ export class Replayer {
                 // don't draw a trail as user has lifted finger and is placing at a new point
                 this.tailPositions.length = 0;
               }
-              this.moveAndHover(d.x, d.y, d.id, isSync, d);
+              this.moveAndHover(d.x || 0, d.y || 0, d.id, isSync, d);
               if (d.type === MouseInteractions.Click) {
                 /*
                  * don't want target.click() here as could trigger an iframe navigation
