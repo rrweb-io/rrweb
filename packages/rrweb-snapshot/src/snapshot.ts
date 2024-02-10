@@ -1,18 +1,20 @@
 import {
-  serializedNode,
-  serializedNodeWithId,
-  NodeType,
-  attributes,
   MaskInputOptions,
   SlimDOMOptions,
-  DataURLOptions,
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
-  elementNode,
   serializedElementNodeWithId,
 } from './types';
+import {
+  elementNode,
+  serializedNode,
+  serializedNodeWithId,
+  NodeType,
+  attributes,
+  DataURLOptions,
+} from '@rrweb/types';
 import {
   Mirror,
   is2DCanvasBlank,
@@ -23,6 +25,8 @@ import {
   stringifyStylesheet,
   getInputType,
   toLowerCase,
+  getUrlsFromSrcset,
+  isAttributeCacheable,
 } from './utils';
 
 let _id = 1;
@@ -120,7 +124,11 @@ export function absoluteToStylesheet(
 const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/; // Don't use \s, to avoid matching non-breaking space
 // eslint-disable-next-line no-control-regex
 const SRCSET_COMMAS_OR_SPACES = /^[, \t\n\r\u000c]+/;
-function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+function parseSrcsetString(
+  doc: Document,
+  attributeValue: string,
+  urlCallback: (doc: Document, url: string) => string,
+) {
   /*
     run absoluteToDoc over every url in the srcset
 
@@ -157,13 +165,13 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     let url = collectCharacters(SRCSET_NOT_SPACES);
     if (url.slice(-1) === ',') {
       // aside: according to spec more than one comma at the end is a parse error, but we ignore that
-      url = absoluteToDoc(doc, url.substring(0, url.length - 1));
+      url = urlCallback(doc, url.substring(0, url.length - 1));
       // the trailing comma splits the srcset, so the interpretion is that
       // another url will follow, and the descriptor is empty
       output.push(url);
     } else {
       let descriptorsStr = '';
-      url = absoluteToDoc(doc, url);
+      url = urlCallback(doc, url);
       let inParens = false;
       // eslint-disable-next-line no-constant-condition
       while (true) {
@@ -192,6 +200,21 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     }
   }
   return output.join(', ');
+}
+
+function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+  return parseSrcsetString(doc, attributeValue, (doc, url) =>
+    absoluteToDoc(doc, url),
+  );
+}
+
+export function getSourcesFromSrcset(attributeValue: string): string[] {
+  const urls = new Set<string>();
+  parseSrcsetString(document, attributeValue, (_, url) => {
+    urls.add(url);
+    return url;
+  });
+  return Array.from(urls);
 }
 
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
@@ -438,13 +461,23 @@ function serializeNode(
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
-    inlineImages: boolean;
+    /**
+     * @deprecated please use `captureAssets` instead
+     */
+    inlineImages?: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -462,6 +495,7 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
+    onAssetDetected,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -501,6 +535,7 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        onAssetDetected,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -594,7 +629,10 @@ function serializeElementNode(
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
-    inlineImages: boolean;
+    /**
+     * @deprecated please use `captureAssets` instead
+     */
+    inlineImages?: boolean;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -602,6 +640,13 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -617,20 +662,31 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    onAssetDetected = false,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
+  const assets: string[] = [];
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
     if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      attributes[attr.name] = transformAttribute(
+      const value = (attributes[attr.name] = transformAttribute(
         doc,
         tagName,
         toLowerCase(attr.name),
         attr.value,
-      );
+      ));
+
+      // save assets offline
+      if (value && onAssetDetected && isAttributeCacheable(n, attr.name)) {
+        if (attr.name === 'srcset') {
+          assets.push(...getUrlsFromSrcset(value));
+        } else {
+          assets.push(value);
+        }
+      }
     }
   }
   // remote css
@@ -726,7 +782,8 @@ function serializeElementNode(
       }
     }
   }
-  // save image offline
+
+  // `inlineImages` is deprecated and will be removed in rrweb 3.x.
   if (tagName === 'img' && inlineImages) {
     if (!canvasService) {
       canvasService = doc.createElement('canvas');
@@ -795,6 +852,10 @@ function serializeElementNode(
       attributes.rr_src = attributes.src;
     }
     delete attributes.src; // prevent auto loading
+  }
+
+  if (assets.length && onAssetDetected) {
+    onAssetDetected({ urls: assets });
   }
 
   let isCustomElement: true | undefined;
@@ -937,6 +998,9 @@ export function serializeNodeWithId(
     slimDOMOptions: SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    /**
+     * @deprecated please use `captureAssets` instead
+     */
     inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
@@ -951,6 +1015,13 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -976,6 +1047,7 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
+    onAssetDetected,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
@@ -1009,6 +1081,7 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
+    onAssetDetected,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1089,6 +1162,7 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
+      onAssetDetected,
     };
 
     if (
@@ -1238,6 +1312,9 @@ function snapshot(
     maskInputFn?: MaskTextFn;
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
+    /**
+     * @deprecated please use `captureAssets` instead
+     */
     inlineImages?: boolean;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
@@ -1253,6 +1330,13 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (result: { urls: string[] }) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1275,6 +1359,7 @@ function snapshot(
     iframeLoadTimeout,
     onStylesheetLoad,
     stylesheetLoadTimeout,
+    onAssetDetected,
     keepIframeSrcFn = () => false,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
@@ -1344,6 +1429,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    onAssetDetected,
   });
 }
 

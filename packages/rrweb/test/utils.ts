@@ -1,4 +1,4 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType } from '@rrweb/types';
 import {
   EventType,
   IncrementalSource,
@@ -44,7 +44,7 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort: number = 3031) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
@@ -129,6 +129,9 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
         ) {
           delete (s.data as Optional<mouseInteractionData, 'x'>).x;
           delete (s.data as Optional<mouseInteractionData, 'y'>).y;
+        }
+        if (s.type === EventType.Asset) {
+          s.data.url = s.data.url.replace(/\/[a-f0-9\-]+$/, '/...');
         }
         if (
           s.type === EventType.IncrementalSnapshot &&
@@ -699,7 +702,8 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     recordCanvas: ${options.recordCanvas},
     recordAfter: '${options.recordAfter || 'load'}',
     inlineImages: ${options.inlineImages},
-    plugins: ${options.plugins}
+    plugins: ${options.plugins},
+    captureAssets: ${JSON.stringify(options.captureAssets)},
   });
   `;
 }

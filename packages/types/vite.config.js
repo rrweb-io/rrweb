@@ -1,5 +1,5 @@
 import path from 'path';
-import dts from 'vite-plugin-dts';
+// import dts from 'vite-plugin-dts'; // disabled because of https://github.com/qmhc/vite-plugin-dts/issues/193
 /**
  * @type {import('vite').UserConfig}
  */
@@ -17,5 +17,5 @@ export default {
 
     sourcemap: true,
   },
-  plugins: [dts()],
+  // plugins: [dts()],
 };

@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { addHoverClass, buildNodeWithSN, createCache } from '../src/rebuild';
-import { NodeType } from '../src/types';
+import { NodeType } from '@rrweb/types';
 import { createMirror, Mirror } from '../src/utils';
 
 function getDuration(hrtime: [number, number]) {

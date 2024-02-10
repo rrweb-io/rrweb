@@ -1,9 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType, serializedNode } from '../src/types';
-import { isNodeMetaEqual } from '../src/utils';
-import { serializedNodeWithId } from 'rrweb-snapshot';
+import { isAttributeCacheable, isNodeMetaEqual } from '../src/utils';
+import { NodeType, serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
@@ -145,6 +144,52 @@ describe('utils', () => {
       expect(isNodeMetaEqual(element1, element2)).toBeFalsy();
       expect(isNodeMetaEqual(element1, element3)).toBeFalsy();
       expect(isNodeMetaEqual(element2, element3)).toBeFalsy();
+    });
+  });
+
+  describe('isAttributeCacheable()', () => {
+    const validAttributeCombinations = [
+      ['img', ['src', 'srcset']],
+      ['video', ['src']],
+      ['audio', ['src']],
+      ['embed', ['src']],
+      ['source', ['src']],
+      ['track', ['src']],
+      ['input', ['src']],
+      ['iframe', ['src']],
+      ['object', ['src']],
+    ] as const;
+
+    const invalidAttributeCombinations = [
+      ['img', ['href']],
+      ['script', ['href']],
+      ['link', ['src']],
+      ['video', ['href']],
+      ['audio', ['href']],
+      ['div', ['src']],
+      ['source', ['href']],
+      ['track', ['href']],
+      ['input', ['href']],
+      ['iframe', ['href']],
+      ['object', ['href']],
+    ] as const;
+
+    validAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as cacheable`, () => {
+          expect(isAttributeCacheable(element, attribute)).toBe(true);
+        });
+      });
+    });
+
+    invalidAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as NOT cacheable`, () => {
+          expect(isAttributeCacheable(element, attribute)).toBe(false);
+        });
+      });
     });
   });
 });

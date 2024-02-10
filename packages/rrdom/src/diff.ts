@@ -1,15 +1,14 @@
+import type { Mirror as NodeMirror } from 'rrweb-snapshot';
 import {
   NodeType as RRNodeType,
-  Mirror as NodeMirror,
   elementNode,
-} from 'rrweb-snapshot';
-import type {
   canvasMutationData,
   canvasEventWithTime,
   inputData,
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
+  RebuildAssetManagerInterface,
 } from '@rrweb/types';
 import type {
   IRRCDATASection,
@@ -77,6 +76,7 @@ const SVGTagMap: Record<string, string> = {
 
 export type ReplayerHandler = {
   mirror: NodeMirror;
+  assetManager?: RebuildAssetManagerInterface;
   applyCanvas: (
     canvasEvent: canvasEventWithTime,
     canvasMutationData: canvasMutationData,
@@ -218,7 +218,7 @@ function diffAfterUpdatingChildren(
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
-      diffProps(oldElement, newRRElement, rrnodeMirror);
+      diffProps(oldElement, newRRElement, rrnodeMirror, replayer.assetManager);
       newRRElement.scrollData &&
         replayer.applyScroll(newRRElement.scrollData, true);
       /**
@@ -302,6 +302,7 @@ function diffProps(
   oldTree: HTMLElement,
   newTree: IRRElement,
   rrnodeMirror: Mirror,
+  assetManager?: RebuildAssetManagerInterface,
 ) {
   const oldAttributes = oldTree.attributes;
   const newAttributes = newTree.attributes;
@@ -322,6 +323,11 @@ function diffProps(
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
     else oldTree.setAttribute(name, newValue);
+
+    if (assetManager?.isCacheable(oldTree, name, newValue)) {
+      // can possibly remove the attribute again if it hasn't loaded yet
+      assetManager.manageAttribute(oldTree, rrnodeMirror.getId(newTree), name);
+    }
   }
 
   for (const { name } of Array.from(oldAttributes))
@@ -531,6 +537,9 @@ export function createOrGetNode(
     case RRNodeType.CDATA:
       node = document.createCDATASection((rrNode as IRRCDATASection).data);
       break;
+    default:
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`Unknown node type ${rrNode.RRNodeType}`);
   }
 
   if (sn) domMirror.add(node, { ...sn });

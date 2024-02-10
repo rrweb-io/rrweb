@@ -18,9 +18,5 @@
   "compileOnSave": true,
   "exclude": ["test"],
   "include": ["src"],
-  "references": [
-    {
-      "path": "../rrweb-snapshot"
-    }
-  ]
+  "references": []
 }
