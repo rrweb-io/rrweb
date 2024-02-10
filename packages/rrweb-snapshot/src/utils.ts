@@ -11,6 +11,7 @@ import {
   documentTypeNode,
   textNode,
   elementNode,
+  IWindow,
 } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -29,6 +30,34 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
 export function isNativeShadowDom(shadowRoot: ShadowRoot) {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
+
+type WindowWithAngularZone = IWindow & {
+  Zone?: {
+    __symbol__?: (key: keyof IWindow) => string;
+  };
+  [key: string]: any;
+};
+
+export function getNative<T>(
+  symbolName: keyof IWindow,
+  windowObj: IWindow = window,
+): T {
+  const windowWithZone = windowObj as WindowWithAngularZone;
+  const angularZoneSymbol = windowWithZone?.Zone?.__symbol__?.(symbolName);
+  if (angularZoneSymbol) {
+    const zonelessImpl = windowWithZone[angularZoneSymbol] as T;
+    if (zonelessImpl) {
+      return zonelessImpl;
+    }
+  }
+
+  return windowWithZone[symbolName] as T;
+}
+
+export const nativeSetTimeout =
+  typeof window !== 'undefined'
+    ? getNative<typeof window.setTimeout>('setTimeout')
+    : global.setTimeout;
 
 /**
  * Browsers sometimes destructively modify the css rules they receive.

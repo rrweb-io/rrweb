@@ -10,17 +10,36 @@ import type {
   textMutation,
 } from '@rrweb/types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
+import {
+  isShadowRoot,
+  IGNORED_NODE,
+  classMatchesRegex,
+  getNative,
+  nativeSetTimeout,
+} from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
+
+function getWindow(documentOrWindow: Document | IWindow): IWindow {
+  const defaultView = (documentOrWindow as Document).defaultView;
+  return (defaultView ? defaultView : documentOrWindow) as IWindow;
+}
 
 export function on(
   type: string,
   fn: EventListenerOrEventListenerObject,
   target: Document | IWindow = document,
 ): listenerHandler {
+  const windowObj = getWindow(target);
+  const nativeAddEventListener = getNative<typeof window.addEventListener>(
+    'addEventListener',
+    windowObj,
+  );
+  const nativeRemoveEventListener = getNative<
+    typeof window.removeEventListener
+  >('removeEventListener', windowObj);
   const options = { capture: true, passive: true };
-  target.addEventListener(type, fn, options);
-  return () => target.removeEventListener(type, fn, options);
+  nativeAddEventListener.call(target, type, fn, options);
+  return () => nativeRemoveEventListener.call(target, type, fn, options);
 }
 
 // https://github.com/rrweb-io/rrweb/pull/407
@@ -70,7 +89,7 @@ export function throttle<T>(
   wait: number,
   options: throttleOptions = {},
 ) {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let timeout: ReturnType<typeof setTimeout> | number | null = null;
   let previous = 0;
   return function (...args: T[]) {
     const now = Date.now();
@@ -88,7 +107,7 @@ export function throttle<T>(
       previous = now;
       func.apply(context, args);
     } else if (!timeout && options.trailing !== false) {
-      timeout = setTimeout(() => {
+      timeout = nativeSetTimeout(() => {
         previous = options.leading === false ? 0 : Date.now();
         timeout = null;
         func.apply(context, args);
@@ -113,7 +132,7 @@ export function hookSetter<T>(
       : {
           set(value) {
             // put hooked setter into event loop to avoid of set latency
-            setTimeout(() => {
+            nativeSetTimeout(() => {
               d.set!.call(this, value);
             }, 0);
             if (original && original.set) {

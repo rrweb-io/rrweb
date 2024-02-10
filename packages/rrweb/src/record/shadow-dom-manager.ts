@@ -11,7 +11,7 @@ import {
 } from './observer';
 import { patch, inDom } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
-import { isNativeShadowDom } from 'rrweb-snapshot';
+import { isNativeShadowDom, nativeSetTimeout } from 'rrweb-snapshot';
 
 type BypassOptions = Omit<
   MutationBufferParam,
@@ -74,7 +74,7 @@ export class ShadowDomManager {
       }),
     );
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
-    setTimeout(() => {
+    nativeSetTimeout(() => {
       if (
         shadowRoot.adoptedStyleSheets &&
         shadowRoot.adoptedStyleSheets.length > 0

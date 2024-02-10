@@ -163,3 +163,5 @@ export type KeepIframeSrcFn = (src: string) => boolean;
 export type BuildCache = {
   stylesWithHoverClass: Map<string, string>;
 };
+
+export type IWindow = Window & typeof globalThis;
