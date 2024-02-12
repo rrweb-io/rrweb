@@ -161,20 +161,18 @@ function isUserInteraction(event: eventWithTime): boolean {
   );
 }
 
-// Forked from 'rrweb' replay/index.ts. A const threshold of inactive time.
-const SKIP_TIME_THRESHOLD = 10 * 1000;
-
 /**
  * Get periods of time when no user interaction happened from a list of events.
  * @param events - all events
+ * @param skipTimeThreshold - threshold of inactive time in milliseconds
  * @returns periods of time consist with [start time, end time]
  */
-export function getInactivePeriods(events: eventWithTime[]) {
+export function getInactivePeriods(events: eventWithTime[], skipTimeThreshold: number) {
   const inactivePeriods: [number, number][] = [];
   let lastActiveTime = events[0].timestamp;
   for (const event of events) {
     if (!isUserInteraction(event)) continue;
-    if (event.timestamp - lastActiveTime > SKIP_TIME_THRESHOLD) {
+    if (event.timestamp - lastActiveTime > skipTimeThreshold) {
       inactivePeriods.push([lastActiveTime, event.timestamp]);
     }
     lastActiveTime = event.timestamp;
