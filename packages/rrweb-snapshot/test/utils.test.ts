@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { NodeType, serializedNode } from '../src/types';
-import { isNodeMetaEqual } from '../src/utils';
+import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
 import { serializedNodeWithId } from 'rrweb-snapshot';
 
 describe('utils', () => {
@@ -145,6 +145,57 @@ describe('utils', () => {
       expect(isNodeMetaEqual(element1, element2)).toBeFalsy();
       expect(isNodeMetaEqual(element1, element3)).toBeFalsy();
       expect(isNodeMetaEqual(element2, element3)).toBeFalsy();
+    });
+  });
+  describe('extractFileExtension', () => {
+    test('absolute path', () => {
+      const path = 'https://example.com/styles/main.css';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('css');
+    });
+
+    test('relative path', () => {
+      const path = 'styles/main.css';
+      const baseURL = 'https://example.com/';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBe('css');
+    });
+
+    test('path with search parameters', () => {
+      const path = 'https://example.com/scripts/app.js?version=1.0';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+
+    test('path with fragment', () => {
+      const path = 'https://example.com/styles/main.css#section1';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('css');
+    });
+
+    test('path with search parameters and fragment', () => {
+      const path = 'https://example.com/scripts/app.js?version=1.0#section1';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+
+    test('path without extension', () => {
+      const path = 'https://example.com/path/to/directory/';
+      const extension = extractFileExtension(path);
+      expect(extension).toBeNull();
+    });
+
+    test('invalid URL', () => {
+      const path = '!@#$%^&*()';
+      const baseURL = 'invalid';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBeNull();
+    });
+
+    test('path with multiple dots', () => {
+      const path = 'https://example.com/scripts/app.min.js?version=1.0';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
     });
   });
 });
