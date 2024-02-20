@@ -161,11 +161,27 @@ export class CanvasManager {
 
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
-      win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (!isBlocked(canvas, blockClass, blockSelector, true)) {
-          matchedCanvas.push(canvas);
-        }
-      });
+
+      // traverse DOM and Shadow DOM
+      const traverseDom = (root: Document | ShadowRoot) => {
+        root.querySelectorAll('canvas').forEach((canvas) => {
+          if (
+            canvas instanceof HTMLCanvasElement &&
+            !isBlocked(canvas, blockClass, blockSelector, true)
+          ) {
+            matchedCanvas.push(canvas);
+          }
+        });
+
+        root.querySelectorAll('*').forEach((elem) => {
+          if (elem.shadowRoot) {
+            traverseDom(elem.shadowRoot);
+          }
+        });
+      };
+
+      traverseDom(win.document);
+
       return matchedCanvas;
     };
 
