@@ -472,6 +472,16 @@ export function buildNodeWithSN(
           node.appendChild(childNode);
         }
       } else {
+        if (
+          childNode.nodeType === childNode.TEXT_NODE &&
+          isElement(node) &&
+          node.tagName === 'STYLE' &&
+          node.childNodes.length === 1 &&
+          !mirror.hasNode(node.childNodes[0])
+        ) {
+          childNode.textContent = node.childNodes[0].textContent;
+          node.removeChild(node.childNodes[0]);
+        }
         node.appendChild(childNode);
       }
       if (afterAppend) {
