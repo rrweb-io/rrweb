@@ -13,7 +13,8 @@ export type RRwebPlayerOptions = {
      */
     events: eventWithTime[];
     /**
-     * The class names to apply to the player
+     * The classname which apply to the player
+     * @defaultValue `''`
      */
     playerClassName?: string;
     /**
