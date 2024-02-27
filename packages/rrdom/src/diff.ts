@@ -118,7 +118,7 @@ export function diff(
 
   diffChildren(oldTree, newTree, replayer, rrnodeMirror);
 
-  diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+  diffAfterUpdatingChildren(oldTree, newTree, replayer);
 }
 
 /**
@@ -195,8 +195,8 @@ function diffBeforeUpdatingChildren(
         );
       }
       /**
-       * Edge case where `applyScroll` may fail in `diffAfterUpdatingChildren`:
-       * the height of a node when `applyScroll` is called may be incorrect if
+       * Attributes and styles of the old element need to be updated before updating its children because of an edge case:
+       * `applyScroll` may fail in `diffAfterUpdatingChildren` when the height of a node when `applyScroll` is called may be incorrect if
        * 1. its parent node contains styles that affects the targeted node's height
        * 2. the CSS selector is targeting an attribute of the parent node
        * by running `diffProps` on the parent node before `diffChildren` is called,
@@ -216,7 +216,6 @@ function diffAfterUpdatingChildren(
   oldTree: Node,
   newTree: IRRNode,
   replayer: ReplayerHandler,
-  rrnodeMirror: Mirror,
 ) {
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
@@ -227,7 +226,6 @@ function diffAfterUpdatingChildren(
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
-      diffProps(oldElement, newRRElement, rrnodeMirror);
       newRRElement.scrollData &&
         replayer.applyScroll(newRRElement.scrollData, true);
       /**
