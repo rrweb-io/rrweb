@@ -1,0 +1,33 @@
+<html>
+  <body>
+    <select id="select"></select>
+  </body>
+  <script>
+    window.workload = () => {
+      const optionCount = 10000;
+      const options = [];
+      for (let i = 0; i < optionCount; ++i) {
+        const value = `${i}`;
+        options.push({ value, label: value });
+      }
+      const frag = document.createDocumentFragment();
+      const select = document.getElementById('select');
+      const parent = select.parentNode;
+      parent.removeChild(select);
+      for (let o of options) {
+        const option = document.createElement('option');
+        option.value = o.value;
+        option.textContent = o.label;
+        o.optionElement = option;
+        frag.appendChild(option);
+      }
+      select.appendChild(frag);
+      parent.appendChild(select);
+      // re-shuffle the options
+      options.sort(() => Math.random() - 0.5);
+      for (var o of options) {
+        o.optionElement.parentNode.appendChild(o.optionElement);
+      }
+    };
+  </script>
+</html>

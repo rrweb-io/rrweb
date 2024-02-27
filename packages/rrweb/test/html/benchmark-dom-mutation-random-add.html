@@ -1,0 +1,25 @@
+<html>
+    <body>
+        <ul id="list"></ul>
+    </body>
+    <script>
+        const itemCount = 5;
+        const nodesPerItem = 2000;
+        window.workload = () => {
+            const list = document.getElementById('list');
+            for (let i = 0; i < itemCount; ++i) {
+                const li = document.createElement('li');
+                list.appendChild(li);
+            }
+            for (i = 0; i < itemCount; ++i) {
+                for (let j = 0; j < nodesPerItem; ++j) {
+                    const index = Math.floor(Math.random() * nodesPerItem);
+                    const span = document.createElement('span');
+                    const li = list.children[i];
+                    li.insertBefore(span, li.children[index + 1]);
+                    span.textContent = `node ${j}`;
+                }
+            }
+        };
+    </script>
+</html>
