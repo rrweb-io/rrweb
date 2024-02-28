@@ -70,6 +70,14 @@ export class IframeManager {
       attributes: [],
       isAttachIframe: true,
     });
+
+    // Listen for messages from cross-origin IFrames that are nested in this iframe.
+    if (this.recordCrossOriginIframes)
+      iframeEl.contentWindow?.addEventListener(
+        'message',
+        this.handleMessage.bind(this),
+      );
+
     this.loadListener?.(iframeEl);
 
     if (
