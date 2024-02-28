@@ -25,7 +25,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
-  nativeSetTimeout
+  nativeSetTimeout,
 } from './utils';
 
 let _id = 1;
