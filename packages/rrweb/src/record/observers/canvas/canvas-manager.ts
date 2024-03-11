@@ -37,13 +37,14 @@ export interface CanvasManagerInterface {
   lock(): void;
   unlock(): void;
   snapshot(canvasElement?: HTMLCanvasElement): void;
+  addWindow(win: IWindow): void;
 }
 
 export interface CanvasManagerConstructorOptions {
   recordCanvas: boolean;
   enableManualSnapshot?: boolean;
   mutationCb: canvasMutationCallback;
-  win: IWindow;
+  // win: IWindow;
   blockClass: blockClass;
   blockSelector: string | null;
   unblockSelector: string | null;
@@ -72,6 +73,9 @@ export class CanvasManagerNoop implements CanvasManagerInterface {
   public snapshot() {
     // noop
   }
+  public addWindow() {
+    // noop
+  }
 }
 
 export class CanvasManager implements CanvasManagerInterface {
@@ -81,13 +85,20 @@ export class CanvasManager implements CanvasManagerInterface {
   private mirror: Mirror;
 
   private mutationCb: canvasMutationCallback;
-  private resetObservers?: listenerHandler;
+  private restoreHandlers: listenerHandler[] = [];
   private frozen = false;
   private locked = false;
 
   public reset() {
     this.pendingCanvasMutations.clear();
-    this.resetObservers && this.resetObservers();
+    this.restoreHandlers.forEach((handler) => {
+      try {
+        handler();
+      } catch (e) {
+        //
+      }
+    });
+    this.restoreHandlers = [];
   }
 
   public freeze() {
@@ -109,12 +120,7 @@ export class CanvasManager implements CanvasManagerInterface {
   constructor(options: CanvasManagerConstructorOptions) {
     const {
       sampling = 'all',
-      win,
-      blockClass,
-      blockSelector,
-      unblockSelector,
       recordCanvas,
-      dataURLOptions,
       errorHandler,
     } = options;
     this.mutationCb = options.mutationCb;
@@ -124,19 +130,38 @@ export class CanvasManager implements CanvasManagerInterface {
     if (errorHandler) {
       registerErrorHandler(errorHandler);
     }
-
     if (options.enableManualSnapshot) {
+      return;
+    }
+    if (recordCanvas && sampling === 'all') {
+      this.startRAFTimestamping();
+      this.startPendingCanvasMutationFlusher();
+    }
+  }
+
+  public addWindow(win: IWindow) {
+    const {
+      sampling = 'all',
+      blockClass,
+      blockSelector,
+      unblockSelector,
+      recordCanvas,
+      dataURLOptions,
+      enableManualSnapshot,
+    } = this.options;
+    if (enableManualSnapshot) {
       return;
     }
 
     callbackWrapper(() => {
-      if (recordCanvas && sampling === 'all')
+      if (recordCanvas && sampling === 'all') {
         this.initCanvasMutationObserver(
           win,
           blockClass,
           blockSelector,
           unblockSelector,
         );
+      }
       if (recordCanvas && typeof sampling === 'number')
         this.initCanvasFPSObserver(
           sampling,
@@ -195,10 +220,10 @@ export class CanvasManager implements CanvasManagerInterface {
       options.dataURLOptions,
     );
 
-    this.resetObservers = () => {
+    this.restoreHandlers.push(() => {
       canvasContextReset();
       cancelAnimationFrame(rafId);
-    };
+    });
   }
 
   private initCanvasMutationObserver(
@@ -207,9 +232,6 @@ export class CanvasManager implements CanvasManagerInterface {
     blockSelector: string | null,
     unblockSelector: string | null,
   ): void {
-    this.startRAFTimestamping();
-    this.startPendingCanvasMutationFlusher();
-
     const canvasContextReset = initCanvasContextObserver(
       win,
       blockClass,
@@ -234,11 +256,11 @@ export class CanvasManager implements CanvasManagerInterface {
       this.mirror,
     );
 
-    this.resetObservers = () => {
+    this.restoreHandlers.push(() => {
       canvasContextReset();
       canvas2DReset();
       canvasWebGL1and2Reset();
-    };
+    });
   }
 
   public snapshot(canvasElement?: HTMLCanvasElement) {
@@ -246,7 +268,7 @@ export class CanvasManager implements CanvasManagerInterface {
     const rafId = this.takeSnapshot(
       true,
       options.sampling === 'all' ? 2 : options.sampling || 2,
-      options.win,
+      window,
       options.blockClass,
       options.blockSelector,
       options.unblockSelector,
@@ -254,9 +276,9 @@ export class CanvasManager implements CanvasManagerInterface {
       canvasElement,
     );
 
-    this.resetObservers = () => {
+    this.restoreHandlers.push(() => {
       cancelAnimationFrame(rafId);
-    };
+    });
   }
 
   private takeSnapshot(
@@ -320,13 +342,24 @@ export class CanvasManager implements CanvasManagerInterface {
       }
 
       const matchedCanvas: HTMLCanvasElement[] = [];
-      win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (
-          !isBlocked(canvas, blockClass, blockSelector, unblockSelector, true)
-        ) {
-          matchedCanvas.push(canvas);
-        }
-      });
+      // traverse DOM and Shadow DOM
+      const traverseDom = (root: Document | ShadowRoot) => {
+        root.querySelectorAll('canvas').forEach((canvas) => {
+          if (
+            !isBlocked(canvas, blockClass, blockSelector, unblockSelector, true)
+          ) {
+            matchedCanvas.push(canvas);
+          }
+        });
+
+        root.querySelectorAll('*').forEach((elem) => {
+          if (elem.shadowRoot) {
+            traverseDom(elem.shadowRoot);
+          }
+        });
+      };
+
+      traverseDom(win.document);
       return matchedCanvas;
     };
 

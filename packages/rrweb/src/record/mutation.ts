@@ -21,6 +21,7 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
+  IWindow,
 } from '@sentry-internal/rrweb-types';
 import {
   isBlocked,
@@ -342,6 +343,9 @@ export default class MutationBuffer {
         onIframeLoad: (iframe, childSn) => {
           this.iframeManager.attachIframe(iframe, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
+          if (iframe.contentWindow) {
+            this.canvasManager.addWindow(iframe.contentWindow as IWindow);
+          }
         },
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);

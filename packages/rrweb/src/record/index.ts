@@ -27,6 +27,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
+  IWindow,
 } from '@sentry-internal/rrweb-types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import {
@@ -341,7 +342,6 @@ function record<T = eventWithTime>(
     getCanvasManager,
     {
       mirror,
-      win: window,
       mutationCb: (p: canvasMutationParam) =>
         wrappedEmit(
           wrapEvent({
@@ -361,6 +361,7 @@ function record<T = eventWithTime>(
       errorHandler,
     },
   );
+  canvasManager.addWindow(window);
 
   const shadowDomManager: ShadowDomManagerInterface =
     typeof __RRWEB_EXCLUDE_SHADOW_DOM__ === 'boolean' &&
@@ -450,6 +451,9 @@ function record<T = eventWithTime>(
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
         shadowDomManager.observeAttachShadow(iframe);
+        if (iframe.contentWindow) {
+          canvasManager.addWindow(iframe.contentWindow as IWindow);
+        }
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
