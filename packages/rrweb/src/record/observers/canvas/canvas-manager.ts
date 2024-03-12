@@ -133,7 +133,7 @@ export class CanvasManager implements CanvasManagerInterface {
   }
 
   constructor(options: CanvasManagerConstructorOptions) {
-    const { sampling = 'all', win, recordCanvas, errorHandler } = options
+    const { sampling = 'all', win, recordCanvas, errorHandler } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
     this.options = options;
