@@ -342,6 +342,7 @@ function record<T = eventWithTime>(
     getCanvasManager,
     {
       mirror,
+      win: window,
       mutationCb: (p: canvasMutationParam) =>
         wrappedEmit(
           wrapEvent({
@@ -361,7 +362,6 @@ function record<T = eventWithTime>(
       errorHandler,
     },
   );
-  canvasManager.addWindow(window);
 
   const shadowDomManager: ShadowDomManagerInterface =
     typeof __RRWEB_EXCLUDE_SHADOW_DOM__ === 'boolean' &&

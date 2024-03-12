@@ -46,7 +46,7 @@ export interface CanvasManagerConstructorOptions {
   recordCanvas: boolean;
   enableManualSnapshot?: boolean;
   mutationCb: canvasMutationCallback;
-  // win: IWindow;
+  win: IWindow;
   blockClass: blockClass;
   blockSelector: string | null;
   unblockSelector: string | null;
@@ -133,7 +133,7 @@ export class CanvasManager implements CanvasManagerInterface {
   }
 
   constructor(options: CanvasManagerConstructorOptions) {
-    const { sampling = 'all', recordCanvas, errorHandler } = options;
+    const { sampling = 'all', win, recordCanvas, errorHandler } = options
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
     this.options = options;
@@ -148,6 +148,7 @@ export class CanvasManager implements CanvasManagerInterface {
       this.startRAFTimestamping();
       this.startPendingCanvasMutationFlusher();
     }
+    this.addWindow(win);
   }
 
   public addWindow(win: IWindow) {
