@@ -1149,7 +1149,7 @@ describe('record integration tests', function (this: ISuite) {
         type: CanvasContext['2D'],
         commands: expect.arrayContaining([
           {
-            args: [4000, 4000, 50, 50],
+            args: [100, 100, 50, 50],
             property: 'fillRect',
           },
         ]),
