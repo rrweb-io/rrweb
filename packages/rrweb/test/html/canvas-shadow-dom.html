@@ -8,7 +8,7 @@
   const shadowRoot = shadowRootContainer.attachShadow({ mode: 'open' })
 
   // Creating canvas inside the Shadow DOM
-  const shadowCanvas = shadowRoot.ownerDocument.createElement('canvas')
+  const shadowCanvas = document.createElement('canvas')
   shadowRoot.appendChild(shadowCanvas);
 
   const shadowCtx = shadowCanvas.getContext('2d')
@@ -20,10 +20,10 @@
     shadowCtx.fillStyle = 'green';
     shadowCtx.fillRect(num * shadowCanvas.width, num * shadowCanvas.height, 50, 50);
   }
-  moveSquare(10)
+  moveSquare(0.2)
 
   setTimeout(() => {
-    moveSquare(20)
+    moveSquare(0.5)
     window.canvasMutationApplied = true;
   }, 10);
 </script>
