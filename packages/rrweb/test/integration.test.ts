@@ -1084,16 +1084,18 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext['2D'],
-        commands: expect.arrayContaining([
-          {
-            args: [200, 100],
-            property: 'lineTo',
-          },
-        ]),
-      }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            {
+              args: [200, 100],
+              property: 'lineTo',
+            },
+          ]),
+        }),
+      );
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1106,7 +1108,7 @@ describe('record integration tests', function (this: ISuite) {
           recordCanvas: true,
           sampling: {
             canvas: maxFPS,
-          }
+          },
         }),
       );
 
@@ -1118,15 +1120,17 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext['2D'],
-        commands: expect.arrayContaining([
-          expect.objectContaining({
-            property: 'drawImage',
-          }),
-        ]),
-      }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            expect.objectContaining({
+              property: 'drawImage',
+            }),
+          ]),
+        }),
+      );
     });
 
     it('should record canvas within shadow dom', async () => {
@@ -1144,16 +1148,18 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext['2D'],
-        commands: expect.arrayContaining([
-          {
-            args: [100, 100, 50, 50],
-            property: 'fillRect',
-          },
-        ]),
-      }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            {
+              args: [100, 100, 50, 50],
+              property: 'fillRect',
+            },
+          ]),
+        }),
+      );
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1177,18 +1183,20 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-        source: IncrementalSource.CanvasMutation,
-        type: CanvasContext['2D'],
-        commands: expect.arrayContaining([
-          expect.objectContaining({
-            property: 'drawImage',
-          }),
-        ]),
-      }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            expect.objectContaining({
+              property: 'drawImage',
+            }),
+          ]),
+        }),
+      );
       assertSnapshot(stripBase64(snapshots));
     });
-  })
+  });
 
   it('should record images with blob url', async () => {
     const page: puppeteer.Page = await browser.newPage();

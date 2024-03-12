@@ -133,11 +133,7 @@ export class CanvasManager implements CanvasManagerInterface {
   }
 
   constructor(options: CanvasManagerConstructorOptions) {
-    const {
-      sampling = 'all',
-      recordCanvas,
-      errorHandler,
-    } = options;
+    const { sampling = 'all', recordCanvas, errorHandler } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
     this.options = options;
@@ -384,7 +380,7 @@ export class CanvasManager implements CanvasManagerInterface {
 
       traverseDom(win.document);
       for (const item of this.shadowDoms) {
-        const shadowRoot = item.deref()
+        const shadowRoot = item.deref();
         if (shadowRoot?.ownerDocument == win.document) {
           traverseDom(shadowRoot);
         }
