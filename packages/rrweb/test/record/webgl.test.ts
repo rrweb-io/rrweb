@@ -332,7 +332,7 @@ describe('record webgl', function (this: ISuite) {
           <iframe id="iframe1" src="./html/empty.html"></iframe>
         </body>
       </html>
-    `
+    `,
     );
 
     it('will record changes to a canvas element', async () => {
@@ -368,5 +368,5 @@ describe('record webgl', function (this: ISuite) {
       });
       assertSnapshot(stripBase64(ctx.events));
     });
-  })
+  });
 });
