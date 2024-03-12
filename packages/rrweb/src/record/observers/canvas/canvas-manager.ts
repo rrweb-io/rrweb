@@ -38,6 +38,8 @@ export interface CanvasManagerInterface {
   unlock(): void;
   snapshot(canvasElement?: HTMLCanvasElement): void;
   addWindow(win: IWindow): void;
+  addShadowRoot(shadowRoot: ShadowRoot): void;
+  resetShadowRoots(): void;
 }
 
 export interface CanvasManagerConstructorOptions {
@@ -76,6 +78,14 @@ export class CanvasManagerNoop implements CanvasManagerInterface {
   public addWindow() {
     // noop
   }
+
+  public addShadowRoot() {
+    // noop
+  }
+
+  public resetShadowRoots() {
+    // noop
+  }
 }
 
 export class CanvasManager implements CanvasManagerInterface {
@@ -83,6 +93,9 @@ export class CanvasManager implements CanvasManagerInterface {
   private rafStamps: RafStamps = { latestId: 0, invokeId: null };
   private options: CanvasManagerConstructorOptions;
   private mirror: Mirror;
+
+  private shadowDoms = new Set<WeakRef<ShadowRoot>>();
+  private windows = new WeakSet<IWindow>();
 
   private mutationCb: canvasMutationCallback;
   private restoreHandlers: listenerHandler[] = [];
@@ -99,6 +112,8 @@ export class CanvasManager implements CanvasManagerInterface {
       }
     });
     this.restoreHandlers = [];
+    this.windows = new WeakSet();
+    this.shadowDoms = new Set();
   }
 
   public freeze() {
@@ -149,6 +164,9 @@ export class CanvasManager implements CanvasManagerInterface {
       dataURLOptions,
       enableManualSnapshot,
     } = this.options;
+    if (this.windows.has(win)) return;
+    this.windows.add(win);
+
     if (enableManualSnapshot) {
       return;
     }
@@ -174,6 +192,14 @@ export class CanvasManager implements CanvasManagerInterface {
           },
         );
     })();
+  }
+
+  public addShadowRoot(shadowRoot: ShadowRoot) {
+    this.shadowDoms.add(new WeakRef(shadowRoot));
+  }
+
+  public resetShadowRoots() {
+    this.shadowDoms = new Set();
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -268,7 +294,7 @@ export class CanvasManager implements CanvasManagerInterface {
     const rafId = this.takeSnapshot(
       true,
       options.sampling === 'all' ? 2 : options.sampling || 2,
-      window,
+      canvasElement?.ownerDocument?.defaultView ?? window,
       options.blockClass,
       options.blockSelector,
       options.unblockSelector,
@@ -294,6 +320,9 @@ export class CanvasManager implements CanvasManagerInterface {
     const snapshotInProgressMap: Map<number, boolean> = new Map();
     const worker = new Worker(getImageBitmapDataUrlWorkerURL());
     worker.onmessage = (e) => {
+      if (!this.windows.has(win)) {
+        return;
+      }
       const data = e.data as ImageBitmapDataURLWorkerResponse;
       const { id } = data;
       snapshotInProgressMap.set(id, false);
@@ -342,7 +371,7 @@ export class CanvasManager implements CanvasManagerInterface {
       }
 
       const matchedCanvas: HTMLCanvasElement[] = [];
-      // traverse DOM and Shadow DOM
+
       const traverseDom = (root: Document | ShadowRoot) => {
         root.querySelectorAll('canvas').forEach((canvas) => {
           if (
@@ -351,19 +380,23 @@ export class CanvasManager implements CanvasManagerInterface {
             matchedCanvas.push(canvas);
           }
         });
-
-        root.querySelectorAll('*').forEach((elem) => {
-          if (elem.shadowRoot) {
-            traverseDom(elem.shadowRoot);
-          }
-        });
       };
 
       traverseDom(win.document);
+      for (const item of this.shadowDoms) {
+        const shadowRoot = item.deref()
+        if (shadowRoot?.ownerDocument == win.document) {
+          traverseDom(shadowRoot);
+        }
+      }
       return matchedCanvas;
     };
 
     const takeCanvasSnapshots = (timestamp: DOMHighResTimeStamp) => {
+      if (!this.windows.has(win)) {
+        // exit loop if window no longer in the list
+        return;
+      }
       if (
         lastSnapshotTime &&
         timestamp - lastSnapshotTime < timeBetweenSnapshots

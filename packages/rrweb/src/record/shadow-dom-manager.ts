@@ -74,6 +74,7 @@ export class ShadowDomManager implements ShadowDomManagerInterface {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
+    this.bypassOptions.canvasManager.addShadowRoot(shadowRoot);
     const observer = initMutationObserver(
       {
         ...this.bypassOptions,
@@ -173,5 +174,6 @@ export class ShadowDomManager implements ShadowDomManagerInterface {
     });
     this.restoreHandlers = [];
     this.shadowDoms = new WeakSet();
+    this.bypassOptions.canvasManager.resetShadowRoots();
   }
 }

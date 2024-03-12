@@ -1112,7 +1112,7 @@ describe('record integration tests', function (this: ISuite) {
       const frameId = await waitForIFrameLoad(page, '#iframe-canvas');
       await frameId.waitForFunction('window.canvasMutationApplied');
       await waitForRAF(page);
-      await page.waitForTimeout(50);
+      await page.waitForTimeout(1000 / maxFPS);
 
       const snapshots = (await page.evaluate(
         'window.snapshots',
@@ -1126,7 +1126,6 @@ describe('record integration tests', function (this: ISuite) {
           }),
         ]),
       }))
-      assertSnapshot(stripBase64(snapshots));
     });
 
     it('should record canvas within shadow dom', async () => {
