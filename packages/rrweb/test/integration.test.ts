@@ -10,8 +10,9 @@ import {
   waitForIFrameLoad,
   replaceLast,
   generateRecordSnippet,
-  ISuite, stripBase64,
-} from './utils'
+  ISuite,
+  stripBase64,
+} from './utils';
 import type { recordOptions } from '../src/types';
 import {
   eventWithTime,
@@ -19,7 +20,7 @@ import {
   RecordPlugin,
   IncrementalSource,
   CanvasContext,
-} from '@sentry-internal/rrweb-types'
+} from '@sentry-internal/rrweb-types';
 import { visitSnapshot, NodeType } from '@sentry-internal/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
@@ -1096,7 +1097,7 @@ describe('record integration tests', function (this: ISuite) {
       assertSnapshot(stripBase64(snapshots));
     });
 
-    it ('should record canvas within iframe with sampling', async () => {
+    it('should record canvas within iframe with sampling', async () => {
       const maxFPS = 60;
       const page: puppeteer.Page = await browser.newPage();
       await page.goto(`${serverURL}/html`);
