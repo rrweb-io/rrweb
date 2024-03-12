@@ -18,7 +18,8 @@ import {
   EventType,
   RecordPlugin,
   IncrementalSource,
-} from '@sentry-internal/rrweb-types';
+  CanvasContext,
+} from '@sentry-internal/rrweb-types'
 import { visitSnapshot, NodeType } from '@sentry-internal/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
@@ -1082,6 +1083,16 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
+      // expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+      //   source: IncrementalSource.CanvasMutation,
+      //   type: CanvasContext['2D'],
+      //   commands: expect.arrayContaining([
+      //     {
+      //       args: [200, 100],
+      //       property: 'lineTo',
+      //     },
+      //   ]),
+      // }))
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1101,10 +1112,20 @@ describe('record integration tests', function (this: ISuite) {
       const frameId = await waitForIFrameLoad(page, '#iframe-canvas');
       await frameId.waitForFunction('window.canvasMutationApplied');
       await waitForRAF(page);
+      await page.waitForTimeout(50);
 
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
+      // expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+      //   source: IncrementalSource.CanvasMutation,
+      //   type: CanvasContext['2D'],
+      //   commands: expect.arrayContaining([
+      //     expect.objectContaining({
+      //       property: 'drawImage',
+      //     }),
+      //   ]),
+      // }))
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1114,9 +1135,6 @@ describe('record integration tests', function (this: ISuite) {
       await page.setContent(
         getHtml.call(this, 'canvas-shadow-dom.html', {
           recordCanvas: true,
-          // sampling: {
-          //   canvas: 1,
-          // },
         }),
       );
 
@@ -1126,6 +1144,16 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
+      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+        source: IncrementalSource.CanvasMutation,
+        type: CanvasContext['2D'],
+        commands: expect.arrayContaining([
+          {
+            args: [4000, 4000, 50, 50],
+            property: 'fillRect',
+          },
+        ]),
+      }))
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1144,9 +1172,20 @@ describe('record integration tests', function (this: ISuite) {
       await page.waitForFunction('window.canvasMutationApplied');
       await waitForRAF(page);
 
+      await page.waitForTimeout(50);
+
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
+      // expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+      //   source: IncrementalSource.CanvasMutation,
+      //   type: CanvasContext['2D'],
+      //   commands: expect.arrayContaining([
+      //     expect.objectContaining({
+      //       property: 'drawImage',
+      //     }),
+      //   ]),
+      // }))
       assertSnapshot(stripBase64(snapshots));
     });
   })
