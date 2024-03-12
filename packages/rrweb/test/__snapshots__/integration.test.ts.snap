@@ -6771,6 +6771,34 @@ exports[`record integration tests canvas should record canvas within iframe 1`] 
       \\"attributes\\": [],
       \\"isAttachIframe\\": true
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 27,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"moveTo\\",
+          \\"args\\": [
+            0,
+            0
+          ]
+        },
+        {
+          \\"property\\": \\"lineTo\\",
+          \\"args\\": [
+            200,
+            100
+          ]
+        },
+        {
+          \\"property\\": \\"stroke\\",
+          \\"args\\": []
+        }
+      ]
+    }
   }
 ]"
 `;
@@ -7055,6 +7083,47 @@ exports[`record integration tests canvas should record canvas within iframe with
       \\"attributes\\": [],
       \\"isAttachIframe\\": true
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 27,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            200,
+            100
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"base64-0\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
+    }
   }
 ]"
 `;
@@ -7222,17 +7291,7 @@ exports[`record integration tests canvas should record canvas within shadow dom 
             50,
             50
           ]
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 8,
-      \\"type\\": 0,
-      \\"commands\\": [
+        },
         {
           \\"property\\": \\"clearRect\\",
           \\"args\\": [
@@ -7394,6 +7453,88 @@ exports[`record integration tests canvas should record canvas within shadow dom 
         \\"left\\": 0,
         \\"top\\": 0
       }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 8,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            200,
+            200
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"base64-0\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 8,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            200,
+            200
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"base64-1\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
     }
   }
 ]"

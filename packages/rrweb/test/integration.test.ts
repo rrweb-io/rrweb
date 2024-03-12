@@ -1083,16 +1083,16 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      // expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-      //   source: IncrementalSource.CanvasMutation,
-      //   type: CanvasContext['2D'],
-      //   commands: expect.arrayContaining([
-      //     {
-      //       args: [200, 100],
-      //       property: 'lineTo',
-      //     },
-      //   ]),
-      // }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+        source: IncrementalSource.CanvasMutation,
+        type: CanvasContext['2D'],
+        commands: expect.arrayContaining([
+          {
+            args: [200, 100],
+            property: 'lineTo',
+          },
+        ]),
+      }))
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1117,15 +1117,15 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      // expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-      //   source: IncrementalSource.CanvasMutation,
-      //   type: CanvasContext['2D'],
-      //   commands: expect.arrayContaining([
-      //     expect.objectContaining({
-      //       property: 'drawImage',
-      //     }),
-      //   ]),
-      // }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+        source: IncrementalSource.CanvasMutation,
+        type: CanvasContext['2D'],
+        commands: expect.arrayContaining([
+          expect.objectContaining({
+            property: 'drawImage',
+          }),
+        ]),
+      }))
       assertSnapshot(stripBase64(snapshots));
     });
 
@@ -1177,15 +1177,15 @@ describe('record integration tests', function (this: ISuite) {
       const snapshots = (await page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      // expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
-      //   source: IncrementalSource.CanvasMutation,
-      //   type: CanvasContext['2D'],
-      //   commands: expect.arrayContaining([
-      //     expect.objectContaining({
-      //       property: 'drawImage',
-      //     }),
-      //   ]),
-      // }))
+      expect(snapshots[snapshots.length - 1].data).toEqual(expect.objectContaining({
+        source: IncrementalSource.CanvasMutation,
+        type: CanvasContext['2D'],
+        commands: expect.arrayContaining([
+          expect.objectContaining({
+            property: 'drawImage',
+          }),
+        ]),
+      }))
       assertSnapshot(stripBase64(snapshots));
     });
   })
