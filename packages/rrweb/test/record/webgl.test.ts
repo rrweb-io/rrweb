@@ -14,6 +14,7 @@ import {
   launchPuppeteer,
   stripBase64,
   waitForRAF,
+  waitForIFrameLoad,
 } from '../utils';
 import type { ICanvas } from '@sentry-internal/rrweb-snapshot';
 import type { CanvasManager } from '../../src/record/observers/canvas/canvas-manager';
@@ -318,4 +319,54 @@ describe('record webgl', function (this: ISuite) {
       assertSnapshot(stripBase64(ctx.events));
     });
   });
+
+  describe('record canvas within iframe', function (this: ISuite) {
+    jest.setTimeout(10_000);
+
+    const ctx: ISuite = setup.call(
+      this,
+      `
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <iframe id="iframe1" src="./html/empty.html"></iframe>
+        </body>
+      </html>
+    `
+    );
+
+    it('will record changes to a canvas element', async () => {
+      const frame = await waitForIFrameLoad(ctx.page, '#iframe1');
+      await frame.evaluate(() => {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'canvas';
+        document.body.appendChild(canvas);
+      });
+
+      await ctx.page.waitForTimeout(50);
+
+      await frame.evaluate(() => {
+        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+        const gl = canvas.getContext('webgl')!;
+
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      });
+      await ctx.page.waitForTimeout(50);
+
+      const lastEvent = ctx.events[ctx.events.length - 1];
+      expect(lastEvent).toMatchObject({
+        data: {
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext.WebGL,
+          commands: [
+            {
+              args: [16384],
+              property: 'clear',
+            },
+          ],
+        },
+      });
+      assertSnapshot(stripBase64(ctx.events));
+    });
+  })
 });

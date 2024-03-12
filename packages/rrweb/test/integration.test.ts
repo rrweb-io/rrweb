@@ -10,8 +10,8 @@ import {
   waitForIFrameLoad,
   replaceLast,
   generateRecordSnippet,
-  ISuite,
-} from './utils';
+  ISuite, stripBase64,
+} from './utils'
 import type { recordOptions } from '../src/types';
 import {
   eventWithTime,
@@ -1063,6 +1063,93 @@ describe('record integration tests', function (this: ISuite) {
     )) as eventWithTime[];
     assertSnapshot(snapshots);
   });
+
+  describe('canvas', function (this: ISuite) {
+    jest.setTimeout(10_000);
+    it('should record canvas within iframe', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-iframe.html', {
+          recordCanvas: true,
+        }),
+      );
+
+      const frameId = await waitForIFrameLoad(page, '#iframe-canvas');
+      await frameId.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(stripBase64(snapshots));
+    });
+
+    it ('should record canvas within iframe with sampling', async () => {
+      const maxFPS = 60;
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-iframe.html', {
+          recordCanvas: true,
+          sampling: {
+            canvas: maxFPS,
+          }
+        }),
+      );
+
+      const frameId = await waitForIFrameLoad(page, '#iframe-canvas');
+      await frameId.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(stripBase64(snapshots));
+    });
+
+    it('should record canvas within shadow dom', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-shadow-dom.html', {
+          recordCanvas: true,
+          // sampling: {
+          //   canvas: 1,
+          // },
+        }),
+      );
+
+      await page.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(stripBase64(snapshots));
+    });
+
+    it('should record canvas within shadow dom with sampling', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-shadow-dom.html', {
+          recordCanvas: true,
+          sampling: {
+            canvas: 60,
+          },
+        }),
+      );
+
+      await page.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      assertSnapshot(stripBase64(snapshots));
+    });
+  })
 
   it('should record images with blob url', async () => {
     const page: puppeteer.Page = await browser.newPage();

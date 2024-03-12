@@ -715,7 +715,8 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
       options.recordCanvas
         ? '(opts) => new rrweb.CanvasManager(opts)'
         : 'undefined'
-    }
+    },
+    sampling: ${JSON.stringify(options.sampling)},
   });
   `;
 }
