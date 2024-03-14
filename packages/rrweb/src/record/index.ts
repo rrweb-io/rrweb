@@ -450,10 +450,10 @@ function record<T = eventWithTime>(
       },
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
-        shadowDomManager.observeAttachShadow(iframe);
         if (iframe.contentWindow) {
           canvasManager.addWindow(iframe.contentWindow as IWindow);
         }
+        shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
