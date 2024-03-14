@@ -96,7 +96,7 @@ export class CanvasManager implements CanvasManagerInterface {
 
   private shadowDoms = new Set<WeakRef<ShadowRoot>>();
   private windowsSet = new WeakSet<IWindow>();
-  private windows: WeakRef<IWindow>[] = []
+  private windows: WeakRef<IWindow>[] = [];
 
   private mutationCb: canvasMutationCallback;
   private restoreHandlers: listenerHandler[] = [];
@@ -122,7 +122,11 @@ export class CanvasManager implements CanvasManagerInterface {
     this.worker?.terminate();
     this.worker = null;
     this.snapshotInProgressMap = new Map();
-    if ((this.options.recordCanvas && typeof this.options.sampling === 'number') || this.options.enableManualSnapshot) {
+    if (
+      (this.options.recordCanvas &&
+        typeof this.options.sampling === 'number') ||
+      this.options.enableManualSnapshot
+    ) {
       this.worker = this.initFPSWorker();
     }
   }
@@ -161,7 +165,10 @@ export class CanvasManager implements CanvasManagerInterface {
     if (errorHandler) {
       registerErrorHandler(errorHandler);
     }
-    if ((recordCanvas && typeof sampling === 'number') || options.enableManualSnapshot) {
+    if (
+      (recordCanvas && typeof sampling === 'number') ||
+      options.enableManualSnapshot
+    ) {
       this.worker = this.initFPSWorker();
     }
     if (options.enableManualSnapshot) {

@@ -46,7 +46,9 @@ async function getTransparentBlobFor(
 // `as any` because: https://github.com/Microsoft/TypeScript/issues/20595
 const worker: ImageBitmapDataURLResponseWorker = self;
 
-const processEvent = async function (e: MessageEvent<ImageBitmapDataURLWorkerParams>) {
+const processEvent = async function (
+  e: MessageEvent<ImageBitmapDataURLWorkerParams>,
+) {
   if ('OffscreenCanvas' in globalThis) {
     const { id, bitmap, width, height, dataURLOptions } = e.data;
 
@@ -91,5 +93,5 @@ worker.onmessage = function (e) {
   // OffscreenCanvas operations sometimes block UI operations in main thread in Chrome,
   // https://stackoverflow.com/questions/61475472/does-web-worker-block-on-the-main-thread-for-some-offscreencanvas-functions
   // setTimeout(fn, 1) fixes the issue
-  setTimeout(() => processEvent(e), 1)
-}
+  setTimeout(() => processEvent(e), 1);
+};
