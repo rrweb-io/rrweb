@@ -360,8 +360,7 @@ export function stripBase64(events: eventWithTime[]) {
   return events.map((evt) => {
     if (
       evt.type === EventType.FullSnapshot ||
-      (evt.type === EventType.IncrementalSnapshot &&
-        evt.data.source === IncrementalSource.CanvasMutation)
+      evt.type === EventType.IncrementalSnapshot
     ) {
       const newData = walk(evt.data);
       return { ...evt, data: newData } as eventWithTime;
