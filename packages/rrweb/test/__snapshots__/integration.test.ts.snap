@@ -5338,7 +5338,7 @@ exports[`record integration tests canvas should record canvas within shadow dom 
                         \\"attributes\\": {
                           \\"width\\": \\"200\\",
                           \\"height\\": \\"200\\",
-                          \\"rr_dataURL\\": \\"data:image/png;base64,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\\"
+                          \\"rr_dataURL\\": \\"base64-0\\"
                         },
                         \\"childNodes\\": [],
                         \\"id\\": 8,
@@ -5543,7 +5543,7 @@ exports[`record integration tests canvas should record canvas within shadow dom 
                         \\"attributes\\": {
                           \\"width\\": \\"200\\",
                           \\"height\\": \\"200\\",
-                          \\"rr_dataURL\\": \\"data:image/png;base64,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\\"
+                          \\"rr_dataURL\\": \\"base64-0\\"
                         },
                         \\"childNodes\\": [],
                         \\"id\\": 8,
@@ -5636,7 +5636,7 @@ exports[`record integration tests canvas should record canvas within shadow dom 
                   \\"data\\": [
                     {
                       \\"rr_type\\": \\"ArrayBuffer\\",
-                      \\"base64\\": \\"base64-0\\"
+                      \\"base64\\": \\"base64-1\\"
                     }
                   ],
                   \\"type\\": \\"image/png\\"
@@ -5677,7 +5677,7 @@ exports[`record integration tests canvas should record canvas within shadow dom 
                   \\"data\\": [
                     {
                       \\"rr_type\\": \\"ArrayBuffer\\",
-                      \\"base64\\": \\"base64-1\\"
+                      \\"base64\\": \\"base64-2\\"
                     }
                   ],
                   \\"type\\": \\"image/png\\"
