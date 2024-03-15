@@ -12,7 +12,7 @@
     "lib": [
       "es6",
       "dom",
-      "ES2021.WeakRef"
+      "es2021.WeakRef"
     ],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",
