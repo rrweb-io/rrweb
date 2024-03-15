@@ -213,7 +213,6 @@ export class CanvasManager {
               context.clear(context.COLOR_BUFFER_BIT);
             }
           }
-
           const bitmap = await createImageBitmap(canvas);
           worker.postMessage(
             {
