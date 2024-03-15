@@ -341,7 +341,7 @@ export function stripBase64(events: eventWithTime[]) {
     const newObj: Partial<T> = {};
     for (const prop in obj) {
       const value = obj[prop];
-      if (prop === 'base64' && typeof value === 'string') {
+      if ((prop === 'base64' || prop === 'rr_dataURL') && typeof value === 'string') {
         let index = base64Strings.indexOf(value);
         if (index === -1) {
           index = base64Strings.push(value) - 1;
@@ -356,11 +356,12 @@ export function stripBase64(events: eventWithTime[]) {
 
   return events.map((evt) => {
     if (
+      evt.type === EventType.FullSnapshot ||
       evt.type === EventType.IncrementalSnapshot &&
       evt.data.source === IncrementalSource.CanvasMutation
     ) {
       const newData = walk(evt.data);
-      return { ...evt, data: newData };
+      return { ...evt, data: newData } as eventWithTime;
     }
     return evt;
   });
