@@ -225,7 +225,7 @@ export class CanvasManager {
 
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
-      const traverseDom = (root: Document | ShadowRoot) => {
+      const searchCanvas = (root: Document | ShadowRoot) => {
         root.querySelectorAll('canvas').forEach((canvas) => {
           if (!isBlocked(canvas, blockClass, blockSelector, true)) {
             matchedCanvas.push(canvas);
@@ -235,13 +235,13 @@ export class CanvasManager {
       for (const item of this.windows) {
         const window = item.deref();
         if (window) {
-          traverseDom(window.document);
+          searchCanvas(window.document);
         }
       }
       for (const item of this.shadowDoms) {
         const shadowRoot = item.deref();
         if (shadowRoot) {
-          traverseDom(shadowRoot);
+          searchCanvas(shadowRoot);
         }
       }
       return matchedCanvas;
