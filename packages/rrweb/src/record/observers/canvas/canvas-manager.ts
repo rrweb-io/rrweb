@@ -184,6 +184,12 @@ export class CanvasManager {
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
           if (snapshotInProgressMap.get(id)) return;
+
+          // The browser throws if the canvas is 0 in size
+          // Uncaught (in promise) DOMException: Failed to execute 'createImageBitmap' on 'Window': The source image width is 0.
+          // Assuming the same happens with height
+          if (canvas.width === 0 || canvas.height === 0) return;
+
           snapshotInProgressMap.set(id, true);
           if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
             // if the canvas hasn't been modified recently,
@@ -207,11 +213,6 @@ export class CanvasManager {
               context.clear(context.COLOR_BUFFER_BIT);
             }
           }
-
-          // The browser throws if the canvas is 0 in size
-          // Uncaught (in promise) DOMException: Failed to execute 'createImageBitmap' on 'Window': The source image width is 0.
-          // Assuming the same happens with height
-          if (canvas.width === 0 || canvas.height === 0) return;
 
           const bitmap = await createImageBitmap(canvas);
           worker.postMessage(
