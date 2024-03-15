@@ -14,7 +14,13 @@ import {
   stripBase64,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin, IncrementalSource, CanvasContext } from '@rrweb/types';
+import {
+  eventWithTime,
+  EventType,
+  RecordPlugin,
+  IncrementalSource,
+  CanvasContext,
+} from '@rrweb/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
