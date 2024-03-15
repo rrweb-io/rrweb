@@ -68,7 +68,10 @@ export class CanvasManager {
     this.shadowDoms = new Set();
     this.worker = null;
     this.snapshotInProgressMap = new Map();
-    if (this.options.recordCanvas && typeof this.options.sampling === 'number') {
+    if (
+      this.options.recordCanvas &&
+      typeof this.options.sampling === 'number'
+    ) {
       this.worker = this.initFPSWorker();
     }
   }
