@@ -217,7 +217,6 @@ describe('replayer', function () {
       await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(assetsChangedEvents);
-      console.log('pausing at', (assetsChangedEvents[2].timestamp - assetsChangedEvents[0].timestamp) + 1)
       replayer.pause((assetsChangedEvents[2].timestamp - assetsChangedEvents[0].timestamp) + 1);
     `);
 
@@ -234,7 +233,6 @@ describe('replayer', function () {
       await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(assetsChangedEvents);
-      console.log('pausing at', (assetsChangedEvents[1].timestamp - assetsChangedEvents[0].timestamp) + 1)
       replayer.pause((assetsChangedEvents[1].timestamp - assetsChangedEvents[0].timestamp) + 1);
   `);
 
