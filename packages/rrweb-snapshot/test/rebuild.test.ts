@@ -91,6 +91,13 @@ describe('rebuild', function () {
       );
     });
 
+    it('can add hover class within media query', () => {
+      const cssText = '@media screen { .m:hover { color: white } }';
+      expect(addHoverClass(cssText, cache)).toEqual(
+        '@media screen { .m:hover, .m.\\:hover { color: white } }',
+      );
+    });
+
     it('can add hover class when there is multi selector', () => {
       const cssText = '.a, .b:hover, .c { color: white }';
       expect(addHoverClass(cssText, cache)).toEqual(

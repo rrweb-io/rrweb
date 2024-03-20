@@ -77,7 +77,7 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
   }
 
   const selectors: string[] = [];
-  ast.stylesheet.rules.forEach((rule) => {
+  function getSelectors(rule: any) {
     if ('selectors' in rule) {
       (rule.selectors || []).forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
@@ -85,7 +85,11 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
         }
       });
     }
-  });
+    if ('rules' in rule) {
+      (rule.rules || []).forEach(getSelectors);
+    }
+  }
+  getSelectors(ast.stylesheet);
 
   if (selectors.length === 0) {
     return cssText;
