@@ -197,6 +197,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         }
         hijackedAttributes.set(attribute, originalValue);
         if (node.tagName === 'IMG' && attribute === 'src') {
+          // special value to prevent a broken image icon while asset is being loaded
           node.setAttribute('src', '//:0');
         } else {
           node.removeAttribute(attribute);
