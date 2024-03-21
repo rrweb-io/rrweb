@@ -91,6 +91,34 @@ describe('rebuild', function () {
       );
     });
 
+    it('can correctly add hover when in middle of selector', () => {
+      const cssText = 'ul li a:hover img { color: white }';
+      expect(addHoverClass(cssText, cache)).toEqual(
+        'ul li a:hover img, ul li a.\\:hover img { color: white }',
+      );
+    });
+
+    it('can correctly add hover on multiline selector', () => {
+      const cssText = `ul li.specified a:hover img,
+ul li.multiline
+b:hover
+img,
+ul li.specified c:hover img {
+  color: white
+}`;
+      expect(addHoverClass(cssText, cache)).toEqual(
+        `ul li.specified a:hover img, ul li.specified a.\\:hover img,
+ul li.multiline
+b:hover
+img, ul li.multiline
+b.\\:hover
+img,
+ul li.specified c:hover img, ul li.specified c.\\:hover img {
+  color: white
+}`,
+      );
+    });
+
     it('can add hover class within media query', () => {
       const cssText = '@media screen { .m:hover { color: white } }';
       expect(addHoverClass(cssText, cache)).toEqual(
