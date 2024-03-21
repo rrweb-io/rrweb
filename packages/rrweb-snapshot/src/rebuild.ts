@@ -66,7 +66,7 @@ const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
 const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
-export function addHoverClass(cssText: string, cache: BuildCache): string {
+export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
@@ -224,7 +224,7 @@ function buildNode(
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
         if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = addHoverClass(value, cache);
+          value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
           node.appendChild(doc.createTextNode(value));
@@ -369,7 +369,7 @@ function buildNode(
     case NodeType.Text:
       return doc.createTextNode(
         n.isStyle && hackCss
-          ? addHoverClass(n.textContent, cache)
+          ? adaptCssForReplay(n.textContent, cache)
           : n.textContent,
       );
     case NodeType.CDATA:
