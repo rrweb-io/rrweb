@@ -131,6 +131,14 @@ describe('rebuild', function () {
       expect(addHoverClass(cssText, cache)).toEqual(cssText);
     });
 
+    it('can adapt media rules to replay context', () => {
+      const cssText =
+        '@media only screen and (min-device-width : 1200px) { .a { width: 10px; }}';
+      expect(addHoverClass(cssText, cache)).toEqual(
+        '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
+      );
+    });
+
     // this benchmark is unreliable when run in parallel with other tests
     it.skip('benchmark', () => {
       const cssText = fs.readFileSync(

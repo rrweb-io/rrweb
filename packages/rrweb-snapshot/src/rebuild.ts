@@ -62,6 +62,8 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
+const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
 export function addHoverClass(cssText: string, cache: BuildCache): string {
@@ -77,6 +79,7 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
   }
 
   const selectors: string[] = [];
+  const medias: string[] = [];
   function getSelectors(rule: any) {
     if ('selectors' in rule) {
       (rule.selectors || []).forEach((selector: string) => {
@@ -84,6 +87,9 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
           selectors.push(selector);
         }
       });
+    }
+    if ('media' in rule && MEDIA_SELECTOR.test(rule.media)) {
+      medias.push(rule.media);
     }
     if ('rules' in rule) {
       (rule.rules || []).forEach(getSelectors);
@@ -109,6 +115,23 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
         '$1.\\:hover',
       );
       return `${selector}, ${newSelector}`;
+    });
+  }
+  if (medias.length > 0) {
+    const mediaMatcher = new RegExp(
+      medias
+        .filter((media, index) => medias.indexOf(media) === index)
+        .sort((a, b) => b.length - a.length)
+        .map((media) => {
+          return escapeRegExp(media);
+        })
+        .join('|'),
+      'g',
+    );
+    result = result.replace(mediaMatcher, (media) => {
+      // not attempting to maintain min-device-width along with min-width
+      // (it's non standard)
+      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
     });
   }
   cache?.stylesWithHoverClass.set(cssText, result);
