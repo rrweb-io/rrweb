@@ -91,25 +91,26 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
   }
   getSelectors(ast.stylesheet);
 
-  if (selectors.length === 0) {
-    return cssText;
+  let result = cssText;
+  if (selectors.length > 0) {
+    const selectorMatcher = new RegExp(
+      selectors
+        .filter((selector, index) => selectors.indexOf(selector) === index)
+        .sort((a, b) => b.length - a.length)
+        .map((selector) => {
+          return escapeRegExp(selector);
+        })
+        .join('|'),
+      'g',
+    );
+    result = result.replace(selectorMatcher, (selector) => {
+      const newSelector = selector.replace(
+        HOVER_SELECTOR_GLOBAL,
+        '$1.\\:hover',
+      );
+      return `${selector}, ${newSelector}`;
+    });
   }
-
-  const selectorMatcher = new RegExp(
-    selectors
-      .filter((selector, index) => selectors.indexOf(selector) === index)
-      .sort((a, b) => b.length - a.length)
-      .map((selector) => {
-        return escapeRegExp(selector);
-      })
-      .join('|'),
-    'g',
-  );
-
-  const result = cssText.replace(selectorMatcher, (selector) => {
-    const newSelector = selector.replace(HOVER_SELECTOR_GLOBAL, '$1.\\:hover');
-    return `${selector}, ${newSelector}`;
-  });
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
