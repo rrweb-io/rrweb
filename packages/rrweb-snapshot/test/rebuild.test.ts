@@ -3,7 +3,11 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { adaptCssForReplay, buildNodeWithSN, createCache } from '../src/rebuild';
+import {
+  adaptCssForReplay,
+  buildNodeWithSN,
+  createCache,
+} from '../src/rebuild';
 import { NodeType } from '../src/types';
 import { createMirror, Mirror } from '../src/utils';
 
