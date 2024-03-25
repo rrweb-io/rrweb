@@ -34,13 +34,7 @@ describe('AssetManager', () => {
   });
 
   beforeEach(() => {
-    assetManager = new AssetManager(
-      { liveMode: false },
-      {
-        origins: true,
-        objectURLs: true,
-      },
-    );
+    assetManager = new AssetManager({ liveMode: false });
   });
 
   afterEach(() => {
@@ -153,139 +147,6 @@ describe('AssetManager', () => {
     await expect(promise).resolves.toEqual({ status: 'reset' });
   });
 
-  const validOriginCombinations: Array<
-    [captureAssetsParam['origins'], string[]]
-  > = [
-    [['http://example.com'], ['http://example.com/image.png']],
-    [['https://example.com'], ['https://example.com/image.png']],
-    [['https://example.com:80'], ['https://example.com:80/cgi-bin/image.png']],
-    [true, ['https://example.com:80/cgi-bin/image.png']],
-  ];
-
-  const invalidOriginCombinations: Array<
-    [captureAssetsParam['origins'], string[]]
-  > = [
-    [['http://example.com'], ['https://example.com/image.png']],
-    [['https://example.com'], ['https://example.org/image.png']],
-    [['https://example.com:80'], ['https://example.com:81/image.png']],
-    [false, ['https://example.com:81/image.png']],
-  ];
-
-  validOriginCombinations.forEach(([origin, urls]) => {
-    const assetManager = new AssetManager(
-      { liveMode: false },
-      {
-        origins: origin,
-        objectURLs: false,
-      },
-    );
-    urls.forEach((url) => {
-      it(`should correctly identify ${url} as capturable for origin ${origin}`, () => {
-        expect(assetManager.isURLConfiguredForCapture(url)).toBe(true);
-      });
-    });
-  });
-
-  invalidOriginCombinations.forEach(([origin, urls]) => {
-    const assetManager = new AssetManager(
-      { liveMode: false },
-      {
-        origins: origin,
-        objectURLs: false,
-      },
-    );
-    urls.forEach((url) => {
-      it(`should correctly identify ${url} as NOT capturable for origin ${origin}`, () => {
-        expect(assetManager.isURLConfiguredForCapture(url)).toBe(false);
-      });
-    });
-  });
-
-  const validCombinations: Array<{
-    origins: captureAssetsParam['origins'];
-    tagName: string;
-    attribute: string;
-    value: string;
-  }> = [
-    {
-      origins: ['http://example.com'],
-      tagName: 'IMG',
-      attribute: 'src',
-      value: 'http://example.com/image.png',
-    },
-    {
-      origins: ['https://example.com'],
-      tagName: 'IMG',
-      attribute: 'srcset',
-      value:
-        'https://example.com/image.png x2, https://example.com/image2.png x3',
-    },
-  ];
-
-  const invalidCombinations: Array<{
-    origins: captureAssetsParam['origins'];
-    tagName: string;
-    attribute: string;
-    value: string;
-  }> = [
-    {
-      origins: ['http://example.com'],
-      tagName: 'IMG',
-      attribute: 'src',
-      value: 'http://google.com/image.png',
-    },
-    {
-      origins: ['https://example.com'],
-      tagName: 'IMG',
-      attribute: 'href',
-      value: 'https://example.com/image.png',
-    },
-    {
-      origins: ['https://duckduckgo.com'],
-      tagName: 'IMG',
-      attribute: 'srcset',
-      value:
-        'https://example.com/image.png x2, https://example.com/image2.png x3',
-    },
-    {
-      origins: false,
-      tagName: 'IMG',
-      attribute: 'srcset',
-      value:
-        'https://example.com/image.png x2, https://example.com/image2.png x3',
-    },
-  ];
-
-  validCombinations.forEach(({ origins, tagName, attribute, value }) => {
-    const element = document.createElement(tagName);
-    element.setAttribute(attribute, value);
-    const assetManager = new AssetManager(
-      { liveMode: false },
-      {
-        origins,
-        objectURLs: false,
-      },
-    );
-    it(`should correctly identify <${element} ${attribute}=${value} /> as capturable for origins ${origins}`, () => {
-      expect(assetManager.isCapturable(element, attribute, value)).toBe(true);
-    });
-  });
-
-  invalidCombinations.forEach(({ origins, tagName, attribute, value }) => {
-    const element = document.createElement(tagName);
-    element.setAttribute(attribute, value);
-    const assetManager = new AssetManager(
-      { liveMode: false },
-      {
-        origins,
-        objectURLs: false,
-      },
-    );
-    it(`should correctly identify <${element} ${attribute}=${value} /> as NOT capturable for origins ${origins}`, () => {
-      expect(assetManager.isCapturable(element, attribute, value)).toBe(false);
-    });
-  });
-
   it("should be able to modify a node's attribute once asset is loaded", async () => {
     const url = 'https://example.com/image.png';
     const event: assetEvent = {
@@ -298,9 +159,8 @@ describe('AssetManager', () => {
     jest.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
 
     const element = document.createElement('img');
-    element.setAttribute('src', url);
 
-    const promise = assetManager.manageAttribute(element, 1, 'src');
+    const promise = assetManager.manageAttribute(element, 1, 'src', url);
 
     await assetManager.add(event);
     await promise;
@@ -321,9 +181,8 @@ describe('AssetManager', () => {
     await assetManager.add(event);
 
     const element = document.createElement('img');
-    element.setAttribute('src', url);
 
-    await assetManager.manageAttribute(element, 1, 'src');
+    await assetManager.manageAttribute(element, 1, 'src', url);
 
     expect(element.getAttribute('src')).toBe('objectURL');
   });
@@ -341,9 +200,8 @@ describe('AssetManager', () => {
     await assetManager.add(event);
 
     const element = document.createElement('img');
-    element.setAttribute('srcset', url);
 
-    await assetManager.manageAttribute(element, 1, 'srcset');
+    await assetManager.manageAttribute(element, 1, 'srcset', url);
 
     expect(element.getAttribute('srcset')).toBe('objectURL');
   });
@@ -361,9 +219,9 @@ describe('AssetManager', () => {
     await assetManager.add(event);
 
     const element = document.createElement('img');
-    element.setAttribute('srcset', `${url} x2, ${url}?x3 x3`);
+    const value = `${url} x2, ${url}?x3 x3`;
 
-    void assetManager.manageAttribute(element, 1, 'srcset');
+    void assetManager.manageAttribute(element, 1, 'srcset', value);
     await assetManager.whenReady(url);
 
     expect(element.getAttribute('srcset')).toBe(`objectURL x2, ${url}?x3 x3`);
@@ -373,7 +231,6 @@ describe('AssetManager', () => {
     const url = 'https://example.com/image.png';
     const url2 = `${url}?x3`;
     const element = document.createElement('img');
-    element.setAttribute('srcset', `${url} x2, ${url2} x3`);
 
     jest
       .spyOn(URL, 'createObjectURL')
@@ -387,7 +244,12 @@ describe('AssetManager', () => {
       },
     });
 
-    void assetManager.manageAttribute(element, 1, 'srcset');
+    void assetManager.manageAttribute(
+      element,
+      1,
+      'srcset',
+      `${url} x2, ${url2} x3`,
+    );
     await assetManager.whenReady(url);
 
     expect(element.getAttribute('srcset')).toBe(`objectURL1 x2, ${url2} x3`);
@@ -422,30 +284,22 @@ describe('AssetManager', () => {
       'http://www.w3.org/2000/svg',
       'feImage',
     );
-    feImage.setAttribute('href', url);
 
-    await assetManager.manageAttribute(feImage, 1, 'href');
+    await assetManager.manageAttribute(feImage, 1, 'href', url);
 
     expect(feImage.getAttribute('href')).toBe('objectURL');
   });
 
   describe('live mode', () => {
     beforeEach(() => {
-      assetManager = new AssetManager(
-        { liveMode: true },
-        {
-          origins: true,
-          objectURLs: true,
-        },
-      );
+      assetManager = new AssetManager({ liveMode: true });
     });
 
     it("should remove a node's attribute while asset is being loaded", async () => {
       const url = 'https://example.com/image.png';
       const element = document.createElement('embed');
-      element.setAttribute('src', url);
 
-      void assetManager.manageAttribute(element, 1, 'src');
+      void assetManager.manageAttribute(element, 1, 'src', url);
 
       expect(element.getAttribute('src')).toBeNull();
     });
@@ -453,9 +307,8 @@ describe('AssetManager', () => {
     it("should set an image's src attribute to //:0 to prevent a broken image icon while asset is being loaded", async () => {
       const url = 'https://example.com/image.png';
       const element = document.createElement('img');
-      element.setAttribute('src', url);
 
-      void assetManager.manageAttribute(element, 1, 'src');
+      void assetManager.manageAttribute(element, 1, 'src', url);
 
       expect(element.getAttribute('src')).toBe('//:0');
     });
@@ -484,11 +337,11 @@ describe('AssetManager', () => {
       const promises: Promise<unknown>[] = [];
 
       const element = document.createElement('img');
-      element.setAttribute('src', originalUrl);
-      promises.push(assetManager.manageAttribute(element, 1, 'src'));
+      promises.push(
+        assetManager.manageAttribute(element, 1, 'src', originalUrl),
+      );
 
-      element.setAttribute('src', newUrl);
-      promises.push(assetManager.manageAttribute(element, 1, 'src'));
+      promises.push(assetManager.manageAttribute(element, 1, 'src', newUrl));
 
       await assetManager.add(newAsset);
       await assetManager.add(originalAsset);
@@ -521,11 +374,11 @@ describe('AssetManager', () => {
       const promises: Promise<unknown>[] = [];
 
       const element = document.createElement('img');
-      element.setAttribute('src', originalUrl);
-      promises.push(assetManager.manageAttribute(element, 1, 'src'));
+      promises.push(
+        assetManager.manageAttribute(element, 1, 'src', originalUrl),
+      );
 
-      element.setAttribute('src', newUrl);
-      promises.push(assetManager.manageAttribute(element, 1, 'src'));
+      promises.push(assetManager.manageAttribute(element, 1, 'src', newUrl));
 
       await assetManager.add(originalAsset);
       await assetManager.add(newAsset);

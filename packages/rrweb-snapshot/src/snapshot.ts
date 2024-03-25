@@ -674,21 +674,28 @@ function serializeElementNode(
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
     if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      const value = (attributes[attr.name] = transformAttribute(
+      const value = transformAttribute(
         doc,
         tagName,
         toLowerCase(attr.name),
         attr.value,
-      ));
-
+      );
+      let { name } = attr;
       // save assets offline
-      if (value && onAssetDetected && isAttributeCapturable(n, attr.name)) {
+      if (
+        value &&
+        typeof value === 'string' &&
+        onAssetDetected &&
+        isAttributeCapturable(n, attr.name)
+      ) {
         if (attr.name === 'srcset') {
           assets.push(...getUrlsFromSrcset(value));
         } else {
           assets.push(value);
         }
+        name = `rr_captured_${name}`;
       }
+      attributes[name] = value;
     }
   }
   // remote css

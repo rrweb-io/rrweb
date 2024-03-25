@@ -331,12 +331,20 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
-    else oldTree.setAttribute(name, newValue);
-
-    if (assetManager?.isCapturable(oldTree, name, newValue)) {
+    else if (
+      assetManager &&
+      name.startsWith('rr_captured_') &&
+      newValue &&
+      typeof newValue === 'string'
+    ) {
       // can possibly remove the attribute again if it hasn't loaded yet
-      assetManager.manageAttribute(oldTree, rrnodeMirror.getId(newTree), name);
-    }
+      assetManager.manageAttribute(
+        oldTree,
+        rrnodeMirror.getId(newTree),
+        name.substring('rr_captured_'.length),
+        newValue,
+      );
+    } else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes))

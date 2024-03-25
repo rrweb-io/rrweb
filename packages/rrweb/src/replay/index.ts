@@ -393,9 +393,7 @@ export class Replayer {
       (e) => e.type === EventType.FullSnapshot,
     );
     if (firstMeta) {
-      const { width, height, captureAssets } =
-        firstMeta.data as metaEvent['data'];
-      this.assetManager.reset(captureAssets);
+      const { width, height } = firstMeta.data as metaEvent['data'];
       setTimeout(() => {
         this.emitter.emit(ReplayerEvents.Resize, {
           width,
@@ -678,7 +676,6 @@ export class Replayer {
         break;
       case EventType.Meta:
         castFn = () => {
-          this.assetManager.reset(event.data.captureAssets);
           this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
@@ -1819,13 +1816,15 @@ export class Replayer {
                 if (tn) {
                   textarea.appendChild(tn as TNode);
                 }
-              } else {
-                targetEl.setAttribute(attributeName, value);
+              } else if (attributeName.startsWith('rr_captured_') && value) {
                 void this.assetManager.manageAttribute(
                   targetEl,
                   mutation.id,
-                  attributeName,
+                  attributeName.substring('rr_captured_'.length),
+                  value,
                 );
+              } else {
+                targetEl.setAttribute(attributeName, value);
               }
               void this.assetManager.manageAttribute(targetEl, attributeName);
             } catch (error) {

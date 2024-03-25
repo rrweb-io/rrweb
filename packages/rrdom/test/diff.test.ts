@@ -470,7 +470,6 @@ describe('diff algorithm for rrdom', () => {
       beforeEach(() => {
         assetManager = fromPartial({
           manageAttribute: jest.fn(),
-          isCapturable: jest.fn(),
         });
         replayer.assetManager = assetManager;
       });
@@ -486,15 +485,13 @@ describe('diff algorithm for rrdom', () => {
         const sn2 = Object.assign({}, elementSn, { tagName });
         rrDocument.mirror.add(rrNode, sn2);
 
-        (assetManager.isCapturable as jest.Mock)
-          .mockReturnValueOnce(true)
-          .mockReturnValue(false);
-        rrNode.attributes = { src: 'image.png', class: 'node' };
+        rrNode.attributes = { rr_captured_src: 'image.png', class: 'node' };
         diff(node, rrNode, replayer);
         expect(assetManager.manageAttribute).toHaveBeenCalledWith(
           node,
           mirror.getId(node),
           'src',
+          'image.png',
         );
       });
     });

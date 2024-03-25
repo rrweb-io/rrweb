@@ -246,6 +246,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
 function stripBlobURLsFromAttributes(node: {
   attributes: {
     src?: string;
+    rr_captured_src?: string;
   };
 }) {
   if (
@@ -255,6 +256,16 @@ function stripBlobURLsFromAttributes(node: {
     node.attributes.src.startsWith('blob:')
   ) {
     node.attributes.src = node.attributes.src
+      .replace(/[\w-]+$/, '...')
+      .replace(/:[0-9]+\//, ':xxxx/');
+  }
+  if (
+    'rr_captured_src' in node.attributes &&
+    node.attributes.rr_captured_src &&
+    typeof node.attributes.rr_captured_src === 'string' &&
+    node.attributes.rr_captured_src.startsWith('blob:')
+  ) {
+    node.attributes.rr_captured_src = node.attributes.rr_captured_src
       .replace(/[\w-]+$/, '...')
       .replace(/:[0-9]+\//, ':xxxx/');
   }

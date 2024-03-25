@@ -6,7 +6,7 @@ import type {
   captureAssetsParam,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
-import { getSourcesFromSrcset, isAttributeCapturable } from 'rrweb-snapshot';
+import { getSourcesFromSrcset } from 'rrweb-snapshot';
 import type { RRElement } from 'rrdom';
 import { updateSrcset } from './update-srcset';
 
@@ -20,15 +20,10 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     string,
     Array<(status: RebuildAssetManagerFinalStatus) => void>
   > = new Map();
-  private config: captureAssetsParam | undefined;
   private liveMode: boolean;
 
-  constructor(
-    { liveMode }: { liveMode: boolean },
-    config?: captureAssetsParam | undefined,
-  ) {
+  constructor({ liveMode }: { liveMode: boolean }) {
     this.liveMode = liveMode;
-    this.config = config;
   }
 
   public async add(event: assetEvent) {
@@ -120,59 +115,20 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     };
   }
 
-  public isCapturable(
-    n: RRElement | Element,
-    attribute: string,
-    value: string,
-  ): boolean {
-    if (!isAttributeCapturable(n as Element, attribute)) return false;
-
-    if (attribute === 'srcset') {
-      return getSourcesFromSrcset(value).some((source) =>
-        this.isURLConfiguredForCapture(source),
-      );
-    } else {
-      return this.isURLConfiguredForCapture(value);
-    }
-  }
-
-  public isURLConfiguredForCapture(url: string): boolean {
-    if (url.startsWith('data:')) return false;
-
-    const { origins: cachedOrigins = false, objectURLs = false } =
-      this.config || {};
-    if (objectURLs && url.startsWith(`blob:`)) {
-      return true;
-    }
-
-    if (Array.isArray(cachedOrigins)) {
-      try {
-        const { origin } = new URL(url);
-        return cachedOrigins.some((o) => o === origin);
-      } catch {
-        return false;
-      }
-    }
-
-    return cachedOrigins;
-  }
-
   public async manageAttribute(
     node: RRElement | Element,
     nodeId: number,
     attribute: string,
+    newValue: string,
   ): Promise<unknown> {
-    const originalValue = node.getAttribute(attribute);
-    if (!originalValue || !this.isCapturable(node, attribute, originalValue))
-      return false;
+    const prevValue = node.getAttribute(attribute);
 
     const promises: Promise<unknown>[] = [];
 
     if (attribute === 'srcset') {
-      let expectedValue: string | void = originalValue;
-      const values = getSourcesFromSrcset(originalValue);
+      const values = getSourcesFromSrcset(newValue);
+      let expectedValue: string | undefined = prevValue;
       values.forEach((value) => {
-        if (!this.isURLConfiguredForCapture(value)) return;
         promises.push(
           this.whenReady(value).then((status) => {
             const isLoaded = status.status === 'loaded';
@@ -182,8 +138,16 @@ export default class AssetManager implements RebuildAssetManagerInterface {
               node.getAttribute(attribute) === expectedValue;
 
             if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
-
-            expectedValue = updateSrcset(node, value, status.url);
+            if (!expectedValue) {
+              // before srcset has been set for the first time
+              expectedValue = newValue;
+            }
+            expectedValue = updateSrcset(
+              node,
+              value,
+              status.url,
+              expectedValue,
+            );
           }),
         );
       });
@@ -195,24 +159,23 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           hijackedAttributes = new Map();
           this.nodeIdAttributeHijackedMap.set(nodeId, hijackedAttributes);
         }
-        hijackedAttributes.set(attribute, originalValue);
+        hijackedAttributes.set(attribute, newValue);
         if (node.tagName === 'IMG' && attribute === 'src') {
           // special value to prevent a broken image icon while asset is being loaded
           node.setAttribute('src', '//:0');
         } else {
-          node.removeAttribute(attribute);
+          node.setAttribute('src', '/\\\:0');
         }
       }
-
       promises.push(
-        this.whenReady(originalValue).then((status) => {
+        this.whenReady(newValue).then((status) => {
           const isLoaded = status.status === 'loaded';
           if (!isLoaded) return; // failed to load asset
 
           const attributeUnchanged = this.liveMode
-            ? originalValue ===
+            ? newValue ===
               this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
-            : node.getAttribute(attribute) === originalValue;
+            : node.getAttribute(attribute) === prevValue;
 
           if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
 
@@ -224,8 +187,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     return Promise.all(promises);
   }
 
-  public reset(config?: captureAssetsParam | undefined): void {
-    this.config = config;
+  public reset(): void {
     this.originalToObjectURLMap.forEach((objectURL) => {
       URL.revokeObjectURL(objectURL);
     });
