@@ -355,6 +355,19 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
+    else if (
+      assetManager &&
+      name.startsWith('rr_captured_') &&
+      newValue &&
+      typeof newValue === 'string'
+    ) 
+      // can possibly remove the attribute again if it hasn't loaded yet
+      assetManager.manageAttribute(
+        oldTree,
+        rrnodeMirror.getId(newTree),
+        name.substring('rr_captured_'.length),
+        newValue,
+      );
     else {
       try {
         oldTree.setAttribute(name, newValue);
@@ -364,11 +377,6 @@ function diffProps(
         // the `ReplayerEvents.Flush` listener and break rendering
         console.warn(err);
       }
-    }
-
-    if (assetManager?.isCapturable(oldTree, name, newValue)) {
-      // can possibly remove the attribute again if it hasn't loaded yet
-      assetManager.manageAttribute(oldTree, rrnodeMirror.getId(newTree), name);
     }
   }
 

@@ -7,10 +7,6 @@ const events: eventWithTime[] = [
       href: '',
       width: 1600,
       height: 900,
-      captureAssets: {
-        origins: ['ftp://example.com'],
-        objectURLs: false,
-      },
     },
     timestamp: 1636379531385,
   },
@@ -113,7 +109,7 @@ const events: eventWithTime[] = [
         {
           id: 16,
           attributes: {
-            src: 'ftp://example.com/image.png',
+            rr_captured_src: 'ftp://example.com/image.png',
           },
         },
       ],

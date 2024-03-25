@@ -643,13 +643,12 @@ export default class MutationBuffer {
 
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
-          const transformedValue = (item.attributes[attributeName] =
-            transformAttribute(
-              this.doc,
-              toLowerCase(target.tagName),
-              toLowerCase(attributeName),
-              value,
-            ));
+          const transformedValue = transformAttribute(
+            this.doc,
+            toLowerCase(target.tagName),
+            toLowerCase(attributeName),
+            value,
+          );
           if (
             transformedValue &&
             this.assetManager.isAttributeCapturable(target, attributeName)
@@ -661,7 +660,9 @@ export default class MutationBuffer {
             } else {
               this.assetManager.capture(transformedValue);
             }
+            attributeName = `rr_captured_${attributeName}`;
           }
+          item.attributes[attributeName] = transformedValue;
 
           if (attributeName === 'style') {
             if (!this.unattachedDoc) {
