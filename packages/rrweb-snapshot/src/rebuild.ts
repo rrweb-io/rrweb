@@ -1,4 +1,4 @@
-import { parse } from './css';
+import { StyleRules, Rule, Media, parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -80,7 +80,7 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
 
   const selectors: string[] = [];
   const medias: string[] = [];
-  function getSelectors(rule: any) {
+  function getSelectors(rule: StyleRules | Rule | Media) {
     if ('selectors' in rule) {
       (rule.selectors || []).forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
@@ -88,7 +88,7 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
         }
       });
     }
-    if ('media' in rule && MEDIA_SELECTOR.test(rule.media)) {
+    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
       medias.push(rule.media);
     }
     if ('rules' in rule) {

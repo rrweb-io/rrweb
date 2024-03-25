@@ -224,7 +224,7 @@ export interface Stylesheet extends Node {
 // https://github.com/visionmedia/css-parse/pull/49#issuecomment-30088027
 const commentre = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//g;
 
-export function parse(css: string, options: ParserOptions = {}) {
+export function parse(css: string, options: ParserOptions = {}): Stylesheet {
   /**
    * Positional.
    */
@@ -882,7 +882,7 @@ function trim(str: string) {
  * Adds non-enumerable parent node reference to each node.
  */
 
-function addParent(obj: Stylesheet, parent?: Stylesheet) {
+function addParent(obj: Stylesheet, parent?: Stylesheet): Stylesheet {
   const isNode = obj && typeof obj.type === 'string';
   const childParent = isNode ? obj : parent;
 
