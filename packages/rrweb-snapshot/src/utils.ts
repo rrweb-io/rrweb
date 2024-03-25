@@ -356,26 +356,6 @@ export function extractFileExtension(
 }
 
 /**
- * Extracts the file extension from an a path, considering search parameters and fragments.
- * @param path - Path to file
- * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
- */
-export function extractFileExtension(
-  path: string,
-  baseURL?: string,
-): string | null {
-  let url;
-  try {
-    url = new URL(path, baseURL ?? window.location.href);
-  } catch (err) {
-    return null;
-  }
-  const regex = /\.([0-9a-z]+)(?:$)/i;
-  const match = url.pathname.match(regex);
-  return match?.[1] ?? null;
-}
-
-/**
  * Extracts the URLs from a srcset attribute.
  * @param srcset - The srcset attribute value. eg. `image.jpg 2x, image2.jpg 3x`
  * @returns An array of URLs. eg. `['image.jpg', 'image2.jpg']`
@@ -401,7 +381,7 @@ export function getUrlsFromSrcset(srcset: string): string[] {
   return urls;
 }
 
-export const CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
+export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['IMG', new Set(['src', 'srcset'])],
   ['VIDEO', new Set(['src'])],
   ['AUDIO', new Set(['src'])],
@@ -423,8 +403,8 @@ export const CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['cursor', new Set(['href'])],
 ]);
 
-export function isAttributeCacheable(n: Element, attribute: string): boolean {
-  const acceptedAttributesSet = CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
+export function isAttributeCapturable(n: Element, attribute: string): boolean {
+  const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
     n.nodeName,
   );
   if (!acceptedAttributesSet) {

@@ -769,8 +769,8 @@ export declare abstract class RebuildAssetManagerInterface {
   abstract get(url: string): RebuildAssetManagerStatus;
   abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
   abstract reset(config?: captureAssetsParam | undefined): void;
-  abstract isCacheable(n: Element, attribute: string, value: string): boolean;
-  abstract isURLOfCacheableOrigin(url: string): boolean;
+  abstract isCapturable(n: Element, attribute: string, value: string): boolean;
+  abstract isURLConfiguredForCapture(url: string): boolean;
   abstract manageAttribute(n: Element, id: number, attribute: string): void;
 }
 
