@@ -8,10 +8,6 @@ const events: eventWithTime[] = [
       href: '',
       width: 1600,
       height: 900,
-      captureAssets: {
-        origins: ['ftp://example.com'],
-        objectURLs: false,
-      },
     },
     timestamp: 100000000,
   },
@@ -77,7 +73,7 @@ const events: eventWithTime[] = [
                       width: '100',
                       height: '100',
                       style: 'border: 1px solid #000000',
-                      src: 'ftp://example.com/red.png',
+                      rr_captured_src: 'ftp://example.com/red.png',
                     },
                     childNodes: [{ type: 3, textContent: '\n    ', id: 17 }],
                     id: 16,
@@ -116,7 +112,7 @@ const events: eventWithTime[] = [
         {
           id: 16,
           attributes: {
-            src: 'ftp://example.com/robot.png',
+            rr_captured_src: 'ftp://example.com/robot.png',
           },
         },
       ],

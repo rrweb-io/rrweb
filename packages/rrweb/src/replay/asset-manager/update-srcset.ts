@@ -4,9 +4,12 @@ export function updateSrcset(
   node: Element | RRElement,
   urlToReplace: string,
   newURL: string,
-): string | void {
-  const srcset = node.getAttribute('srcset');
-  if (!srcset) return;
+  expectedValue?: string,
+): string | undefined {
+  if (typeof expectedValue === 'undefined') {
+    expectedValue = node.getAttribute('srcset');
+    if (!expectedValue) return undefined;
+  }
 
   // from https://stackoverflow.com/a/6969486/543604
   const escapedUrlToReplace = urlToReplace.replace(
@@ -14,7 +17,7 @@ export function updateSrcset(
     '\\$&',
   );
   const matcher = new RegExp(`(?<=^|[\\s,])${escapedUrlToReplace}(?=[\\s,]|$)`);
-  const newSrcset = srcset.replace(matcher, newURL);
+  const newSrcset = expectedValue.replace(matcher, newURL);
 
   node.setAttribute('srcset', newSrcset);
 
