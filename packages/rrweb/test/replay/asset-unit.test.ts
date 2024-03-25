@@ -181,8 +181,8 @@ describe('AssetManager', () => {
       },
     );
     urls.forEach((url) => {
-      it(`should correctly identify ${url} as cacheable for origin ${origin}`, () => {
-        expect(assetManager.isURLOfCacheableOrigin(url)).toBe(true);
+      it(`should correctly identify ${url} as capturable for origin ${origin}`, () => {
+        expect(assetManager.isURLConfiguredForCapture(url)).toBe(true);
       });
     });
   });
@@ -196,8 +196,8 @@ describe('AssetManager', () => {
       },
     );
     urls.forEach((url) => {
-      it(`should correctly identify ${url} as NOT cacheable for origin ${origin}`, () => {
-        expect(assetManager.isURLOfCacheableOrigin(url)).toBe(false);
+      it(`should correctly identify ${url} as NOT capturable for origin ${origin}`, () => {
+        expect(assetManager.isURLConfiguredForCapture(url)).toBe(false);
       });
     });
   });
@@ -267,8 +267,8 @@ describe('AssetManager', () => {
         objectURLs: false,
       },
     );
-    it(`should correctly identify <${element} ${attribute}=${value} /> as cacheable for origins ${origins}`, () => {
-      expect(assetManager.isCacheable(element, attribute, value)).toBe(true);
+    it(`should correctly identify <${element} ${attribute}=${value} /> as capturable for origins ${origins}`, () => {
+      expect(assetManager.isCapturable(element, attribute, value)).toBe(true);
     });
   });
 
@@ -282,8 +282,8 @@ describe('AssetManager', () => {
         objectURLs: false,
       },
     );
-    it(`should correctly identify <${element} ${attribute}=${value} /> as NOT cacheable for origins ${origins}`, () => {
-      expect(assetManager.isCacheable(element, attribute, value)).toBe(false);
+    it(`should correctly identify <${element} ${attribute}=${value} /> as NOT capturable for origins ${origins}`, () => {
+      expect(assetManager.isCapturable(element, attribute, value)).toBe(false);
     });
   });
 
