@@ -7,11 +7,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -280,7 +276,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                             \\"type\\": 2,
                             \\"tagName\\": \\"source\\",
                             \\"attributes\\": {
-                              \\"src\\": \\"http://localhost:3030/html/assets/1-minute-of-silence.mp3\\",
+                              \\"rr_captured_src\\": \\"http://localhost:3030/html/assets/1-minute-of-silence.mp3\\",
                               \\"type\\": \\"audio/mpeg\\"
                             },
                             \\"childNodes\\": [],
@@ -344,11 +340,7 @@ exports[`cross origin iframes blank.html should filter out forwarded cross origi
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -610,11 +602,7 @@ exports[`cross origin iframes blank.html should record same-origin iframe in cro
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -858,11 +846,7 @@ exports[`cross origin iframes blank.html should support packFn option in record(
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     },
     \\"v\\": \\"v1\\"
   },
@@ -1031,11 +1015,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2048,11 +2028,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2708,11 +2684,7 @@ exports[`cross origin iframes move-node.html captures mutations on adopted style
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3126,11 +3098,7 @@ exports[`cross origin iframes move-node.html captures mutations on stylesheets 1
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3549,11 +3517,7 @@ exports[`cross origin iframes move-node.html should record DOM attribute changes
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3841,11 +3805,7 @@ exports[`cross origin iframes move-node.html should record DOM node movement 1`]
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -4230,11 +4190,7 @@ exports[`cross origin iframes move-node.html should record DOM node removal 1`] 
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -4520,11 +4476,7 @@ exports[`cross origin iframes move-node.html should record DOM text changes 1`] 
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -4810,11 +4762,7 @@ exports[`cross origin iframes move-node.html should record canvas elements 1`] =
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -5137,11 +5085,7 @@ exports[`cross origin iframes move-node.html should record custom events 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -5423,11 +5367,7 @@ exports[`same origin iframes should emit contents of iframe once 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {

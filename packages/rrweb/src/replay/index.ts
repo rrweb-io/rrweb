@@ -1807,12 +1807,16 @@ export class Replayer {
                 }
               } else {
                 const targetEl = target as Element | RRElement;
-                targetEl.setAttribute(attributeName, value);
-                void this.assetManager.manageAttribute(
-                  targetEl,
-                  mutation.id,
-                  attributeName,
-                );
+                if (attributeName.startsWith('rr_captured_') && value) {
+                  void this.assetManager.manageAttribute(
+                    targetEl,
+                    mutation.id,
+                    attributeName.substring('rr_captured_'.length),
+                    value,
+                  );
+                } else {
+                  targetEl.setAttribute(attributeName, value);
+                }
               }
             } catch (error) {
               this.warn(
