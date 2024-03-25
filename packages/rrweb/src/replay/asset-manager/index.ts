@@ -6,7 +6,7 @@ import type {
   captureAssetsParam,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
-import { getSourcesFromSrcset, isAttributeCacheable } from 'rrweb-snapshot';
+import { getSourcesFromSrcset, isAttributeCapturable } from 'rrweb-snapshot';
 import type { RRElement } from 'rrdom';
 import { updateSrcset } from './update-srcset';
 
@@ -120,23 +120,23 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     };
   }
 
-  public isCacheable(
+  public isCapturable(
     n: RRElement | Element,
     attribute: string,
     value: string,
   ): boolean {
-    if (!isAttributeCacheable(n as Element, attribute)) return false;
+    if (!isAttributeCapturable(n as Element, attribute)) return false;
 
     if (attribute === 'srcset') {
       return getSourcesFromSrcset(value).some((source) =>
-        this.isURLOfCacheableOrigin(source),
+        this.isURLConfiguredForCapture(source),
       );
     } else {
-      return this.isURLOfCacheableOrigin(value);
+      return this.isURLConfiguredForCapture(value);
     }
   }
 
-  public isURLOfCacheableOrigin(url: string): boolean {
+  public isURLConfiguredForCapture(url: string): boolean {
     if (url.startsWith('data:')) return false;
 
     const { origins: cachedOrigins = false, objectURLs = false } =
@@ -163,7 +163,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     attribute: string,
   ): Promise<unknown> {
     const originalValue = node.getAttribute(attribute);
-    if (!originalValue || !this.isCacheable(node, attribute, originalValue))
+    if (!originalValue || !this.isCapturable(node, attribute, originalValue))
       return false;
 
     const promises: Promise<unknown>[] = [];
@@ -172,7 +172,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       let expectedValue: string | void = originalValue;
       const values = getSourcesFromSrcset(originalValue);
       values.forEach((value) => {
-        if (!this.isURLOfCacheableOrigin(value)) return;
+        if (!this.isURLConfiguredForCapture(value)) return;
         promises.push(
           this.whenReady(value).then((status) => {
             const isLoaded = status.status === 'loaded';
