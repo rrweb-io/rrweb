@@ -470,12 +470,12 @@ describe('diff algorithm for rrdom', () => {
       beforeEach(() => {
         assetManager = fromPartial({
           manageAttribute: jest.fn(),
-          isCacheable: jest.fn(),
+          isCapturable: jest.fn(),
         });
         replayer.assetManager = assetManager;
       });
 
-      it('new properties are managed by asset manager if cacheable', () => {
+      it('new properties are managed by asset manager if capturable', () => {
         const tagName = 'IMG';
         const node = document.createElement(tagName);
         const sn = Object.assign({}, elementSn, { tagName });
@@ -486,7 +486,7 @@ describe('diff algorithm for rrdom', () => {
         const sn2 = Object.assign({}, elementSn, { tagName });
         rrDocument.mirror.add(rrNode, sn2);
 
-        (assetManager.isCacheable as jest.Mock)
+        (assetManager.isCapturable as jest.Mock)
           .mockReturnValueOnce(true)
           .mockReturnValue(false);
         rrNode.attributes = { src: 'image.png', class: 'node' };

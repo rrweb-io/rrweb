@@ -28,7 +28,7 @@ import {
   toLowerCase,
   extractFileExtension,
   getUrlsFromSrcset,
-  isAttributeCacheable,
+  isAttributeCapturable,
 } from './utils';
 
 let _id = 1;
@@ -682,7 +682,7 @@ function serializeElementNode(
       ));
 
       // save assets offline
-      if (value && onAssetDetected && isAttributeCacheable(n, attr.name)) {
+      if (value && onAssetDetected && isAttributeCapturable(n, attr.name)) {
         if (attr.name === 'srcset') {
           assets.push(...getUrlsFromSrcset(value));
         } else {

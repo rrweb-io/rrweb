@@ -1,7 +1,11 @@
 /**
  * @jest-environment jsdom
  */
-import { extractFileExtension, isAttributeCacheable, isNodeMetaEqual } from '../src/utils';
+import {
+  extractFileExtension,
+  isAttributeCapturable,
+  isNodeMetaEqual,
+} from '../src/utils';
 import { NodeType, serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
@@ -198,7 +202,7 @@ describe('utils', () => {
     });
   });
 
-  describe('isAttributeCacheable()', () => {
+  describe('isAttributeCapturable()', () => {
     const validAttributeCombinations = [
       ['img', ['src', 'srcset']],
       ['video', ['src']],
@@ -228,8 +232,8 @@ describe('utils', () => {
     validAttributeCombinations.forEach(([tagName, attributes]) => {
       const element = document.createElement(tagName);
       attributes.forEach((attribute) => {
-        it(`should correctly identify <${tagName} ${attribute}> as cacheable`, () => {
-          expect(isAttributeCacheable(element, attribute)).toBe(true);
+        it(`should correctly identify <${tagName} ${attribute}> as capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(true);
         });
       });
     });
@@ -237,8 +241,8 @@ describe('utils', () => {
     invalidAttributeCombinations.forEach(([tagName, attributes]) => {
       const element = document.createElement(tagName);
       attributes.forEach((attribute) => {
-        it(`should correctly identify <${tagName} ${attribute}> as NOT cacheable`, () => {
-          expect(isAttributeCacheable(element, attribute)).toBe(false);
+        it(`should correctly identify <${tagName} ${attribute}> as NOT capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(false);
         });
       });
     });

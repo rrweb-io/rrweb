@@ -376,7 +376,7 @@ export function getUrlsFromSrcset(srcset: string): string[] {
   return urls;
 }
 
-export const CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
+export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['IMG', new Set(['src', 'srcset'])],
   ['VIDEO', new Set(['src'])],
   ['AUDIO', new Set(['src'])],
@@ -398,8 +398,8 @@ export const CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['cursor', new Set(['href'])],
 ]);
 
-export function isAttributeCacheable(n: Element, attribute: string): boolean {
-  const acceptedAttributesSet = CACHEABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
+export function isAttributeCapturable(n: Element, attribute: string): boolean {
+  const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
     n.nodeName,
   );
   if (!acceptedAttributesSet) {
