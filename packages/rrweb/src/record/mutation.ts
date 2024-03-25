@@ -645,7 +645,7 @@ export default class MutationBuffer {
             ));
           if (
             transformedValue &&
-            this.assetManager.isAttributeCacheable(target, attributeName)
+            this.assetManager.isAttributeCapturable(target, attributeName)
           ) {
             if (attributeName === 'srcset') {
               getSourcesFromSrcset(transformedValue).forEach((url) => {
