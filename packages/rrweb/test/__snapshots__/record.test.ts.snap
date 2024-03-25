@@ -7,11 +7,7 @@ exports[`record > aggregates mutations 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -97,11 +93,7 @@ exports[`record > can add custom event 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -195,11 +187,7 @@ exports[`record > captures CORS stylesheets that are still loading 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -302,11 +290,7 @@ exports[`record > captures adopted stylesheets in nested shadow doms and iframes
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -772,11 +756,7 @@ exports[`record > captures adopted stylesheets in shadow doms and iframe 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -1172,11 +1152,7 @@ exports[`record > captures adopted stylesheets of shadow doms in checkout full s
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -1276,11 +1252,7 @@ exports[`record > captures adopted stylesheets of shadow doms in checkout full s
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -1385,11 +1357,7 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -1517,11 +1485,7 @@ exports[`record > captures mutations on adopted stylesheets 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -1821,11 +1785,7 @@ exports[`record > captures nested stylesheet rules 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -1974,11 +1934,7 @@ exports[`record > captures style property changes 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2107,11 +2063,7 @@ exports[`record > captures stylesheet rules 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2389,11 +2341,7 @@ exports[`record > captures stylesheets in iframes with \`blob:\` url 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2537,11 +2485,7 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2629,11 +2573,7 @@ exports[`record > is safe to checkout during async callbacks 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2764,11 +2704,7 @@ exports[`record > is safe to checkout during async callbacks 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -2893,11 +2829,7 @@ exports[`record > loading stylesheets > captures stylesheets in iframes that are
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3233,11 +3165,7 @@ exports[`record > loading stylesheets > captures stylesheets that are still load
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3417,11 +3345,7 @@ exports[`record > no need for attribute mutations on adds 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3541,11 +3465,7 @@ exports[`record > should record scroll position 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3665,11 +3585,7 @@ exports[`record > without CSSGroupingRule support > captures nested stylesheet r
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {
@@ -3818,11 +3734,7 @@ exports[`record iframes > captures stylesheet mutations in iframes 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     }
   },
   {

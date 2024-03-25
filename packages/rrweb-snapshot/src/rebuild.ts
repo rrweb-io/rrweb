@@ -235,7 +235,6 @@ function buildNode(
        * We need to parse them last so they can overwrite conflicting attributes.
        */
       const specialAttributes: { [key: string]: string | number } = {};
-      const managedAttributes: [Element, number, string][] = [];
       for (const name in n.attributes) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
@@ -331,18 +330,29 @@ function buildNode(
             continue;
           } else {
             node.setAttribute(name, value.toString());
-            managedAttributes.push([node, n.id, name]);
           }
         } catch (error) {
           // skip invalid attribute
         }
       }
-      for (const ma of managedAttributes) {
-        options.assetManager?.manageAttribute(...ma);
-      }
 
       for (const name in specialAttributes) {
         const value = specialAttributes[name];
+
+        if (
+          name.startsWith('rr_captured_') &&
+          value &&
+          typeof value === 'string'
+        ) {
+          options.assetManager?.manageAttribute(
+            node,
+            n.id,
+            name.substring('rr_captured_'.length),
+            value,
+          );
+          continue;
+        }
+
         // handle internal attributes
         if (tagName === 'canvas' && name === 'rr_dataURL') {
           const image = doc.createElement('img');
