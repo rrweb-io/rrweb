@@ -10,7 +10,7 @@ import { encode } from 'base64-arraybuffer';
 import { patch } from '../../utils';
 
 import type { recordOptions } from '../../types';
-import { isAttributeCacheable } from 'rrweb-snapshot';
+import { isAttributeCapturable } from 'rrweb-snapshot';
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -190,7 +190,7 @@ export default class AssetManager {
     return { status: 'capturing' };
   }
 
-  public isAttributeCacheable(n: Element, attribute: string): boolean {
-    return isAttributeCacheable(n, attribute);
+  public isAttributeCapturable(n: Element, attribute: string): boolean {
+    return isAttributeCapturable(n, attribute);
   }
 }
