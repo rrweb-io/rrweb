@@ -401,9 +401,7 @@ export class Replayer {
       (e) => e.type === EventType.FullSnapshot,
     );
     if (firstMeta) {
-      const { width, height, captureAssets } =
-        firstMeta.data as metaEvent['data'];
-      this.assetManager.reset(captureAssets);
+      const { width, height } = firstMeta.data as metaEvent['data'];
       setTimeout(() => {
         this.emitter.emit(ReplayerEvents.Resize, {
           width,
@@ -686,7 +684,6 @@ export class Replayer {
         break;
       case EventType.Meta:
         castFn = () => {
-          this.assetManager.reset(event.data.captureAssets);
           this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
@@ -1798,6 +1795,7 @@ export class Replayer {
         }
         return this.warnNodeNotFound(d, mutation.id);
       }
+      const targetEl = target as HTMLElement | RRElement;
       for (const attributeName in mutation.attributes) {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
@@ -1853,14 +1851,15 @@ export class Replayer {
                 if (tn) {
                   textarea.appendChild(tn as TNode);
                 }
-              } else {
-                const targetEl = target as Element | RRElement;
-                targetEl.setAttribute(attributeName, value);
+              } else if (attributeName.startsWith('rr_captured_') && value) {
                 void this.assetManager.manageAttribute(
                   targetEl,
                   mutation.id,
-                  attributeName,
+                  attributeName.substring('rr_captured_'.length),
+                  value,
                 );
+              } else {
+                targetEl.setAttribute(attributeName, value);
               }
             } catch (error) {
               this.warn(
@@ -1870,7 +1869,6 @@ export class Replayer {
             }
           } else if (attributeName === 'style') {
             const styleValues = value;
-            const targetEl = target as HTMLElement | RRElement;
             for (const s in styleValues) {
               if (styleValues[s] === false) {
                 targetEl.style.removeProperty(s);

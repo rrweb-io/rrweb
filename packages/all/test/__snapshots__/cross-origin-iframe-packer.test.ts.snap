@@ -7,11 +7,7 @@ exports[`cross origin iframes & packer > blank.html > should support packFn opti
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080,
-      \\"captureAssets\\": {
-        \\"objectURLs\\": true,
-        \\"origins\\": false
-      }
+      \\"height\\": 1080
     },
     \\"v\\": \\"v1\\"
   },
