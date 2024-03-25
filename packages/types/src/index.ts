@@ -41,7 +41,6 @@ export type metaEvent = {
     href: string;
     width: number;
     height: number;
-    captureAssets?: captureAssetsParam;
   };
 };
 
@@ -769,9 +768,12 @@ export declare abstract class RebuildAssetManagerInterface {
   abstract get(url: string): RebuildAssetManagerStatus;
   abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
   abstract reset(config?: captureAssetsParam | undefined): void;
-  abstract isCapturable(n: Element, attribute: string, value: string): boolean;
-  abstract isURLConfiguredForCapture(url: string): boolean;
-  abstract manageAttribute(n: Element, id: number, attribute: string): void;
+  abstract manageAttribute(
+    n: Element,
+    id: number,
+    attribute: string,
+    originalValue: string,
+  ): void;
 }
 
 export enum NodeType {
