@@ -1,4 +1,4 @@
-import { StyleRules, Rule, Media, parse } from './css';
+import { StyleRules, Rule, Media, NodeWithOptionalRules, parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -81,9 +81,11 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
 
   const selectors: string[] = [];
   const medias: string[] = [];
-  function getSelectors(rule: StyleRules | Rule | Media) {
-    if ('selectors' in rule) {
-      (rule.selectors || []).forEach((selector: string) => {
+  function getSelectors(
+    rule: StyleRules | Rule | Media | NodeWithOptionalRules,
+  ) {
+    if ('selectors' in rule && rule.selectors) {
+      rule.selectors.forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
           selectors.push(selector);
         }
@@ -92,8 +94,8 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
     if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
       medias.push(rule.media);
     }
-    if ('rules' in rule) {
-      (rule.rules || []).forEach(getSelectors);
+    if ('rules' in rule && rule.rules) {
+      rule.rules.forEach(getSelectors);
     }
   }
   getSelectors(ast.stylesheet);
