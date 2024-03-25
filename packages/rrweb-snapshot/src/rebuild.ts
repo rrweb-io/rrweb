@@ -191,6 +191,7 @@ function buildNode(
        * We need to parse them last so they can overwrite conflicting attributes.
        */
       const specialAttributes: { [key: string]: string | number } = {};
+      const managedAttributes: [Element, number, string][] = [];
       for (const name in n.attributes) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
@@ -287,12 +288,14 @@ function buildNode(
             continue;
           } else {
             node.setAttribute(name, value.toString());
-
-            options.assetManager?.manageAttribute(node, n.id, name);
+            managedAttributes.push([node, n.id, name]);
           }
         } catch (error) {
           // skip invalid attribute
         }
+      }
+      for (const ma of managedAttributes) {
+        options.assetManager?.manageAttribute(...ma);
       }
 
       for (const name in specialAttributes) {
