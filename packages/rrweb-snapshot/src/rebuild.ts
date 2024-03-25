@@ -1,4 +1,4 @@
-import { StyleRules, Rule, Media, NodeWithOptionalRules, parse } from './css';
+import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -81,9 +81,7 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
 
   const selectors: string[] = [];
   const medias: string[] = [];
-  function getSelectors(
-    rule: StyleRules | Rule | Media | NodeWithOptionalRules,
-  ) {
+  function getSelectors(rule: Rule | Media | NodeWithRules) {
     if ('selectors' in rule && rule.selectors) {
       rule.selectors.forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
