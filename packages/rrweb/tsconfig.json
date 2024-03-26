@@ -11,7 +11,8 @@
     "outDir": "build",
     "lib": [
       "es6",
-      "dom"
+      "dom",
+      "es2021.weakref"
     ],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",

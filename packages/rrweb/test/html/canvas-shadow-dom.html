@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div id="shadow-root"></div>
+</body>
+<script>
+  const shadowRootContainer = document.getElementById('shadow-root')
+  const shadowRoot = shadowRootContainer.attachShadow({ mode: 'open' })
+
+  // Creating canvas inside the Shadow DOM
+  const shadowCanvas = document.createElement('canvas')
+  shadowRoot.appendChild(shadowCanvas);
+
+  const shadowCtx = shadowCanvas.getContext('2d')
+  shadowCanvas.width = 200;
+  shadowCanvas.height = 200;
+
+  function moveSquare(num) {
+    shadowCtx.clearRect(0, 0, shadowCanvas.width, shadowCanvas.height);
+    shadowCtx.fillStyle = 'green';
+    shadowCtx.fillRect(num * shadowCanvas.width, num * shadowCanvas.height, 50, 50);
+  }
+  moveSquare(0.2)
+
+  setTimeout(() => {
+    moveSquare(0.5)
+    window.canvasMutationApplied = true;
+  }, 10);
+</script>
+</html>

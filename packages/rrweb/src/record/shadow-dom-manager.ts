@@ -52,6 +52,7 @@ export class ShadowDomManager {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
+    this.bypassOptions.canvasManager.addShadowRoot(shadowRoot);
     const observer = initMutationObserver(
       {
         ...this.bypassOptions,
@@ -151,5 +152,6 @@ export class ShadowDomManager {
     });
     this.restoreHandlers = [];
     this.shadowDoms = new WeakSet();
+    this.bypassOptions.canvasManager.resetShadowRoots();
   }
 }
