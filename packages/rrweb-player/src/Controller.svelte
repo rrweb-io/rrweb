@@ -91,7 +91,7 @@
        */
       if (event.type === EventType.Custom) {
         const customEvent = {
-          name: event.data.tag,
+          name: event.data.payload.name,
           background: tags[event.data.tag] || 'rgb(73, 80, 246)',
           position: `${position(start, end, event.timestamp)}%`,
         };
