@@ -815,9 +815,10 @@ export class Replayer {
     const { documentElement, head } = this.iframe.contentDocument;
     this.insertStyleRules(documentElement, head);
     if (!this.service.state.matches('playing')) {
-      this.iframe.contentDocument
-        .getElementsByTagName('html')[0]
-        .classList.add('rrweb-paused');
+      const iframeHtmlElement =
+        this.iframe.contentDocument.getElementsByTagName('html')[0];
+
+      iframeHtmlElement && iframeHtmlElement.classList.add('rrweb-paused');
     }
     this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
     if (!isSync) {
@@ -1960,7 +1961,8 @@ export class Replayer {
         styleSheet.rules,
         data.index,
       ) as unknown as CSSStyleRule;
-      rule.style &&
+      rule &&
+        rule.style &&
         rule.style.setProperty(
           data.set.property,
           data.set.value,
@@ -1973,7 +1975,7 @@ export class Replayer {
         styleSheet.rules,
         data.index,
       ) as unknown as CSSStyleRule;
-      rule.style && rule.style.removeProperty(data.remove.property);
+      rule && rule.style && rule.style.removeProperty(data.remove.property);
     }
   }
 
@@ -2131,11 +2133,16 @@ export class Replayer {
   }
 
   private hoverElements(el: Element) {
-    (this.lastHoveredRootNode || this.iframe.contentDocument)
-      ?.querySelectorAll('.\\:hover')
-      .forEach((hoveredEl) => {
+    const rootElement = this.lastHoveredRootNode || this.iframe.contentDocument;
+
+    // Sometimes this throws because `querySelectorAll` is not a function,
+    // unsure of value of rootElement when this occurs
+    if (rootElement && typeof rootElement.querySelectorAll === 'function') {
+      rootElement.querySelectorAll('.\\:hover').forEach((hoveredEl) => {
         hoveredEl.classList.remove(':hover');
       });
+    }
+
     this.lastHoveredRootNode = el.getRootNode() as Document | ShadowRoot;
     let currentEl: Element | null = el;
     while (currentEl) {
