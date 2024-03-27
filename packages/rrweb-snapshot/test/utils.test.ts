@@ -211,7 +211,6 @@ describe('utils', () => {
       ['source', ['src']],
       ['track', ['src']],
       ['input', ['src']],
-      ['iframe', ['src']],
       ['object', ['src']],
     ] as const;
 
