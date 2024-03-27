@@ -22,12 +22,14 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   > = new Map();
   private config: captureAssetsParam | undefined;
   private liveMode: boolean;
+  public allAdded: boolean;
 
   constructor(
     { liveMode }: { liveMode: boolean },
     config?: captureAssetsParam | undefined,
   ) {
     this.liveMode = liveMode;
+    this.allAdded = false;
     this.config = config;
   }
 
@@ -79,6 +81,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       currentStatus.status === 'failed'
     ) {
       return currentStatus;
+    } else if (
+      currentStatus.status === 'unknown' && this.allAdded && !this.liveMode
+    ) {
+      return {
+        status: 'failed',
+      };
     }
     let resolve: (status: RebuildAssetManagerFinalStatus) => void;
     const promise = new Promise<RebuildAssetManagerFinalStatus>((r) => {
@@ -138,7 +146,13 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         promises.push(
           this.whenReady(value).then((status) => {
             const isLoaded = status.status === 'loaded';
-            if (!isLoaded) return; // failed to load asset
+            if (!isLoaded) {
+              if (!this.liveMode) {
+                // failed to load asset, revert to recorded value
+                node.setAttribute(attribute, newValue);
+              }
+              return; // failed to load asset
+            }
 
             const attributeUnchanged =
               node.getAttribute(attribute) === expectedValue;
@@ -171,7 +185,13 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       promises.push(
         this.whenReady(newValue).then((status) => {
           const isLoaded = status.status === 'loaded';
-          if (!isLoaded) return; // failed to load asset
+          if (!isLoaded) {
+            if (!this.liveMode) {
+              // failed to load asset, revert to recorded value
+              node.setAttribute(attribute, newValue);
+            }
+            return;
+          }
 
           const attributeUnchanged = this.liveMode
             ? newValue ===
@@ -204,5 +224,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       }
     });
     this.callbackMap.clear();
+    this.allAdded = false;
   }
 }
