@@ -82,7 +82,9 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     ) {
       return currentStatus;
     } else if (
-      currentStatus.status === 'unknown' && this.allAdded && !this.liveMode
+      currentStatus.status === 'unknown' &&
+      this.allAdded &&
+      !this.liveMode
     ) {
       return {
         status: 'failed',
@@ -134,7 +136,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     attribute: string,
     newValue: string,
   ): Promise<unknown> {
-
     const prevValue = node.getAttribute(attribute);
 
     const promises: Promise<unknown>[] = [];
@@ -162,7 +163,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
               // before srcset has been set for the first time
               expectedValue = newValue;
             }
-            expectedValue = updateSrcset(node, value, status.url, expectedValue);
+            expectedValue = updateSrcset(
+              node,
+              value,
+              status.url,
+              expectedValue,
+            );
           }),
         );
       });
@@ -179,7 +185,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           // special value to prevent a broken image icon while asset is being loaded
           node.setAttribute('src', '//:0');
         } else {
-          node.setAttribute('src', '/\\\:0');
+          node.setAttribute('src', '/\\:0');
         }
       }
       promises.push(

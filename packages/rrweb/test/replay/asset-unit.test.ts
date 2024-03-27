@@ -250,7 +250,12 @@ describe('AssetManager', () => {
       },
     });
 
-    void assetManager.manageAttribute(element, 1, 'srcset', `${url} x2, ${url2} x3`);
+    void assetManager.manageAttribute(
+      element,
+      1,
+      'srcset',
+      `${url} x2, ${url2} x3`,
+    );
     await assetManager.whenReady(url);
 
     expect(element.getAttribute('srcset')).toBe(`objectURL1 x2, ${url2} x3`);
@@ -344,7 +349,9 @@ describe('AssetManager', () => {
       const promises: Promise<unknown>[] = [];
 
       const element = document.createElement('img');
-      promises.push(assetManager.manageAttribute(element, 1, 'src', originalUrl));
+      promises.push(
+        assetManager.manageAttribute(element, 1, 'src', originalUrl),
+      );
 
       promises.push(assetManager.manageAttribute(element, 1, 'src', newUrl));
 
@@ -379,7 +386,9 @@ describe('AssetManager', () => {
       const promises: Promise<unknown>[] = [];
 
       const element = document.createElement('img');
-      promises.push(assetManager.manageAttribute(element, 1, 'src', originalUrl));
+      promises.push(
+        assetManager.manageAttribute(element, 1, 'src', originalUrl),
+      );
 
       promises.push(assetManager.manageAttribute(element, 1, 'src', newUrl));
 

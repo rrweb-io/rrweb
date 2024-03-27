@@ -379,13 +379,14 @@ export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
 
 export function isAttributeCapturable(n: Element, attribute: string): boolean {
   if (n.nodeName === 'IFRAME' && attribute == 'src') {
-    let i = (n as HTMLIFrameElement);
-    return !i.contentDocument && (
-      i.src.endsWith('.pdf')
-      || i.src.endsWith('.jpeg')
-      || i.src.endsWith('.jpg')
-      || i.src.endsWith('.png')
-      || i.src.endsWith('.webp')
+    let i = n as HTMLIFrameElement;
+    return (
+      !i.contentDocument &&
+      (i.src.endsWith('.pdf') ||
+        i.src.endsWith('.jpeg') ||
+        i.src.endsWith('.jpg') ||
+        i.src.endsWith('.png') ||
+        i.src.endsWith('.webp'))
     );
   }
   const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(

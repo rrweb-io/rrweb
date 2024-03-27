@@ -680,7 +680,12 @@ function serializeElementNode(
       );
       let name = attr.name;
       // save assets offline
-      if (value && typeof value === 'string' && onAssetDetected && isAttributeCapturable(n, attr.name)) {
+      if (
+        value &&
+        typeof value === 'string' &&
+        onAssetDetected &&
+        isAttributeCapturable(n, attr.name)
+      ) {
         if (attr.name === 'srcset') {
           assets.push(...getUrlsFromSrcset(value));
         } else {

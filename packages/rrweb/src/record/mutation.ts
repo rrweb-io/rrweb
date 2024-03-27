@@ -623,10 +623,10 @@ export default class MutationBuffer {
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
           const transformedValue = transformAttribute(
-              this.doc,
-              toLowerCase(target.tagName),
-              toLowerCase(attributeName),
-              value,
+            this.doc,
+            toLowerCase(target.tagName),
+            toLowerCase(attributeName),
+            value,
           );
           if (
             transformedValue &&

@@ -267,7 +267,11 @@ function buildNode(
       for (const name in specialAttributes) {
         const value = specialAttributes[name];
 
-        if (name.startsWith('rr_captured_') && value && typeof value === 'string') {
+        if (
+          name.startsWith('rr_captured_') &&
+          value &&
+          typeof value === 'string'
+        ) {
           options.assetManager?.manageAttribute(
             node,
             n.id,

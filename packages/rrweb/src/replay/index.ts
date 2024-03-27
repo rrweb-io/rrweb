@@ -1015,7 +1015,10 @@ export class Replayer {
   /**
    * Process all asset events and preload them
    */
-  private async preloadAllAssets(timestamp: number, liveMode: boolean): Promise<void[]> {
+  private async preloadAllAssets(
+    timestamp: number,
+    liveMode: boolean,
+  ): Promise<void[]> {
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (event.timestamp <= timestamp) continue;
