@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.12.0
+
+### Various fixes & improvements
+
+- fix(canvas): `createImageBitmap` throws when canvas size is 0 (#170) by @billyvg
+- fix: fixes several cases where we access an undefined value (#171) by @billyvg
+- fix: Incorrect parsing of functional pseudo class css selector (#169) by @billyvg
+
 ## 2.11.0
 
 - feat: Enforce masking of credit card fields (https://github.com/getsentry/rrweb/pull/166)
