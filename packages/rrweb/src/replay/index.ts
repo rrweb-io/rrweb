@@ -840,7 +840,7 @@ export class Replayer {
       }
     };
 
-    void this.preloadAllAssets(event.timestamp);
+    void this.preloadAllAssets(event.timestamp, this.config.liveMode);
 
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
@@ -1062,7 +1062,10 @@ export class Replayer {
   /**
    * Process all asset events and preload them
    */
-  private async preloadAllAssets(timestamp: number): Promise<void[]> {
+  private async preloadAllAssets(
+    timestamp: number,
+    liveMode: boolean,
+  ): Promise<void[]> {
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (event.timestamp <= timestamp) continue;
@@ -1070,6 +1073,9 @@ export class Replayer {
       if (event.type === EventType.Asset) {
         promises.push(this.assetManager.add(event));
       }
+    }
+    if (!liveMode) {
+      this.assetManager.allAdded = true;
     }
     return Promise.all(promises);
   }
