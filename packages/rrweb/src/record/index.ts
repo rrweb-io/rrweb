@@ -41,10 +41,9 @@ import {
 } from './error-handler';
 
 function wrapEvent(e: event): eventWithTime {
-  return {
-    ...e,
-    timestamp: nowTimestamp(),
-  };
+  const eWithTime = e as eventWithTime;
+  eWithTime.timestamp = nowTimestamp();
+  return eWithTime;
 }
 
 let wrappedEmit!: (e: eventWithTime, isCheckout?: boolean) => void;
