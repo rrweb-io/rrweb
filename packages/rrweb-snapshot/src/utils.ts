@@ -384,7 +384,6 @@ export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['SOURCE', new Set(['src'])],
   ['TRACK', new Set(['src'])],
   ['INPUT', new Set(['src'])],
-  ['IFRAME', new Set(['src'])],
   ['OBJECT', new Set(['src'])],
   ['BODY', new Set(['background'])],
   ['TABLE', new Set(['background'])],
@@ -399,6 +398,17 @@ export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
 ]);
 
 export function isAttributeCapturable(n: Element, attribute: string): boolean {
+  if (n.nodeName === 'IFRAME' && attribute == 'src') {
+    const i = n as HTMLIFrameElement;
+    return (
+      !i.contentDocument &&
+      (i.src.endsWith('.pdf') ||
+        i.src.endsWith('.jpeg') ||
+        i.src.endsWith('.jpg') ||
+        i.src.endsWith('.png') ||
+        i.src.endsWith('.webp'))
+    );
+  }
   const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
     n.nodeName,
   );

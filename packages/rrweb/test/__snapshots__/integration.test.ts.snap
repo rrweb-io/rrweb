@@ -331,22 +331,6 @@ exports[`record integration tests [DEPRECATED] should record images inside ifram
     }
   },
   {
-    \\"type\\": 7,
-    \\"data\\": {
-      \\"url\\": \\"http://localhost:3030/html/image-blob-url.html\\",
-      \\"payload\\": {
-        \\"rr_type\\": \\"Blob\\",
-        \\"type\\": \\"text/html\\",
-        \\"data\\": [
-          {
-            \\"rr_type\\": \\"ArrayBuffer\\",
-            \\"base64\\": \\"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KICA8aGVhZD4KICAgIDxtZXRhIGNoYXJzZXQ9IlVURi04IiAvPgogICAgPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT1lZGdlIiAvPgogICAgPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xLjAiIC8+CiAgICA8dGl0bGU+SW1hZ2Ugd2l0aCBibG9iOnVybDwvdGl0bGU+CiAgPC9oZWFkPgogIDxib2R5PgogICAgPHNjcmlwdD4KICAgICAgc2V0VGltZW91dChhc3luYyBmdW5jdGlvbiAoKSB7CiAgICAgICAgY29uc3Qgcm9ib3RGaWxlID0gYXdhaXQgZmV0Y2goJy9odG1sL2Fzc2V0cy9yb2JvdC5wbmcnKTsKICAgICAgICBjb25zdCByb2JvdEJsb2IgPSBhd2FpdCByb2JvdEZpbGUuYmxvYigpOwogICAgICAgIGNvbnN0IHJvYm90QmxvYlVybCA9IFVSTC5jcmVhdGVPYmplY3RVUkwocm9ib3RCbG9iKTsKICAgICAgICBjb25zdCBlbCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2ltZycpOwogICAgICAgIGVsLnNyYyA9IHJvYm90QmxvYlVybDsKICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZChlbCk7CiAgICAgIH0sIDEwKTsKICAgIDwvc2NyaXB0PgogIDwvYm9keT4KPC9odG1sPgo=\\"
-          }
-        ]
-      }
-    }
-  },
-  {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
