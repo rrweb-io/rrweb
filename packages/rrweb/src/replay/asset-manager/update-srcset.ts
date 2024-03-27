@@ -5,10 +5,11 @@ export function updateSrcset(
   urlToReplace: string,
   newURL: string,
   expectedValue?: string,
-): string | undefined {
+): string | null {
   if (typeof expectedValue === 'undefined') {
-    expectedValue = node.getAttribute('srcset');
-    if (!expectedValue) return undefined;
+    let srcsetValue = node.getAttribute('srcset');
+    if (!srcsetValue) return null;
+    expectedValue = srcsetValue;
   }
 
   // from https://stackoverflow.com/a/6969486/543604

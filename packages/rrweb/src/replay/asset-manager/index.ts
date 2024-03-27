@@ -21,9 +21,11 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     Array<(status: RebuildAssetManagerFinalStatus) => void>
   > = new Map();
   private liveMode: boolean;
+  public allAdded: boolean;
 
   constructor({ liveMode }: { liveMode: boolean }) {
     this.liveMode = liveMode;
+    this.allAdded = false;
   }
 
   public async add(event: assetEvent) {
@@ -74,6 +76,14 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       currentStatus.status === 'failed'
     ) {
       return currentStatus;
+    } else if (
+      currentStatus.status === 'unknown' &&
+      this.allAdded &&
+      !this.liveMode
+    ) {
+      return {
+        status: 'failed',
+      };
     }
     let resolve: (status: RebuildAssetManagerFinalStatus) => void;
     const promise = new Promise<RebuildAssetManagerFinalStatus>((r) => {
@@ -127,12 +137,18 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
     if (attribute === 'srcset') {
       const values = getSourcesFromSrcset(newValue);
-      let expectedValue: string | undefined = prevValue;
+      let expectedValue: string | null = prevValue;
       values.forEach((value) => {
         promises.push(
           this.whenReady(value).then((status) => {
             const isLoaded = status.status === 'loaded';
-            if (!isLoaded) return; // failed to load asset
+            if (!isLoaded) {
+              if (!this.liveMode) {
+                // failed to load asset, revert to recorded value
+                node.setAttribute(attribute, newValue);
+              }
+              return; // failed to load asset
+            }
 
             const attributeUnchanged =
               node.getAttribute(attribute) === expectedValue;
@@ -163,14 +179,18 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         if (node.tagName === 'IMG' && attribute === 'src') {
           // special value to prevent a broken image icon while asset is being loaded
           node.setAttribute('src', '//:0');
-        } else {
-          node.setAttribute('src', '/\\\:0');
         }
       }
       promises.push(
         this.whenReady(newValue).then((status) => {
           const isLoaded = status.status === 'loaded';
-          if (!isLoaded) return; // failed to load asset
+          if (!isLoaded) {
+            if (!this.liveMode) {
+              // failed to load asset, revert to recorded value
+              node.setAttribute(attribute, newValue);
+            }
+            return;
+          }
 
           const attributeUnchanged = this.liveMode
             ? newValue ===
@@ -202,5 +222,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       }
     });
     this.callbackMap.clear();
+    this.allAdded = false;
   }
 }
