@@ -5,6 +5,7 @@ import minimist from 'minimist';
 import { ProgressBar } from '@open-tech-world/cli-progress-bar';
 import type { RRwebPlayerOptions } from 'rrweb-player';
 import { transformToVideo } from './index';
+import type { LaunchOptions } from 'playwright';
 
 const argv = minimist(process.argv.slice(2));
 
@@ -12,17 +13,27 @@ if (!argv.input) {
   throw new Error('please pass --input to your rrweb events file');
 }
 
-let config = {};
+type ConfigOptions = Omit<
+  RRwebPlayerOptions['props'] & {
+    launchOptions?: LaunchOptions;
+  },
+  'events'
+>;
+
+let config: ConfigOptions = {};
+let launchOptions: LaunchOptions = {};
 
 if (argv.config) {
   const configPathStr = argv.config as string;
   const configPath = path.isAbsolute(configPathStr)
     ? configPathStr
     : path.resolve(process.cwd(), configPathStr);
-  config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Omit<
-    RRwebPlayerOptions['props'],
-    'events'
-  >;
+  config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as ConfigOptions;
+
+  if (config.launchOptions) {
+    launchOptions = { ...config.launchOptions };
+    delete config.launchOptions;
+  }
 }
 
 const pBar = new ProgressBar({ prefix: 'Transforming' });
@@ -35,6 +46,7 @@ const onProgressUpdate = (percent: number) => {
 transformToVideo({
   input: argv.input as string,
   output: argv.output as string,
+  launchOptions: launchOptions || {},
   rrwebPlayer: config,
   onProgressUpdate,
 })
