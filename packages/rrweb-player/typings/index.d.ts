@@ -13,6 +13,11 @@ export type RRwebPlayerOptions = {
      */
     events: eventWithTime[];
     /**
+     * The classname which apply to the player
+     * @defaultValue `''`
+     */
+    playerClassName?: string;
+    /**
      * The width of the replayer
      * @defaultValue `1024`
      */
