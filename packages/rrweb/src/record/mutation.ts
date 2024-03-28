@@ -353,8 +353,8 @@ export default class MutationBuffer {
         },
         cssCaptured,
         onAssetDetected: (assets) => {
-          assets.urls.forEach((url) => {
-            this.assetManager.capture(url);
+          assets.forEach((asset) => {
+            this.assetManager.capture(asset);
           });
         },
       });
@@ -655,10 +655,16 @@ export default class MutationBuffer {
           ) {
             if (attributeName === 'srcset') {
               getSourcesFromSrcset(transformedValue).forEach((url) => {
-                this.assetManager.capture(url);
+                this.assetManager.capture({
+                  element: target,
+                  url,
+                });
               });
             } else {
-              this.assetManager.capture(transformedValue);
+              this.assetManager.capture({
+                element: target,
+                url: transformedValue,
+              });
             }
             attributeName = `rr_captured_${attributeName}`;
           }
