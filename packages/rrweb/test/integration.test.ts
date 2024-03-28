@@ -961,7 +961,7 @@ describe('record integration tests', function (this: ISuite) {
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
-    await page.waitForTimeout(50); // wait for image to get added
+    await page.waitForTimeout(150); // wait for image to get added
     await waitForRAF(page); // wait for image to be captured
 
     const snapshots = (await page.evaluate(
@@ -987,7 +987,7 @@ describe('record integration tests', function (this: ISuite) {
       iframe.setAttribute('src', '/html/image-blob-url.html');
     });
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`); // wait for image to get loaded
-    await page.waitForTimeout(50); // wait for image to get added
+    await page.waitForTimeout(150); // wait for image to get added
     await waitForRAF(page); // wait for image to be captured
 
     const snapshots = (await page.evaluate(
@@ -1025,7 +1025,7 @@ describe('record integration tests', function (this: ISuite) {
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
-    await page.waitForTimeout(50); // wait for image to get added
+    await page.waitForTimeout(150); // wait for image to get added
     await waitForRAF(page); // wait for image to be captured
 
     const snapshots = (await page.evaluate(
@@ -1050,7 +1050,7 @@ describe('record integration tests', function (this: ISuite) {
       iframe.setAttribute('src', '/html/image-blob-url.html');
     });
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`); // wait for image to get loaded
-    await page.waitForTimeout(50); // wait for image to get added
+    await page.waitForTimeout(150); // wait for image to get added
     await waitForRAF(page); // wait for image to be captured
 
     const snapshots = (await page.evaluate(
