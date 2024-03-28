@@ -3,6 +3,7 @@ import type {
   SerializedCanvasArg,
   eventWithTime,
   listenerHandler,
+  asset,
 } from '@rrweb/types';
 import type { assetCallback } from '@rrweb/types';
 import { encode } from 'base64-arraybuffer';
@@ -125,7 +126,13 @@ export default class AssetManager {
     }
   }
 
-  public capture(url: string): {
+  public capture(asset: asset): {
+    status: 'capturing' | 'captured' | 'error' | 'refused';
+  } {
+    this.captureUrl(asset.url);
+  }
+
+  public captureUrl(url): {
     status: 'capturing' | 'captured' | 'error' | 'refused';
   } {
     if (this.shouldIgnore(url)) return { status: 'refused' };
