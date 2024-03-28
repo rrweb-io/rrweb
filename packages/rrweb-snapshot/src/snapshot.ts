@@ -825,7 +825,11 @@ function serializeElementNode(
     };
   }
   // iframe
-  if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
+  if (
+    tagName === 'iframe' &&
+    attributes.src &&
+    !keepIframeSrcFn(attributes.src as string)
+  ) {
     if (!(n as HTMLIFrameElement).contentDocument) {
       // we can't record it directly as we can't see into it
       // preserve the src attribute so a decision can be taken at replay time
@@ -1175,6 +1179,13 @@ export function serializeNodeWithId(
       (serializedNode as elementNode).attributes.value !== undefined
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
+    } else if (
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'iframe' &&
+      (serializedNode as elementNode).attributes.rr_captured_src !== undefined
+    ) {
+      // even though we might be able to recurse into it (e.g. browser renders a document with an <embed>)
+      // we will instead capture it using asset management
     } else {
       if (
         serializedNode.type === NodeType.Element &&
@@ -1211,7 +1222,8 @@ export function serializeNodeWithId(
 
   if (
     serializedNode.type === NodeType.Element &&
-    serializedNode.tagName === 'iframe'
+    serializedNode.tagName === 'iframe' &&
+    (serializedNode as elementNode).attributes.rr_captured_src === undefined // already captured as e.g. a PDF asset
   ) {
     onceIframeLoaded(
       n as HTMLIFrameElement,
