@@ -608,11 +608,11 @@ describe('asset caching', function (this: ISuite) {
 
     [
       '{SERVER_URL}/html/assets/robot.png?body',
-      `{SERVER_URL}/html/assets/robot.png?img`,
-      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio`,
-      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video`,
-      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source`,
-      `{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed`,
+      '{SERVER_URL}/html/assets/robot.png?img',
+      '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio',
+      '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video',
+      '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source',
+      '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed',
       '{SERVER_URL}/html/assets/subtitles.vtt',
       '{SERVER_URL}/html/assets/robot.png?1x',
       '{SERVER_URL}/html/assets/robot.png?2x',
