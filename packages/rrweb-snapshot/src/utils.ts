@@ -400,14 +400,29 @@ export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
 export function isAttributeCapturable(n: Element, attribute: string): boolean {
   if (n.nodeName === 'IFRAME' && attribute == 'src') {
     const i = n as HTMLIFrameElement;
-    return (
-      !i.contentDocument &&
-      (i.src.endsWith('.pdf') ||
-        i.src.endsWith('.jpeg') ||
-        i.src.endsWith('.jpg') ||
-        i.src.endsWith('.png') ||
-        i.src.endsWith('.webp'))
-    );
+    if (i.contentDocument && i.contentDocument.contentType) {
+      return (
+        i.contentDocument.contentType.startsWith('image/') ||
+        i.contentDocument.contentType == 'application/pdf'
+      );
+    } else if (i.src) {
+      // fallback to checking filename
+      let ipath;
+      try {
+        ipath = new URL(i.src).pathname;
+      } catch (e) {
+        ipath = i.src.split('?')[0];
+      }
+      return (
+        ipath.endsWith('.pdf') ||
+        ipath.endsWith('.jpeg') ||
+        ipath.endsWith('.jpg') ||
+        ipath.endsWith('.gif') ||
+        ipath.endsWith('.png') ||
+        ipath.endsWith('.webp')
+      );
+    }
+    return false;
   }
   const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
     n.nodeName,

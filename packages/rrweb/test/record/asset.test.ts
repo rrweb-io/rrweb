@@ -578,6 +578,9 @@ describe('asset caching', function (this: ISuite) {
             <img src="{SERVER_B_URL}/html/assets/robot.png?img" />
             <input type="image" id="image" alt="Login" src="{SERVER_URL}/html/assets/robot.png?input-type-image" />
             <iframe src="{SERVER_URL}/html/assets/robot.png?iframe"></iframe>
+            <iframe xsrc="{SERVER_URL}/html/assets/doc.pdf?iframe"></iframe>
+            <iframe src="{SERVER_URL}/html/assets/robot.png?should-ignore" srcdoc="<html>should override</html>"></iframe>
+            <iframe srcdoc="<svg style=&quot;background:gold&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;></svg>"></iframe>
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
               <image href="{SERVER_URL}/html/assets/robot.png?svg" width="100" height="100" />
                 <defs>
@@ -618,6 +621,7 @@ describe('asset caching', function (this: ISuite) {
       '{SERVER_URL}/html/assets/robot.png?2x',
       '{SERVER_URL}/html/assets/robot.png?input-type-image',
       '{SERVER_URL}/html/assets/robot.png?iframe',
+      //'{SERVER_URL}/html/assets/doc.pdf?iframe',
       '{SERVER_URL}/html/assets/robot.png?svg',
       '{SERVER_URL}/html/assets/robot.png?svg2',
       '{SERVER_URL}/html/assets/robot.png?svg3',
@@ -660,6 +664,26 @@ describe('asset caching', function (this: ISuite) {
           type: EventType.Asset,
           data: {
             url: `${ctx.serverBURL}/html/assets/robot.png?img`,
+            payload: expect.any(Object),
+          },
+        }),
+      );
+    });
+
+    it("shouldn't capture iframe src assets if srcdoc overrides", async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      // expect an event to be emitted with `event.type` === EventType.Asset
+      expect(events).not.toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: `${ctx.serverBURL}/html/assets/robot.png?should-ignore`,
             payload: expect.any(Object),
           },
         }),
