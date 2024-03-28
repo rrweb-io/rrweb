@@ -433,8 +433,8 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       onAssetDetected: (assets) => {
-        assets.urls.forEach((url) => {
-          assetManager.capture(url);
+        assets.forEach((asset) => {
+          assetManager.capture(asset);
         });
       },
       keepIframeSrcFn,
