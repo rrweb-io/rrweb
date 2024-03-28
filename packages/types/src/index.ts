@@ -76,11 +76,6 @@ export type captureAssetsParam = {
   origins: string[] | true | false;
 };
 
-export type assetEvent = {
-  type: EventType.Asset;
-  data: assetParam;
-};
-
 export type NetworkInitiatorType =
   | 'audio'
   | 'beacon'
