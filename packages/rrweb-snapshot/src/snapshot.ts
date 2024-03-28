@@ -15,6 +15,7 @@ import type {
   elementNode,
   attributes,
   mediaAttributes,
+  asset,
   DataURLOptions,
 } from '@rrweb/types';
 import {
@@ -436,7 +437,7 @@ function serializeNode(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (result: { urls: string[] }) => unknown;
+    onAssetDetected?: (assets: asset[]) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -598,7 +599,7 @@ function serializeElementNode(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (result: { urls: string[] }) => unknown;
+    onAssetDetected?: (assets: asset[]) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -619,7 +620,7 @@ function serializeElementNode(
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
-  const assets: string[] = [];
+  const assets: asset[] = [];
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
@@ -639,9 +640,17 @@ function serializeElementNode(
         isAttributeCapturable(n, attr.name)
       ) {
         if (attr.name === 'srcset') {
-          assets.push(...getUrlsFromSrcset(value));
+          getUrlsFromSrcset(value).forEach((url) => {
+            assets.push({
+              element: n,
+              url,
+            });
+          });
         } else {
-          assets.push(value);
+          assets.push({
+            element: n,
+            url: value,
+          });
         }
         name = `rr_captured_${name}`;
       }
@@ -848,7 +857,7 @@ function serializeElementNode(
     // In case old browsers don't support customElements
   }
   if (assets.length && onAssetDetected) {
-    onAssetDetected({ urls: assets });
+    onAssetDetected(assets);
   }
 
   return {
@@ -1007,7 +1016,7 @@ export function serializeNodeWithId(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (result: { urls: string[] }) => unknown;
+    onAssetDetected?: (assets: asset[]) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1338,7 +1347,7 @@ function snapshot(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (result: { urls: string[] }) => unknown;
+    onAssetDetected?: (assets: asset[]) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
