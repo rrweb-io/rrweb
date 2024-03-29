@@ -577,7 +577,10 @@ function serializeTextNode(
         n,
       );
     }
-    textContent = absoluteToStylesheet(textContent, getHrefWithoutHash(options.doc));
+    textContent = absoluteToStylesheet(
+      textContent,
+      getHrefWithoutHash(options.doc),
+    );
   }
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
@@ -671,7 +674,10 @@ function serializeElementNode(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHrefWithoutHash(doc));
+      attributes._cssText = absoluteToStylesheet(
+        cssText,
+        getHrefWithoutHash(doc),
+      );
     }
   }
   // form fields
