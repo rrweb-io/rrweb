@@ -28,7 +28,6 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
-  getUrlsFromSrcset,
   isAttributeCapturable,
 } from './utils';
 
@@ -690,7 +689,7 @@ function serializeElementNode(
         isAttributeCapturable(n, attr.name)
       ) {
         if (attr.name === 'srcset') {
-          getUrlsFromSrcset(value).forEach((url) => {
+          getSourcesFromSrcset(value).forEach((url) => {
             assets.push({
               element: n,
               url,
