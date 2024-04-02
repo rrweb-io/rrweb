@@ -311,6 +311,8 @@ function record<T = eventWithTime>(
 
   assetManager = new AssetManager({
     mutationCb: wrappedAssetEmit,
+    attributeMutationCb: wrappedMutationEmit,
+    mirror,
     win: window,
     captureAssets,
   });
@@ -445,9 +447,7 @@ function record<T = eventWithTime>(
           asset,
           true, // indicate it's a FullSnapshot
         );
-        if (Array.isArray(assetStatus)) {
-          // removeme when we just capture one asset from srcset
-          // srcset: we're not expecting a timeout (no requestIdleCallback), and don't want to do `data:` related substitution in the caller
+        if (assetStatus.status === 'not-current-src') {
           return;
         }
         if (assetStatus.status === 'capturing' && assetStatus.renderBlocking) {

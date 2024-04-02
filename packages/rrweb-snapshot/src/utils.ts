@@ -628,7 +628,7 @@ export function markCssSplits(
 }
 
 export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
-  ['IMG', new Set(['src', 'srcset'])],
+  //['IMG', new Set(['src', 'srcset'])],
   ['VIDEO', new Set(['src'])],
   ['AUDIO', new Set(['src'])],
   ['EMBED', new Set(['src'])],
@@ -699,12 +699,21 @@ export function shouldCaptureAsset(
       }
     }
     return false;
-  } else if (
-    config.images !== undefined &&
-    ((n.nodeName === 'IMG' && ['src', 'srcset'].includes(attribute)) ||
-      (parentOfSource === 'PICTURE' && attribute === 'srcset'))
-  ) {
-    return config.images;
+  } else if (n.nodeName === 'IMG' && ['src', 'srcset'].includes(attribute)) {
+    const image = n as HTMLImageElement;
+    if (attribute === 'src' && image.getAttribute('srcset')) {
+      // will be captured via .currentSrc instead
+      return false;
+    }
+    return config.images || !shouldIgnoreAsset(value, config);
+  } else if (parentOfSource === 'PICTURE' && attribute === 'srcset') {
+    // <picture> does not work like <video> or <uadio>
+    // even with multiple <source> elements, there still needs
+    // to be an <img> within <picure> parent which will have a .currentSrc
+    // which may (according to media queries) take the value of one of the sibling
+    // <source> elements (e.g. this one, but we shouldn't capture directly from this)
+    // A <picture> with no <img> child is invalid HTML that renders nothing
+    return false;
   } else if (
     config.video !== undefined &&
     attribute === 'src' &&

@@ -7,15 +7,16 @@ import type {
   asset,
   captureAssetsParam,
   assetStatus,
+  mutationCallBack,
 } from '@rrweb/types';
 import type { assetCallback } from '@rrweb/types';
+import type { Mirror } from 'rrweb-snapshot';
 import { encode } from 'base64-arraybuffer';
 
 import { patch } from '@rrweb/utils';
 
 import type { recordOptions, ProcessingStyleElement } from '../../types';
 import {
-  getSourcesFromSrcset,
   shouldCaptureAsset,
   stringifyCssRules,
   absolutifyURLs,
@@ -52,6 +53,10 @@ export default class AssetManager {
   private pendingIdleStylesheets = 0;
   private resetHandlers: listenerHandler[] = [];
   private mutationCb: assetCallback;
+  private attributeMutationCb: mutationCallBack;
+  private mirror: Mirror;
+  private imgSrcListenerAttached = new WeakSet<HTMLImageElement>();
+  private imgLastCurrentSrc = new WeakMap<HTMLImageElement, string>();
   // base href of the recording frame, used only to namespace adopted-stylesheet
   // virtual urls so they don't collide across cross-origin iframes (which each
   // have their own styleId counter starting at 1)
@@ -84,6 +89,8 @@ export default class AssetManager {
 
   constructor(options: {
     mutationCb: assetCallback;
+    attributeMutationCb: mutationCallBack;
+    mirror: Mirror;
     win: IWindow;
     captureAssets: Exclude<
       recordOptions<eventWithTime>['captureAssets'],
@@ -93,6 +100,8 @@ export default class AssetManager {
     const { win } = options;
 
     this.mutationCb = options.mutationCb;
+    this.attributeMutationCb = options.attributeMutationCb;
+    this.mirror = options.mirror;
     this.config = options.captureAssets;
     this.baseHref = win.location.href;
 
@@ -424,7 +433,7 @@ export default class AssetManager {
   public capture(
     asset: asset,
     snapshotTimestamp?: number | true,
-  ): assetStatus | assetStatus[] {
+  ): assetStatus {
     if ('sheet' in asset.element) {
       const status = this.captureStylesheet(
         asset.value,
@@ -434,25 +443,71 @@ export default class AssetManager {
       );
       status.renderBlocking = true;
       return status;
-    } else if (asset.attr === 'srcset') {
-      const statuses: assetStatus[] = [];
-      getSourcesFromSrcset(asset.value).forEach((url) => {
-        // data: sources are self-contained; leave them inline within the srcset
-        // string (the whole string is stored verbatim) rather than emitting an
-        // asset that the unrewritten srcset on replay couldn't reference
-        if (url.startsWith('data:')) {
-          return;
+    } else if ([
+      'srcset',
+      'src',  // <img> within <picture>
+    ].includes(asset.attr) && asset.element.tagName === 'IMG') {
+      const image = asset.element as HTMLImageElement;
+      const isResponsive =
+        image.getAttribute('srcset') !== null ||
+        image.parentElement?.nodeName === 'PICTURE';
+      if (isResponsive) {
+        this.trackImageSrcChanges(image);
+        if (image.currentSrc) {
+          this.imgLastCurrentSrc.set(image, image.currentSrc);
+          return this.captureUrl(image.currentSrc, snapshotTimestamp);
         }
-        statuses.push(this.captureUrl(url, snapshotTimestamp));
-      });
-      return statuses;
-    } else {
-      return this.captureUrl(
-        asset.value,
-        snapshotTimestamp,
-        this.mediaKind(asset.element),
-      );
+        return {
+          url: asset.value,
+          status: 'not-current-src',
+        };
+      }
+    } else if (asset.element.tagName === 'SOURCE') {
+      const parent = asset.element.parentElement;
+      if (parent && ['VIDEO', 'AUDIO'].includes(parent.tagName)) {
+        const mediaParent = parent as HTMLMediaElement;
+        if (mediaParent.currentSrc !== asset.value) {
+          return {
+            url: asset.value,
+            status: 'not-current-src',
+          }
+        }
+      }
     }
+    return this.captureUrl(
+      asset.value,
+      snapshotTimestamp,
+      this.mediaKind(asset.element),
+    );
+  }
+
+  private trackImageSrcChanges(image: HTMLImageElement) {
+    if (this.imgSrcListenerAttached.has(image)) {
+      return;
+    }
+    this.imgSrcListenerAttached.add(image);
+    image.addEventListener('load', () => {
+      const currentSrc = image.currentSrc;
+      if (!currentSrc || this.imgLastCurrentSrc.get(image) === currentSrc) {
+        return;
+      }
+      this.imgLastCurrentSrc.set(image, currentSrc);
+      const status = this.captureUrl(currentSrc);
+      const id = this.mirror.getId(image);
+      if (id > 0) {
+        this.attributeMutationCb({
+          adds: [],
+          removes: [],
+          texts: [],
+          attributes: [
+            {
+              id,
+              attributes: { rr_captured_src: status.url },
+            },
+          ],
+        });
+      }
+    });
   }
 
   private captureUrl(

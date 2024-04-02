@@ -43,6 +43,7 @@ interface IWindow extends Window {
 }
 type ExtraOptions = {
   captureAssets?: recordOptions<eventWithTime>['captureAssets'];
+  viewportConfig: {};
 };
 
 const BASE64_PNG_RECTANGLE =
@@ -93,13 +94,26 @@ const setup = function (
 
   beforeEach(async () => {
     ctx.page = await ctx.browser.newPage();
-    await ctx.page.goto('about:blank');
-    await ctx.page.setContent(
-      content
-        .replace(/\{SERVER_URL\}/g, ctx.serverURL)
-        .replace(/\{SERVER_B_URL\}/g, ctx.serverBURL),
-    );
-    // await ctx.page.evaluate(ctx.code);
+    if (options && options.viewportConfig) {
+      await ctx.page.setViewport(options.viewportConfig);
+    }
+    const html = content
+      .replace(/\{SERVER_URL\}/g, ctx.serverURL)
+      .replace(/\{SERVER_B_URL\}/g, ctx.serverBURL);
+    const pageUrl = `${ctx.serverURL}/__rrweb_test_page__.html`;
+    await ctx.page.setRequestInterception(true);
+    ctx.page.on('request', (req) => {
+      if (req.url() === pageUrl) {
+        void req.respond({
+          status: 200,
+          contentType: 'text/html',
+          body: html,
+        });
+      } else {
+        void req.continue();
+      }
+    });
+    await ctx.page.goto(pageUrl, { waitUntil: 'load' });
     await waitForRAF(ctx.page);
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
@@ -111,7 +125,8 @@ const setup = function (
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
     if (
-      options?.captureAssets?.origins &&
+      options &&
+      options.captureAssets?.origins &&
       Array.isArray(options.captureAssets.origins)
     ) {
       options.captureAssets.origins = options.captureAssets.origins.map(
@@ -695,7 +710,6 @@ describe('asset capturing', function (this: ISuite) {
             <video src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video" type="audio/mp3"></video>
             <audio src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio" type="audio/mp3"></audio>
             <embed type="video/webm" src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed" width="250" height="200" />
-            <img srcset="{SERVER_URL}/html/assets/robot.png?1x, {SERVER_URL}/html/assets/robot.png?2x 2x" />
             <img src="{SERVER_B_URL}/html/assets/robot.png?img" />
             <input type="image" id="image" alt="Login" src="{SERVER_URL}/html/assets/robot.png?input-type-image" />
             <iframe src="{SERVER_URL}/html/assets/robot.png?iframe"></iframe>
@@ -738,8 +752,6 @@ describe('asset capturing', function (this: ISuite) {
       '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source',
       '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?embed',
       '{SERVER_URL}/html/assets/subtitles.vtt',
-      '{SERVER_URL}/html/assets/robot.png?1x',
-      '{SERVER_URL}/html/assets/robot.png?2x',
       '{SERVER_URL}/html/assets/robot.png?input-type-image',
       '{SERVER_URL}/html/assets/robot.png?iframe',
       //'{SERVER_URL}/html/assets/doc.pdf?iframe',
@@ -770,6 +782,96 @@ describe('asset capturing', function (this: ISuite) {
         );
       });
     });
+  });
+
+  describe('should only capture one asset according to .currentSrc', () => {
+    const ctx: ISuite = setup.call(
+      this,
+`
+        <!DOCTYPE html>
+        <html>
+          <body background="{SERVER_URL}/html/assets/robot.png?body">
+            <img srcset="{SERVER_URL}/html/assets/robot.png?1x, {SERVER_URL}/html/assets/robot.png?2x 2x" />
+            <picture>
+              <source srcset="{SERVER_URL}/html/assets/robot.png?narrow" media="(max-width:300px)" />
+              <source srcset="{SERVER_URL}/html/assets/robot.png?wide" media="(min-width: 301px)" />
+              <img src="{SERVER_URL}/html/assets/robot.png?overridden" />
+            </picture>
+            <video>
+              <source src="{SERVER_URL}/html/assets/bunny-video.webm" type="video/webm" />
+              <source src="{SERVER_URL}/html/assets/bunny-video-wide.mp4" type="video/mp4"  media="(min-width: 301px)" />
+            </video>
+            <audio>
+              <source src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3" type="audio/mp3" />
+              <source src="{SERVER_URL}/html/assets/1-minute-of-silence.ogg" type="audio/ogg" />
+            </audio>
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          origins: ['{SERVER_URL}'],
+          objectURLs: false,
+        },
+      },
+    );
+
+    [
+      '{SERVER_URL}/html/assets/robot.png?1x',
+      '{SERVER_URL}/html/assets/robot.png?wide',
+      '{SERVER_URL}/html/assets/bunny-video.webm',
+      '{SERVER_URL}/html/assets/1-minute-of-silence.mp3',
+    ].forEach((u) => {
+      it(`should capture ${u} as it is expected to be the one used by browser`, async () => {
+        const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
+        await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+        await waitForRAF(ctx.page);
+
+        const events = await ctx.page?.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        );
+
+        // expect an event to be emitted with `event.type` === EventType.Asset
+        expect(stripBase64(events)).toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+            data: {
+              url,
+              payload: expect.any(Object),
+            },
+          }),
+        );
+      });
+    });
+
+    [
+      '{SERVER_URL}/html/assets/robot.png?overridden',
+      '{SERVER_URL}/html/assets/robot.png?narrow',
+      '{SERVER_URL}/html/assets/robot.png?2x',
+      '{SERVER_URL}/html/assets/bunny-video.mp4',
+      '{SERVER_URL}/html/assets/1-minute-of-silence.ogg',
+   ].forEach((u) => {
+      it(`shouldn't capture ${u} which are not the focus of .currentSrc`, async () => {
+        const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
+        await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+        await waitForRAF(ctx.page);
+
+        const events = await ctx.page?.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        );
+
+        expect(stripBase64(events)).not.toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+            data: {
+              url,
+              payload: expect.any(Object),
+            },
+          }),
+        );
+      });
+    });
+
 
     it("shouldn't capture assets within a blocked section", async () => {
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
@@ -899,6 +1001,152 @@ describe('asset capturing', function (this: ISuite) {
         );
       });
     });
+  });
+
+
+  describe('srcset and regular viewport width', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <img
+              src="{SERVER_URL}/html/assets/robot.png?overridden"
+              srcset="{SERVER_URL}/html/assets/robot.png?narrow 300w, {SERVER_URL}/html/assets/robot.png?wide 600w"
+              sizes="(max-width: 400px) 300px, 600px"
+            />
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          origins: ['{SERVER_URL}'],
+          objectURLs: false,
+        },
+      },
+    );
+
+    [
+      '{SERVER_URL}/html/assets/robot.png?narrow',
+      '{SERVER_URL}/html/assets/robot.png?overridden',
+    ].forEach((u) => {
+      it(`shouldn't capture ${u} asset not used for responsive srcset reasons`, async () => {
+        const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
+        await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+        await waitForRAF(ctx.page);
+
+        const events = await ctx.page?.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        );
+
+        expect(stripBase64(events)).not.toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+            data: {
+              url,
+              payload: expect.any(Object),
+            },
+          }),
+        );
+      });
+    });
+
+  });
+
+  describe('narrow viewport width', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <img
+              src="{SERVER_URL}/html/assets/robot.png?overridden"
+              srcset="{SERVER_URL}/html/assets/robot.png?narrow 300w, {SERVER_URL}/html/assets/robot.png?wide 600w"
+              sizes="(max-width: 400px) 300px, 600px"
+            />
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          origins: ['{SERVER_URL}'],
+          objectURLs: false,
+        },
+        viewportConfig: {
+          width: 350,
+          height: 500,
+        }
+      },
+    );
+
+    it("should capture correct srcset asset", async () => {
+      const u = '{SERVER_URL}/html/assets/robot.png?narrow';
+      const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+
+      await waitForRAF(ctx.page);
+      // await ctx.page.waitForTimeout(40_000);
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      const sevents = stripBase64(events);
+
+      expect(sevents).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url,
+            payload: expect.any(Object),
+          },
+        }),
+      );
+
+      expect(sevents).not.toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: url.replace('narrow', 'wide'),
+            payload: expect.any(Object),
+          },
+        }),
+      );
+    });
+
+    it('re-pins rr_captured_src via a mutation when the viewport expands and currentSrc changes', async () => {
+      const wideUrl = `${ctx.serverURL}/html/assets/robot.png?wide`;
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      await ctx.page.setViewport({ width: 850, height: 500 });
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = stripBase64(
+        await ctx.page.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        ),
+      );
+
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.IncrementalSnapshot,
+          data: expect.objectContaining({
+            source: IncrementalSource.Mutation,
+            attributes: expect.arrayContaining([
+              expect.objectContaining({
+                attributes: expect.objectContaining({
+                  rr_captured_src: wideUrl,
+                }),
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
   });
 
   describe('jsdelivr <link> with CORS restrictions', () => {

@@ -366,7 +366,7 @@ describe('utils', () => {
 
   describe('isAttributeCapturable()', () => {
     const validAttributeCombinations = [
-      ['img', ['src', 'srcset']],
+      //['img', ['src', 'srcset']], -> this is a bit more complicated, so test against `shouldCaptureAsset`
       ['video', ['src']],
       ['audio', ['src']],
       ['embed', ['src']],
@@ -409,7 +409,27 @@ describe('utils', () => {
       });
     });
 
-    it(`should identify a <source> child of a <picture> element as a capturable image`, () => {
+    it(`should ignore ignore 'src' attribute if 'srcset' (and .currentSrc) overrides`, () => {
+      const image = document.createElement('img');
+      image.src = 'https://example.com/img1.png';
+      image.srcset = 'https://example.com/img2.png';
+
+      expect(
+        shouldCaptureAsset(image, 'srcset', image.srcset, { images: true }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(image, 'src', image.srcset, { images: true }),
+      ).toBe(false);  // capture a single url from srcset, don't capture both
+
+      expect(
+        shouldCaptureAsset(image, 'srcset', image.srcset, { images: false }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(image, 'src', image.src, { images: false }),
+      ).toBe(false);
+    });
+
+    it(`should not capture a <source> child of a <picture> directly; the sibling <img> indicates what should be captured via .currentSrc`, () => {
       const picture = document.createElement('picture');
       const source = document.createElement('source');
       source.srcset = 'https://example.com/img1.png';
@@ -426,7 +446,7 @@ describe('utils', () => {
 
       expect(
         shouldCaptureAsset(source, 'srcset', source.srcset, { images: true }),
-      ).toBe(true);
+      ).toBe(false);
       expect(
         shouldCaptureAsset(source, 'src', source.srcset, { images: true }),
       ).toBe(false); // not allowed

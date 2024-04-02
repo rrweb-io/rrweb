@@ -366,8 +366,7 @@ export default class MutationBuffer {
         cssCaptured,
         onAssetDetected: (asset: asset) => {
           const assetStatus = this.assetManager.capture(asset, now);
-          if (Array.isArray(assetStatus)) {
-            // srcset: stored verbatim, no substitution
+          if (assetStatus.status === 'not-current-src') {
             return;
           }
           // return the (possibly virtual, e.g. for a data: url) url the asset
@@ -690,11 +689,10 @@ export default class MutationBuffer {
               attr: attributeName,
               value: transformedValue,
             });
-            attributeName = `rr_captured_${attributeName}`;
-            if (!Array.isArray(assetStatus)) {
+            if (assetStatus.status !== 'not-current-src') {
+              attributeName = `rr_captured_${attributeName}`;
               // store the (possibly virtual, e.g. for a data: url) url the asset
-              // was emitted under so the replayer can match it; srcset keeps its
-              // verbatim string
+              // was emitted under so the replayer can match it
               transformedValue = assetStatus.url;
             }
           }

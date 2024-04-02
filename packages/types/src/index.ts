@@ -21,7 +21,7 @@ export type loadedEvent = {
 
 export type assetStatus = {
   url: string;
-  status: 'capturing' | 'captured' | 'media-mismatch' | 'error' | 'refused';
+  status: 'capturing' | 'captured' | 'media-mismatch' | 'not-current-src' | 'error' | 'refused';
   timeout?: number;
   renderBlocking?: boolean;
 };

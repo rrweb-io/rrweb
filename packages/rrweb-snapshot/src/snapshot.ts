@@ -680,12 +680,44 @@ function serializeElementNode(
           attr: attr.name,
           value,
         });
-        name = `rr_captured_${name}`;
         if (typeof capturedUrl === 'string') {
+          if (
+            n.nodeName === 'IMG' &&
+            (attr.name === 'src' || attr.name === 'srcset')
+          ) {
+            if (attr.name === 'srcset') {
+              attributes['rrweb-original-srcset'] = value;
+            }
+            name = 'rr_captured_src'; // 'pin' the currentSrc i.e. don't allow the replayer to pick media not selected at record time
+          } else {
+            name = `rr_captured_${name}`;
+          }
           // the asset was emitted under a (possibly virtual) url, e.g. for a
           // data: url; store that so the replayer can match it to the asset
           value = capturedUrl;
         }
+      } else if (
+        onAssetDetected &&
+        typeof value === 'string' &&
+        n.nodeName === 'IMG' &&
+        attr.name === 'src' &&
+        n.getAttribute('srcset') &&
+        (n as HTMLImageElement).currentSrc
+      ) {
+        if (value !== (n as HTMLImageElement).currentSrc) {
+          attributes['rrweb-original-src'] = value;
+        }
+        continue;
+      } else if (
+        onAssetDetected &&
+        typeof value === 'string' &&
+        n.nodeName === 'SOURCE' &&
+        attr.name === 'srcset' &&
+        n.parentElement?.nodeName === 'PICTURE' &&
+        n.parentElement.querySelector('img')?.currentSrc
+      ) {
+        attributes['rrweb-original-srcset'] = value;
+        continue;
       }
       attributes[name] = value;
     }

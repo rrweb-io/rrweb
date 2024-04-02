@@ -268,7 +268,7 @@ describe('jsdom snapshot', () => {
 describe('onAssetDetected callback', () => {
   const serializeNode = (
     node: Node,
-    onAssetDetected: (result: asset) => void,
+    onAssetDetected: (result: asset) => unknown,
     inlineImages?: boolean,
     captureAssets?: captureAssetsParam,
   ): serializedNodeWithId | null => {
@@ -481,5 +481,85 @@ describe('onAssetDetected callback', () => {
       captureAssets,
     );
     expect(onAssetDetectedCallback).toBeCalledTimes(1);
+  });
+
+  const findByTag = (
+    node: serializedNodeWithId,
+    tagName: string,
+  ): elementNode | null => {
+    if ((node as elementNode).tagName === tagName) {
+      return node as elementNode;
+    }
+    for (const child of (node as elementNode).childNodes || []) {
+      const found = findByTag(child, tagName);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  it('pins a captured <img srcset> as rr_captured_src with an inert rrweb-original-srcset', () => {
+    const el = render(`<div>
+      <img srcset="https://example.com/a.jpg, https://example.com/a-2x.jpg 2x" />
+    </div>`);
+    const sn = serializeNode(
+      el,
+      () => 'https://example.com/a.jpg#rr_asset',
+    ) as serializedNodeWithId;
+    const img = findByTag(sn, 'img')!;
+    expect(img.attributes['rr_captured_src']).toBe(
+      'https://example.com/a.jpg#rr_asset',
+    );
+    expect(String(img.attributes['rrweb-original-srcset'])).toContain(
+      'a-2x.jpg 2x',
+    );
+    expect(img.attributes).not.toHaveProperty('srcset');
+    expect(img.attributes).not.toHaveProperty('rr_captured_srcset');
+  });
+
+  it('keeps an <img src> overridden by srcset only as an inert rrweb-original-src', () => {
+    const el = render(`<div>
+      <img src="https://example.com/original.jpg" srcset="https://example.com/a.jpg 2x" />
+    </div>`);
+    const img = el.querySelector('img')!;
+    Object.defineProperty(img, 'currentSrc', {
+      value: 'https://example.com/a.jpg',
+      configurable: true,
+    });
+    const sn = serializeNode(
+      el,
+      () => 'https://example.com/a.jpg#rr_asset',
+    ) as serializedNodeWithId;
+    const serialized = findByTag(sn, 'img')!;
+    expect(serialized.attributes['rr_captured_src']).toBe(
+      'https://example.com/a.jpg#rr_asset',
+    );
+    expect(serialized.attributes['rrweb-original-src']).toBe(
+      'https://example.com/original.jpg',
+    );
+    expect(serialized.attributes).not.toHaveProperty('src');
+  });
+
+  it('neuters a <picture> <source> srcset to an inert rrweb-original-srcset once the <img> has a currentSrc', () => {
+    const el = render(`<div>
+      <picture>
+        <source srcset="https://example.com/wide.jpg" media="(min-width: 600px)" />
+        <img src="https://example.com/fallback.jpg" />
+      </picture>
+    </div>`);
+    const img = el.querySelector('img')!;
+    Object.defineProperty(img, 'currentSrc', {
+      value: 'https://example.com/wide.jpg',
+      configurable: true,
+    });
+    const sn = serializeNode(el, (a) =>
+      (a as asset).attr === 'src'
+        ? 'https://example.com/wide.jpg#rr_asset'
+        : undefined,
+    ) as serializedNodeWithId;
+    const source = findByTag(sn, 'source')!;
+    expect(String(source.attributes['rrweb-original-srcset'])).toContain(
+      'wide.jpg',
+    );
+    expect(source.attributes).not.toHaveProperty('srcset');
   });
 });
