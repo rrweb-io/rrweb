@@ -10,7 +10,6 @@ import {
   isNativeShadowDom,
   getInputType,
   toLowerCase,
-  getSourcesFromSrcset,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -635,19 +634,11 @@ export default class MutationBuffer {
             transformedValue &&
             this.assetManager.isAttributeCapturable(target, attributeName)
           ) {
-            if (attributeName === 'srcset') {
-              getSourcesFromSrcset(transformedValue).forEach((url) => {
-                this.assetManager.capture({
-                  element: target,
-                  url,
-                });
-              });
-            } else {
-              this.assetManager.capture({
-                element: target,
-                url: transformedValue,
-              });
-            }
+            this.assetManager.capture({
+              element: target,
+              attr: attributeName,
+              value: transformedValue,
+            });
             attributeName = `rr_captured_${attributeName}`;
           }
           item.attributes[attributeName] = transformedValue;

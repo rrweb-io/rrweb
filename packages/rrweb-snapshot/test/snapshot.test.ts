@@ -296,7 +296,8 @@ describe('onAssetDetected callback', () => {
     expect(callback).toHaveBeenCalledWith([
       {
         element: el.querySelector('img'),
-        url: 'https://example.com/image.png',
+        attr: 'src',
+        value: 'https://example.com/image.png',
       },
     ]);
   });
@@ -311,7 +312,8 @@ describe('onAssetDetected callback', () => {
     expect(callback).toHaveBeenCalledWith([
       {
         element: el.querySelector('img'),
-        url: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
+        attr: 'src',
+        value: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
       },
     ]);
   });
@@ -320,16 +322,15 @@ describe('onAssetDetected callback', () => {
       <img srcset="https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x" />
     </div>`);
 
+    // this used to trigger two calls, but now AssetManager is responsible for parsing the args
     const callback = jest.fn();
     serializeNode(el, callback);
     expect(callback).toHaveBeenCalledWith([
       {
         element: el.querySelector('img'),
-        url: 'https://example.com/images/team-photo.jpg',
-      },
-      {
-        element: el.querySelector('img'),
-        url: 'https://example.com/images/team-photo-retina.jpg',
+        attr: 'srcset',
+        value:
+          'https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x',
       },
     ]);
   });
@@ -346,13 +347,15 @@ describe('onAssetDetected callback', () => {
     expect(callback).toHaveBeenCalledWith([
       {
         element: el.querySelectorAll('img')[0],
-        url: 'https://example.com/image.png',
+        attr: 'src',
+        value: 'https://example.com/image.png',
       },
     ]);
     expect(callback).toHaveBeenCalledWith([
       {
         element: el.querySelectorAll('img')[1],
-        url: 'https://example.com/image2.png',
+        attr: 'src',
+        value: 'https://example.com/image2.png',
       },
     ]);
   });

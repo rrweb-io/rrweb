@@ -688,19 +688,11 @@ function serializeElementNode(
         onAssetDetected &&
         isAttributeCapturable(n, attr.name)
       ) {
-        if (attr.name === 'srcset') {
-          getSourcesFromSrcset(value).forEach((url) => {
-            assets.push({
-              element: n,
-              url,
-            });
-          });
-        } else {
-          assets.push({
-            element: n,
-            url: value,
-          });
-        }
+        assets.push({
+          element: n,
+          attr: attr.name,
+          value,
+        });
         name = `rr_captured_${name}`;
       }
       attributes[name] = value;

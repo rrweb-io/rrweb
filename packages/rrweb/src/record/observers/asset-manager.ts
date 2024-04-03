@@ -11,7 +11,7 @@ import { encode } from 'base64-arraybuffer';
 import { patch } from '../../utils';
 
 import type { recordOptions } from '../../types';
-import { isAttributeCapturable } from 'rrweb-snapshot';
+import { isAttributeCapturable, getSourcesFromSrcset } from 'rrweb-snapshot';
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -129,7 +129,13 @@ export default class AssetManager {
   public capture(asset: asset): {
     status: 'capturing' | 'captured' | 'error' | 'refused';
   } {
-    this.captureUrl(asset.url);
+    if (asset.attr === 'srcset') {
+      getSourcesFromSrcset(asset.value).forEach((url) => {
+        this.captureUrl(url);
+      });
+    } else {
+      this.captureUrl(asset.value);
+    }
   }
 
   public captureUrl(url): {
