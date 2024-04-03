@@ -228,3 +228,7 @@ export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
 
 export type ErrorHandler = (error: unknown) => void | boolean;
+
+export type assetStatus = {
+  status: 'capturing' | 'captured' | 'error' | 'refused';
+};
