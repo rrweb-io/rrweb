@@ -41,6 +41,7 @@
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
     "format": "yarn prettier --write '**/*.{ts,md}'",
+    "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs yarn prettier --write",
     "dev": "yarn turbo run dev",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",
