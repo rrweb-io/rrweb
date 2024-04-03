@@ -10,7 +10,7 @@ import { encode } from 'base64-arraybuffer';
 
 import { patch } from '../../utils';
 
-import type { recordOptions } from '../../types';
+import type { recordOptions, assetStatus } from '../../types';
 import { isAttributeCapturable, getSourcesFromSrcset } from 'rrweb-snapshot';
 
 export default class AssetManager {
@@ -126,9 +126,7 @@ export default class AssetManager {
     }
   }
 
-  public capture(asset: asset): {
-    status: 'capturing' | 'captured' | 'error' | 'refused';
-  } {
+  public capture(asset: asset): assetStatus {
     if (asset.attr === 'srcset') {
       getSourcesFromSrcset(asset.value).forEach((url) => {
         this.captureUrl(url);
@@ -138,9 +136,7 @@ export default class AssetManager {
     }
   }
 
-  public captureUrl(url): {
-    status: 'capturing' | 'captured' | 'error' | 'refused';
-  } {
+  public captureUrl(url): assetStatus {
     if (this.shouldIgnore(url)) return { status: 'refused' };
 
     if (this.capturedURLs.has(url)) {
