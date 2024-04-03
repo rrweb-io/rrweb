@@ -83,7 +83,8 @@ export type assetEvent = {
 
 export type asset = {
   element: HTMLElement;
-  url: string;
+  attr: string;
+  value: string;
 };
 
 export enum IncrementalSource {
