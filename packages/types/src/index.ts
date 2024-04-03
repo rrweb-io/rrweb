@@ -147,6 +147,15 @@ export type assetEventWithTime = assetEvent & {
   timestamp: number;
 };
 
+/*
+  used at record time to pass an asset between snapshot.ts and AssetManager
+*/
+export type asset = {
+  element: HTMLElement;
+  attr: string;
+  value: string;
+};
+
 export enum IncrementalSource {
   Mutation,
   MouseMove,
