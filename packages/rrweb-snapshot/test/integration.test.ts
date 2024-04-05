@@ -287,6 +287,26 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('data:image/webp;base64,'));
   });
 
+  it('correctly deals with changes in window.history', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto('http://localhost:3030/html/basic.html', {
+      waitUntil: 'load',
+    });
+    await waitForRAF(page); // wait for page to render
+    await page.evaluate(`${code}
+        window.val1 = rrweb.absoluteToDoc(document, './rel');
+        window.history.replaceState({}, null, window.document.location.href + '/artificial/');
+        window.val2 = rrweb.absoluteToDoc(document, './rel');
+    `);
+    await waitForRAF(page);
+    const snapshot = (await page.evaluate(
+      'JSON.stringify(window.snapshot, null, 2);',
+    )) as string;
+    expect((await page.evaluate('window.val1')) as string).toEqual('http://localhost:3030/html/rel');
+    expect((await page.evaluate('window.val2')) as string).toEqual('http://localhost:3030/html/basic.html/artificial/rel');
+  });
+
   it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto(`http://localhost:3030/html/background-clip-text.html`, {
