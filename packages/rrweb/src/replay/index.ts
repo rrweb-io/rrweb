@@ -881,6 +881,9 @@ export class Replayer {
         'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',
       );
     }
+    if (!injectStylesRules.length) {
+      return;
+    }
     if (this.usingVirtualDom) {
       const styleEl = this.virtualDom.createElement('style');
       this.virtualDom.mirror.add(
