@@ -1835,7 +1835,6 @@ export class Replayer {
               } else {
                 targetEl.setAttribute(attributeName, value);
               }
-              void this.assetManager.manageAttribute(targetEl, attributeName);
             } catch (error) {
               this.warn(
                 'An error occurred may due to the checkout feature.',
