@@ -170,6 +170,74 @@ describe('record integration tests', function (this: ISuite) {
     ]);
   });
 
+  it('can record style text mutations', async () => {
+    // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'style.html'));
+
+    await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
+
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style');
+      if (styleEl) {
+        styleEl.append(
+          document.createTextNode('body { background-color: darkgreen; }'),
+        );
+      }
+    });
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('darkgreen', 'purple');
+          }
+        });
+      }
+    });
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace(
+              'black',
+              'black !important',
+            );
+          }
+        });
+      }
+    });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    // following ensures that the ./rel url has been absolutized (in a mutation)
+    assertSnapshot(snapshots);
+
+    // check after each mutation and text input
+    const replayStyleValues = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      const vals = [];
+      window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
+        replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
+        vals.push(getComputedStyle(replayer.iframe.contentDocument.querySelector('body'))['background-color']);
+});
+      vals;
+`);
+
+    expect(replayStyleValues).toEqual([
+      'rgb(0, 100, 0)', // darkgreen
+      'rgb(128, 0, 128)', // purple
+      'rgb(0, 0, 0)', // black !important
+    ]);
+  });
+
   it('can record childList mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
