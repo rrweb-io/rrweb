@@ -126,17 +126,19 @@ export default class AssetManager {
     }
   }
 
-  public capture(asset: asset): assetStatus {
+  public capture(asset: asset): assetStatus | assetStatus[] {
     if (asset.attr === 'srcset') {
+      const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {
-        this.captureUrl(url);
+        statuses.push(this.captureUrl(url));
       });
+      return statuses;
     } else {
-      this.captureUrl(asset.value);
+      return this.captureUrl(asset.value);
     }
   }
 
-  public captureUrl(url): assetStatus {
+  public captureUrl(url: string): assetStatus {
     if (this.shouldIgnore(url)) return { status: 'refused' };
 
     if (this.capturedURLs.has(url)) {
