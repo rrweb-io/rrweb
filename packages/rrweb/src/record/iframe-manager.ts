@@ -61,7 +61,7 @@ export class IframeManager {
     this.mutationCb({
       adds: [
         {
-          parentId: parentId,
+          parentId,
           nextId: null,
           node: childSn,
         },
