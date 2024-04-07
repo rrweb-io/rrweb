@@ -91,7 +91,7 @@ export function throttle<T>(
       const argumentsList = args.map((arg: T)=> {
         return {
           ...arg,
-          target: arg.target || null
+          target: arg.target
         }
       })
       timeout = setTimeout(() => {
