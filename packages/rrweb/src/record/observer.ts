@@ -375,6 +375,9 @@ export function initScrollObserver({
         }
       }),
       sampling.scroll || 100,
+      {
+        trailing: true
+      }
     ),
   );
   return on('scroll', updatePosition, doc);
