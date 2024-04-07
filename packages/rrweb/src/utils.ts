@@ -88,10 +88,19 @@ export function throttle<T>(
       previous = now;
       func.apply(context, args);
     } else if (!timeout && options.trailing !== false) {
+      const argumentsList = args.map((arg: Omit<T, 'target'>) => {
+        return {
+          ...arg,
+          target: arg.target || null
+        }
+      })
       timeout = setTimeout(() => {
         previous = options.leading === false ? 0 : Date.now();
-        timeout = null;
-        func.apply(context, args);
+        if (timeout) {
+          clearTimeout(timeout)
+          timeout = null;
+        }
+        func.apply(context, argumentsList);
       }, remaining);
     }
   };

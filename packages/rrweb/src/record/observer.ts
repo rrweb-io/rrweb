@@ -374,10 +374,7 @@ export function initScrollObserver({
           });
         }
       }),
-      sampling.scroll || 100,
-      {
-        trailing: true
-      }
+      sampling.scroll || 100
     ),
   );
   return on('scroll', updatePosition, doc);
