@@ -88,7 +88,7 @@ export function throttle<T>(
       previous = now;
       func.apply(context, args);
     } else if (!timeout && options.trailing !== false) {
-      const argumentsList = args.map((arg: Omit<T, 'target'>) => {
+      const argumentsList = args.map((arg: T)=> {
         return {
           ...arg,
           target: arg.target || null
