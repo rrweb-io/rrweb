@@ -93,7 +93,7 @@ export class RRDocument extends BaseRRDocument implements IRRDocument {
   }
 
   querySelectorAll(selectors: string): BaseRRNode[] {
-    return (this.nwsapi.select(selectors) as unknown) as BaseRRNode[];
+    return this.nwsapi.select(selectors) as unknown as BaseRRNode[];
   }
 
   getElementsByTagName(tagName: string): RRElement[] {
@@ -271,7 +271,7 @@ export class RRElement extends BaseRRElement {
           if ((element as unknown as RRElement) !== this)
             result.push(element as unknown as RRElement);
         },
-      ) as unknown) as BaseRRNode[];
+      ) as unknown as BaseRRNode[];
     }
     return result;
   }
