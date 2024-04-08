@@ -6,9 +6,9 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import {
   NodeType as RRNodeType,
-  serializedNodeWithId,
   createMirror,
   Mirror as NodeMirror,
+  serializedNodeWithId,
 } from 'rrweb-snapshot';
 import {
   buildFromDom,
@@ -26,15 +26,8 @@ import {
   sameNodeType,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
-import { Replayer } from 'rrweb';
-import type {
-  eventWithTime,
-  canvasMutationData,
-  styleDeclarationData,
-  styleSheetRuleData,
-} from '@rrweb/types';
+import type { canvasMutationData, styleSheetRuleData } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
-import { compileTSCode } from './utils';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -1707,163 +1700,164 @@ describe('diff algorithm for rrdom', () => {
     });
   });
 
-  describe('apply virtual style rules to node', () => {
-    beforeEach(() => {
-      const dummyReplayer = new Replayer([
-        {
-          type: EventType.DomContentLoaded,
-          timestamp: 0,
-        },
-        {
-          type: EventType.Meta,
-          data: {
-            with: 1920,
-            height: 1080,
-          },
-          timestamp: 0,
-        },
-      ] as unknown as eventWithTime[]);
-      replayer.applyStyleSheetMutation = (
-        data: styleDeclarationData | styleSheetRuleData,
-        styleSheet: CSSStyleSheet,
-      ) => {
-        if (data.source === IncrementalSource.StyleSheetRule)
-          // Disable the ts check here because these two functions are private methods.
-          // @ts-ignore
-          dummyReplayer.applyStyleSheetRule(data, styleSheet);
-        else if (data.source === IncrementalSource.StyleDeclaration)
-          // @ts-ignore
-          dummyReplayer.applyStyleDeclaration(data, styleSheet);
-      };
-    });
+  // TODO: move me to rrweb to avoid circular dependencies
+  // describe('apply virtual style rules to node', () => {
+  //   beforeEach(() => {
+  //     const dummyReplayer = new Replayer([
+  //       {
+  //         type: EventType.DomContentLoaded,
+  //         timestamp: 0,
+  //       },
+  //       {
+  //         type: EventType.Meta,
+  //         data: {
+  //           with: 1920,
+  //           height: 1080,
+  //         },
+  //         timestamp: 0,
+  //       },
+  //     ] as unknown as eventWithTime[]);
+  //     replayer.applyStyleSheetMutation = (
+  //       data: styleDeclarationData | styleSheetRuleData,
+  //       styleSheet: CSSStyleSheet,
+  //     ) => {
+  //       if (data.source === IncrementalSource.StyleSheetRule)
+  //         // Disable the ts check here because these two functions are private methods.
+  //         // @ts-ignore
+  //         dummyReplayer.applyStyleSheetRule(data, styleSheet);
+  //       else if (data.source === IncrementalSource.StyleDeclaration)
+  //         // @ts-ignore
+  //         dummyReplayer.applyStyleDeclaration(data, styleSheet);
+  //     };
+  //   });
 
-    it('should insert rule at index 0 in empty sheet', () => {
-      document.write('<style></style>');
-      const styleEl = document.getElementsByTagName('style')[0];
-      const cssText = '.added-rule {border: 1px solid yellow;}';
+  //   it('should insert rule at index 0 in empty sheet', () => {
+  //     document.write('<style></style>');
+  //     const styleEl = document.getElementsByTagName('style')[0];
+  //     const cssText = '.added-rule {border: 1px solid yellow;}';
 
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        adds: [
-          {
-            rule: cssText,
-            index: 0,
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
+  //     const styleRuleData: styleSheetRuleData = {
+  //       source: IncrementalSource.StyleSheetRule,
+  //       adds: [
+  //         {
+  //           rule: cssText,
+  //           index: 0,
+  //         },
+  //       ],
+  //     };
+  //     replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
-      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
-    });
+  //     expect(styleEl.sheet?.cssRules?.length).toEqual(1);
+  //     expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
+  //   });
 
-    it('should insert rule at index 0 and keep exsisting rules', () => {
-      document.write(`
-      <style>
-        a {color: blue}
-        div {color: black}
-      </style>
-    `);
-      const styleEl = document.getElementsByTagName('style')[0];
+  //   it('should insert rule at index 0 and keep exsisting rules', () => {
+  //     document.write(`
+  //     <style>
+  //       a {color: blue}
+  //       div {color: black}
+  //     </style>
+  //   `);
+  //     const styleEl = document.getElementsByTagName('style')[0];
 
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        adds: [
-          {
-            rule: cssText,
-            index: 0,
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
+  //     const cssText = '.added-rule {border: 1px solid yellow;}';
+  //     const styleRuleData: styleSheetRuleData = {
+  //       source: IncrementalSource.StyleSheetRule,
+  //       adds: [
+  //         {
+  //           rule: cssText,
+  //           index: 0,
+  //         },
+  //       ],
+  //     };
+  //     replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
-      expect(styleEl.sheet?.cssRules?.length).toEqual(3);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
-    });
+  //     expect(styleEl.sheet?.cssRules?.length).toEqual(3);
+  //     expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
+  //   });
 
-    it('should delete rule at index 0', () => {
-      document.write(`
-        <style>
-          a {color: blue;}
-          div {color: black;}
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
+  //   it('should delete rule at index 0', () => {
+  //     document.write(`
+  //       <style>
+  //         a {color: blue;}
+  //         div {color: black;}
+  //       </style>
+  //     `);
+  //     const styleEl = document.getElementsByTagName('style')[0];
 
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        removes: [
-          {
-            index: 0,
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
+  //     const styleRuleData: styleSheetRuleData = {
+  //       source: IncrementalSource.StyleSheetRule,
+  //       removes: [
+  //         {
+  //           index: 0,
+  //         },
+  //       ],
+  //     };
+  //     replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
-      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
-    });
+  //     expect(styleEl.sheet?.cssRules?.length).toEqual(1);
+  //     expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
+  //   });
 
-    it('should insert rule at index [0,0] and keep existing rules', () => {
-      document.write(`
-        <style>
-          @media {
-            a {color: blue}
-            div {color: black}
-          }
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
+  //   it('should insert rule at index [0,0] and keep existing rules', () => {
+  //     document.write(`
+  //       <style>
+  //         @media {
+  //           a {color: blue}
+  //           div {color: black}
+  //         }
+  //       </style>
+  //     `);
+  //     const styleEl = document.getElementsByTagName('style')[0];
 
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        adds: [
-          {
-            rule: cssText,
-            index: [0, 0],
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
+  //     const cssText = '.added-rule {border: 1px solid yellow;}';
+  //     const styleRuleData: styleSheetRuleData = {
+  //       source: IncrementalSource.StyleSheetRule,
+  //       adds: [
+  //         {
+  //           rule: cssText,
+  //           index: [0, 0],
+  //         },
+  //       ],
+  //     };
+  //     replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).toEqual(3);
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).toEqual(cssText);
-    });
+  //     expect(
+  //       (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
+  //     ).toEqual(3);
+  //     expect(
+  //       (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
+  //     ).toEqual(cssText);
+  //   });
 
-    it('should delete rule at index [0,1]', () => {
-      document.write(`
-        <style>
-          @media {
-            a {color: blue;}
-            div {color: black;}
-          }
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        removes: [
-          {
-            index: [0, 1],
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
+  //   it('should delete rule at index [0,1]', () => {
+  //     document.write(`
+  //       <style>
+  //         @media {
+  //           a {color: blue;}
+  //           div {color: black;}
+  //         }
+  //       </style>
+  //     `);
+  //     const styleEl = document.getElementsByTagName('style')[0];
+  //     const styleRuleData: styleSheetRuleData = {
+  //       source: IncrementalSource.StyleSheetRule,
+  //       removes: [
+  //         {
+  //           index: [0, 1],
+  //         },
+  //       ],
+  //     };
+  //     replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
 
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).toEqual(1);
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).toEqual('a {color: blue;}');
-    });
-  });
+  //     expect(
+  //       (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
+  //     ).toEqual(1);
+  //     expect(
+  //       (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
+  //     ).toEqual('a {color: blue;}');
+  //   });
+  // });
 
   describe('test sameNodeType function', () => {
     const rrdom = new RRDocument();
