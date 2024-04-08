@@ -164,15 +164,15 @@ function isUserInteraction(event: eventWithTime): boolean {
 /**
  * Get periods of time when no user interaction happened from a list of events.
  * @param events - all events
- * @param skipTimeThreshold - threshold of inactive time in milliseconds
+ * @param inactivePeriodThreshold - threshold of inactive time in milliseconds
  * @returns periods of time consist with [start time, end time]
  */
-export function getInactivePeriods(events: eventWithTime[], skipTimeThreshold: number) {
+export function getInactivePeriods(events: eventWithTime[], inactivePeriodThreshold: number) {
   const inactivePeriods: [number, number][] = [];
   let lastActiveTime = events[0].timestamp;
   for (const event of events) {
     if (!isUserInteraction(event)) continue;
-    if (event.timestamp - lastActiveTime > skipTimeThreshold) {
+    if (event.timestamp - lastActiveTime > inactivePeriodThreshold) {
       inactivePeriods.push([lastActiveTime, event.timestamp]);
     }
     lastActiveTime = event.timestamp;

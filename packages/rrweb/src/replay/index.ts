@@ -178,7 +178,7 @@ export class Replayer {
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
-      skipTimeThreshold: 10 * 1000,
+      inactivePeriodThreshold: 10 * 1000,
       showWarning: true,
       showDebug: false,
       blockClass: 'rr-block',
@@ -692,7 +692,7 @@ export class Replayer {
                 if (
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   _event.delay! - event.delay! >
-                  this.config.skipTimeThreshold *
+                  this.config.inactivePeriodThreshold *
                     this.speedService.state.context.timer.speed
                 ) {
                   this.nextUserInteractionEvent = _event;
