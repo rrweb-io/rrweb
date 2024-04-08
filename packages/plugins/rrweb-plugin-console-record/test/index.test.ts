@@ -6,7 +6,7 @@ import type { Browser, Page } from 'puppeteer';
 import type { eventWithTime } from '@rrweb/types';
 
 export async function launchPuppeteer(
-  options?: Parameters<typeof puppeteer['launch']>[0],
+  options?: Parameters<(typeof puppeteer)['launch']>[0],
 ) {
   return await puppeteer.launch({
     headless: process.env.PUPPETEER_HEADLESS ? true : false,
