@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-console-record",
-  "version": "2.0.0-alpha.3",
+  "version": "2.0.0-alpha.12",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-console-record.umd.cjs",
@@ -38,14 +38,14 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "rrweb": "^2.0.0-alpha.3",
+    "rrweb": "^2.0.0-alpha.12",
     "typescript": "^4.7.3",
     "vite": "^3.2.0-beta.2",
-    "vite-plugin-dts": "^1.6.6",
+    "vite-plugin-dts": "^3.8.1",
     "vitest": "^0.24.3",
     "puppeteer": "^19.1.0"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.0-alpha.3"
+    "rrweb": "^2.0.0-alpha.12"
   }
 }

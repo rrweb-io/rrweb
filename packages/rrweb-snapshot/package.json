@@ -59,6 +59,6 @@
     "tslib": "^1.9.3",
     "typescript": "^4.7.3",
     "vite": "^3.2.0-beta.2",
-    "vite-plugin-dts": "^1.6.6"
+    "vite-plugin-dts": "^3.8.1"
   }
 }
