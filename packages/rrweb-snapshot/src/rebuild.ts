@@ -1,14 +1,13 @@
-import { parse } from './css';
+import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
   tagMap,
   elementNode,
   BuildCache,
-  attributes,
   legacyAttributes,
 } from './types';
-import { isElement, Mirror } from './utils';
+import { isElement, Mirror, isNodeMetaEqual } from './utils';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -63,9 +62,11 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
+const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
-export function addHoverClass(cssText: string, cache: BuildCache): string {
+export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
@@ -78,35 +79,61 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
   }
 
   const selectors: string[] = [];
-  ast.stylesheet.rules.forEach((rule) => {
-    if ('selectors' in rule) {
-      (rule.selectors || []).forEach((selector: string) => {
+  const medias: string[] = [];
+  function getSelectors(rule: Rule | Media | NodeWithRules) {
+    if ('selectors' in rule && rule.selectors) {
+      rule.selectors.forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
           selectors.push(selector);
         }
       });
     }
-  });
-
-  if (selectors.length === 0) {
-    return cssText;
+    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
+      medias.push(rule.media);
+    }
+    if ('rules' in rule && rule.rules) {
+      rule.rules.forEach(getSelectors);
+    }
   }
+  getSelectors(ast.stylesheet);
 
-  const selectorMatcher = new RegExp(
-    selectors
-      .filter((selector, index) => selectors.indexOf(selector) === index)
-      .sort((a, b) => b.length - a.length)
-      .map((selector) => {
-        return escapeRegExp(selector);
-      })
-      .join('|'),
-    'g',
-  );
-
-  const result = cssText.replace(selectorMatcher, (selector) => {
-    const newSelector = selector.replace(HOVER_SELECTOR_GLOBAL, '$1.\\:hover');
-    return `${selector}, ${newSelector}`;
-  });
+  let result = cssText;
+  if (selectors.length > 0) {
+    const selectorMatcher = new RegExp(
+      selectors
+        .filter((selector, index) => selectors.indexOf(selector) === index)
+        .sort((a, b) => b.length - a.length)
+        .map((selector) => {
+          return escapeRegExp(selector);
+        })
+        .join('|'),
+      'g',
+    );
+    result = result.replace(selectorMatcher, (selector) => {
+      const newSelector = selector.replace(
+        HOVER_SELECTOR_GLOBAL,
+        '$1.\\:hover',
+      );
+      return `${selector}, ${newSelector}`;
+    });
+  }
+  if (medias.length > 0) {
+    const mediaMatcher = new RegExp(
+      medias
+        .filter((media, index) => medias.indexOf(media) === index)
+        .sort((a, b) => b.length - a.length)
+        .map((media) => {
+          return escapeRegExp(media);
+        })
+        .join('|'),
+      'g',
+    );
+    result = result.replace(mediaMatcher, (media) => {
+      // not attempting to maintain min-device-width along with min-width
+      // (it's non standard)
+      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
+    });
+  }
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
@@ -142,6 +169,18 @@ function buildNode(
       if (n.isSVG) {
         node = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
       } else {
+        if (
+          // If the tag name is a custom element name
+          n.isCustom &&
+          // If the browser supports custom elements
+          doc.defaultView?.customElements &&
+          // If the custom element hasn't been defined yet
+          !doc.defaultView.customElements.get(n.tagName)
+        )
+          doc.defaultView.customElements.define(
+            n.tagName,
+            class extends doc.defaultView.HTMLElement {},
+          );
         node = doc.createElement(tagName);
       }
       /**
@@ -149,7 +188,7 @@ function buildNode(
        * They often overwrite other attributes on the element.
        * We need to parse them last so they can overwrite conflicting attributes.
        */
-      const specialAttributes: attributes = {};
+      const specialAttributes: { [key: string]: string | number } = {};
       for (const name in n.attributes) {
         if (!Object.prototype.hasOwnProperty.call(n.attributes, name)) {
           continue;
@@ -162,6 +201,11 @@ function buildNode(
         ) {
           // legacy fix (TODO: if `value === false` can be generated for other attrs,
           // should we also omit those other attrs from build ?)
+          continue;
+        }
+
+        // null values mean the attribute was removed
+        if (value === null) {
           continue;
         }
 
@@ -180,17 +224,12 @@ function buildNode(
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
         if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = addHoverClass(value, cache);
+          value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          const child = doc.createTextNode(value);
+          node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
-          for (const c of Array.from(node.childNodes)) {
-            if (c.nodeType === node.TEXT_NODE) {
-              node.removeChild(c);
-            }
-          }
-          node.appendChild(child);
+          n.childNodes = []; // value overrides childNodes
           continue;
         }
 
@@ -221,7 +260,8 @@ function buildNode(
             continue;
           } else if (
             tagName === 'link' &&
-            n.attributes.rel === 'preload' &&
+            (n.attributes.rel === 'preload' ||
+              n.attributes.rel === 'modulepreload') &&
             n.attributes.as === 'script'
           ) {
             // ignore
@@ -267,8 +307,8 @@ function buildNode(
             rr_dataURL: string;
           };
           // If the canvas element is created in RRDom runtime (seeking to a time point), the canvas context isn't supported. So the data has to be stored and not handled until diff process. https://github.com/rrweb-io/rrweb/pull/944
-          if (((node as unknown) as RRCanvasElement).RRNodeType)
-            ((node as unknown) as RRCanvasElement).rr_dataURL = value.toString();
+          if ((node as unknown as RRCanvasElement).RRNodeType)
+            (node as unknown as RRCanvasElement).rr_dataURL = value.toString();
         } else if (tagName === 'img' && name === 'rr_dataURL') {
           const image = node as HTMLImageElement;
           if (!image.currentSrc.startsWith('data:')) {
@@ -329,7 +369,7 @@ function buildNode(
     case NodeType.Text:
       return doc.createTextNode(
         n.isStyle && hackCss
-          ? addHoverClass(n.textContent, cache)
+          ? adaptCssForReplay(n.textContent, cache)
           : n.textContent,
       );
     case NodeType.CDATA:
@@ -364,6 +404,19 @@ export function buildNodeWithSN(
     afterAppend,
     cache,
   } = options;
+  /**
+   * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
+   * This situation (duplicated nodes) can happen when recorder has some unfixed bugs and the same node is recorded twice. Or something goes wrong when saving or transferring event data.
+   * Duplicated node creation may cause unexpected errors in replayer. This check tries best effort to prevent the errors.
+   */
+  if (mirror.has(n.id)) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const nodeInMirror = mirror.getNode(n.id)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const meta = mirror.getMeta(nodeInMirror)!;
+    // For safety concern, check if the node in mirror is the same as the node we are trying to build
+    if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
+  }
   let node = buildNode(n, { doc, hackCss, cache });
   if (!node) {
     return null;
@@ -424,6 +477,28 @@ export function buildNodeWithSN(
 
       if (childN.isShadow && isElement(node) && node.shadowRoot) {
         node.shadowRoot.appendChild(childNode);
+      } else if (
+        n.type === NodeType.Document &&
+        childN.type == NodeType.Element
+      ) {
+        const htmlElement = childNode as HTMLElement;
+        let body: HTMLBodyElement | null = null;
+        htmlElement.childNodes.forEach((child) => {
+          if (child.nodeName === 'BODY') body = child as HTMLBodyElement;
+        });
+        if (body) {
+          // this branch solves a problem in Firefox where css transitions are incorrectly
+          // being applied upon rebuild.  Presumably FF doesn't finished parsing the styles
+          // in time, and applies e.g. a default margin:0 to elements which have a non-zero
+          // margin set in CSS, along with a transition on them
+          htmlElement.removeChild(body);
+          // append <head> and <style>s
+          node.appendChild(childNode);
+          // now append <body>
+          htmlElement.appendChild(body);
+        } else {
+          node.appendChild(childNode);
+        }
       } else {
         node.appendChild(childNode);
       }

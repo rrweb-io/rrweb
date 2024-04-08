@@ -131,7 +131,8 @@ export class RRDocument extends BaseRRDocument {
   }
 
   destroyTree() {
-    this.childNodes = [];
+    this.firstChild = null;
+    this.lastChild = null;
     this.mirror.reset();
   }
 
@@ -193,9 +194,8 @@ interface RRElementTagNameMap {
   video: RRMediaElement;
 }
 
-type RRElementType<
-  K extends keyof HTMLElementTagNameMap
-> = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
+type RRElementType<K extends keyof HTMLElementTagNameMap> =
+  K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
 
 function getValidTagName(element: HTMLElement): string {
   // https://github.com/rrweb-io/rrweb-snapshot/issues/56

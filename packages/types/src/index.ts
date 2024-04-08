@@ -83,6 +83,7 @@ export enum IncrementalSource {
   StyleDeclaration,
   Selection,
   AdoptedStyleSheet,
+  CustomElement,
 }
 
 export type mutationData = {
@@ -142,6 +143,10 @@ export type adoptedStyleSheetData = {
   source: IncrementalSource.AdoptedStyleSheet;
 } & adoptedStyleSheetParam;
 
+export type customElementData = {
+  source: IncrementalSource.CustomElement;
+} & customElementParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -155,7 +160,8 @@ export type incrementalData =
   | fontData
   | selectionData
   | styleDeclarationData
-  | adoptedStyleSheetData;
+  | adoptedStyleSheetData
+  | customElementData;
 
 export type event =
   | domContentLoadedEvent
@@ -216,6 +222,23 @@ export type SamplingStrategy = Partial<{
   canvas: 'all' | number;
 }>;
 
+export interface ICrossOriginIframeMirror {
+  getId(
+    iframe: HTMLIFrameElement,
+    remoteId: number,
+    parentToRemoteMap?: Map<number, number>,
+    remoteToParentMap?: Map<number, number>,
+  ): number;
+  getIds(iframe: HTMLIFrameElement, remoteId: number[]): number[];
+  getRemoteId(
+    iframe: HTMLIFrameElement,
+    parentId: number,
+    map?: Map<number, number>,
+  ): number;
+  getRemoteIds(iframe: HTMLIFrameElement, parentId: number[]): number[];
+  reset(iframe?: HTMLIFrameElement): void;
+}
+
 export type RecordPlugin<TOptions = unknown> = {
   name: string;
   observer?: (
@@ -224,7 +247,11 @@ export type RecordPlugin<TOptions = unknown> = {
     options: TOptions,
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
-  getMirror?: (mirror: Mirror) => void;
+  getMirror?: (mirrors: {
+    nodeMirror: Mirror;
+    crossOriginIframeMirror: ICrossOriginIframeMirror;
+    crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
+  }) => void;
   options: TOptions;
 };
 
@@ -241,17 +268,18 @@ export type hooksParam = {
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
   selection?: selectionCallback;
+  customElement?: customElementCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
-export type mutationRecord = {
+export type mutationRecord = Readonly<{
   type: string;
   target: Node;
   oldValue: string | null;
   addedNodes: NodeList;
   removedNodes: NodeList;
   attributeName: string | null;
-};
+}>;
 
 export type textCursor = {
   node: Node;
@@ -262,7 +290,7 @@ export type textMutation = {
   value: string | null;
 };
 
-export type styleAttributeValue = {
+export type styleOMValue = {
   [key: string]: styleValueWithPriority | string | false;
 };
 
@@ -271,13 +299,15 @@ export type styleValueWithPriority = [string, string];
 export type attributeCursor = {
   node: Node;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
+  styleDiff: styleOMValue;
+  _unchangedStyles: styleOMValue;
 };
 export type attributeMutation = {
   id: number;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
 };
 
@@ -341,6 +371,12 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum PointerTypes {
+  Mouse,
+  Pen,
+  Touch,
+}
+
 export enum CanvasContext {
   '2D',
   WebGL,
@@ -381,8 +417,9 @@ export type CanvasArg =
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
+  pointerType?: PointerTypes;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
@@ -563,6 +600,14 @@ export type selectionParam = {
 
 export type selectionCallback = (p: selectionParam) => void;
 
+export type customElementParam = {
+  define?: {
+    name: string;
+  };
+};
+
+export type customElementCallback = (c: customElementParam) => void;
+
 export type DeprecatedMirror = {
   map: {
     [key: number]: INode;
@@ -636,3 +681,16 @@ declare global {
 export type IWindow = Window & typeof globalThis;
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export type GetTypedKeys<Obj extends object, ValueType> = TakeTypeHelper<
+  Obj,
+  ValueType
+>[keyof TakeTypeHelper<Obj, ValueType>];
+export type TakeTypeHelper<Obj extends object, ValueType> = {
+  [K in keyof Obj]: Obj[K] extends ValueType ? K : never;
+};
+
+export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
+  Obj,
+  TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
+>;

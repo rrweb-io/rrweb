@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Page } from 'puppeteer';
-import type { recordOptions } from '../../src/types';
 import type { eventWithTime } from '@rrweb/types';
+import type { recordOptions } from '../../src/types';
 import { startServer, launchPuppeteer, ISuite, getServerURL } from '../utils';
 
 const suites: Array<
@@ -27,6 +27,24 @@ const suites: Array<
   {
     title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
     html: 'benchmark-dom-mutation-add-and-remove.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
+  {
+    title: 'create 1000 DOM nodes and append into its previous looped node',
+    html: 'benchmark-dom-mutation-multiple-descendant-add.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
+  {
+    title: 'create 10000 DOM nodes and move it to new container',
+    html: 'benchmark-dom-mutation-add-and-move.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
+  {
+    title: 'modify attributes on 10000 DOM nodes',
+    html: 'benchmark-dom-mutation-attributes.html',
     eval: 'window.workload()',
     times: 10,
   },

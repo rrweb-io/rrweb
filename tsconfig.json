@@ -23,6 +23,12 @@
     },
     {
       "path": "packages/plugins/rrweb-plugin-console-record"
+    },
+    {
+      "path": "packages/rrvideo"
+    },
+    {
+      "path": "packages/web-extension"
     }
   ],
   "files": [],

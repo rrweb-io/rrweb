@@ -39,8 +39,8 @@ export class RRDocument extends BaseRRDocument implements IRRDocument {
     if (!this._nwsapi) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       this._nwsapi = nwsapi({
-        document: (this as unknown) as Document,
-        DOMException: (null as unknown) as new (
+        document: this as unknown as Document,
+        DOMException: null as unknown as new (
           message?: string,
           name?: string,
         ) => DOMException,
@@ -216,7 +216,7 @@ export class RRElement extends BaseRRElement {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   get style() {
-    return (this._style as unknown) as CSSStyleDeclaration;
+    return this._style as unknown as CSSStyleDeclaration;
   }
 
   attachShadow(_init: ShadowRootInit): RRElement {
@@ -264,12 +264,12 @@ export class RRElement extends BaseRRElement {
   querySelectorAll(selectors: string): BaseRRNode[] {
     const result: RRElement[] = [];
     if (this.ownerDocument !== null) {
-      ((this.ownerDocument as RRDocument).nwsapi.select(
+      (this.ownerDocument as RRDocument).nwsapi.select(
         selectors,
-        (this as unknown) as Element,
+        this as unknown as Element,
         (element) => {
-          if (((element as unknown) as RRElement) !== this)
-            result.push((element as unknown) as RRElement);
+          if ((element as unknown as RRElement) !== this)
+            result.push(element as unknown as RRElement);
         },
       ) as unknown) as BaseRRNode[];
     }
@@ -389,6 +389,5 @@ interface RRElementTagNameMap {
   video: RRMediaElement;
 }
 
-type RRElementType<
-  K extends keyof HTMLElementTagNameMap
-> = K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
+type RRElementType<K extends keyof HTMLElementTagNameMap> =
+  K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;

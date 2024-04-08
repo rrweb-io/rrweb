@@ -1,15 +1,17 @@
 import snapshot, {
   serializeNodeWithId,
   transformAttribute,
+  ignoreAttribute,
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
   classMatchesRegex,
   IGNORED_NODE,
+  genId,
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
-  addHoverClass,
+  adaptCssForReplay,
   createCache,
 } from './rebuild';
 export * from './types';
@@ -20,12 +22,14 @@ export {
   serializeNodeWithId,
   rebuild,
   buildNodeWithSN,
-  addHoverClass,
+  adaptCssForReplay,
   createCache,
   transformAttribute,
+  ignoreAttribute,
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
   classMatchesRegex,
   IGNORED_NODE,
+  genId,
 };

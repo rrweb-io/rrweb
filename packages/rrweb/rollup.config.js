@@ -125,6 +125,7 @@ function getPlugins(options = {}) {
     webWorkerLoader({
       targetPlatform: 'browser',
       inline: true,
+      preserveSource: true,
       sourceMap,
     }),
     esbuild({
@@ -144,7 +145,11 @@ for (const c of baseConfigs) {
     resolve({ browser: true }),
 
     // supports bundling `web-worker:..filename`
-    webWorkerLoader(),
+    webWorkerLoader({
+      targetPlatform: 'browser',
+      inline: true,
+      preserveSource: true,
+    }),
 
     typescript(),
   ];
@@ -186,7 +191,7 @@ for (const c of baseConfigs) {
     output: [
       {
         format: 'cjs',
-        file: c.pathFn('lib/rrweb.js'),
+        file: c.pathFn('lib/rrweb.cjs'),
       },
     ],
   });
@@ -213,6 +218,11 @@ if (process.env.BROWSER_ONLY) {
       input: './src/index.ts',
       name: 'rrweb',
       pathFn: (p) => p,
+    },
+    {
+      input: './src/entries/all.ts',
+      name: 'rrweb',
+      pathFn: toAllPath,
     },
     {
       input: './src/plugins/console/record/index.ts',

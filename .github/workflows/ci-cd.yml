@@ -21,21 +21,21 @@ jobs:
           node-version: lts/*
 
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
 
       - name: Build Project
-        run: yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
       - name: Check types
         run: yarn turbo run check-types
 
       - name: Run tests
-        run: xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+        run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: image-diff
-          path: packages/rrweb/test/e2e/__image_snapshots__/__diff_output__/*.png
+          path: packages/rrweb/test/*/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore

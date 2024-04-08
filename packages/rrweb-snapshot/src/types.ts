@@ -21,7 +21,7 @@ export type documentTypeNode = {
 };
 
 export type attributes = {
-  [key: string]: string | number | true;
+  [key: string]: string | number | true | null;
 };
 export type legacyAttributes = {
   /**
@@ -38,6 +38,8 @@ export type elementNode = {
   childNodes: serializedNodeWithId[];
   isSVG?: true;
   needBlock?: boolean;
+  // This is a custom element or not.
+  isCustom?: true;
 };
 
 export type textNode = {
@@ -153,8 +155,8 @@ export type DataURLOptions = Partial<{
   quality: number;
 }>;
 
-export type MaskTextFn = (text: string) => string;
-export type MaskInputFn = (text: string) => string;
+export type MaskTextFn = (text: string, element: HTMLElement | null) => string;
+export type MaskInputFn = (text: string, element: HTMLElement) => string;
 
 export type KeepIframeSrcFn = (src: string) => boolean;
 

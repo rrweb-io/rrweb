@@ -10,6 +10,7 @@ import {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
+  elementNode,
   serializedElementNodeWithId,
 } from './types';
 import {
@@ -19,7 +20,10 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  getCssRulesString,
+  stringifyStylesheet,
+  getInputType,
+  toLowerCase,
+  extractFileExtension,
 } from './utils';
 
 let _id = 1;
@@ -27,16 +31,16 @@ const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
 export const IGNORED_NODE = -2;
 
-function genId(): number {
+export function genId(): number {
   return _id++;
 }
 
-function getValidTagName(element: HTMLElement): string {
+function getValidTagName(element: HTMLElement): Lowercase<string> {
   if (element instanceof HTMLFormElement) {
     return 'form';
   }
 
-  const processedTagName = element.tagName.toLowerCase().trim();
+  const processedTagName = toLowerCase(element.tagName);
 
   if (tagNameRegex.test(processedTagName)) {
     // if the tag name is odd and we cannot extract
@@ -46,14 +50,6 @@ function getValidTagName(element: HTMLElement): string {
   }
 
   return processedTagName;
-}
-
-function stringifyStyleSheet(sheet: CSSStyleSheet): string {
-  return sheet.cssRules
-    ? Array.from(sheet.cssRules)
-        .map((rule) => rule.cssText || '')
-        .join('')
-    : '';
 }
 
 function extractOrigin(url: string): string {
@@ -71,7 +67,8 @@ let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
-const RELATIVE_PATH = /^(?!www\.|(?:http|ftp)s?:\/\/|[A-Za-z]:\\|\/\/|#).*/;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
 export function absoluteToStylesheet(
   cssText: string | null,
@@ -92,7 +89,7 @@ export function absoluteToStylesheet(
       if (!filePath) {
         return origin;
       }
-      if (!RELATIVE_PATH.test(filePath)) {
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (DATA_URI.test(filePath)) {
@@ -220,35 +217,46 @@ function getHref() {
 
 export function transformAttribute(
   doc: Document,
-  tagName: string,
-  name: string,
-  value: string,
-): string {
+  tagName: Lowercase<string>,
+  name: Lowercase<string>,
+  value: string | null,
+): string | null {
+  if (!value) {
+    return value;
+  }
+
   // relative path in attribute
   if (
     name === 'src' ||
-    (name === 'href' && value && !(tagName === 'use' && value[0] === '#'))
+    (name === 'href' && !(tagName === 'use' && value[0] === '#'))
   ) {
     // href starts with a # is an id pointer for svg
     return absoluteToDoc(doc, value);
-  } else if (name === 'xlink:href' && value && value[0] !== '#') {
+  } else if (name === 'xlink:href' && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
   } else if (
     name === 'background' &&
-    value &&
     (tagName === 'table' || tagName === 'td' || tagName === 'th')
   ) {
     return absoluteToDoc(doc, value);
-  } else if (name === 'srcset' && value) {
+  } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
-  } else if (name === 'style' && value) {
+  } else if (name === 'style') {
     return absoluteToStylesheet(value, getHref());
-  } else if (tagName === 'object' && name === 'data' && value) {
+  } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
-  } else {
-    return value;
   }
+
+  return value;
+}
+
+export function ignoreAttribute(
+  tagName: string,
+  name: string,
+  _value: unknown,
+): boolean {
+  return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
 }
 
 export function _isBlockedElement(
@@ -256,20 +264,24 @@ export function _isBlockedElement(
   blockClass: string | RegExp,
   blockSelector: string | null,
 ): boolean {
-  if (typeof blockClass === 'string') {
-    if (element.classList.contains(blockClass)) {
-      return true;
-    }
-  } else {
-    for (let eIndex = element.classList.length; eIndex--; ) {
-      const className = element.classList[eIndex];
-      if (blockClass.test(className)) {
+  try {
+    if (typeof blockClass === 'string') {
+      if (element.classList.contains(blockClass)) {
         return true;
       }
+    } else {
+      for (let eIndex = element.classList.length; eIndex--; ) {
+        const className = element.classList[eIndex];
+        if (blockClass.test(className)) {
+          return true;
+        }
+      }
     }
-  }
-  if (blockSelector) {
-    return element.matches(blockSelector);
+    if (blockSelector) {
+      return element.matches(blockSelector);
+    }
+  } catch (e) {
+    //
   }
 
   return false;
@@ -300,23 +312,32 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  checkAncestors: boolean,
 ): boolean {
-  const el: HTMLElement | null =
-    node.nodeType === node.ELEMENT_NODE
-      ? (node as HTMLElement)
-      : node.parentElement;
-  if (el === null) return false;
-
-  if (typeof maskTextClass === 'string') {
-    if (el.classList.contains(maskTextClass)) return true;
-    if (el.closest(`.${maskTextClass}`)) return true;
-  } else {
-    if (classMatchesRegex(el, maskTextClass, true)) return true;
-  }
-
-  if (maskTextSelector) {
-    if (el.matches(maskTextSelector)) return true;
-    if (el.closest(maskTextSelector)) return true;
+  try {
+    const el: HTMLElement | null =
+      node.nodeType === node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
+    if (el === null) return false;
+    if (typeof maskTextClass === 'string') {
+      if (checkAncestors) {
+        if (el.closest(`.${maskTextClass}`)) return true;
+      } else {
+        if (el.classList.contains(maskTextClass)) return true;
+      }
+    } else {
+      if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
+    }
+    if (maskTextSelector) {
+      if (checkAncestors) {
+        if (el.closest(maskTextSelector)) return true;
+      } else {
+        if (el.matches(maskTextSelector)) return true;
+      }
+    }
+  } catch (e) {
+    //
   }
   return false;
 }
@@ -412,8 +433,7 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
-    maskTextClass: string | RegExp;
-    maskTextSelector: string | null;
+    needsMask: boolean | undefined;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -433,8 +453,7 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
-    maskTextClass,
-    maskTextSelector,
+    needsMask,
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
@@ -486,8 +505,7 @@ function serializeNode(
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
-        maskTextClass,
-        maskTextSelector,
+        needsMask,
         maskTextFn,
         rootId,
       });
@@ -517,13 +535,12 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
-    maskTextClass: string | RegExp;
-    maskTextSelector: string | null;
+    needsMask: boolean | undefined;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
+  const { needsMask, maskTextFn, rootId } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -539,7 +556,7 @@ function serializeTextNode(
         // to _only_ include the current rule(s) added by the text node.
         // So we'll be conservative and keep textContent as-is.
       } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStyleSheet(
+        textContent = stringifyStylesheet(
           (n.parentNode as HTMLStyleElement).sheet!,
         );
       }
@@ -554,14 +571,9 @@ function serializeTextNode(
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
   }
-  if (
-    !isStyle &&
-    !isScript &&
-    textContent &&
-    needMaskingText(n, maskTextClass, maskTextSelector)
-  ) {
+  if (!isStyle && !isScript && textContent && needsMask) {
     textContent = maskTextFn
-      ? maskTextFn(textContent)
+      ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
   }
 
@@ -613,12 +625,14 @@ function serializeElementNode(
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    attributes[attr.name] = transformAttribute(
-      doc,
-      tagName,
-      attr.name,
-      attr.value,
-    );
+    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+      attributes[attr.name] = transformAttribute(
+        doc,
+        tagName,
+        toLowerCase(attr.name),
+        attr.value,
+      );
+    }
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
@@ -627,7 +641,7 @@ function serializeElementNode(
     });
     let cssText: string | null = null;
     if (stylesheet) {
-      cssText = getCssRulesString(stylesheet);
+      cssText = stringifyStylesheet(stylesheet);
     }
     if (cssText) {
       delete attributes.rel;
@@ -642,7 +656,7 @@ function serializeElementNode(
     // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
     !(n.innerText || n.textContent || '').trim().length
   ) {
-    const cssText = getCssRulesString(
+    const cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
@@ -661,7 +675,8 @@ function serializeElementNode(
       value
     ) {
       attributes.value = maskInputValue({
-        type: attributes.type,
+        element: n,
+        type: getInputType(n),
         tagName,
         value,
         maskInputOptions,
@@ -722,6 +737,7 @@ function serializeElementNode(
     const oldValue = image.crossOrigin;
     image.crossOrigin = 'anonymous';
     const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
       try {
         canvasService!.width = image.naturalWidth;
         canvasService!.height = image.naturalHeight;
@@ -741,7 +757,7 @@ function serializeElementNode(
     };
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.onload = recordInlineImage;
+    else image.addEventListener('load', recordInlineImage);
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
@@ -782,6 +798,13 @@ function serializeElementNode(
     delete attributes.src; // prevent auto loading
   }
 
+  let isCustomElement: true | undefined;
+  try {
+    if (customElements.get(tagName)) isCustomElement = true;
+  } catch (e) {
+    // In case old browsers don't support customElements
+  }
+
   return {
     type: NodeType.Element,
     tagName,
@@ -790,11 +813,14 @@ function serializeElementNode(
     isSVG: isSVGElement(n as Element) || undefined,
     needBlock,
     rootId,
+    isCustom: isCustomElement,
   };
 }
 
-function lowerIfExists(maybeAttr: string | number | boolean): string {
-  if (maybeAttr === undefined) {
+function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): string {
+  if (maybeAttr === undefined || maybeAttr === null) {
     return '';
   } else {
     return (maybeAttr as string).toLowerCase();
@@ -813,15 +839,16 @@ function slimDOMExcluded(
       slimDOMOptions.script &&
       // script tag
       (sn.tagName === 'script' ||
-        // preload link
+        // (module)preload link
         (sn.tagName === 'link' &&
-          sn.attributes.rel === 'preload' &&
+          (sn.attributes.rel === 'preload' ||
+            sn.attributes.rel === 'modulepreload') &&
           sn.attributes.as === 'script') ||
         // prefetch link
         (sn.tagName === 'link' &&
           sn.attributes.rel === 'prefetch' &&
           typeof sn.attributes.href === 'string' &&
-          sn.attributes.href.endsWith('.js')))
+          extractFileExtension(sn.attributes.href) === 'js'))
     ) {
       return true;
     } else if (
@@ -905,6 +932,7 @@ export function serializeNodeWithId(
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
+    needsMask?: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
@@ -950,14 +978,29 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
   } = options;
+  let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
+
+  if (
+    !needsMask &&
+    n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
+  ) {
+    // perf: if needsMask = true, children won't also need to check
+    const checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
+    needsMask = needMaskingText(
+      n as Element,
+      maskTextClass,
+      maskTextSelector,
+      checkAncestors,
+    );
+  }
+
   const _serializedNode = serializeNode(n, {
     doc,
     mirror,
     blockClass,
     blockSelector,
-    maskTextClass,
-    maskTextSelector,
+    needsMask,
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
@@ -1028,6 +1071,7 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
+      needsMask,
       maskTextClass,
       maskTextSelector,
       skipChild,
@@ -1047,10 +1091,19 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
     };
-    for (const childN of Array.from(n.childNodes)) {
-      const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
-      if (serializedChildNode) {
-        serializedNode.childNodes.push(serializedChildNode);
+
+    if (
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'textarea' &&
+      (serializedNode as elementNode).attributes.value !== undefined
+    ) {
+      // value parameter in DOM reflects the correct value, so ignore childNode
+    } else {
+      for (const childN of Array.from(n.childNodes)) {
+        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+        if (serializedChildNode) {
+          serializedNode.childNodes.push(serializedChildNode);
+        }
       }
     }
 
@@ -1088,6 +1141,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            needsMask,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
@@ -1124,7 +1178,11 @@ export function serializeNodeWithId(
   if (
     serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'link' &&
-    serializedNode.attributes.rel === 'stylesheet'
+    typeof serializedNode.attributes.rel === 'string' &&
+    (serializedNode.attributes.rel === 'stylesheet' ||
+      (serializedNode.attributes.rel === 'preload' &&
+        typeof serializedNode.attributes.href === 'string' &&
+        extractFileExtension(serializedNode.attributes.href) === 'css'))
   ) {
     onceStylesheetLoaded(
       n as HTMLLinkElement,
@@ -1135,6 +1193,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            needsMask,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
@@ -1182,7 +1241,7 @@ function snapshot(
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskTextFn;
-    slimDOM?: boolean | SlimDOMOptions;
+    slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
     recordCanvas?: boolean;

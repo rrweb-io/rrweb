@@ -35,8 +35,8 @@ export class RRWebPluginCanvasWebRTCReplay {
           this.canvasFoundCallback(node, context);
         }
       },
-      getMirror: (mirror: Mirror) => {
-        this.mirror = mirror;
+      getMirror: (options) => {
+        this.mirror = options.nodeMirror;
       },
     };
   }

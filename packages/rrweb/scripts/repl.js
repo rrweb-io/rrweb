@@ -21,6 +21,47 @@ void (async () => {
   const code = getCode();
   let events = [];
 
+  async function injectRecording(frame) {
+    try {
+      await frame.evaluate((rrwebCode) => {
+        const win = window;
+        if (win.__IS_RECORDING__) return;
+        win.__IS_RECORDING__ = true;
+
+        (async () => {
+          function loadScript(code) {
+            const s = document.createElement('script');
+            let r = false;
+            s.type = 'text/javascript';
+            s.innerHTML = code;
+            if (document.head) {
+              document.head.append(s);
+            } else {
+              requestAnimationFrame(() => {
+                document.head.append(s);
+              });
+            }
+          }
+          loadScript(rrwebCode);
+
+          win.events = [];
+          rrweb.record({
+            emit: (event) => {
+              win.events.push(event);
+              win._replLog(event);
+            },
+            plugins: [],
+            recordCanvas: true,
+            recordCrossOriginIframes: true,
+            collectFonts: true,
+          });
+        })();
+      }, code);
+    } catch (e) {
+      console.error('failed to inject recording script:', e);
+    }
+  }
+
   await start('https://react-redux.realworld.io');
 
   const fakeGoto = async (page, url) => {
@@ -115,34 +156,18 @@ void (async () => {
       ],
     });
     const page = await browser.newPage();
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: 300000,
-    });
 
     await page.exposeFunction('_replLog', (event) => {
       events.push(event);
     });
-    await page.evaluate(`;${code}
-      window.__IS_RECORDING__ = true
-      rrweb.record({
-        emit: event => window._replLog(event),
-        recordCanvas: true,
-        collectFonts: true
-      });
-    `);
-    page.on('framenavigated', async () => {
-      const isRecording = await page.evaluate('window.__IS_RECORDING__');
-      if (!isRecording) {
-        await page.evaluate(`;${code}
-          window.__IS_RECORDING__ = true
-          rrweb.record({
-            emit: event => window._replLog(event),
-            recordCanvas: true,
-            collectFonts: true
-          });
-        `);
-      }
+
+    page.on('framenavigated', async (frame) => {
+      await injectRecording(frame);
+    });
+
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 300000,
     });
 
     emitter.once('done', async (shouldReplay) => {

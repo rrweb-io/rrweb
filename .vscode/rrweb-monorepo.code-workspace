@@ -29,6 +29,11 @@
       "path": "../packages/types"
     },
     {
+      "name": "web-extension (package)",
+      "path": "../packages/web-extension"
+    },
+    { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
+    {
       "name": "@rrweb/rrweb-plugin-console-record",
       "path": "../packages/plugins/rrweb-plugin-console-record"
     },

@@ -76,7 +76,9 @@ describe('e2e webgl', () => {
 
   const hideMouseAnimation = async (p: puppeteer.Page) => {
     await p.addStyleTag({
-      content: '.replayer-mouse-tail{display: none !important;}',
+      content: `.replayer-mouse-tail{display: none !important;}
+                html, body { margin: 0; padding: 0; }
+                iframe { border: none; }`,
     });
   };
 
@@ -90,7 +92,9 @@ describe('e2e webgl', () => {
 
     await waitForRAF(page);
 
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots: eventWithTime[] = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
@@ -108,9 +112,8 @@ describe('e2e webgl', () => {
     `);
     await waitForRAF(page);
 
-    const element = await page.$('iframe');
-    const frameImage = await element!.screenshot();
-
+    const frameImage = await page!.screenshot();
+    await waitForRAF(page);
     expect(frameImage).toMatchImageSnapshot();
   });
 
@@ -122,8 +125,11 @@ describe('e2e webgl', () => {
       getHtml.call(this, 'canvas-webgl-image.html', { recordCanvas: true }),
     );
 
+    await waitForRAF(page);
     await page.waitForTimeout(100);
-    const snapshots: eventWithTime[] = await page.evaluate('window.snapshots');
+    const snapshots: eventWithTime[] = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
 
     page = await browser.newPage();
 
@@ -143,9 +149,7 @@ describe('e2e webgl', () => {
     await page.evaluate(`replayer.play(500);`);
     await waitForRAF(page);
 
-    const element = await page.$('iframe');
-    const frameImage = await element!.screenshot();
-
+    const frameImage = await page!.screenshot();
     expect(frameImage).toMatchImageSnapshot();
   });
 });

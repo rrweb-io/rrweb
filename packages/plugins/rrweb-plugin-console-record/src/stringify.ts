@@ -91,7 +91,7 @@ export function stringify(
   const keys: unknown[] = [];
   return JSON.stringify(
     obj,
-    function (key, value: string | object | null | undefined) {
+    function (key, value: string | bigint | object | null | undefined) {
       /**
        * forked from https://github.com/moll/json-stringify-safe/blob/master/stringify.js
        * to deCycle the object
@@ -120,10 +120,13 @@ export function stringify(
       if (shouldIgnore(value as object)) {
         return toString(value as object);
       }
+      if (typeof value === 'bigint') {
+        return value.toString() + 'n';
+      }
       if (value instanceof Event) {
         const eventResult: Record<string, unknown> = {};
         for (const eventKey in value) {
-          const eventValue = ((value as unknown) as Record<string, unknown>)[
+          const eventValue = (value as unknown as Record<string, unknown>)[
             eventKey
           ];
           if (Array.isArray(eventValue)) {
@@ -158,7 +161,7 @@ export function stringify(
       return true;
     }
 
-    // is function
+    // is function or bigint
     if (typeof _obj === 'function') {
       return true;
     }

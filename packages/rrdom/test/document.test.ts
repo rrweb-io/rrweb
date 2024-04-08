@@ -8,6 +8,7 @@ import {
   BaseRRMediaElement,
   BaseRRNode,
   IRRDocumentType,
+  IRRNode,
 } from '../src/document';
 
 describe('Basic RRDocument implementation', () => {
@@ -34,6 +35,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -42,56 +44,103 @@ describe('Basic RRDocument implementation', () => {
       expect(node.toString()).toEqual('RRNode');
     });
 
-    it('can get first child node', () => {
+    it('can get and set first child node', () => {
       const parentNode = new RRNode();
       const childNode1 = new RRNode();
-      const childNode2 = new RRNode();
       expect(parentNode.firstChild).toBeNull();
-      parentNode.childNodes = [childNode1];
+      parentNode.firstChild = childNode1;
       expect(parentNode.firstChild).toBe(childNode1);
-      parentNode.childNodes = [childNode1, childNode2];
-      expect(parentNode.firstChild).toBe(childNode1);
-      parentNode.childNodes = [childNode2, childNode1];
-      expect(parentNode.firstChild).toBe(childNode2);
+      parentNode.firstChild = null;
+      expect(parentNode.firstChild).toBeNull();
     });
 
-    it('can get last child node', () => {
+    it('can get and set last child node', () => {
       const parentNode = new RRNode();
       const childNode1 = new RRNode();
-      const childNode2 = new RRNode();
       expect(parentNode.lastChild).toBeNull();
-      parentNode.childNodes = [childNode1];
+      parentNode.lastChild = childNode1;
       expect(parentNode.lastChild).toBe(childNode1);
-      parentNode.childNodes = [childNode1, childNode2];
-      expect(parentNode.lastChild).toBe(childNode2);
-      parentNode.childNodes = [childNode2, childNode1];
-      expect(parentNode.lastChild).toBe(childNode1);
+      parentNode.lastChild = null;
+      expect(parentNode.lastChild).toBeNull();
     });
 
-    it('can get nextSibling', () => {
+    it('can get and set preSibling', () => {
+      const node1 = new RRNode();
+      const node2 = new RRNode();
+      expect(node1.previousSibling).toBeNull();
+      node1.previousSibling = node2;
+      expect(node1.previousSibling).toBe(node2);
+      node1.previousSibling = null;
+      expect(node1.previousSibling).toBeNull();
+    });
+
+    it('can get and set nextSibling', () => {
+      const node1 = new RRNode();
+      const node2 = new RRNode();
+      expect(node1.nextSibling).toBeNull();
+      node1.nextSibling = node2;
+      expect(node1.nextSibling).toBe(node2);
+      node1.nextSibling = null;
+      expect(node1.nextSibling).toBeNull();
+    });
+
+    it('can get childNodes', () => {
       const parentNode = new RRNode();
+      expect(parentNode.childNodes).toBeInstanceOf(Array);
+      expect(parentNode.childNodes.length).toBe(0);
+
       const childNode1 = new RRNode();
+      parentNode.firstChild = childNode1;
+      parentNode.lastChild = childNode1;
+      expect(parentNode.childNodes).toEqual([childNode1]);
+
       const childNode2 = new RRNode();
-      expect(parentNode.nextSibling).toBeNull();
-      expect(childNode1.nextSibling).toBeNull();
-      childNode1.parentNode = parentNode;
-      parentNode.childNodes = [childNode1];
-      expect(childNode1.nextSibling).toBeNull();
-      childNode2.parentNode = parentNode;
-      parentNode.childNodes = [childNode1, childNode2];
-      expect(childNode1.nextSibling).toBe(childNode2);
-      expect(childNode2.nextSibling).toBeNull();
+      parentNode.lastChild = childNode2;
+      childNode1.nextSibling = childNode2;
+      childNode2.previousSibling = childNode1;
+      expect(parentNode.childNodes).toEqual([childNode1, childNode2]);
+
+      const childNode3 = new RRNode();
+      parentNode.lastChild = childNode3;
+      childNode2.nextSibling = childNode3;
+      childNode3.previousSibling = childNode2;
+      expect(parentNode.childNodes).toEqual([
+        childNode1,
+        childNode2,
+        childNode3,
+      ]);
     });
 
     it('should return whether the node contains another node', () => {
       const parentNode = new RRNode();
+      expect(parentNode.contains(parentNode)).toBeTruthy();
+      expect(parentNode.contains(null as unknown as IRRNode)).toBeFalsy();
+      expect(parentNode.contains(undefined as unknown as IRRNode)).toBeFalsy();
+      expect(parentNode.contains({} as unknown as IRRNode)).toBeFalsy();
+      expect(
+        parentNode.contains(new RRDocument().createElement('div')),
+      ).toBeFalsy();
       const childNode1 = new RRNode();
       const childNode2 = new RRNode();
-      parentNode.childNodes = [childNode1];
+      parentNode.firstChild = childNode1;
+      parentNode.lastChild = childNode1;
+      childNode1.parentNode = parentNode;
       expect(parentNode.contains(childNode1)).toBeTruthy();
       expect(parentNode.contains(childNode2)).toBeFalsy();
-      childNode1.childNodes = [childNode2];
+
+      parentNode.lastChild = childNode2;
+      childNode1.nextSibling = childNode2;
+      childNode2.previousSibling = childNode1;
+      childNode2.parentNode = childNode1;
+      expect(parentNode.contains(childNode1)).toBeTruthy();
       expect(parentNode.contains(childNode2)).toBeTruthy();
+
+      const childNode3 = new RRNode();
+      expect(parentNode.contains(childNode3)).toBeFalsy();
+      childNode2.firstChild = childNode3;
+      childNode2.lastChild = childNode3;
+      childNode3.parentNode = childNode2;
+      expect(parentNode.contains(childNode3)).toBeTruthy();
     });
 
     it('should not implement appendChild', () => {
@@ -127,7 +176,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.parentElement).toEqual(null);
       expect(node.childNodes).toBeInstanceOf(Array);
       expect(node.childNodes.length).toBe(0);
-      expect(node.ownerDocument).toBeUndefined();
+      expect(node.ownerDocument).toBe(node);
       expect(node.textContent).toBeNull();
       expect(node.RRNodeType).toBe(RRNodeType.Document);
       expect(node.nodeType).toBe(document.nodeType);
@@ -137,6 +186,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -263,8 +313,10 @@ describe('Basic RRDocument implementation', () => {
       expect(documentType.parentNode).toBe(node);
       expect(documentElement.parentNode).toBe(node);
 
-      expect(() => node.removeChild(node.createElement('div'))).toThrowError(
-        `Failed to execute 'removeChild' on 'RRDocument': The RRNode to be removed is not a child of this RRNode.`,
+      expect(() =>
+        node.removeChild(node.createElement('div')),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode."`,
       );
       expect(node.removeChild(documentType)).toBe(documentType);
       expect(documentType.parentNode).toBeNull();
@@ -351,6 +403,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -386,6 +439,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -406,7 +460,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.removeAttribute).toBeDefined();
       expect(node.attachShadow).toBeDefined();
       expect(node.dispatchEvent).toBeDefined();
-      expect(node.dispatchEvent((null as unknown) as Event)).toBeTruthy();
+      expect(node.dispatchEvent(null as unknown as Event)).toBeTruthy();
       expect(node.toString()).toEqual('DIV id="id" class="className" ');
     });
 
@@ -668,64 +722,194 @@ describe('Basic RRDocument implementation', () => {
       const node = document.createElement('div');
       expect(node.childNodes.length).toBe(0);
 
-      const child1 = document.createComment('span');
+      const child1 = document.createElement('span');
       expect(node.appendChild(child1)).toBe(child1);
-      expect(node.childNodes[0]).toEqual(child1);
+      expect(node.childNodes[0]).toBe(child1);
+      expect(node.firstChild).toBe(child1);
+      expect(node.lastChild).toBe(child1);
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBeNull();
       expect(child1.parentElement).toBe(node);
       expect(child1.parentNode).toBe(node);
+      expect(child1.ownerDocument).toBe(document);
+      expect(node.contains(child1)).toBeTruthy();
 
       const child2 = document.createElement('p');
       expect(node.appendChild(child2)).toBe(child2);
-      expect(node.childNodes[1]).toEqual(child2);
+      expect(node.childNodes[1]).toBe(child2);
+      expect(node.firstChild).toBe(child1);
+      expect(node.lastChild).toBe(child2);
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBe(child2);
+      expect(child2.previousSibling).toBe(child1);
+      expect(child2.nextSibling).toBeNull();
       expect(child2.parentElement).toBe(node);
       expect(child2.parentNode).toBe(node);
+      expect(child2.ownerDocument).toBe(document);
+      expect(node.contains(child1)).toBeTruthy();
+      expect(node.contains(child2)).toBeTruthy();
+    });
+
+    it('can append a child with parent node', () => {
+      const node = document.createElement('div');
+      const child = document.createElement('span');
+      expect(node.appendChild(child)).toBe(child);
+      expect(node.childNodes).toEqual([child]);
+      expect(node.appendChild(child)).toBe(child);
+      expect(node.childNodes).toEqual([child]);
+      expect(child.parentNode).toBe(node);
+
+      const node1 = document.createElement('div');
+      expect(node1.appendChild(child)).toBe(child);
+      expect(node1.childNodes).toEqual([child]);
+      expect(child.parentNode).toBe(node1);
+      expect(node.childNodes).toEqual([]);
     });
 
     it('can insert new child before an existing child', () => {
       const node = document.createElement('div');
       const child1 = document.createElement('h1');
       const child2 = document.createElement('h2');
-      expect(() => node.insertBefore(node, child1)).toThrowError(
-        `Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.`,
+      const child3 = document.createElement('h3');
+      expect(() =>
+        node.insertBefore(node, child1),
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
       );
       expect(node.insertBefore(child1, null)).toBe(child1);
       expect(node.childNodes[0]).toBe(child1);
+      expect(node.childNodes.length).toBe(1);
+      expect(node.firstChild).toBe(child1);
+      expect(node.lastChild).toBe(child1);
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBeNull();
       expect(child1.parentNode).toBe(node);
       expect(child1.parentElement).toBe(node);
+      expect(child1.ownerDocument).toBe(document);
+      expect(node.contains(child1)).toBeTruthy();
 
       expect(node.insertBefore(child2, child1)).toBe(child2);
-      expect(node.childNodes.length).toBe(2);
-      expect(node.childNodes[0]).toBe(child2);
-      expect(node.childNodes[1]).toBe(child1);
+      expect(node.childNodes).toEqual([child2, child1]);
+      expect(node.firstChild).toBe(child2);
+      expect(node.lastChild).toBe(child1);
+      expect(child1.previousSibling).toBe(child2);
+      expect(child1.nextSibling).toBeNull();
+      expect(child2.previousSibling).toBeNull();
+      expect(child2.nextSibling).toBe(child1);
       expect(child2.parentNode).toBe(node);
       expect(child2.parentElement).toBe(node);
+      expect(child2.ownerDocument).toBe(document);
+      expect(node.contains(child2)).toBeTruthy();
+      expect(node.contains(child1)).toBeTruthy();
+
+      expect(node.insertBefore(child3, child1)).toBe(child3);
+      expect(node.childNodes).toEqual([child2, child3, child1]);
+      expect(node.firstChild).toBe(child2);
+      expect(node.lastChild).toBe(child1);
+      expect(child1.previousSibling).toBe(child3);
+      expect(child1.nextSibling).toBeNull();
+      expect(child3.previousSibling).toBe(child2);
+      expect(child3.nextSibling).toBe(child1);
+      expect(child2.previousSibling).toBeNull();
+      expect(child2.nextSibling).toBe(child3);
+      expect(child3.parentNode).toBe(node);
+      expect(child3.parentElement).toBe(node);
+      expect(child3.ownerDocument).toBe(document);
+      expect(node.contains(child2)).toBeTruthy();
+      expect(node.contains(child3)).toBeTruthy();
+      expect(node.contains(child1)).toBeTruthy();
+    });
+
+    it('can insert a child with parent node', () => {
+      const node = document.createElement('div');
+      const child1 = document.createElement('h1');
+      expect(node.insertBefore(child1, null)).toBe(child1);
+      expect(node.childNodes).toEqual([child1]);
+      expect(node.insertBefore(child1, child1)).toBe(child1);
+      expect(node.childNodes).toEqual([child1]);
+      expect(child1.parentNode).toEqual(node);
+
+      const node2 = document.createElement('div');
+      const child2 = document.createElement('h2');
+      expect(node2.insertBefore(child2, null)).toBe(child2);
+      expect(node2.childNodes).toEqual([child2]);
+      expect(node2.insertBefore(child1, child2)).toBe(child1);
+      expect(node2.childNodes).toEqual([child1, child2]);
+      expect(child1.parentNode).toEqual(node2);
+      expect(node.childNodes).toEqual([]);
     });
 
     it('can remove an existing child', () => {
       const node = document.createElement('div');
       const child1 = document.createElement('h1');
       const child2 = document.createElement('h2');
+      const child3 = document.createElement('h3');
       node.appendChild(child1);
       node.appendChild(child2);
-      expect(node.childNodes.length).toBe(2);
-      expect(child1.parentNode).toBe(node);
-      expect(child2.parentNode).toBe(node);
-      expect(child1.parentElement).toBe(node);
-      expect(child2.parentElement).toBe(node);
+      node.appendChild(child3);
+      expect(node.childNodes).toEqual([child1, child2, child3]);
 
       expect(() =>
         node.removeChild(document.createElement('div')),
-      ).toThrowError(
-        `Failed to execute 'removeChild' on 'RRElement': The RRNode to be removed is not a child of this RRNode.`,
+      ).toThrowErrorMatchingInlineSnapshot(
+        `"Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode."`,
       );
-      expect(node.removeChild(child1)).toBe(child1);
-      expect(child1.parentNode).toBeNull();
-      expect(child1.parentElement).toBeNull();
-      expect(node.childNodes.length).toBe(1);
+      // Remove the middle child.
       expect(node.removeChild(child2)).toBe(child2);
-      expect(node.childNodes.length).toBe(0);
+      expect(node.childNodes).toEqual([child1, child3]);
+      expect(node.contains(child2)).toBeFalsy();
+      expect(node.firstChild).toBe(child1);
+      expect(node.lastChild).toBe(child3);
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBe(child3);
+      expect(child3.previousSibling).toBe(child1);
+      expect(child3.nextSibling).toBeNull();
+      expect(child2.previousSibling).toBeNull();
+      expect(child2.nextSibling).toBeNull();
       expect(child2.parentNode).toBeNull();
       expect(child2.parentElement).toBeNull();
+
+      // Remove the previous child.
+      expect(node.removeChild(child1)).toBe(child1);
+      expect(node.childNodes).toEqual([child3]);
+      expect(node.contains(child1)).toBeFalsy();
+      expect(node.firstChild).toBe(child3);
+      expect(node.lastChild).toBe(child3);
+      expect(child3.previousSibling).toBeNull();
+      expect(child3.nextSibling).toBeNull();
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBeNull();
+      expect(child1.parentNode).toBeNull();
+      expect(child1.parentElement).toBeNull();
+
+      node.insertBefore(child1, child3);
+      expect(node.childNodes).toEqual([child1, child3]);
+      // Remove the next child.
+      expect(node.removeChild(child3)).toBe(child3);
+      expect(node.childNodes).toEqual([child1]);
+      expect(node.contains(child3)).toBeFalsy();
+      expect(node.contains(child1)).toBeTruthy();
+      expect(node.firstChild).toBe(child1);
+      expect(node.lastChild).toBe(child1);
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBeNull();
+      expect(child3.previousSibling).toBeNull();
+      expect(child3.nextSibling).toBeNull();
+      expect(child3.parentNode).toBeNull();
+      expect(child3.parentElement).toBeNull();
+
+      // Remove all children.
+      expect(node.removeChild(child1)).toBe(child1);
+      expect(node.childNodes).toEqual([]);
+      expect(node.contains(child1)).toBeFalsy();
+      expect(node.contains(child2)).toBeFalsy();
+      expect(node.contains(child3)).toBeFalsy();
+      expect(node.firstChild).toBeNull();
+      expect(node.lastChild).toBeNull();
+      expect(child1.previousSibling).toBeNull();
+      expect(child1.nextSibling).toBeNull();
+      expect(child1.parentNode).toBeNull();
+      expect(child1.parentElement).toBeNull();
     });
   });
 
@@ -748,6 +932,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -783,6 +968,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -818,6 +1004,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
       expect(node.lastChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();
@@ -850,6 +1037,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.ELEMENT_NODE).toBe(document.ELEMENT_NODE);
       expect(node.TEXT_NODE).toBe(document.TEXT_NODE);
       expect(node.firstChild).toBeNull();
+      expect(node.previousSibling).toBeNull();
       expect(node.nextSibling).toBeNull();
       expect(node.contains).toBeDefined();
       expect(node.appendChild).toBeDefined();

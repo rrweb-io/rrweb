@@ -1,12 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { recordOptions } from '../../src/types';
+import * as https from 'https';
 import type { eventWithTime } from '@rrweb/types';
+import type { recordOptions } from '../../src/types';
 import { launchPuppeteer, ISuite } from '../utils';
 
 const suites: Array<{
   title: string;
-  eval: string;
+  eval?: string;
+  eventURL?: string;
   eventsString?: string;
   times?: number; // defaults to 5
 }> = [
@@ -66,6 +68,12 @@ const suites: Array<{
     `,
     times: 3,
   },
+  {
+    title: 'real events recorded on bugs.chromium.org',
+    eventURL:
+      'https://raw.githubusercontent.com/rrweb-io/benchmark-events/main/rrdom-benchmark-1.json',
+    times: 3,
+  },
 ];
 
 function avg(v: number[]): number {
@@ -86,9 +94,6 @@ describe('benchmark: replayer fast-forward performance', () => {
 
     const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
     code = fs.readFileSync(bundlePath, 'utf8');
-
-    for (const suite of suites)
-      suite.eventsString = await generateEvents(suite.eval);
   }, 600_000);
 
   afterAll(async () => {
@@ -99,6 +104,13 @@ describe('benchmark: replayer fast-forward performance', () => {
     it(
       suite.title,
       async () => {
+        if (suite.eval) suite.eventsString = await generateEvents(suite.eval);
+        else if (suite.eventURL) {
+          suite.eventsString = await fetchEventsWithCache(
+            suite.eventURL,
+            './temp',
+          );
+        } else throw new Error('Invalid suite');
         suite.times = suite.times ?? 5;
         const durations: number[] = [];
         for (let i = 0; i < suite.times; i++) {
@@ -167,5 +179,38 @@ describe('benchmark: replayer fast-forward performance', () => {
 
     await page.close();
     return eventsString;
+  }
+
+  /**
+   * Fetch the recorded events from URL. If the events are already cached, read from the cache.
+   */
+  async function fetchEventsWithCache(
+    eventURL: string,
+    cacheFolder: string,
+  ): Promise<string> {
+    const fileName = eventURL.split('/').pop() || '';
+    const cachePath = path.resolve(__dirname, cacheFolder, fileName);
+    if (fs.existsSync(cachePath)) return fs.readFileSync(cachePath, 'utf8');
+    return new Promise((resolve, reject) => {
+      https
+        .get(eventURL, (resp) => {
+          let data = '';
+          resp.on('data', (chunk) => {
+            data += chunk;
+          });
+          resp.on('end', () => {
+            resolve(data);
+            const folderAbsolutePath = path.resolve(__dirname, cacheFolder);
+            if (!fs.existsSync(folderAbsolutePath))
+              fs.mkdirSync(path.resolve(__dirname, cacheFolder), {
+                recursive: true,
+              });
+            fs.writeFileSync(cachePath, data);
+          });
+        })
+        .on('error', (err) => {
+          reject(err);
+        });
+    });
   }
 });

@@ -132,6 +132,7 @@ export abstract class BaseRRNode implements IRRNode {
   public parentNode: IRRNode | null = null;
   public abstract textContent: string | null;
   public ownerDocument: IRRDocument;
+  public previousSibling: IRRNode | null = null;
   public readonly ELEMENT_NODE: number = NodeType.ELEMENT_NODE;
   public readonly TEXT_NODE: number = NodeType.TEXT_NODE;
   // corresponding nodeType value of standard HTML Node
@@ -201,6 +202,12 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
   public readonly RRNodeType = RRNodeType.Document;
   public textContent: string | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(...args: any[]) {
+    super(args);
+    this.ownerDocument = this;
+  }
+
   public get documentElement(): IRRElement | null {
     return (
       (this.childNodes.find(
@@ -255,6 +262,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
     }
     childNode.parentElement = null;
     childNode.parentNode = this;
+    childNode.ownerDocument = this.ownerDocument;
     this.childNodes.push(childNode);
     return childNode;
   }
@@ -282,6 +290,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
     this.childNodes.splice(childIndex, 0, newChild);
     newChild.parentElement = null;
     newChild.parentNode = this;
+    newChild.ownerDocument = this.ownerDocument;
     return newChild;
   }
 
@@ -416,12 +425,10 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
   public scrollLeft?: number;
   public scrollTop?: number;
 
-  constructor(...args: any[]) {
-    if (typeof args[0] !== 'string')
-      throw new Error('RRDOM: tag name must be a string.');
-    const tagName = args[0];
+  constructor(tagName: string) {
     super();
-    this.tagName = this.nodeName = tagName.toUpperCase();
+    this.tagName = tagName.toUpperCase();
+    this.nodeName = tagName.toUpperCase();
   }
 
   public get textContent(): string {
@@ -452,9 +459,9 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
   }
 
   public get style() {
-    const style = (this.attributes.style
-      ? parseCSSText(this.attributes.style)
-      : {}) as CSSStyleDeclaration;
+    const style = (
+      this.attributes.style ? parseCSSText(this.attributes.style) : {}
+    ) as CSSStyleDeclaration;
     const hyphenateRE = /\B([A-Z])/g;
     style.setProperty = (
       name: string,
@@ -503,6 +510,7 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
     this.childNodes.push(newChild);
     newChild.parentNode = this;
     newChild.parentElement = this;
+    newChild.ownerDocument = this.ownerDocument;
     return newChild;
   }
 
@@ -516,6 +524,7 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
     this.childNodes.splice(childIndex, 0, newChild);
     newChild.parentElement = this;
     newChild.parentNode = this;
+    newChild.ownerDocument = this.ownerDocument;
     return newChild;
   }
 
@@ -606,24 +615,6 @@ export class BaseRRComment extends BaseRRNode implements IRRComment {
     super();
     this.data = data;
   }
-  parentElement: IRRNode | null;
-  parentNode: IRRNode | null;
-  childNodes: IRRNode[] = [];
-  ownerDocument: IRRDocument;
-  ELEMENT_NODE: number;
-  TEXT_NODE: number;
-  contains(node: IRRNode): boolean {
-    throw new Error('Method not implemented.');
-  }
-  appendChild(newChild: IRRNode): IRRNode {
-    throw new Error('Method not implemented.');
-  }
-  insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
-    throw new Error('Method not implemented.');
-  }
-  removeChild(node: IRRNode): IRRNode {
-    throw new Error('Method not implemented.');
-  }
 
   public get textContent(): string {
     return this.data;
@@ -661,6 +652,7 @@ export class BaseRRCDATASection extends BaseRRNode implements IRRCDATASection {
     return `RRCDATASection data=${JSON.stringify(this.data)}`;
   }
 }
+
 export class ClassList {
   private onChange: ((newClassText: string) => void) | undefined;
   classes: string[] = [];

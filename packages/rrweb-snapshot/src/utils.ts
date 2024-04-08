@@ -5,6 +5,12 @@ import {
   nodeMetaMap,
   IMirror,
   serializedNodeWithId,
+  serializedNode,
+  NodeType,
+  documentNode,
+  documentTypeNode,
+  textNode,
+  elementNode,
 } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -24,29 +30,116 @@ export function isNativeShadowDom(shadowRoot: ShadowRoot) {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
 
-export function getCssRulesString(s: CSSStyleSheet): string | null {
+/**
+ * Browsers sometimes destructively modify the css rules they receive.
+ * This function tries to rectify the modifications the browser made to make it more cross platform compatible.
+ * @param cssText - output of `CSSStyleRule.cssText`
+ * @returns `cssText` with browser inconsistencies fixed.
+ */
+function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
+  /**
+   * Chrome outputs `-webkit-background-clip` as `background-clip` in `CSSStyleRule.cssText`.
+   * But then Chrome ignores `background-clip` as css input.
+   * Re-introduce `-webkit-background-clip` to fix this issue.
+   */
+  if (
+    cssText.includes(' background-clip: text;') &&
+    !cssText.includes(' -webkit-background-clip: text;')
+  ) {
+    cssText = cssText.replace(
+      ' background-clip: text;',
+      ' -webkit-background-clip: text; background-clip: text;',
+    );
+  }
+  return cssText;
+}
+
+// Remove this declaration once typescript has added `CSSImportRule.supportsText` to the lib.
+declare interface CSSImportRule extends CSSRule {
+  readonly href: string;
+  readonly layerName: string | null;
+  readonly media: MediaList;
+  readonly styleSheet: CSSStyleSheet;
+  /**
+   * experimental API, currently only supported in firefox
+   * https://developer.mozilla.org/en-US/docs/Web/API/CSSImportRule/supportsText
+   */
+  readonly supportsText?: string | null;
+}
+
+/**
+ * Browsers sometimes incorrectly escape `@import` on `.cssText` statements.
+ * This function tries to correct the escaping.
+ * more info: https://bugs.chromium.org/p/chromium/issues/detail?id=1472259
+ * @param cssImportRule
+ * @returns `cssText` with browser inconsistencies fixed, or null if not applicable.
+ */
+export function escapeImportStatement(rule: CSSImportRule): string {
+  const { cssText } = rule;
+  if (cssText.split('"').length < 3) return cssText;
+
+  const statement = ['@import', `url(${JSON.stringify(rule.href)})`];
+  if (rule.layerName === '') {
+    statement.push(`layer`);
+  } else if (rule.layerName) {
+    statement.push(`layer(${rule.layerName})`);
+  }
+  if (rule.supportsText) {
+    statement.push(`supports(${rule.supportsText})`);
+  }
+  if (rule.media.length) {
+    statement.push(rule.media.mediaText);
+  }
+  return statement.join(' ') + ';';
+}
+
+export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules ? Array.from(rules).map(getCssRuleString).join('') : null;
+    return rules
+      ? fixBrowserCompatibilityIssuesInCSS(
+          Array.from(rules, stringifyRule).join(''),
+        )
+      : null;
   } catch (error) {
     return null;
   }
 }
 
-export function getCssRuleString(rule: CSSRule): string {
-  let cssStringified = rule.cssText;
+export function stringifyRule(rule: CSSRule): string {
+  let importStringified;
   if (isCSSImportRule(rule)) {
     try {
-      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
-    } catch {
+      importStringified =
+        // for same-origin stylesheets,
+        // we can access the imported stylesheet rules directly
+        stringifyStylesheet(rule.styleSheet) ||
+        // work around browser issues with the raw string `@import url(...)` statement
+        escapeImportStatement(rule);
+    } catch (error) {
       // ignore
     }
+  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+    // Safari does not escape selectors with : properly
+    // see https://bugs.webkit.org/show_bug.cgi?id=184604
+    return fixSafariColons(rule.cssText);
   }
-  return cssStringified;
+
+  return importStringified || rule.cssText;
+}
+
+export function fixSafariColons(cssStringified: string): string {
+  // Replace e.g. [aa:bb] with [aa\\:bb]
+  const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
+  return cssStringified.replace(regex, '$1\\$2');
 }
 
 export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
+}
+
+export function isCSSStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return 'selectorText' in rule;
 }
 
 export class Mirror implements IMirror<Node> {
@@ -82,7 +175,7 @@ export class Mirror implements IMirror<Node> {
 
     if (n.childNodes) {
       n.childNodes.forEach((childNode) =>
-        this.removeNodeFromMap((childNode as unknown) as Node),
+        this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
   }
@@ -120,30 +213,38 @@ export function createMirror(): Mirror {
 }
 
 export function maskInputValue({
+  element,
   maskInputOptions,
   tagName,
   type,
   value,
   maskInputFn,
 }: {
+  element: HTMLElement;
   maskInputOptions: MaskInputOptions;
   tagName: string;
-  type: string | number | boolean | null;
+  type: string | null;
   value: string | null;
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
+  const actualType = type && toLowerCase(type);
+
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    maskInputOptions[type as keyof MaskInputOptions]
+    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
   ) {
     if (maskInputFn) {
-      text = maskInputFn(text);
+      text = maskInputFn(text, element);
     } else {
       text = '*'.repeat(text.length);
     }
   }
   return text;
+}
+
+export function toLowerCase<T extends string>(str: T): Lowercase<T> {
+  return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -184,4 +285,69 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
     }
   }
   return true;
+}
+
+export function isNodeMetaEqual(a: serializedNode, b: serializedNode): boolean {
+  if (!a || !b || a.type !== b.type) return false;
+  if (a.type === NodeType.Document)
+    return a.compatMode === (b as documentNode).compatMode;
+  else if (a.type === NodeType.DocumentType)
+    return (
+      a.name === (b as documentTypeNode).name &&
+      a.publicId === (b as documentTypeNode).publicId &&
+      a.systemId === (b as documentTypeNode).systemId
+    );
+  else if (
+    a.type === NodeType.Comment ||
+    a.type === NodeType.Text ||
+    a.type === NodeType.CDATA
+  )
+    return a.textContent === (b as textNode).textContent;
+  else if (a.type === NodeType.Element)
+    return (
+      a.tagName === (b as elementNode).tagName &&
+      JSON.stringify(a.attributes) ===
+        JSON.stringify((b as elementNode).attributes) &&
+      a.isSVG === (b as elementNode).isSVG &&
+      a.needBlock === (b as elementNode).needBlock
+    );
+  return false;
+}
+
+/**
+ * Get the type of an input element.
+ * This takes care of the case where a password input is changed to a text input.
+ * In this case, we continue to consider this of type password, in order to avoid leaking sensitive data
+ * where passwords should be masked.
+ */
+export function getInputType(element: HTMLElement): Lowercase<string> | null {
+  // when omitting the type of input element(e.g. <input />), the type is treated as text
+  const type = (element as HTMLInputElement).type;
+
+  return element.hasAttribute('data-rr-is-password')
+    ? 'password'
+    : type
+    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      toLowerCase(type)
+    : null;
+}
+
+/**
+ * Extracts the file extension from an a path, considering search parameters and fragments.
+ * @param path - Path to file
+ * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
+ */
+export function extractFileExtension(
+  path: string,
+  baseURL?: string,
+): string | null {
+  let url;
+  try {
+    url = new URL(path, baseURL ?? window.location.href);
+  } catch (err) {
+    return null;
+  }
+  const regex = /\.([0-9a-z]+)(?:$)/i;
+  const match = url.pathname.match(regex);
+  return match?.[1] ?? null;
 }

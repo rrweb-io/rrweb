@@ -143,8 +143,9 @@ describe('integration tests', function (this: ISuite) {
           waitUntil: 'load',
         });
       }
+      await waitForRAF(page);
       const rebuildHtml = (
-        await page.evaluate(`${code}
+        (await page.evaluate(`${code}
         const x = new XMLSerializer();
         const snap = rrwebSnapshot.snapshot(document);
         let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document }));
@@ -153,8 +154,14 @@ describe('integration tests', function (this: ISuite) {
           out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
         }
         out;  // return
-      `)
-      ).replace(/\n\n/g, '');
+      `)) as string
+      )
+        .replace(/\n\n/g, '')
+        .replace(
+          /blob:http:\/\/localhost:\d+\/[0-9a-z\-]+/,
+          'blob:http://localhost:xxxx/...',
+        );
+
       assertSnapshot(rebuildHtml);
     });
   }
@@ -173,9 +180,9 @@ describe('integration tests', function (this: ISuite) {
       compatMode +
         ' for compat-mode.html should be BackCompat as DOCTYPE is deliberately omitted',
     );
-    const renderedHeight = await page.evaluate(
+    const renderedHeight = (await page.evaluate(
       'document.querySelector("center").clientHeight',
-    );
+    )) as number;
     // can remove following assertion if dimensions of page change
     assert(
       renderedHeight < 400,
@@ -218,8 +225,10 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await page.waitFor(100);
-    const snapshot = await page.evaluate('JSON.stringify(snapshot, null, 2);');
+    await waitForRAF(page);
+    const snapshot = (await page.evaluate(
+      'JSON.stringify(snapshot, null, 2);',
+    )) as string;
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
   });
@@ -236,8 +245,10 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await page.waitFor(100);
-    const snapshot = await page.evaluate('JSON.stringify(snapshot, null, 2);');
+    await waitForRAF(page);
+    const snapshot = (await page.evaluate(
+      'JSON.stringify(snapshot, null, 2);',
+    )) as string;
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
   });
@@ -259,10 +270,10 @@ iframe.contentDocument.querySelector('center').clientHeight
           window.snapshot = sn;
         }
     })`);
-    await page.waitFor(100);
-    const snapshot = await page.evaluate(
+    await waitForRAF(page);
+    const snapshot = (await page.evaluate(
       'JSON.stringify(window.snapshot, null, 2);',
-    );
+    )) as string;
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
   });
@@ -284,12 +295,51 @@ iframe.contentDocument.querySelector('center').clientHeight
           window.snapshot = sn;
         }
     })`);
-    await page.waitFor(100);
-    const snapshot = await page.evaluate(
+    await waitForRAF(page);
+    const snapshot = (await page.evaluate(
       'JSON.stringify(window.snapshot, null, 2);',
-    );
+    )) as string;
     assert(snapshot.includes('"rr_dataURL"'));
     assert(snapshot.includes('data:image/webp;base64,'));
+  });
+
+  it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`http://localhost:3030/html/background-clip-text.html`, {
+      waitUntil: 'load',
+    });
+    await waitForRAF(page); // wait for page to render
+    await page.evaluate(`${code}
+        window.snapshot = rrweb.snapshot(document, {
+        inlineStylesheet: true,
+    })`);
+    await waitForRAF(page);
+    const snapshot = (await page.evaluate(
+      'JSON.stringify(window.snapshot, null, 2);',
+    )) as string;
+    assert(snapshot.includes('-webkit-background-clip: text;'));
+  });
+
+  it('images with inline onload should work', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto(
+      'http://localhost:3030/html/picture-with-inline-onload.html',
+      {
+        waitUntil: 'load',
+      },
+    );
+    await page.waitForSelector('img', { timeout: 1000 });
+    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false
+    })`);
+    await waitForRAF(page);
+    const fnName = (await page.evaluate(
+      'document.querySelector("img").onload.name',
+    )) as string;
+    assert(fnName === 'onload');
   });
 });
 

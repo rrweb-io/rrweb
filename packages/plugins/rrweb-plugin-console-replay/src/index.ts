@@ -63,10 +63,10 @@ class LogReplayPlugin {
     for (const level of this.config.level!) {
       if (level === 'trace') {
         replayLogger[level] = (data: LogData) => {
-          const logger = ((console.log as unknown) as PatchedConsoleLog)[
+          const logger = (console.log as unknown as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? ((console.log as unknown) as PatchedConsoleLog)[
+            ? (console.log as unknown as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console.log;
@@ -77,10 +77,10 @@ class LogReplayPlugin {
         };
       } else {
         replayLogger[level] = (data: LogData) => {
-          const logger = ((console[level] as unknown) as PatchedConsoleLog)[
+          const logger = (console[level] as unknown as PatchedConsoleLog)[
             ORIGINAL_ATTRIBUTE_NAME
           ]
-            ? ((console[level] as unknown) as PatchedConsoleLog)[
+            ? (console[level] as unknown as PatchedConsoleLog)[
                 ORIGINAL_ATTRIBUTE_NAME
               ]
             : console[level];
@@ -126,7 +126,7 @@ export const getReplayConsolePlugin: (
         event.type === EventType.IncrementalSnapshot &&
         event.data.source === (IncrementalSource.Log as IncrementalSource)
       ) {
-        logData = (event.data as unknown) as LogData;
+        logData = event.data as unknown as LogData;
       } else if (
         event.type === EventType.Plugin &&
         event.data.plugin === PLUGIN_NAME
