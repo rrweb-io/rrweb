@@ -39,7 +39,6 @@
   ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
-  "type": "module",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
