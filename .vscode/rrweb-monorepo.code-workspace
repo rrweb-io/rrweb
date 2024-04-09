@@ -63,10 +63,14 @@
     }
   ],
   "settings": {
+    "vitest.workspaceConfig": "../vitest.workspace.ts",
+    "vitest.disabledWorkspaceFolders": ["rrweb (package)", "../packages/rrweb"],
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
       "rrweb-player (package)",
+      "rrdom-nodejs (package)",
       "@rrweb/types",
+      "@rrweb/packer",
       "@rrweb/rrweb-plugin-console-record",
       "@rrweb/rrweb-plugin-console-replay",
       "@rrweb/rrweb-plugin-sequential-id",
