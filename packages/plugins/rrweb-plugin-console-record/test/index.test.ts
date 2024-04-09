@@ -1,4 +1,4 @@
-import { describe, it, beforeAll, afterAll, expect } from 'vitest';
+import { describe, it, beforeAll, afterAll, expect, vi } from 'vitest';
 import { stringifySnapshots } from '../../../rrweb/test/utils';
 import { createServer, ViteDevServer } from 'vite';
 import * as puppeteer from 'puppeteer';
@@ -25,6 +25,7 @@ export function assertSnapshot(snapshots: eventWithTime[]) {
 }
 
 describe('rrweb-plugin-console-record', () => {
+  // vi.setConfig({ testTimeout: 120_000 });
   let server: ViteDevServer;
   let serverUrl: string;
   let browser: Browser;

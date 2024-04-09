@@ -166,10 +166,6 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
     }
   },
   {
-    "type": 0,
-    "data": {}
-  },
-  {
     "type": 6,
     "data": {
       "plugin": "rrweb/console@1",
