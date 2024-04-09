@@ -429,14 +429,40 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     if (!m) {
       return;
     }
+
+    function splitRootSelectors(input: string) {
+      const parts = [];
+      let nestedLevel = 0;
+      let currentPart = '';
+
+      for (let i = 0; i < input.length; i++) {
+          const char = input[i];
+          currentPart += char;
+
+          if (char === '(') {
+              nestedLevel++;
+          } else if (char === ')') {
+              nestedLevel--;
+          } else if (char === ',' && nestedLevel === 0) {
+              parts.push(currentPart.slice(0, -1).trim());
+              currentPart = '';
+          }
+      }
+
+      if (currentPart.trim() !== '') {
+          parts.push(currentPart.trim());
+      }
+
+      return parts;
+    }
+
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
-    return trim(m[0])
+    return splitRootSelectors(trim(m[0])
       .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
       .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
         return m.replace(/,/g, '\u200C');
-      })
-      .split(/\s*(?![^(]*\)),\s*/)
+      }))
       .map((s) => {
         return s.replace(/\u200C/g, ',');
       });
