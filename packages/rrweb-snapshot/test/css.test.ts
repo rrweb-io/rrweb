@@ -119,6 +119,17 @@ describe('css parser', () => {
     expect(out3).toEqual('[data-aa\\:other] { color: red; }');
   });
 
+  it('parses nested commas in selectors correctly', () => {
+    const result = parse(
+      `
+body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {
+  background: red;
+}
+`,
+    );
+    expect((result.stylesheet!.rules[0] as Rule)!.selectors!.length).toEqual(1);
+  });
+
   it('parses imports with quotes correctly', () => {
     const out1 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"");`,
