@@ -6,7 +6,6 @@ import type {
   MaskTextFn,
   DataURLOptions,
 } from 'rrweb-snapshot';
-import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
@@ -37,6 +36,8 @@ import type {
   styleDeclarationCallback,
   styleSheetRuleCallback,
   viewportResizeCallback,
+  PackFn,
+  UnpackFn,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 

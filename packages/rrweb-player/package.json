@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "rrweb": "^2.0.0-alpha.12"
+    "rrweb": "^2.0.0-alpha.12",
+    "@rrweb/packer": "^2.0.0-alpha.12"
   },
   "scripts": {
     "build": "rollup -c",
@@ -42,7 +43,8 @@
   "files": [
     "lib",
     "dist",
-    "typings"
+    "typings",
+    "package.json"
   ],
   "typings": "typings/index.d.ts",
   "type": "module",

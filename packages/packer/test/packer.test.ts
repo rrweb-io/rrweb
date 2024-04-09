@@ -1,6 +1,7 @@
-import { pack, unpack } from '../src/packer';
-import { eventWithTime, EventType } from '@rrweb/types';
-import { MARK } from '../src/packer/base';
+import { describe, it, expect, vi } from 'vitest';
+import { pack, unpack } from '../src';
+import { type eventWithTime, EventType } from '@rrweb/types';
+import { MARK } from '../src/base';
 
 const event: eventWithTime = {
   type: EventType.DomContentLoaded,
@@ -27,14 +28,12 @@ describe('unpack', () => {
   });
 
   it('stop on unknown data format', () => {
-    const consoleSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(() => unpack('[""]')).toThrow('');
 
     expect(consoleSpy).toHaveBeenCalled();
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it('can unpack packed data', () => {

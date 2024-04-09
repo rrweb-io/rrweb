@@ -1,5 +1,6 @@
 import { strFromU8, strToU8, zlibSync } from 'fflate';
-import { PackFn, MARK, eventWithTimeAndPacker } from './base';
+import type { PackFn } from '@rrweb/types';
+import { eventWithTimeAndPacker, MARK } from './base';
 
 export const pack: PackFn = (event) => {
   const _e: eventWithTimeAndPacker = {

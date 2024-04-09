@@ -16,7 +16,8 @@ export default function (
         fileName,
         // TODO: turn on `umd` for rrweb when https://github.com/schummar/vite/tree/feature/libMultiEntryUMD gets merged
         // More info: https://github.com/vitejs/vite/pull/7047#issuecomment-1288080855
-        formats: name !== 'rrweb' ? ['es', 'umd', 'cjs'] : ['es', 'cjs'],
+        formats:
+          typeof entry === 'string' ? ['es', 'umd', 'cjs'] : ['es', 'cjs'],
       },
 
       // Leaving this unminified so you can see what exactly gets included in

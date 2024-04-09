@@ -29,6 +29,10 @@
       "path": "../packages/types"
     },
     {
+      "name": "@rrweb/packer",
+      "path": "../packages/packer"
+    },
+    {
       "name": "web-extension (package)",
       "path": "../packages/web-extension"
     },

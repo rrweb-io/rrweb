@@ -1,6 +1,8 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "node_modules/*",
     "__sapper__/*",
@@ -13,6 +15,9 @@
   "references": [
     {
       "path": "../rrweb"
+    },
+    {
+      "path": "../packer"
     },
     {
       "path": "../types"

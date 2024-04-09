@@ -1,21 +1,23 @@
 {
-  "name": "@rrweb/types",
+  "name": "@rrweb/packer",
   "version": "2.0.0-alpha.12",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
     "rrweb",
-    "@rrweb/types"
+    "@rrweb/packer"
   ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/packer#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
@@ -25,26 +27,38 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/types.umd.cjs",
-  "module": "./dist/types.js",
-  "unpkg": "./dist/types.umd.cjs",
+  "main": "./dist/packer.cjs",
+  "module": "./dist/packer.js",
+  "unpkg": "./dist/packer.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/types.js",
-      "require": "./dist/types.umd.cjs"
+      "import": "./dist/packer.js",
+      "require": "./dist/packer.cjs"
+    },
+    "./pack": {
+      "import": "./dist/pack.js",
+      "require": "./dist/pack.cjs"
+    },
+    "./unpack": {
+      "import": "./dist/unpack.js",
+      "require": "./dist/unpack.cjs"
     }
   },
   "files": [
+    "build",
     "dist",
     "package.json"
   ],
   "devDependencies": {
     "vite": "^5.2.8",
-    "vite-plugin-dts": "^3.8.1"
+    "vite-plugin-dts": "^3.8.1",
+    "vitest": "^0.24.3",
+    "typescript": "^4.7.3"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.12"
+    "fflate": "^0.4.4",
+    "@rrweb/types": "^2.0.0-alpha.12"
   },
   "browserslist": [
     "supports es6-class"
