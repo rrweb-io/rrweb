@@ -157,6 +157,17 @@ body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {
 `,
     );
     expect((result.stylesheet!.rules[0] as Rule)!.selectors!.length).toEqual(1);
+
+    const trickresult = parse(
+      `
+li[attr="weirdly("] a:hover, li[attr="weirdly)"] a {
+  background-color: red;
+}
+`,
+    );
+    expect(
+      (trickresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
+    ).toEqual(2);
   });
 
   it('parses imports with quotes correctly', () => {
