@@ -437,6 +437,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     if (!m) {
       return;
     }
+
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
     const cleanedInput = m[0]
