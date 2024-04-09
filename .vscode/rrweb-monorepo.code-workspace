@@ -68,6 +68,7 @@
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
       "rrweb-player (package)",
+      "rrdom-snapshot (package)",
       "rrdom-nodejs (package)",
       "@rrweb/types",
       "@rrweb/packer",

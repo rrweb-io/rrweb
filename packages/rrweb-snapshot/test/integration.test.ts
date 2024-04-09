@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
-import * as assert from 'assert';
+import { vi, assert, describe, it, beforeAll, afterAll, expect } from 'vitest';
 import { waitForRAF } from './utils';
 
 const htmlFolder = path.join(__dirname, 'html');
@@ -81,7 +81,7 @@ interface ISuite {
 }
 
 describe('integration tests', function (this: ISuite) {
-  jest.setTimeout(30_000);
+  vi.setConfig({ testTimeout: 30_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
@@ -220,7 +220,8 @@ iframe.contentDocument.querySelector('center').clientHeight
       waitUntil: 'load',
     });
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrwebSnapshot.snapshot(document, {
+    await page.evaluate(`${code}
+    var snapshot = rrwebSnapshot.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
         inlineImages: true,
         inlineStylesheet: false
@@ -310,7 +311,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     });
     await waitForRAF(page); // wait for page to render
     await page.evaluate(`${code}
-        window.snapshot = rrweb.snapshot(document, {
+        window.snapshot = rrwebSnapshot.snapshot(document, {
         inlineStylesheet: true,
     })`);
     await waitForRAF(page);
@@ -330,10 +331,12 @@ iframe.contentDocument.querySelector('center').clientHeight
       },
     );
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
-        dataURLOptions: { type: "image/webp", quality: 0.8 },
-        inlineImages: true,
-        inlineStylesheet: false
+    await page.evaluate(`${code}`);
+    await page.evaluate(`
+    var snapshot = rrwebSnapshot.snapshot(document, {
+      dataURLOptions: { type: "image/webp", quality: 0.8 },
+      inlineImages: true,
+      inlineStylesheet: false
     })`);
     await waitForRAF(page);
     const fnName = (await page.evaluate(
@@ -344,7 +347,7 @@ iframe.contentDocument.querySelector('center').clientHeight
 });
 
 describe('iframe integration tests', function (this: ISuite) {
-  jest.setTimeout(30_000);
+  vi.setConfig({ testTimeout: 30_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
@@ -387,7 +390,7 @@ describe('iframe integration tests', function (this: ISuite) {
 });
 
 describe('shadow DOM integration tests', function (this: ISuite) {
-  jest.setTimeout(30_000);
+  vi.setConfig({ testTimeout: 30_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
