@@ -30,6 +30,7 @@
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/types.js",
       "require": "./dist/types.umd.cjs"
     }
