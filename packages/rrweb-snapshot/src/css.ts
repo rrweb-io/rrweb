@@ -447,7 +447,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
         } else if (char === ',' && nestedLevel === 0) {
           parts.push(currentPart.slice(0, -1).trim());
           currentPart = '';
-        } else if ("'\"".includes(char)) {
+        } else if ('\'"'.includes(char)) {
           if (currentStringChar === char) {
             currentStringChar = null;
           } else {
