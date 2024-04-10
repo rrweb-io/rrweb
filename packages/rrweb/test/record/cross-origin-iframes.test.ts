@@ -15,7 +15,6 @@ import {
   startServer,
   waitForRAF,
 } from '../utils';
-import { unpack } from '../../src/packer/unpack';
 import type * as http from 'http';
 
 interface ISuite {
@@ -52,7 +51,7 @@ async function injectRecordScript(
   options = options || {};
   await frame.evaluate((options) => {
     (window as unknown as IWindow).snapshots = [];
-    const { record, pack } = (window as unknown as IWindow).rrweb;
+    const { record } = (window as unknown as IWindow).rrweb;
     const config: recordOptions<eventWithTime> = {
       recordCrossOriginIframes: true,
       recordCanvas: true,
@@ -61,9 +60,6 @@ async function injectRecordScript(
         (window as unknown as IWindow).emit(event);
       },
     };
-    if (options.usePackFn) {
-      config.packFn = pack;
-    }
     record(config);
   }, options);
 
@@ -560,21 +556,6 @@ describe('cross origin iframes', function (this: ISuite) {
         'window.snapshots',
       )) as eventWithTime[];
       assertSnapshot(snapshots);
-    });
-
-    describe('should support packFn option in record()', () => {
-      const ctx = setup.call(this, content, { usePackFn: true });
-      it('', async () => {
-        const frame = ctx.page.mainFrame().childFrames()[0];
-        await waitForRAF(frame);
-        const packedSnapshots = (await ctx.page.evaluate(
-          'window.snapshots',
-        )) as string[];
-        const unpackedSnapshots = packedSnapshots.map((packed) =>
-          unpack(packed),
-        ) as eventWithTime[];
-        assertSnapshot(unpackedSnapshots);
-      });
     });
   });
 });
