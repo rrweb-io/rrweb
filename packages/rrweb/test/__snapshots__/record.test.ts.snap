@@ -118,23 +118,7 @@ exports[`record can add custom event 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -145,7 +129,7 @@ exports[`record can add custom event 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -155,15 +139,15 @@ exports[`record can add custom event 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -228,23 +212,7 @@ exports[`record captures CORS stylesheets that are still loading 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -255,7 +223,7 @@ exports[`record captures CORS stylesheets that are still loading 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -265,15 +233,15 @@ exports[`record captures CORS stylesheets that are still loading 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -306,7 +274,7 @@ exports[`record captures CORS stylesheets that are still loading 1`] = `
               \\"href\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         }
       ]
@@ -347,23 +315,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -374,7 +326,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -386,7 +338,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"entry\\",
-                        \\"id\\": 10
+                        \\"id\\": 8
                       },
                       {
                         \\"type\\": 2,
@@ -395,20 +347,20 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                           \\"id\\": \\"iframe-1\\"
                         },
                         \\"childNodes\\": [],
-                        \\"id\\": 11,
+                        \\"id\\": 9,
                         \\"isShadow\\": true
                       }
                     ],
-                    \\"id\\": 9,
+                    \\"id\\": 7,
                     \\"isShadowHost\\": true
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n      \\",
-                    \\"id\\": 12
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -428,7 +380,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -443,8 +395,8 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 13,
-                    \\"id\\": 15
+                    \\"rootId\\": 11,
+                    \\"id\\": 13
                   },
                   {
                     \\"type\\": 2,
@@ -465,26 +417,26 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                               \\"id\\": \\"iframe-2\\"
                             },
                             \\"childNodes\\": [],
-                            \\"rootId\\": 13,
-                            \\"id\\": 18,
+                            \\"rootId\\": 11,
+                            \\"id\\": 16,
                             \\"isShadow\\": true
                           }
                         ],
-                        \\"rootId\\": 13,
-                        \\"id\\": 17,
+                        \\"rootId\\": 11,
+                        \\"id\\": 15,
                         \\"isShadowHost\\": true
                       }
                     ],
-                    \\"rootId\\": 13,
-                    \\"id\\": 16
+                    \\"rootId\\": 11,
+                    \\"id\\": 14
                   }
                 ],
-                \\"rootId\\": 13,
-                \\"id\\": 14
+                \\"rootId\\": 11,
+                \\"id\\": 12
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 13
+            \\"id\\": 11
           }
         }
       ],
@@ -500,7 +452,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 18,
+          \\"parentId\\": 16,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -515,8 +467,8 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 19,
-                    \\"id\\": 21
+                    \\"rootId\\": 17,
+                    \\"id\\": 19
                   },
                   {
                     \\"type\\": 2,
@@ -537,26 +489,26 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                               \\"id\\": \\"iframe-3\\"
                             },
                             \\"childNodes\\": [],
-                            \\"rootId\\": 19,
-                            \\"id\\": 24,
+                            \\"rootId\\": 17,
+                            \\"id\\": 22,
                             \\"isShadow\\": true
                           }
                         ],
-                        \\"rootId\\": 19,
-                        \\"id\\": 23,
+                        \\"rootId\\": 17,
+                        \\"id\\": 21,
                         \\"isShadowHost\\": true
                       }
                     ],
-                    \\"rootId\\": 19,
-                    \\"id\\": 22
+                    \\"rootId\\": 17,
+                    \\"id\\": 20
                   }
                 ],
-                \\"rootId\\": 19,
-                \\"id\\": 20
+                \\"rootId\\": 17,
+                \\"id\\": 18
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 19
+            \\"id\\": 17
           }
         }
       ],
@@ -572,7 +524,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 24,
+          \\"parentId\\": 22,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -587,8 +539,8 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 25,
-                    \\"id\\": 27
+                    \\"rootId\\": 23,
+                    \\"id\\": 25
                   },
                   {
                     \\"type\\": 2,
@@ -609,26 +561,26 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                               \\"id\\": \\"iframe-4\\"
                             },
                             \\"childNodes\\": [],
-                            \\"rootId\\": 25,
-                            \\"id\\": 30,
+                            \\"rootId\\": 23,
+                            \\"id\\": 28,
                             \\"isShadow\\": true
                           }
                         ],
-                        \\"rootId\\": 25,
-                        \\"id\\": 29,
+                        \\"rootId\\": 23,
+                        \\"id\\": 27,
                         \\"isShadowHost\\": true
                       }
                     ],
-                    \\"rootId\\": 25,
-                    \\"id\\": 28
+                    \\"rootId\\": 23,
+                    \\"id\\": 26
                   }
                 ],
-                \\"rootId\\": 25,
-                \\"id\\": 26
+                \\"rootId\\": 23,
+                \\"id\\": 24
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 25
+            \\"id\\": 23
           }
         }
       ],
@@ -644,7 +596,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 30,
+          \\"parentId\\": 28,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -659,8 +611,8 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 31,
-                    \\"id\\": 33
+                    \\"rootId\\": 29,
+                    \\"id\\": 31
                   },
                   {
                     \\"type\\": 2,
@@ -674,21 +626,21 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
                           \\"id\\": \\"shadow-host-5\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 31,
-                        \\"id\\": 35,
+                        \\"rootId\\": 29,
+                        \\"id\\": 33,
                         \\"isShadowHost\\": true
                       }
                     ],
-                    \\"rootId\\": 31,
-                    \\"id\\": 34
+                    \\"rootId\\": 29,
+                    \\"id\\": 32
                   }
                 ],
-                \\"rootId\\": 31,
-                \\"id\\": 32
+                \\"rootId\\": 29,
+                \\"id\\": 30
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 31
+            \\"id\\": 29
           }
         }
       ],
@@ -702,7 +654,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 31,
+      \\"id\\": 29,
       \\"styleIds\\": [
         1
       ],
@@ -723,7 +675,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 35,
+      \\"id\\": 33,
       \\"styleIds\\": [
         2
       ],
@@ -765,7 +717,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 31,
+      \\"id\\": 29,
       \\"styleIds\\": [
         3,
         2
@@ -787,7 +739,7 @@ exports[`record captures adopted stylesheets in nested shadow doms and iframes 1
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 35,
+      \\"id\\": 33,
       \\"styleIds\\": [
         1,
         3
@@ -829,23 +781,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -856,7 +792,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -866,15 +802,15 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"div in outermost document\\",
-                        \\"id\\": 10
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 11
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -891,10 +827,10 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"div in shadow dom 1\\",
-                            \\"id\\": 14
+                            \\"id\\": 12
                           }
                         ],
-                        \\"id\\": 13,
+                        \\"id\\": 11,
                         \\"isShadow\\": true
                       },
                       {
@@ -905,20 +841,20 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"span in shadow dom 1\\",
-                            \\"id\\": 16
+                            \\"id\\": 14
                           }
                         ],
-                        \\"id\\": 15,
+                        \\"id\\": 13,
                         \\"isShadow\\": true
                       }
                     ],
-                    \\"id\\": 12,
+                    \\"id\\": 10,
                     \\"isShadowHost\\": true
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 17
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 2,
@@ -927,27 +863,27 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                       \\"id\\": \\"shadow-host2\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 18
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 19
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"iframe\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"id\\": 20
+                    \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n      \\",
-                    \\"id\\": 21
+                    \\"id\\": 19
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -994,7 +930,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 12,
+      \\"id\\": 10,
       \\"styleIds\\": [
         1,
         2
@@ -1018,7 +954,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 20,
+          \\"parentId\\": 18,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -1033,8 +969,8 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 22,
-                    \\"id\\": 24
+                    \\"rootId\\": 20,
+                    \\"id\\": 22
                   },
                   {
                     \\"type\\": 2,
@@ -1049,24 +985,24 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"h1 in iframe\\",
-                            \\"rootId\\": 22,
-                            \\"id\\": 27
+                            \\"rootId\\": 20,
+                            \\"id\\": 25
                           }
                         ],
-                        \\"rootId\\": 22,
-                        \\"id\\": 26
+                        \\"rootId\\": 20,
+                        \\"id\\": 24
                       }
                     ],
-                    \\"rootId\\": 22,
-                    \\"id\\": 25
+                    \\"rootId\\": 20,
+                    \\"id\\": 23
                   }
                 ],
-                \\"rootId\\": 22,
-                \\"id\\": 23
+                \\"rootId\\": 20,
+                \\"id\\": 21
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 22
+            \\"id\\": 20
           }
         }
       ],
@@ -1080,7 +1016,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 22,
+      \\"id\\": 20,
       \\"styleIds\\": [
         3
       ],
@@ -1124,7 +1060,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 22,
+      \\"id\\": 20,
       \\"styleIds\\": [
         5,
         3
@@ -1151,11 +1087,32 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 18,
+          \\"parentId\\": 16,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 26,
+            \\"isShadow\\": true
+          }
+        },
+        {
+          \\"parentId\\": 26,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"span in shadow dom 2\\",
+            \\"id\\": 27
+          }
+        },
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": 26,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 28,
@@ -1167,29 +1124,8 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"span in shadow dom 2\\",
-            \\"id\\": 29
-          }
-        },
-        {
-          \\"parentId\\": 18,
-          \\"nextId\\": 28,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 30,
-            \\"isShadow\\": true
-          }
-        },
-        {
-          \\"parentId\\": 30,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
             \\"textContent\\": \\"div in shadow dom 2\\",
-            \\"id\\": 31
+            \\"id\\": 29
           }
         }
       ]
@@ -1199,7 +1135,7 @@ exports[`record captures adopted stylesheets in shadow doms and iframe 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 18,
+      \\"id\\": 16,
       \\"styleIds\\": [
         1,
         4
@@ -1449,21 +1385,6 @@ exports[`record captures inserted style text nodes correctly 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  },
-                  {
-                    \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [
@@ -1471,16 +1392,16 @@ exports[`record captures inserted style text nodes correctly 1`] = `
                         \\"type\\": 3,
                         \\"textContent\\": \\"div { color: red; }\\",
                         \\"isStyle\\": true,
-                        \\"id\\": 8
+                        \\"id\\": 6
                       },
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"section { color: blue; }\\",
                         \\"isStyle\\": true,
-                        \\"id\\": 9
+                        \\"id\\": 7
                       }
                     ],
-                    \\"id\\": 7
+                    \\"id\\": 5
                   }
                 ],
                 \\"id\\": 4
@@ -1493,7 +1414,7 @@ exports[`record captures inserted style text nodes correctly 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 11
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -1503,15 +1424,15 @@ exports[`record captures inserted style text nodes correctly 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 12
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 13
+                    \\"id\\": 11
                   }
                 ],
-                \\"id\\": 10
+                \\"id\\": 8
               }
             ],
             \\"id\\": 3
@@ -1534,23 +1455,23 @@ exports[`record captures inserted style text nodes correctly 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 7,
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"h1 { color: pink; }\\",
             \\"isStyle\\": true,
-            \\"id\\": 14
+            \\"id\\": 12
           }
         },
         {
-          \\"parentId\\": 7,
-          \\"nextId\\": 14,
+          \\"parentId\\": 5,
+          \\"nextId\\": 12,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"span { color: orange; }\\",
             \\"isStyle\\": true,
-            \\"id\\": 15
+            \\"id\\": 13
           }
         }
       ]
@@ -1591,23 +1512,7 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -1618,7 +1523,7 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -1628,30 +1533,30 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"div in outermost document\\",
-                        \\"id\\": 10
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 11
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"iframe\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"id\\": 12
+                    \\"id\\": 10
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n      \\",
-                    \\"id\\": 13
+                    \\"id\\": 11
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -1687,7 +1592,7 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 12,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -1702,8 +1607,8 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 14,
-                    \\"id\\": 16
+                    \\"rootId\\": 12,
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -1718,24 +1623,24 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"h1 in iframe\\",
-                            \\"rootId\\": 14,
-                            \\"id\\": 19
+                            \\"rootId\\": 12,
+                            \\"id\\": 17
                           }
                         ],
-                        \\"rootId\\": 14,
-                        \\"id\\": 18
+                        \\"rootId\\": 12,
+                        \\"id\\": 16
                       }
                     ],
-                    \\"rootId\\": 14,
-                    \\"id\\": 17
+                    \\"rootId\\": 12,
+                    \\"id\\": 15
                   }
                 ],
-                \\"rootId\\": 14,
-                \\"id\\": 15
+                \\"rootId\\": 12,
+                \\"id\\": 13
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 14
+            \\"id\\": 12
           }
         }
       ],
@@ -1749,7 +1654,7 @@ exports[`record captures mutations on adopted stylesheets 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 15,
-      \\"id\\": 14,
+      \\"id\\": 12,
       \\"styleIds\\": [
         2
       ],
@@ -1907,23 +1812,7 @@ exports[`record captures nested stylesheet rules 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -1934,7 +1823,7 @@ exports[`record captures nested stylesheet rules 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -1944,15 +1833,15 @@ exports[`record captures nested stylesheet rules 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -1984,7 +1873,7 @@ exports[`record captures nested stylesheet rules 1`] = `
               \\"_cssText\\": \\"@media  {\\\\n  body { background: rgb(0, 0, 0); }\\\\n}\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         }
       ]
@@ -1994,7 +1883,7 @@ exports[`record captures nested stylesheet rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\",
@@ -2010,7 +1899,7 @@ exports[`record captures nested stylesheet rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"removes\\": [
         {
           \\"index\\": [
@@ -2025,7 +1914,7 @@ exports[`record captures nested stylesheet rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\",
@@ -2072,23 +1961,7 @@ exports[`record captures style property changes 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -2099,7 +1972,7 @@ exports[`record captures style property changes 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -2109,15 +1982,15 @@ exports[`record captures style property changes 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -2149,7 +2022,7 @@ exports[`record captures style property changes 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         }
       ]
@@ -2159,7 +2032,7 @@ exports[`record captures style property changes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"set\\": {
         \\"property\\": \\"border-color\\",
         \\"value\\": \\"green\\"
@@ -2173,7 +2046,7 @@ exports[`record captures style property changes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"remove\\": {
         \\"property\\": \\"background\\"
       },
@@ -2217,23 +2090,7 @@ exports[`record captures stylesheet rules 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -2244,7 +2101,7 @@ exports[`record captures stylesheet rules 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -2254,15 +2111,15 @@ exports[`record captures stylesheet rules 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -2294,7 +2151,7 @@ exports[`record captures stylesheet rules 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         }
       ]
@@ -2304,7 +2161,7 @@ exports[`record captures stylesheet rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\"
@@ -2316,7 +2173,7 @@ exports[`record captures stylesheet rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"removes\\": [
         {
           \\"index\\": 0
@@ -2328,7 +2185,7 @@ exports[`record captures stylesheet rules 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\"
@@ -2371,23 +2228,7 @@ exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -2398,7 +2239,7 @@ exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -2408,22 +2249,22 @@ exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"iframe\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"id\\": 11
+                    \\"id\\": 9
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -2443,7 +2284,7 @@ exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -2465,28 +2306,28 @@ exports[`record captures stylesheets in iframes with \`blob:\` url 1`] = `
                           \\"_cssText\\": \\"body { color: pink; }\\"
                         },
                         \\"childNodes\\": [],
-                        \\"rootId\\": 12,
-                        \\"id\\": 15
+                        \\"rootId\\": 10,
+                        \\"id\\": 13
                       }
                     ],
-                    \\"rootId\\": 12,
-                    \\"id\\": 14
+                    \\"rootId\\": 10,
+                    \\"id\\": 12
                   },
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"body\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 12,
-                    \\"id\\": 16
+                    \\"rootId\\": 10,
+                    \\"id\\": 14
                   }
                 ],
-                \\"rootId\\": 12,
-                \\"id\\": 13
+                \\"rootId\\": 10,
+                \\"id\\": 11
               }
             ],
             \\"compatMode\\": \\"BackCompat\\",
-            \\"id\\": 12
+            \\"id\\": 10
           }
         }
       ],
@@ -2534,27 +2375,12 @@ exports[`record captures stylesheets with \`blob:\` url 1`] = `
                 \\"childNodes\\": [
                   {
                     \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  },
-                  {
-                    \\"type\\": 2,
                     \\"tagName\\": \\"link\\",
                     \\"attributes\\": {
                       \\"_cssText\\": \\"body { color: pink; }\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 5
                   }
                 ],
                 \\"id\\": 4
@@ -2567,7 +2393,7 @@ exports[`record captures stylesheets with \`blob:\` url 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 2,
@@ -2577,15 +2403,15 @@ exports[`record captures stylesheets with \`blob:\` url 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 10
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 11
+                    \\"id\\": 9
                   }
                 ],
-                \\"id\\": 8
+                \\"id\\": 6
               }
             ],
             \\"id\\": 3
@@ -2634,23 +2460,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -2661,7 +2471,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -2673,13 +2483,13 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n        </body>\\\\n      </html>\\\\n    \\",
-                        \\"id\\": 10
+                        \\"id\\": 8
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -2699,7 +2509,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
       \\"source\\": 0,
       \\"adds\\": [
         {
-          \\"parentId\\": 9,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 0,
@@ -2714,8 +2524,8 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
                     \\"tagName\\": \\"head\\",
                     \\"attributes\\": {},
                     \\"childNodes\\": [],
-                    \\"rootId\\": 11,
-                    \\"id\\": 13
+                    \\"rootId\\": 9,
+                    \\"id\\": 11
                   },
                   {
                     \\"type\\": 2,
@@ -2730,23 +2540,23 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"Mysterious Button\\",
-                            \\"rootId\\": 11,
-                            \\"id\\": 16
+                            \\"rootId\\": 9,
+                            \\"id\\": 14
                           }
                         ],
-                        \\"rootId\\": 11,
-                        \\"id\\": 15
+                        \\"rootId\\": 9,
+                        \\"id\\": 13
                       }
                     ],
-                    \\"rootId\\": 11,
-                    \\"id\\": 14
+                    \\"rootId\\": 9,
+                    \\"id\\": 12
                   }
                 ],
-                \\"rootId\\": 11,
-                \\"id\\": 12
+                \\"rootId\\": 9,
+                \\"id\\": 10
               }
             ],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         }
       ],
@@ -2765,7 +2575,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 13,
+          \\"parentId\\": 11,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -2774,8 +2584,8 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
               \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }@media  {\\\\n  body { background: rgb(0, 0, 0); }\\\\n}\\"
             },
             \\"childNodes\\": [],
-            \\"rootId\\": 11,
-            \\"id\\": 17
+            \\"rootId\\": 9,
+            \\"id\\": 15
           }
         }
       ]
@@ -2785,7 +2595,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 17,
+      \\"id\\": 15,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\"
@@ -2797,7 +2607,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 17,
+      \\"id\\": 15,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\",
@@ -2813,7 +2623,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 17,
+      \\"id\\": 15,
       \\"removes\\": [
         {
           \\"index\\": 0
@@ -2825,7 +2635,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 17,
+      \\"id\\": 15,
       \\"set\\": {
         \\"property\\": \\"color\\",
         \\"value\\": \\"green\\"
@@ -2839,7 +2649,7 @@ exports[`record iframes captures stylesheet mutations in iframes 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 17,
+      \\"id\\": 15,
       \\"removes\\": [
         {
           \\"index\\": [
@@ -2885,23 +2695,7 @@ exports[`record is safe to checkout during async callbacks 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -2912,7 +2706,7 @@ exports[`record is safe to checkout during async callbacks 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -2922,15 +2716,15 @@ exports[`record is safe to checkout during async callbacks 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -2952,31 +2746,31 @@ exports[`record is safe to checkout during async callbacks 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 7,
-          \\"id\\": 9
+          \\"parentId\\": 5,
+          \\"id\\": 7
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 7,
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"p\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         },
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 12
+            \\"id\\": 10
           }
         }
       ]
@@ -2991,12 +2785,12 @@ exports[`record is safe to checkout during async callbacks 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 12,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"test\\",
-            \\"id\\": 13
+            \\"id\\": 11
           }
         }
       ]
@@ -3032,23 +2826,7 @@ exports[`record is safe to checkout during async callbacks 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -3059,12 +2837,12 @@ exports[`record is safe to checkout during async callbacks 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -3079,16 +2857,16 @@ exports[`record is safe to checkout during async callbacks 1`] = `
                           {
                             \\"type\\": 3,
                             \\"textContent\\": \\"test\\",
-                            \\"id\\": 13
+                            \\"id\\": 11
                           }
                         ],
-                        \\"id\\": 12
+                        \\"id\\": 10
                       }
                     ],
-                    \\"id\\": 11
+                    \\"id\\": 9
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -3110,29 +2888,29 @@ exports[`record is safe to checkout during async callbacks 1`] = `
       \\"attributes\\": [],
       \\"removes\\": [
         {
-          \\"parentId\\": 11,
-          \\"id\\": 12
+          \\"parentId\\": 9,
+          \\"id\\": 10
         }
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 7,
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 12
+            \\"id\\": 10
           }
         },
         {
-          \\"parentId\\": 12,
+          \\"parentId\\": 10,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"test\\",
-            \\"id\\": 13
+            \\"id\\": 11
           }
         }
       ]
@@ -3809,23 +3587,7 @@ exports[`record should record scroll position 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -3836,7 +3598,7 @@ exports[`record should record scroll position 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 8
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -3846,15 +3608,15 @@ exports[`record should record scroll position 1`] = `
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 9
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 10
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 7
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -3877,7 +3639,7 @@ exports[`record should record scroll position 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 7,
+          \\"parentId\\": 5,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -3886,16 +3648,16 @@ exports[`record should record scroll position 1`] = `
               \\"style\\": \\"overflow: auto; height: Npx; width: Npx;\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 9
           }
         },
         {
-          \\"parentId\\": 11,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"testtesttesttesttesttesttesttesttesttest\\",
-            \\"id\\": 12
+            \\"id\\": 10
           }
         }
       ]
@@ -3905,7 +3667,7 @@ exports[`record should record scroll position 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 3,
-      \\"id\\": 11,
+      \\"id\\": 9,
       \\"x\\": 10,
       \\"y\\": 10
     }
@@ -3945,38 +3707,7 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 6
-                      }
-                    ],
-                    \\"id\\": 5
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {
-                      \\"type\\": \\"\\"
-                    },
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 8
-                      }
-                    ],
-                    \\"id\\": 7
-                  }
-                ],
+                \\"childNodes\\": [],
                 \\"id\\": 4
               },
               {
@@ -3987,7 +3718,7 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 10
+                    \\"id\\": 6
                   },
                   {
                     \\"type\\": 2,
@@ -3997,15 +3728,15 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
                       \\"size\\": \\"40\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 11
+                    \\"id\\": 7
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 12
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 9
+                \\"id\\": 5
               }
             ],
             \\"id\\": 3
@@ -4037,7 +3768,7 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
               \\"_cssText\\": \\"@media  {\\\\n  body { background: rgb(0, 0, 0); }\\\\n}\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 13
+            \\"id\\": 9
           }
         }
       ]
@@ -4047,7 +3778,7 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 13,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #fff; }\\",
@@ -4063,7 +3794,7 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 13,
+      \\"id\\": 9,
       \\"removes\\": [
         {
           \\"index\\": [
@@ -4078,7 +3809,7 @@ exports[`record without CSSGroupingRule support captures nested stylesheet rules
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 8,
-      \\"id\\": 13,
+      \\"id\\": 9,
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\",

@@ -21,6 +21,7 @@ import {
 import type { Server } from 'http';
 
 interface ISuite {
+  code: string;
   browser: puppeteer.Browser;
   page: puppeteer.Page;
   events: eventWithTime[];
@@ -47,15 +48,16 @@ const setup = function (this: ISuite, content: string): ISuite {
     ctx.browser = await launchPuppeteer({
       devtools: true,
     });
+
+    const bundlePath = path.resolve(__dirname, '../dist/main/rrweb.umd.cjs');
+    ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
     ctx.page = await ctx.browser.newPage();
     await ctx.page.goto('about:blank');
     await ctx.page.setContent(content);
-    await ctx.page.addScriptTag({
-      path: path.resolve(__dirname, '../dist/rrweb.umd.cjs'),
-    });
+    await ctx.page.evaluate(ctx.code);
 
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
@@ -385,9 +387,7 @@ describe('record', function (this: ISuite) {
         CSSGroupingRule = undefined;
       });
       // load a fresh rrweb recorder without CSSGroupingRule
-      await ctx.page.addScriptTag({
-        path: path.resolve(__dirname, '../dist/rrweb.umd.cjs'),
-      });
+      await ctx.page.evaluate(ctx.code);
     });
     it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
   });
