@@ -25,7 +25,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer({ devtools: true });
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs');
     const stylePath = path.resolve(
       __dirname,
       '../../src/replay/styles/style.css',

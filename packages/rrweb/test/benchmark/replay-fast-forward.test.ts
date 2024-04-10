@@ -92,7 +92,7 @@ describe('benchmark: replayer fast-forward performance', () => {
       args: ['--disable-dev-shm-usage'],
     });
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.min.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs');
     code = fs.readFileSync(bundlePath, 'utf8');
   }, 600_000);
 

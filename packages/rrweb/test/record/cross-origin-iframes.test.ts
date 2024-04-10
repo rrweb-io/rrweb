@@ -46,7 +46,7 @@ async function injectRecordScript(
   options?: ExtraOptions,
 ) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../../dist/rrweb-all.js'),
+    path: path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs'),
   });
   options = options || {};
   await frame.evaluate((options) => {
@@ -85,7 +85,7 @@ const setup = function (
     ctx.serverB = await startServer();
     ctx.serverBURL = getServerURL(ctx.serverB);
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
