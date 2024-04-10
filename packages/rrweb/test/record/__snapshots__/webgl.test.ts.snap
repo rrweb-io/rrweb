@@ -37,7 +37,7 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -130,7 +130,7 @@ exports[`record webgl should batch events by RAF 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -291,7 +291,7 @@ exports[`record webgl will record changes to a canvas element 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -400,7 +400,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -544,7 +544,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -688,7 +688,7 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -797,7 +797,7 @@ exports[`record webgl will record webgl variables 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -926,7 +926,7 @@ exports[`record webgl will record webgl variables in reverse order 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"script\\",
                     \\"attributes\\": {
-                      \\"type\\": \\"\\"
+                      \\"type\\": \\"text/javascript\\"
                     },
                     \\"childNodes\\": [
                       {
