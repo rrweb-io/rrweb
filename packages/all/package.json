@@ -1,0 +1,60 @@
+{
+  "name": "@rrweb/all",
+  "version": "2.0.0-alpha.12",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "rrweb",
+    "@rrweb/all"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run build",
+    "lint": "yarn eslint src/**/*.ts"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/all#readme",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/all.cjs",
+  "module": "./dist/all.js",
+  "unpkg": "./dist/all.umd.js",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/all.js",
+      "require": "./dist/all.cjs"
+    }
+  },
+  "files": [
+    "build",
+    "dist",
+    "package.json"
+  ],
+  "devDependencies": {
+    "puppeteer": "^20.9.0",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1",
+    "vitest": "^1.4.0",
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "@rrweb/types": "^2.0.0-alpha.12",
+    "@rrweb/packer": "^2.0.0-alpha.12",
+    "rrweb": "^2.0.0-alpha.12"
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
+}

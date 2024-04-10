@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "includes": [
+    "src"
+  ],
+  "exclude": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "test"
+  ],
+  "compilerOptions": {
+    "rootDir": "src",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../packer"
+    },
+    {
+      "path": "../rrweb"
+    }
+  ]
+}

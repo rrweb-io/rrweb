@@ -25,6 +25,10 @@
       "path": "../packages/rrweb-snapshot"
     },
     {
+      "name": "@rrweb/all",
+      "path": "../packages/all"
+    },
+    {
       "name": "@rrweb/types",
       "path": "../packages/types"
     },
@@ -70,6 +74,7 @@
       "rrweb-player (package)",
       "rrdom-snapshot (package)",
       "rrdom-nodejs (package)",
+      "@rrweb/all",
       "@rrweb/types",
       "@rrweb/packer",
       "@rrweb/rrweb-plugin-console-record",

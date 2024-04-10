@@ -1,6 +1,3 @@
-export default [
-  'packages/rrweb-snapshot',
-  'packages/rrdom-nodejs',
-  'packages/packer',
-  'packages/plugins/rrweb-plugin-console-record',
-];
+import { defineWorkspace } from 'vitest/config';
+
+export default defineWorkspace(['packages/**/vitest.config.ts']);
