@@ -434,18 +434,25 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
       const parts = [];
       let nestedLevel = 0;
       let currentPart = '';
+      let currentStringChar = null
 
       for (let i = 0; i < input.length; i++) {
           const char = input[i];
           currentPart += char;
 
-          if (char === '(') {
+          if (char === '(' && !currentStringChar) {
               nestedLevel++;
-          } else if (char === ')') {
+          } else if (char === ')' && !currentStringChar) {
               nestedLevel--;
           } else if (char === ',' && nestedLevel === 0) {
               parts.push(currentPart.slice(0, -1).trim());
               currentPart = '';
+          } else if (char.match(/"|'|`/)) {
+            if (currentStringChar === char) {
+              currentStringChar = null
+            } else {
+              currentStringChar = char
+            }
           }
       }
 
