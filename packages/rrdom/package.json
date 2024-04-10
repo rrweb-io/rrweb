@@ -4,14 +4,20 @@
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/rrdom.umd.cjs",
+  "main": "./dist/rrdom.cjs",
   "module": "./dist/rrdom.js",
   "unpkg": "./dist/rrdom.umd.cjs",
-  "typings": "dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/rrdom.js",
-      "require": "./dist/rrdom.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrdom.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrdom.cjs"
+      }
     }
   },
   "files": [
@@ -34,6 +40,7 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
+    "@rrweb/types": "^2.0.0-alpha.12",
     "@types/jest": "^29.5.12",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
@@ -44,8 +51,7 @@
     "ts-jest": "^29.1.2",
     "jest-environment-jsdom": "^29.6.0",
     "jest-environment-jsdom-global": "^4.0.0",
-    "@rrweb/types": "^2.0.0-alpha.12",
-    "typescript": "^4.7.3",
+    "typescript": "^4.9.0",
     "vite": "^5.2.8",
     "vite-plugin-dts": "^3.8.1"
   },

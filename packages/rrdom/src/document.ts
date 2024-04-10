@@ -386,7 +386,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
 export class BaseRRDocumentType extends BaseRRNode implements IRRDocumentType {
   public readonly nodeType: number = NodeType.DOCUMENT_TYPE_NODE;
   public readonly RRNodeType = RRNodeType.DocumentType;
-  public readonly nodeName: string;
+  declare readonly nodeName: string;
   public readonly name: string;
   public readonly publicId: string;
   public readonly systemId: string;
@@ -408,7 +408,7 @@ export class BaseRRDocumentType extends BaseRRNode implements IRRDocumentType {
 export class BaseRRElement extends BaseRRNode implements IRRElement {
   public readonly nodeType: number = NodeType.ELEMENT_NODE;
   public readonly RRNodeType = RRNodeType.Element;
-  public readonly nodeName: string;
+  declare readonly nodeName: string;
   public tagName: string;
   public attributes: Record<string, string> = {};
   public shadowRoot: IRRElement | null = null;
@@ -478,7 +478,7 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
     return style;
   }
 
-  public getAttribute(name: string) {
+  public getAttribute(name: string): string | null {
     return this.attributes[name] || null;
   }
 

@@ -24,13 +24,13 @@ import {
   BaseRRElement,
   BaseRRMediaElement,
   BaseRRText,
-  IRRDocument,
-  IRRElement,
-  IRRNode,
+  type IRRDocument,
+  type IRRElement,
+  type IRRNode,
   NodeType,
-  IRRDocumentType,
-  IRRText,
-  IRRComment,
+  type IRRDocumentType,
+  type IRRText,
+  type IRRComment,
 } from './document';
 
 export class RRDocument extends BaseRRDocument {
