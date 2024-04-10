@@ -1,8 +1,9 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
-import { stringify } from '../../../src/plugins/console/record/stringify';
+import { stringify } from '../src/stringify';
+import { describe, it, expect } from 'vitest';
 
 describe('console record plugin', () => {
   it('can stringify bigint', () => {
