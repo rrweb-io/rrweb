@@ -12,7 +12,7 @@ export {
   type eventWithTime,
 } from '@rrweb/types';
 
-export type { recordOptions } from './types';
+export type { recordOptions, ReplayPlugin } from './types';
 
 const { addCustomEvent } = record;
 const { freezePage } = record;
