@@ -434,30 +434,30 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
       const parts = [];
       let nestedLevel = 0;
       let currentPart = '';
-      let currentStringChar = null
+      let currentStringChar = null;
 
       for (let i = 0; i < input.length; i++) {
-          const char = input[i];
-          currentPart += char;
+        const char = input[i];
+        currentPart += char;
 
-          if (char === '(' && !currentStringChar) {
-              nestedLevel++;
-          } else if (char === ')' && !currentStringChar) {
-              nestedLevel--;
-          } else if (char === ',' && nestedLevel === 0) {
-              parts.push(currentPart.slice(0, -1).trim());
-              currentPart = '';
-          } else if (char.match(/"|'|`/)) {
-            if (currentStringChar === char) {
-              currentStringChar = null
-            } else {
-              currentStringChar = char
-            }
+        if (char === '(' && !currentStringChar) {
+          nestedLevel++;
+        } else if (char === ')' && !currentStringChar) {
+          nestedLevel--;
+        } else if (char === ',' && nestedLevel === 0) {
+          parts.push(currentPart.slice(0, -1).trim());
+          currentPart = '';
+        } else if (char.match(/"|'|`/)) {
+          if (currentStringChar === char) {
+            currentStringChar = null;
+          } else {
+            currentStringChar = char;
           }
+        }
       }
 
       if (currentPart.trim() !== '') {
-          parts.push(currentPart.trim());
+        parts.push(currentPart.trim());
       }
 
       return parts;
@@ -465,14 +465,15 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
 
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
-    return splitRootSelectors(trim(m[0])
-      .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
-      .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
-        return m.replace(/,/g, '\u200C');
-      }))
-      .map((s) => {
-        return s.replace(/\u200C/g, ',');
-      });
+    return splitRootSelectors(
+      trim(m[0])
+        .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
+        .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
+          return m.replace(/,/g, '\u200C');
+        }),
+    ).map((s) => {
+      return s.replace(/\u200C/g, ',');
+    });
   }
 
   /**
