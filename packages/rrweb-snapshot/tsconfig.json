@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "ES6",
-    "module": "ESNext",
+    "target": "ES2020",
+    "module": "ES2020",
     "moduleResolution": "Node",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "rootDir": "src",
-    "outDir": "build",
+    "outDir": "dist",
     "lib": ["es6", "dom"]
   },
   "exclude": ["test"],
