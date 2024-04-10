@@ -29,12 +29,18 @@
   "type": "module",
   "main": "./dist/all.cjs",
   "module": "./dist/all.js",
-  "unpkg": "./dist/all.umd.js",
+  "unpkg": "./dist/all.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/all.js",
-      "require": "./dist/all.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/all.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/all.cjs"
+      }
     }
   },
   "files": [

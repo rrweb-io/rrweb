@@ -22,8 +22,14 @@
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/rrdom-nodejs.js",
-      "require": "./dist/rrdom-nodejs.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrdom-nodejs.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrdom-nodejs.umd.cjs"
+      }
     }
   },
   "files": [

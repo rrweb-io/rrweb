@@ -3,14 +3,20 @@
   "version": "2.0.0-alpha.12",
   "description": "",
   "type": "module",
-  "main": "./dist/rrweb-plugin-console-record.umd.cjs",
-  "module": "./dist/rrweb-plugin-console-record.js",
-  "unpkg": "./dist/rrweb-plugin-console-record.umd.cjs",
+  "main": "./dist/rrweb-plugin-console-replay.umd.cjs",
+  "module": "./dist/rrweb-plugin-console-replay.js",
+  "unpkg": "./dist/rrweb-plugin-console-replay.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/rrweb-plugin-console-record.js",
-      "require": "./dist/rrweb-plugin-console-record.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-console-replay.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-console-replay.umd.cjs"
+      }
     }
   },
   "files": [

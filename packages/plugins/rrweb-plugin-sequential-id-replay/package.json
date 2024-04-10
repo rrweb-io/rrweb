@@ -3,14 +3,20 @@
   "version": "2.0.0-alpha.12",
   "description": "",
   "type": "module",
-  "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
-  "module": "./dist/rrweb-plugin-sequential-id-record.js",
-  "unpkg": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
+  "main": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
+  "module": "./dist/rrweb-plugin-sequential-id-replay.js",
+  "unpkg": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/rrweb-plugin-sequential-id-record.js",
-      "require": "./dist/rrweb-plugin-sequential-id-record.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-sequential-id-replay.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs"
+      }
     }
   },
   "files": [

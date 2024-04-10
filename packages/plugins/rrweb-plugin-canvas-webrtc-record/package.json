@@ -9,8 +9,14 @@
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/rrweb-plugin-canvas-webrtc-record.js",
-      "require": "./dist/rrweb-plugin-canvas-webrtc-record.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-canvas-webrtc-record.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-canvas-webrtc-record.cjs"
+      }
     }
   },
   "files": [
