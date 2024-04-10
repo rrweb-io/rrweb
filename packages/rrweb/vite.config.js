@@ -1,10 +1,3 @@
 import config from '../../vite.config.default';
 
-export default config(
-  {
-    rrweb: 'src/index.ts',
-    'rrweb-record': 'src/entries/record.ts',
-    'rrweb-replay': 'src/entries/replay.ts',
-  },
-  'rrweb',
-);
+export default config('src/index.ts', 'rrweb', { outputDir: 'dist/main' });

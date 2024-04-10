@@ -16,7 +16,7 @@
     "repl": "yarn build && node scripts/repl.js",
     "live-stream": "yarn build && node scripts/stream.js",
     "dev": "vite",
-    "build": "tsc -noEmit && vite build",
+    "build": "tsc -noEmit && vite build && vite build -c vite.config.entries.js",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
     "lint": "yarn eslint src",
@@ -30,39 +30,39 @@
   "keywords": [
     "rrweb"
   ],
-  "main": "./dist/rrweb.umd.cjs",
-  "module": "./dist/rrweb.js",
-  "unpkg": "./dist/rrweb.umd.cjs",
-  "typings": "dist/rrweb.d.ts",
+  "main": "./dist/main/rrweb.umd.cjs",
+  "module": "./dist/main/rrweb.js",
+  "unpkg": "./dist/main/rrweb.umd.cjs",
+  "typings": "dist/main/rrweb.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/rrweb.d.ts",
-        "default": "./dist/rrweb.js"
+        "types": "./dist/main/rrweb.d.ts",
+        "default": "./dist/main/rrweb.js"
       },
       "require": {
-        "types": "./dist/rrweb.d.cts",
-        "default": "./dist/rrweb.cjs"
+        "types": "./dist/main/rrweb.d.cts",
+        "default": "./dist/main/rrweb.cjs"
       }
     },
     "./rrweb-replay": {
       "import": {
-        "types": "./dist/rrweb-replay.d.ts",
-        "default": "./dist/rrweb-replay.js"
+        "types": "./dist/alt/rrweb-replay.d.ts",
+        "default": "./dist/alt/rrweb-replay.js"
       },
       "require": {
-        "types": "./dist/rrweb-replay.d.cts",
-        "default": "./dist/rrweb-replay.cjs"
+        "types": "./dist/alt/rrweb-replay.d.cts",
+        "default": "./dist/alt/rrweb-replay.cjs"
       }
     },
     "./rrweb-record": {
       "import": {
-        "types": "./dist/rrweb-record.d.ts",
-        "default": "./dist/rrweb-record.js"
+        "types": "./dist/alt/rrweb-record.d.ts",
+        "default": "./dist/alt/rrweb-record.js"
       },
       "require": {
-        "types": "./dist/rrweb-record.d.cts",
-        "default": "./dist/rrweb-record.cjs"
+        "types": "./dist/alt/rrweb-record.d.cts",
+        "default": "./dist/alt/rrweb-record.cjs"
       }
     }
   },

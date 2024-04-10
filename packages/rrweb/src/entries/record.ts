@@ -1,1 +1,3 @@
-export * from '../record';
+import record from '../record';
+
+export { record };

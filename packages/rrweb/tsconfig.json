@@ -1,15 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "target": "ES6",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "rootDir": "src",
-    "outDir": "build",
     "lib": ["es6", "dom"],
     "downlevelIteration": true,
     "importsNotUsedAsValues": "error",

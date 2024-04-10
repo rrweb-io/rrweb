@@ -7,7 +7,7 @@ import glob from 'fast-glob';
 export default function (
   entry: LibraryOptions['entry'],
   name: LibraryOptions['name'],
-  fileName?: LibraryOptions['fileName'],
+  options?: { outputDir?: string },
 ) {
   return defineConfig({
     build: {
@@ -15,12 +15,14 @@ export default function (
       lib: {
         entry,
         name,
-        fileName,
+        // fileName,
         // TODO: turn on `umd` for rrweb when https://github.com/schummar/vite/tree/feature/libMultiEntryUMD gets merged
         // More info: https://github.com/vitejs/vite/pull/7047#issuecomment-1288080855
         formats:
           typeof entry === 'string' ? ['es', 'umd', 'cjs'] : ['es', 'cjs'],
       },
+
+      outDir: options?.outputDir ?? 'dist',
 
       // Leaving this unminified so you can see what exactly gets included in
       // the bundles
