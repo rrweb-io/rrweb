@@ -33,14 +33,42 @@
   "main": "./dist/rrweb.umd.cjs",
   "module": "./dist/rrweb.js",
   "unpkg": "./dist/rrweb.umd.cjs",
-  "typings": "dist/index.d.ts",
+  "typings": "dist/rrweb.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/rrweb.js",
-      "require": "./dist/rrweb.umd.cjs"
+      "import": {
+        "types": "./dist/rrweb.d.ts",
+        "default": "./dist/rrweb.js"
+      },
+      "require": {
+        "types": "./dist/rrweb.d.cts",
+        "default": "./dist/rrweb.cjs"
+      }
+    },
+    "./rrweb-replay": {
+      "import": {
+        "types": "./dist/rrweb-replay.d.ts",
+        "default": "./dist/rrweb-replay.js"
+      },
+      "require": {
+        "types": "./dist/rrweb-replay.d.cts",
+        "default": "./dist/rrweb-replay.cjs"
+      }
+    },
+    "./rrweb-record": {
+      "import": {
+        "types": "./dist/rrweb-record.d.ts",
+        "default": "./dist/rrweb-record.js"
+      },
+      "require": {
+        "types": "./dist/rrweb-record.d.cts",
+        "default": "./dist/rrweb-record.cjs"
+      }
     }
   },
   "files": [
+    "rrweb-replay",
+    "rrweb-record",
     "dist",
     "package.json"
   ],
