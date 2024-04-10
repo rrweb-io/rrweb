@@ -559,7 +559,7 @@ export type inputValue = {
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
 
-export const enum MediaInteractions {
+export enum MediaInteractions {
   Play,
   Pause,
   Seeked,
