@@ -30,22 +30,42 @@
   "main": "./dist/packer.cjs",
   "module": "./dist/packer.js",
   "unpkg": "./dist/packer.js",
-  "typings": "dist/index.d.ts",
+  "typings": "dist/packer.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/packer.js",
-      "require": "./dist/packer.cjs"
+      "import": {
+        "types": "./dist/packer.d.ts",
+        "default": "./dist/packer.js"
+      },
+      "require": {
+        "types": "./dist/packer.d.cts",
+        "default": "./dist/packer.cjs"
+      }
     },
     "./pack": {
-      "import": "./dist/pack.js",
-      "require": "./dist/pack.cjs"
+      "import": {
+        "types": "./dist/pack.d.ts",
+        "default": "./dist/pack.js"
+      },
+      "require": {
+        "types": "./dist/pack.d.cts",
+        "default": "./dist/pack.cjs"
+      }
     },
     "./unpack": {
-      "import": "./dist/unpack.js",
-      "require": "./dist/unpack.cjs"
+      "import": {
+        "types": "./dist/unpack.d.ts",
+        "default": "./dist/unpack.js"
+      },
+      "require": {
+        "types": "./dist/unpack.d.cts",
+        "default": "./dist/unpack.cjs"
+      }
     }
   },
   "files": [
+    "pack",
+    "unpack",
     "build",
     "dist",
     "package.json"
