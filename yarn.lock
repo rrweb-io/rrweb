@@ -2565,6 +2565,19 @@
     unbzip2-stream "1.4.3"
     yargs "17.7.1"
 
+"@puppeteer/browsers@1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@puppeteer/browsers/-/browsers-1.9.1.tgz#384ee8b09786f0e8f62b1925e4c492424cb549ee"
+  integrity sha512-PuvK6xZzGhKPvlx3fpfdM2kYY3P/hB1URtK8wA7XUJ6prn6pp22zvJHu48th0SGcHL9SutbPHrFuQgfXTFobWA==
+  dependencies:
+    debug "4.3.4"
+    extract-zip "2.0.1"
+    progress "2.0.3"
+    proxy-agent "6.3.1"
+    tar-fs "3.0.4"
+    unbzip2-stream "1.4.3"
+    yargs "17.7.2"
+
 "@remix-run/router@1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.0.2.tgz#1c17eadb2fa77f80a796ad5ea9bf108e6993ef06"
@@ -3609,6 +3622,13 @@ agent-base@^7.0.1, agent-base@^7.0.2, agent-base@^7.1.0:
   dependencies:
     debug "^4.3.4"
 
+agent-base@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-7.1.1.tgz#bdbded7dfb096b751a2a087eeeb9664725b2e317"
+  integrity sha512-H0TSyFNDMomMNJQBn8wFV5YC/2eJ+VXECwOadZJT554xP6cODZHPX3H9QMQECxvrgiSOP1pHjy1sMWQVYJOUOA==
+  dependencies:
+    debug "^4.3.4"
+
 ajv@^6.10.0, ajv@^6.12.4, ajv@~6.12.6:
   version "6.12.6"
   resolved "https://registry.npmjs.org/ajv/-/ajv-6.12.6.tgz"
@@ -4329,6 +4349,14 @@ chromium-bidi@0.4.16:
   dependencies:
     mitt "3.0.0"
 
+chromium-bidi@0.5.8:
+  version "0.5.8"
+  resolved "https://registry.yarnpkg.com/chromium-bidi/-/chromium-bidi-0.5.8.tgz#5053038425c062ed34b9bc973e84e79de0a5cef0"
+  integrity sha512-blqh+1cEQbHBKmok3rVJkBlBxt9beKBgOsxbFgs7UJcoVbbeZ+K7+6liAsjgpc8l1Xd55cQUy14fXZdGSb4zIw==
+  dependencies:
+    mitt "3.0.1"
+    urlpattern-polyfill "10.0.0"
+
 ci-info@^3.1.1:
   version "3.2.0"
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-3.2.0.tgz"
@@ -4630,6 +4658,16 @@ cosmiconfig@8.2.0:
     js-yaml "^4.1.0"
     parse-json "^5.0.0"
     path-type "^4.0.0"
+
+cosmiconfig@9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/cosmiconfig/-/cosmiconfig-9.0.0.tgz#34c3fc58287b915f3ae905ab6dc3de258b55ad9d"
+  integrity sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==
+  dependencies:
+    env-paths "^2.2.1"
+    import-fresh "^3.3.0"
+    js-yaml "^4.1.0"
+    parse-json "^5.2.0"
 
 cosmiconfig@^7.0.0:
   version "7.0.0"
@@ -4992,6 +5030,11 @@ devtools-protocol@0.0.1147663:
   resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1147663.tgz#4ec5610b39a6250d1f87e6b9c7e16688ed0ac78e"
   integrity sha512-hyWmRrexdhbZ1tcJUGpO95ivbRhWXz++F4Ko+n21AY5PNln2ovoJw+8ZMNDTtip+CNFQfrtLVh/w4009dXO/eQ==
 
+devtools-protocol@0.0.1232444:
+  version "0.0.1232444"
+  resolved "https://registry.yarnpkg.com/devtools-protocol/-/devtools-protocol-0.0.1232444.tgz#406345a90a871ba852c530d73482275234936eed"
+  integrity sha512-pM27vqEfxSxRkTMnF+XCmxSEb6duO5R+t8A9DEEJgy4Wz2RVanje2mmj99B6A3zv2r/qGfYlOvYznUhuokizmg==
+
 devtools-protocol@0.0.869402:
   version "0.0.869402"
   resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.869402.tgz"
@@ -5205,6 +5248,11 @@ entities@~2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.1.0.tgz#992d3129cf7df6870b96c57858c249a120f8b8b5"
   integrity sha512-hCx1oky9PFrJ611mf0ifBLBRW8lUUVRlFolb5gWRfIELabBlbp9xZvrqZLZAs+NxFnbfQoeGd8wDkygjg7U85w==
+
+env-paths@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/env-paths/-/env-paths-2.2.1.tgz#420399d416ce1fbe9bc0a07c62fa68d67fd0f8f2"
+  integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
 
 error-ex@^1.3.1, error-ex@^1.3.2:
   version "1.3.2"
@@ -6627,6 +6675,14 @@ https-proxy-agent@^7.0.0:
     agent-base "^7.0.2"
     debug "4"
 
+https-proxy-agent@^7.0.2:
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/https-proxy-agent/-/https-proxy-agent-7.0.4.tgz#8e97b841a029ad8ddc8731f26595bad868cb4168"
+  integrity sha512-wlwpilI7YdjSkWaQ/7omYBMTliDcmCN8OLihO6I9B86g06lMyAoqgoDpV0XqoaPOKj+0DIdAvnsWfyAAhmimcg==
+  dependencies:
+    agent-base "^7.0.2"
+    debug "4"
+
 human-id@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/human-id/-/human-id-1.0.2.tgz#e654d4b2b0d8b07e45da9f6020d8af17ec0a5df3"
@@ -6686,7 +6742,7 @@ immediate@~3.0.5:
   resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
   integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
 
-import-fresh@^3.0.0, import-fresh@^3.2.1:
+import-fresh@^3.0.0, import-fresh@^3.2.1, import-fresh@^3.3.0:
   version "3.3.0"
   resolved "https://registry.npmjs.org/import-fresh/-/import-fresh-3.3.0.tgz"
   integrity sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==
@@ -8282,6 +8338,11 @@ mitt@3.0.0, mitt@^3.0.0:
   resolved "https://registry.yarnpkg.com/mitt/-/mitt-3.0.0.tgz#69ef9bd5c80ff6f57473e8d89326d01c414be0bd"
   integrity sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ==
 
+mitt@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/mitt/-/mitt-3.0.1.tgz#ea36cf0cc30403601ae074c8f77b7092cdab36d1"
+  integrity sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==
+
 mixme@^0.5.1:
   version "0.5.5"
   resolved "https://registry.yarnpkg.com/mixme/-/mixme-0.5.5.tgz#bf8f67d8caf10fdb49fd23198fd1fa6d8e406627"
@@ -8738,6 +8799,20 @@ pac-proxy-agent@^7.0.0:
     pac-resolver "^7.0.0"
     socks-proxy-agent "^8.0.1"
 
+pac-proxy-agent@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/pac-proxy-agent/-/pac-proxy-agent-7.0.1.tgz#6b9ddc002ec3ff0ba5fdf4a8a21d363bcc612d75"
+  integrity sha512-ASV8yU4LLKBAjqIPMbrgtaKIvxQri/yh2OpI+S6hVa9JRkUI3Y3NPFbfngDtY7oFtSMD3w31Xns89mDa3Feo5A==
+  dependencies:
+    "@tootallnate/quickjs-emscripten" "^0.23.0"
+    agent-base "^7.0.2"
+    debug "^4.3.4"
+    get-uri "^6.0.1"
+    http-proxy-agent "^7.0.0"
+    https-proxy-agent "^7.0.2"
+    pac-resolver "^7.0.0"
+    socks-proxy-agent "^8.0.2"
+
 pac-resolver@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/pac-resolver/-/pac-resolver-7.0.0.tgz#79376f1ca26baf245b96b34c339d79bff25e900c"
@@ -9164,6 +9239,20 @@ proxy-agent@6.3.0:
     proxy-from-env "^1.1.0"
     socks-proxy-agent "^8.0.1"
 
+proxy-agent@6.3.1:
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/proxy-agent/-/proxy-agent-6.3.1.tgz#40e7b230552cf44fd23ffaf7c59024b692612687"
+  integrity sha512-Rb5RVBy1iyqOtNl15Cw/llpeLH8bsb37gM1FUfKQ+Wck6xHlbAhWGUFiTRHtkjqGTA5pSHz6+0hrPW/oECihPQ==
+  dependencies:
+    agent-base "^7.0.2"
+    debug "^4.3.4"
+    http-proxy-agent "^7.0.0"
+    https-proxy-agent "^7.0.2"
+    lru-cache "^7.14.1"
+    pac-proxy-agent "^7.0.1"
+    proxy-from-env "^1.1.0"
+    socks-proxy-agent "^8.0.2"
+
 proxy-from-env@1.1.0, proxy-from-env@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-1.1.0.tgz"
@@ -9227,6 +9316,18 @@ puppeteer-core@20.9.0:
     devtools-protocol "0.0.1147663"
     ws "8.13.0"
 
+puppeteer-core@21.11.0:
+  version "21.11.0"
+  resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-21.11.0.tgz#6c60ec350f1a3a2152179c68166da6edfce18a23"
+  integrity sha512-ArbnyA3U5SGHokEvkfWjW+O8hOxV1RSJxOgriX/3A4xZRqixt9ZFHD0yPgZQF05Qj0oAqi8H/7stDorjoHY90Q==
+  dependencies:
+    "@puppeteer/browsers" "1.9.1"
+    chromium-bidi "0.5.8"
+    cross-fetch "4.0.0"
+    debug "4.3.4"
+    devtools-protocol "0.0.1232444"
+    ws "8.16.0"
+
 puppeteer@^17.1.3:
   version "17.1.3"
   resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-17.1.3.tgz#2814cf221925e19c681c69aa97401a68b30240c9"
@@ -9263,6 +9364,15 @@ puppeteer@^20.9.0:
     "@puppeteer/browsers" "1.4.6"
     cosmiconfig "8.2.0"
     puppeteer-core "20.9.0"
+
+puppeteer@^21.11.0:
+  version "21.11.0"
+  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-21.11.0.tgz#46e64067b742b0e17a3b8dc668bc437f45cdd9f1"
+  integrity sha512-9jTHuYe22TD3sNxy0nEIzC7ZrlRnDgeX3xPkbS7PnbdwYjl2o/z/YuCrRBwezdKpbTDTJ4VqIggzNyeRcKq3cg==
+  dependencies:
+    "@puppeteer/browsers" "1.9.1"
+    cosmiconfig "9.0.0"
+    puppeteer-core "21.11.0"
 
 puppeteer@^9.1.1:
   version "9.1.1"
@@ -10086,6 +10196,15 @@ socks-proxy-agent@^8.0.1:
   integrity sha512-59EjPbbgg8U3x62hhKOFVAmySQUcfRQ4C7Q/D5sEHnZTQRrQlNKINks44DMR1gwXp0p4LaVIeccX2KHTTcHVqQ==
   dependencies:
     agent-base "^7.0.1"
+    debug "^4.3.4"
+    socks "^2.7.1"
+
+socks-proxy-agent@^8.0.2:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/socks-proxy-agent/-/socks-proxy-agent-8.0.3.tgz#6b2da3d77364fde6292e810b496cb70440b9b89d"
+  integrity sha512-VNegTZKhuGq5vSD6XNKlbqWhyt/40CgoEw8XxD6dhnm8Jq9IEa3nIa4HwnM8XOqU0CdB0BwWVXusqiFXfHB3+A==
+  dependencies:
+    agent-base "^7.1.1"
     debug "^4.3.4"
     socks "^2.7.1"
 
@@ -11067,6 +11186,11 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
+urlpattern-polyfill@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/urlpattern-polyfill/-/urlpattern-polyfill-10.0.0.tgz#f0a03a97bfb03cdf33553e5e79a2aadd22cac8ec"
+  integrity sha512-H/A06tKD7sS1O1X2SshBVeA5FLycRpjqiBeqGKmBwBDBy28EnRjORxTNe269KSSr5un5qyWi1iL61wLxpd+ZOg==
+
 use-callback-ref@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/use-callback-ref/-/use-callback-ref-1.3.0.tgz#772199899b9c9a50526fedc4993fc7fa1f7e32d5"
@@ -11610,6 +11734,19 @@ yargs@17.7.1:
   version "17.7.1"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.7.1.tgz#34a77645201d1a8fc5213ace787c220eabbd0967"
   integrity sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw==
+  dependencies:
+    cliui "^8.0.1"
+    escalade "^3.1.1"
+    get-caller-file "^2.0.5"
+    require-directory "^2.1.1"
+    string-width "^4.2.3"
+    y18n "^5.0.5"
+    yargs-parser "^21.1.1"
+
+yargs@17.7.2:
+  version "17.7.2"
+  resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.7.2.tgz#991df39aca675a192b816e1e0363f9d75d2aa269"
+  integrity sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==
   dependencies:
     cliui "^8.0.1"
     escalade "^3.1.1"

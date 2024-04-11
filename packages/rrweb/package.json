@@ -92,7 +92,7 @@
     "ignore-styles": "^5.0.1",
     "inquirer": "^9.0.0",
     "jest-image-snapshot": "^6.2.0",
-    "puppeteer": "^20.9.0",
+    "puppeteer": "^21.11.0",
     "simple-peer-light": "^9.10.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
