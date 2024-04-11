@@ -89,7 +89,7 @@ describe('benchmark: replayer fast-forward performance', () => {
 
   beforeAll(async () => {
     browser = await launchPuppeteer({
-      headless: true,
+      headless: 'new',
       args: ['--disable-dev-shm-usage'],
     });
 

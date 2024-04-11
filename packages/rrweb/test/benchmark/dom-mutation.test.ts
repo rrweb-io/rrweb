@@ -65,7 +65,7 @@ describe('benchmark: mutation observer', () => {
     server = await startServer();
     browser = await launchPuppeteer({
       dumpio: true,
-      headless: true,
+      headless: 'new',
     });
   });
 
