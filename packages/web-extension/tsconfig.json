@@ -4,12 +4,9 @@
     "rootDir": ".",
     "baseUrl": ".",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "strict": true,
     "esModuleInterop": true,
     "incremental": true,
     "resolveJsonModule": true,
-    "noUnusedLocals": true,
-    "forceConsistentCasingInFileNames": true,
     "paths": {
       "~/*": ["src/*"]
     },

@@ -10,7 +10,8 @@
     "test:watch": "vitest watch",
     "test:update": "vitest run --update",
     "dev": "vite",
-    "build": "tsc -noEmit && vite build",
+    "build": "yarn check-types && vite build",
+    "check-types": "tsc --noEmit",
     "prepublish": "npm run build",
     "lint": "yarn eslint src"
   },
