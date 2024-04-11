@@ -19,6 +19,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
+      
+      - name: Setup Chrome
+        # run: npx puppeteer browsers install chrome
+        uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+
+      - name: Test chrome cache location
+        run: ls -la /home/runner/.cache/puppeteer
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
@@ -29,10 +37,6 @@ jobs:
       - name: Check types
         run: yarn check-types
 
-      - name: Setup Chrome
-        # run: npx puppeteer browsers install chrome
-        uses: browser-actions/setup-chrome@latest
-        id: setup-chrome
       - name: Test chrome install
         run: |
           npx puppeteer browsers list
