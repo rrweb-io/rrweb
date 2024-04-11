@@ -21,32 +21,19 @@ jobs:
           node-version: lts/*
       
       - name: Setup Chrome
-        # run: npx puppeteer browsers install chrome
         uses: browser-actions/setup-chrome@latest
         id: setup-chrome
+        with:
+          chrome-version: stable
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Test chrome cache location
-        run: ls -la /home/runner/.cache/puppeteer
-
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
-      - name: install chrome
-        run: node node_modules/puppeteer/install.js
-
       - name: Check types
         run: yarn check-types
-
-      # - name: Test chrome install
-      #   run: |
-      #     npx puppeteer browsers list
-      #     npx puppeteer browsers install chrome
-      #     npx puppeteer browsers list
-      - run: |
-          ${{ steps.setup-chrome.outputs.chrome-path }} --version
 
       - name: Run tests
         run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
