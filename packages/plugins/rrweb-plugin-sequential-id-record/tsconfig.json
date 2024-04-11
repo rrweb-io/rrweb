@@ -1,6 +1,6 @@
 {
   "extends": "../../../tsconfig.base.json",
-  "includes": ["src"],
+  "include": ["src"],
   "exclude": ["vite.config.ts"],
   "compilerOptions": {
     "rootDir": "src",

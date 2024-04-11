@@ -15,7 +15,7 @@
     },
     "jsx": "react-jsx"
   },
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "vite.config.ts"],
   "references": [
     {
       "path": "../rrweb"

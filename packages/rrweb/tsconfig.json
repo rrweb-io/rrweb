@@ -1,20 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
+  "include": ["src"],
   "compilerOptions": {
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
     "rootDir": "src",
-    "lib": ["es6", "dom"],
-    "downlevelIteration": true,
-    "importsNotUsedAsValues": "error",
-    "strictBindCallApply": true,
-    "composite": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "types": [
+      // from tsconfig.base.json
       "vite/client",
       "@types/dom-mediacapture-transform",
       "@types/offscreencanvas",
+
+      // rrweb specific:
       /*
        * @see https://vitest.dev/config/#globals
        * if we remove the --globals flag from the vite test command, we can remove this
@@ -33,11 +29,5 @@
     {
       "path": "../rrweb-snapshot"
     }
-  ],
-  "exclude": ["test", "scripts", "vite.config.ts"],
-  "include": [
-    "src",
-    "node_modules/@types/css-font-loading-module/index.d.ts",
-    "node_modules/@types/jest-image-snapshot/index.d.ts"
   ]
 }
