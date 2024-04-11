@@ -634,6 +634,7 @@ describe('record integration tests', function (this: ISuite) {
 
     await page.evaluate(() => {
       const el = document.createElement('input');
+      el.size = 50;
       el.id = 'input';
       el.value = 'input should be masked';
 

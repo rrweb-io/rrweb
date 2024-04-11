@@ -9560,6 +9560,7 @@ exports[`record integration tests should not record input values if dynamically 
             \\"type\\": 2,
             \\"tagName\\": \\"input\\",
             \\"attributes\\": {
+              \\"size\\": \\"50\\",
               \\"id\\": \\"input\\",
               \\"value\\": \\"**********************\\"
             },
