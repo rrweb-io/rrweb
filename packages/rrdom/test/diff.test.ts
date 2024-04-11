@@ -1659,9 +1659,7 @@ describe('diff algorithm for rrdom', () => {
       rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 3));
       expect(() =>
         createOrGetNode(rrNode, mirror, rrDocument.mirror),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `DOMException {}`,
-      );
+      ).toThrowErrorMatchingInlineSnapshot(`DOMException {}`);
     });
 
     it('create a DocumentType from RRDocumentType', () => {
