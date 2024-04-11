@@ -25,11 +25,11 @@ jobs:
         uses: browser-actions/setup-chrome@latest
         id: setup-chrome
 
-      - name: Test chrome cache location
-        run: ls -la /home/runner/.cache/puppeteer
-
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Test chrome cache location
+        run: ls -la /home/runner/.cache/puppeteer
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
