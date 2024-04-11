@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
 import type { recordOptions } from '../src/types';
 import {
@@ -82,7 +83,7 @@ const setup = function (this: ISuite, content: string): ISuite {
 };
 
 describe('record', function (this: ISuite) {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   const ctx: ISuite = setup.call(
     this,
@@ -928,7 +929,7 @@ describe('record', function (this: ISuite) {
 });
 
 describe('record iframes', function (this: ISuite) {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   const ctx: ISuite = setup.call(
     this,

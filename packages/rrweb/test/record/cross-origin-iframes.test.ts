@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import type {
   listenerHandler,
@@ -45,9 +46,17 @@ async function injectRecordScript(
   frame: puppeteer.Frame,
   options?: ExtraOptions,
 ) {
-  await frame.addScriptTag({
-    path: path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs'),
-  });
+  try {
+    await frame.addScriptTag({
+      path: path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs'),
+    });
+  } catch (e) {
+    // we get this error: `Protocol error (DOM.resolveNode): Node with given id does not belong to the document`
+    // then the page wasn't loaded yet and we try again
+    if (!e.message.includes('DOM.resolveNode')) throw e;
+    await injectRecordScript(frame, options);
+    return;
+  }
   options = options || {};
   await frame.evaluate((options) => {
     (window as unknown as IWindow).snapshots = [];
@@ -122,7 +131,7 @@ const setup = function (
 };
 
 describe('cross origin iframes', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   describe('form.html', function (this: ISuite) {
     const ctx: ISuite = setup.call(
@@ -472,7 +481,7 @@ describe('cross origin iframes', function (this: ISuite) {
   });
 
   describe('audio.html', function (this: ISuite) {
-    jest.setTimeout(100_000);
+    vi.setConfig({ testTimeout: 100_000 });
 
     const ctx: ISuite = setup.call(
       this,
@@ -561,7 +570,7 @@ describe('cross origin iframes', function (this: ISuite) {
 });
 
 describe('same origin iframes', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,

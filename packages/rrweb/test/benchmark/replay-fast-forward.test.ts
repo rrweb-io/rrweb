@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
+import { vi } from 'vitest';
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from '../../src/types';
 import { launchPuppeteer, ISuite } from '../utils';
@@ -81,7 +82,7 @@ function avg(v: number[]): number {
 }
 
 describe('benchmark: replayer fast-forward performance', () => {
-  jest.setTimeout(240000);
+  vi.setConfig({ testTimeout: 240000 });
   let code: ISuite['code'];
   let page: ISuite['page'];
   let browser: ISuite['browser'];

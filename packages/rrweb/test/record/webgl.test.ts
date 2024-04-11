@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import {
   listenerHandler,
@@ -86,7 +87,7 @@ const setup = function (
 };
 
 describe('record webgl', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,
@@ -268,7 +269,7 @@ describe('record webgl', function (this: ISuite) {
   });
 
   describe('recordCanvas FPS', function (this: ISuite) {
-    jest.setTimeout(10_000);
+    vi.setConfig({ testTimeout: 10_000 });
 
     const maxFPS = 60;
 

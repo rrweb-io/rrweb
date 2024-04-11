@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
+exports[`record webgl > recordCanvas FPS > should record snapshots 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -93,7 +93,7 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
 ]"
 `;
 
-exports[`record webgl should batch events by RAF 1`] = `
+exports[`record webgl > should batch events by RAF 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -254,7 +254,7 @@ exports[`record webgl should batch events by RAF 1`] = `
 ]"
 `;
 
-exports[`record webgl will record changes to a canvas element 1`] = `
+exports[`record webgl > will record changes to a canvas element 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -363,7 +363,7 @@ exports[`record webgl will record changes to a canvas element 1`] = `
 ]"
 `;
 
-exports[`record webgl will record changes to a canvas element before the canvas gets added (webgl2) 1`] = `
+exports[`record webgl > will record changes to a canvas element before the canvas gets added (webgl2) 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -507,7 +507,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
 ]"
 `;
 
-exports[`record webgl will record changes to a canvas element before the canvas gets added 1`] = `
+exports[`record webgl > will record changes to a canvas element before the canvas gets added 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -651,7 +651,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
 ]"
 `;
 
-exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
+exports[`record webgl > will record changes to a webgl2 canvas element 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -760,7 +760,7 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
 ]"
 `;
 
-exports[`record webgl will record webgl variables 1`] = `
+exports[`record webgl > will record webgl variables 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -889,7 +889,7 @@ exports[`record webgl will record webgl variables 1`] = `
 ]"
 `;
 
-exports[`record webgl will record webgl variables in reverse order 1`] = `
+exports[`record webgl > will record webgl variables in reverse order 1`] = `
 "[
   {
     \\"type\\": 4,

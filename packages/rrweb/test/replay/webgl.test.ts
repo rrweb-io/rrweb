@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
@@ -13,7 +14,7 @@ interface ISuite {
 expect.extend({ toMatchImageSnapshot });
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   let browser: ISuite['browser'];
   let page: ISuite['page'];

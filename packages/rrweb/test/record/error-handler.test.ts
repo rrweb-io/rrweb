@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import { listenerHandler, eventWithTime, EventType } from '@rrweb/types';
 import { launchPuppeteer } from '../utils';
@@ -69,7 +70,7 @@ const setup = function (
 };
 
 describe('error-handler', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,

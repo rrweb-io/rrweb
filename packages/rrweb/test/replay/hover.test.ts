@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 import { launchPuppeteer, waitForRAF } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
@@ -15,7 +16,7 @@ interface ISuite {
 expect.extend({ toMatchImageSnapshot });
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
 
   let code: ISuite['code'];
   let styles: ISuite['styles'];
@@ -62,6 +63,7 @@ describe('replayer', function () {
       replayer.pause(110); // mouseDown event is at 100
     `);
 
+      await waitForRAF(page);
       await waitForRAF(page);
 
       const image = await page.screenshot();

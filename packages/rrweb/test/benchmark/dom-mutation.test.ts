@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 import type { Page } from 'puppeteer';
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from '../../src/types';
@@ -55,7 +56,7 @@ function avg(v: number[]): number {
 }
 
 describe('benchmark: mutation observer', () => {
-  jest.setTimeout(240000);
+  vi.setConfig({ testTimeout: 240000 });
   let page: ISuite['page'];
   let browser: ISuite['browser'];
   let server: ISuite['server'];

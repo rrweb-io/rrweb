@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import {
   NodeType as RRNodeType,
   createMirror,
@@ -1163,7 +1164,7 @@ describe('diff algorithm for rrdom', () => {
   });
 
   describe('diff iframe elements', () => {
-    jest.setTimeout(60_000);
+    vi.setConfig({ testTimeout: 60_000 });
 
     it('should add an element to the contentDocument of an iframe element', () => {
       document.write('<html></html>');

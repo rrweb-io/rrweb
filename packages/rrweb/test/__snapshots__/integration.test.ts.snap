@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`record integration tests can correctly serialize a shader and multiple webgl contexts 1`] = `
+exports[`record integration tests > can correctly serialize a shader and multiple webgl contexts 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -414,7 +414,7 @@ exports[`record integration tests can correctly serialize a shader and multiple 
 ]"
 `;
 
-exports[`record integration tests can freeze mutations 1`] = `
+exports[`record integration tests > can freeze mutations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -594,7 +594,7 @@ exports[`record integration tests can freeze mutations 1`] = `
 ]"
 `;
 
-exports[`record integration tests can mask character data mutations 1`] = `
+exports[`record integration tests > can mask character data mutations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -812,7 +812,7 @@ exports[`record integration tests can mask character data mutations 1`] = `
 ]"
 `;
 
-exports[`record integration tests can mask character data mutations with regexp 1`] = `
+exports[`record integration tests > can mask character data mutations with regexp 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -1034,7 +1034,7 @@ exports[`record integration tests can mask character data mutations with regexp 
 ]"
 `;
 
-exports[`record integration tests can record attribute mutation 1`] = `
+exports[`record integration tests > can record attribute mutation 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -1205,7 +1205,7 @@ exports[`record integration tests can record attribute mutation 1`] = `
 ]"
 `;
 
-exports[`record integration tests can record character data muatations 1`] = `
+exports[`record integration tests > can record character data muatations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -1383,7 +1383,7 @@ exports[`record integration tests can record character data muatations 1`] = `
 ]"
 `;
 
-exports[`record integration tests can record childList mutations 1`] = `
+exports[`record integration tests > can record childList mutations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -1559,7 +1559,7 @@ exports[`record integration tests can record childList mutations 1`] = `
 ]"
 `;
 
-exports[`record integration tests can record clicks 1`] = `
+exports[`record integration tests > can record clicks 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -1841,7 +1841,7 @@ exports[`record integration tests can record clicks 1`] = `
 ]"
 `;
 
-exports[`record integration tests can record form interactions 1`] = `
+exports[`record integration tests > can record form interactions 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -2624,7 +2624,7 @@ exports[`record integration tests can record form interactions 1`] = `
 ]"
 `;
 
-exports[`record integration tests can record node mutations 1`] = `
+exports[`record integration tests > can record node mutations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -3599,7 +3599,7 @@ exports[`record integration tests can record node mutations 1`] = `
 ]"
 `;
 
-exports[`record integration tests can record style changes compactly and preserve css var() functions 1`] = `
+exports[`record integration tests > can record style changes compactly and preserve css var() functions 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -3825,7 +3825,7 @@ exports[`record integration tests can record style changes compactly and preserv
 ]"
 `;
 
-exports[`record integration tests can record textarea mutations correctly 1`] = `
+exports[`record integration tests > can record textarea mutations correctly 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -4089,7 +4089,7 @@ exports[`record integration tests can record textarea mutations correctly 1`] = 
 ]"
 `;
 
-exports[`record integration tests can use maskInputOptions to configure which type of inputs should be masked 1`] = `
+exports[`record integration tests > can use maskInputOptions to configure which type of inputs should be masked 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -4960,7 +4960,7 @@ exports[`record integration tests can use maskInputOptions to configure which ty
 ]"
 `;
 
-exports[`record integration tests handles null attribute values 1`] = `
+exports[`record integration tests > handles null attribute values 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -5151,7 +5151,7 @@ exports[`record integration tests handles null attribute values 1`] = `
 ]"
 `;
 
-exports[`record integration tests mutations should work when blocked class is unblocked 1`] = `
+exports[`record integration tests > mutations should work when blocked class is unblocked 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -5916,7 +5916,7 @@ exports[`record integration tests mutations should work when blocked class is un
 ]"
 `;
 
-exports[`record integration tests should mask inputs via function call 1`] = `
+exports[`record integration tests > should mask inputs via function call 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -6786,7 +6786,7 @@ exports[`record integration tests should mask inputs via function call 1`] = `
 ]"
 `;
 
-exports[`record integration tests should mask password value attribute with maskInputOptions 1`] = `
+exports[`record integration tests > should mask password value attribute with maskInputOptions 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -7233,7 +7233,7 @@ exports[`record integration tests should mask password value attribute with mask
 ]"
 `;
 
-exports[`record integration tests should mask texts 1`] = `
+exports[`record integration tests > should mask texts 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -7531,7 +7531,7 @@ exports[`record integration tests should mask texts 1`] = `
 ]"
 `;
 
-exports[`record integration tests should mask texts using maskTextFn 1`] = `
+exports[`record integration tests > should mask texts using maskTextFn 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -7829,7 +7829,7 @@ exports[`record integration tests should mask texts using maskTextFn 1`] = `
 ]"
 `;
 
-exports[`record integration tests should nest record iframe 1`] = `
+exports[`record integration tests > should nest record iframe 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -8588,7 +8588,7 @@ exports[`record integration tests should nest record iframe 1`] = `
 ]"
 `;
 
-exports[`record integration tests should not record blocked elements and its child nodes 1`] = `
+exports[`record integration tests > should not record blocked elements and its child nodes 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -8768,7 +8768,7 @@ exports[`record integration tests should not record blocked elements and its chi
 ]"
 `;
 
-exports[`record integration tests should not record blocked elements dynamically added 1`] = `
+exports[`record integration tests > should not record blocked elements dynamically added 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -8974,7 +8974,7 @@ exports[`record integration tests should not record blocked elements dynamically
 ]"
 `;
 
-exports[`record integration tests should not record input events on ignored elements 1`] = `
+exports[`record integration tests > should not record input events on ignored elements 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -9385,7 +9385,7 @@ exports[`record integration tests should not record input events on ignored elem
 ]"
 `;
 
-exports[`record integration tests should not record input values if dynamically added and maskAllInputs is true 1`] = `
+exports[`record integration tests > should not record input values if dynamically added and maskAllInputs is true 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -9618,7 +9618,7 @@ exports[`record integration tests should not record input values if dynamically 
 ]"
 `;
 
-exports[`record integration tests should not record input values if maskAllInputs is enabled 1`] = `
+exports[`record integration tests > should not record input values if maskAllInputs is enabled 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -10488,7 +10488,7 @@ exports[`record integration tests should not record input values if maskAllInput
 ]"
 `;
 
-exports[`record integration tests should record DOM node movement 1 1`] = `
+exports[`record integration tests > should record DOM node movement 1 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -10755,7 +10755,7 @@ exports[`record integration tests should record DOM node movement 1 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record DOM node movement 2 1`] = `
+exports[`record integration tests > should record DOM node movement 2 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -11033,7 +11033,7 @@ exports[`record integration tests should record DOM node movement 2 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record after DOMContentLoaded event 1`] = `
+exports[`record integration tests > should record after DOMContentLoaded event 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -11116,7 +11116,7 @@ exports[`record integration tests should record after DOMContentLoaded event 1`]
 ]"
 `;
 
-exports[`record integration tests should record canvas mutations 1`] = `
+exports[`record integration tests > should record canvas mutations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -11335,7 +11335,7 @@ exports[`record integration tests should record canvas mutations 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record dynamic CSS changes 1`] = `
+exports[`record integration tests > should record dynamic CSS changes 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -11732,7 +11732,7 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record images inside iframe with blob url 1`] = `
+exports[`record integration tests > should record images inside iframe with blob url 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -12125,7 +12125,7 @@ exports[`record integration tests should record images inside iframe with blob u
 ]"
 `;
 
-exports[`record integration tests should record images inside iframe with blob url after iframe was reloaded 1`] = `
+exports[`record integration tests > should record images inside iframe with blob url after iframe was reloaded 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -12593,7 +12593,7 @@ exports[`record integration tests should record images inside iframe with blob u
 ]"
 `;
 
-exports[`record integration tests should record images with blob url 1`] = `
+exports[`record integration tests > should record images with blob url 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -12834,7 +12834,7 @@ exports[`record integration tests should record images with blob url 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record input userTriggered values if userTriggeredOnInput is enabled 1`] = `
+exports[`record integration tests > should record input userTriggered values if userTriggeredOnInput is enabled 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -13734,7 +13734,7 @@ exports[`record integration tests should record input userTriggered values if us
 ]"
 `;
 
-exports[`record integration tests should record moved shadow DOM 1`] = `
+exports[`record integration tests > should record moved shadow DOM 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -13903,7 +13903,7 @@ exports[`record integration tests should record moved shadow DOM 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record moved shadow DOM 2 1`] = `
+exports[`record integration tests > should record moved shadow DOM 2 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -14086,7 +14086,7 @@ exports[`record integration tests should record moved shadow DOM 2 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record mutations in iframes accross pages 1`] = `
+exports[`record integration tests > should record mutations in iframes accross pages 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -14395,7 +14395,7 @@ exports[`record integration tests should record mutations in iframes accross pag
 ]"
 `;
 
-exports[`record integration tests should record nested iframes and shadow doms 1`] = `
+exports[`record integration tests > should record nested iframes and shadow doms 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -14742,7 +14742,7 @@ exports[`record integration tests should record nested iframes and shadow doms 1
 ]"
 `;
 
-exports[`record integration tests should record shadow DOM 1`] = `
+exports[`record integration tests > should record shadow DOM 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -15192,7 +15192,7 @@ exports[`record integration tests should record shadow DOM 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record shadow DOM 2 1`] = `
+exports[`record integration tests > should record shadow DOM 2 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -15310,7 +15310,7 @@ exports[`record integration tests should record shadow DOM 2 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record shadow DOM 3 1`] = `
+exports[`record integration tests > should record shadow DOM 3 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -15428,7 +15428,7 @@ exports[`record integration tests should record shadow DOM 3 1`] = `
 ]"
 `;
 
-exports[`record integration tests should record shadow doms polyfilled by shadydom 1`] = `
+exports[`record integration tests > should record shadow doms polyfilled by shadydom 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -15674,7 +15674,7 @@ exports[`record integration tests should record shadow doms polyfilled by shadyd
 ]"
 `;
 
-exports[`record integration tests should record shadow doms polyfilled by synthetic-shadow 1`] = `
+exports[`record integration tests > should record shadow doms polyfilled by synthetic-shadow 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -15948,7 +15948,7 @@ exports[`record integration tests should record shadow doms polyfilled by synthe
 ]"
 `;
 
-exports[`record integration tests should record webgl canvas mutations 1`] = `
+exports[`record integration tests > should record webgl canvas mutations 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -16163,7 +16163,7 @@ exports[`record integration tests should record webgl canvas mutations 1`] = `
 ]"
 `;
 
-exports[`record integration tests should unmask texts using maskTextFn 1`] = `
+exports[`record integration tests > should unmask texts using maskTextFn 1`] = `
 "[
   {
     \\"type\\": 0,
@@ -16461,7 +16461,7 @@ exports[`record integration tests should unmask texts using maskTextFn 1`] = `
 ]"
 `;
 
-exports[`record integration tests will serialize node before record 1`] = `
+exports[`record integration tests > will serialize node before record 1`] = `
 "[
   {
     \\"type\\": 0,

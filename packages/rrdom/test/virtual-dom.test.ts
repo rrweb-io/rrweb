@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
   cdataNode,
@@ -49,7 +50,7 @@ function walk(node, mirror, blankSpace) {
 `;
 
 describe('RRDocument for browser environment', () => {
-  jest.setTimeout(60_000);
+  vi.setConfig({ testTimeout: 60_000 });
   let mirror: Mirror;
   beforeEach(() => {
     mirror = new Mirror();

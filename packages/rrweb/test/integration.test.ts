@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import {
   assertSnapshot,
   startServer,
@@ -17,7 +18,7 @@ import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   const getHtml = (
     fileName: string,

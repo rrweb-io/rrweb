@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
 import {
   assertDomSnapshot,
@@ -37,7 +38,7 @@ type IWindow = Window &
   typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   let code: ISuite['code'];
   let browser: ISuite['browser'];
@@ -1048,9 +1049,9 @@ describe('replayer', function () {
     await page.evaluate(
       `events = ${JSON.stringify(documentReplacementEvents)}`,
     );
-    const warningThrown = jest.fn();
+    const warningThrown = vi.fn();
     page.on('console', warningThrown);
-    const errorThrown = jest.fn();
+    const errorThrown = vi.fn();
     page.on('pageerror', errorThrown);
     await page.evaluate(`
       const { Replayer } = rrweb;
