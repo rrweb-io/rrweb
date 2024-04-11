@@ -36,5 +36,6 @@
       "@types/offscreencanvas"
     ]
   },
+  "exclude": ["**/vite.config.ts", "**/vitest.config.ts", "**/test"],
   "compileOnSave": true
 }
