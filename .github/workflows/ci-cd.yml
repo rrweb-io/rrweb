@@ -30,8 +30,16 @@ jobs:
         run: yarn check-types
 
       - name: Setup Chrome
-        run: npx puppeteer browsers install chrome
-        # uses: browser-actions/setup-chrome@latest
+        # run: npx puppeteer browsers install chrome
+        uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+      - name: Test chrome install
+        run: |
+          npx puppeteer browsers list
+          npx puppeteer browsers install chrome
+          npx puppeteer browsers list
+      - run: |
+          ${{ steps.setup-chrome.outputs.chrome-path }} --version
 
       - name: Run tests
         run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
