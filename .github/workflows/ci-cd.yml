@@ -27,7 +27,7 @@ jobs:
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
       - name: Check types
-        run: yarn turbo run check-types
+        run: yarn check-types
 
       - name: Run tests
         run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test

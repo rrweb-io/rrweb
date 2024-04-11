@@ -41,6 +41,7 @@
     "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1 --continue'",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
+    "check-types": "yarn turbo run check-types --continue",
     "format": "yarn prettier --write '**/*.{ts,md}'",
     "dev": "yarn turbo run dev",
     "repl": "cd packages/rrweb && npm run repl",
