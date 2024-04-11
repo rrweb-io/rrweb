@@ -38,7 +38,7 @@
   },
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
-    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1'",
+    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1 --continue'",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
     "format": "yarn prettier --write '**/*.{ts,md}'",
