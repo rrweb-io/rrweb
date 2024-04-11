@@ -172,6 +172,12 @@ export type eventWithoutTime =
   | customEvent
   | pluginEvent;
 
+/**
+ * @deprecated intended for internal use
+ * a synonym for eventWithoutTime
+ */
+export type event = eventWithoutTime;
+
 export type eventWithTime = eventWithoutTime & {
   timestamp: number;
   delay?: number;
