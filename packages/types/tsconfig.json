@@ -1,23 +1,11 @@
 {
+  "extends": "../../tsconfig.base.json",
+  "includes": ["src"],
+  "exclude": ["vite.config.ts"],
   "compilerOptions": {
-    "composite": true,
-    "target": "ES6",
-    "module": "commonjs",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
     "rootDir": "src",
-    "outDir": "build",
-    "lib": ["es6", "dom"],
-    "skipLibCheck": true,
-    "declaration": true,
-    "importsNotUsedAsValues": "error"
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
-  "compileOnSave": true,
-  "exclude": ["test"],
-  "include": ["src"],
   "references": [
     {
       "path": "../rrweb-snapshot"
