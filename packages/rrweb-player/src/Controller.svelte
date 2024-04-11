@@ -5,7 +5,7 @@
   import type {
     PlayerMachineState,
     SpeedMachineState,
-  } from 'rrweb/typings/replay/machine';
+  } from 'rrweb';
   import {
     onMount,
     onDestroy,

@@ -31,7 +31,12 @@ import type {
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
-import { createPlayerService, createSpeedService } from './machine';
+import {
+  createPlayerService,
+  createSpeedService,
+  type PlayerMachineState,
+  type SpeedMachineState,
+} from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
   EventType,
@@ -2217,3 +2222,5 @@ export class Replayer {
     this.config.logger.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }
+
+export { PlayerMachineState, SpeedMachineState };

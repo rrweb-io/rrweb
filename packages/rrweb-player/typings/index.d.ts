@@ -1,4 +1,4 @@
-import { playerConfig } from 'rrweb/typings/types';
+import { playerConfig } from 'rrweb';
 import { eventWithTime } from '@rrweb/types';
 import { Replayer } from 'rrweb';
 import { Mirror } from 'rrweb-snapshot';
