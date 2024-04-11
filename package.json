@@ -50,7 +50,7 @@
     "release": "yarn build:all && changeset publish"
   },
   "resolutions": {
-    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
+    "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
     "**/@types/dom-webcodecs": "0.1.5"
   },
   "browserslist": [
