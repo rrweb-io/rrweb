@@ -197,7 +197,7 @@ export abstract class BaseRRNode implements IRRNode {
 
 export class BaseRRDocument extends BaseRRNode implements IRRDocument {
   public readonly nodeType: number = NodeType.DOCUMENT_NODE;
-  public readonly nodeName: '#document' = '#document';
+  public readonly nodeName = '#document' as const;
   public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
   public readonly RRNodeType = RRNodeType.Document;
   public textContent: string | null = null;
@@ -548,7 +548,7 @@ export class BaseRRMediaElement extends BaseRRElement {
 
 export class BaseRRText extends BaseRRNode implements IRRText {
   public readonly nodeType: number = NodeType.TEXT_NODE;
-  public readonly nodeName: '#text' = '#text';
+  public readonly nodeName = '#text' as const;
   public readonly RRNodeType = RRNodeType.Text;
   public data: string;
 
@@ -572,7 +572,7 @@ export class BaseRRText extends BaseRRNode implements IRRText {
 
 export class BaseRRComment extends BaseRRNode implements IRRComment {
   public readonly nodeType: number = NodeType.COMMENT_NODE;
-  public readonly nodeName: '#comment' = '#comment';
+  public readonly nodeName = '#comment' as const;
   public readonly RRNodeType = RRNodeType.Comment;
   public data: string;
 
@@ -595,7 +595,7 @@ export class BaseRRComment extends BaseRRNode implements IRRComment {
 }
 
 export class BaseRRCDATASection extends BaseRRNode implements IRRCDATASection {
-  public readonly nodeName: '#cdata-section' = '#cdata-section';
+  public readonly nodeName = '#cdata-section' as const;
   public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
   public readonly RRNodeType = RRNodeType.CDATA;
   public data: string;

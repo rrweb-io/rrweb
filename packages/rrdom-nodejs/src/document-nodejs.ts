@@ -33,7 +33,7 @@ export class RRWindow {
 }
 
 export class RRDocument extends BaseRRDocument implements IRRDocument {
-  readonly nodeName: '#document' = '#document';
+  readonly nodeName = '#document' as const;
   private _nwsapi: NWSAPI | undefined;
   get nwsapi(): NWSAPI {
     if (!this._nwsapi) {
@@ -319,9 +319,9 @@ export class RRElement extends BaseRRElement {
 }
 
 export class RRImageElement extends RRElement {
-  src: string = '';
-  width: number = 0;
-  height: number = 0;
+  src = '';
+  width = 0;
+  height = 0;
   onload: ((this: GlobalEventHandlers, ev: Event) => unknown) | null = null;
 }
 
@@ -369,15 +369,15 @@ export class RRIFrameElement extends RRElement {
 }
 
 export class RRText extends BaseRRText {
-  readonly nodeName: '#text' = '#text';
+  readonly nodeName = '#text' as const;
 }
 
 export class RRComment extends BaseRRComment {
-  readonly nodeName: '#comment' = '#comment';
+  readonly nodeName = '#comment' as const;
 }
 
 export class RRCDATASection extends BaseRRCDATASection {
-  readonly nodeName: '#cdata-section' = '#cdata-section';
+  readonly nodeName = '#cdata-section' as const;
 }
 
 interface RRElementTagNameMap {
