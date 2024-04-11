@@ -316,7 +316,7 @@ describe('Basic RRDocument implementation', () => {
       expect(() =>
         node.removeChild(node.createElement('div')),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode."`,
+        `[Error: Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode.]`,
       );
       expect(node.removeChild(documentType)).toBe(documentType);
       expect(documentType.parentNode).toBeNull();
@@ -774,7 +774,7 @@ describe('Basic RRDocument implementation', () => {
       expect(() =>
         node.insertBefore(node, child1),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
+        `[Error: Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.]`,
       );
       expect(node.insertBefore(child1, null)).toBe(child1);
       expect(node.childNodes[0]).toBe(child1);
@@ -852,7 +852,7 @@ describe('Basic RRDocument implementation', () => {
       expect(() =>
         node.removeChild(document.createElement('div')),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode."`,
+        `[Error: Failed to execute 'removeChild' on 'RRNode': The RRNode to be removed is not a child of this RRNode.]`,
       );
       // Remove the middle child.
       expect(node.removeChild(child2)).toBe(child2);

@@ -24,6 +24,6 @@
       "path": "../types"
     }
   ],
-  "exclude": ["test"],
+  "exclude": ["test", "vite.config.ts", "vitest.config.ts"],
   "include": ["src"]
 }

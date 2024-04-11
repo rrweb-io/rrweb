@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { vi } from 'vitest';
+import { vi, MockInstance } from 'vitest';
 import {
   NodeType as RRNodeType,
   createMirror,
@@ -102,7 +102,7 @@ function shuffle(list: number[]) {
 describe('diff algorithm for rrdom', () => {
   let mirror: NodeMirror;
   let replayer: ReplayerHandler;
-  let warn: jest.SpyInstance;
+  let warn: MockInstance;
 
   beforeEach(() => {
     mirror = createMirror();
@@ -116,7 +116,7 @@ describe('diff algorithm for rrdom', () => {
     };
     document.write('<!DOCTYPE html><html><head></head><body></body></html>');
     // Mock the original console.warn function to make the test fail once console.warn is called.
-    warn = jest.spyOn(console, 'warn');
+    warn = vi.spyOn(console, 'warn');
   });
 
   afterEach(() => {
@@ -141,7 +141,7 @@ describe('diff algorithm for rrdom', () => {
         x: 0,
         y: 0,
       };
-      const applyScrollFn = jest.spyOn(replayer, 'applyScroll');
+      const applyScrollFn = vi.spyOn(replayer, 'applyScroll');
       diff(document, rrNode, replayer);
       expect(document.childNodes.length).toEqual(1);
       expect(document.childNodes[0]).toBeInstanceOf(DocumentType);
@@ -164,7 +164,7 @@ describe('diff algorithm for rrdom', () => {
         x: 0,
         y: 0,
       };
-      const applyScrollFn = jest.spyOn(replayer, 'applyScroll');
+      const applyScrollFn = vi.spyOn(replayer, 'applyScroll');
       diff(element, rrNode, replayer);
       expect(applyScrollFn).toHaveBeenCalledTimes(1);
       applyScrollFn.mockRestore();
@@ -180,7 +180,7 @@ describe('diff algorithm for rrdom', () => {
         id: 0,
         isChecked: false,
       };
-      replayer.applyInput = jest.fn();
+      replayer.applyInput = vi.fn();
       diff(element, rrNode, replayer);
       expect(replayer.applyInput).toHaveBeenCalledTimes(1);
     });
@@ -210,7 +210,7 @@ describe('diff algorithm for rrdom', () => {
         ],
       };
       rrStyle.rules = [styleData];
-      replayer.applyStyleSheetMutation = jest.fn();
+      replayer.applyStyleSheetMutation = vi.fn();
       diff(element, rrStyle, replayer);
       expect(replayer.applyStyleSheetMutation).toHaveBeenCalledTimes(1);
       expect(replayer.applyStyleSheetMutation).toHaveBeenCalledWith(
@@ -240,7 +240,7 @@ describe('diff algorithm for rrdom', () => {
           mutation: canvasMutation,
         }),
       );
-      replayer.applyCanvas = jest.fn();
+      replayer.applyCanvas = vi.fn();
       diff(element, rrCanvas, replayer);
       expect(replayer.applyCanvas).toHaveBeenCalledTimes(MutationNumber);
     });
@@ -419,7 +419,7 @@ describe('diff algorithm for rrdom', () => {
       const value = 'http://www.w3.org/2000/svg';
       node.attributes.xmlns = value;
 
-      jest.spyOn(Element.prototype, 'setAttributeNS');
+      vi.spyOn(Element.prototype, 'setAttributeNS');
       diff(element, node, replayer);
       expect((element as Node as SVGElement).getAttribute('xmlns')).toBe(value);
       expect(SVGElement.prototype.setAttributeNS).toHaveBeenCalledWith(
@@ -427,7 +427,7 @@ describe('diff algorithm for rrdom', () => {
         'xmlns',
         value,
       );
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('can diff properties for canvas', async () => {
@@ -438,11 +438,11 @@ describe('diff algorithm for rrdom', () => {
       rrDocument.mirror.add(rrCanvas, sn);
       rrCanvas.attributes['rr_dataURL'] = 'data:image/png;base64,';
 
-      jest.spyOn(document, 'createElement');
+      vi.spyOn(document, 'createElement');
 
       diff(element, rrCanvas, replayer);
       expect(document.createElement).toHaveBeenCalledWith('img');
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('can omit srcdoc attribute of iframe element', () => {
@@ -1324,7 +1324,7 @@ describe('diff algorithm for rrdom', () => {
        * If not, the diff function will throw errors or warnings.
        */
       // Mock the original console.warn function to make the test fail once console.warn is called.
-      const warn = jest.spyOn(global.console, 'warn');
+      const warn = vi.spyOn(global.console, 'warn');
 
       document.write('<!DOCTYPE html><html><body></body></html>');
       const rrdom = new RRDocument();
@@ -1469,7 +1469,7 @@ describe('diff algorithm for rrdom', () => {
 
   describe('afterAppend callback', () => {
     it('should call afterAppend callback', () => {
-      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const afterAppendFn = vi.spyOn(replayer, 'afterAppend');
       const node = createTree(
         {
           tagName: 'div',
@@ -1508,7 +1508,7 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('should call afterAppend callback in the post traversal order', () => {
-      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const afterAppendFn = vi.spyOn(replayer, 'afterAppend');
       document.open();
 
       const rrdom = new RRDocument();
@@ -1581,7 +1581,7 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('should only call afterAppend for newly created nodes', () => {
-      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const afterAppendFn = vi.spyOn(replayer, 'afterAppend');
       const rrdom = buildFromDom(document, replayer.mirror) as RRDocument;
 
       // Append 3 nodes to rrdom.
@@ -1660,7 +1660,7 @@ describe('diff algorithm for rrdom', () => {
       expect(() =>
         createOrGetNode(rrNode, mirror, rrDocument.mirror),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Cannot create CDATA sections in HTML documents"`,
+        `DOMException {}`,
       );
     });
 
