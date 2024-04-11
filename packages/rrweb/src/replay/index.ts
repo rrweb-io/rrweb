@@ -82,7 +82,6 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import { Timer } from './timer';
 
-const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
@@ -179,6 +178,7 @@ export class Replayer {
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
+      inactivePeriodThreshold: 10 * 1000,
       showWarning: true,
       showDebug: false,
       blockClass: 'rr-block',
@@ -688,7 +688,7 @@ export class Replayer {
                 if (
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   _event.delay! - event.delay! >
-                  SKIP_TIME_THRESHOLD *
+                  this.config.inactivePeriodThreshold *
                     this.speedService.state.context.timer.speed
                 ) {
                   this.nextUserInteractionEvent = _event;
