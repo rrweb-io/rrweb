@@ -12,7 +12,7 @@ export class RRWebPluginCanvasWebRTCReplay {
     context: { id: number; replayer: Replayer },
   ) => void;
   private signalSendCallback: (signal: RTCSessionDescriptionInit) => void;
-  private mirror: Mirror;
+  private mirror: Mirror | undefined;
 
   constructor({
     canvasFoundCallback,
@@ -155,7 +155,7 @@ export class RRWebPluginCanvasWebRTCReplay {
     this.streams.forEach((stream) => {
       const nodeId = this.streamNodeMap.get(stream.id);
       if (!nodeId) return;
-      const target = this.mirror.getNode(nodeId) as
+      const target = this.mirror?.getNode(nodeId) as
         | HTMLCanvasElement
         | HTMLVideoElement
         | null;

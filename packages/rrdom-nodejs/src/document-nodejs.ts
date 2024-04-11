@@ -34,8 +34,8 @@ export class RRWindow {
 
 export class RRDocument extends BaseRRDocument implements IRRDocument {
   readonly nodeName: '#document' = '#document';
-  private _nwsapi: NWSAPI;
-  get nwsapi() {
+  private _nwsapi: NWSAPI | undefined;
+  get nwsapi(): NWSAPI {
     if (!this._nwsapi) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       this._nwsapi = nwsapi({
@@ -44,7 +44,7 @@ export class RRDocument extends BaseRRDocument implements IRRDocument {
           message?: string,
           name?: string,
         ) => DOMException,
-      });
+      }) as NWSAPI;
       this._nwsapi.configure({
         LOGERRORS: false,
         IDS_DUPES: true,
@@ -319,10 +319,10 @@ export class RRElement extends BaseRRElement {
 }
 
 export class RRImageElement extends RRElement {
-  src: string;
-  width: number;
-  height: number;
-  onload: ((this: GlobalEventHandlers, ev: Event) => unknown) | null;
+  src: string = '';
+  width: number = 0;
+  height: number = 0;
+  onload: ((this: GlobalEventHandlers, ev: Event) => unknown) | null = null;
 }
 
 export class RRMediaElement extends BaseRRMediaElement {}

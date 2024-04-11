@@ -121,18 +121,13 @@ export interface IRRCDATASection extends IRRNode {
   data: string;
 }
 
-type ConstrainedConstructor<T = Record<string, unknown>> = new (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...args: any[]
-) => T;
-
 /**
  * This is designed as an abstract class so it should never be instantiated.
  */
 export abstract class BaseRRNode implements IRRNode {
   public parentElement: IRRNode | null = null;
   public parentNode: IRRNode | null = null;
-  public ownerDocument: IRRDocument;
+  public ownerDocument!: IRRDocument;
   public firstChild: IRRNode | null = null;
   public lastChild: IRRNode | null = null;
   public previousSibling: IRRNode | null = null;
@@ -143,9 +138,9 @@ export abstract class BaseRRNode implements IRRNode {
   public readonly ELEMENT_NODE: number = NodeType.ELEMENT_NODE;
   public readonly TEXT_NODE: number = NodeType.TEXT_NODE;
   // corresponding nodeType value of standard HTML Node
-  public readonly nodeType: number;
-  public readonly nodeName: string;
-  public readonly RRNodeType: RRNodeType;
+  public readonly nodeType!: number;
+  public readonly nodeName!: string;
+  public readonly RRNodeType!: RRNodeType;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   constructor(..._args: any[]) {
@@ -458,7 +453,7 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
     style.setProperty = (
       name: string,
       value: string | null,
-      priority?: string,
+      priority?: string | null,
     ) => {
       if (hyphenateRE.test(name)) return;
       const normalizedName = camelize(name);

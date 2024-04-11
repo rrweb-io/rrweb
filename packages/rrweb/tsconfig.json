@@ -17,7 +17,11 @@
        * to remove the flag, we need to add vitest imports in the test files
        */
       "vitest/globals"
-    ]
+    ],
+
+    // TODO: enable me in the future, this is quite a large project
+    // at time of writing (April 2024) there are over 100 errors in rrweb
+    "strict": false
   },
   "references": [
     {

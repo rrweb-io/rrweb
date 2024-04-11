@@ -7,17 +7,23 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
     "rootDir": "src",
-    "outDir": "build",
+    "outDir": "dist",
     "lib": ["es6", "dom"],
+    "sourceMap": true,
     "skipLibCheck": true,
     "declaration": true,
     "importsNotUsedAsValues": "error",
+    "strict": true,
+    "removeComments": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "preserveConstEnums": true,
+    "strictBindCallApply": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
 
     // needed for vite
     /**
@@ -27,6 +33,10 @@
 
     "types": [
       "node",
+      /**
+       * needed as long as we have jest tests
+       * they add globals like `test` and `expect`
+       */
       "jest",
       /**
        * @see https://vitejs.dev/guide/features.html#client-types

@@ -25,8 +25,8 @@ export type CrossOriginIframeMessageEventContent = {
 
 export class RRWebPluginCanvasWebRTCRecord {
   private peer: SimplePeer.Instance | null = null;
-  private mirror: Mirror;
-  private crossOriginIframeMirror: ICrossOriginIframeMirror;
+  private mirror: Mirror | undefined;
+  private crossOriginIframeMirror: ICrossOriginIframeMirror | undefined;
   private streamMap: Map<number, MediaStream> = new Map();
   private incomingStreams = new Set<MediaStream>();
   private outgoingStreams = new Set<MediaStream>();
@@ -44,13 +44,11 @@ export class RRWebPluginCanvasWebRTCRecord {
     peer?: SimplePeer.Instance;
   }) {
     this.signalSendCallback = signalSendCallback;
-    window.addEventListener(
-      'message',
-      this.windowPostMessageHandler.bind(this),
+    window.addEventListener('message', (event: MessageEvent) =>
+      this.windowPostMessageHandler(event),
     );
     if (peer) this.peer = peer;
   }
-
   public initPlugin(): RecordPlugin {
     return {
       name: PLUGIN_NAME,
@@ -193,7 +191,7 @@ export class RRWebPluginCanvasWebRTCRecord {
   }
 
   public setupStream(id: number, rootId?: number): boolean | MediaStream {
-    if (id === -1) return false;
+    if (id === -1 || !this.mirror) return false;
     let stream: MediaStream | undefined = this.streamMap.get(rootId || id);
     if (stream) return stream;
 
@@ -241,6 +239,7 @@ export class RRWebPluginCanvasWebRTCRecord {
 
     document.querySelectorAll('iframe').forEach((iframe) => {
       if (found) return;
+      if (!this.crossOriginIframeMirror) return;
 
       const remoteId = this.crossOriginIframeMirror.getRemoteId(iframe, id);
       if (remoteId === -1) return;

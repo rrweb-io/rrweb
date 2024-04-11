@@ -4,7 +4,11 @@
   "exclude": ["vite.config.ts", "vitest.config.ts", "test"],
   "compilerOptions": {
     "rootDir": "src",
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+
+    // TODO: enable me in the future
+    // at time of writing (April 2024) there are 6 errors in this package
+    "strict": false
   },
   "references": [
     {

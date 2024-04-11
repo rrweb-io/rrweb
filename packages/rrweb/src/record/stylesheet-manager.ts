@@ -84,7 +84,7 @@ export class StylesheetManager {
   }
 
   // TODO: take snapshot on stylesheet reload by applying event listener
-  private trackStylesheetInLinkElement(linkEl: HTMLLinkElement) {
+  private trackStylesheetInLinkElement(_linkEl: HTMLLinkElement) {
     // linkEl.addEventListener('load', () => {
     //   // re-loaded, maybe take another snapshot?
     // });
