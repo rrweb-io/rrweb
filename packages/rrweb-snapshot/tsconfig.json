@@ -1,18 +1,10 @@
 {
+  "extends": "../../tsconfig.base.json",
+  "includes": ["src"],
+  "exclude": ["vite.config.ts", "vitest.config.ts", "test"],
   "compilerOptions": {
-    "composite": true,
-    "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "Node",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
     "rootDir": "src",
-    "outDir": "dist",
-    "lib": ["es6", "dom"]
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
-  "exclude": ["test"],
-  "include": ["src"],
   "references": []
 }
