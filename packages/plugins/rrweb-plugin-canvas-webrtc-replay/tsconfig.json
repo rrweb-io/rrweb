@@ -1,13 +1,10 @@
 {
   "extends": "../../../tsconfig.base.json",
-  "includes": [
-    "src"
-  ],
-  "exclude": [
-    "vite.config.ts"
-  ],
+  "includes": ["src"],
+  "exclude": ["vite.config.ts"],
   "compilerOptions": {
-    "rootDir": "src"
+    "rootDir": "src",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "references": [
     {
