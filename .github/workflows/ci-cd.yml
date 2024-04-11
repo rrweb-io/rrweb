@@ -34,14 +34,17 @@ jobs:
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
+      - name: install chrome
+        run: node node_modules/puppeteer/install.js
+
       - name: Check types
         run: yarn check-types
 
-      - name: Test chrome install
-        run: |
-          npx puppeteer browsers list
-          npx puppeteer browsers install chrome
-          npx puppeteer browsers list
+      # - name: Test chrome install
+      #   run: |
+      #     npx puppeteer browsers list
+      #     npx puppeteer browsers install chrome
+      #     npx puppeteer browsers list
       - run: |
           ${{ steps.setup-chrome.outputs.chrome-path }} --version
 
