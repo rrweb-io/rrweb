@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "target": "ES2020",
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "removeComments": true,
+      "preserveConstEnums": true,
+      "rootDir": "src",
+      "outDir": "build",
+      "lib": [
+        "webworker",
+        "scripthost"
+      ],
+      "allowSyntheticDefaultImports": true,
+      "declarationMap": false,
+      "skipLibCheck": true,
+      "composite": true
+    },
+    "references": [
+      {
+        "path": "../rrweb-snapshot"
+      }
+    ],
+    "exclude": [
+      "test",
+      "scripts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  }

@@ -4,7 +4,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
-import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import css from 'rollup-plugin-css-only';
@@ -12,18 +11,19 @@ import css from 'rollup-plugin-css-only';
 // eslint-disable-next-line no-undef
 const production = !process.env.ROLLUP_WATCH;
 
-const entries = (production
-  ? [
-      { file: pkg.module, format: 'es', css: false },
-      { file: pkg.main, format: 'cjs', css: false },
-      {
-        file: pkg.unpkg,
-        format: 'iife',
-        name: 'rrwebPlayer',
-        css: 'style.css',
-      },
-    ]
-  : []
+const entries = (
+  production
+    ? [
+        { file: pkg.module, format: 'es', css: false },
+        { file: pkg.main, format: 'cjs', css: false },
+        {
+          file: pkg.unpkg,
+          format: 'iife',
+          name: 'rrwebPlayer',
+          css: 'style.css',
+        },
+      ]
+    : []
 ).concat([
   {
     file: 'public/bundle.js',
@@ -66,14 +66,8 @@ export default entries.map((output) => ({
       dedupe: ['svelte'],
       extensions: ['.js', '.ts', '.svelte'],
     }),
-
     commonjs(),
-
-    // supports bundling `web-worker:..filename` from rrweb
-    webWorkerLoader(),
-
     typescript(),
-
     css({
       // we'll extract any component CSS out into
       // a separate file — better for performance

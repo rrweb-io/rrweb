@@ -27,7 +27,10 @@
     },
     {
       "path": "../rrweb-snapshot"
-    }
+    },
+    {
+      "path": "../rrweb-worker"
+    },
   ],
   "exclude": [
     "test",
