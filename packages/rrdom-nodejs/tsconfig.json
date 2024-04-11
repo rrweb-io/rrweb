@@ -1,28 +1,10 @@
 {
+  "extends": "../../tsconfig.base.json",
+  "includes": ["src"],
   "compilerOptions": {
-    "composite": true,
-    "target": "ES6",
-    "module": "commonjs",
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
     "rootDir": "src",
-    "outDir": "build",
-    "lib": ["es6", "dom"],
-    "skipLibCheck": true,
-    "declaration": true,
-    "importsNotUsedAsValues": "error"
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
-  "compileOnSave": true,
-  "exclude": ["test"],
-  "include": [
-    "src",
-    "test.d.ts",
-    "../rrweb/src/record/workers/workers.d.ts",
-    "../rrweb/src/record/constructable-stylesheets.d.ts"
-  ],
   "references": [
     {
       "path": "../rrdom"
