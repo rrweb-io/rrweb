@@ -89,15 +89,15 @@ export function throttle<T>(
       func.apply(context, args);
     } else if (!timeout && options.trailing !== false) {
       const argumentsList = args.map((arg: T)=> {
-        return {
-          ...arg,
-          target: arg.target
+        const argTmp = {...arg}
+        if (arg.target) {
+          argTmp.target = arg.target
         }
+        return argTmp
       })
       timeout = setTimeout(() => {
         previous = options.leading === false ? 0 : Date.now();
         if (timeout) {
-          clearTimeout(timeout)
           timeout = null;
         }
         func.apply(context, argumentsList);
