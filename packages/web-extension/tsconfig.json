@@ -1,18 +1,14 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
+    "rootDir": ".",
     "baseUrl": ".",
-    "module": "ESNext",
-    "target": "es2016",
-    "lib": ["DOM", "ESNext"],
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "strict": true,
     "esModuleInterop": true,
     "incremental": true,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "noUnusedLocals": true,
-    "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "~/*": ["src/*"]
