@@ -29,6 +29,9 @@ jobs:
       - name: Check types
         run: yarn check-types
 
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+
       - name: Run tests
         run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
