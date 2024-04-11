@@ -194,7 +194,7 @@
 </script>
 
 <style global>
-  @import 'rrweb/dist/rrweb.min.css';
+  @import 'rrweb/dist/main/style.css';
 
   .rr-player {
     position: relative;

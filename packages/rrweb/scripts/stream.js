@@ -176,7 +176,7 @@ void (async () => {
     await replayerPage.goto('about:blank');
 
     await replayerPage.addStyleTag({
-      path: path.resolve(__dirname, '../dist/rrweb.css'),
+      path: path.resolve(__dirname, '../dist/main/style.css'),
     });
 
     const recordingBrowser = await puppeteer.launch({
