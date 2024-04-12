@@ -5,12 +5,12 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run build",
-    "retest": "vitest run --globals --exclude test/benchmark",
+    "retest": "vitest run --exclude test/benchmark",
     "build-and-test": "yarn build && yarn retest",
     "test:headless": "PUPPETEER_HEADLESS=true yarn build-and-test",
     "test:headful": "PUPPETEER_HEADLESS=false yarn build-and-test",
     "test": "yarn test:headless",
-    "test:watch": "yarn build && PUPPETEER_HEADLESS=true yarn vitest --globals --exclude test/benchmark",
+    "test:watch": "yarn build && PUPPETEER_HEADLESS=true yarn vitest --exclude test/benchmark",
     "test:update": "yarn test:headless --update",
     "retest:update": "PUPPETEER_HEADLESS=true yarn retest --update",
     "repl": "yarn build && node scripts/repl.js",
@@ -20,7 +20,7 @@
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
     "lint": "yarn eslint src",
-    "benchmark": "vitest run --globals --maxConcurrency 1 --no-file-parallelism test/benchmark"
+    "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark"
   },
   "type": "module",
   "repository": {

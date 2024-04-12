@@ -32,7 +32,8 @@
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
-    "test": "vitest run --globals",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
