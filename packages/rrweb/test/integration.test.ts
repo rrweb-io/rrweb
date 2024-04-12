@@ -199,6 +199,10 @@ describe('record integration tests', function (this: ISuite) {
         styleEl.childNodes.forEach((cn) => {
           if (cn.textContent) {
             cn.textContent = cn.textContent.replace('darkgreen', 'purple');
+            cn.textContent = cn.textContent.replace(
+              'orange !important',
+              'yellow',
+            );
           }
         });
       }
@@ -244,15 +248,15 @@ describe('record integration tests', function (this: ISuite) {
     expect(replayStyleValues).toEqual([
       {
         'background-color': 'rgb(0, 100, 0)', // darkgreen
-        color: 'rgb(0, 100, 0)', // darkgreen (from style.html)
+        color: 'rgb(255, 165, 0)', // orange (from style.html)
       },
       {
         'background-color': 'rgb(128, 0, 128)', // purple
-        color: 'rgb(128, 0, 128)', // purple
+        color: 'rgb(255, 255, 0)', // yellow
       },
       {
         'background-color': 'rgb(0, 0, 0)', // black !important
-        color: 'rgb(128, 0, 128)', // purple
+        color: 'rgb(255, 255, 0)', // yellow
       },
     ]);
   });
