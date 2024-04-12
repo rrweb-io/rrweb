@@ -232,15 +232,28 @@ describe('record integration tests', function (this: ISuite) {
       const vals = [];
       window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
         replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
-        vals.push(getComputedStyle(replayer.iframe.contentDocument.querySelector('body'))['background-color']);
-});
+        let bodyStyle = getComputedStyle(replayer.iframe.contentDocument.querySelector('body'))
+        vals.push({
+          'background-color': bodyStyle['background-color'],
+          'color': bodyStyle['color'],
+        });
+      });
       vals;
 `);
 
     expect(replayStyleValues).toEqual([
-      'rgb(0, 100, 0)', // darkgreen
-      'rgb(128, 0, 128)', // purple
-      'rgb(0, 0, 0)', // black !important
+      {
+        'background-color': 'rgb(0, 100, 0)', // darkgreen
+        color: 'rgb(0, 100, 0)', // darkgreen (from style.html)
+      },
+      {
+        'background-color': 'rgb(128, 0, 128)', // purple
+        color: 'rgb(128, 0, 128)', // purple
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)', // black !important
+        color: 'rgb(128, 0, 128)', // purple
+      },
     ]);
   });
 

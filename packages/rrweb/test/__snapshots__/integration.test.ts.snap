@@ -3929,39 +3929,26 @@ exports[`record integration tests can record style text mutations 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"body { background-color: black; }\\"
+                      \\"_cssText\\": \\"body { background-color: black; }body { color: darkgreen; }\\"
                     },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\",
                         \\"id\\": 14
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 15
                       }
                     ],
                     \\"id\\": 13
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 15
-                  }
-                ],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 16
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 18
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -3971,18 +3958,54 @@ exports[`record integration tests can record style text mutations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 20
+                        \\"id\\": 18
                       }
                     ],
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
                     \\"id\\": 19
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 20
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 24
+                      }
+                    ],
+                    \\"id\\": 23
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 21
+                    \\"id\\": 25
                   }
                 ],
-                \\"id\\": 17
+                \\"id\\": 21
               }
             ],
             \\"id\\": 3
@@ -4010,16 +4033,16 @@ exports[`record integration tests can record style text mutations 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel\\\\\\"); }\\",
-            \\"id\\": 22
+            \\"id\\": 26
           }
         },
         {
           \\"parentId\\": 13,
-          \\"nextId\\": 22,
+          \\"nextId\\": 26,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"body { background-color: darkgreen; }\\",
-            \\"id\\": 23
+            \\"id\\": 27
           }
         }
       ]
@@ -4031,7 +4054,11 @@ exports[`record integration tests can record style text mutations 1`] = `
       \\"source\\": 0,
       \\"texts\\": [
         {
-          \\"id\\": 23,
+          \\"id\\": 15,
+          \\"value\\": \\"body { color: purple; }\\"
+        },
+        {
+          \\"id\\": 27,
           \\"value\\": \\"body { background-color: purple; }\\"
         }
       ],
