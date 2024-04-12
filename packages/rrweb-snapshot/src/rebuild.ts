@@ -256,6 +256,9 @@ function buildNode(
               }
             }
             continue;
+          } else if (hackCss && isRemoteOrDynamicCss) {
+            // <link> element or dynamic <style>
+            value = adaptCssForReplay(value, cache);
           }
           node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
