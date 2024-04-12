@@ -24,7 +24,7 @@ jobs:
         uses: browser-actions/setup-chrome@latest
         id: setup-chrome
         with:
-          chrome-version: stable
+          chrome-version: 106
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
