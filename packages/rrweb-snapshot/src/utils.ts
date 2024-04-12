@@ -351,3 +351,36 @@ export function extractFileExtension(
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
 }
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * performance is not considered as this is anticipated to be very much an edge case
+ * (javascript is needed to add extra text nodes to a <style>)
+ */
+export function findCssTextSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): number[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits = [];
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    for (let i = 1; i < childNodes.length; i++) {
+      let split = 0; // marker for 'no split found'
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        for (let j = 3; j < childNodes[i].textContent!.length; j++) {
+          // find the smallest substring that appears only once
+          let bit = childNodes[i].textContent!.substring(0, j);
+          if (cssText.split(bit).length === 2) {
+            split = cssText.indexOf(bit);
+            break;
+          }
+        }
+      }
+      splits.push(split);
+    }
+  }
+  return splits;
+}

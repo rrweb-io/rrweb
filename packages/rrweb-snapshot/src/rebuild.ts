@@ -219,20 +219,42 @@ function buildNode(
         if (name.startsWith('rr_')) {
           specialAttributes[name] = value;
           continue;
+        } else if (name === '_cssTextSplits') {
+          continue;
         }
 
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache);
-        }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          if (
-            isRemoteOrDynamicCss &&
-            n.childNodes.length &&
-            n.childNodes[0].type === NodeType.Text
-          ) {
-            n.childNodes[0].textContent = value;
+          if (isRemoteOrDynamicCss && n.childNodes.length) {
+            let cssTextSplits: string[] = [];
+            if (
+              n.attributes._cssTextSplits &&
+              typeof n.attributes._cssTextSplits === 'string'
+            ) {
+              cssTextSplits = n.attributes._cssTextSplits.split(' ');
+            }
+            for (let j = n.childNodes.length - 1; j >= 0; j--) {
+              const scn = n.childNodes[j];
+              let ix = 0;
+              if (cssTextSplits.length > j && j > 0) {
+                ix = parseInt(cssTextSplits[j - 1]);
+              }
+              if (scn.type === NodeType.Text) {
+                let remainder = '';
+                if (ix !== 0) {
+                  remainder = value.substring(0, ix);
+                  value = value.substring(ix);
+                } else if (j > 1) {
+                  continue;
+                }
+                if (hackCss) {
+                  value = adaptCssForReplay(value, cache);
+                }
+                scn.textContent = value;
+                value = remainder;
+              }
+            }
             continue;
           }
           node.appendChild(doc.createTextNode(value));

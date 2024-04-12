@@ -25,6 +25,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
+  findCssTextSplits,
 } from './utils';
 
 let _id = 1;
@@ -1123,9 +1124,17 @@ export function serializeNodeWithId(
     } else {
       if (
         serializedNode.type === NodeType.Element &&
-        (serializedNode as elementNode).attributes._cssText !== undefined
+        (serializedNode as elementNode).attributes._cssText !== undefined &&
+        typeof serializedNode.attributes._cssText === 'string'
       ) {
         bypassOptions.blankTextNodes = true;
+        if (n.childNodes.length > 1) {
+          const splits = findCssTextSplits(
+            serializedNode.attributes._cssText,
+            n as HTMLStyleElement,
+          );
+          serializedNode.attributes._cssTextSplits = splits.join(' ');
+        }
       }
       for (const childN of Array.from(n.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
