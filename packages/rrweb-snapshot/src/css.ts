@@ -449,7 +449,9 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
           currentPart = '';
         } else if ('\'"'.includes(char)) {
           if (currentStringChar === char) {
-            currentStringChar = null;
+            if (!(i > 0 && input[i - 1] === '\\')) {
+              currentStringChar = null;
+            }
           } else {
             currentStringChar = char;
           }
