@@ -1133,7 +1133,8 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"body { background-color: black; }body { color: darkgreen; }\\"
+                      \\"_cssText\\": \\"body { background-color: black; }body { color: orange !important; }\\",
+                      \\"_cssTextSplits\\": \\"33\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1259,7 +1260,11 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
       \\"texts\\": [
         {
           \\"id\\": 15,
-          \\"value\\": \\"body { color: purple; }\\"
+          \\"value\\": \\"body { color: yellow; }\\"
+        },
+        {
+          \\"id\\": 15,
+          \\"value\\": \\"body { color: yellow; }\\"
         },
         {
           \\"id\\": 27,
