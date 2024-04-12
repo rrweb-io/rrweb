@@ -1212,9 +1212,19 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"body { background-color: darkgreen; }\\",
+            \\"textContent\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel\\\\\\"); }\\",
             \\"isStyle\\": true,
             \\"id\\": 22
+          }
+        },
+        {
+          \\"parentId\\": 13,
+          \\"nextId\\": 22,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"body { background-color: darkgreen; }\\",
+            \\"isStyle\\": true,
+            \\"id\\": 23
           }
         }
       ]
@@ -1226,7 +1236,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
       \\"source\\": 0,
       \\"texts\\": [
         {
-          \\"id\\": 22,
+          \\"id\\": 23,
           \\"value\\": \\"body { background-color: purple; }\\"
         }
       ],
