@@ -50,7 +50,7 @@
     "vite": "^5.2.8",
     "vite-plugin-dts": "^3.8.1",
     "vitest": "^1.4.0",
-    "puppeteer": "^19.1.0"
+    "puppeteer": "^20.9.0"
   },
   "peerDependencies": {
     "rrweb": "^2.0.0-alpha.12"
