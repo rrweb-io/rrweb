@@ -48,7 +48,7 @@ async function injectRecordScript(
 ) {
   try {
     await frame.addScriptTag({
-      path: path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs'),
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
     });
   } catch (e) {
     // we get this error: `Protocol error (DOM.resolveNode): Node with given id does not belong to the document`
@@ -94,7 +94,7 @@ const setup = function (
     ctx.serverB = await startServer();
     ctx.serverBURL = getServerURL(ctx.serverB);
 
-    const bundlePath = path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 

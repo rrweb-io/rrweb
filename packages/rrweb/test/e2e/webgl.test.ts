@@ -27,7 +27,7 @@ describe('e2e webgl', () => {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/main/rrweb.umd.cjs');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 

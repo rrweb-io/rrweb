@@ -13,9 +13,9 @@ You are recommended to install rrweb via jsdelivr's CDN service:
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.cjs"></script>
 ```
 
 Also, you can link to a specific version number that you can update manually:
@@ -30,34 +30,26 @@ rrweb's code includes both the record and the replay parts. Most of the time you
 This also can be done by using the CDN service:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb-record.umd.cjs"></script>
 ```
 
 #### Other bundles
 
-Besides the `record/rrweb-record.min.js` entry, rrweb also provides other bundles for different usage.
+Besides the `rrweb-record.umd.cjs` entry, rrweb also provides other bundles for different usage.
 
 ```shell
-# Include record, replay, compression, and decompression.
-rrweb-all.js
-rrweb-all.min.js
 # Include record and replay.
-rrweb.js
-rrweb.min.js
+rrweb.cjs
+rrweb.min.cjs
 # Include the styles for replay.
-rrweb.min.css
+style.css
+style.min.css
 # Record
-record/rrweb-record.js
-record/rrweb-record.min.js
-# Data compression.
-record/rrweb-record-pack.js
-record/rrweb-record-pack.min.js
+rrweb-record.cjs
+rrweb-record.min.cjs
 # Replay
-replay/rrweb-replay.js
-replay/rrweb-replay.min.js
-# Data decompression.
-replay/rrweb-replay-unpack.js
-replay/rrweb-replay-unpack.min.js
+rrweb-replay.cjs
+rrweb-replay.min.cjs
 ```
 
 ### NPM
@@ -257,7 +249,7 @@ You need to include the style sheet before replay:
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
 ```
 

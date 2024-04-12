@@ -11,9 +11,9 @@
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.cjs"></script>
 ```
 
 也可以在 URL 中指定具体的版本号，例如：
@@ -27,34 +27,29 @@
 rrweb 代码分为录制和回放两部分，大多数时候用户在被录制的应用中只需要引入录制部分代码，同样可以通过 CDN 安装：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb-record.min.cjs"></script>
 ```
 
 #### 其它按需引入方式
 
-除了仅包含录制代码的 `record/rrweb-record-min.js` 之外，rrweb 还提供了其它多种可选的打包文件。所有包含 `.min` 的文件为同名文件的压缩版。
+除了仅包含录制代码的 `rrweb-record-min.cjs` 之外，rrweb 还提供了其它多种可选的打包文件。所有包含 `.min` 的文件为同名文件的压缩版。
 
 ```shell
 # 包含录制、回放、压缩数据、解压缩数据
-rrweb-all.js
-rrweb-all.min.js
+rrweb-all.cjs
+rrweb-all.min.cjs
 # 包含录制、回放
-rrweb.js
-rrweb.min.js
+rrweb.cjs
+rrweb.min.cjs
 # 回放所需的样式文件
-rrweb.min.css
+style.css
+style.min.css
 # 录制
-record/rrweb-record.js
-record/rrweb-record.min.js
-# 压缩数据
-record/rrweb-record-pack.js
-record/rrweb-record-pack.min.js
+rrweb-record.cjs
+rrweb-record.min.cjs
 # 回放
-replay/rrweb-replay.js
-replay/rrweb-replay.min.js
-# 解压缩数据
-replay/rrweb-replay-unpack.js
-replay/rrweb-replay-unpack.min.js
+rrweb-replay.cjs
+rrweb-replay.min.cjs
 ```
 
 ### 通过 npm 引入
@@ -252,7 +247,7 @@ window.onerror = function () {
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
 ```
 
