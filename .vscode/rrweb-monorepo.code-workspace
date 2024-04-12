@@ -68,11 +68,13 @@
   ],
   "settings": {
     "vitest.workspaceConfig": "../vitest.workspace.ts",
-    "vitest.disabledWorkspaceFolders": ["rrweb (package)", "../packages/rrweb"],
+    "vitest.commandLine": "yarn vitest",
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
+      "rrweb (package)",
       "rrweb-player (package)",
-      "rrdom-snapshot (package)",
+      "rrweb-snapshot (package)",
+      "rrdom (package)",
       "rrdom-nodejs (package)",
       "@rrweb/all",
       "@rrweb/types",

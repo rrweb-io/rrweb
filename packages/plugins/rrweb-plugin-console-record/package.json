@@ -24,7 +24,7 @@
     "package.json"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "build": "tsc -noEmit && vite build",

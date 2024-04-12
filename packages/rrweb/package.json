@@ -15,8 +15,8 @@
     "retest:update": "PUPPETEER_HEADLESS=true yarn retest --update",
     "repl": "yarn build && node scripts/repl.js",
     "live-stream": "yarn build && node scripts/stream.js",
-    "dev": "vite",
-    "build": "tsc -noEmit && vite build && vite build -c vite.config.entries.js",
+    "dev": "vite build --watch",
+    "build": "tsc -noEmit && rimraf dist && vite build && vite build -c vite.config.entries.js",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
     "lint": "yarn eslint src",
@@ -30,39 +30,39 @@
   "keywords": [
     "rrweb"
   ],
-  "main": "./dist/main/rrweb.umd.cjs",
-  "module": "./dist/main/rrweb.js",
-  "unpkg": "./dist/main/rrweb.umd.cjs",
-  "typings": "dist/main/rrweb.d.ts",
+  "main": "./dist/rrweb.umd.cjs",
+  "module": "./dist/rrweb.js",
+  "unpkg": "./dist/rrweb.umd.cjs",
+  "typings": "dist/rrweb.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/main/rrweb.d.ts",
-        "default": "./dist/main/rrweb.js"
+        "types": "./dist/rrweb.d.ts",
+        "default": "./dist/rrweb.js"
       },
       "require": {
-        "types": "./dist/main/rrweb.d.cts",
-        "default": "./dist/main/rrweb.cjs"
+        "types": "./dist/rrweb.d.cts",
+        "default": "./dist/rrweb.cjs"
       }
     },
     "./rrweb-replay": {
       "import": {
-        "types": "./dist/alt/rrweb-replay.d.ts",
-        "default": "./dist/alt/rrweb-replay.js"
+        "types": "./dist/rrweb-replay.d.ts",
+        "default": "./dist/rrweb-replay.js"
       },
       "require": {
-        "types": "./dist/alt/rrweb-replay.d.cts",
-        "default": "./dist/alt/rrweb-replay.cjs"
+        "types": "./dist/rrweb-replay.d.cts",
+        "default": "./dist/rrweb-replay.cjs"
       }
     },
     "./rrweb-record": {
       "import": {
-        "types": "./dist/alt/rrweb-record.d.ts",
-        "default": "./dist/alt/rrweb-record.js"
+        "types": "./dist/rrweb-record.d.ts",
+        "default": "./dist/rrweb-record.js"
       },
       "require": {
-        "types": "./dist/alt/rrweb-record.d.cts",
-        "default": "./dist/alt/rrweb-record.cjs"
+        "types": "./dist/rrweb-record.d.cts",
+        "default": "./dist/rrweb-record.cjs"
       }
     }
   },
@@ -94,6 +94,7 @@
     "jest-image-snapshot": "^6.2.0",
     "puppeteer": "^20.9.0",
     "simple-peer-light": "^9.10.0",
+    "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
     "typescript": "^4.7.3",

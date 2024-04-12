@@ -2,7 +2,7 @@
   "name": "rrdom-nodejs",
   "version": "2.0.0-alpha.12",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "test": "vitest run",

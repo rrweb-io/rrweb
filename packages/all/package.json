@@ -9,7 +9,7 @@
     "@rrweb/all"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "tsc -noEmit && vite build",
     "test": "vitest run",
     "test:watch": "vitest watch",

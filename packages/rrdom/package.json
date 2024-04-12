@@ -29,7 +29,7 @@
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
