@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>style</title>
-    <style>
+    <style id="dual-textContent">
       body { background-color: black; }
     </style>
     <script>
@@ -12,6 +12,15 @@
       document.querySelector('style').append(
         document.createTextNode('body { color: orange !important; }')
       );
+    </script>
+    <style id="single-textContent">
+      a:hover { outline: 1px solid red; }
+    </style>
+    <style id="empty"></style>
+    <script>
+      // this simulates how <link> is stringified
+      let empty = document.getElementById('empty');
+      empty.sheet.insertRule('a:hover { outline: 1px solid blue; }');
     </script>
   </head>
   <body>
