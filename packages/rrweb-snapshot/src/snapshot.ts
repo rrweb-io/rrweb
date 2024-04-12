@@ -457,6 +457,7 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
+    blankTextNodes?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -474,6 +475,7 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
+    blankTextNodes = false,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -520,6 +522,7 @@ function serializeNode(
         needsMask,
         maskTextFn,
         rootId,
+        blankTextNodes,
       });
     case n.CDATA_SECTION_NODE:
       return {
@@ -551,40 +554,45 @@ function serializeTextNode(
     needsMask: boolean | undefined;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
+    blankTextNodes?: boolean;
   },
 ): serializedNode {
-  const { needsMask, maskTextFn, rootId } = options;
+  const { needsMask, maskTextFn, rootId, blankTextNodes } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
-  let textContent = n.textContent;
+  let textContent: string | null = '';
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
-  if (isStyle && textContent) {
-    try {
-      // try to read style sheet
+  if (isScript) {
+    textContent = 'SCRIPT_PLACEHOLDER';
+  } else if (!blankTextNodes) {
+    textContent = n.textContent;
+    if (isStyle && textContent) {
+      // This branch is solely for the use of mutation
       if (n.nextSibling || n.previousSibling) {
         // This is not the only child of the stylesheet.
         // We can't read all of the sheet's .cssRules and expect them
         // to _only_ include the current rule(s) added by the text node.
         // So we'll be conservative and keep textContent as-is.
       } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStylesheet(
-          (n.parentNode as HTMLStyleElement).sheet!,
-        );
+        try {
+          textContent = stringifyStylesheet(
+            (n.parentNode as HTMLStyleElement).sheet!,
+          );
+        } catch (err) {
+          console.warn(
+            `Cannot get CSS styles from text's parentNode. Error: ${
+              err as string
+            }`,
+            n,
+          );
+        }
       }
-    } catch (err) {
-      console.warn(
-        `Cannot get CSS styles from text's parentNode. Error: ${err as string}`,
-        n,
-      );
+      textContent = absoluteToStylesheet(textContent, getHref(options.doc));
     }
-    textContent = absoluteToStylesheet(textContent, getHref(options.doc));
   }
-  if (isScript) {
-    textContent = 'SCRIPT_PLACEHOLDER';
-  }
-  if (!isStyle && !isScript && textContent && needsMask) {
+  if (!isScript && !isStyle && textContent && needsMask) {
     textContent = maskTextFn
       ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
@@ -593,7 +601,6 @@ function serializeTextNode(
   return {
     type: NodeType.Text,
     textContent: textContent || '',
-    isStyle,
     rootId,
   };
 }
@@ -662,13 +669,7 @@ function serializeElementNode(
       attributes._cssText = absoluteToStylesheet(cssText, stylesheet!.href!);
     }
   }
-  // dynamic stylesheet
-  if (
-    tagName === 'style' &&
-    (n as HTMLStyleElement).sheet &&
-    // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
-    !(n.innerText || n.textContent || '').trim().length
-  ) {
+  if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
     const cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
@@ -970,6 +971,7 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
+    blankTextNodes?: boolean;
   },
 ): serializedNodeWithId | null {
   const {
@@ -995,6 +997,7 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
+    blankTextNodes = false,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
@@ -1028,6 +1031,7 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
+    blankTextNodes,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1043,7 +1047,6 @@ export function serializeNodeWithId(
     slimDOMExcluded(_serializedNode, slimDOMOptions) ||
     (!preserveWhiteSpace &&
       _serializedNode.type === NodeType.Text &&
-      !_serializedNode.isStyle &&
       !_serializedNode.textContent.replace(/^\s+|\s+$/gm, '').length)
   ) {
     id = IGNORED_NODE;
@@ -1108,6 +1111,7 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
+      blankTextNodes: false,
     };
 
     if (
@@ -1117,6 +1121,12 @@ export function serializeNodeWithId(
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
     } else {
+      if (
+        serializedNode.type === NodeType.Element &&
+        (serializedNode as elementNode).attributes._cssText !== undefined
+      ) {
+        bypassOptions.blankTextNodes = true;
+      }
       for (const childN of Array.from(n.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {

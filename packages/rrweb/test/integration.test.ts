@@ -171,6 +171,7 @@ describe('record integration tests', function (this: ISuite) {
   });
 
   it('can record style text mutations', async () => {
+    // This test shows that the `isStyle` attribute on textContent is not needed in a mutation
     // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
     const page: puppeteer.Page = await browser.newPage();
     await page.goto(`${serverURL}/html`);

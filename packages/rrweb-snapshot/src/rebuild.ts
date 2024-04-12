@@ -227,6 +227,14 @@ function buildNode(
           value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
+          if (
+            isRemoteOrDynamicCss &&
+            n.childNodes.length &&
+            n.childNodes[0].type === NodeType.Text
+          ) {
+            n.childNodes[0].textContent = value;
+            continue;
+          }
           node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
           n.childNodes = []; // value overrides childNodes
@@ -378,11 +386,11 @@ function buildNode(
       return node;
     }
     case NodeType.Text:
-      return doc.createTextNode(
-        n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache)
-          : n.textContent,
-      );
+      if (n.isStyle && hackCss) {
+        // support legacy style
+        return doc.createTextNode(adaptCssForReplay(n.textContent, cache));
+      }
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:
