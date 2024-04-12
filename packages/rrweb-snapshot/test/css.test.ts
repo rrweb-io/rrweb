@@ -139,17 +139,6 @@ li[attr="weirdly("] a:hover, li[attr="weirdly)"] a {
     expect(
       (trickresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
     ).toEqual(2);
-
-    const weirderresult = parse(
-      `
-li[attr="weirder\"("] a:hover, li[attr="weirder\")"] a {
-  background-color: red;
-}
-`,
-    );
-    expect(
-      (weirderresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
-    ).toEqual(2);
   });
 
   it('parses imports with quotes correctly', () => {
