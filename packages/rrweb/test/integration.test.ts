@@ -173,7 +173,7 @@ describe('record integration tests', function (this: ISuite) {
   it('can record style text mutations', async () => {
     // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
     const page: puppeteer.Page = await browser.newPage();
-    await page.goto('about:blank');
+    await page.goto(`${serverURL}/html`);
     await page.setContent(getHtml.call(this, 'style.html'));
 
     await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
@@ -183,6 +183,11 @@ describe('record integration tests', function (this: ISuite) {
       if (styleEl) {
         styleEl.append(
           document.createTextNode('body { background-color: darkgreen; }'),
+        );
+        styleEl.append(
+          document.createTextNode(
+            '.absolutify { background-image: url("./rel"); }',
+          ),
         );
       }
     });
