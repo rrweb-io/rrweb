@@ -352,6 +352,12 @@ export function extractFileExtension(
   return match?.[1] ?? null;
 }
 
+function normalizeCssString(cssText: string): string {
+  // remove spaces
+  // TODO: normalize other differences between css as authored vs. stringifyStylesheet
+  return cssText.replace(/[\s]/g, '');
+}
+
 /**
  * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
  * performance is not considered as this is anticipated to be very much an edge case
@@ -364,17 +370,27 @@ export function findCssTextSplits(
   const childNodes = Array.from(style.childNodes);
   const splits = [];
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    const cssTextNorm = normalizeCssString(cssText);
     for (let i = 1; i < childNodes.length; i++) {
       let split = 0; // marker for 'no split found'
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
-        for (let j = 3; j < childNodes[i].textContent!.length; j++) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        for (let j = 3; j < textContentNorm.length; j++) {
           // find the smallest substring that appears only once
-          let bit = childNodes[i].textContent!.substring(0, j);
-          if (cssText.split(bit).length === 2) {
-            split = cssText.indexOf(bit);
+          const bit = textContentNorm.substring(0, j);
+          if (cssTextNorm.split(bit).length === 2) {
+            const splitNorm = cssTextNorm.indexOf(bit);
+            // find the split point in the original text
+            for (let k = splitNorm; k < cssText.length; k++) {
+              if (
+                normalizeCssString(cssText.substring(0, k)).length === splitNorm
+              ) {
+                split = k;
+              }
+            }
             break;
           }
         }
