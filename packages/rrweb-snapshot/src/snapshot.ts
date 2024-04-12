@@ -583,7 +583,9 @@ function serializeTextNode(
           );
         } catch (err) {
           console.warn(
-            `Cannot get CSS styles from text's parentNode. Error: ${err as string}`,
+            `Cannot get CSS styles from text's parentNode. Error: ${
+              err as string
+            }`,
             n,
           );
         }
