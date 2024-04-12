@@ -1132,12 +1132,13 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"body { background-color: black; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"body { background-color: black; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -1213,7 +1214,6 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel\\\\\\"); }\\",
-            \\"isStyle\\": true,
             \\"id\\": 22
           }
         },
@@ -1223,7 +1223,6 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"body { background-color: darkgreen; }\\",
-            \\"isStyle\\": true,
             \\"id\\": 23
           }
         }
@@ -5445,12 +5444,13 @@ exports[`record integration tests > mutations should work when blocked class is 
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 9
                       }
                     ],
@@ -8161,12 +8161,13 @@ exports[`record integration tests > should nest record iframe 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"iframe { width: 500px; height: 500px; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -11704,7 +11705,6 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\",
-                        \\"isStyle\\": true,
                         \\"id\\": 18
                       }
                     ],
@@ -14972,12 +14972,13 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -15055,12 +15056,13 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"style\\",
-                        \\"attributes\\": {},
+                        \\"attributes\\": {
+                          \\"_cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+                        },
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\",
-                            \\"isStyle\\": true,
+                            \\"textContent\\": \\"\\",
                             \\"id\\": 28
                           }
                         ],
@@ -16129,8 +16131,7 @@ exports[`record integration tests > should record style mutations and replay the
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"#one { color: rgb(255, 0, 0); }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 7
                       }
                     ],
@@ -16260,7 +16261,6 @@ exports[`record integration tests > should record style mutations and replay the
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"#two { color: rgb(255, 0, 0); }\\",
-            \\"isStyle\\": true,
             \\"id\\": 22
           }
         }

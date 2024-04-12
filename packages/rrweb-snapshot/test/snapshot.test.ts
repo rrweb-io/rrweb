@@ -162,22 +162,27 @@ describe('style elements', () => {
   it('should serialize all rules of stylesheet when the sheet has a single child node', () => {
     const styleEl = render(`<style>body { color: red; }</style>`);
     styleEl.sheet?.insertRule('section { color: blue; }');
-    expect(serializeNode(styleEl.childNodes[0])).toMatchObject({
-      isStyle: true,
+    expect(serializeNode(styleEl)).toMatchObject({
       rootId: undefined,
-      textContent: 'section {color: blue;}body {color: red;}',
-      type: 3,
+      attributes: {
+        _cssText: 'section {color: blue;}body {color: red;}',
+      },
+      type: 2,
     });
   });
 
-  it('should serialize individual text nodes on stylesheets with multiple child nodes', () => {
+  it('should serialize all rules on stylesheets with mix of insertion type', () => {
     const styleEl = render(`<style>body { color: red; }</style>`);
+    styleEl.sheet?.insertRule('section.lost { color: unseeable; }'); // browser throws this away after append
     styleEl.append(document.createTextNode('section { color: blue; }'));
-    expect(serializeNode(styleEl.childNodes[1])).toMatchObject({
-      isStyle: true,
+    styleEl.sheet?.insertRule('section.working { color: pink; }');
+    expect(serializeNode(styleEl)).toMatchObject({
       rootId: undefined,
-      textContent: 'section { color: blue; }',
-      type: 3,
+      attributes: {
+        _cssText:
+          'section.working {color: pink;}body {color: red;}section {color: blue;}',
+      },
+      type: 2,
     });
   });
 });
