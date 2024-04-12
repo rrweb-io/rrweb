@@ -3929,6 +3929,7 @@ exports[`record integration tests can record style text mutations 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
+                      \\"id\\": \\"dual-textContent\\",
                       \\"_cssText\\": \\"body { background-color: black; }body { color: orange !important; }\\",
                       \\"_cssTextSplits\\": \\"33\\"
                     },
@@ -3966,26 +3967,44 @@ exports[`record integration tests can record style text mutations 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 19
-                  }
-                ],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 20
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"single-textContent\\",
+                      \\"_cssText\\": \\"a:hover { outline: red solid 1px; }\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 21
+                      }
+                    ],
+                    \\"id\\": 20
+                  },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"empty\\",
+                      \\"_cssText\\": \\"a:hover { outline: blue solid 1px; }\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 23
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 24
                   },
                   {
                     \\"type\\": 2,
@@ -3995,18 +4014,54 @@ exports[`record integration tests can record style text mutations 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 24
+                        \\"id\\": 26
                       }
                     ],
-                    \\"id\\": 23
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 27
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 28
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 30
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 32
+                      }
+                    ],
+                    \\"id\\": 31
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 25
+                    \\"id\\": 33
                   }
                 ],
-                \\"id\\": 21
+                \\"id\\": 29
               }
             ],
             \\"id\\": 3
@@ -4034,16 +4089,16 @@ exports[`record integration tests can record style text mutations 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel\\\\\\"); }\\",
-            \\"id\\": 26
+            \\"id\\": 34
           }
         },
         {
           \\"parentId\\": 13,
-          \\"nextId\\": 26,
+          \\"nextId\\": 34,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"body { background-color: darkgreen; }\\",
-            \\"id\\": 27
+            \\"id\\": 35
           }
         }
       ]
@@ -4063,7 +4118,7 @@ exports[`record integration tests can record style text mutations 1`] = `
           \\"value\\": \\"body { color: yellow; }\\"
         },
         {
-          \\"id\\": 27,
+          \\"id\\": 35,
           \\"value\\": \\"body { background-color: purple; }\\"
         }
       ],
