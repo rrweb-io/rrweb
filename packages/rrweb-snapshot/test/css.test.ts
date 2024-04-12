@@ -1,5 +1,14 @@
+/**
+ * @jest-environment jsdom
+ */
+import { JSDOM } from 'jsdom';
 import { parse, Rule, Media } from '../src/css';
-import { fixSafariColons, escapeImportStatement } from './../src/utils';
+import {
+  fixSafariColons,
+  escapeImportStatement,
+  findCssTextSplits,
+  stringifyStylesheet,
+} from './../src/utils';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
@@ -250,5 +259,26 @@ li[attr="has,comma"] a:hover {
       supportsText: null,
     } as unknown as CSSImportRule);
     expect(out5).toEqual(`@import url("/foo.css;900;800\\"") layer;`);
+  });
+});
+
+describe('css splitter', () => {
+  it('finds css textElement splits correctly', () => {
+    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    if (style) {
+      // as authored, e.g. no spaces
+      style.appendChild(JSDOM.fragment('.a{background-color:red;}'));
+      style.appendChild(JSDOM.fragment('.a{background-color:black;}'));
+
+      // how it is currently stringified (spaces present)
+      let browserSheet = '.a { background-color: red; }';
+      let expectedSplit = browserSheet.length;
+      browserSheet += '.a { background-color: black; }';
+
+      // can't do this as JSDOM doesn't have style.sheet
+      //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(findCssTextSplits(browserSheet, style)).toEqual([expectedSplit]);
+    }
   });
 });
