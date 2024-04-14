@@ -85,7 +85,7 @@ async function buildFile({
     minify,
     sourcemap: true,
     format: isCss ? undefined : ('umd' as Format),
-    target: isCss ? undefined : 'es2015',
+    target: isCss ? undefined : 'es2017',
     treeShaking: !isCss,
     plugins: [
       umdWrapper({
@@ -122,7 +122,7 @@ export default function (
 
       outDir,
 
-      emptyOutDir: typeof entry === 'string',
+      emptyOutDir: true,
 
       // Leaving this unminified so you can see what exactly gets included in
       // the bundles

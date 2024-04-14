@@ -1,5 +1,9 @@
 import record from './record';
-import { Replayer } from './replay';
+import {
+  Replayer,
+  type PlayerMachineState,
+  type SpeedMachineState,
+} from './replay';
 import canvasMutation from './replay/canvas';
 import { _mirror } from './utils';
 import * as utils from './utils';
@@ -22,6 +26,8 @@ export {
   addCustomEvent,
   freezePage,
   Replayer,
+  PlayerMachineState,
+  SpeedMachineState,
   canvasMutation,
   _mirror as mirror,
   utils,

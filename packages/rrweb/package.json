@@ -16,7 +16,7 @@
     "repl": "yarn build && node scripts/repl.js",
     "live-stream": "yarn build && node scripts/stream.js",
     "dev": "vite build --watch",
-    "build": "tsc -noEmit && rimraf dist && vite build && vite build -c vite.config.entries.js",
+    "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
     "lint": "yarn eslint src",
@@ -45,30 +45,9 @@
         "default": "./dist/rrweb.cjs"
       }
     },
-    "./rrweb-replay": {
-      "import": {
-        "types": "./dist/rrweb-replay.d.ts",
-        "default": "./dist/rrweb-replay.js"
-      },
-      "require": {
-        "types": "./dist/rrweb-replay.d.cts",
-        "default": "./dist/rrweb-replay.cjs"
-      }
-    },
-    "./rrweb-record": {
-      "import": {
-        "types": "./dist/rrweb-record.d.ts",
-        "default": "./dist/rrweb-record.js"
-      },
-      "require": {
-        "types": "./dist/rrweb-record.d.cts",
-        "default": "./dist/rrweb-record.cjs"
-      }
-    }
+    "./dist/style.css": "./dist/style.css"
   },
   "files": [
-    "rrweb-replay",
-    "rrweb-record",
     "dist",
     "package.json"
   ],
@@ -94,7 +73,6 @@
     "jest-image-snapshot": "^6.2.0",
     "puppeteer": "^20.9.0",
     "simple-peer-light": "^9.10.0",
-    "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
     "typescript": "^4.7.3",

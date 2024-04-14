@@ -4,6 +4,7 @@
     /**
      * @see https://vitejs.dev/guide/features.html#target
      */
+    "esModuleInterop": true,
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",

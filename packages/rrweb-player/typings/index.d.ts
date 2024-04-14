@@ -1,6 +1,6 @@
-import { playerConfig } from 'rrweb';
+import { playerConfig } from '@rrweb/replay';
 import { eventWithTime } from '@rrweb/types';
-import { Replayer } from 'rrweb';
+import { Replayer } from '@rrweb/replay';
 import { Mirror } from 'rrweb-snapshot';
 import { SvelteComponent } from 'svelte';
 
