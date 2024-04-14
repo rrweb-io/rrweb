@@ -6,7 +6,7 @@ for dir in "$packages_dir"/*/ "$packages_dir/plugins"/*/ ; do
         (
             cd "$dir" || exit
             npx publint --strict
-            attw --pack .
+            attw --pack . --exclude-entrypoints dist/style.css
         )
     fi
 done
