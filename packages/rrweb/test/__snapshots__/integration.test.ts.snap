@@ -5531,12 +5531,13 @@ exports[`record integration tests mutations should work when blocked class is un
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 9
                       }
                     ],
@@ -8427,12 +8428,13 @@ exports[`record integration tests should nest record iframe 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"iframe { width: 500px; height: 500px; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -12475,7 +12477,6 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\",
-                        \\"isStyle\\": true,
                         \\"id\\": 18
                       }
                     ],
@@ -15845,12 +15846,13 @@ exports[`record integration tests should record shadow DOM 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -15928,12 +15930,13 @@ exports[`record integration tests should record shadow DOM 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"style\\",
-                        \\"attributes\\": {},
+                        \\"attributes\\": {
+                          \\"_cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+                        },
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\",
-                            \\"isStyle\\": true,
+                            \\"textContent\\": \\"\\",
                             \\"id\\": 28
                           }
                         ],
