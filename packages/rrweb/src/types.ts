@@ -64,6 +64,7 @@ export type recordOptions<T> = {
   maskAttributeFn?: MaskAttributeFn;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
+  maxCanvasSize?: [number, number];
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
   inlineStylesheet?: boolean;

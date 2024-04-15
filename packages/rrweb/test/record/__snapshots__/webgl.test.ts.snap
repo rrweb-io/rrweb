@@ -109,7 +109,9 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
               ]
             },
             0,
-            0
+            0,
+            300,
+            150
           ]
         }
       ]
@@ -150,7 +152,9 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
               ]
             },
             0,
-            0
+            0,
+            300,
+            150
           ]
         }
       ]

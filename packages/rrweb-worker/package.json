@@ -13,6 +13,7 @@
     "typings": "tsc -p tsconfig.types.json",
     "prepare": "npm run typings && npm run bundle",
     "check-types": "tsc -noEmit",
+    "test": "yarn jest",
     "lint": "yarn eslint src"
   },
   "repository": {
@@ -27,6 +28,12 @@
   "dependencies": {
     "@sentry-internal/rrweb-snapshot": "2.12.0",
     "@sentry-internal/rrweb-types": "2.12.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.6.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1"
   },
   "engines": {
     "node": ">=12"

@@ -5,6 +5,8 @@ import type {
   ImageBitmapDataURLWorkerResponse,
 } from '@sentry-internal/rrweb-types';
 
+import { getScaledDimensions } from './getScaledDimensions';
+
 const lastBlobMap: Map<number, string> = new Map();
 const transparentBlobMap: Map<string, string> = new Map();
 
@@ -49,7 +51,7 @@ const worker: ImageBitmapDataURLResponseWorker = self;
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 worker.onmessage = async function (e) {
   if ('OffscreenCanvas' in globalThis) {
-    const { id, bitmap, width, height, dataURLOptions } = e.data;
+    const { id, bitmap, width, height, maxCanvasSize, dataURLOptions } = e.data;
 
     const transparentBase64 = getTransparentBlobFor(
       width,
@@ -57,15 +59,32 @@ worker.onmessage = async function (e) {
       dataURLOptions,
     );
 
-    const offscreen = new OffscreenCanvas(width, height);
-    const ctx = offscreen.getContext('2d')!;
+    const [targetWidth, targetHeight] = getScaledDimensions(
+      width,
+      height,
+      maxCanvasSize,
+    );
+    const offscreen = new OffscreenCanvas(targetWidth, targetHeight);
+    const ctx = offscreen.getContext('bitmaprenderer')!;
+    const resizedBitmap =
+      targetWidth === width && targetHeight === height
+        ? bitmap
+        : // resize bitmap to fit within maxsize
+          // ~95% browser support https://caniuse.com/mdn-api_createimagebitmap_options_resizewidth_parameter
+          await createImageBitmap(bitmap, {
+            resizeWidth: targetWidth,
+            resizeHeight: targetHeight,
+            resizeQuality: 'low',
+          });
 
-    ctx.drawImage(bitmap, 0, 0);
+    ctx.transferFromImageBitmap(resizedBitmap);
     bitmap.close();
+
     const blob = await offscreen.convertToBlob(dataURLOptions); // takes a while
     const type = blob.type;
     const arrayBuffer = await blob.arrayBuffer();
     const base64 = encode(arrayBuffer); // cpu intensive
+    resizedBitmap.close();
 
     // on first try we should check if canvas is transparent,
     // no need to save it's contents in that case
