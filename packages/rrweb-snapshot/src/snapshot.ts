@@ -1140,7 +1140,7 @@ export function serializeNodeWithId(
       ) {
         bypassOptions.blankTextNodes = true;
         if (n.childNodes.length > 1) {
-          let splits = findCssTextSplits(
+          const splits = findCssTextSplits(
             serializedNode.attributes._cssText,
             n as HTMLStyleElement,
           );

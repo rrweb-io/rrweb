@@ -235,8 +235,8 @@ function buildNode(
               cssTextSplits = n.attributes._cssTextSplits.split(' ');
             }
             for (let j = n.childNodes.length - 1; j >= 0; j--) {
-              let scn = n.childNodes[j];
-              let ix: number = 0;
+              const scn = n.childNodes[j];
+              let ix = 0;
               if (cssTextSplits.length > j && j > 0) {
                 ix = parseInt(cssTextSplits[j - 1]);
               }

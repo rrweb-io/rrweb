@@ -368,16 +368,16 @@ export function findCssTextSplits(
   style: HTMLStyleElement,
 ): number[] {
   const childNodes = Array.from(style.childNodes);
-  let splits = [];
+  const splits = [];
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
-    let cssTextNorm = normalizeCssString(cssText);
+    const cssTextNorm = normalizeCssString(cssText);
     for (let i = 1; i < childNodes.length; i++) {
       let split = 0; // marker for 'no split found'
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
-        let textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
         for (let j = 3; j < textContentNorm!.length; j++) {
           // find the smallest substring that appears only once
           let bit = textContentNorm!.substring(0, j);
