@@ -378,11 +378,11 @@ export function findCssTextSplits(
         typeof childNodes[i].textContent === 'string'
       ) {
         const textContentNorm = normalizeCssString(childNodes[i].textContent!);
-        for (let j = 3; j < textContentNorm!.length; j++) {
+        for (let j = 3; j < textContentNorm.length; j++) {
           // find the smallest substring that appears only once
-          let bit = textContentNorm!.substring(0, j);
+          const bit = textContentNorm.substring(0, j);
           if (cssTextNorm.split(bit).length === 2) {
-            let splitNorm = cssTextNorm.indexOf(bit);
+            const splitNorm = cssTextNorm.indexOf(bit);
             // find the split point in the original text
             for (let k = splitNorm; k < cssText.length; k++) {
               if (
