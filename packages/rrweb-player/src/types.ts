@@ -1,7 +1,6 @@
-import { playerConfig } from '@rrweb/replay';
-import { eventWithTime } from '@rrweb/types';
-import { Replayer } from '@rrweb/replay';
-import { Mirror } from 'rrweb-snapshot';
+import type { eventWithTime } from '@rrweb/types';
+import type { Replayer, playerConfig } from '@rrweb/replay';
+import type { Mirror } from 'rrweb-snapshot';
 import { SvelteComponent } from 'svelte';
 
 export type RRwebPlayerOptions = {
@@ -60,19 +59,17 @@ export type RRwebPlayerOptions = {
   } & Partial<playerConfig>;
 };
 
-export default class rrwebPlayer extends SvelteComponent {
-  constructor(options: RRwebPlayerOptions);
-
-  addEventListener(event: string, handler: (params: any) => unknown): void;
-
-  addEvent(event: eventWithTime): void;
+export type RRwebPlayerExpose = {
+  addEventListener: (event: string, handler: (params: any) => unknown) => void;
+  addEvent: (event: eventWithTime) => void;
   getMetaData: Replayer['getMetaData'];
   getReplayer: () => Replayer;
   getMirror: () => Mirror;
-
+  // getSilly: () => void;
   toggle: () => void;
   setSpeed: (speed: number) => void;
   toggleSkipInactive: () => void;
+  toggleFullscreen: () => void;
   triggerResize: () => void;
   $set: (options: { width: number; height: number }) => void;
   play: () => void;
@@ -84,4 +81,4 @@ export default class rrwebPlayer extends SvelteComponent {
     startLooping?: boolean,
     afterHook?: undefined | (() => void),
   ) => void;
-}
+};

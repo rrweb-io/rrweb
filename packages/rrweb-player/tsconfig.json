@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
   "exclude": [
     "node_modules/*",
     "__sapper__/*",
@@ -8,9 +8,22 @@
     "../rrweb/src/record/workers/workers.d.ts"
   ],
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+
+    // defaults for svelte
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    /**
+     * Typecheck JS in `.svelte` and `.js` files by default.
+     * Disable checkJs if you'd like to use dynamic types in JS.
+     * Note that setting allowJs false does not prevent the use
+     * of JS in `.svelte` files.
+     */
+    "allowJs": true,
+    "checkJs": true
   },
   "references": [
+    { "path": "./tsconfig.node.json" },
     {
       "path": "../replay"
     },

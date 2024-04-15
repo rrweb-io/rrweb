@@ -2215,4 +2215,4 @@ export class Replayer {
   }
 }
 
-export { PlayerMachineState, SpeedMachineState };
+export { PlayerMachineState, SpeedMachineState, playerConfig };

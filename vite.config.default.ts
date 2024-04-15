@@ -101,9 +101,9 @@ async function buildFile({
 export default function (
   entry: LibraryOptions['entry'],
   name: LibraryOptions['name'],
-  options?: { outputDir?: string; fileName?: string },
+  options?: { outputDir?: string; fileName?: string; plugins?: Plugin[] },
 ) {
-  const { fileName, outputDir: outDir = 'dist' } = options || {};
+  const { fileName, outputDir: outDir = 'dist', plugins = [] } = options || {};
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
 

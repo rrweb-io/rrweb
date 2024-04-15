@@ -12,19 +12,20 @@
     typeOf,
   } from './utils';
   import Controller from './Controller.svelte';
-
-  export let width = 1024;
-  export let height = 576;
-  export let maxScale = 1;
-  export let events: eventWithTime[] = [];
-  export let skipInactive = true;
-  export let autoPlay = true;
-  export let speedOption: number[] = [1, 2, 4, 8];
-  export let speed = 1;
-  export let showController = true;
-  export let tags: Record<string, string> = {};
+  import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
+    
+  export let width: RRwebPlayerOptions['props']['width']  = 1024;
+  export let height: RRwebPlayerOptions['props']['height'] = 576;
+  export let maxScale: RRwebPlayerOptions['props']['maxScale'] = 1;
+  export let events: RRwebPlayerOptions['props']['events'];
+  export let skipInactive: RRwebPlayerOptions['props']['skipInactive'] = true;
+  export let autoPlay: RRwebPlayerOptions['props']['autoPlay'] = true;
+  export let speedOption: RRwebPlayerOptions['props']['speedOption'] = [1, 2, 4, 8];
+  export let speed: RRwebPlayerOptions['props']['speed'] = 1;
+  export let showController: RRwebPlayerOptions['props']['showController'] = true;
+  export let tags: RRwebPlayerOptions['props']['tags'] = {};
   // color of inactive periods indicator
-  export let inactiveColor = '#D4D4D4';
+  export let inactiveColor: RRwebPlayerOptions['props']['inactiveColor'] = '#D4D4D4';
 
   let replayer: Replayer;
 
@@ -65,20 +66,20 @@
       `scale(${Math.min(...scale)})` + 'translate(-50%, -50%)';
   };
 
-  export const triggerResize = () => {
+  export const triggerResize: RRwebPlayerExpose['triggerResize'] = () => {
     updateScale(replayer.wrapper, {
       width: replayer.iframe.offsetWidth,
       height: replayer.iframe.offsetHeight,
     });
   };
 
-  export const toggleFullscreen = () => {
+  export const toggleFullscreen: RRwebPlayerExpose['toggleFullscreen'] = () => {
     if (player) {
       isFullscreen() ? exitFullscreen() : openFullscreen(player);
     }
   };
 
-  export const addEventListener = (
+  export const addEventListener: RRwebPlayerExpose['addEventListener'] = (
     event: string,
     handler: (detail: unknown) => unknown,
   ) => {
@@ -93,33 +94,33 @@
     }
   };
 
-  export const addEvent = (event: eventWithTime) => {
+  export const addEvent: RRwebPlayerExpose['addEvent'] = (event: eventWithTime) => {
     replayer.addEvent(event);
     controller.triggerUpdateMeta();
   };
-  export const getMetaData = () => replayer.getMetaData();
-  export const getReplayer = () => replayer;
+  export const getMetaData: RRwebPlayerExpose['getMetaData'] = () => replayer.getMetaData();
+  export const getReplayer: RRwebPlayerExpose['getReplayer'] = () => replayer;
 
   // by pass controller methods as public API
-  export const toggle = () => {
+  export const toggle: RRwebPlayerExpose['toggle'] = () => {
     controller.toggle();
   };
-  export const setSpeed = (speed: number) => {
+  export const setSpeed: RRwebPlayerExpose['setSpeed'] = (speed: number) => {
     controller.setSpeed(speed);
   };
-  export const toggleSkipInactive = () => {
+  export const toggleSkipInactive: RRwebPlayerExpose['toggleSkipInactive'] = () => {
     controller.toggleSkipInactive();
   };
-  export const play = () => {
+  export const play: RRwebPlayerExpose['play'] = () => {
     controller.play();
   };
-  export const pause = () => {
+  export const pause: RRwebPlayerExpose['pause'] = () => {
     controller.pause();
   };
-  export const goto = (timeOffset: number, play?: boolean) => {
+  export const goto: RRwebPlayerExpose['goto'] = (timeOffset: number, play?: boolean) => {
     controller.goto(timeOffset, play);
   };
-  export const playRange = (
+  export const playRange: RRwebPlayerExpose['playRange'] = (
     timeOffset: number,
     endTimeOffset: number,
     startLooping = false,

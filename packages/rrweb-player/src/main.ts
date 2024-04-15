@@ -1,17 +1,13 @@
 import type { eventWithTime } from '@rrweb/types';
 import _Player from './Player.svelte';
-
-type PlayerProps = {
-  events: eventWithTime[];
-};
-
-class Player extends _Player {
-  constructor(options: {
-    target: Element;
-    props: PlayerProps;
-    // for compatibility
-    data?: PlayerProps;
-  }) {
+import type { RRwebPlayerExpose, RRwebPlayerOptions } from './types';
+export class Player extends _Player {
+  constructor(
+    options: {
+      // for compatibility
+      data?: RRwebPlayerOptions['props'];
+    } & RRwebPlayerOptions,
+  ) {
     super({
       target: options.target,
       props: options.data || options.props,

@@ -1,6 +1,7 @@
 import record from './record';
 import {
   Replayer,
+  type playerConfig,
   type PlayerMachineState,
   type SpeedMachineState,
 } from './replay';
@@ -26,6 +27,7 @@ export {
   addCustomEvent,
   freezePage,
   Replayer,
+  playerConfig,
   PlayerMachineState,
   SpeedMachineState,
   canvasMutation,

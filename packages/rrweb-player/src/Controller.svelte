@@ -254,6 +254,17 @@
     goto(timeOffset);
   };
 
+  const handleProgressKeydown = (event: KeyboardEvent) => { 
+    if (speedState === 'skipping') {
+      return;
+    }
+    if (event.key === 'ArrowLeft') {
+      goto(currentTime - 5);
+    } else if (event.key === 'ArrowRight') {
+      goto(currentTime + 5);
+    }
+  };
+
   export const setSpeed = (newSpeed: number) => {
     let needFreeze = playerState === 'playing';
     speed = newSpeed;
@@ -428,6 +439,7 @@
         class:disabled={speedState === 'skipping'}
         bind:this={progress}
         on:click={handleProgressClick}
+        on:keydown={handleProgressKeydown}
       >
         <div
           class="rr-progress__step"
@@ -537,7 +549,6 @@
             48s-21.6 48-48 48l-224 0c-26.4 0-48-21.6-48-48l0-224c0-26.4 21.6-48
             48-48 26.4 0 48 21.6 48 48L164 792l253.6-253.6c18.4-18.4 48.8-18.4
             68 0 18.4 18.4 18.4 48.8 0 68L231.2 860z"
-            p-id="1286"
           />
         </svg>
       </button>
