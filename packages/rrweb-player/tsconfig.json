@@ -1,15 +1,10 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
-  "exclude": [
-    "node_modules/*",
-    "__sapper__/*",
-    "public/*",
-    "../rrweb/src/record/workers/workers.d.ts"
-  ],
+  "extends": "../../tsconfig.base.json",
+  "exclude": ["package.json", "vite.config.ts"],
+  "include": ["src/**/*", "vite-env.d.ts"],
   "compilerOptions": {
     "composite": true,
-
+    "rootDir": "./src",
     // defaults for svelte
     "useDefineForClassFields": true,
     "resolveJsonModule": true,

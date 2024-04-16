@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium } from 'playwright';
 import { EventType, eventWithTime } from '@rrweb/types';
-import type { RRwebPlayerOptions } from 'rrweb-player';
+import type Player from 'rrweb-player';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),
@@ -22,7 +22,10 @@ type RRvideoConfig = {
   resolutionRatio?: number;
   // A callback function that will be called when the progress of the replay is updated.
   onProgressUpdate?: (percent: number) => void;
-  rrwebPlayer?: Omit<RRwebPlayerOptions['props'], 'events'>;
+  rrwebPlayer?: Omit<
+    ConstructorParameters<typeof Player>[0]['props'],
+    'events'
+  >;
 };
 
 const defaultConfig: Required<RRvideoConfig> = {

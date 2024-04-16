@@ -37,7 +37,6 @@
   }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
-  let step: HTMLElement;
   let finished: boolean;
 
   let pauseAt: number | false = false;
@@ -443,7 +442,6 @@
       >
         <div
           class="rr-progress__step"
-          bind:this={step}
           style="width: {percentage}"
         />
         {#each inactivePeriods as period}

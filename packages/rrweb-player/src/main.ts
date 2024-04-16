@@ -1,7 +1,6 @@
-import type { eventWithTime } from '@rrweb/types';
 import _Player from './Player.svelte';
-import type { RRwebPlayerExpose, RRwebPlayerOptions } from './types';
-export class Player extends _Player {
+import type { RRwebPlayerOptions } from './types';
+class Player extends _Player {
   constructor(
     options: {
       // for compatibility

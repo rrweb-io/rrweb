@@ -153,6 +153,7 @@ export default function (
         },
       }),
       minifyAndUMDPlugin({ name, outDir }),
+      ...plugins,
     ],
   });
 }
