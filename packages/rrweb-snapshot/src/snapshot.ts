@@ -416,11 +416,6 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
-function isStylesheetLoaded(link: HTMLLinkElement) {
-  if (!link.getAttribute('href')) return true; // nothing to load
-  return link.sheet !== null;
-}
-
 function onceStylesheetLoaded(
   link: HTMLLinkElement,
   listener: () => unknown,
