@@ -14,18 +14,18 @@
   import Controller from './Controller.svelte';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
     
-  export let width: RRwebPlayerOptions['props']['width']  = 1024;
-  export let height: RRwebPlayerOptions['props']['height'] = 576;
-  export let maxScale: RRwebPlayerOptions['props']['maxScale'] = 1;
+  export let width: NonNullable<RRwebPlayerOptions['props']['width']>  = 1024;
+  export let height: NonNullable<RRwebPlayerOptions['props']['height']> = 576;
+  export let maxScale: NonNullable<RRwebPlayerOptions['props']['maxScale']> = 1;
   export let events: RRwebPlayerOptions['props']['events'];
-  export let skipInactive: RRwebPlayerOptions['props']['skipInactive'] = true;
-  export let autoPlay: RRwebPlayerOptions['props']['autoPlay'] = true;
-  export let speedOption: RRwebPlayerOptions['props']['speedOption'] = [1, 2, 4, 8];
-  export let speed: RRwebPlayerOptions['props']['speed'] = 1;
-  export let showController: RRwebPlayerOptions['props']['showController'] = true;
-  export let tags: RRwebPlayerOptions['props']['tags'] = {};
+  export let skipInactive: NonNullable<RRwebPlayerOptions['props']['skipInactive']> = true;
+  export let autoPlay: NonNullable<RRwebPlayerOptions['props']['autoPlay']> = true;
+  export let speedOption: NonNullable<RRwebPlayerOptions['props']['speedOption']> = [1, 2, 4, 8];
+  export let speed: NonNullable<RRwebPlayerOptions['props']['speed']> = 1;
+  export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
+  export let tags: NonNullable<RRwebPlayerOptions['props']['tags']> = {};
   // color of inactive periods indicator
-  export let inactiveColor: RRwebPlayerOptions['props']['inactiveColor'] = '#D4D4D4';
+  export let inactiveColor: NonNullable<RRwebPlayerOptions['props']['inactiveColor']> = '#D4D4D4';
 
   let replayer: Replayer;
 

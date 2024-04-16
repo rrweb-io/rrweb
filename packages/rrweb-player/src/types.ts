@@ -1,7 +1,6 @@
 import type { eventWithTime } from '@rrweb/types';
 import type { Replayer, playerConfig } from '@rrweb/replay';
 import type { Mirror } from 'rrweb-snapshot';
-import { SvelteComponent } from 'svelte';
 
 export type RRwebPlayerOptions = {
   target: HTMLElement;
