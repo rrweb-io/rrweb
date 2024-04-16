@@ -18,7 +18,6 @@
     "checkJs": true
   },
   "references": [
-    { "path": "./tsconfig.node.json" },
     {
       "path": "../replay"
     },
