@@ -22,7 +22,7 @@ async function injectRecording(frame, serverURL) {
   try {
     await frame.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
     await frame.addScriptTag({
-      url: `${serverURL}/plugins/canvas-webrtc-record.js`,
+      url: `${serverURL}/plugins/rrweb-plugin-canvas-webrtc-record.js`,
     });
     await frame.evaluate(() => {
       const win = window;
@@ -33,7 +33,7 @@ async function injectRecording(frame, serverURL) {
         win.events = [];
         window.record = win.rrweb.record;
         window.plugin =
-          new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord({
+          new rrwebPluginCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord({
             signalSendCallback: (msg) => {
               // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
               _signal(msg);
@@ -59,6 +59,7 @@ async function injectRecording(frame, serverURL) {
 }
 
 async function startReplay(page, serverURL, recordedPage) {
+  page.on('console', (msg) => console.log('REPLAY PAGE LOG:', msg.text()));
   await recordedPage.exposeFunction('_signal', async (signal) => {
     await page.evaluate((signal) => {
       // [replay#signalReceive] setups up peer and starts creating counter offer
@@ -81,20 +82,21 @@ async function startReplay(page, serverURL, recordedPage) {
 
   await page.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
   await page.addScriptTag({
-    url: `${serverURL}/plugins/canvas-webrtc-replay.js`,
+    url: `${serverURL}/plugins/rrweb-plugin-canvas-webrtc-replay.js`,
   });
 
   return page.evaluate(() => {
-    window.plugin = new rrwebCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay({
-      canvasFoundCallback(canvas, context) {
-        console.log('canvas', canvas, context);
-        // [replay#onBuild] gets id of canvas element and sends to recorded page
-        _canvas(context.id);
-      },
-      signalSendCallback(data) {
-        _signal(JSON.stringify(data));
-      },
-    });
+    window.plugin =
+      new rrwebPluginCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay({
+        canvasFoundCallback(canvas, context) {
+          console.log('canvas', canvas, context);
+          // [replay#onBuild] gets id of canvas element and sends to recorded page
+          _canvas(context.id);
+        },
+        signalSendCallback(data) {
+          _signal(JSON.stringify(data));
+        },
+      });
 
     window.replayer = new rrweb.Replayer([], {
       UNSAFE_replayCanvas: true,
