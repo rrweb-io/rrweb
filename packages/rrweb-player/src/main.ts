@@ -1,6 +1,6 @@
 import _Player from './Player.svelte';
 import type { RRwebPlayerOptions } from './types';
-class Player extends _Player {
+export class Player extends _Player {
   constructor(
     options: {
       // for compatibility
