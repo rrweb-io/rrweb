@@ -1,0 +1,6 @@
+dist
+types
+vite.config.ts
+vite-env.d.ts
+svelte.config.js
+public/events.js
