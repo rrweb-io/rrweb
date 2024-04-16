@@ -59,7 +59,10 @@ export type RRwebPlayerOptions = {
 };
 
 export type RRwebPlayerExpose = {
-  addEventListener: (event: string, handler: (params: any) => unknown) => void;
+  addEventListener: (
+    event: string,
+    handler: (params: unknown) => unknown,
+  ) => void;
   addEvent: (event: eventWithTime) => void;
   getMetaData: Replayer['getMetaData'];
   getReplayer: () => Replayer;
