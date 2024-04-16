@@ -593,7 +593,7 @@ function serializeTextNode(
       textContent = absoluteToStylesheet(textContent, getHref(options.doc));
     }
   }
-  if (!isScript && !isStyle && textContent && needsMask) {
+  if (!isStyle && !isScript && textContent && needsMask) {
     textContent = maskTextFn
       ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
