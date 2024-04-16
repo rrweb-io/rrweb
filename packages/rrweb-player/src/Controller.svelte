@@ -41,7 +41,7 @@
   let finished: boolean;
 
   let pauseAt: number | false = false;
-  let onPauseHook: () => unknown | undefined = undefined;
+  let onPauseHook: (() => unknown) | null = null;
   let loop: {
     start: number;
     end: number;
@@ -234,7 +234,7 @@
     }
     currentTime = timeOffset;
     pauseAt = endTimeOffset;
-    onPauseHook = afterHook;
+    onPauseHook = afterHook || null;
     replayer.play(timeOffset);
   };
 
@@ -292,8 +292,8 @@
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
-      (states: { player?: PlayerMachineState; speed?: SpeedMachineState }) => {
-        const { player, speed } = states;
+      (states) => {
+        const { player, speed } = states as { player?: PlayerMachineState; speed?: SpeedMachineState };
         if (player?.value && playerState !== player.value) {
           playerState = player.value;
           switch (playerState) {
