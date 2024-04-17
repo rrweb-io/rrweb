@@ -1046,7 +1046,7 @@ function initMediaInteractionObserver({
         ) {
           return;
         }
-        const { currentTime, volume, muted, playbackRate } =
+        const { currentTime, volume, muted, playbackRate, loop } =
           target as HTMLMediaElement;
         mediaInteractionCb({
           type,
@@ -1055,6 +1055,7 @@ function initMediaInteractionObserver({
           volume,
           muted,
           playbackRate,
+          loop,
         });
       }),
       sampling.media || 500,
