@@ -46,7 +46,7 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
  - [@rrweb/record](packages/record): A package for recording rrweb sessions.
  - [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
  - [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
- - [@rrweb/types](packages/types): Contains type definitions used in rrweb.
+ - [@rrweb/types](packages/types): Contains types shared across rrweb packages.
  - [web-extension](packages/web-extension): A web extension for rrweb.
  - [rrvideo](packages/rrvideo): A package for handling video operations in rrweb.
  - [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record): A plugin for recording console logs.
