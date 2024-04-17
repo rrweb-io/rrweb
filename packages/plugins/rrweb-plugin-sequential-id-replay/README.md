@@ -19,14 +19,13 @@ const replayer = new rrweb.Replayer(events, {
   plugins: [
     getReplaySequentialIdPlugin({
       // make sure this is the same as the record side
-      key: "_id", // default value
-      warnOnMissingId: true // default value
+      key: '_id', // default value
+      warnOnMissingId: true, // default value
     }),
   ],
 });
 replayer.play(); // ERROR: [sequential-id-plugin]: expect to get an id with value "42", but got "666"`
 ```
-
 
 ## Sponsors
 

@@ -34,24 +34,24 @@ rrweb 代码分为录制和回放两部分，大多数时候用户在被录制�
 
 除了 `rrweb` 和 `@rrweb/record` 包之外，rrweb 还提供了其他不同用途的包。
 
- - [rrweb](packages/rrweb)：rrweb 的核心包，包括录制和回放功能。
- - [rrweb-player](packages/rrweb-player)：rrweb 的图形用户界面，提供时间线和暂停、快进、加速等按钮。
- - [rrweb-snapshot](packages/rrweb-snapshot)：处理快照和重建功能，将 DOM 及其状态转换为可序列化的数据结构。
- - [rrdom](packages/rrdom)：rrweb 的虚拟 dom 包。
- - [rrdom-nodejs](packages/rrdom-nodejs)：用于服务器端 DOM 操作的 rrdom 的 Node.js 版本。
- - [@rrweb/all](packages/all)：一个包含 `rrweb` 和 `@rrweb/packer`，便于安装的包。
- - [@rrweb/record](packages/record)：一个用于录制 rrweb 会话的包。
- - [@rrweb/replay](packages/replay)：一个用于回放 rrweb 会话的包。
- - [@rrweb/packer](packages/packer)：一个用于打包和解包 rrweb 数据的包。
- - [@rrweb/types](packages/types)：包含 rrweb 中使用的类型定义。
- - [web-extension](packages/web-extension)：rrweb 的网页扩展。
- - [rrvideo](packages/rrvideo)：一个用于处理 rrweb 中视频操作的包。
- - [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record)：一个用于记录控制台日志的插件。
- - [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay)：一个用于回放控制台日志的插件。
- - [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record)：一个用于记录顺序 ID 的插件。
- - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay)：一个用于回放顺序 ID 的插件。
- - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
- - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。 
+- [rrweb](packages/rrweb)：rrweb 的核心包，包括录制和回放功能。
+- [rrweb-player](packages/rrweb-player)：rrweb 的图形用户界面，提供时间线和暂停、快进、加速等按钮。
+- [rrweb-snapshot](packages/rrweb-snapshot)：处理快照和重建功能，将 DOM 及其状态转换为可序列化的数据结构。
+- [rrdom](packages/rrdom)：rrweb 的虚拟 dom 包。
+- [rrdom-nodejs](packages/rrdom-nodejs)：用于服务器端 DOM 操作的 rrdom 的 Node.js 版本。
+- [@rrweb/all](packages/all)：一个包含 `rrweb` 和 `@rrweb/packer`，便于安装的包。
+- [@rrweb/record](packages/record)：一个用于录制 rrweb 会话的包。
+- [@rrweb/replay](packages/replay)：一个用于回放 rrweb 会话的包。
+- [@rrweb/packer](packages/packer)：一个用于打包和解包 rrweb 数据的包。
+- [@rrweb/types](packages/types)：包含 rrweb 中使用的类型定义。
+- [web-extension](packages/web-extension)：rrweb 的网页扩展。
+- [rrvideo](packages/rrvideo)：一个用于处理 rrweb 中视频操作的包。
+- [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record)：一个用于记录控制台日志的插件。
+- [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay)：一个用于回放控制台日志的插件。
+- [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record)：一个用于记录顺序 ID 的插件。
+- [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay)：一个用于回放顺序 ID 的插件。
+- [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
+- [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。
 
 ### 通过 npm 引入
 

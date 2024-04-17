@@ -22,10 +22,9 @@ rrweb.record({
   plugins: [
     getRecordSequentialIdPlugin({
       key: '_sid', // default value
-    })
+    }),
   ],
 });
-
 ```
 
 ## Sponsors

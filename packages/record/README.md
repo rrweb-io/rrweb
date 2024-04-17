@@ -26,7 +26,6 @@ record({
 Currently this package is really just a wrapper around the `record` function in the main `rrweb` package.
 All `record` related code will get moved here in the future.
 
-
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
