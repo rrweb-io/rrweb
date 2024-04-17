@@ -167,7 +167,10 @@ function isUserInteraction(event: eventWithTime): boolean {
  * @param inactivePeriodThreshold - threshold of inactive time in milliseconds
  * @returns periods of time consist with [start time, end time]
  */
-export function getInactivePeriods(events: eventWithTime[], inactivePeriodThreshold: number) {
+export function getInactivePeriods(
+  events: eventWithTime[],
+  inactivePeriodThreshold: number,
+) {
   const inactivePeriods: [number, number][] = [];
   let lastActiveTime = events[0].timestamp;
   for (const event of events) {
