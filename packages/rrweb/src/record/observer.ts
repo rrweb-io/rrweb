@@ -1314,7 +1314,7 @@ export function initObservers(
       //
     };
   }
-  console.warn(o)
+
   mergeHooks(o, hooks);
   let mutationObserver: MutationObserver | undefined;
   if (o.recordDOM) {
