@@ -54,8 +54,6 @@ export default async function canvasMutation({
       ) {
         imageMap.get(event);
         original.apply(ctx, mutation.args);
-      } else {
-        original.apply(ctx, args);
       }
     } catch (error) {
       errorHandler(mutation, error);
