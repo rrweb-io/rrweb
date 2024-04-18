@@ -12,6 +12,7 @@ import {
   ICanvas,
   elementNode,
   serializedElementNodeWithId,
+  type mediaAttributes,
 } from './types';
 import {
   Mirror,
@@ -757,10 +758,15 @@ function serializeElementNode(
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
-    attributes.rr_mediaState = (n as HTMLMediaElement).paused
+    const mediaAttributes = attributes as mediaAttributes;
+    mediaAttributes.rr_mediaState = (n as HTMLMediaElement).paused
       ? 'paused'
       : 'played';
-    attributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime;
+    mediaAttributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime;
+    mediaAttributes.rr_mediaPlaybackRate = (n as HTMLMediaElement).playbackRate;
+    mediaAttributes.rr_mediaMuted = (n as HTMLMediaElement).muted;
+    mediaAttributes.rr_mediaLoop = (n as HTMLMediaElement).loop;
+    mediaAttributes.rr_mediaVolume = (n as HTMLMediaElement).volume;
   }
   // Scroll
   if (!newlyAddedElement) {

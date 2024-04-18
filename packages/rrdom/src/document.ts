@@ -532,6 +532,7 @@ export class BaseRRMediaElement extends BaseRRElement {
   public paused?: boolean;
   public muted?: boolean;
   public playbackRate?: number;
+  public loop?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   attachShadow(_init: ShadowRootInit): IRRElement {
     throw new Error(

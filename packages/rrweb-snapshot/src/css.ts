@@ -427,21 +427,71 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
    */
 
   function selector() {
-    const m = match(/^([^{]+)/);
+    whitespace();
+    while (css[0] == '}') {
+      error('extra closing bracket');
+      css = css.slice(1);
+      whitespace();
+    }
+
+    // Use match logic from https://github.com/NxtChg/pieces/blob/3eb39c8287a97632e9347a24f333d52d916bc816/js/css_parser/css_parse.js#L46C1-L47C1
+    const m = match(/^(("(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^{])+)/);
     if (!m) {
       return;
     }
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
-    return trim(m[0])
+    const cleanedInput = m[0]
+      .trim()
       .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
+
+      // Handle strings by replacing commas inside them
       .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
         return m.replace(/,/g, '\u200C');
-      })
-      .split(/\s*(?![^(]*\)),\s*/)
-      .map((s) => {
-        return s.replace(/\u200C/g, ',');
       });
+
+    // Split using a custom function and restore commas in strings
+    return customSplit(cleanedInput).map((s) =>
+      s.replace(/\u200C/g, ',').trim(),
+    );
+  }
+
+  /**
+   * Split selector correctly, ensuring not to split on comma if inside ().
+   */
+
+  function customSplit(input: string) {
+    const result = [];
+    let currentSegment = '';
+    let depthParentheses = 0; // Track depth of parentheses
+    let depthBrackets = 0; // Track depth of square brackets
+
+    for (const char of input) {
+      if (char === '(') {
+        depthParentheses++;
+      } else if (char === ')') {
+        depthParentheses--;
+      } else if (char === '[') {
+        depthBrackets++;
+      } else if (char === ']') {
+        depthBrackets--;
+      }
+
+      // Split point is a comma that is not inside parentheses or square brackets
+      if (char === ',' && depthParentheses === 0 && depthBrackets === 0) {
+        result.push(currentSegment);
+        currentSegment = '';
+      } else {
+        currentSegment += char;
+      }
+    }
+
+    // Add the last segment
+    if (currentSegment) {
+      result.push(currentSegment);
+    }
+
+    return result;
   }
 
   /**

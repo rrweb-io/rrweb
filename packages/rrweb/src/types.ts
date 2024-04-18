@@ -172,6 +172,7 @@ export type playerConfig = {
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;
+  inactivePeriodThreshold: number;
   showWarning: boolean;
   showDebug: boolean;
   blockClass: string;

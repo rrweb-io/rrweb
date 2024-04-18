@@ -79,6 +79,35 @@ describe('css parser', () => {
     expect(errors[0].filename).toEqual('foo.css');
   });
 
+  it('should parse selector with comma nested inside ()', () => {
+    const result = parse(
+      '[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }',
+    );
+
+    expect(result.parent).toEqual(null);
+
+    const rules = result.stylesheet!.rules;
+    expect(rules.length).toEqual(1);
+
+    let rule = rules[0] as Rule;
+    expect(rule.parent).toEqual(result);
+    expect(rule.selectors?.length).toEqual(1);
+
+    let decl = rule.declarations![0];
+    expect(decl.parent).toEqual(rule);
+  });
+
+  it('parses { and } in attribute selectors correctly', () => {
+    const result = parse('foo[someAttr~="{someId}"] { color: red; }');
+    const rules = result.stylesheet!.rules;
+
+    expect(rules.length).toEqual(1);
+
+    const rule = rules[0] as Rule;
+
+    expect(rule.selectors![0]).toEqual('foo[someAttr~="{someId}"]');
+  });
+
   it('should set parent property', () => {
     const result = parse(
       'thing { test: value; }\n' +
