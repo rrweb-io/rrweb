@@ -1,5 +1,24 @@
 # rrweb
 
+## 2.0.0-alpha.13
+
+### Minor Changes
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Full overhawl of `video` and `audio` element playback. More robust and fixes lots of bugs related to pausing/playing/skipping/muting/playbackRate etc.
+
+### Patch Changes
+
+- [#1422](https://github.com/rrweb-io/rrweb/pull/1422) [`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812) Thanks [@marandaneto](https://github.com/marandaneto)! - fix: createImageBitmap throws DOMException if source is 0 width or height
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Record `loop` on `<audio>` & `<video>` elements.
+
+- [#1445](https://github.com/rrweb-io/rrweb/pull/1445) [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216) Thanks [@daibhin](https://github.com/daibhin)! - fix: protect against missing parentNode
+
+- Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf)]:
+  - rrdom@2.0.0-alpha.13
+  - rrweb-snapshot@2.0.0-alpha.13
+  - @rrweb/types@2.0.0-alpha.13
+
 ## 2.0.0-alpha.12
 
 ### Minor Changes

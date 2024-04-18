@@ -1,5 +1,13 @@
 # rrdom-nodejs
 
+## 2.0.0-alpha.13
+
+### Patch Changes
+
+- Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356)]:
+  - rrdom@2.0.0-alpha.13
+  - rrweb-snapshot@2.0.0-alpha.13
+
 ## 2.0.0-alpha.12
 
 ### Patch Changes

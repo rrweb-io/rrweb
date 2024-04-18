@@ -425,57 +425,82 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
    */
 
   function selector() {
-    const m = match(/^([^{]+)/);
+    whitespace();
+    while (css[0] == '}') {
+      error('extra closing bracket');
+      css = css.slice(1);
+      whitespace();
+    }
+
+    // Use match logic from https://github.com/NxtChg/pieces/blob/3eb39c8287a97632e9347a24f333d52d916bc816/js/css_parser/css_parse.js#L46C1-L47C1
+    const m = match(/^(("(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^{])+)/);
     if (!m) {
       return;
     }
 
-    function splitRootSelectors(input: string) {
-      const parts = [];
-      let nestedLevel = 0;
-      let currentPart = '';
-      let currentStringChar = null;
-
-      for (let i = 0; i < input.length; i++) {
-        const char = input[i];
-        currentPart += char;
-
-        const hasStringEscape = i > 0 && input[i - 1] === '\\';
-
-        if (currentStringChar) {
-          if (currentStringChar === char && !hasStringEscape) {
-            currentStringChar = null;
-          }
-        } else if (char === '(') {
-          nestedLevel++;
-        } else if (char === ')') {
-          nestedLevel--;
-        } else if (char === ',' && nestedLevel === 0) {
-          parts.push(currentPart.slice(0, -1).trim());
-          currentPart = '';
-        } else if ('\'"'.includes(char)) {
-          currentStringChar = char;
-        }
-      }
-
-      if (currentPart.trim() !== '') {
-        parts.push(currentPart.trim());
-      }
-
-      return parts;
-    }
-
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
-    return splitRootSelectors(
-      trim(m[0])
-        .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
-        .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
-          return m.replace(/,/g, '\u200C');
-        }),
-    ).map((s) => {
-      return s.replace(/\u200C/g, ',');
-    });
+    const cleanedInput = m[0]
+      .trim()
+      .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
+
+      // Handle strings by replacing commas inside them
+      .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
+        return m.replace(/,/g, '\u200C');
+      });
+
+    // Split using a custom function and restore commas in strings
+    return customSplit(cleanedInput).map((s) =>
+      s.replace(/\u200C/g, ',').trim(),
+    );
+  }
+
+  /**
+   * Split selector correctly, ensuring not to split on comma if inside ().
+   */
+
+  function customSplit(input: string) {
+    const result = [];
+    let currentSegment = '';
+    let depthParentheses = 0; // Track depth of parentheses
+    let depthBrackets = 0; // Track depth of square brackets
+    let currentStringChar = null;
+
+    for (const char of input) {
+
+      const hasStringEscape = currentSegment.endsWith('\\');
+
+      if (currentStringChar) {
+        if (currentStringChar === char && !hasStringEscape) {
+          currentStringChar = null;
+        }
+      } else if (char === '(') {
+        depthParentheses++;
+      } else if (char === ')') {
+        depthParentheses--;
+      } else if (char === '[') {
+        depthBrackets++;
+      } else if (char === ']') {
+        depthBrackets--;
+      } else if ('\'"'.includes(char)) {
+        currentStringChar = char;
+      }
+
+      // Split point is a comma that is not inside parentheses or square brackets
+      if (char === ',' && depthParentheses === 0 && depthBrackets === 0) {
+        result.push(currentSegment);
+        currentSegment = '';
+      } else {
+        currentSegment += char;
+      }
+    }
+
+    // Add the last segment
+    if (currentSegment) {
+      result.push(currentSegment);
+    }
+
+    return result;
   }
 
   /**
