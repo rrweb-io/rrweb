@@ -171,7 +171,7 @@ li[attr="weirdly("] a:hover, li[attr="weirdly)"] a {
 
     const weirderresult = parse(
       `
-li[attr="weirder\"("] a:hover, li[attr="weirder\")"] a {
+li[attr="weirder\\"("] a:hover, li[attr="weirder\\")"] a {
   background-color: red;
 }
 `,
