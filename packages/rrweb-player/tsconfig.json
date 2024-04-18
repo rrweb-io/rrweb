@@ -5,7 +5,6 @@
     "node_modules/*",
     "__sapper__/*",
     "public/*",
-    "../rrweb/src/record/workers/workers.d.ts"
   ],
   "compilerOptions": {
     "composite": true

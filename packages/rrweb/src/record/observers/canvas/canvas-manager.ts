@@ -8,14 +8,15 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
+  ImageBitmapDataURLWorkerResponse,
 } from '@rrweb/types';
 import { isBlocked } from '../../../utils';
 import { CanvasContext } from '@rrweb/types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
-import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
+import { getImageBitmapDataUrlWorkerURL } from 'rrweb-worker';
+import { callbackWrapper } from '../../error-handler';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -76,12 +77,14 @@ export class CanvasManager {
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
 
-    if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass, blockSelector);
-    if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
-        dataURLOptions,
-      });
+    callbackWrapper(() => {
+      if (recordCanvas && sampling === 'all')
+        this.initCanvasMutationObserver(win, blockClass, blockSelector);
+      if (recordCanvas && typeof sampling === 'number')
+        this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
+          dataURLOptions,
+        });
+    })();
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -117,10 +120,10 @@ export class CanvasManager {
       true,
     );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
-    const worker =
-      new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
+
+    const worker = new Worker(getImageBitmapDataUrlWorkerURL());
     worker.onmessage = (e) => {
-      const { id } = e.data;
+      const { id } = e.data as ImageBitmapDataURLWorkerResponse;
       snapshotInProgressMap.set(id, false);
 
       if (!('base64' in e.data)) return;

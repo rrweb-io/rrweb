@@ -27,7 +27,6 @@
   "exclude": ["test"],
   "include": [
     "src",
-    "../rrweb/src/record/workers/workers.d.ts",
     "../rrweb/src/record/constructable-stylesheets.d.ts"
   ]
 }

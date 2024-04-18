@@ -15,7 +15,6 @@
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
-    "rollup-plugin-web-worker-loader": "^1.6.1",
     "sirv-cli": "^0.4.4",
     "svelte": "^3.59.2",
     "svelte-check": "^3.0.1",

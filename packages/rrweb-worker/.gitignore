@@ -1,0 +1,11 @@
+.vscode
+.idea
+node_modules
+package-lock.json
+*.tsbuildinfo
+build
+dist
+es
+lib
+typings
+temp
