@@ -179,6 +179,17 @@ li[attr="weirder\\"("] a:hover, li[attr="weirder\\")"] a {
     expect(
       (weirderresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
     ).toEqual(2);
+
+    const commainstrresult = parse(
+      `
+li[attr="has,comma"] a:hover {
+  background-color: red;
+}
+`,
+    );
+    expect(
+      (commainstrresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
+    ).toEqual(1);
   });
 
   it('parses imports with quotes correctly', () => {
