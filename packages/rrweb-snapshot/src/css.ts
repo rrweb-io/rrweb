@@ -440,21 +440,21 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
         const char = input[i];
         currentPart += char;
 
-        if (char === '(' && !currentStringChar) {
+        const hasStringEscape = i > 0 && input[i - 1] === '\\';
+
+        if (currentStringChar) {
+          if (currentStringChar === char && !hasStringEscape) {
+            currentStringChar = null;
+          }
+        } else if (char === '(') {
           nestedLevel++;
-        } else if (char === ')' && !currentStringChar) {
+        } else if (char === ')') {
           nestedLevel--;
         } else if (char === ',' && nestedLevel === 0) {
           parts.push(currentPart.slice(0, -1).trim());
           currentPart = '';
         } else if ('\'"'.includes(char)) {
-          if (currentStringChar === char) {
-            if (!(i > 0 && input[i - 1] === '\\')) {
-              currentStringChar = null;
-            }
-          } else {
-            currentStringChar = char;
-          }
+          currentStringChar = char;
         }
       }
 
