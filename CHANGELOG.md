@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.13.0
+
+### Various fixes & improvements
+
+- feat(canvas): Add "maxCanvasSize" option for canvas (#174) by @billyvg
+- test: skip flakey test (cross origin iframe) (#172) by @billyvg
+
 ## 2.12.0
 
 ### Various fixes & improvements
