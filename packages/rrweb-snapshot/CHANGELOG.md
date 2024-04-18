@@ -1,5 +1,15 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.13
+
+### Minor Changes
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Video and Audio elements now also capture `playbackRate`, `muted`, `loop`, `volume`.
+
+### Patch Changes
+
+- [#1401](https://github.com/rrweb-io/rrweb/pull/1401) [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356) Thanks [@dengelke](https://github.com/dengelke)! - Fix css parsing errors
+
 ## 2.0.0-alpha.12
 
 ### Minor Changes
