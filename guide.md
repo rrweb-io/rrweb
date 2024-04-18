@@ -21,7 +21,7 @@ You are recommended to install rrweb via jsdelivr's CDN service:
 Also, you can link to a specific version number that you can update manually:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.13/dist/rrweb.umd.min.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
 ```
 
 #### Only include the recorder code
