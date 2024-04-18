@@ -31,7 +31,8 @@
   "exports": {
     ".": {
       "import": "./dist/rrweb-types.js",
-      "require": "./dist/rrweb-types.umd.cjs"
+      "require": "./dist/rrweb-types.umd.cjs",
+      "types": "./dist/index.d.ts"
     }
   },
   "files": [
