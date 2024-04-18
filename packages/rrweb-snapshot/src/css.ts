@@ -467,7 +467,6 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     let currentStringChar = null;
 
     for (const char of input) {
-
       const hasStringEscape = currentSegment.endsWith('\\');
 
       if (currentStringChar) {
