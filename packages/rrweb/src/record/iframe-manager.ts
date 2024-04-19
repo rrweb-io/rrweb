@@ -8,6 +8,7 @@ import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, IncrementalSource } from '@sentry-internal/rrweb-types';
 import type {
   eventWithTime,
+  eventWithoutTime,
   mutationCallBack,
 } from '@sentry-internal/rrweb-types';
 import type { StylesheetManager } from './stylesheet-manager';
@@ -52,7 +53,7 @@ export class IframeManager implements IframeManagerInterface {
     new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
-  private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
+  private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
@@ -62,7 +63,7 @@ export class IframeManager implements IframeManagerInterface {
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
-    wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
+    wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
