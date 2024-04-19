@@ -209,7 +209,7 @@
 </div>
 
 <style global>
-  @import 'rrweb/dist/rrweb.min.css';
+  @import '@sentry-internal/rrweb/dist/rrweb.min.css';
 
   .rr-player {
     position: relative;
