@@ -1,6 +1,6 @@
 import type { Mirror, serializedNodeWithId } from '@amplitude/rrweb-snapshot';
 import { NodeType, genId } from '@amplitude/rrweb-snapshot';
-import type { eventWithTime, mutationCallBack } from '@amplitude/rrweb-types';
+import type { eventWithTime, eventWithoutTime, mutationCallBack } from '@amplitude/rrweb-types';
 import { EventType, IncrementalSource } from '@amplitude/rrweb-types';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
@@ -16,7 +16,7 @@ export class IframeManager {
     new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
-  private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
+  private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
@@ -26,7 +26,7 @@ export class IframeManager {
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
-    wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
+    wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;

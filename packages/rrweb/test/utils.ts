@@ -2,10 +2,11 @@ import { NodeType } from '@amplitude/rrweb-snapshot';
 import {
   EventType,
   IncrementalSource,
-  MouseInteractions,
-  Optional,
   event,
   eventWithTime,
+  eventWithoutTime,
+  MouseInteractions,
+  Optional,
   mouseInteractionData,
   pluginEvent,
 } from '@amplitude/rrweb-types';
@@ -228,7 +229,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
-        return s as event;
+        return s as eventWithoutTime;
       }),
     null,
     2,
