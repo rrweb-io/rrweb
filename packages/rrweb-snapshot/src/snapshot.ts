@@ -732,7 +732,7 @@ function serializeTextNode(
 
   if (!isStyle && !isScript && !isTextarea && textContent && forceMask) {
     textContent = maskTextFn
-      ? maskTextFn(textContent)
+      ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
   }
   if (isTextarea && textContent && (maskInputOptions.textarea || forceMask)) {

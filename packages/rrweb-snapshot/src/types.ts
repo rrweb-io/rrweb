@@ -157,7 +157,7 @@ export type DataURLOptions = Partial<{
   quality: number;
 }>;
 
-export type MaskTextFn = (text: string) => string;
+export type MaskTextFn = (text: string, element: HTMLElement | null) => string;
 export type MaskInputFn = (text: string, element: HTMLElement) => string;
 export type MaskAttributeFn = (
   attributeName: string,
