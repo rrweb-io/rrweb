@@ -431,102 +431,81 @@ export function parse(css: string, options: ParserOptions = {}) {
    */
 
   function selector() {
-    const m = match(/^([^{]+)/);
+    whitespace();
+    while (css[0] == '}') {
+      error('extra closing bracket');
+      css = css.slice(1);
+      whitespace();
+    }
+
+    // Use match logic from https://github.com/NxtChg/pieces/blob/3eb39c8287a97632e9347a24f333d52d916bc816/js/css_parser/css_parse.js#L46C1-L47C1
+    const m = match(/^(("(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^{])+)/);
     if (!m) {
       return;
     }
+
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
-    const splitSelectors = trim(m[0])
+    const cleanedInput = m[0]
+      .trim()
       .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
+
+      // Handle strings by replacing commas inside them
       .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, (m) => {
         return m.replace(/,/g, '\u200C');
-      })
-      .split(/\s*(?![^(]*\)),\s*/);
-
-    if (splitSelectors.length <= 1) {
-      return splitSelectors.map((s) => {
-        return s.replace(/\u200C/g, ',');
       });
-    }
 
-    // For each selector, need to check if we properly split on `,`
-    // Example case where selector is:
-    // .bar:has(input:is(:disabled), button:is(:disabled))
-    let i = 0;
-    let j = 0;
-    const len = splitSelectors.length;
-    const finalSelectors = [];
-    while (i < len) {
-      // Look for selectors with opening parens - `(` and search rest of
-      // selectors for the first one with matching number of closing
-      // parens `)`
-      const openingParensCount = (splitSelectors[i].match(/\(/g) || []).length;
-      const closingParensCount = (splitSelectors[i].match(/\)/g) || []).length;
-      let unbalancedParens = openingParensCount - closingParensCount;
+    // Split using a custom function and restore commas in strings
+    return customSplit(cleanedInput).map((s) =>
+      s.replace(/\u200C/g, ',').trim(),
+    );
+  }
 
-      if (unbalancedParens >= 1) {
-        // At least one opening parens was found, prepare to look through
-        // rest of selectors
-        let foundClosingSelector = false;
+  /**
+   * Split selector correctly, ensuring not to split on comma if inside ().
+   */
 
-        // Loop starting with next item in array, until we find matching
-        // number of ending parens
-        j = i + 1;
-        while (j < len) {
-          // peek into next item to count the number of closing brackets
-          const nextOpeningParensCount = (splitSelectors[j].match(/\(/g) || [])
-            .length;
-          const nextClosingParensCount = (splitSelectors[j].match(/\)/g) || [])
-            .length;
-          const nextUnbalancedParens =
-            nextClosingParensCount - nextOpeningParensCount;
+  function customSplit(input: string) {
+    const result = [];
+    let currentSegment = '';
+    let depthParentheses = 0; // Track depth of parentheses
+    let depthBrackets = 0; // Track depth of square brackets
+    let currentStringChar = null;
 
-          if (nextUnbalancedParens === unbalancedParens) {
-            // Matching # of closing parens was found, join all elements
-            // from i to j
-            finalSelectors.push(splitSelectors.slice(i, j + 1).join(','));
+    for (const char of input) {
+      const hasStringEscape = currentSegment.endsWith('\\');
 
-            // we will want to skip the items that we have joined together
-            i = j + 1;
-
-            // Use to continue the outer loop
-            foundClosingSelector = true;
-
-            // break out of inner loop so we found matching closing parens
-            break;
-          }
-
-          // No matching closing parens found, keep moving through index, but
-          // update the # of unbalanced parents still outstanding
-          j++;
-          unbalancedParens -= nextUnbalancedParens;
+      if (currentStringChar) {
+        if (currentStringChar === char && !hasStringEscape) {
+          currentStringChar = null;
         }
-
-        if (foundClosingSelector) {
-          // Matching closing selector was found, move to next selector
-          continue;
-        }
-
-        // No matching closing selector was found, either invalid CSS,
-        // or unbalanced number of opening parens were used as CSS
-        // selectors. Assume that rest of the list of selectors are
-        // selectors and break to avoid iterating through the list of
-        // selectors again.
-        splitSelectors
-          .slice(i, len)
-          .forEach((selector) => selector && finalSelectors.push(selector));
-        break;
+      } else if (char === '(') {
+        depthParentheses++;
+      } else if (char === ')') {
+        depthParentheses--;
+      } else if (char === '[') {
+        depthBrackets++;
+      } else if (char === ']') {
+        depthBrackets--;
+      } else if ('\'"'.includes(char)) {
+        currentStringChar = char;
       }
 
-      // No opening parens found, contiue looking through list
-      splitSelectors[i] && finalSelectors.push(splitSelectors[i]);
-      i++;
+      // Split point is a comma that is not inside parentheses or square brackets
+      if (char === ',' && depthParentheses === 0 && depthBrackets === 0) {
+        result.push(currentSegment);
+        currentSegment = '';
+      } else {
+        currentSegment += char;
+      }
     }
 
-    return finalSelectors.map((s) => {
-      return s.replace(/\u200C/g, ',');
-    });
+    // Add the last segment
+    if (currentSegment) {
+      result.push(currentSegment);
+    }
+
+    return result;
   }
 
   /**
