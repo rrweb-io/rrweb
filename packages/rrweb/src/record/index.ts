@@ -335,15 +335,13 @@ function record<T = eventWithTime>(
       mirror,
       win: window,
       mutationCb: (p: canvasMutationParam) =>
-        wrappedEmit(
-          wrapEvent({
-            type: EventType.IncrementalSnapshot,
-            data: {
-              source: IncrementalSource.CanvasMutation,
-              ...p,
-            },
-          }),
-        ),
+        wrappedEmit({
+          type: EventType.IncrementalSnapshot,
+          data: {
+            source: IncrementalSource.CanvasMutation,
+            ...p,
+          },
+        }),
       recordCanvas,
       blockClass,
       blockSelector,
