@@ -21,6 +21,7 @@ import {
   patch,
   StyleSheetMirror,
   nowTimestamp,
+  setTimeout,
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {

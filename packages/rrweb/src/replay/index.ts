@@ -76,6 +76,8 @@ import {
   getPositionsAndIndex,
   uniqueTextMutations,
   StyleSheetMirror,
+  clearTimeout,
+  setTimeout,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
