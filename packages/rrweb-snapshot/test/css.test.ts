@@ -192,6 +192,85 @@ li[attr="has,comma"] a:hover {
     ).toEqual(1);
   });
 
+  it.each([
+    ['.foo,.bar {}', ['.foo', '.bar']],
+    ['.bar:has(:disabled) {}', ['.bar:has(:disabled)']],
+    ['.bar:has(input, button) {}', ['.bar:has(input, button)']],
+    [
+      '.bar:has(input:is(:disabled),button:has(:disabled)) {}',
+      ['.bar:has(input:is(:disabled),button:has(:disabled))'],
+    ],
+    [
+      '.bar:has(div, input:is(:disabled), button) {}',
+      ['.bar:has(div, input:is(:disabled), button)'],
+    ],
+    [
+      '.bar:has(div, input:is(:disabled),button:has(:disabled,.baz)) {}',
+      ['.bar:has(div, input:is(:disabled),button:has(:disabled,.baz))'],
+    ],
+    [
+      '.bar:has(input), .foo:has(input, button), .baz {}',
+      ['.bar:has(input)', '.foo:has(input, button)', '.baz'],
+    ],
+    [
+      '.bar:has(input:is(:disabled),button:has(:disabled,.baz), div:has(:disabled,.baz)){color: red;}',
+      [
+        '.bar:has(input:is(:disabled),button:has(:disabled,.baz), div:has(:disabled,.baz))',
+      ],
+    ],
+    [
+      '.bar:has(:has(:has(a), :has(:has(:has(b, :has(a), c), e))), input:is(:disabled), button) {}',
+      [
+        '.bar:has(:has(:has(a), :has(:has(:has(b, :has(a), c), e))), input:is(:disabled), button)',
+      ],
+    ],
+    [
+      '.foo,.bar:has(input:is(:disabled)){color: red;}',
+      ['.foo', '.bar:has(input:is(:disabled))'],
+    ],
+    [
+      '.foo,.bar:has(input:is(:disabled),button:has(:disabled,.baz)){color: red;}',
+      ['.foo', '.bar:has(input:is(:disabled),button:has(:disabled,.baz))'],
+    ],
+    [
+      '.foo,.bar:has(input:is(:disabled),button:has(:disabled), div:has(:disabled,.baz)){color: red;}',
+      [
+        '.foo',
+        '.bar:has(input:is(:disabled),button:has(:disabled), div:has(:disabled,.baz))',
+      ],
+    ],
+    [
+      '.foo,.bar:has(input:is(:disabled),button:has(:disabled,.baz), div:has(:disabled,.baz)){color: red;}',
+      [
+        '.foo',
+        '.bar:has(input:is(:disabled),button:has(:disabled,.baz), div:has(:disabled,.baz))',
+      ],
+    ],
+    ['.bar:has(:disabled), .foo {}', ['.bar:has(:disabled)', '.foo']],
+    [
+      '.bar:has(input:is(:disabled),.foo,button:is(:disabled)), .foo {}',
+      ['.bar:has(input:is(:disabled),.foo,button:is(:disabled))', '.foo'],
+    ],
+    [
+      '.bar:has(input:is(:disabled),.foo,button:is(:disabled)), .foo:has(input, button), .baz,  {}',
+      [
+        '.bar:has(input:is(:disabled),.foo,button:is(:disabled))',
+        '.foo:has(input, button)',
+        '.baz',
+      ],
+    ],
+  ])(
+    'can parse selector(s) with functional pseudo classes: %s',
+    (cssText, expected) => {
+      expect(
+        parse(
+          cssText,
+          // @ts-ignore
+        ).stylesheet?.rules[0].selectors,
+      ).toEqual(expected);
+    },
+  );
+
   it('parses imports with quotes correctly', () => {
     const out1 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"");`,
