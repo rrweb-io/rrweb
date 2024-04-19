@@ -144,6 +144,7 @@ export default class MutationBuffer {
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
+  private attributeMap = new WeakMap<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
   private mapRemoves: Node[] = [];
 
@@ -502,6 +503,7 @@ export default class MutationBuffer {
     // reset
     this.texts = [];
     this.attributes = [];
+    this.attributeMap = new WeakMap<Node, attributeCursor>();
     this.removes = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
@@ -602,9 +604,7 @@ export default class MutationBuffer {
           return;
         }
 
-        let item: attributeCursor | undefined = this.attributes.find(
-          (a) => a.node === m.target,
-        );
+        let item = this.attributeMap.get(m.target);
         if (
           target.tagName === 'IFRAME' &&
           attributeName === 'src' &&
@@ -626,6 +626,7 @@ export default class MutationBuffer {
             _unchangedStyles: {},
           };
           this.attributes.push(item);
+          this.attributeMap.set(m.target, item);
         }
 
         // Keep this property on inputs that used to be password inputs

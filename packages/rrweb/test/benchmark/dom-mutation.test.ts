@@ -47,6 +47,12 @@ const suites: Array<
     times: 5,
   },
   {
+    title: 'modify attributes on 10000 DOM nodes',
+    html: 'benchmark-dom-mutation-attributes.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
+  {
     title: 'mask 1000x10 DOM nodes',
     html: 'benchmark-text-masking.html',
     eval: 'window.workload()',
