@@ -273,6 +273,10 @@ describe('onAssetDetected callback', () => {
       slimDOMOptions: {},
       newlyAddedElement: false,
       inlineImages: false,
+      captureAssets: {
+        objectURLs: true,
+        origins: ['https://example.com'],
+      },
       onAssetDetected,
     });
   };
