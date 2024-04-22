@@ -14,6 +14,7 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
+  captureAssetsParam,
 } from '@rrweb/types';
 import dom from '@rrweb/utils';
 
@@ -650,4 +651,31 @@ export function isAttributeCapturable(n: Element, attribute: string): boolean {
     return false;
   }
   return acceptedAttributesSet.has(attribute);
+}
+
+export function shouldIgnoreAsset(
+  url: string,
+  config: captureAssetsParam,
+): boolean {
+  const originsToIgnore = ['data:'];
+  const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
+
+  // Check if url is a blob and we should ignore blobs
+  if (urlIsBlob) return !config.objectURLs;
+
+  // Check if url matches any ignorable origins
+  for (const origin of originsToIgnore) {
+    if (url.startsWith(origin)) return true;
+  }
+
+  // Check the origins
+  const captureOrigins = config.origins;
+  if (typeof captureOrigins === 'boolean') {
+    return !captureOrigins;
+  } else if (Array.isArray(captureOrigins)) {
+    const urlOrigin = new URL(url).origin;
+    return !captureOrigins.includes(urlOrigin);
+  }
+
+  return false;
 }
