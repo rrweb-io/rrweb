@@ -108,6 +108,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordDOM: boolean;
+  captureAssets: captureAssetsParam;
   recordCanvas: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
@@ -145,6 +146,7 @@ export type MutationBufferParam = Pick<
   | 'maskTextFn'
   | 'maskInputFn'
   | 'keepIframeSrcFn'
+  | 'captureAssets'
   | 'recordCanvas'
   | 'slimDOMOptions'
   | 'dataURLOptions'

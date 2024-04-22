@@ -280,7 +280,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                             \\"type\\": 2,
                             \\"tagName\\": \\"source\\",
                             \\"attributes\\": {
-                              \\"rr_captured_src\\": \\"http://localhost:3030/html/assets/1-minute-of-silence.mp3\\",
+                              \\"src\\": \\"http://localhost:3030/html/assets/1-minute-of-silence.mp3\\",
                               \\"type\\": \\"audio/mpeg\\"
                             },
                             \\"childNodes\\": [],

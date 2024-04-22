@@ -16,6 +16,7 @@ import {
   elementNode,
   asset,
   DataURLOptions,
+  captureAssetsParam,
 } from '@rrweb/types';
 import {
   Mirror,
@@ -29,6 +30,7 @@ import {
   toLowerCase,
   extractFileExtension,
   isAttributeCapturable,
+  shouldIgnoreAsset,
 } from './utils';
 
 let _id = 1;
@@ -462,6 +464,7 @@ function serializeNode(
      * @deprecated please use `captureAssets` instead
      */
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -489,6 +492,10 @@ function serializeNode(
     maskInputFn,
     dataURLOptions = {},
     inlineImages,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
@@ -528,6 +535,7 @@ function serializeNode(
         maskInputFn,
         dataURLOptions,
         inlineImages,
+        captureAssets,
         recordCanvas,
         keepIframeSrcFn,
         newlyAddedElement,
@@ -630,6 +638,7 @@ function serializeElementNode(
      * @deprecated please use `captureAssets` instead
      */
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -655,6 +664,10 @@ function serializeElementNode(
     maskInputFn,
     dataURLOptions = {},
     inlineImages,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
@@ -681,7 +694,8 @@ function serializeElementNode(
         value &&
         typeof value === 'string' &&
         onAssetDetected &&
-        isAttributeCapturable(n, attr.name)
+        isAttributeCapturable(n, attr.name) &&
+        !shouldIgnoreAsset(attr.value, captureAssets)
       ) {
         assets.push({
           element: n,
@@ -1015,6 +1029,7 @@ export function serializeNodeWithId(
      * @deprecated please use `captureAssets` instead
      */
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
@@ -1052,6 +1067,10 @@ export function serializeNodeWithId(
     slimDOMOptions,
     dataURLOptions = {},
     inlineImages = false,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     recordCanvas = false,
     onSerialize,
     onIframeLoad,
@@ -1091,6 +1110,7 @@ export function serializeNodeWithId(
     maskInputFn,
     dataURLOptions,
     inlineImages,
+    captureAssets,
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
@@ -1167,6 +1187,7 @@ export function serializeNodeWithId(
       slimDOMOptions,
       dataURLOptions,
       inlineImages,
+      captureAssets,
       recordCanvas,
       preserveWhiteSpace,
       onSerialize,
@@ -1246,6 +1267,7 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
+            captureAssets,
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1298,6 +1320,7 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
+            captureAssets,
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1341,6 +1364,7 @@ function snapshot(
      * @deprecated please use `captureAssets` instead
      */
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
@@ -1372,6 +1396,10 @@ function snapshot(
     maskTextSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     recordCanvas = false,
     maskAllInputs = false,
     maskTextFn,
@@ -1445,6 +1473,7 @@ function snapshot(
     slimDOMOptions,
     dataURLOptions,
     inlineImages,
+    captureAssets,
     recordCanvas,
     preserveWhiteSpace,
     onSerialize,

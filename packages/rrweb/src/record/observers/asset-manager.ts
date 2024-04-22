@@ -11,7 +11,11 @@ import { encode } from 'base64-arraybuffer';
 import { patch } from '../../utils';
 
 import type { recordOptions, assetStatus } from '../../types';
-import { isAttributeCapturable, getSourcesFromSrcset } from 'rrweb-snapshot';
+import {
+  isAttributeCapturable,
+  getSourcesFromSrcset,
+  shouldIgnoreAsset,
+} from 'rrweb-snapshot';
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -85,27 +89,7 @@ export default class AssetManager {
   }
 
   public shouldIgnore(url: string): boolean {
-    const originsToIgnore = ['data:'];
-    const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
-
-    // Check if url is a blob and we should ignore blobs
-    if (urlIsBlob) return !this.config.objectURLs;
-
-    // Check if url matches any ignorable origins
-    for (const origin of originsToIgnore) {
-      if (url.startsWith(origin)) return true;
-    }
-
-    // Check the origins
-    const captureOrigins = this.config.origins;
-    if (typeof captureOrigins === 'boolean') {
-      return !captureOrigins;
-    } else if (Array.isArray(captureOrigins)) {
-      const urlOrigin = new URL(url).origin;
-      return !captureOrigins.includes(urlOrigin);
-    }
-
-    return false;
+    return shouldIgnoreAsset(url, this.config);
   }
 
   public async getURLObject(
@@ -139,7 +123,10 @@ export default class AssetManager {
   }
 
   public captureUrl(url: string): assetStatus {
-    if (this.shouldIgnore(url)) return { status: 'refused' };
+    if (this.shouldIgnore(url)) {
+      console.warn(`snapshot.ts should know to ignore ${url}`);
+      return { status: 'refused' };
+    }
 
     if (this.capturedURLs.has(url)) {
       return { status: 'captured' };
