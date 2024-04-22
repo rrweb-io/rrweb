@@ -344,6 +344,7 @@ function record<T = eventWithTime>(
       inlineStylesheet,
       maskInputOptions,
       dataURLOptions,
+      captureAssets,
       maskTextFn,
       maskInputFn,
       recordCanvas,
@@ -393,6 +394,7 @@ function record<T = eventWithTime>(
       maskInputFn,
       slimDOM: slimDOMOptions,
       dataURLOptions,
+      captureAssets,
       recordCanvas,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
@@ -554,6 +556,7 @@ function record<T = eventWithTime>(
           keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
+          captureAssets,
           dataURLOptions,
           mirror,
           iframeManager,
