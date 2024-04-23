@@ -47,7 +47,7 @@ export interface CanvasManagerConstructorOptions {
   blockClass: blockClass;
   blockSelector: string | null;
   unblockSelector: string | null;
-  maxCanvasSize: [number, number] | null;
+  maxCanvasSize?: [number, number] | null;
   mirror: Mirror;
   dataURLOptions: DataURLOptions;
   errorHandler?: ErrorHandler;
@@ -177,7 +177,7 @@ export class CanvasManager implements CanvasManagerInterface {
     blockClass: blockClass,
     blockSelector: string | null,
     unblockSelector: string | null,
-    maxCanvasSize: [number, number] | null,
+    maxCanvasSize: [number, number] | null | undefined,
     options: {
       dataURLOptions: DataURLOptions;
     },
@@ -272,7 +272,7 @@ export class CanvasManager implements CanvasManagerInterface {
     blockClass: blockClass,
     blockSelector: string | null,
     unblockSelector: string | null,
-    maxCanvasSize: [number, number] | null,
+    maxCanvasSize: [number, number] | null | undefined,
     dataURLOptions: DataURLOptions,
     canvasElement?: HTMLCanvasElement,
   ) {
