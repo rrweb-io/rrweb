@@ -47,7 +47,7 @@ export interface CanvasManagerConstructorOptions {
   blockClass: blockClass;
   blockSelector: string | null;
   unblockSelector: string | null;
-  maxCanvasSize: [number, number] | null;
+  maxCanvasSize?: [number, number] | null;
   mirror: Mirror;
   dataURLOptions: DataURLOptions;
   errorHandler?: ErrorHandler;
