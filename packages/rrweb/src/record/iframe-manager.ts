@@ -3,7 +3,11 @@ import { genId, NodeType } from 'rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime, mutationCallBack } from '@rrweb/types';
+import type {
+  eventWithTime,
+  eventWithoutTime,
+  mutationCallBack,
+} from '@rrweb/types';
 import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
@@ -16,7 +20,7 @@ export class IframeManager {
     new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
-  private wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
+  private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
@@ -26,7 +30,7 @@ export class IframeManager {
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
-    wrappedEmit: (e: eventWithTime, isCheckout?: boolean) => void;
+    wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
