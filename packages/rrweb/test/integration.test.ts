@@ -117,17 +117,19 @@ describe('record integration tests', function (this: ISuite) {
       ta.innerText = 'pre value';
       document.body.append(ta);
     });
+    await page.waitForTimeout(5);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       t.innerText = 'ok'; // this mutation should be recorded
     });
+    await page.waitForTimeout(5);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
     });
-
+    await page.waitForTimeout(5);
     await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
-
+    await page.waitForTimeout(5);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       // user has typed so childNode content should now be ignored
@@ -138,7 +140,7 @@ describe('record integration tests', function (this: ISuite) {
       // there is nothing explicit in rrweb which enforces this, but this test may protect against
       // a future change where a mutation on a textarea incorrectly updates the .value
     });
-
+    await page.waitForTimeout(5);
     await page.type('textarea', '2'); // cursor is at index 1
 
     const snapshots = (await page.evaluate(
