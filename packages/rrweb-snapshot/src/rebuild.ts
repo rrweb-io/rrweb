@@ -85,6 +85,11 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
                         .map(node => css.generate(node))
                         .filter(selector => HOVER_SELECTOR.test(selector));
 
+  const newMediaFeatures = css
+                        .findAll(newAst, (node) => node.type === 'MediaFeature')
+                        .map(node => css.generate(node))
+                        .filter(feature => MEDIA_SELECTOR.test(feature));
+
   const ast = parseOld(cssText, {
     silent: true,
   });
@@ -132,10 +137,10 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
       return `${selector}, ${newSelector}`;
     });
   }
-  if (medias.length > 0) {
+  if (newMediaFeatures.length > 0) {
     const mediaMatcher = new RegExp(
-      medias
-        .filter((media, index) => medias.indexOf(media) === index)
+      newMediaFeatures
+        .filter((media, index) => newMediaFeatures.indexOf(media) === index)
         .sort((a, b) => b.length - a.length)
         .map((media) => {
           return escapeRegExp(media);

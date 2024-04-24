@@ -159,7 +159,7 @@ ul li.specified c:hover img {
       const cssText =
         '@media only screen and (min-device-width : 1200px) { .a { width: 10px; }}';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
+        '@media only screen and (min-width:1200px){.a{width:10px}}',
       );
     });
 
