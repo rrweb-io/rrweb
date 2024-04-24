@@ -6,6 +6,7 @@ import AssetManager from '../../src/replay/asset-manager';
 import {
   EventType,
   SerializedBlobArg,
+  SerializedCssTextArg,
   assetEvent,
   captureAssetsParam,
 } from '@rrweb/types';
@@ -24,6 +25,11 @@ describe('AssetManager', () => {
         base64: 'fake-base64-abcd',
       },
     ],
+  };
+
+  const exampleCssPayload: SerializedCssTextArg = {
+    rr_type: 'CssText',
+    cssText: 'body { background: red; }',
   };
 
   beforeAll(() => {
@@ -440,6 +446,27 @@ describe('AssetManager', () => {
       expect(element.getAttribute('srcset')).toBe(
         'https://example.com/image.png?x=2 x2, https://other-url.com/image.png x3',
       );
+    });
+  });
+
+  describe('stylesheets', () => {
+    it('should rebuild stylesheets from assets', () => {
+      const url = 'https://example.com/index.css';
+      const event: assetEvent = {
+        type: EventType.Asset,
+        data: {
+          url,
+          payload: exampleCssPayload,
+        },
+      };
+      void assetManager.add(event);
+
+      // no need for deserializeArg so should be loaded immediately
+      expect(assetManager.get(url)).toEqual({
+        cssText: 'body { background: red; }',
+        status: 'loaded',
+        url,
+      });
     });
   });
 });

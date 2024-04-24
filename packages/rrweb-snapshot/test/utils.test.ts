@@ -7,6 +7,7 @@ import {
   extractFileExtension,
   fixSafariColons,
   isAttributeCapturable,
+  shouldCaptureAsset,
   isNodeMetaEqual,
 } from '../src/utils';
 import { NodeType } from '@rrweb/types';
@@ -307,6 +308,7 @@ describe('utils', () => {
       ['input', ['href']],
       ['iframe', ['href']],
       ['object', ['href']],
+      ['link', ['href']], // without rel="stylesheet"
     ] as const;
 
     validAttributeCombinations.forEach(([tagName, attributes]) => {
@@ -325,6 +327,24 @@ describe('utils', () => {
           expect(isAttributeCapturable(element, attribute)).toBe(false);
         });
       });
+    });
+
+    it(`should correctly identify <link href rel="stylesheet"> as capturable if inlineStylesheet == 'all'`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+      const ca = {
+        objectURLs: false,
+        origins: false,
+      };
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com', ca, false),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com', ca, true),
+      ).toBe(false); // this is false for backwards compatibility
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com', ca, 'all'),
+      ).toBe(true);
     });
   });
 });

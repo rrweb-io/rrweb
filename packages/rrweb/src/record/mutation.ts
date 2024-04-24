@@ -653,7 +653,13 @@ export default class MutationBuffer {
           );
           if (
             transformedValue &&
-            this.assetManager.isAttributeCapturable(target, attributeName)
+            this.assetManager.shouldCapture(
+              target,
+              attributeName,
+              transformedValue,
+              this.captureAssets,
+              this.inlineStylesheet,
+            )
           ) {
             this.assetManager.capture({
               element: target,

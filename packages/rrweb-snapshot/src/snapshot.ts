@@ -29,11 +29,11 @@ import {
   stringifyStylesheet,
   getInputType,
   toLowerCase,
+  lowerIfExists,
   extractFileExtension,
   absolutifyURLs,
   markCssSplits,
-  isAttributeCapturable,
-  shouldIgnoreAsset,
+  shouldCaptureAsset,
 } from './utils';
 import dom from '@rrweb/utils';
 
@@ -416,7 +416,7 @@ function serializeNode(
     blockClass: string | RegExp;
     blockSelector: string | null;
     needsMask: boolean;
-    inlineStylesheet: boolean;
+    inlineStylesheet: boolean | 'all';
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
@@ -585,7 +585,7 @@ function serializeElementNode(
     doc: Document;
     blockClass: string | RegExp;
     blockSelector: string | null;
-    inlineStylesheet: boolean;
+    inlineStylesheet: boolean | 'all';
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
@@ -649,8 +649,13 @@ function serializeElementNode(
         value &&
         typeof value === 'string' &&
         onAssetDetected &&
-        isAttributeCapturable(n, attr.name) &&
-        !shouldIgnoreAsset(attr.value, captureAssets)
+        shouldCaptureAsset(
+          n,
+          attr.name,
+          attr.value,
+          captureAssets,
+          inlineStylesheet,
+        )
       ) {
         assets.push({
           element: n,
@@ -877,16 +882,6 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(
-  maybeAttr: string | number | boolean | undefined | null,
-): string {
-  if (maybeAttr === undefined || maybeAttr === null) {
-    return '';
-  } else {
-    return (maybeAttr as string).toLowerCase();
-  }
-}
-
 function slimDOMExcluded(
   sn: serializedNode,
   slimDOMOptions: SlimDOMOptions,
@@ -988,7 +983,7 @@ export function serializeNodeWithId(
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     skipChild: boolean;
-    inlineStylesheet: boolean;
+    inlineStylesheet: boolean | 'all';
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
     needsMask?: boolean;
@@ -1331,7 +1326,7 @@ function snapshot(
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
-    inlineStylesheet?: boolean;
+    inlineStylesheet?: boolean | 'all';
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskInputFn;

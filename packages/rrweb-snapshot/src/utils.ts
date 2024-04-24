@@ -283,6 +283,16 @@ export function toLowerCase<T extends string>(str: T): Lowercase<T> {
   return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
+export function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): Lowercase<string> {
+  if (maybeAttr === undefined || maybeAttr === null) {
+    return '';
+  } else {
+    return toLowerCase(maybeAttr as string);
+  }
+}
+
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
 type PatchedGetImageData = {
   [ORIGINAL_ATTRIBUTE_NAME]: CanvasImageData['getImageData'];
@@ -616,6 +626,27 @@ export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['feImage', new Set(['href'])],
   ['cursor', new Set(['href'])],
 ]);
+
+export function shouldCaptureAsset(
+  n: Element,
+  attribute: string,
+  value: string,
+  config: captureAssetsParam,
+  inlineStylesheet: string | boolean,
+): boolean {
+  if (
+    n.nodeName === 'LINK' &&
+    attribute === 'href' &&
+    (inlineStylesheet === 'all' ||
+      (inlineStylesheet && !shouldIgnoreAsset(value, config)))
+  ) {
+    // we don't take into account shouldIgnoreAsset (origins) with the inlineStylesheet override
+    return lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet';
+  }
+  return (
+    isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)
+  );
+}
 
 export function isAttributeCapturable(n: Element, attribute: string): boolean {
   if (n.nodeName === 'IFRAME' && attribute == 'src') {
