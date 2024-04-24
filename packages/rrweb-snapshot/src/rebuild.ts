@@ -1,4 +1,3 @@
-import { Rule, Media, NodeWithRules, parse as parseOld } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -80,48 +79,21 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   if (cachedStyle) return cachedStyle;
 
   const newAst = css.parse(cssText);
-  const newSelectors = css
+  const selectors = css
                         .findAll(newAst, (node) => node.type === 'Selector')
                         .map(node => css.generate(node))
                         .filter(selector => HOVER_SELECTOR.test(selector));
 
-  const newMediaFeatures = css
+  const mediaFeatures = css
                         .findAll(newAst, (node) => node.type === 'MediaFeature')
                         .map(node => css.generate(node))
                         .filter(feature => MEDIA_SELECTOR.test(feature));
 
-  const ast = parseOld(cssText, {
-    silent: true,
-  });
-
-  if (!ast.stylesheet) {
-    return cssText;
-  }
-
-  const selectors: string[] = [];
-  const medias: string[] = [];
-  function getSelectors(rule: Rule | Media | NodeWithRules) {
-    if ('selectors' in rule && rule.selectors) {
-      rule.selectors.forEach((selector: string) => {
-        if (HOVER_SELECTOR.test(selector)) {
-          selectors.push(selector);
-        }
-      });
-    }
-    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
-      medias.push(rule.media);
-    }
-    if ('rules' in rule && rule.rules) {
-      rule.rules.forEach(getSelectors);
-    }
-  }
-  getSelectors(ast.stylesheet);
-
   let result = css.generate(newAst);
-  if (newSelectors.length > 0) {
+  if (selectors.length > 0) {
     const selectorMatcher = new RegExp(
-      newSelectors
-        .filter((selector, index) => newSelectors.indexOf(selector) === index)
+      selectors
+        .filter((selector, index) => selectors.indexOf(selector) === index)
         .sort((a, b) => b.length - a.length)
         .map((selector) => {
           return escapeRegExp(selector);
@@ -137,10 +109,10 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
       return `${selector}, ${newSelector}`;
     });
   }
-  if (newMediaFeatures.length > 0) {
+  if (mediaFeatures.length > 0) {
     const mediaMatcher = new RegExp(
-      newMediaFeatures
-        .filter((media, index) => newMediaFeatures.indexOf(media) === index)
+      mediaFeatures
+        .filter((media, index) => mediaFeatures.indexOf(media) === index)
         .sort((a, b) => b.length - a.length)
         .map((media) => {
           return escapeRegExp(media);
