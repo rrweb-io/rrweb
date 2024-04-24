@@ -8,7 +8,15 @@ import {
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
-import { parse, findAll, generate } from 'css-tree';
+import type {ParseOptions, CssNode, FindFn, GenerateOptions} from 'css-tree';
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
+const css: CSSTree = require('css-tree');
+
+interface CSSTree {
+  parse: (text: string, options?: ParseOptions) => CssNode
+  findAll: (ast: CssNode, fn: FindFn) => CssNode[];
+  generate: (ast: CssNode, options?: GenerateOptions) => string
+}
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -71,8 +79,11 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const newAst = parse(cssText);
-  const newSelectors = findAll(newAst, (node) => node.type === 'Selector').map(selector => generate(selector));
+  const newAst = css.parse(cssText);
+  const newSelectors = css
+                        .findAll(newAst, (node) => node.type === 'Selector')
+                        .map(node => css.generate(node))
+                        .filter(selector => HOVER_SELECTOR.test(selector));
 
   const ast = parseOld(cssText, {
     silent: true,
@@ -101,7 +112,7 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   }
   getSelectors(ast.stylesheet);
 
-  let result = cssText;
+  let result = css.generate(newAst);
   if (newSelectors.length > 0) {
     const selectorMatcher = new RegExp(
       newSelectors
