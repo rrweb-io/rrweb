@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.0.0-alpha.13",
+  "version": "2.0.0-alpha.12",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -58,6 +58,10 @@
     "rollup-plugin-typescript2": "^0.31.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
-    "tslib": "^1.9.3"
+    "tslib": "^1.9.3",
+    "@types/css-tree": "^2.3.7"
+  },
+  "dependencies": {
+    "css-tree": "^2.3.1"
   }
 }

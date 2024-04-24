@@ -1,4 +1,4 @@
-import { Rule, Media, NodeWithRules, parse } from './css';
+import { Rule, Media, NodeWithRules, parse as parseOld } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -8,6 +8,7 @@ import {
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
+import { parse, findAll } from 'css-tree';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -70,13 +71,16 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const ast = parse(cssText, {
+  const ast = parseOld(cssText, {
     silent: true,
   });
 
   if (!ast.stylesheet) {
     return cssText;
   }
+
+  const newAst = parse(cssText);
+  const newSelectors: string[] = findAll(newAst, (node, _, _) => node.type === 'Selector');
 
   const selectors: string[] = [];
   const medias: string[] = [];
