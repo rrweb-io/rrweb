@@ -7,7 +7,7 @@ import {
 } from '@rrweb/types';
 import { Rule, Media, NodeWithRules, parse } from './css';
 import { tagMap, BuildCache, serializedElementNodeWithId } from './types';
-import { isElement, Mirror, isNodeMetaEqual } from './utils';
+import { isElement, Mirror, isNodeMetaEqual, lowerIfExists } from './utils';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -51,7 +51,12 @@ const tagMap: tagMap = {
 };
 function getTagName(n: elementNode): string {
   let tagName = tagMap[n.tagName] ? tagMap[n.tagName] : n.tagName;
-  if (tagName === 'link' && n.attributes._cssText) {
+  if (
+    tagName === 'link' &&
+    (n.attributes._cssText ||
+      (n.attributes.rr_captured_href &&
+        lowerIfExists(n.attributes.rel) === 'stylesheet'))
+  ) {
     tagName = 'style';
   }
   return tagName;
