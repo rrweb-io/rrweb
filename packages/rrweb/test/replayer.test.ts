@@ -10,6 +10,7 @@ import {
   waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
+import noscriptEvents from './events/noscript';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
@@ -173,6 +174,29 @@ describe('replayer', function () {
     );
 
     await assertDomSnapshot(page);
+  });
+
+  it('should keep default injected styles after fast forward, and appending to style tag', async () => {
+    await page.evaluate(`events = ${JSON.stringify(noscriptEvents)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      function pause() {
+        return new Promise(resolve => setTimeout(() => {
+          replayer.pause(1500);
+          console.log('paused');
+          resolve();
+        }, 0));
+      }
+      pause().then(() => {
+        const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+          (sheet) => [...sheet.rules],
+        ).flat();
+        return rules.some((x) => x.selectorText === 'noscript');
+      });
+    `);
+
+    expect(result).toEqual(true);
   });
 
   it('should apply fast forwarded StyleSheetRules that where added', async () => {
