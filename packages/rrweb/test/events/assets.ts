@@ -55,6 +55,17 @@ const events: eventWithTime[] = [
                     id: 10,
                   },
                   { type: 3, textContent: '\n  ', id: 12 },
+                  {
+                    type: 2,
+                    tagName: 'link',
+                    attributes: {
+                      rel: 'stylesheet',
+                      rr_captured_href: 'https://example.com/style.css',
+                    },
+                    childNodes: [],
+                    id: 22,
+                  },
+                  { type: 3, textContent: '\n  ', id: 23 },
                 ],
                 id: 4,
               },
@@ -115,6 +126,17 @@ const events: eventWithTime[] = [
               'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAWtJREFUeF7t1cEJAEAIxEDtv2gProo8xgpCwuLezI3LGFhBMi0+iCCtHoLEeggiSM1AjMcPESRmIIZjIYLEDMRwLESQmIEYjoUIEjMQw7EQQWIGYjgWIkjMQAzHQgSJGYjhWIggMQMxHAsRJGYghmMhgsQMxHAsRJCYgRiOhQgSMxDDsRBBYgZiOBYiSMxADMdCBIkZiOFYiCAxAzEcCxEkZiCGYyGCxAzEcCxEkJiBGI6FCBIzEMOxEEFiBmI4FiJIzEAMx0IEiRmI4ViIIDEDMRwLESRmIIZjIYLEDMRwLESQmIEYjoUIEjMQw7EQQWIGYjgWIkjMQAzHQgSJGYjhWIggMQMxHAsRJGYghmMhgsQMxHAsRJCYgRiOhQgSMxDDsRBBYgZiOBYiSMxADMdCBIkZiOFYiCAxAzEcCxEkZiCGYyGCxAzEcCxEkJiBGI6FCBIzEMOxEEFiBmI4FiJIzEAMx0IEiRmI4TwVjsedWCiXGAAAAABJRU5ErkJggg==', // base64
           },
         ],
+      },
+    },
+    timestamp: 1636379532355,
+  },
+  {
+    type: EventType.Asset,
+    data: {
+      url: 'https://example.com/style.css',
+      payload: {
+        rr_type: 'CssText',
+        cssText: 'body { background-color: indigo; }',
       },
     },
     timestamp: 1636379532355,

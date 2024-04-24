@@ -916,6 +916,30 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
+  it('captures CORS stylesheets as assets', async () => {
+    const corsStylesheetURL =
+      'https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css';
+
+    ctx.page.evaluate((corsStylesheetURL) => {
+      const link1 = document.createElement('link');
+      link1.setAttribute('rel', 'stylesheet');
+      link1.setAttribute('href', corsStylesheetURL);
+      document.head.appendChild(link1);
+
+      const { record } = (window as unknown as IWindow).rrweb;
+
+      record({
+        inlineStylesheet: 'all',
+        emit: (window as unknown as IWindow).emit,
+      });
+    }, corsStylesheetURL);
+
+    await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
+    await waitForRAF(ctx.page); // wait for rrweb to emit events
+
+    assertSnapshot(ctx.events);
+  });
+
   it('captures adopted stylesheets in shadow doms and iframe', async () => {
     await ctx.page.evaluate(() => {
       return new Promise((resolve) => {

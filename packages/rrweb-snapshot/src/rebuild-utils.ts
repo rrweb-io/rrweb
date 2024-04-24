@@ -11,4 +11,5 @@ export {
   Mirror,
   isNodeMetaEqual,
   extractFileExtension,
+  lowerIfExists,
 } from './utils';

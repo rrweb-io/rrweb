@@ -19,4 +19,6 @@ export {
   extractFileExtension,
   absolutifyURLs,
   markCssSplits,
+  shouldCaptureAsset,
+  lowerIfExists,
 } from './utils';

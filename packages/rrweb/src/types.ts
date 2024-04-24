@@ -63,7 +63,7 @@ export type recordOptions<T> = {
    * @deprecated Since 2.0.0. This option is still supported, but is planned to
    * be superseded by future captureAssets asset recording APIs.
    */
-  inlineStylesheet?: boolean;
+  inlineStylesheet?: boolean | 'all';
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
@@ -105,7 +105,7 @@ export type observerParam = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   keepIframeSrcFn: KeepIframeSrcFn;
-  inlineStylesheet: boolean;
+  inlineStylesheet: boolean | 'all';
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
