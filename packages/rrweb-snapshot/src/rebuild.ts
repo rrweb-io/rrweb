@@ -8,7 +8,7 @@ import {
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
-import { parse, findAll } from 'css-tree';
+import { parse, findAll, generate } from 'css-tree';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -71,6 +71,9 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
+  const newAst = parse(cssText);
+  const newSelectors = findAll(newAst, (node) => node.type === 'Selector').map(selector => generate(selector));
+
   const ast = parseOld(cssText, {
     silent: true,
   });
@@ -78,9 +81,6 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   if (!ast.stylesheet) {
     return cssText;
   }
-
-  const newAst = parse(cssText);
-  const newSelectors: string[] = findAll(newAst, (node, _, _) => node.type === 'Selector');
 
   const selectors: string[] = [];
   const medias: string[] = [];
@@ -102,10 +102,10 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   getSelectors(ast.stylesheet);
 
   let result = cssText;
-  if (selectors.length > 0) {
+  if (newSelectors.length > 0) {
     const selectorMatcher = new RegExp(
-      selectors
-        .filter((selector, index) => selectors.indexOf(selector) === index)
+      newSelectors
+        .filter((selector, index) => newSelectors.indexOf(selector) === index)
         .sort((a, b) => b.length - a.length)
         .map((selector) => {
           return escapeRegExp(selector);
