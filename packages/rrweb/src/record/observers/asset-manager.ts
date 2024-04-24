@@ -1,9 +1,11 @@
 import type {
   IWindow,
   SerializedCanvasArg,
+  SerializedCssTextArg,
   eventWithTime,
   listenerHandler,
   asset,
+  captureAssetsParam,
 } from '@rrweb/types';
 import type { assetCallback } from '@rrweb/types';
 import { encode } from 'base64-arraybuffer';
@@ -12,13 +14,15 @@ import { patch } from '../../utils';
 
 import type { recordOptions, assetStatus } from '../../types';
 import {
-  isAttributeCapturable,
   getSourcesFromSrcset,
+  shouldCaptureAsset,
   shouldIgnoreAsset,
+  absolutifyURLs,
 } from 'rrweb-snapshot';
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
+  private urlTextMap = new Map<string, string>();
   private capturedURLs = new Set<string>();
   private capturingURLs = new Set<string>();
   private failedURLs = new Set<string>();
@@ -31,6 +35,7 @@ export default class AssetManager {
 
   public reset() {
     this.urlObjectMap.clear();
+    this.urlTextMap.clear();
     this.capturedURLs.clear();
     this.capturingURLs.clear();
     this.failedURLs.clear();
@@ -94,24 +99,54 @@ export default class AssetManager {
 
   public async getURLObject(
     url: string,
-  ): Promise<File | Blob | MediaSource | null> {
+  ): Promise<File | Blob | MediaSource | string | null> {
     const object = this.urlObjectMap.get(url);
     if (object) {
       return object;
     }
+    const text = this.urlTextMap.get(url);
+    if (text) {
+      return text;
+    }
 
     try {
       const response = await fetch(url);
-      const blob = await response.blob();
-      return blob;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/css')) {
+        return await response.text();
+      } else {
+        return await response.blob();
+      }
     } catch (e) {
       console.warn(`getURLObject failed for ${url}`);
       throw e;
     }
   }
 
+  public getStylesheet(url: string, linkElement: HTMLLinkElement): void {
+    void this.getURLObject(url)
+      .then((cssText) => {
+        if (cssText && typeof cssText === 'string') {
+          cssText = absolutifyURLs(cssText, url);
+          let payload: SerializedCssTextArg;
+          payload = {
+            rr_type: 'CssText',
+            cssText,
+          };
+          this.mutationCb({
+            url,
+            payload,
+          });
+        }
+      })
+      .catch(this.fetchCatcher(url));
+  }
+
   public capture(asset: asset): assetStatus | assetStatus[] {
-    if (asset.attr === 'srcset') {
+    if (asset.element instanceof HTMLLinkElement) {
+      this.getStylesheet(asset.value, asset.element);
+      return { status: 'capturing' };
+    } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {
         statuses.push(this.captureUrl(url));
@@ -165,30 +200,40 @@ export default class AssetManager {
           }
         }
       })
-      .catch((e: unknown) => {
-        let message = '';
-        if (e instanceof Error) {
-          message = e.message;
-        } else if (typeof e === 'string') {
-          message = e;
-        } else if (e && typeof e === 'object' && 'toString' in e) {
-          message = (e as { toString(): string }).toString();
-        }
-        this.mutationCb({
-          url,
-          failed: {
-            message,
-          },
-        });
-
-        this.failedURLs.add(url);
-        this.capturingURLs.delete(url);
-      });
+      .catch(this.fetchCatcher(url));
 
     return { status: 'capturing' };
   }
 
-  public isAttributeCapturable(n: Element, attribute: string): boolean {
-    return isAttributeCapturable(n, attribute);
+  private fetchCatcher(url: string) {
+    return (e: unknown) => {
+      let message = '';
+      if (e instanceof Error) {
+        message = e.message;
+      } else if (typeof e === 'string') {
+        message = e;
+      } else if (e && typeof e === 'object' && 'toString' in e) {
+        message = (e as { toString(): string }).toString();
+      }
+      this.mutationCb({
+        url,
+        failed: {
+          message,
+        },
+      });
+
+      this.failedURLs.add(url);
+      this.capturingURLs.delete(url);
+    };
+  }
+
+  public shouldCapture(
+    n: Element,
+    attribute: string,
+    value: string,
+    config: captureAssetsParam,
+    inlineStylesheet: string | boolean,
+  ): boolean {
+    return shouldCaptureAsset(n, attribute, value, config, inlineStylesheet);
   }
 }

@@ -3,6 +3,8 @@ import type {
   RebuildAssetManagerInterface,
   RebuildAssetManagerStatus,
   assetEvent,
+  SerializedCssTextArg,
+  SerializedCanvasArg,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
 import { getSourcesFromSrcset } from 'rrweb-snapshot';
@@ -11,6 +13,7 @@ import { updateSrcset } from './update-srcset';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
+  private urlToStylesheetMap: Map<string, string> = new Map();
   private nodeIdAttributeHijackedMap: Map<number, Map<string, string>> =
     new Map();
   private loadingURLs: Set<string> = new Set();
@@ -42,15 +45,27 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       isUnchanged: true,
     };
 
-    // TODO: extract the logic only needed for assets from deserializeArg
-    const result = (await deserializeArg(new Map(), null, status)(payload)) as
-      | Blob
-      | MediaSource;
-
-    const objectURL = URL.createObjectURL(result);
-    this.originalToObjectURLMap.set(url, objectURL);
-    this.loadingURLs.delete(url);
-    this.executeCallbacks(url, { status: 'loaded', url: objectURL });
+    if (payload.rr_type === 'CssText') {
+      const cssPayload = payload as SerializedCssTextArg;
+      this.urlToStylesheetMap.set(url, cssPayload.cssText);
+      this.loadingURLs.delete(url);
+      this.executeCallbacks(url, {
+        status: 'loaded',
+        url,
+        cssText: cssPayload.cssText,
+      });
+    } else {
+      // TODO: extract the logic only needed for assets from deserializeArg
+      const result = (await deserializeArg(
+        new Map(),
+        null,
+        status,
+      )(payload as SerializedCanvasArg)) as Blob | MediaSource;
+      const objectURL = URL.createObjectURL(result);
+      this.originalToObjectURLMap.set(url, objectURL);
+      this.loadingURLs.delete(url);
+      this.executeCallbacks(url, { status: 'loaded', url: objectURL });
+    }
   }
 
   private executeCallbacks(
@@ -98,7 +113,16 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   }
 
   public get(url: string): RebuildAssetManagerStatus {
-    const result = this.originalToObjectURLMap.get(url);
+    let result = this.urlToStylesheetMap.get(url);
+    if (result) {
+      return {
+        status: 'loaded',
+        url,
+        cssText: result,
+      };
+    }
+
+    result = this.originalToObjectURLMap.get(url);
 
     if (result) {
       return {
@@ -131,6 +155,11 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     newValue: string,
   ): Promise<unknown> {
     const prevValue = node.getAttribute(attribute);
+    let isCssTextElement = false;
+    if (node.nodeName === 'STYLE') {
+      // includes <link>s (these are recreated as <style> elements)
+      isCssTextElement = true;
+    }
 
     const promises: Promise<unknown>[] = [];
 
@@ -142,17 +171,19 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           this.whenReady(value).then((status) => {
             const isLoaded = status.status === 'loaded';
             if (!isLoaded) {
-              if (!this.liveMode) {
+              if (!this.liveMode && !isCssTextElement) {
                 // failed to load asset, revert to recorded value
                 node.setAttribute(attribute, newValue);
               }
               return; // failed to load asset
             }
 
-            const attributeUnchanged =
-              node.getAttribute(attribute) === expectedValue;
+            if (!isCssTextElement) {
+              const attributeUnchanged =
+                node.getAttribute(attribute) === expectedValue;
 
-            if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
+              if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
+            }
             if (!expectedValue) {
               // before srcset has been set for the first time
               expectedValue = newValue;
@@ -168,7 +199,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       });
     } else {
       // In live mode we removes the attribute while it loads so it doesn't show the broken image icon
-      if (this.liveMode && nodeId > 0) {
+      if (this.liveMode && nodeId > 0 && !isCssTextElement) {
         let hijackedAttributes = this.nodeIdAttributeHijackedMap.get(nodeId);
         if (!hijackedAttributes) {
           hijackedAttributes = new Map();
@@ -184,21 +215,27 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         this.whenReady(newValue).then((status) => {
           const isLoaded = status.status === 'loaded';
           if (!isLoaded) {
-            if (!this.liveMode) {
+            if (!this.liveMode && !isCssTextElement) {
               // failed to load asset, revert to recorded value
               node.setAttribute(attribute, newValue);
             }
             return;
           }
+          if (!isCssTextElement) {
+            const attributeUnchanged = this.liveMode
+              ? newValue ===
+                this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
+              : node.getAttribute(attribute) === prevValue;
 
-          const attributeUnchanged = this.liveMode
-            ? newValue ===
-              this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
-            : node.getAttribute(attribute) === prevValue;
-
-          if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
-
-          node.setAttribute(attribute, status.url);
+            if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
+          }
+          if (isCssTextElement) {
+            if (status.cssText) {
+              node.textContent = status.cssText;
+            }
+          } else {
+            node.setAttribute(attribute, status.url);
+          }
         }),
       );
     }
@@ -211,6 +248,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       URL.revokeObjectURL(objectURL);
     });
     this.originalToObjectURLMap.clear();
+    this.urlToStylesheetMap.clear();
     this.loadingURLs.clear();
     this.failedURLs.clear();
     this.nodeIdAttributeHijackedMap.clear();

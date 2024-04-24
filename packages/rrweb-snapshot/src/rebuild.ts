@@ -13,6 +13,7 @@ import {
   Mirror,
   isNodeMetaEqual,
   extractFileExtension,
+  lowerIfExists,
 } from './utils';
 import postcss from 'postcss';
 
@@ -58,7 +59,12 @@ const tagMap: tagMap = {
 };
 function getTagName(n: elementNode): string {
   let tagName = tagMap[n.tagName] ? tagMap[n.tagName] : n.tagName;
-  if (tagName === 'link' && n.attributes._cssText) {
+  if (
+    tagName === 'link' &&
+    (n.attributes._cssText ||
+      (n.attributes.rr_captured_href &&
+        lowerIfExists(n.attributes.rel) === 'stylesheet'))
+  ) {
     tagName = 'style';
   }
   return tagName;
