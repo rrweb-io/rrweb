@@ -523,6 +523,27 @@ describe('diff algorithm for rrdom', () => {
           'image.png',
         );
       });
+
+      it('new link elements are managed by asset manager', () => {
+        const tagName = 'LINK';
+        const node = document.createElement(tagName);
+        const sn = Object.assign({}, elementSn, { tagName });
+        mirror.add(node, sn);
+
+        const rrDocument = new RRDocument();
+        const rrNode = rrDocument.createElement(tagName);
+        const sn2 = Object.assign({}, elementSn, { tagName });
+        rrDocument.mirror.add(rrNode, sn2);
+
+        rrNode.attributes = { rr_captured_href: 'https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css', class: 'node' };
+        diff(node, rrNode, replayer);
+        expect(assetManager.manageAttribute).toHaveBeenCalledWith(
+          node,
+          mirror.getId(node),
+          'href',
+          'https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css',
+        );
+      });
     });
   });
 

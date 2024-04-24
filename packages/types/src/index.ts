@@ -70,8 +70,8 @@ export type captureAssetsParam = {
    * Allowlist of origins to capture object URLs from.
    * [origin, origin, ...] to capture from specific origins.
    *   e.g. ['https://example.com', 'https://www.example.com']
-   * Set to `true` capture from all origins.
-   * Set to `false` or `[]` to disable capturing from any origin apart from object URLs.
+   * Set to `true` to capture from all origins.
+   * Set to `false` or `[]` to disable capturing from any origin (apart from object URLs or when inlineStylesheet=='all')
    */
   origins: string[] | true | false;
 };
@@ -411,6 +411,11 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedCssTextArg = {
+  rr_type: 'CssText';
+  cssText: string;
+};
+
 export type SerializedBlobArg = {
   rr_type: 'Blob';
   data: Array<CanvasArg>;
@@ -642,7 +647,7 @@ export type customElementCallback = (c: customElementParam) => void;
 export type assetParam =
   | {
       url: string;
-      payload: SerializedCanvasArg;
+      payload: SerializedCanvasArg | SerializedCssTextArg;
     }
   | {
       url: string;
@@ -754,7 +759,11 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
 export type RebuildAssetManagerResetStatus = { status: 'reset' };
 export type RebuildAssetManagerUnknownStatus = { status: 'unknown' };
 export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
-export type RebuildAssetManagerLoadedStatus = { status: 'loaded'; url: string };
+export type RebuildAssetManagerLoadedStatus = {
+  status: 'loaded';
+  url: string;
+  cssText?: string;
+};
 export type RebuildAssetManagerFailedStatus = { status: 'failed' };
 export type RebuildAssetManagerFinalStatus =
   | RebuildAssetManagerLoadedStatus
