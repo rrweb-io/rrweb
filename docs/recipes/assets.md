@@ -6,6 +6,10 @@
 
 The `inlineImages` configuration option is deprecated and should not be used anymore. The previous implementation had some issues, namely rewriting events that are already emitted which might make you miss the inlined image if the event has already been sent to the server. Currently it just turns on `captureAssets`, so use please directly use the `captureAssets` option to configure asset capture.
 
+## Inline Stylesheets
+
+The `inlineStylesheet` configuration option has been updated to use the asset system. When it is `'all'` stylesheets which are otherwise inaccessible due to CORS to be captured via fetch (which should use the browser cache).  If a stylesheet matches via the `origins` config below, it will also be captured either directly or via fetch.
+
 ## Asset Capture Configuration
 
 The `captureAssets` configuration option allows you to customize the asset capture process. It is an object with the following properties:

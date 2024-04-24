@@ -61,6 +61,8 @@ describe('replayer', function () {
 
   describe('asset', () => {
     it('should incorporate assets emitted later', async () => {
+      // incorprates a red square populated from an image asset
+      // and a navy background populated from a stylesheet asset
       await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events, {
