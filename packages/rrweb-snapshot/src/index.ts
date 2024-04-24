@@ -1,4 +1,5 @@
 import snapshot, {
+  absoluteToStylesheet,
   serializeNodeWithId,
   transformAttribute,
   ignoreAttribute,
@@ -19,6 +20,7 @@ export * from './types';
 export * from './utils';
 
 export {
+  absoluteToStylesheet,
   snapshot,
   serializeNodeWithId,
   rebuild,

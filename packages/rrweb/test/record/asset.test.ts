@@ -691,4 +691,96 @@ describe('asset caching', function (this: ISuite) {
       );
     });
   });
+
+  describe('jsdelivr <link> with CORS restrictions', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css" rel="stylesheet" />
+</head>
+</html>
+`,
+      {
+        captureAssets: {
+          origins: ['https://cdn.jsdelivr.net'],
+          objectURLs: false,
+        },
+      },
+    );
+
+    it('should capture 3rd party CORS stylesheets as assets if origin matches', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      // expect an event to be emitted with `event.type` === EventType.Asset
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: `https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css`,
+            payload: {
+              rr_type: 'CssText',
+              cssText: expect.stringContaining('body'),
+            },
+          },
+        }),
+      );
+    });
+  });
+
+  describe('jsdelivr <link> in mutation', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css" rel="stylesheet" />
+</head>
+</html>
+`,
+      {
+        captureAssets: {
+          origins: ['https://cdn.jsdelivr.net'],
+          objectURLs: false,
+        },
+      },
+    );
+    it('will emit asset after a 3rd party CORS stylesheet insertion mutation', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      await ctx.page?.evaluate(() => {
+        const link = document.createElement('link');
+        document.body.appendChild(link);
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute(
+          'href',
+          'https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css',
+        );
+      });
+      await waitForRAF(ctx.page);
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+      const expected: assetEvent = {
+        type: EventType.Asset,
+        data: {
+          url: `https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css`,
+          payload: {
+            rr_type: 'CssText',
+            cssText: expect.stringContaining('body'),
+          },
+        },
+      };
+      expect(events[events.length - 1]).toMatchObject(expected);
+    });
+  });
 });
