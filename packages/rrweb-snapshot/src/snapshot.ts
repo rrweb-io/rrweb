@@ -633,6 +633,20 @@ function serializeElementNode(
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
   const len = n.attributes.length;
+
+  let cssText: string | null = null;
+  // remote css
+  if (tagName === 'link') {
+    const l = n as HTMLLinkElement;
+    if (inlineStylesheet && l.href && lowerIfExists(l.rel) === 'stylesheet') {
+      // TODO: maybe replace this `.styleSheets` with original one
+      stylesheet = Array.from(doc.styleSheets).find((s) => s.href === l.href);
+      if (stylesheet) {
+        cssText = stringifyStylesheet(stylesheet);
+      }
+    }
+  }
+
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
     if (!ignoreAttribute(tagName, attr.name, attr.value)) {
@@ -647,6 +661,7 @@ function serializeElementNode(
       if (
         value &&
         typeof value === 'string' &&
+        !cssText &&
         onAssetDetected &&
         shouldCaptureAsset(
           n,
@@ -667,23 +682,13 @@ function serializeElementNode(
     }
   }
   // remote css
-  if (tagName === 'link' && inlineStylesheet) {
-    //TODO: maybe replace this `.styleSheets` with original one
-    const stylesheet = Array.from(doc.styleSheets).find((s) => {
-      return s.href === (n as HTMLLinkElement).href;
-    });
-    let cssText: string | null = null;
-    if (stylesheet) {
-      cssText = stringifyStylesheet(stylesheet);
-    }
-    if (cssText) {
-      delete attributes.rel;
-      delete attributes.href;
-      attributes._cssText = cssText;
-    }
+  if (cssText) {
+    delete attributes.rel;
+    delete attributes.href;
+    attributes._cssText = cssText;
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
-    let cssText = stringifyStylesheet(
+    cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
