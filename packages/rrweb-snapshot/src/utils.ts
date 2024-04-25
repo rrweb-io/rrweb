@@ -635,13 +635,24 @@ export function shouldCaptureAsset(
   inlineStylesheet: string | boolean,
 ): boolean {
   if (
+    inlineStylesheet &&
     n.nodeName === 'LINK' &&
     attribute === 'href' &&
-    (inlineStylesheet === 'all' ||
-      (inlineStylesheet && !shouldIgnoreAsset(value, config)))
+    lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
   ) {
-    // we don't take into account shouldIgnoreAsset (origins) with the inlineStylesheet override
-    return lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet';
+    if (inlineStylesheet === 'all' || !shouldIgnoreAsset(value, config)) {
+      // we'll also try to fetch if there are CORs issues
+      return true;
+    } else {
+      // replicate legacy inlineStylesheet behaviour;
+      // inline all stylesheets that are CORs accessible
+      try {
+        (n as HTMLLinkElement)!.sheet!.cssRules;
+      } catch (e) {
+        return false;
+      }
+      return true;
+    }
   }
   return (
     isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)
