@@ -2614,7 +2614,8 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"link\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"body { color: pink; }\\"
+                      \\"rel\\": \\"stylesheet\\",
+                      \\"rr_captured_href\\": \\"blob:null/...\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 5
@@ -2659,6 +2660,16 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"blob:null/...\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"body { color: pink; }\\"
       }
     }
   }

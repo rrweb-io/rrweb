@@ -349,4 +349,19 @@ describe('onAssetDetected callback', () => {
       value: 'https://example.com/image2.png',
     });
   });
+
+  it('should detect link stylesheet as asset', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://example.com/css/style.css" />
+</div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('link'),
+      attr: 'href',
+      value: 'https://example.com/css/style.css',
+    });
+  });
 });

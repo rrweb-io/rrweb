@@ -8,7 +8,7 @@ The `inlineImages` configuration option is deprecated and should not be used any
 
 ## Inline Stylesheets
 
-The `inlineStylesheet` configuration option has been updated to use the asset system. When it is `'all'` stylesheets which are otherwise inaccessible due to CORS to be captured via fetch (which should use the browser cache).  If a stylesheet matches via the `origins` config below, it will also be captured either directly or via fetch.
+The `inlineStylesheet` configuration option has been updated to use the asset system. When it is `true` (the default), stylesheets whose rules are accessible (from a CORS point of view) are captured as an asset. There is a processing cost in capturing large stylesheets and style elements, and emitting a delayed asset event for a stylesheet helps to avoid blocking the main thread during initial snapshot. There is no corresponding delay on the replay side so long as the stylesheet has been successfully emitted. There is also an `inlineStylesheet: 'all'` option which allows capturing of stylesheets which are otherwise inaccessible due to CORS to be captured via fetch (which should use the browser cache).  If a stylesheet matches via the `origins` config below, it will also be captured either directly or via fetch.
 
 ## Asset Capture Configuration
 
