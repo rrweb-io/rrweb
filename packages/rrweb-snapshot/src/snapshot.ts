@@ -634,22 +634,30 @@ function serializeElementNode(
   let attributes: attributes = {};
   const len = n.attributes.length;
 
-  let cssText: string | null = null;
-  // remote css
-  if (tagName === 'link') {
+  // legacy, the stringifyStylesheet badly blocks the main thread as web page loads when taking an initial snapshot
+  // prefer to capture as an asset instead
+  if (tagName === 'link' && !onAssetDetected) {
+    let cssText: string | null = null;
     const l = n as HTMLLinkElement;
     if (inlineStylesheet && l.href && lowerIfExists(l.rel) === 'stylesheet') {
       // TODO: maybe replace this `.styleSheets` with original one
-      stylesheet = Array.from(doc.styleSheets).find((s) => s.href === l.href);
+      const stylesheet = Array.from(doc.styleSheets).find(
+        (s) => s.href === l.href,
+      );
       if (stylesheet) {
         cssText = stringifyStylesheet(stylesheet);
+      }
+      if (cssText) {
+        attributes._cssText = cssText;
       }
     }
   }
 
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+    if (attributes._cssText && ['href', 'rel'].includes(attr.name)) {
+      // ignore in snapshot, and no need to try to asset capture the href (already done)
+    } else if (!ignoreAttribute(tagName, attr.name, attr.value)) {
       const value = transformAttribute(
         doc,
         tagName,
@@ -657,19 +665,12 @@ function serializeElementNode(
         attr.value,
       );
       let { name } = attr;
-      // save assets offline
+      // onAssetDetected present: save media and stylesheets asynchronously without blocking this snapshot
       if (
         value &&
         typeof value === 'string' &&
-        !cssText &&
         onAssetDetected &&
-        shouldCaptureAsset(
-          n,
-          attr.name,
-          attr.value,
-          captureAssets,
-          inlineStylesheet,
-        )
+        shouldCaptureAsset(n, attr.name, value, captureAssets, inlineStylesheet)
       ) {
         onAssetDetected({
           element: n,
@@ -681,14 +682,8 @@ function serializeElementNode(
       attributes[name] = value;
     }
   }
-  // remote css
-  if (cssText) {
-    delete attributes.rel;
-    delete attributes.href;
-    attributes._cssText = cssText;
-  }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
-    cssText = stringifyStylesheet(
+    let cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
@@ -1272,6 +1267,7 @@ export function serializeNodeWithId(
         typeof serializedNode.attributes.href === 'string' &&
         extractFileExtension(serializedNode.attributes.href) === 'css'))
   ) {
+    // this isn't executed for stylesheet assets as we've replaced `href` with `rr_captured_href`
     onceStylesheetLoaded(
       n as HTMLLinkElement,
       () => {
@@ -1356,6 +1352,7 @@ function snapshot(
      * Example of assets:
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
+     *  - `href` attribute on a `link rel=stylesheet` tag.
      */
     onAssetDetected?: (asset: asset) => unknown;
   },
