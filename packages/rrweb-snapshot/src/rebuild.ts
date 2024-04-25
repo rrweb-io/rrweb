@@ -78,18 +78,18 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const newAst = css.parse(cssText);
+  const ast = css.parse(cssText);
   const selectors = css
-                        .findAll(newAst, (node) => node.type === 'Selector')
+                        .findAll(ast, (node) => node.type === 'Selector')
                         .map(node => css.generate(node))
                         .filter(selector => HOVER_SELECTOR.test(selector));
 
   const mediaFeatures = css
-                        .findAll(newAst, (node) => node.type === 'MediaFeature')
+                        .findAll(ast, (node) => node.type === 'MediaFeature')
                         .map(node => css.generate(node))
                         .filter(feature => MEDIA_SELECTOR.test(feature));
 
-  let result = css.generate(newAst);
+  let result = css.generate(ast);
   if (selectors.length > 0) {
     const selectorMatcher = new RegExp(
       selectors
