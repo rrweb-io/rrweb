@@ -19,6 +19,7 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
+  asset,
 } from '@rrweb/types';
 import {
   isBlocked,
@@ -350,10 +351,8 @@ export default class MutationBuffer {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
         cssCaptured,
-        onAssetDetected: (assets) => {
-          assets.forEach((asset) => {
-            this.assetManager.capture(asset);
-          });
+        onAssetDetected: (asset: asset) => {
+          this.assetManager.capture(asset);
         },
       });
       if (sn) {
