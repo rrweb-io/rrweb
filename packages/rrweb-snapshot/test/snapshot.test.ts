@@ -257,7 +257,7 @@ describe('jsdom snapshot', () => {
 describe('onAssetDetected callback', () => {
   const serializeNode = (
     node: Node,
-    onAssetDetected: (result: asset[]) => void,
+    onAssetDetected: (result: asset) => void,
   ): serializedNodeWithId | null => {
     return serializeNodeWithId(node, {
       doc: document,
@@ -293,13 +293,11 @@ describe('onAssetDetected callback', () => {
 
     const callback = vi.fn();
     serializeNode(el, callback);
-    expect(callback).toHaveBeenCalledWith([
-      {
-        element: el.querySelector('img'),
-        attr: 'src',
-        value: 'https://example.com/image.png',
-      },
-    ]);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
   });
 
   it('should detect `set` attribute in image with ObjectURL', () => {
@@ -309,13 +307,11 @@ describe('onAssetDetected callback', () => {
 
     const callback = vi.fn();
     serializeNode(el, callback);
-    expect(callback).toHaveBeenCalledWith([
-      {
-        element: el.querySelector('img'),
-        attr: 'src',
-        value: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
-      },
-    ]);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
+    });
   });
   it('should detect `srcset` attribute in image', () => {
     const el = render(`<div>
@@ -325,14 +321,12 @@ describe('onAssetDetected callback', () => {
     // this used to trigger two calls, but now AssetManager is responsible for parsing the args
     const callback = vi.fn();
     serializeNode(el, callback);
-    expect(callback).toHaveBeenCalledWith([
-      {
-        element: el.querySelector('img'),
-        attr: 'srcset',
-        value:
-          'https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x',
-      },
-    ]);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'srcset',
+      value:
+        'https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x',
+    });
   });
 
   it('should detect `src` attribute in two images', () => {
@@ -344,19 +338,15 @@ describe('onAssetDetected callback', () => {
     const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toBeCalledTimes(2);
-    expect(callback).toHaveBeenCalledWith([
-      {
-        element: el.querySelectorAll('img')[0],
-        attr: 'src',
-        value: 'https://example.com/image.png',
-      },
-    ]);
-    expect(callback).toHaveBeenCalledWith([
-      {
-        element: el.querySelectorAll('img')[1],
-        attr: 'src',
-        value: 'https://example.com/image2.png',
-      },
-    ]);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelectorAll('img')[0],
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelectorAll('img')[1],
+      attr: 'src',
+      value: 'https://example.com/image2.png',
+    });
   });
 });

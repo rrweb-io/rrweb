@@ -439,7 +439,7 @@ function serializeNode(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (assets: asset[]) => unknown;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -607,7 +607,7 @@ function serializeElementNode(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (assets: asset[]) => unknown;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -632,7 +632,6 @@ function serializeElementNode(
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
-  const assets: asset[] = [];
   const len = n.attributes.length;
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
@@ -657,7 +656,7 @@ function serializeElementNode(
           inlineStylesheet,
         )
       ) {
-        assets.push({
+        onAssetDetected({
           element: n,
           attr: attr.name,
           value,
@@ -866,10 +865,6 @@ function serializeElementNode(
   } catch (e) {
     // In case old browsers don't support customElements
   }
-  if (assets.length && onAssetDetected) {
-    onAssetDetected(assets);
-  }
-
   return {
     type: NodeType.Element,
     tagName,
@@ -1017,7 +1012,7 @@ export function serializeNodeWithId(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (assets: asset[]) => unknown;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1357,7 +1352,7 @@ function snapshot(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      */
-    onAssetDetected?: (assets: asset[]) => unknown;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
