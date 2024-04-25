@@ -91,14 +91,16 @@ describe('rebuild', function () {
     it('can add hover class to css text', () => {
       const cssText = '.a:hover { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '.a:hover, .a.\\:hover{color:white}',
+        `.a:hover,
+.a.\\:hover { color: white }`,
       );
     });
 
     it('can correctly add hover when in middle of selector', () => {
       const cssText = 'ul li a:hover img { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        'ul li a:hover img, ul li a.\\:hover img{color:white}',
+        `ul li a:hover img,
+ul li a.\\:hover img { color: white }`,
       );
     });
 
@@ -111,48 +113,65 @@ ul li.specified c:hover img {
   color: white
 }`;
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        `ul li.specified a:hover img, ul li.specified a.\\:hover img,ul li.multiline b:hover img, ul li.multiline b.\\:hover img,ul li.specified c:hover img, ul li.specified c.\\:hover img{color:white}`,
+        `ul li.specified a:hover img,
+ul li.multiline
+b:hover
+img,
+ul li.specified c:hover img,
+ul li.specified a.\\:hover img,
+ul li.multiline b.\\:hover img,
+ul li.specified c.\\:hover img {
+  color: white
+}`,
       );
     });
 
     it('can add hover class within media query', () => {
       const cssText = '@media screen { .m:hover { color: white } }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '@media screen{.m:hover, .m.\\:hover{color:white}}',
+        `@media screen { .m:hover,
+.m.\\:hover { color: white } }`,
       );
     });
 
     it('can add hover class when there is multi selector', () => {
       const cssText = '.a, .b:hover, .c { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '.a,.b:hover, .b.\\:hover,.c{color:white}',
+        `.a, .b:hover, .c,
+.b.\\:hover { color: white }`,
       );
     });
 
     it('can add hover class when there is a multi selector with the same prefix', () => {
       const cssText = '.a:hover, .a:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '.a:hover, .a.\\:hover,.a:hover::after, .a.\\:hover::after{color:white}',
+        `.a:hover, .a:hover::after,
+.a.\\:hover,
+.a.\\:hover::after { color: white }`,
       );
     });
 
     it('can add hover class when :hover is not the end of selector', () => {
       const cssText = 'div:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        'div:hover::after, div.\\:hover::after{color:white}',
+        `div:hover::after,
+div.\\:hover::after { color: white }`,
       );
     });
 
     it('can add hover class when the selector has multi :hover', () => {
       const cssText = 'a:hover b:hover { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        'a:hover b:hover, a.\\:hover b.\\:hover{color:white}',
+        `a:hover b:hover,
+a.\\:hover b.\\:hover { color: white }`,
       );
     });
 
     it('will ignore :hover in css value', () => {
       const cssText = '.a::after { content: ":hover" }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual('.a::after{content:":hover"}');
+      expect(adaptCssForReplay(cssText, cache)).toEqual(
+        '.a::after { content: ":hover" }',
+      );
     });
 
     it('can adapt media rules to replay context', () => {
@@ -161,6 +180,44 @@ ul li.specified c:hover img {
       expect(adaptCssForReplay(cssText, cache)).toEqual(
         '@media only screen and (min-width:1200px){.a{width:10px}}',
       );
+    });
+
+    it('should allow empty property value', () => {
+      expect(adaptCssForReplay('p { color:; }', cache)).toEqual(
+        'p { color:; }',
+      );
+    });
+
+    it('should parse selector with comma nested inside ()', () => {
+      expect(
+        adaptCssForReplay(
+          '[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }',
+          cache,
+        ),
+      )
+        .toEqual(`[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active),
+[_nghost-ng-c4172599085]:not(.fit-content).aim-select.\\:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled { border-color: rgb(84, 84, 84); }`);
+    });
+
+    it('parses nested commas in selectors correctly', () => {
+      expect(
+        adaptCssForReplay(
+          'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) { background: red; }',
+          cache,
+        ),
+      ).toEqual(
+        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) { background: red; }',
+      );
+    });
+
+    it('ignores comma in string', () => {
+      expect(
+        adaptCssForReplay(
+          'li[attr="has,comma"] a:hover { background-color: red; }',
+          cache,
+        ),
+      ).toEqual(`li[attr="has,comma"] a:hover,
+li[attr="has,comma"] a.\\:hover { background-color: red; }`);
     });
 
     // this benchmark is unreliable when run in parallel with other tests
