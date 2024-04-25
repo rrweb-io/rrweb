@@ -244,12 +244,19 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
       }),
     null,
     2,
-  ).replace(
-    // servers might get run on a random port,
-    // so we need to normalize the port number
-    /http:\/\/localhost:\d+/g,
-    'http://localhost:3030',
-  );
+  )
+    .replace(
+      // servers might get run on a random port,
+      // so we need to normalize the port number
+      /http:\/\/localhost:\d+/g,
+      'http://localhost:3030',
+    )
+    .replace(
+      // stripBlobURLsFromAttributes would have to recursively
+      // examine fullsnapshots to do this 'properly'
+      /href": "blob:null\/[^"]+"/g,
+      'href": "blob:null/..."',
+    );
 }
 
 function stripBlobURLsFromAttributes(node: {

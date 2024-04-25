@@ -17,6 +17,7 @@ import {
   getSourcesFromSrcset,
   shouldCaptureAsset,
   shouldIgnoreAsset,
+  stringifyStylesheet,
   absolutifyURLs,
 } from 'rrweb-snapshot';
 
@@ -123,29 +124,68 @@ export default class AssetManager {
     }
   }
 
-  public getStylesheet(url: string, linkElement: HTMLLinkElement): void {
-    void this.getURLObject(url)
-      .then((cssText) => {
-        if (cssText && typeof cssText === 'string') {
-          cssText = absolutifyURLs(cssText, url);
-          let payload: SerializedCssTextArg;
-          payload = {
-            rr_type: 'CssText',
-            cssText,
-          };
-          this.mutationCb({
-            url,
-            payload,
-          });
-        }
-      })
-      .catch(this.fetchCatcher(url));
+  private captureStylesheet(
+    url: string,
+    linkElement: HTMLLinkElement,
+  ): assetStatus {
+    const stylesheet = Array.from(linkElement.ownerDocument.styleSheets).find(
+      (s: CSSStyleSheet) => {
+        return s.href === url;
+      },
+    );
+    try {
+      stylesheet!.rules;
+    } catch (e) {
+      // stylesheet could not be found or
+      // is not readable due to CORS, fallback to fetch
+      void this.getURLObject(url)
+        .then((cssText) => {
+          if (cssText && typeof cssText === 'string') {
+            cssText = absolutifyURLs(cssText, url);
+            let payload: SerializedCssTextArg;
+            payload = {
+              rr_type: 'CssText',
+              cssText,
+            };
+            this.mutationCb({
+              url,
+              payload,
+            });
+          }
+        })
+        .catch(this.fetchCatcher(url));
+      return { status: 'capturing' }; // 'processing' ?
+    }
+    const processStylesheet = () => {
+      let cssText = stringifyStylesheet(stylesheet);
+      if (!cssText) {
+        console.warn(`empty stylesheet; CORs issue? ${url}`);
+        return;
+      }
+      cssText = absolutifyURLs(cssText, stylesheet!.href!);
+      let payload: SerializedCssTextArg;
+      payload = {
+        rr_type: 'CssText',
+        cssText,
+      };
+      this.mutationCb({
+        url,
+        payload,
+      });
+    };
+    if (window.requestIdleCallback !== undefined) {
+      // try not to clog up main thread
+      requestIdleCallback(processStylesheet);
+      return { status: 'capturing' }; // 'processing' ?
+    } else {
+      processStylesheet();
+      return { status: 'captured' };
+    }
   }
 
   public capture(asset: asset): assetStatus | assetStatus[] {
     if (asset.element instanceof HTMLLinkElement) {
-      this.getStylesheet(asset.value, asset.element);
-      return { status: 'capturing' };
+      return this.captureStylesheet(asset.value, asset.element);
     } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {
