@@ -28,6 +28,7 @@ import {
   canvasMutationParam,
   adoptedStyleSheetParam,
   assetParam,
+  asset,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -425,10 +426,8 @@ function record<T = eventWithTime>(
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
-      onAssetDetected: (assets) => {
-        assets.forEach((asset) => {
-          assetManager.capture(asset);
-        });
+      onAssetDetected: (asset: asset) => {
+        assetManager.capture(asset);
       },
       keepIframeSrcFn,
     });
