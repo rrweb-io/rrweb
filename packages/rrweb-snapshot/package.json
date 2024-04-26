@@ -1,5 +1,5 @@
 {
-  "name": "rrweb-snapshot",
+  "name": "howdygo-rrweb-snapshot",
   "version": "2.0.0-alpha.13",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
@@ -26,9 +26,9 @@
     "snapshot",
     "DOM"
   ],
-  "main": "lib/rrweb-snapshot.cjs",
-  "module": "es/rrweb-snapshot.js",
-  "unpkg": "dist/rrweb-snapshot.js",
+  "main": "lib/howdygo-rrweb-snapshot.cjs",
+  "module": "es/howdygo-rrweb-snapshot.js",
+  "unpkg": "dist/howdygo-rrweb-snapshot.js",
   "typings": "typings/index.d.ts",
   "files": [
     "dist",
@@ -41,7 +41,7 @@
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/howdygo-rrweb-snapshot#readme",
   "devDependencies": {
     "@types/chai": "^4.1.4",
     "@types/jest": "^27.0.2",

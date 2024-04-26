@@ -1,4 +1,4 @@
-import type { Mirror } from 'rrweb-snapshot';
+import type { Mirror } from 'howdygo-rrweb-snapshot';
 import {
   blockClass,
   CanvasContext,

@@ -8,7 +8,7 @@ import {
   serializedNodeWithId,
   createMirror,
   Mirror as NodeMirror,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 import {
   buildFromDom,
   getDefaultSN,

@@ -1,4 +1,4 @@
-import type { Mirror } from 'rrweb-snapshot';
+import type { Mirror } from 'howdygo-rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
 import type { RecordPlugin, ICrossOriginIframeMirror } from 'howdygo-rrweb-types';
 import type { WebRTCDataChannel } from '../types';

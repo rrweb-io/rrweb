@@ -21,7 +21,7 @@ import {
   IncrementalSource,
   CanvasContext,
 } from 'howdygo-rrweb-types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { visitSnapshot, NodeType } from 'howdygo-rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   jest.setTimeout(10_000);

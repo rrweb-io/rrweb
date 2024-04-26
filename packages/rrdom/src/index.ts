@@ -1,12 +1,12 @@
 import {
   NodeType as RRNodeType,
   createMirror as createNodeMirror,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 import type {
   Mirror as NodeMirror,
   IMirror,
   serializedNodeWithId,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 import type {
   canvasMutationData,
   canvasEventWithTime,
@@ -198,7 +198,7 @@ type RRElementType<K extends keyof HTMLElementTagNameMap> =
   K extends keyof RRElementTagNameMap ? RRElementTagNameMap[K] : RRElement;
 
 function getValidTagName(element: HTMLElement): string {
-  // https://github.com/rrweb-io/rrweb-snapshot/issues/56
+  // https://github.com/rrweb-io/howdygo-rrweb-snapshot/issues/56
   if (element instanceof HTMLFormElement) {
     return 'FORM';
   }
@@ -338,7 +338,7 @@ export function createMirror(): Mirror {
   return new Mirror();
 }
 
-// based on Mirror from rrweb-snapshots
+// based on Mirror from howdygo-rrweb-snapshots
 export class Mirror implements IMirror<RRNode> {
   private idNodeMap: Map<number, RRNode> = new Map();
   private nodeMetaMap: WeakMap<RRNode, serializedNodeWithId> = new WeakMap();

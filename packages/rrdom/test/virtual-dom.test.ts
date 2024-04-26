@@ -15,7 +15,7 @@ import {
   NodeType,
   NodeType as RRNodeType,
   textNode,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 import {
   buildFromDom,
   buildFromNode,

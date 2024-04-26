@@ -16,7 +16,7 @@ import {
   waitForRAF,
   waitForIFrameLoad,
 } from '../utils';
-import type { ICanvas } from 'rrweb-snapshot';
+import type { ICanvas } from 'howdygo-rrweb-snapshot';
 
 interface ISuite {
   code: string;

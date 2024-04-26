@@ -3,7 +3,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   createMirror,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,

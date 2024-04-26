@@ -3,7 +3,7 @@ import type {
   Mirror,
   INode,
   DataURLOptions,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 
 export enum EventType {
   DomContentLoaded,

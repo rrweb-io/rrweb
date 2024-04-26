@@ -44,7 +44,7 @@
     "vite-plugin-dts": "^1.7.3"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.13"
+    "howdygo-rrweb-snapshot": "^2.0.0-alpha.13"
   },
   "browserslist": [
     "supports es6-class"

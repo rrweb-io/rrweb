@@ -2,7 +2,7 @@ import {
   NodeType as RRNodeType,
   Mirror as NodeMirror,
   elementNode,
-} from 'rrweb-snapshot';
+} from 'howdygo-rrweb-snapshot';
 import type {
   canvasMutationData,
   canvasEventWithTime,
@@ -88,11 +88,11 @@ export type ReplayerHandler = {
     data: styleDeclarationData | styleSheetRuleData,
     styleSheet: CSSStyleSheet,
   ) => void;
-  // Similar to the `afterAppend` callback in the `rrweb-snapshot` package. It's a postorder traversal of the newly appended nodes.
+  // Similar to the `afterAppend` callback in the `howdygo-rrweb-snapshot` package. It's a postorder traversal of the newly appended nodes.
   afterAppend?(node: Node, id: number): void;
 };
 
-// A set contains newly appended nodes. It's used to make sure the afterAppend callback can iterate newly appended nodes in the same traversal order as that in the `rrweb-snapshot` package.
+// A set contains newly appended nodes. It's used to make sure the afterAppend callback can iterate newly appended nodes in the same traversal order as that in the `howdygo-rrweb-snapshot` package.
 let createdNodeSet: WeakSet<Node> | null = null;
 
 /**

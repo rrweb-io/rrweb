@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import type { Mirror, DataURLOptions } from 'rrweb-snapshot';
+import type { Mirror, DataURLOptions } from 'howdygo-rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,

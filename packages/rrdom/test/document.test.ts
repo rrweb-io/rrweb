@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType as RRNodeType } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from 'howdygo-rrweb-snapshot';
 import {
   BaseRRDocumentImpl,
   BaseRRDocumentTypeImpl,
@@ -371,7 +371,7 @@ describe('Basic RRDocument implementation', () => {
       expect(node.childNodes.length).toEqual(0);
     });
 
-    it('can cover the usage of write() in rrweb-snapshot', () => {
+    it('can cover the usage of write() in howdygo-rrweb-snapshot', () => {
       const node = new RRDocument();
       node.write(
         '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">',

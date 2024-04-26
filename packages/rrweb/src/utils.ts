@@ -9,8 +9,8 @@ import type {
   DeprecatedMirror,
   textMutation,
 } from 'howdygo-rrweb-types';
-import type { IMirror, Mirror } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
+import type { IMirror, Mirror } from 'howdygo-rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'howdygo-rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'howdygo-rrdom';
 
 export function on(
@@ -278,7 +278,7 @@ export function isSerialized(n: Node, mirror: Mirror): boolean {
 
 export function isIgnored(n: Node, mirror: Mirror): boolean {
   // The main part of the slimDOM check happens in
-  // rrweb-snapshot::serializeNodeWithId
+  // howdygo-rrweb-snapshot::serializeNodeWithId
   return mirror.getId(n) === IGNORED_NODE;
 }
 
