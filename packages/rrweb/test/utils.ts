@@ -693,7 +693,6 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     maskAllInputs: ${options.maskAllInputs},
     maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
     userTriggeredOnInput: ${options.userTriggeredOnInput},
-    maskTextClass: ${options.maskTextClass},
     maskTextFn: ${options.maskTextFn},
     maskInputFn: ${options.maskInputFn},
     recordCanvas: ${options.recordCanvas},

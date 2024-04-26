@@ -515,7 +515,6 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
-                true, // checkAncestors
               ) && value
                 ? this.maskTextFn
                   ? this.maskTextFn(value, closestElementOfNode(m.target))

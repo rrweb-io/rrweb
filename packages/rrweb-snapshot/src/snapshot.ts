@@ -311,7 +311,6 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
-  checkAncestors: boolean,
 ): boolean {
   try {
     const el: HTMLElement | null =
@@ -319,21 +318,17 @@ export function needMaskingText(
         ? (node as HTMLElement)
         : node.parentElement;
     if (el === null) return false;
+
     if (typeof maskTextClass === 'string') {
-      if (checkAncestors) {
-        if (el.closest(`.${maskTextClass}`)) return true;
-      } else {
-        if (el.classList.contains(maskTextClass)) return true;
-      }
+      if (el.classList.contains(maskTextClass)) return true;
+      if (el.closest(`.${maskTextClass}`)) return true;
     } else {
-      if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
+      if (classMatchesRegex(el, maskTextClass, true)) return true;
     }
+
     if (maskTextSelector) {
-      if (checkAncestors) {
-        if (el.closest(maskTextSelector)) return true;
-      } else {
-        if (el.matches(maskTextSelector)) return true;
-      }
+      if (el.matches(maskTextSelector)) return true;
+      if (el.closest(maskTextSelector)) return true;
     }
   } catch (e) {
     //
@@ -432,7 +427,8 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
-    needsMask: boolean | undefined;
+    maskTextClass: string | RegExp;
+    maskTextSelector: string | null;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -452,7 +448,8 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
-    needsMask,
+    maskTextClass,
+    maskTextSelector,
     inlineStylesheet,
     maskInputOptions = {},
     maskTextFn,
@@ -504,7 +501,8 @@ function serializeNode(
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
-        needsMask,
+        maskTextClass,
+        maskTextSelector,
         maskTextFn,
         rootId,
       });
@@ -534,12 +532,13 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
-    needsMask: boolean | undefined;
+    maskTextClass: string | RegExp;
+    maskTextSelector: string | null;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { needsMask, maskTextFn, rootId } = options;
+  const { maskTextClass, maskTextSelector, maskTextFn, rootId } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -570,7 +569,12 @@ function serializeTextNode(
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
   }
-  if (!isStyle && !isScript && textContent && needsMask) {
+  if (
+    !isStyle &&
+    !isScript &&
+    textContent &&
+    needMaskingText(n, maskTextClass, maskTextSelector)
+  ) {
     textContent = maskTextFn
       ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
@@ -932,7 +936,6 @@ export function serializeNodeWithId(
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
-    needsMask?: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     slimDOMOptions: SlimDOMOptions;
@@ -978,29 +981,14 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
   } = options;
-  let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
-
-  if (
-    !needsMask &&
-    n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
-  ) {
-    // perf: if needsMask = true, children won't also need to check
-    const checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
-    needsMask = needMaskingText(
-      n as Element,
-      maskTextClass,
-      maskTextSelector,
-      checkAncestors,
-    );
-  }
-
   const _serializedNode = serializeNode(n, {
     doc,
     mirror,
     blockClass,
     blockSelector,
-    needsMask,
+    maskTextClass,
+    maskTextSelector,
     inlineStylesheet,
     maskInputOptions,
     maskTextFn,
@@ -1071,7 +1059,6 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
-      needsMask,
       maskTextClass,
       maskTextSelector,
       skipChild,
@@ -1132,7 +1119,6 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
-            needsMask,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
@@ -1184,7 +1170,6 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
-            needsMask,
             maskTextClass,
             maskTextSelector,
             skipChild: false,
