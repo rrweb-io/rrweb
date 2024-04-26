@@ -10,7 +10,6 @@ import {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
-  elementNode,
   serializedElementNodeWithId,
   type mediaAttributes,
 } from './types';
@@ -675,9 +674,10 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
+      const type = getInputType(n);
       attributes.value = maskInputValue({
         element: n,
-        type: getInputType(n),
+        type,
         tagName,
         value,
         maskInputOptions,
@@ -1097,19 +1097,10 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
     };
-
-    if (
-      serializedNode.type === NodeType.Element &&
-      serializedNode.tagName === 'textarea' &&
-      (serializedNode as elementNode).attributes.value !== undefined
-    ) {
-      // value parameter in DOM reflects the correct value, so ignore childNode
-    } else {
-      for (const childN of Array.from(n.childNodes)) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
-        if (serializedChildNode) {
-          serializedNode.childNodes.push(serializedChildNode);
-        }
+    for (const childN of Array.from(n.childNodes)) {
+      const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+      if (serializedChildNode) {
+        serializedNode.childNodes.push(serializedChildNode);
       }
     }
 

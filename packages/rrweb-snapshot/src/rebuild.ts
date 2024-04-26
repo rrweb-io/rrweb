@@ -5,6 +5,7 @@ import {
   tagMap,
   elementNode,
   BuildCache,
+  attributes,
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
@@ -227,9 +228,14 @@ function buildNode(
           value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          node.appendChild(doc.createTextNode(value));
+          const child = doc.createTextNode(value);
           // https://github.com/rrweb-io/rrweb/issues/112
-          n.childNodes = []; // value overrides childNodes
+          for (const c of Array.from(node.childNodes)) {
+            if (c.nodeType === node.TEXT_NODE) {
+              node.removeChild(c);
+            }
+          }
+          node.appendChild(child);
           continue;
         }
 
