@@ -5,6 +5,7 @@ import {
   tagMap,
   elementNode,
   BuildCache,
+  attributes,
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
@@ -227,9 +228,14 @@ function buildNode(
           value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          node.appendChild(doc.createTextNode(value));
+          const child = doc.createTextNode(value);
           // https://github.com/rrweb-io/rrweb/issues/112
-          n.childNodes = []; // value overrides childNodes
+          for (const c of Array.from(node.childNodes)) {
+            if (c.nodeType === node.TEXT_NODE) {
+              node.removeChild(c);
+            }
+          }
+          node.appendChild(child);
           continue;
         }
 
@@ -342,17 +348,6 @@ function buildNode(
               break;
             default:
           }
-        } else if (
-          name === 'rr_mediaPlaybackRate' &&
-          typeof value === 'number'
-        ) {
-          (node as HTMLMediaElement).playbackRate = value;
-        } else if (name === 'rr_mediaMuted' && typeof value === 'boolean') {
-          (node as HTMLMediaElement).muted = value;
-        } else if (name === 'rr_mediaLoop' && typeof value === 'boolean') {
-          (node as HTMLMediaElement).loop = value;
-        } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
-          (node as HTMLMediaElement).volume = value;
         }
       }
 

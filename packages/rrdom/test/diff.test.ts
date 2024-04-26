@@ -280,7 +280,6 @@ describe('diff algorithm for rrdom', () => {
         rrMedia.muted = true;
         rrMedia.paused = false;
         rrMedia.playbackRate = 0.5;
-        rrMedia.loop = false;
 
         diff(element, rrMedia, replayer);
         expect(element.volume).toEqual(0.5);
@@ -288,7 +287,6 @@ describe('diff algorithm for rrdom', () => {
         expect(element.muted).toEqual(true);
         expect(element.paused).toEqual(false);
         expect(element.playbackRate).toEqual(0.5);
-        expect(element.loop).toEqual(false);
 
         rrMedia.paused = true;
         diff(element, rrMedia, replayer);

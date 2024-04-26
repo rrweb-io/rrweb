@@ -5,8 +5,7 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run bundle && npm run typings",
-    "retest": "jest",
-    "test": "yarn bundle && yarn retest",
+    "test": "jest",
     "test:watch": "jest --watch",
     "test:update": "jest --updateSnapshot",
     "bundle": "rollup --config",
