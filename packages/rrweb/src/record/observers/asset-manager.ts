@@ -128,13 +128,8 @@ export default class AssetManager {
     url: string,
     linkElement: HTMLLinkElement,
   ): assetStatus {
-    const stylesheet = Array.from(linkElement.ownerDocument.styleSheets).find(
-      (s: CSSStyleSheet) => {
-        return s.href === url;
-      },
-    );
     try {
-      stylesheet!.rules;
+      linkElement.sheet!.rules;
     } catch (e) {
       // stylesheet could not be found or
       // is not readable due to CORS, fallback to fetch
@@ -157,12 +152,16 @@ export default class AssetManager {
       return { status: 'capturing' }; // 'processing' ?
     }
     const processStylesheet = () => {
-      let cssText = stringifyStylesheet(stylesheet);
+      if (!linkElement.sheet) {
+        // this `if` is to satisfy typescript; we already know sheet is accessible
+        return;
+      }
+      let cssText = stringifyStylesheet(linkElement.sheet);
       if (!cssText) {
         console.warn(`empty stylesheet; CORs issue? ${url}`);
         return;
       }
-      cssText = absolutifyURLs(cssText, stylesheet!.href!);
+      cssText = absolutifyURLs(cssText, url);
       let payload: SerializedCssTextArg;
       payload = {
         rr_type: 'CssText',
