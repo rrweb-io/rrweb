@@ -49,11 +49,21 @@ export class MediaManager {
     });
   }
 
+  private safePause(target: HTMLMediaElement | RRMediaElement) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/pause
+    // RRMediaElement inherits from BaseRRMediaElementImpl, which has a pause method
+    // but we received a type error when trying to call it directly (target.pause is not a function)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof target.pause === 'function') {
+      target.pause();
+    }
+  }
+
   private syncAllMediaElements(options = { pause: false }) {
     this.mediaMap.forEach((mediaState, target) => {
       this.syncTargetWithState(target);
       if (options.pause) {
-        target.pause();
+        safePause(target);
       }
     });
   }
@@ -103,7 +113,7 @@ export class MediaManager {
 
       target.currentTime = seekToTime;
     } else {
-      target.pause();
+      this.safePause(target);
       target.currentTime = mediaState.currentTimeAtLastInteraction;
     }
   }
@@ -194,7 +204,7 @@ export class MediaManager {
         // unexpected behavior
         void target.play();
       } else {
-        target.pause();
+        this.safePause(target);
       }
     } catch (error) {
       this.warn(
@@ -220,7 +230,7 @@ export class MediaManager {
     } else {
       isPlaying = target.getAttribute('autoplay') !== null;
     }
-    if (isPlaying && playerIsPaused) target.pause();
+    if (isPlaying && playerIsPaused) this.safePause(target);
 
     let playbackRate = 1;
     if (typeof mediaAttributes.rr_mediaPlaybackRate === 'number') {
