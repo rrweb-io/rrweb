@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import minimist from 'minimist';
 import { ProgressBar } from '@open-tech-world/cli-progress-bar';
-import type { RRwebPlayerOptions } from 'rrweb-player';
+import type { RRwebPlayerOptions } from 'howdygo-rrweb-player';
 import { transformToVideo } from './index';
 
 const argv = minimist(process.argv.slice(2));
