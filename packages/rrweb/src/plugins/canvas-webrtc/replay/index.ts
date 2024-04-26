@@ -1,4 +1,4 @@
-import type { RRNode } from 'rrdom';
+import type { RRNode } from 'howdygo-rrdom';
 import type { Mirror } from 'rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
 import type { Replayer } from '../../../replay';

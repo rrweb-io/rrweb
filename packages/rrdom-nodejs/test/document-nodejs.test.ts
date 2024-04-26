@@ -16,7 +16,7 @@ import {
   RRStyleElement,
   RRText,
 } from '../src/document-nodejs';
-import { buildFromDom } from 'rrdom';
+import { buildFromDom } from 'howdygo-rrdom';
 
 describe('RRDocument for nodejs environment', () => {
   describe('RRDocument API', () => {

@@ -1,5 +1,5 @@
 import { Emitter, MediaInteractions, ReplayerEvents } from 'howdygo-rrweb-types';
-import type { RRMediaElement } from 'rrdom/es';
+import type { RRMediaElement } from 'howdygo-rrdom/es';
 import type { createPlayerService, createSpeedService } from '../machine';
 import type { Mirror, mediaAttributes } from 'rrweb-snapshot';
 import type { mediaInteractionData } from 'howdygo-rrweb-types';

@@ -71,7 +71,7 @@ const suites: Array<{
   {
     title: 'real events recorded on bugs.chromium.org',
     eventURL:
-      'https://raw.githubusercontent.com/rrweb-io/benchmark-events/main/rrdom-benchmark-1.json',
+      'https://raw.githubusercontent.com/rrweb-io/benchmark-events/main/howdygo-rrdom-benchmark-1.json',
     times: 3,
   },
 ];

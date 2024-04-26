@@ -1,7 +1,7 @@
 <script lang="ts">
   import { EventType } from 'rrweb';
   import type { Replayer } from 'rrweb';
-  import type { playerMetaData } from '@rrweb/types';
+  import type { playerMetaData } from 'howdygo-rrweb-types';
   import type {
     PlayerMachineState,
     SpeedMachineState,

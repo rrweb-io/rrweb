@@ -11,7 +11,7 @@ import type {
 } from 'howdygo-rrweb-types';
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+import type { RRNode, RRIFrameElement } from 'howdygo-rrdom';
 
 export function on(
   type: string,

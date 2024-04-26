@@ -1,12 +1,12 @@
 {
-  "name": "rrdom",
+  "name": "howdygo-rrdom",
   "version": "2.0.0-alpha.13",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
-  "main": "lib/rrdom.cjs",
-  "module": "es/rrdom.js",
+  "main": "lib/howdygo-rrdom.cjs",
+  "module": "es/howdygo-rrdom.js",
   "typings": "es",
-  "unpkg": "dist/rrdom.js",
+  "unpkg": "dist/howdygo-rrdom.js",
   "files": [
     "dist",
     "lib",

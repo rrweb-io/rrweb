@@ -14,7 +14,7 @@ import {
   ClassList,
   IRRDocument,
   CSSStyleDeclaration,
-} from 'rrdom';
+} from 'howdygo-rrdom';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const nwsapi = require('nwsapi');
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
