@@ -47,7 +47,7 @@ import {
   SelectionRange,
   selectionCallback,
   customElementCallback,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 

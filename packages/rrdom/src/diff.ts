@@ -10,7 +10,7 @@ import type {
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import type {
   IRRCDATASection,
   IRRComment,

@@ -28,7 +28,7 @@ import {
   canvasMutationParam,
   adoptedStyleSheetParam,
   IWindow,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';

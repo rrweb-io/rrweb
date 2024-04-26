@@ -14,7 +14,7 @@ import type {
   scrollData,
   styleSheetRuleData,
   styleDeclarationData,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import {
   BaseRRNode as RRNode,
   BaseRRCDATASectionImpl,

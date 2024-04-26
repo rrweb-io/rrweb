@@ -1,4 +1,4 @@
-import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
+import type { listenerHandler, RecordPlugin, IWindow } from 'howdygo-rrweb-types';
 import { patch } from '../../../utils';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';

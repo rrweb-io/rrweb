@@ -62,7 +62,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import {
   polyfill,
   queueToResolveTrees,

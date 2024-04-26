@@ -9,7 +9,7 @@
       "rrdom",
       "rrdom-nodejs",
       "rrweb-player",
-      "@rrweb/types",
+      "howdygo-rrweb-types",
       "@rrweb/web-extension",
       "rrvideo"
     ]

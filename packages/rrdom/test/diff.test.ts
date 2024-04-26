@@ -31,8 +31,8 @@ import type {
   canvasMutationData,
   styleDeclarationData,
   styleSheetRuleData,
-} from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+} from 'howdygo-rrweb-types';
+import { EventType, IncrementalSource } from 'howdygo-rrweb-types';
 import { compileTSCode } from './utils';
 
 const elementSn = {

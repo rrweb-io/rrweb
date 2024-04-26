@@ -1,5 +1,5 @@
 import { playerConfig } from 'rrweb/typings/types';
-import { eventWithTime } from '@rrweb/types';
+import { eventWithTime } from 'howdygo-rrweb-types';
 import { Replayer } from 'rrweb';
 import { Mirror } from 'rrweb-snapshot';
 import { SvelteComponent } from 'svelte';

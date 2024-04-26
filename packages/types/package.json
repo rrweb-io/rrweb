@@ -1,12 +1,12 @@
 {
-  "name": "@rrweb/types",
+  "name": "howdygo-rrweb-types",
   "version": "2.0.0-alpha.13",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
     "rrweb",
-    "@rrweb/types"
+    "howdygo-rrweb-types"
   ],
   "scripts": {
     "dev": "vite",
@@ -15,7 +15,7 @@
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/howdygo-rrweb-types#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
@@ -25,14 +25,14 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/types.umd.cjs",
-  "module": "./dist/types.js",
+  "main": "./dist/howdygo-rrweb-types.umd.cjs",
+  "module": "./dist/howdygo-rrweb-types.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/types.js",
-      "require": "./dist/types.umd.cjs"
+      "types": "./dist/howdygo-rrweb-types.d.ts",
+      "import": "./dist/howdygo-rrweb-types.js",
+      "require": "./dist/howdygo-rrweb-types.umd.cjs"
     }
   },
   "files": [

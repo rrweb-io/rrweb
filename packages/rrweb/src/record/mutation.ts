@@ -20,7 +20,7 @@ import type {
   addedNodeMutation,
   Optional,
   IWindow,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import {
   isBlocked,
   isAncestorRemoved,

@@ -10,7 +10,7 @@ export {
   MouseInteractions,
   ReplayerEvents,
   type eventWithTime,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 
 export type { recordOptions } from './types';
 

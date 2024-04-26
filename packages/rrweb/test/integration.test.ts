@@ -20,7 +20,7 @@ import {
   RecordPlugin,
   IncrementalSource,
   CanvasContext,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import { visitSnapshot, NodeType } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {

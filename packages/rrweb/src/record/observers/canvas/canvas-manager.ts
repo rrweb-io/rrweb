@@ -9,9 +9,9 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import { isBlocked } from '../../../utils';
-import { CanvasContext } from '@rrweb/types';
+import { CanvasContext } from 'howdygo-rrweb-types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasWebGLMutationObserver from './webgl';
 

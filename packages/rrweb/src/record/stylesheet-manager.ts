@@ -5,7 +5,7 @@ import type {
   adoptedStyleSheetParam,
   attributeMutation,
   mutationCallBack,
-} from '@rrweb/types';
+} from 'howdygo-rrweb-types';
 import { StyleSheetMirror } from '../utils';
 
 export class StylesheetManager {
