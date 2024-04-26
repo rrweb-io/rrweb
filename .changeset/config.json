@@ -7,7 +7,7 @@
       "rrweb",
       "rrweb-snapshot",
       "rrdom",
-      "rrdom-nodejs",
+      "howdygo-rrdom-nodejs",
       "rrweb-player",
       "howdygo-rrweb-types",
       "@rrweb/web-extension",

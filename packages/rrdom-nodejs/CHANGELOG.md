@@ -1,4 +1,4 @@
-# rrdom-nodejs
+# howdygo-rrdom-nodejs
 
 ## 2.0.0-alpha.13
 

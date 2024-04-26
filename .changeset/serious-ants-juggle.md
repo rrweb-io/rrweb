@@ -1,6 +1,6 @@
 ---
 'rrdom': major
-'rrdom-nodejs': major
+'howdygo-rrdom-nodejs': major
 'rrweb': patch
 ---
 

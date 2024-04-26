@@ -1,5 +1,5 @@
 {
-  "name": "rrdom-nodejs",
+  "name": "howdygo-rrdom-nodejs",
   "version": "2.0.0-alpha.13",
   "scripts": {
     "dev": "rollup -c -w",
@@ -12,11 +12,11 @@
   },
   "keywords": [
     "rrweb",
-    "rrdom-nodejs"
+    "howdygo-rrdom-nodejs"
   ],
   "license": "MIT",
-  "main": "lib/rrdom-nodejs.cjs",
-  "module": "es/rrdom-nodejs.js",
+  "main": "lib/howdygo-rrdom-nodejs.cjs",
+  "module": "es/howdygo-rrdom-nodejs.js",
   "typings": "es",
   "files": [
     "dist",

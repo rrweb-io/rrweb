@@ -3,7 +3,7 @@
   "tag": "alpha",
   "initialVersions": {
     "rrdom": "0.1.7",
-    "rrdom-nodejs": "0.1.7",
+    "howdygo-rrdom-nodejs": "0.1.7",
     "rrweb": "2.0.0-alpha.4",
     "rrweb-player": "1.0.0-alpha.4",
     "rrweb-snapshot": "2.0.0-alpha.4",
