@@ -695,17 +695,16 @@ function serializeElementNode(
   // legacy, the stringifyStylesheet badly blocks the main thread as web page loads when taking an initial snapshot
   // prefer to capture as an asset instead
   if (tagName === 'link' && !onAssetDetected) {
-    let cssText: string | null = null;
     const l = n as HTMLLinkElement;
-    if (inlineStylesheet && l.href && lowerIfExists(l.rel) === 'stylesheet') {
-      const stylesheet = Array.from(doc.styleSheets).find(
-        (s) => s.href === l.href,
-      );
-      if (stylesheet) {
-        cssText = stringifyStylesheet(stylesheet);
-      }
+    if (
+      inlineStylesheet &&
+      l.href &&
+      lowerIfExists(l.rel) === 'stylesheet' &&
+      l.sheet
+    ) {
+      const cssText = stringifyStylesheet(l.sheet);
       if (cssText) {
-        attributes._cssText = absoluteToStylesheet(cssText, stylesheet!.href!);
+        attributes._cssText = absoluteToStylesheet(cssText, l.href);
       }
     }
   }
