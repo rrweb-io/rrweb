@@ -55,6 +55,7 @@ export class MediaManager {
     // but we received a type error when trying to call it directly (target.pause is not a function)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (typeof target.pause === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       target.pause();
     }
   }
@@ -63,7 +64,7 @@ export class MediaManager {
     this.mediaMap.forEach((mediaState, target) => {
       this.syncTargetWithState(target);
       if (options.pause) {
-        safePause(target);
+        this.safePause(target);
       }
     });
   }
