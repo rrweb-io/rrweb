@@ -579,7 +579,6 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
-  loop?: boolean;
   playbackRate?: number;
 };
 
@@ -660,9 +659,6 @@ export type Arguments<T> = T extends (...payload: infer U) => unknown
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
-  /**
-   * @deprecated use Play instead
-   */
   Resume = 'resume',
   Resize = 'resize',
   Finish = 'finish',

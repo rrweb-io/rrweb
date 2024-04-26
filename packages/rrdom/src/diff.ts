@@ -250,8 +250,6 @@ function diffAfterUpdatingChildren(
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
           if (newMediaRRElement.playbackRate !== undefined)
             oldMediaElement.playbackRate = newMediaRRElement.playbackRate;
-          if (newMediaRRElement.loop !== undefined)
-            oldMediaElement.loop = newMediaRRElement.loop;
           break;
         }
         case 'CANVAS': {

@@ -50,7 +50,6 @@ export const startServer = (defaultPort: number = 3030) =>
       '.html': 'text/html',
       '.js': 'text/javascript',
       '.css': 'text/css',
-      '.webm': 'video/webm',
     };
     const s = http.createServer((req, res) => {
       const parsedUrl = url.parse(req.url!);
@@ -70,7 +69,6 @@ export const startServer = (defaultPort: number = 3030) =>
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET');
         res.setHeader('Access-Control-Allow-Headers', 'Content-type');
-        if (ext === '.webm') res.setHeader('Accept-Ranges', 'bytes');
         setTimeout(() => {
           res.end(data);
           // mock delay
@@ -705,26 +703,3 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
   });
   `;
 }
-
-export async function hideMouseAnimation(p: puppeteer.Page): Promise<void> {
-  await p.addStyleTag({
-    content: `.replayer-mouse-tail{display: none !important;}
-                html, body { margin: 0; padding: 0; }
-                iframe { border: none; }`,
-  });
-}
-
-export const fakeGoto = async (p: puppeteer.Page, url: string) => {
-  const intercept = async (request: puppeteer.HTTPRequest) => {
-    await request.respond({
-      status: 200,
-      contentType: 'text/html',
-      body: ' ', // non-empty string or page will load indefinitely
-    });
-  };
-  await p.setRequestInterception(true);
-  p.on('request', intercept);
-  await p.goto(url);
-  p.off('request', intercept);
-  await p.setRequestInterception(false);
-};

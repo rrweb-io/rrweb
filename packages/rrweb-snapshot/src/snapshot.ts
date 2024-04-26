@@ -11,7 +11,6 @@ import {
   KeepIframeSrcFn,
   ICanvas,
   serializedElementNodeWithId,
-  type mediaAttributes,
 } from './types';
 import {
   Mirror,
@@ -762,15 +761,10 @@ function serializeElementNode(
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
-    const mediaAttributes = attributes as mediaAttributes;
-    mediaAttributes.rr_mediaState = (n as HTMLMediaElement).paused
+    attributes.rr_mediaState = (n as HTMLMediaElement).paused
       ? 'paused'
       : 'played';
-    mediaAttributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime;
-    mediaAttributes.rr_mediaPlaybackRate = (n as HTMLMediaElement).playbackRate;
-    mediaAttributes.rr_mediaMuted = (n as HTMLMediaElement).muted;
-    mediaAttributes.rr_mediaLoop = (n as HTMLMediaElement).loop;
-    mediaAttributes.rr_mediaVolume = (n as HTMLMediaElement).volume;
+    attributes.rr_mediaCurrentTime = (n as HTMLMediaElement).currentTime;
   }
   // Scroll
   if (!newlyAddedElement) {
