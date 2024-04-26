@@ -1287,7 +1287,7 @@ export function initObservers(
     };
   }
 
-  // We do not use hooks, so we skip this
+  // Sentry: We do not use hooks, so we skip this
   // mergeHooks(o, hooks);
   let mutationObserver: MutationObserver | undefined;
   if (o.recordDOM) {

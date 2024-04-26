@@ -84,7 +84,6 @@ import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
 
-const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
@@ -181,6 +180,7 @@ export class Replayer {
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
+      inactivePeriodThreshold: 10 * 1000,
       showWarning: true,
       showDebug: false,
       blockClass: 'rr-block',
@@ -694,7 +694,7 @@ export class Replayer {
                 if (
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   _event.delay! - event.delay! >
-                  SKIP_TIME_THRESHOLD *
+                  this.config.inactivePeriodThreshold *
                     this.speedService.state.context.timer.speed
                 ) {
                   this.nextUserInteractionEvent = _event;
@@ -1164,8 +1164,8 @@ export class Replayer {
                 this.lastMouseDownEvent = null;
               }
               this.mousePos = {
-                x: d.x,
-                y: d.y,
+                x: d.x || 0,
+                y: d.y || 0,
                 id: d.id,
                 debugData: d,
               };
@@ -1174,7 +1174,7 @@ export class Replayer {
                 // don't draw a trail as user has lifted finger and is placing at a new point
                 this.tailPositions.length = 0;
               }
-              this.moveAndHover(d.x, d.y, d.id, isSync, d);
+              this.moveAndHover(d.x || 0, d.y || 0, d.id, isSync, d);
               if (d.type === MouseInteractions.Click) {
                 /*
                  * don't want target.click() here as could trigger an iframe navigation

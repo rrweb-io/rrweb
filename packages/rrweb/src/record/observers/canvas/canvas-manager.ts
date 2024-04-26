@@ -354,9 +354,11 @@ export class CanvasManager implements CanvasManagerInterface {
       getCanvas(canvasElement).forEach((canvas: HTMLCanvasElement) => {
         const id = this.mirror.getId(canvas);
         if (snapshotInProgressMap.get(id)) return;
+
         // Don't do anything if canvas height/width is 0, otherwise causes
         // `createImageBitmap()` to throw
         if (!canvas.width || !canvas.height) return;
+
         snapshotInProgressMap.set(id, true);
         if (
           !isManualSnapshot &&

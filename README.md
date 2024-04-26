@@ -58,6 +58,8 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 [**🍳 Recipes 🍳**](./docs/recipes/index.md)
 
+[**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
+
 ## Project Structure
 
 rrweb is mainly composed of 3 parts:
@@ -169,6 +171,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Yuyz0112</b></sub>
+        <br /><br />
       </a>
     </td>
     <td align="center">
@@ -179,6 +182,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Yun Feng</b></sub>
+        <br /><br />
       </a>
     </td>
     <td align="center">
@@ -189,6 +193,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>eoghanmurray</b></sub>
+        <br /><br />
       </a>
     </td>
     <td align="center">
@@ -199,6 +204,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Juice10</b></sub>
+        <br /><sub>open for rrweb consulting</sub>
       </a>
     </td>
   </tr>
@@ -255,6 +261,21 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     <td align="center">
       <a href="https://requestly.io" target="_blank">
         <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://gleap.io" target="_blank">
+        <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://uxwizz.com" target="_blank">
+        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.howdygo.com" target="_blank">
+        <img style="padding: 8px" alt="Interactive product demos for small marketing teams" width="195px" src="https://assets-global.website-files.com/650afb446f1dd5bd410f00cc/650b2cec6188ff54dd9b01e1_Logo.svg">
       </a>
     </td>
   </tr>

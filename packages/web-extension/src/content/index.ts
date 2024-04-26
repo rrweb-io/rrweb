@@ -155,8 +155,8 @@ async function initMainPage() {
 
   // Before unload pages, cache the new events in the local storage.
   window.addEventListener('beforeunload', (event) => {
+    if (!newEvents.length) return;
     event.preventDefault();
-    if (newEvents.length === 0) return;
     void Browser.storage.local.set({
       [LocalDataKey.bufferedEvents]: bufferedEvents.concat(newEvents),
     });

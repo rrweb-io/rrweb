@@ -192,6 +192,7 @@ li[attr="has,comma"] a:hover {
     ).toEqual(1);
   });
 
+<<<<<<< HEAD
   it.each([
     ['.foo,.bar {}', ['.foo', '.bar']],
     ['.bar:has(:disabled) {}', ['.bar:has(:disabled)']],
@@ -271,6 +272,8 @@ li[attr="has,comma"] a:hover {
     },
   );
 
+=======
+>>>>>>> develop
   it('parses imports with quotes correctly', () => {
     const out1 = escapeImportStatement({
       cssText: `@import url("/foo.css;900;800"");`,
