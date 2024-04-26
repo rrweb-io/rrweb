@@ -1,10 +1,10 @@
 {
-  "name": "rrvideo",
+  "name": "howdygo-rrvideo",
   "version": "2.0.0-alpha.13",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
-    "rrvideo": "build/cli.js"
+    "howdygo-rrvideo": "build/cli.js"
   },
   "files": [
     "build"

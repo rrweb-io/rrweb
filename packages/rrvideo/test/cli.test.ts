@@ -28,7 +28,7 @@ describe('should be able to run cli', () => {
     execSync('node ./build/cli.js --input ./test/generated/example.json', {
       stdio: 'pipe',
     });
-    const outputFile = path.resolve(__dirname, '../rrvideo-output.webm');
+    const outputFile = path.resolve(__dirname, '../howdygo-rrvideo-output.webm');
     expect(fs.existsSync(outputFile)).toBe(true);
     fs.removeSync(outputFile);
   });
