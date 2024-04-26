@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from 'rrweb';
+import { EventType, IncrementalSource } from 'howdygo-rrweb';
 import type { eventWithTime } from 'howdygo-rrweb-types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
@@ -146,7 +146,7 @@ export function typeOf(
 }
 
 /**
- * Forked from 'rrweb' replay/index.ts. The original function is not exported.
+ * Forked from 'howdygo-rrweb' replay/index.ts. The original function is not exported.
  * Determine whether the event is a user interaction event
  * @param event - event to be determined
  * @returns true if the event is a user interaction event

@@ -11,7 +11,7 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
-    "rrweb",
+    "howdygo-rrweb",
     "howdygo-howdygo-rrdom-nodejs"
   ],
   "license": "MIT",

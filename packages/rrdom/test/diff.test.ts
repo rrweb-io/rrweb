@@ -25,7 +25,7 @@ import {
   sameNodeType,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
-import { Replayer } from 'rrweb';
+import { Replayer } from 'howdygo-rrweb';
 import type {
   eventWithTime,
   canvasMutationData,

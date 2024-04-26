@@ -201,7 +201,7 @@ function record<T = eventWithTime>(
       emit?.(eventProcessor(e), isCheckout);
     } else if (passEmitsToParent) {
       const message: CrossOriginIframeMessageEventContent<T> = {
-        type: 'rrweb',
+        type: 'howdygo-rrweb',
         event: eventProcessor(e),
         origin: window.location.origin,
         isCheckout,

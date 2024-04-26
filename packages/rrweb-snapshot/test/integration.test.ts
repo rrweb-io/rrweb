@@ -79,7 +79,7 @@ describe('integration tests', function (this: ISuite) {
     const {
       output: [{ code: _code }],
     } = await bundle.generate({
-      name: 'rrweb',
+      name: 'howdygo-rrweb',
       format: 'iife',
     });
     code = _code;
@@ -346,7 +346,7 @@ describe('iframe integration tests', function (this: ISuite) {
     const {
       output: [{ code: _code }],
     } = await bundle.generate({
-      name: 'rrweb',
+      name: 'howdygo-rrweb',
       format: 'iife',
     });
     code = _code;
@@ -394,7 +394,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     const {
       output: [{ code: _code }],
     } = await bundle.generate({
-      name: 'rrweb',
+      name: 'howdygo-rrweb',
       format: 'iife',
     });
     code = _code;

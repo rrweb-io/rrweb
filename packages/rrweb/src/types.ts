@@ -211,7 +211,7 @@ declare global {
 }
 
 export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
-  type: 'rrweb';
+  type: 'howdygo-rrweb';
   event: T;
   // The origin of the iframe which originally emits this message. It is used to check the integrity of message and to filter out the rrweb messages which are forwarded by some sites.
   origin: string;

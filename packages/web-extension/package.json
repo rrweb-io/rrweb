@@ -40,7 +40,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.13",
+    "howdygo-rrweb": "^2.0.0-alpha.13",
     "howdygo-rrweb-player": "^2.0.0-alpha.13"
   }
 }

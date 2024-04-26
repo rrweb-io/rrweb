@@ -89,7 +89,7 @@ export class IframeManager {
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
     const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
     if (
-      crossOriginMessageEvent.data.type !== 'rrweb' ||
+      crossOriginMessageEvent.data.type !== 'howdygo-rrweb' ||
       // To filter out the rrweb messages which are forwarded by some sites.
       crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin
     )

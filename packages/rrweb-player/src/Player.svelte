@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Replayer, unpack } from 'rrweb';
+  import { Replayer, unpack } from 'howdygo-rrweb';
   import type { eventWithTime } from 'howdygo-rrweb-types';
   import {
     inlineCss,

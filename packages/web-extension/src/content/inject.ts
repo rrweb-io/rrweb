@@ -1,4 +1,4 @@
-import { record } from 'rrweb';
+import { record } from 'howdygo-rrweb';
 import type { recordOptions } from 'rrweb/typings/types';
 import type { eventWithTime } from 'howdygo-rrweb-types';
 import { MessageName, RecordStartedMessage } from '~/types';

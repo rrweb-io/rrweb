@@ -1,5 +1,5 @@
 {
-  "name": "rrweb",
+  "name": "howdygo-rrweb",
   "version": "2.0.0-alpha.13",
   "description": "record and replay the web",
   "scripts": {
@@ -30,7 +30,7 @@
     "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
-    "rrweb"
+    "howdygo-rrweb"
   ],
   "main": "lib/rrweb-all.cjs",
   "module": "es/rrweb/packages/rrweb/src/entries/all.js",
