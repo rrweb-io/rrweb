@@ -1,4 +1,5 @@
-import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
+import { encode } from 'base64-arraybuffer';
+import type { Mirror, DataURLOptions } from 'rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,
@@ -12,10 +13,7 @@ import type {
 import { isBlocked } from '../../../utils';
 import { CanvasContext } from '@rrweb/types';
 import initCanvas2DMutationObserver from './2d';
-import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
-import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -51,7 +49,6 @@ export class CanvasManager {
   private locked = false;
 
   private snapshotInProgressMap: Map<number, boolean> = new Map();
-  private worker: ImageBitmapDataURLRequestWorker | null = null;
 
   public reset() {
     this.pendingCanvasMutations.clear();
@@ -66,14 +63,7 @@ export class CanvasManager {
     this.windowsSet = new WeakSet();
     this.windows = [];
     this.shadowDoms = new Set();
-    this.worker = null;
     this.snapshotInProgressMap = new Map();
-    if (
-      this.options.recordCanvas &&
-      typeof this.options.sampling === 'number'
-    ) {
-      this.worker = this.initFPSWorker();
-    }
   }
 
   public freeze() {
@@ -110,7 +100,6 @@ export class CanvasManager {
       this.startPendingCanvasMutationFlusher();
     }
     if (recordCanvas && typeof sampling === 'number') {
-      this.worker = this.initFPSWorker();
       this.initCanvasFPSObserver(sampling, blockClass, blockSelector, {
         dataURLOptions,
       });
@@ -130,17 +119,6 @@ export class CanvasManager {
     if (recordCanvas && sampling === 'all') {
       this.initCanvasMutationObserver(win, blockClass, blockSelector);
     }
-    if (recordCanvas && typeof sampling === 'number') {
-      const canvasContextReset = initCanvasContextObserver(
-        win,
-        blockClass,
-        blockSelector,
-        true,
-      );
-      this.restoreHandlers.push(() => {
-        canvasContextReset();
-      });
-    }
     this.windowsSet.add(win);
     this.windows.push(new WeakRef(win));
   }
@@ -151,47 +129,6 @@ export class CanvasManager {
 
   public resetShadowRoots() {
     this.shadowDoms = new Set();
-  }
-
-  private initFPSWorker(): ImageBitmapDataURLRequestWorker {
-    const worker =
-      new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
-    worker.onmessage = (e) => {
-      const { id } = e.data;
-      this.snapshotInProgressMap.set(id, false);
-
-      if (!('base64' in e.data)) return;
-
-      const { base64, type, width, height } = e.data;
-      this.mutationCb({
-        id,
-        type: CanvasContext['2D'],
-        commands: [
-          {
-            property: 'clearRect', // wipe canvas
-            args: [0, 0, width, height],
-          },
-          {
-            property: 'drawImage', // draws (semi-transparent) image
-            args: [
-              {
-                rr_type: 'ImageBitmap',
-                args: [
-                  {
-                    rr_type: 'Blob',
-                    data: [{ rr_type: 'ArrayBuffer', base64 }],
-                    type,
-                  },
-                ],
-              } as CanvasArg,
-              0,
-              0,
-            ],
-          },
-        ],
-      });
-    };
-    return worker;
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -221,6 +158,8 @@ export class CanvasManager {
   ) {
     const timeBetweenSnapshots = 1000 / fps;
     let lastSnapshotTime = 0;
+    const lastBlobMap: Map<number, string> = new Map();
+    const transparentBlobMap: Map<string, string> = new Map();
     let rafId: number;
 
     const getCanvas = (): HTMLCanvasElement[] => {
@@ -246,6 +185,26 @@ export class CanvasManager {
       }
       return matchedCanvas;
     };
+
+    async function getTransparentBlobFor(
+      width: number,
+      height: number,
+      dataURLOptions: DataURLOptions,
+    ): Promise<string> {
+      const id = `${width}-${height}`;
+      if ('OffscreenCanvas' in globalThis) {
+        if (transparentBlobMap.has(id)) return transparentBlobMap.get(id)!;
+        const offscreen = new OffscreenCanvas(width, height);
+        offscreen.getContext('2d'); // creates rendering context for `converToBlob`
+        const blob = await offscreen.convertToBlob(dataURLOptions); // takes a while
+        const arrayBuffer = await blob.arrayBuffer();
+        const base64 = encode(arrayBuffer); // cpu intensive
+        transparentBlobMap.set(id, base64);
+        return base64;
+      } else {
+        return '';
+      }
+    }
 
     const takeCanvasSnapshots = (timestamp: DOMHighResTimeStamp) => {
       if (!this.windows.length) {
@@ -276,39 +235,46 @@ export class CanvasManager {
           if (canvas.width === 0 || canvas.height === 0) return;
 
           this.snapshotInProgressMap.set(id, true);
-          if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
-            // if the canvas hasn't been modified recently,
-            // its contents won't be in memory and `createImageBitmap`
-            // will return a transparent imageBitmap
 
-            const context = canvas.getContext((canvas as ICanvas).__context) as
-              | WebGLRenderingContext
-              | WebGL2RenderingContext
-              | null;
-            if (
-              context?.getContextAttributes()?.preserveDrawingBuffer === false
-            ) {
-              // Hack to load canvas back into memory so `createImageBitmap` can grab it's contents.
-              // Context: https://twitter.com/Juice10/status/1499775271758704643
-              // Preferably we set `preserveDrawingBuffer` to true, but that's not always possible,
-              // especially when canvas is loaded before rrweb.
-              // This hack can wipe the background color of the canvas in the (unlikely) event that
-              // the canvas background was changed but clear was not called directly afterwards.
-              // Example of this hack having negative side effect: https://visgl.github.io/react-map-gl/examples/layers
-              context.clear(context.COLOR_BUFFER_BIT);
-            }
+          const blob: Blob = await new Promise((resolve) => canvas.toBlob(file => resolve(file!), options.dataURLOptions.type, options.dataURLOptions.quality));
+          const type = blob.type;
+          const arrayBuffer = await blob.arrayBuffer();
+          const base64 = encode(arrayBuffer); // cpu intensive // TODO in post processing
+
+          this.snapshotInProgressMap.set(id, false);
+          if (!lastBlobMap.has(id) && (await getTransparentBlobFor(canvas.width, canvas.height, options.dataURLOptions)) === base64) {
+            lastBlobMap.set(id, base64);
           }
-          const bitmap = await createImageBitmap(canvas);
-          this.worker?.postMessage(
-            {
+          if (lastBlobMap.get(id) !== base64) {
+            this.mutationCb({
               id,
-              bitmap,
-              width: canvas.width,
-              height: canvas.height,
-              dataURLOptions: options.dataURLOptions,
-            },
-            [bitmap],
-          );
+              type: CanvasContext['2D'],
+              commands: [
+                {
+                  property: 'clearRect', // wipe canvas
+                  args: [0, 0, canvas.width, canvas.height],
+                },
+                {
+                  property: 'drawImage', // draws (semi-transparent) image
+                  args: [
+                    {
+                      rr_type: 'ImageBitmap',
+                      args: [
+                        {
+                          rr_type: 'Blob',
+                          data: [{ rr_type: 'ArrayBuffer', base64 }],
+                          type,
+                        },
+                      ],
+                    } as CanvasArg,
+                    0,
+                    0,
+                  ],
+                },
+              ],
+            });
+            lastBlobMap.set(id, base64);
+          }
         });
       rafId = requestAnimationFrame(takeCanvasSnapshots);
     };
@@ -325,12 +291,6 @@ export class CanvasManager {
     blockClass: blockClass,
     blockSelector: string | null,
   ): void {
-    const canvasContextReset = initCanvasContextObserver(
-      win,
-      blockClass,
-      blockSelector,
-      false,
-    );
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
       win,
@@ -347,7 +307,6 @@ export class CanvasManager {
     );
 
     this.restoreHandlers.push(() => {
-      canvasContextReset();
       canvas2DReset();
       canvasWebGL1and2Reset();
     });
