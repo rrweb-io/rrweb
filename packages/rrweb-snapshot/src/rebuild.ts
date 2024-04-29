@@ -70,15 +70,6 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-// based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-// function escapeRegExp(str: string) {
-//   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-// }
-
-// const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
-// const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
-// const HOVER_SELECTOR = /([^\\]):hover/;
-// const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
 export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
@@ -88,59 +79,6 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
     cssText,
   );
   const result = ast.css;
-
-  // const mediaFeatures = css
-  //   .findAll(ast, (node) => node.type === 'MediaFeature')
-  //   .map((node) => css.generate(node))
-  //   .filter((feature) => MEDIA_SELECTOR.test(feature));
-
-  // const selectors: string[] = [];
-  // css.walk(ast, function (node) {
-  //   if (node.type === 'Selector') {
-  //     const selector = css.generate(node);
-  //     if (HOVER_SELECTOR.test(selector)) {
-  //       selectors.push(css.generate(node));
-  //     }
-  //   }
-  // });
-
-  // let result = css.generate(ast);
-  // if (selectors.length > 0) {
-  //   const selectorMatcher = new RegExp(
-  //     selectors
-  //       .filter((selector, index) => selectors.indexOf(selector) === index)
-  //       .sort((a, b) => b.length - a.length)
-  //       .map((selector) => {
-  //         return escapeRegExp(selector);
-  //       })
-  //       .join('|'),
-  //     'g',
-  //   );
-  //   result = result.replace(selectorMatcher, (selector) => {
-  //     const newSelector = selector.replace(
-  //       HOVER_SELECTOR_GLOBAL,
-  //       '$1.\\:hover',
-  //     );
-  //     return `${selector}, ${newSelector}`;
-  //   });
-  // }
-  // if (mediaFeatures.length > 0) {
-  //   const mediaMatcher = new RegExp(
-  //     mediaFeatures
-  //       .filter((media, index) => mediaFeatures.indexOf(media) === index)
-  //       .sort((a, b) => b.length - a.length)
-  //       .map((media) => {
-  //         return escapeRegExp(media);
-  //       })
-  //       .join('|'),
-  //     'g',
-  //   );
-  //   result = result.replace(mediaMatcher, (media) => {
-  //     // not attempting to maintain min-device-width along with min-width
-  //     // (it's non standard)
-  //     return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
-  //   });
-  // }
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
