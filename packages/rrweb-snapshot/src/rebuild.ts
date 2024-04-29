@@ -1,3 +1,4 @@
+import creator from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -8,6 +9,7 @@ import {
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
 // import * from "postcss"
+// import * from "postcss-pseudo-classes"
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const postcss = require('postcss');
@@ -82,7 +84,9 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   if (cachedStyle) return cachedStyle;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-  const ast: { css: string } = postcss([pseudoClasses]).process(cssText);
+  const ast: { css: string } = postcss([pseudoClasses, creator]).process(
+    cssText,
+  );
   const result = ast.css;
 
   // const mediaFeatures = css

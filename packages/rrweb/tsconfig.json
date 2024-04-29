@@ -24,9 +24,6 @@
     },
     {
       "path": "../rrdom"
-    },
-    {
-      "path": "../rrweb-snapshot"
     }
   ],
   "exclude": [
