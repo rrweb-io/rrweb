@@ -34,7 +34,7 @@ const pseudoClassPlugin: Plugin = {
             return;
           }
 
-          const selectorParts = selector.split(' ');
+          const selectorParts = selector.replace(/\n/g, ' ').split(' ');
           const pseudoedSelectorParts: string[] = [];
 
           selectorParts.forEach(function (selectorPart) {

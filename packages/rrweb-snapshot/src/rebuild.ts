@@ -8,7 +8,6 @@ import {
   legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
-// import * from "postcss"
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const postcss = require('postcss');
