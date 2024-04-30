@@ -331,7 +331,10 @@ export default class MutationBuffer {
         maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
         dataURLOptions: this.dataURLOptions,
-        captureAssets: this.captureAssets,
+        captureAssets: {
+          ...this.captureAssets,
+          _fromMutation: true,
+        },
         recordCanvas: this.recordCanvas,
         onSerialize: (currentN) => {
           if (isSerializedIframe(currentN, this.mirror)) {
