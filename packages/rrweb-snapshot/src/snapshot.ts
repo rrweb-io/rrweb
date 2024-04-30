@@ -676,6 +676,7 @@ function serializeElementNode(
     captureAssets = {
       objectURLs: true,
       origins: false,
+      _fromMutation: false,
     },
     recordCanvas,
     keepIframeSrcFn,
@@ -690,14 +691,13 @@ function serializeElementNode(
 
   // legacy, the stringifyStylesheet badly blocks the main thread as web page loads when taking an initial snapshot
   // prefer to capture as an asset instead
-  if (tagName === 'link' && !onAssetDetected) {
+  if (
+    tagName === 'link' &&
+    inlineStylesheet &&
+    (!onAssetDetected || captureAssets._fromMutation)
+  ) {
     const l = n as HTMLLinkElement;
-    if (
-      inlineStylesheet &&
-      l.href &&
-      lowerIfExists(l.rel) === 'stylesheet' &&
-      l.sheet
-    ) {
+    if (l.href && lowerIfExists(l.rel) === 'stylesheet' && l.sheet) {
       const cssText = stringifyStylesheet(l.sheet);
       if (cssText) {
         attributes._cssText = absoluteToStylesheet(cssText, l.href);
@@ -736,7 +736,7 @@ function serializeElementNode(
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
     const sheetBaseHref = getHref(doc);
-    if (!onAssetDetected) {
+    if (!onAssetDetected || captureAssets._fromMutation) {
       const cssText = stringifyStylesheet(
         (n as HTMLStyleElement).sheet as CSSStyleSheet,
       );
