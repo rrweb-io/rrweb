@@ -368,3 +368,23 @@ export function getInputValue(
 
   return el.value;
 }
+
+/**
+ * Extracts the file extension from an a path, considering search parameters and fragments.
+ * @param path - Path to file
+ * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
+ */
+export function extractFileExtension(
+  path: string,
+  baseURL?: string,
+): string | null {
+  let url;
+  try {
+    url = new URL(path, baseURL ?? window.location.href);
+  } catch (err) {
+    return null;
+  }
+  const regex = /\.([0-9a-z]+)(?:$)/i;
+  const match = url.pathname.match(regex);
+  return match?.[1] ?? null;
+}

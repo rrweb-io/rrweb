@@ -424,8 +424,8 @@ export type CanvasArg =
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   pointerType?: PointerTypes;
 };
 

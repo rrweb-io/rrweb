@@ -24,55 +24,58 @@ const pluginCode = fs.readFileSync(
 );
 
 async function injectRecording(frame) {
-  await frame.evaluate(
-    (rrwebCode, pluginCode) => {
-      const win = window;
-      if (win.__IS_RECORDING__) return;
-      win.__IS_RECORDING__ = true;
+  try {
+    await frame.evaluate(
+      (rrwebCode, pluginCode) => {
+        const win = window;
+        if (win.__IS_RECORDING__) return;
+        win.__IS_RECORDING__ = true;
 
-      (async () => {
-        function loadScript(code) {
-          const s = document.createElement('script');
-          s.type = 'text/javascript';
-          s.innerHTML = code;
-          if (document.head) {
-            document.head.append(s);
-          } else {
-            requestAnimationFrame(() => {
+        (async () => {
+          function loadScript(code) {
+            const s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.innerHTML = code;
+            if (document.head) {
               document.head.append(s);
-            });
+            } else {
+              requestAnimationFrame(() => {
+                document.head.append(s);
+              });
+            }
           }
-        }
-        loadScript(rrwebCode);
-        loadScript(pluginCode);
+          loadScript(rrwebCode);
+          loadScript(pluginCode);
 
-        win.events = [];
-        window.record = win.rrweb.record;
-        window.plugin = new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord(
-          {
-            signalSendCallback: (msg) => {
-              // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
-              _signal(msg);
+          win.events = [];
+          window.record = win.rrweb.record;
+          window.plugin =
+            new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord({
+              signalSendCallback: (msg) => {
+                // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
+                _signal(msg);
+              },
+            });
+
+          window.record({
+            emit: (event) => {
+              win.events.push(event);
+              win._captureEvent(event);
             },
-          },
-        );
-
-        window.record({
-          emit: (event) => {
-            win.events.push(event);
-            win._captureEvent(event);
-          },
-          plugins: [window.plugin.initPlugin()],
-          recordCanvas: false,
-          recordCrossOriginIframes: true,
-          collectFonts: true,
-          inlineImages: true,
-        });
-      })();
-    },
-    code,
-    pluginCode,
-  );
+            plugins: [window.plugin.initPlugin()],
+            recordCanvas: false,
+            recordCrossOriginIframes: true,
+            collectFonts: true,
+            inlineImages: true,
+          });
+        })();
+      },
+      code,
+      pluginCode,
+    );
+  } catch (e) {
+    console.error('failed to inject script, error:', e);
+  }
 }
 
 async function startReplay(page, serverURL, recordedPage) {
