@@ -2,7 +2,11 @@
  * @jest-environment jsdom
  */
 import { NodeType, serializedNode } from '../src/types';
-import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
+import {
+  escapeImportStatement,
+  extractFileExtension,
+  isNodeMetaEqual,
+} from '../src/utils';
 import { serializedNodeWithId } from 'rrweb-snapshot';
 
 describe('utils', () => {
@@ -196,6 +200,70 @@ describe('utils', () => {
       const path = 'https://example.com/scripts/app.min.js?version=1.0';
       const extension = extractFileExtension(path);
       expect(extension).toBe('js');
+    });
+  });
+
+  describe('escapeImportStatement', () => {
+    it('parses imports with quotes correctly', () => {
+      const out1 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"");`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: null,
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out1).toEqual(`@import url("/foo.css;900;800\\"");`);
+
+      const out2 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") supports(display: flex);`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: null,
+        supportsText: 'display: flex',
+      } as unknown as CSSImportRule);
+      expect(out2).toEqual(
+        `@import url("/foo.css;900;800\\"") supports(display: flex);`,
+      );
+
+      const out3 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"");`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 1,
+          mediaText: 'print, screen',
+        },
+        layerName: null,
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out3).toEqual(`@import url("/foo.css;900;800\\"") print, screen;`);
+
+      const out4 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") layer(layer-1);`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: 'layer-1',
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out4).toEqual(
+        `@import url("/foo.css;900;800\\"") layer(layer-1);`,
+      );
+
+      const out5 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") layer;`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: '',
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out5).toEqual(`@import url("/foo.css;900;800\\"") layer;`);
     });
   });
 });
