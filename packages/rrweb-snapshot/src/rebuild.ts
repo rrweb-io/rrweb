@@ -1,4 +1,4 @@
-import creator from './css';
+import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -9,18 +9,9 @@ import {
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
 // import * from "postcss"
-// import * from "postcss-pseudo-classes"
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const postcss = require('postcss');
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-call
-const pseudoClasses = require('postcss-pseudo-classes')({
-  blacklist: [],
-  restrictTo: ['hover'],
-  preserveBeforeAfter: false,
-  prefix: '\\:',
-});
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -75,9 +66,10 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   if (cachedStyle) return cachedStyle;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-  const ast: { css: string } = postcss([pseudoClasses, creator]).process(
-    cssText,
-  );
+  const ast: { css: string } = postcss([
+    mediaSelectorPlugin,
+    pseudoClassPlugin,
+  ]).process(cssText);
   const result = ast.css;
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
