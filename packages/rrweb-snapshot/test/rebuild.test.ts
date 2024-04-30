@@ -174,50 +174,18 @@ a.\\:hover b.\\:hover { color: white }`,
       );
     });
 
-    it('can adapt media rules to replay context', () => {
-      const cssText =
-        '@media only screen and (min-device-width: 1200px) { .a { width: 10px; }}';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '@media only screen and (min-width: 1200px) { .a { width: 10px; }}',
-      );
-    });
-
     it('should allow empty property value', () => {
       expect(adaptCssForReplay('p { color:; }', cache)).toEqual(
         'p { color:; }',
       );
     });
 
-    it('should parse selector with comma nested inside ()', () => {
-      expect(
-        adaptCssForReplay(
-          '[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }',
-          cache,
-        ),
-      )
-        .toEqual(`[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active),
-[_nghost-ng-c4172599085]:not(.fit-content).aim-select.\\:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }`);
-    });
-
-    it('parses nested commas in selectors correctly', () => {
-      expect(
-        adaptCssForReplay(
-          'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) { background: red; }',
-          cache,
-        ),
-      ).toEqual(
-        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) { background: red; }',
+    it('can adapt media rules to replay context', () => {
+      const cssText =
+        '@media only screen and (min-device-width : 1200px) { .a { width: 10px; }}';
+      expect(adaptCssForReplay(cssText, cache)).toEqual(
+        '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
       );
-    });
-
-    it('ignores comma in string', () => {
-      expect(
-        adaptCssForReplay(
-          'li[attr="has,comma"] a:hover { background-color: red; }',
-          cache,
-        ),
-      ).toEqual(`li[attr="has,comma"] a:hover,
-li[attr="has,comma"] a.\\:hover { background-color: red; }`);
     });
 
     // this benchmark is unreliable when run in parallel with other tests

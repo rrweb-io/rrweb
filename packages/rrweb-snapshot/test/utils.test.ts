@@ -5,6 +5,7 @@ import { NodeType, serializedNode } from '../src/types';
 import {
   escapeImportStatement,
   extractFileExtension,
+  fixSafariColons,
   isNodeMetaEqual,
 } from '../src/utils';
 import { serializedNodeWithId } from 'rrweb-snapshot';
@@ -264,6 +265,18 @@ describe('utils', () => {
         supportsText: null,
       } as unknown as CSSImportRule);
       expect(out5).toEqual(`@import url("/foo.css;900;800\\"") layer;`);
+    });
+  });
+  describe('fixSafariColons', () => {
+    it('parses : in attribute selectors correctly', () => {
+      const out1 = fixSafariColons('[data-foo] { color: red; }');
+      expect(out1).toEqual('[data-foo] { color: red; }');
+
+      const out2 = fixSafariColons('[data-foo:other] { color: red; }');
+      expect(out2).toEqual('[data-foo\\:other] { color: red; }');
+
+      const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
+      expect(out3).toEqual('[data-aa\\:other] { color: red; }');
     });
   });
 });
