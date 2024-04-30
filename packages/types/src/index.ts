@@ -74,6 +74,10 @@ export type captureAssetsParam = {
    * Set to `false` or `[]` to disable capturing from any origin (apart from object URLs or when inlineStylesheet=='all')
    */
   origins: string[] | true | false;
+  /**
+   * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
+   */
+  _fromMutation?: true;
 };
 
 export type assetEvent = {
