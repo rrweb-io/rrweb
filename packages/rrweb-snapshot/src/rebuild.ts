@@ -326,6 +326,7 @@ function buildNode(
             n.id,
             name.substring('rr_captured_'.length), // ok that 'rr_css_text' gets erased
             value,
+            n,
           );
           continue;
         }

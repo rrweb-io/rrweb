@@ -6,7 +6,6 @@ import {
   createCache,
   Mirror,
   createMirror,
-  type serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
 import {
@@ -70,6 +69,7 @@ import type {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  serializedElementNodeWithId,
 } from '@rrweb/types';
 import {
   polyfill,
