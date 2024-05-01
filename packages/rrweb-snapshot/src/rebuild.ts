@@ -168,8 +168,9 @@ export function applyCssSplits(
  * browser sees and serialize this to a special _cssText attribute, blanking
  * out any text nodes. This function reverses that and also handles cases where
  * there were no textNode children present (dynamic css/or a <link> element) as
- * well as multiple textNodes, which need to be repopulated (based on presence of
- * a special `rr_split` marker in case they are modified by subsequent mutations.
+ * well as multiple textNodes, which need to be repopulated correctly (based on
+ * presence of a special `rr_split` marker) in case they are modified by subsequent
+ * mutations.
  */
 export function buildStyleNode(
   n: serializedElementNodeWithId,
