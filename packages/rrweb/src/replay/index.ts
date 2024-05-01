@@ -656,6 +656,7 @@ export class Replayer {
         case EventType.DomContentLoaded:
         case EventType.Load:
         case EventType.Custom:
+        case EventType.Asset:
           continue;
         case EventType.FullSnapshot:
         case EventType.Meta:
