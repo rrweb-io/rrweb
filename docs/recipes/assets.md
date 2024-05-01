@@ -21,6 +21,8 @@ The `captureAssets` configuration option allows you to customize the asset captu
   - `true`: Captures assets from all origins.
   - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
 
+- `processStylesheetsWithin` (default: `2000`): This property defines the maximum time in milliseconds that the browser should  delay before processing stylesheets. Lower this value if you wish to improve the odds that short 'bounce' visits will emit the asset before visitor unloads page.
+
 ## TypeScript Type Definition
 
 Here is the TypeScript type definition for the `recordOptions` object, which includes the asset capture configuration options:
