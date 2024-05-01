@@ -200,7 +200,7 @@ export function applyCssSplits(
  * out any text nodes. This function reverses that and also handles cases where
  * there were no textNode children present (dynamic css/or a <link> element) as
  * well as multiple textNodes (`cssTextSplits`), which need to be repopulated
- * in case they are modified by subsequent mutations.
+ * correctly in case they are modified by subsequent mutations.
  */
 export function buildStyleNode(
   n: serializedElementNodeWithId,
