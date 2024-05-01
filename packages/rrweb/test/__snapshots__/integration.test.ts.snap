@@ -16904,6 +16904,26 @@ exports[`record integration tests > should record shadow DOM 1`] = `
     }
   },
   {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:2\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+      }
+    }
+  },
+  {
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 0,
@@ -16958,26 +16978,6 @@ exports[`record integration tests > should record shadow DOM 1`] = `
           }
         }
       ]
-    }
-  },
-  {
-    \\"type\\": 7,
-    \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
-      \\"payload\\": {
-        \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
-      }
-    }
-  },
-  {
-    \\"type\\": 7,
-    \\"data\\": {
-      \\"url\\": \\"rr_css_text:2\\",
-      \\"payload\\": {
-        \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
-      }
     }
   },
   {

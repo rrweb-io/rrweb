@@ -190,7 +190,9 @@ export default class AssetManager {
     };
     if (window.requestIdleCallback !== undefined) {
       // try not to clog up main thread
-      requestIdleCallback(processStylesheet);
+      requestIdleCallback(processStylesheet, {
+        timeout: this.config.processStylesheetsWithin || 2000,
+      });
       return { status: 'capturing' }; // 'processing' ?
     } else {
       processStylesheet();
