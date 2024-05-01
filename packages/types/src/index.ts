@@ -60,7 +60,7 @@ export type pluginEvent<T = unknown> = {
   };
 };
 
-export type captureAssetsParam = {
+export type captureAssetsParam = Partial<{
   /**
    * Captures object URLs (blobs, files, media sources).
    * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
@@ -77,8 +77,15 @@ export type captureAssetsParam = {
   /**
    * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
    */
-  _fromMutation?: true;
-};
+  _fromMutation: true;
+  /*
+   * in milliseconds, default 2000
+   * stylesheets are captured as assets in order to take their processing off the main thread
+   * this number may need to be reduced to ensure that stylesheet assets are emitted
+   * in time
+   */
+  processStylesheetsWithin: number;
+}>;
 
 export type assetEvent = {
   type: EventType.Asset;
