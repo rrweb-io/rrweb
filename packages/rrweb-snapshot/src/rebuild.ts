@@ -175,7 +175,12 @@ export function applyCssSplits(
  * mutations.
  */
 export function buildStyleNode(
-  n: any, // serializedElementNodeWithId | HTMLStyleElement | RRStyleElement,
+  n:
+    | serializedElementNodeWithId
+    /* when rebuilding via assets, we might have already created the <style> element.
+     * This function only cares about childNodes and cn.textContent so can also rebuild directly to the DOM
+     */
+    | HTMLStyleElement,
   styleEl: HTMLStyleElement, // when inlined, a <link type="stylesheet"> also gets rebuilt as a <style>
   cssText: string,
   options: {
