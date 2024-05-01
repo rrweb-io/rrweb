@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.16.0
+
+### Various fixes & improvements
+
+- fix merge conflict (#189) by @billyvg
+- Revert "Masking: Avoid the repeated calls to `closest` when recursing through the DOM (#1349)" (#186) by @billyvg
+- Revert "Full overhawl of video & audio playback to make it more complete (#1432)" (#186) by @billyvg
+- Revert "Fix serialization and mutation of <textarea> elements (#1351)" (#186) by @billyvg
+- Revert "Enable preserveSource (#1309)" (#186) by @billyvg
+- upstream: Add config option to turn off all snapshotting and related observers (#163) by @billyvg
+- optional (#183) by @billyvg
+- fix: Change `maxCanvasSize` to be optional (#183) by @billyvg
+- sentry fix (#180) by @billyvg
+- perf: Avoid an extra function call and object clone during event emission (#1441) by @billyvg
+- perf: Avoid an extra function call and object clone during event emission (#1441) by @eoghanmurray
+- better splitting of selectors (#1440) by @daibhin
+- Version Packages (alpha) (#1436) by @github-actions
+- Add "types" field to fix error when using "moduleResolution": "NodeNext" (#1369) by @stefansundin
+- Fix for test cases mentioned in #1379 (#1401) by @dengelke
+- Full overhawl of video & audio playback to make it more complete (#1432) by @Juice10
+- I forgot to pay attention to `yarn format` during merge of #1408 (#1452) by @eoghanmurray
+- Expose constant SKIP_TIME_THRESHOLD as inactivePeriodThreshold in replayer (#1408) by @avillegasn
+- protect against no parent node (#1445) by @daibhin
+- fix: createImageBitmap throws DOMException if source is 0 (#1422) by @marandaneto
+- Chore: Make inject script more robust on repl & stream (#1429) by @Juice10
+- Version Packages (alpha) (#1291) by @github-actions
+- Add HowdyGo to Who's using rrweb (#1423) by @dengelke
+- Fix some css issues with :hover and rewrite max-device-width (#1431) by @eoghanmurray
+
+_Plus 30 more_
+
 ## 2.14.0
 
 ### Various fixes & improvements
