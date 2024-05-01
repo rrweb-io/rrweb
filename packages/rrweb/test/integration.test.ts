@@ -186,10 +186,21 @@ describe('record integration tests', function (this: ISuite) {
     // This test shows that the `isStyle` attribute on textContent is not needed in a mutation
     // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
     const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+
+    const waitForStylesheetAssets = 100;
+
     await page.goto(`${serverURL}/html`);
-    await page.setContent(getHtml.call(this, 'style.html'));
+    await page.setContent(
+      getHtml.call(this, 'style.html', {
+        captureAssets: {
+          processStylesheetsWithin: waitForStylesheetAssets,
+        },
+      }),
+    );
 
     await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
 
     await page.evaluate(() => {
       let styleEl = document.querySelector('style#dual-textContent');
@@ -1049,7 +1060,16 @@ describe('record integration tests', function (this: ISuite) {
   it('should record shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'shadow-dom.html'));
+
+    const waitForStylesheetAssets = 100;
+    await page.setContent(
+      getHtml.call(this, 'shadow-dom.html', {
+        captureAssets: {
+          processStylesheetsWithin: waitForStylesheetAssets,
+        },
+      }),
+    );
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
 
     await page.evaluate(() => {
       const sleep = (ms: number) =>
