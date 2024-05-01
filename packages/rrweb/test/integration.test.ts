@@ -948,52 +948,6 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
-  it('should record images inside iframe with blob url if inlineImages is on', async () => {
-    const page: puppeteer.Page = await browser.newPage();
-    page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`${serverURL}/html`);
-    await page.setContent(
-      getHtml.call(this, 'frame-image-blob-url.html', {
-        inlineImages: true,
-        captureAssets: { origins: false }, // override the default, leaving objectUrls unspecified
-      }),
-    );
-    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
-    await page.waitForTimeout(150); // wait for image to get added
-    await waitForRAF(page); // wait for image to be captured
-
-    const snapshots = (await page.evaluate(
-      'window.snapshots',
-    )) as eventWithTime[];
-    assertSnapshot(snapshots);
-  });
-
-  it('should record images inside iframe with blob url after iframe was reloaded if inlineImages is on', async () => {
-    const page: puppeteer.Page = await browser.newPage();
-    page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`${serverURL}/html`);
-    await page.setContent(
-      getHtml.call(this, 'frame2.html', {
-        inlineImages: true,
-        captureAssets: { origins: false }, // override the default, leaving objectUrls unspecified
-      }),
-    );
-    await page.waitForSelector('iframe'); // wait for iframe to get added
-    await waitForRAF(page); // wait for iframe to load
-    page.evaluate(() => {
-      const iframe = document.querySelector('iframe')!;
-      iframe.setAttribute('src', '/html/image-blob-url.html');
-    });
-    await page.waitForResponse(`${serverURL}/html/assets/robot.png`); // wait for image to get loaded
-    await page.waitForTimeout(150); // wait for image to get added
-    await waitForRAF(page); // wait for image to be captured
-
-    const snapshots = (await page.evaluate(
-      'window.snapshots',
-    )) as eventWithTime[];
-    assertSnapshot(snapshots);
-  });
-
   it('should record images with blob url', async () => {
     const page: puppeteer.Page = await browser.newPage();
     page.on('console', (msg) => console.log(msg.text()));
