@@ -518,6 +518,25 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
+  it("doesn't duplicate assets and mutations", async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+
+      const styleEl = document.createElement(`style`);
+      document.head.appendChild(styleEl);
+
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+
+      // this will show up as an Asset due to the processing delay, but showing up as
+      // a mutation is also correct
+      styleEl.append(document.createTextNode('span { color: orange; }'));
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
+
   it('captures stylesheets with `blob:` url', async () => {
     await ctx.page.evaluate(() => {
       const link1 = document.createElement('link');
