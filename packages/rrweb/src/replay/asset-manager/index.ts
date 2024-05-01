@@ -270,7 +270,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           }
           if (status.cssText) {
             buildStyleNode(
-              serializedNode || node,
+              serializedNode || (node as HTMLStyleElement),
               node as HTMLStyleElement,
               status.cssText,
               status.cssTextSplits || [],
