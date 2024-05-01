@@ -4,9 +4,10 @@ import {
   elementNode,
   legacyAttributes,
   NodeType,
+  serializedElementNodeWithId,
 } from '@rrweb/types';
 import { Rule, Media, NodeWithRules, parse } from './css';
-import { tagMap, BuildCache, serializedElementNodeWithId } from './types';
+import { tagMap, BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual, lowerIfExists } from './utils';
 
 const tagMap: tagMap = {
@@ -218,6 +219,9 @@ export function buildStyleNode(
   if (n.childNodes.length) {
     applyCssSplits(n, cssText, cssTextSplits, hackCss, cache);
   } else {
+    if (cssTextSplits.length) {
+      console.warn('ignoring cssTextSplits');
+    }
     if (hackCss) {
       cssText = adaptCssForReplay(cssText, cache);
     }
@@ -406,6 +410,7 @@ function buildNode(
             n.id,
             name.substring('rr_captured_'.length), // ok that 'rr_css_text' gets erased
             value,
+            n,
           );
           continue;
         }

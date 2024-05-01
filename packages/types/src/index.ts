@@ -802,6 +802,7 @@ export declare abstract class RebuildAssetManagerInterface {
     id: number,
     attribute: string,
     originalValue: string | number,
+    serializedNode?: serializedElementNodeWithId,
   ): void;
 }
 
@@ -895,6 +896,11 @@ export type serializedNode = (
 };
 
 export type serializedNodeWithId = serializedNode & { id: number };
+
+export type serializedElementNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Element>
+>;
 
 export interface IMirror<TNode> {
   getId(n: TNode | undefined | null): number;

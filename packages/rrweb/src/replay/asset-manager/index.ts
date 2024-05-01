@@ -6,6 +6,7 @@ import type {
   SerializedCssTextArg,
   SerializedCanvasArg,
   captureAssetsParam,
+  serializedElementNodeWithId,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
 import {
@@ -169,6 +170,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     nodeId: number,
     attribute: string,
     serializedValue: string | number,
+    serializedNode?: serializedElementNodeWithId,
   ): Promise<unknown> {
     const newValue =
       typeof serializedValue === 'string'
@@ -219,10 +221,14 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           }),
         );
       });
-    } else if (preloadedStatus.status === 'loaded' && preloadedStatus.cssText) {
+    } else if (
+      preloadedStatus.status === 'loaded' &&
+      preloadedStatus.cssText &&
+      serializedNode
+    ) {
       // this is the case with preloadAllAssets; we can build immediately as unlike images, there's no asynchronous rebuild step
       buildStyleNode(
-        node, // buildStyleNode also accepts serializedElementNodeWithId here
+        serializedNode,
         node as HTMLStyleElement,
         preloadedStatus.cssText,
         preloadedStatus.cssTextSplits || [],
@@ -265,7 +271,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           }
           if (status.cssText) {
             buildStyleNode(
-              node, // buildStyleNode also accepts serializedElementNodeWithId here
+              serializedNode || node,
               node as HTMLStyleElement,
               status.cssText,
               status.cssTextSplits || [],

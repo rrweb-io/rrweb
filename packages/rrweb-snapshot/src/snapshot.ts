@@ -5,12 +5,12 @@ import {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
-  serializedElementNodeWithId,
   type mediaAttributes,
 } from './types';
 import {
   serializedNode,
   serializedNodeWithId,
+  serializedElementNodeWithId,
   NodeType,
   attributes,
   elementNode,
