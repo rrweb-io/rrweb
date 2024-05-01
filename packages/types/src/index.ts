@@ -163,7 +163,7 @@ export type incrementalData =
   | adoptedStyleSheetData
   | customElementData;
 
-export type event =
+export type eventWithoutTime =
   | domContentLoadedEvent
   | loadedEvent
   | fullSnapshotEvent
@@ -172,7 +172,13 @@ export type event =
   | customEvent
   | pluginEvent;
 
-export type eventWithTime = event & {
+/**
+ * @deprecated intended for internal use
+ * a synonym for eventWithoutTime
+ */
+export type event = eventWithoutTime;
+
+export type eventWithTime = eventWithoutTime & {
   timestamp: number;
   delay?: number;
 };
