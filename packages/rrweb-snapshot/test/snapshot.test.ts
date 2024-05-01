@@ -258,6 +258,7 @@ describe('onAssetDetected callback', () => {
   const serializeNode = (
     node: Node,
     onAssetDetected: (result: asset) => void,
+    inlineImages?: boolean,
   ): serializedNodeWithId | null => {
     return serializeNodeWithId(node, {
       doc: document,
@@ -272,7 +273,7 @@ describe('onAssetDetected callback', () => {
       maskInputFn: undefined,
       slimDOMOptions: {},
       newlyAddedElement: false,
-      inlineImages: false,
+      inlineImages: Boolean(inlineImages),
       captureAssets: {
         objectURLs: true,
         origins: ['https://example.com'],
@@ -363,6 +364,27 @@ describe('onAssetDetected callback', () => {
       attr: 'href',
       value: 'https://example.com/css/style.css',
     });
+  });
+
+  it('should not detect different origin stylesheet as asset', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://rrweb.com/css/style.css" />
+</div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(0);
+  });
+
+  it('should not confuse inlineImages=true with capturing all stylesheets', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://rrweb.com/css/style.css" />
+</div>`);
+
+    const callback = jest.fn();
+    const inlineImages = true;
+    serializeNode(el, callback, inlineImages);
+    expect(callback).toBeCalledTimes(0);
   });
 
   it('should detect style element as asset', () => {
