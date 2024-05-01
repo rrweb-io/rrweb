@@ -463,9 +463,15 @@ export default class MutationBuffer {
         .map((text) => {
           const n = text.node;
           const parent = dom.parentNode(n);
-          if (parent && (parent as Element).tagName === 'TEXTAREA') {
-            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+          if (parent) {
+            let parentEl = parent as Element;
+            if (parentEl.tagName === 'TEXTAREA') {
+              // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+              this.genTextAreaValueMutation(parentEl as HTMLTextAreaElement);
+            } else if (parentEl.tagName === 'STYLE' && 'rr_processingStylesheet' in parent) {
+              // stylesheet hasn't been captured as an asset yet, ignore this mutation
+              return { id: -1, value: null };
+            }
           }
           return {
             id: this.mirror.getId(n),
@@ -731,6 +737,13 @@ export default class MutationBuffer {
           // children would be ignored in genAdds as they aren't in the mirror
           this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
           return; // any removedNodes won't have been in mirror either
+        }
+        if (
+          (m.target as Element).tagName === 'STYLE' &&
+          'rr_processingStylesheet' in m.target
+        ) {
+          // stylesheet hasn't been captured as an asset yet
+          return;
         }
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
