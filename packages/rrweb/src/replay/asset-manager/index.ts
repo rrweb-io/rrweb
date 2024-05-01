@@ -173,6 +173,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       typeof serializedValue === 'string'
         ? serializedValue
         : `rr_css_text:${serializedValue}`;
+    const preloadedStatus = this.get(newValue);
 
     let isCssTextElement = false;
     if (node.nodeName === 'STYLE') {
@@ -217,6 +218,18 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           }),
         );
       });
+    } else if (preloadedStatus.status === 'loaded' && preloadedStatus.cssText) {
+      // this is the case with preloadAllAssets; we can build immediately as unlike images, there's no asynchronous rebuild step
+      buildStyleNode(
+        node, // buildStyleNode also accepts serializedElementNodeWithId here
+        node as HTMLStyleElement,
+        preloadedStatus.cssText,
+        preloadedStatus.cssTextSplits || [],
+        {
+          hackCss: true, // seems to be always true in this package
+          cache: this.cache,
+        },
+      );
     } else {
       // In live mode we removes the attribute while it loads so it doesn't show the broken image icon
       if (this.liveMode && nodeId > 0 && !isCssTextElement) {
