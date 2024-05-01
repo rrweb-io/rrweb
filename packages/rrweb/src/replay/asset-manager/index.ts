@@ -45,6 +45,9 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       this.executeCallbacks(url, { status: 'failed' });
       return;
     }
+    if (this.loadingURLs.has(url)) {
+      return;
+    }
     this.loadingURLs.add(url);
 
     // tracks if deserializing did anything, not really needed for AssetManager
