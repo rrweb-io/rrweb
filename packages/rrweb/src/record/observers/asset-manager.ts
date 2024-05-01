@@ -182,8 +182,15 @@ export default class AssetManager {
           payload,
         });
       }
+      if ('rr_processingStylesheet' in el) {
+        delete el.rr_processingStylesheet;
+      }
     };
     if (window.requestIdleCallback !== undefined) {
+      if (el.tagName === 'STYLE') {
+        // mark it so mutations on it can be ignored until processed
+        (el as any).rr_processingStylesheet = true;
+      }
       // try not to clog up main thread
       requestIdleCallback(processStylesheet, {
         timeout: this.config.processStylesheetsWithin || 2000,
