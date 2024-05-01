@@ -1,5 +1,9 @@
 import { parse, Rule, Media } from '../src/css';
-import { fixSafariColons, escapeImportStatement } from './../src/utils';
+import {
+  fixSafariColons,
+  escapeImportStatement,
+  stringifyRule,
+} from './../src/utils';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
@@ -150,7 +154,7 @@ describe('css parser', () => {
 
   it('parses nested commas in selectors correctly', () => {
     const result = parse(
-      `
+        `
 body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {
   background: red;
 }
@@ -159,37 +163,83 @@ body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {
     expect((result.stylesheet!.rules[0] as Rule)!.selectors!.length).toEqual(1);
 
     const trickresult = parse(
-      `
+        `
 li[attr="weirdly("] a:hover, li[attr="weirdly)"] a {
   background-color: red;
 }
 `,
     );
     expect(
-      (trickresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
+        (trickresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
     ).toEqual(2);
 
     const weirderresult = parse(
-      `
+        `
 li[attr="weirder\\"("] a:hover, li[attr="weirder\\")"] a {
   background-color: red;
 }
 `,
     );
     expect(
-      (weirderresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
+        (weirderresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
     ).toEqual(2);
 
     const commainstrresult = parse(
-      `
+        `
 li[attr="has,comma"] a:hover {
   background-color: red;
 }
 `,
     );
     expect(
-      (commainstrresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
+        (commainstrresult.stylesheet!.rules[0] as Rule)!.selectors!.length,
     ).toEqual(1);
+  });
+
+  it('does not alter correctly parsed grid template rules', () => {
+    const cssText =
+      '#wrapper { display: grid; width: 100%; height: 100%; grid-template: repeat(2, 1fr); margin: 0px auto; }';
+    const stringified = stringifyRule({
+      cssText: cssText,
+    } as Partial<CSSStyleRule> as CSSStyleRule);
+    expect(stringified).toEqual(cssText);
+  });
+
+  it('fixes incorrectly parsed grid template rules', () => {
+    const cssText =
+      '#wrapper { display: grid; grid-template: "header header" max-content / repeat(2, 1fr); margin: 0px auto; }';
+    // to avoid using JSDom we can fake as much of the CSSStyleDeclaration as we need
+    const cssStyleDeclaration: Record<string | number, any> = {
+      length: 3,
+      0: 'grid-template-areas',
+      1: 'grid-template-rows',
+      2: 'grid-template-columns',
+      items: (i: number): string => {
+        return [cssStyleDeclaration[i]].toString();
+      },
+      getPropertyValue: (key: string): string => {
+        if (key === 'grid-template-areas') {
+          return '"header header" "main main" "footer footer"';
+        }
+        if (key === 'grid-template-rows') {
+          return 'repeat(2, 1fr)';
+        }
+        if (key === 'grid-template-columns') {
+          return 'repeat(2, 1fr)';
+        }
+        return '';
+      },
+    };
+
+    const stringified = stringifyRule({
+      cssText: cssText,
+      selectorText: '#wrapper',
+      style: cssStyleDeclaration as unknown as CSSStyleDeclaration,
+    } as Partial<CSSStyleRule> as CSSStyleRule);
+
+    expect(stringified).toEqual(
+      '#wrapper { display: grid; margin: 0px auto; grid-template-areas: "header header" "main main" "footer footer"; grid-template-rows: repeat(2, 1fr); grid-template-columns: repeat(2, 1fr); }',
+    );
   });
 
   it('parses imports with quotes correctly', () => {
