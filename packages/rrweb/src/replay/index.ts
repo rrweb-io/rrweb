@@ -207,7 +207,10 @@ export class Replayer {
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
-    this.assetManager = new AssetManager({ liveMode: this.config.liveMode });
+    this.assetManager = new AssetManager({
+      liveMode: this.config.liveMode,
+      cache: this.cache,
+    });
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -1803,8 +1806,8 @@ export class Replayer {
       }
       const targetEl = target as HTMLElement | RRElement;
       for (const attributeName in mutation.attributes) {
+        const value = mutation.attributes[attributeName];
         if (typeof attributeName === 'string') {
-          const value = mutation.attributes[attributeName];
           if (value === null) {
             (target as Element | RRElement).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
@@ -1887,6 +1890,13 @@ export class Replayer {
               }
             }
           }
+        } else if (
+          typeof value === 'number' &&
+          attributeName === 'rr_css_text'
+        ) {
+          this.warn(
+            `rr_css_text is only intended for snapshot and shouldn't be present in a mutation`,
+          );
         }
       }
     });

@@ -15,6 +15,7 @@ import rebuild, {
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,
+  buildStyleNode,
 } from './rebuild';
 export * from './types';
 export * from './utils';
@@ -36,4 +37,5 @@ export {
   IGNORED_NODE,
   genId,
   getSourcesFromSrcset,
+  buildStyleNode,
 };
