@@ -8,6 +8,7 @@ import {
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
+  sampleStyleSheetAssetRemoveEvents as styleSheetAssetRemoveEvents,
   waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
@@ -194,6 +195,23 @@ describe('replayer', function () {
 
   it('can handle removing style elements', async () => {
     await page.evaluate(`events = ${JSON.stringify(stylesheetRemoveEvents)}`);
+    const actionLength = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).toEqual(
+      stylesheetRemoveEvents.filter(
+        (e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500,
+      ).length,
+    );
+
+    await assertDomSnapshot(page);
+  });
+
+  it('can handle removing style elements which were emitted as an asset', async () => {
+    await page.evaluate(`events = ${JSON.stringify(styleSheetAssetRemoveEvents)}`);
     const actionLength = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
