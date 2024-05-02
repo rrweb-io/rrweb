@@ -211,18 +211,14 @@ function isSVGElement(el: Element): boolean {
 
 function getHref(doc: Document, customHref?: string) {
   let a = cachedDocument.get(doc);
-
   if (!a) {
     a = doc.createElement('a');
     cachedDocument.set(doc, a);
   }
-
   if (!customHref) {
     customHref = '';
   }
-
   a.setAttribute('href', customHref);
-
   return a.href;
 }
 
