@@ -43,6 +43,11 @@ export function genId(): number {
   return _id++;
 }
 
+let _style_id = 1;
+export function genStyleId(): number {
+  return _style_id++;
+}
+
 function getValidTagName(element: HTMLElement): Lowercase<string> {
   if (element instanceof HTMLFormElement) {
     return 'form';
@@ -730,18 +735,30 @@ function serializeElementNode(
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
-    const cssText = stringifyStylesheet(
-      (n as HTMLStyleElement).sheet as CSSStyleSheet,
-    );
-    if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref(doc));
-      if (n.childNodes.length > 1) {
-        const splits = findCssTextSplits(
-          attributes._cssText,
-          n as HTMLStyleElement,
-        );
-        attributes._cssTextSplits = splits.join(' ');
+    const sheetBaseHref = getHref(doc);
+    if (!onAssetDetected) {
+      const cssText = stringifyStylesheet(
+        (n as HTMLStyleElement).sheet as CSSStyleSheet,
+      );
+      if (cssText) {
+        attributes._cssText = absoluteToStylesheet(cssText, sheetBaseHref);
+        if (n.childNodes.length > 1) {
+          const splits = findCssTextSplits(
+            attributes._cssText,
+            n as HTMLStyleElement,
+          );
+          attributes._cssTextSplits = splits.join(' ');
+        }
       }
+    } else {
+      const styleId = genStyleId();
+      onAssetDetected({
+        element: n,
+        attr: 'css_text',
+        value: sheetBaseHref,
+        styleId,
+      });
+      attributes.rr_css_text = styleId;
     }
   }
   // form fields
@@ -1223,8 +1240,8 @@ export function serializeNodeWithId(
     } else {
       if (
         serializedNode.type === NodeType.Element &&
-        (serializedNode as elementNode).attributes._cssText !== undefined &&
-        typeof serializedNode.attributes._cssText === 'string'
+        (serializedNode.attributes.rr_css_text ||
+          serializedNode.attributes._cssText)
       ) {
         bypassOptions.blankTextNodes = true;
       }
@@ -1401,6 +1418,7 @@ function snapshot(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      *  - `href` attribute on a `link rel=stylesheet` tag.
+     *  - css contents of a `style` element.
      */
     onAssetDetected?: (asset: asset) => unknown;
   },

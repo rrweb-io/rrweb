@@ -344,6 +344,10 @@ function diffProps(
         name.substring('rr_captured_'.length),
         newValue,
       );
+    } else if (name === 'rr_css_text') {
+      console.warn(
+        'styles should not be assigned during a mutation but rather inlined directly',
+      );
     } else oldTree.setAttribute(name, newValue);
   }
 
