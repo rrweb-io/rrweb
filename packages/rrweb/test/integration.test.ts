@@ -239,6 +239,9 @@ describe('record integration tests', function (this: ISuite) {
             cn.textContent = cn.textContent.replace(
               'black',
               'black !important',
+            ).replace(
+              '/rel',
+              '/rel2',
             );
           }
         });
