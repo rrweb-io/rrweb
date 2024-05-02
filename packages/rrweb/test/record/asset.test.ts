@@ -128,7 +128,7 @@ const setup = function (
   return ctx;
 };
 
-describe('asset caching', function (this: ISuite) {
+describe('asset capturing', function (this: ISuite) {
   vi.setConfig({ testTimeout: 100_000 });
 
   describe('objectURLs: true with incremental snapshots', function (this: ISuite) {
@@ -781,6 +781,62 @@ describe('asset caching', function (this: ISuite) {
         },
       };
       expect(events[events.length - 1]).toMatchObject(expected);
+    });
+  });
+
+  describe('inlineStylesheet=true', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+</html>
+`,
+      {
+        captureAssets: {
+          origins: [],
+          objectURLs: false,
+          inlineStylesheet: true,
+        },
+      },
+    );
+
+    it('will not emit asset after a style element insertion mutation, but rather include the cssText directly in the mutation', async () => {
+      // we include directly as the mutation is already off the main thread
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      await ctx.page?.evaluate(() => {
+        const styleEl = document.createElement('style');
+        styleEl.append(document.createTextNode('.inlineme { color: red; }'));
+        document.body.appendChild(styleEl);
+      });
+      await waitForRAF(ctx.page);
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+      const anyAssetEvents = events.filter((e) => e.type === EventType.Asset);
+      expect(anyAssetEvents).toMatchObject([]);
+      const mutationEvents = events.filter(
+        (e) => e.type === EventType.IncrementalSnapshot,
+      );
+      expect(mutationEvents).toMatchObject([
+        {
+          data: {
+            adds: expect.arrayContaining([
+              expect.objectContaining({
+                node: expect.objectContaining({
+                  attributes: {
+                    _cssText: '.inlineme { color: red; }',
+                  },
+                }),
+              }),
+            ]),
+          },
+        },
+      ]);
     });
   });
 });

@@ -7,13 +7,18 @@ import type {
   SerializedCanvasArg,
 } from '@rrweb/types';
 import { deserializeArg } from '../canvas/deserialize-args';
-import { getSourcesFromSrcset } from 'rrweb-snapshot';
+import {
+  getSourcesFromSrcset,
+  buildStyleNode,
+  BuildCache,
+} from 'rrweb-snapshot';
 import type { RRElement } from 'rrdom';
 import { updateSrcset } from './update-srcset';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
   private urlToStylesheetMap: Map<string, string> = new Map();
+  private urlToStylesheetSplitsMap: Map<string, number[]> = new Map();
   private nodeIdAttributeHijackedMap: Map<number, Map<string, string>> =
     new Map();
   private loadingURLs: Set<string> = new Set();
@@ -23,10 +28,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     Array<(status: RebuildAssetManagerFinalStatus) => void>
   > = new Map();
   private liveMode: boolean;
+  private cache: BuildCache;
   public allAdded: boolean;
 
-  constructor({ liveMode }: { liveMode: boolean }) {
+  constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
+    this.cache = cache;
     this.allAdded = false;
   }
 
@@ -48,11 +55,15 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     if (payload.rr_type === 'CssText') {
       const cssPayload = payload as SerializedCssTextArg;
       this.urlToStylesheetMap.set(url, cssPayload.cssText);
+      if (cssPayload.splits) {
+        this.urlToStylesheetSplitsMap.set(url, cssPayload.splits);
+      }
       this.loadingURLs.delete(url);
       this.executeCallbacks(url, {
         status: 'loaded',
         url,
         cssText: cssPayload.cssText,
+        cssTextSplits: cssPayload.splits,
       });
     } else {
       // TODO: extract the logic only needed for assets from deserializeArg
@@ -119,6 +130,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         status: 'loaded',
         url,
         cssText: result,
+        cssTextSplits: this.urlToStylesheetSplitsMap.get(url),
       };
     }
 
@@ -152,14 +164,19 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     node: RRElement | Element,
     nodeId: number,
     attribute: string,
-    newValue: string,
+    serializedValue: string | number,
   ): Promise<unknown> {
-    const prevValue = node.getAttribute(attribute);
+    const newValue =
+      typeof serializedValue === 'string'
+        ? serializedValue
+        : `rr_css_text:${serializedValue}`;
+
     let isCssTextElement = false;
     if (node.nodeName === 'STYLE') {
       // includes <link>s (these are recreated as <style> elements)
       isCssTextElement = true;
     }
+    const prevValue = node.getAttribute(attribute);
 
     const promises: Promise<unknown>[] = [];
 
@@ -229,10 +246,17 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
             if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
           }
-          if (isCssTextElement) {
-            if (status.cssText) {
-              node.textContent = status.cssText;
-            }
+          if (status.cssText) {
+            buildStyleNode(
+              node, // buildStyleNode also accepts serializedElementNodeWithId here
+              node as HTMLStyleElement,
+              status.cssText,
+              status.cssTextSplits || [],
+              {
+                hackCss: true, // seems to be always true in this package
+                cache: this.cache,
+              },
+            );
           } else {
             node.setAttribute(attribute, status.url);
           }
@@ -249,6 +273,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     });
     this.originalToObjectURLMap.clear();
     this.urlToStylesheetMap.clear();
+    this.urlToStylesheetSplitsMap.clear();
     this.loadingURLs.clear();
     this.failedURLs.clear();
     this.nodeIdAttributeHijackedMap.clear();
