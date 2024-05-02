@@ -664,6 +664,112 @@ export const sampleRemoteStyleSheetEvents: eventWithTime[] = [
   },
 ];
 
+export const sampleStyleSheetAssetRemoveEvents: eventWithTime[] = [
+  {
+    type: EventType.DomContentLoaded,
+    data: {},
+    timestamp: now,
+  },
+  {
+    type: EventType.Load,
+    data: {},
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.Meta,
+    data: {
+      href: 'http://localhost',
+      width: 1000,
+      height: 800,
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.FullSnapshot,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'html',
+            attributes: {},
+            childNodes: [
+              {
+                type: 2,
+                tagName: 'head',
+                attributes: {},
+                childNodes: [
+                  {
+                    type: 2,
+                    tagName: 'style',
+                    attributes: {
+                      'data-jss': '',
+                      'data-meta': 'OverlayDrawer',
+                      rr_css_text: 1,
+                    },
+                    childNodes: [
+                      {
+                        type: 3,
+                        textContent: '\n',
+                        isStyle: true,
+                        id: 5,
+                      },
+                    ],
+                    id: 4,
+                  },
+                ],
+                id: 3,
+              },
+              {
+                type: 2,
+                tagName: 'body',
+                attributes: {},
+                childNodes: [],
+                id: 6,
+              },
+            ],
+            id: 2,
+          },
+        ],
+        id: 1,
+      },
+      initialOffset: {
+        top: 0,
+        left: 0,
+      },
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [
+        {
+          parentId: 3,
+          id: 4,
+        },
+      ],
+      adds: [],
+    },
+    timestamp: now + 2000,
+  },
+  {
+    type: EventType.Asset,
+    data: {
+      url: 'rr_css_text:1',
+      payload: {
+        rr_type: 'CssText',
+        cssText: '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
+      }
+    },
+    timestamp: now + 2001, // not unexpected for the asset to be emitted after a mutation which removes it
+  },
+];
+
 export const polyfillWebGLGlobals = () => {
   // polyfill as jsdom does not have support for these classes
   // consider replacing with https://www.npmjs.com/package/canvas
