@@ -218,7 +218,7 @@ function getHref(doc: Document, customHref?: string) {
   if (!customHref) {
     customHref = '';
   }
-  // note: using `new URL` is slower https://jsbench.me/uqlud17rxo/1
+  // note: using `new URL` is slower. See #1434 or https://jsbench.me/uqlud17rxo/1
   a.setAttribute('href', customHref);
   return a.href;
 }
