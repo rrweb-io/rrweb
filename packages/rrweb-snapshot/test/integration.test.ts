@@ -303,8 +303,12 @@ iframe.contentDocument.querySelector('center').clientHeight
     const snapshot = (await page.evaluate(
       'JSON.stringify(window.snapshot, null, 2);',
     )) as string;
-    expect((await page.evaluate('window.val1')) as string).toEqual('http://localhost:3030/html/rel');
-    expect((await page.evaluate('window.val2')) as string).toEqual('http://localhost:3030/html/basic.html/artificial/rel');
+    expect((await page.evaluate('window.val1')) as string).toEqual(
+      'http://localhost:3030/html/rel',
+    );
+    expect((await page.evaluate('window.val2')) as string).toEqual(
+      'http://localhost:3030/html/basic.html/artificial/rel',
+    );
   });
 
   it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
