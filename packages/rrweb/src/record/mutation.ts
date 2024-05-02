@@ -1,4 +1,6 @@
 import {
+  absoluteToStylesheet,
+  getHref,
   serializeNodeWithId,
   transformAttribute,
   IGNORED_NODE,
@@ -451,19 +453,24 @@ export default class MutationBuffer {
       texts: this.texts
         .map((text) => {
           const n = text.node;
+          let value = text.value;
           if (n.parentNode) {
             let parentEl = n.parentNode as Element;
             if (parentEl.tagName === 'TEXTAREA') {
               // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
               this.genTextAreaValueMutation(parentEl as HTMLTextAreaElement);
-            } else if (parentEl.tagName === 'STYLE' && 'rr_processingStylesheet' in n.parentNode) {
-              // stylesheet hasn't been captured as an asset yet, ignore this mutation
-              return { id: -1, value: null };
+            } else if (parentEl.tagName === 'STYLE') {
+              if ('rr_processingStylesheet' in n.parentNode) {
+                // stylesheet hasn't been captured as an asset yet, ignore this mutation
+                return { id: -1, value: null };
+              } else {
+                value = absoluteToStylesheet(value, getHref(this.doc));
+              }
             }
           }
           return {
             id: this.mirror.getId(n),
-            value: text.value,
+            value,
           };
         })
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
