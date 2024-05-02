@@ -505,9 +505,14 @@ describe('record', function (this: ISuite) {
       record({
         emit: (window as unknown as IWindow).emit,
       });
-
-      styleEl.append(document.createTextNode('span { color: orange; }'));
-      styleEl.append(document.createTextNode('h1 { color: pink; }'));
+    });
+    await ctx.page.waitForTimeout(30); // give time for the style asset to be captured before mutations
+    await ctx.page.evaluate(() => {
+      let styleEl = document.querySelector('head > style');
+      if (styleEl) {
+        styleEl.append(document.createTextNode('span { color: orange; }'));
+        styleEl.append(document.createTextNode('h1 { color: pink; }'));
+      }
     });
     await waitForRAF(ctx.page);
     await assertSnapshot(ctx.events);

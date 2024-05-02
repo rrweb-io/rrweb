@@ -5,10 +5,6 @@ export type serializedElementNodeWithId = Extract<
   Record<'type', NodeType.Element>
 >;
 
-export type serializedTextNodeWithId = Extract<
-  serializedNodeWithId,
-  Record<'type', NodeType.Text>
->;
 
 export type tagMap = {
   [key: string]: string;

@@ -10,6 +10,7 @@ import {
   assetEvent,
   captureAssetsParam,
 } from '@rrweb/types';
+import { createCache } from 'rrweb-snapshot';
 import { updateSrcset } from '../../src/replay/asset-manager/update-srcset';
 import { vi } from 'vitest';
 
@@ -41,7 +42,7 @@ describe('AssetManager', () => {
   });
 
   beforeEach(() => {
-    assetManager = new AssetManager({ liveMode: false });
+    assetManager = new AssetManager({ liveMode: false, cache: createCache() });
   });
 
   afterEach(() => {
@@ -298,7 +299,7 @@ describe('AssetManager', () => {
 
   describe('live mode', () => {
     beforeEach(() => {
-      assetManager = new AssetManager({ liveMode: true });
+      assetManager = new AssetManager({ liveMode: true, cache: createCache() });
     });
 
     it("should remove a node's attribute while asset is being loaded", async () => {
