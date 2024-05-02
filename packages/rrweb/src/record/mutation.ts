@@ -466,7 +466,7 @@ export default class MutationBuffer {
           const n = text.node;
           let value = text.value;
           if (n.parentNode) {
-            let parentEl = n.parentNode as Element;
+            const parentEl = n.parentNode as Element;
             if (parentEl.tagName === 'TEXTAREA') {
               // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
               this.genTextAreaValueMutation(parentEl as HTMLTextAreaElement);

@@ -733,54 +733,53 @@ describe('asset capturing', function (this: ISuite) {
         }),
       );
     });
-  });
 
-  describe('jsdelivr <link> in mutation', () => {
-    const ctx: ISuite = setup.call(
-      this,
-      `
-<!DOCTYPE html>
-<html>
-<head>
-<link href="https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css" rel="stylesheet" />
-</head>
-</html>
-`,
-      {
-        captureAssets: {
-          origins: ['https://cdn.jsdelivr.net'],
-          objectURLs: false,
-        },
-      },
-    );
     it('will emit asset after a 3rd party CORS stylesheet insertion mutation', async () => {
-      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
-      await waitForRAF(ctx.page);
-
+      // don't wait at all here, we want to get the mutations in before network events
       await ctx.page?.evaluate(() => {
+        const static_link = document.querySelector('link[rel="stylesheet"]');
+        if (static_link) {
+          static_link.remove();
+        }
         const link = document.createElement('link');
         document.body.appendChild(link);
         link.setAttribute('rel', 'stylesheet');
         link.setAttribute(
           'href',
-          'https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css',
+          'https://cdn.jsdelivr.net/npm/pure@2.67.0/index.css', // different version to that in the static HTML);
         );
       });
       await waitForRAF(ctx.page);
+      await ctx.page.waitForNetworkIdle({ idleTime: 300 });
+
       const events = await ctx.page?.evaluate(
         () => (window as unknown as IWindow).snapshots,
       );
-      const expected: assetEvent = {
-        type: EventType.Asset,
-        data: {
-          url: `https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css`,
-          payload: {
-            rr_type: 'CssText',
-            cssText: expect.stringContaining('body'),
+      const assetEvents = events.filter((e) => e.type === EventType.Asset);
+      expect(assetEvents.length).toEqual(2); // both should be present as both were present on the page (albeit momentarily)
+      const expected: assetEvent[] = [
+        {
+          type: EventType.Asset,
+          data: {
+            url: expect.stringContaining('2.85.0'),
+            payload: {
+              rr_type: 'CssText',
+              cssText: expect.stringContaining('body'),
+            },
           },
         },
-      };
-      expect(events[events.length - 1]).toMatchObject(expected);
+        {
+          type: EventType.Asset,
+          data: {
+            url: expect.stringContaining('2.67.0'),
+            payload: {
+              rr_type: 'CssText',
+              cssText: expect.stringContaining('body'),
+            },
+          },
+        },
+      ];
+      expect(assetEvents).toMatchObject(expected);
     });
   });
 
