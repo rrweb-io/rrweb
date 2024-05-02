@@ -1,4 +1,5 @@
 import snapshot, {
+  getHref,
   serializeNodeWithId,
   transformAttribute,
   ignoreAttribute,
@@ -20,6 +21,7 @@ export * from './types';
 export * from './utils';
 
 export {
+  getHref,
   snapshot,
   serializeNodeWithId,
   rebuild,

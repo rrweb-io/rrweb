@@ -181,7 +181,7 @@ function isSVGElement(el: Element): boolean {
 }
 
 const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
-function getHref(doc: Document, customHref?: string) {
+export function getHref(doc: Document, customHref?: string) {
   let a = cachedDocument.get(doc);
   if (!a) {
     a = doc.createElement('a');
