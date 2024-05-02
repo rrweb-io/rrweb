@@ -17,6 +17,7 @@ import rebuild, {
   createCache,
   createSandboxedIframe,
   rebuildIntoSandboxedIframe,
+  buildStyleNode,
 } from './rebuild';
 export * from './types';
 // Legacy broad export kept for compatibility. New internal imports should
@@ -42,4 +43,5 @@ export {
   IGNORED_NODE,
   genId,
   getSourcesFromSrcset,
+  buildStyleNode,
 };

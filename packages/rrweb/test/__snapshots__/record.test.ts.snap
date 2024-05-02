@@ -1486,7 +1486,7 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"div { color: red; }/* rr_split */section { color: blue; }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -1542,6 +1542,20 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"div { color: red; }section { color: blue; }\\",
+        \\"splits\\": [
+          19,
+          43
+        ]
       }
     }
   },

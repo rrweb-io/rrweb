@@ -2179,7 +2179,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"dual-textContent\\",
-                      \\"_cssText\\": \\"body { background-color: black; }/* rr_split */body { color: orange !important; }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -2223,7 +2223,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"single-textContent\\",
-                      \\"_cssText\\": \\"a:hover { outline: red solid 1px; }\\"
+                      \\"rr_css_text\\": 2
                     },
                     \\"childNodes\\": [
                       {
@@ -2244,7 +2244,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"empty\\",
-                      \\"_cssText\\": \\"a:hover { outline: blue solid 1px; }\\"
+                      \\"rr_css_text\\": 3
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 23
@@ -2276,12 +2276,13 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"id\\": \\"hover-mutation\\"
+                      \\"id\\": \\"hover-mutation\\",
+                      \\"rr_css_text\\": 4
                     },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n      /* replaceme */\\\\n    \\",
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 29
                       }
                     ],
@@ -2340,6 +2341,52 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"body { background-color: black; }body { color: orange !important; }\\",
+        \\"splits\\": [
+          33,
+          67
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:2\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"a:hover { outline: red solid 1px; }\\"
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:3\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"a:hover { outline: blue solid 1px; }\\"
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:4\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"\\"
+        ]
       }
     }
   },
@@ -6927,7 +6974,7 @@ exports[`record integration tests > mutations should work when blocked class is 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -7370,6 +7417,16 @@ exports[`record integration tests > mutations should work when blocked class is 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
       }
     }
   },
@@ -9644,7 +9701,7 @@ exports[`record integration tests > should nest record iframe 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -9789,6 +9846,16 @@ exports[`record integration tests > should nest record iframe 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [],
       \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
+      }
     }
   },
   {
@@ -13307,7 +13374,7 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
                     \\"attributes\\": {
                       \\"data-styled\\": \\"active\\",
                       \\"data-styled-version\\": \\"5.0.1\\",
-                      \\"_cssText\\": \\".ixzlRK { font-size: 1.5em; text-align: center; color: palevioletred; }.eOXmez { font-size: 1.5em; text-align: center; color: rebeccapurple; }.bJCmFu { padding: 4em; background: papayawhip; }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -13512,6 +13579,16 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\".ixzlRK { font-size: 1.5em; text-align: center; color: palevioletred; }.eOXmez { font-size: 1.5em; text-align: center; color: rebeccapurple; }.bJCmFu { padding: 4em; background: papayawhip; }\\"
       }
     }
   },
@@ -16626,7 +16703,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -16710,7 +16787,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                         \\"type\\": 2,
                         \\"tagName\\": \\"style\\",
                         \\"attributes\\": {
-                          \\"_cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+                          \\"rr_css_text\\": 2
                         },
                         \\"childNodes\\": [
                           {
@@ -16881,6 +16958,26 @@ exports[`record integration tests > should record shadow DOM 1`] = `
           }
         }
       ]
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:2\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+      }
     }
   },
   {
@@ -17779,7 +17876,7 @@ exports[`record integration tests > should record style mutations and replay the
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"#one { color: rgb(255, 0, 0); }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -17884,6 +17981,18 @@ exports[`record integration tests > should record style mutations and replay the
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"#one { color: rgb(255, 0, 0); }\\"
+        ]
       }
     }
   },
@@ -17995,7 +18104,7 @@ exports[`record integration tests > should record style mutations with multiple 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"#one { color: rgb(255, 0, 0); }\\"
+                      \\"rr_css_text\\": 1
                     },
                     \\"childNodes\\": [
                       {
@@ -18105,6 +18214,18 @@ exports[`record integration tests > should record style mutations with multiple 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"rr_css_text:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"#one { color: rgb(255, 0, 0); }\\"
+        ]
       }
     }
   },
