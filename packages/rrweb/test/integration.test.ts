@@ -287,7 +287,7 @@ describe('record integration tests', function (this: ISuite) {
     expect(replayStyleValues).toEqual([
       {
         'background-color': 'rgb(0, 100, 0)', // darkgreen
-        color: 'rgb(255, 165, 0)', // orange (from style.html)
+        color: 'rgb(255, 165, 0)', // orange (from style.html as asset)
       },
       {
         'background-color': 'rgb(128, 0, 128)', // purple

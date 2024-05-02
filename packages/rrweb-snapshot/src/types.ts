@@ -1,4 +1,9 @@
-import type { serializedNodeWithId } from '@rrweb/types';
+import type { serializedNodeWithId, NodeType } from '@rrweb/types';
+
+export type serializedElementNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Element>
+>;
 
 export type tagMap = {
   [key: string]: string;

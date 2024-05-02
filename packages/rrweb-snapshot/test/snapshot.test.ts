@@ -364,4 +364,22 @@ describe('onAssetDetected callback', () => {
       value: 'https://example.com/css/style.css',
     });
   });
+
+  it('should detect style element as asset', () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+</div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('style'),
+      attr: 'css_text',
+      styleId: 1,
+      value: 'http://localhost/',
+    });
+  });
 });

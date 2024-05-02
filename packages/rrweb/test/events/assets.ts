@@ -66,6 +66,16 @@ const events: eventWithTime[] = [
                     id: 22,
                   },
                   { type: 3, textContent: '\n  ', id: 23 },
+                  {
+                    type: 2,
+                    tagName: 'style',
+                    attributes: {
+                      rr_css_text: 1,
+                    },
+                    childNodes: [],
+                    id: 24,
+                  },
+                  { type: 3, textContent: '\n  ', id: 25 },
                 ],
                 id: 4,
               },
@@ -137,6 +147,17 @@ const events: eventWithTime[] = [
       payload: {
         rr_type: 'CssText',
         cssText: 'body { background-color: indigo; }',
+      },
+    },
+    timestamp: 1636379532355,
+  },
+  {
+    type: EventType.Asset,
+    data: {
+      url: 'rr_css_text:1',
+      payload: {
+        rr_type: 'CssText',
+        cssText: 'body { margin: 0; border-top: 10px solid darkgreen; }',
       },
     },
     timestamp: 1636379532355,
