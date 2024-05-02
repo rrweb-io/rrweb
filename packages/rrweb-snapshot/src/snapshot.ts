@@ -46,6 +46,11 @@ export function genId(): number {
   return _id++;
 }
 
+let _style_id = 1;
+export function genStyleId(): number {
+  return _style_id++;
+}
+
 function getValidTagName(element: HTMLElement): Lowercase<string> {
   if (element instanceof HTMLFormElement) {
     return 'form';
@@ -681,14 +686,23 @@ function serializeElementNode(
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
-    let cssText = stringifyStylesheet(
-      (n as HTMLStyleElement).sheet as CSSStyleSheet,
-    );
-    if (cssText) {
-      if (n.childNodes.length > 1) {
+    if (!onAssetDetected) {
+      let cssText = stringifyStylesheet(
+        (n as HTMLStyleElement).sheet as CSSStyleSheet,
+      );
+      if (cssText && n.childNodes.length > 1) {
         cssText = markCssSplits(cssText, n as HTMLStyleElement);
       }
       attributes._cssText = cssText;
+    } else {
+      const styleId = genStyleId();
+      onAssetDetected({
+        element: n,
+        attr: 'css_text',
+        value: getHref(doc), // should equal n.ownerDocument.location.href
+        styleId,
+      });
+      attributes.rr_css_text = styleId;
     }
   }
   // form fields
@@ -1175,8 +1189,8 @@ export function serializeNodeWithId(
     } else {
       if (
         serializedNode.type === NodeType.Element &&
-        (serializedNode as elementNode).attributes._cssText !== undefined &&
-        typeof serializedNode.attributes._cssText === 'string'
+        (serializedNode.attributes.rr_css_text ||
+          serializedNode.attributes._cssText)
       ) {
         bypassOptions.cssCaptured = true;
       }
@@ -1351,6 +1365,7 @@ function snapshot(
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
      *  - `href` attribute on a `link rel=stylesheet` tag.
+     *  - css contents of a `style` element.
      */
     onAssetDetected?: (asset: asset) => unknown;
   },

@@ -19,6 +19,7 @@ import {
   shouldIgnoreAsset,
   stringifyStylesheet,
   absolutifyURLs,
+  findCssTextSplits,
 } from 'rrweb-snapshot';
 
 export default class AssetManager {
@@ -126,11 +127,16 @@ export default class AssetManager {
 
   private captureStylesheet(
     url: string,
-    linkElement: HTMLLinkElement,
+    el: HTMLLinkElement | HTMLStyleElement,
+    styleId?: number,
   ): assetStatus {
     try {
-      linkElement.sheet!.rules;
+      el.sheet!.cssRules;
     } catch (e) {
+      if (el.tagName === 'STYLE') {
+        // url represents the document url the style element is embedded in so can't be fetched
+        return { status: 'refused' };
+      }
       // stylesheet could not be found or
       // is not readable due to CORS, fallback to fetch
       void this.getURLObject(url)
@@ -152,11 +158,11 @@ export default class AssetManager {
       return { status: 'capturing' }; // 'processing' ?
     }
     const processStylesheet = () => {
-      if (!linkElement.sheet) {
+      if (!el.sheet) {
         // this `if` is to satisfy typescript; we already know sheet is accessible
         return;
       }
-      let cssText = stringifyStylesheet(linkElement.sheet);
+      let cssText = stringifyStylesheet(el.sheet);
       if (!cssText) {
         console.warn(`empty stylesheet; CORs issue? ${url}`);
         return;
@@ -167,10 +173,20 @@ export default class AssetManager {
         rr_type: 'CssText',
         cssText,
       };
-      this.mutationCb({
-        url,
-        payload,
-      });
+      if (styleId) {
+        if (el.childNodes.length > 1) {
+          payload.splits = findCssTextSplits(cssText, el as HTMLStyleElement);
+        }
+        this.mutationCb({
+          url: `rr_css_text:${styleId}`,
+          payload,
+        });
+      } else {
+        this.mutationCb({
+          url,
+          payload,
+        });
+      }
     };
     if (window.requestIdleCallback !== undefined) {
       // try not to clog up main thread
@@ -183,8 +199,12 @@ export default class AssetManager {
   }
 
   public capture(asset: asset): assetStatus | assetStatus[] {
-    if (asset.element instanceof HTMLLinkElement) {
-      return this.captureStylesheet(asset.value, asset.element);
+    if ('sheet' in asset.element) {
+      return this.captureStylesheet(
+        asset.value,
+        asset.element as HTMLStyleElement | HTMLLinkElement,
+        asset.styleId,
+      );
     } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {

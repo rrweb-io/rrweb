@@ -85,6 +85,7 @@ export type asset = {
   element: HTMLElement;
   attr: string;
   value: string;
+  styleId?: number;
 };
 
 export enum IncrementalSource {
@@ -414,6 +415,7 @@ export enum CanvasContext {
 export type SerializedCssTextArg = {
   rr_type: 'CssText';
   cssText: string;
+  splits?: number[];
 };
 
 export type SerializedBlobArg = {
@@ -763,6 +765,7 @@ export type RebuildAssetManagerLoadedStatus = {
   status: 'loaded';
   url: string;
   cssText?: string;
+  cssTextSplits?: number[];
 };
 export type RebuildAssetManagerFailedStatus = { status: 'failed' };
 export type RebuildAssetManagerFinalStatus =
@@ -787,7 +790,7 @@ export declare abstract class RebuildAssetManagerInterface {
     n: Element,
     id: number,
     attribute: string,
-    originalValue: string,
+    originalValue: string | number,
   ): void;
 }
 
