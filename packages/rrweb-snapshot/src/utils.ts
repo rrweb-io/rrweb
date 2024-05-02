@@ -720,9 +720,13 @@ function shouldIgnoreAsset(url: string, config: captureAssetsParam): boolean {
   if (typeof captureOrigins === 'boolean') {
     return !captureOrigins;
   } else if (Array.isArray(captureOrigins)) {
-    const urlOrigin = new URL(url).origin;
+    let urlOrigin;
+    try {
+      urlOrigin = new URL(url).origin;
+    } catch (e) {
+      return false;
+    }
     return !captureOrigins.includes(urlOrigin);
   }
-
   return false;
 }
