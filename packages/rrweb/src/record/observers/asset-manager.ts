@@ -121,7 +121,7 @@ export default class AssetManager {
   }
 
   private captureStylesheet(
-    url: string,
+    sheetBaseHref: string,
     el: HTMLLinkElement | HTMLStyleElement,
     styleId?: number,
   ): assetStatus {
@@ -129,15 +129,27 @@ export default class AssetManager {
       el.sheet!.cssRules;
     } catch (e) {
       if (el.tagName === 'STYLE') {
-        // url represents the document url the style element is embedded in so can't be fetched
+        // sheetBaseHref represents the document url the style element is embedded in so can't be fetched
         return { status: 'refused' };
       }
+      const url = sheetBaseHref; // same as linkEl.href
+      if (this.capturedURLs.has(url)) {
+        return { status: 'captured' };
+      } else if (this.capturingURLs.has(url)) {
+        return { status: 'capturing' };
+      } else if (this.failedURLs.has(url)) {
+        return { status: 'error' };
+      }
+      this.capturingURLs.add(url);
       // stylesheet could not be found or
       // is not readable due to CORS, fallback to fetch
       void this.getURLObject(url)
         .then((cssText) => {
+          this.capturedURLs.add(url);
+          this.capturingURLs.delete(url);
+
           if (cssText && typeof cssText === 'string') {
-            cssText = absolutifyURLs(cssText, url);
+            cssText = absolutifyURLs(cssText, sheetBaseHref);
             let payload: SerializedCssTextArg;
             payload = {
               rr_type: 'CssText',
@@ -159,12 +171,11 @@ export default class AssetManager {
       }
       let cssText = stringifyStylesheet(el.sheet);
       if (!cssText) {
-        console.warn(`empty stylesheet; CORs issue? ${url}`);
+        console.warn(`empty stylesheet; CORs issue? ${sheetBaseHref}`);
         return;
       }
-      cssText = absolutifyURLs(cssText, url);
-      let payload: SerializedCssTextArg;
-      payload = {
+      cssText = absolutifyURLs(cssText, sheetBaseHref);
+      const payload: SerializedCssTextArg = {
         rr_type: 'CssText',
         cssText,
       };
@@ -178,7 +189,7 @@ export default class AssetManager {
         });
       } else {
         this.mutationCb({
-          url,
+          url: sheetBaseHref,
           payload,
         });
       }
