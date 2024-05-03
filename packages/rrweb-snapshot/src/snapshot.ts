@@ -747,7 +747,8 @@ function serializeElementNode(
       canvasCtx = canvasService.getContext('2d');
     }
     const image = n as HTMLImageElement;
-    const imageSrc: string = image.currentSrc || image.getAttribute('src') || '<unknown-src>';
+    const imageSrc: string =
+      image.currentSrc || image.getAttribute('src') || '<unknown-src>';
     const priorCrossOrigin = image.crossOrigin;
     const recordInlineImage = () => {
       image.removeEventListener('load', recordInlineImage);
