@@ -62,6 +62,7 @@ export class IframeManager {
     iframeEl: HTMLIFrameElement,
     childSn: serializedNodeWithId,
   ) {
+    // a mutation rather than an asset event so that we record the timestamp that the iframe was loaded
     this.mutationCb({
       adds: [
         {
