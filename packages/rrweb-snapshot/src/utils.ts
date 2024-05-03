@@ -379,7 +379,7 @@ export function findCssTextSplits(
       ) {
         const textContentNorm = normalizeCssString(childNodes[i].textContent!);
         for (let j = 3; j < textContentNorm.length; j++) {
-          // find the smallest substring that appears only once
+          // find a  substring that appears only once
           const bit = textContentNorm.substring(0, j);
           if (cssTextNorm.split(bit).length === 2) {
             const splitNorm = cssTextNorm.indexOf(bit);
@@ -398,5 +398,6 @@ export function findCssTextSplits(
       splits.push(split);
     }
   }
+  splits.push(cssText.length); // a check in case the cssText is altered in transit
   return splits;
 }

@@ -1388,7 +1388,7 @@ exports[`record captures inserted style text nodes correctly 1`] = `
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"_cssText\\": \\"div { color: red; }section { color: blue; }\\",
-                      \\"_cssTextSplits\\": \\"19\\"
+                      \\"_cssTextSplits\\": \\"19 43\\"
                     },
                     \\"childNodes\\": [
                       {
