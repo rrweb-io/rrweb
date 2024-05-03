@@ -27,6 +27,7 @@ export class StylesheetManager {
     linkEl: HTMLLinkElement,
     childSn: serializedNodeWithId,
   ) {
+    // a mutation rather than an asset event so that we record the timestamp that the stylesheet was loaded
     if ('_cssText' in (childSn as elementNode).attributes)
       this.mutationCb({
         adds: [],
