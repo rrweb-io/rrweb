@@ -278,7 +278,43 @@ describe('css splitter', () => {
       // can't do this as JSDOM doesn't have style.sheet
       //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
-      expect(findCssTextSplits(browserSheet, style)).toEqual([expectedSplit]);
+      expect(findCssTextSplits(browserSheet, style)).toEqual([
+        expectedSplit,
+        browserSheet.length,
+      ]);
+    }
+  });
+
+  it('finds css textElement splits correctly when vendor prefixed rules have been removed', () => {
+    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    if (style) {
+      // as authored, with newlines
+      style.appendChild(
+        JSDOM.fragment(`.x {
+  -webkit-transition: all 4s ease;
+  content: 'try to keep a newline';
+  transition: all 4s ease;
+}`),
+      );
+      style.appendChild(
+        JSDOM.fragment(`.y {
+  -moz-transition: all 5s ease;
+  transition: all 5s ease;
+}`),
+      );
+      // browser .rules would usually omit the vendored versions and modifies the transition value
+      let browserSheet =
+        '.x { content: "try to keep a newline"; background: red; transition: 4s; }';
+      let expectedSplit = browserSheet.length;
+      browserSheet += '.y { transition: 5s; }';
+
+      // can't do this as JSDOM doesn't have style.sheet
+      //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(findCssTextSplits(browserSheet, style)).toEqual([
+        expectedSplit,
+        browserSheet.length,
+      ]);
     }
   });
 });
