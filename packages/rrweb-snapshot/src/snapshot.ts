@@ -218,6 +218,8 @@ function getHref(doc: Document, customHref?: string) {
   }
   if (!customHref) {
     customHref = '';
+  } else if (customHref.startsWith('blob:') || customHref.startsWith('data:')) {
+    return customHref;
   }
   // note: using `new URL` is slower. See #1434 or https://jsbench.me/uqlud17rxo/1
   a.setAttribute('href', customHref);
