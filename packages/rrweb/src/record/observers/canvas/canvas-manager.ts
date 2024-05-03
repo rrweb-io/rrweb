@@ -16,6 +16,8 @@ import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
 import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
+import type { ErrorHandler } from '../../../types';
+import { callbackWrapper } from '../../error-handler';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -179,40 +181,40 @@ export class CanvasManager {
       }
       lastSnapshotTime = timestamp;
 
-      getCanvas()
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        .forEach(async (canvas: HTMLCanvasElement) => {
-          const id = this.mirror.getId(canvas);
-          if (snapshotInProgressMap.get(id)) return;
+      getCanvas().forEach((canvas: HTMLCanvasElement) => {
+        const id = this.mirror.getId(canvas);
+        if (snapshotInProgressMap.get(id)) return;
 
-          // The browser throws if the canvas is 0 in size
-          // Uncaught (in promise) DOMException: Failed to execute 'createImageBitmap' on 'Window': The source image width is 0.
-          // Assuming the same happens with height
-          if (canvas.width === 0 || canvas.height === 0) return;
+        // The browser throws if the canvas is 0 in size
+        // Uncaught (in promise) DOMException: Failed to execute 'createImageBitmap' on 'Window': The source image width is 0.
+        // Assuming the same happens with height
+        if (canvas.width === 0 || canvas.height === 0) return;
 
-          snapshotInProgressMap.set(id, true);
-          if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
-            // if the canvas hasn't been modified recently,
-            // its contents won't be in memory and `createImageBitmap`
-            // will return a transparent imageBitmap
+        snapshotInProgressMap.set(id, true);
+        if (['webgl', 'webgl2'].includes((canvas as ICanvas).__context)) {
+          // if the canvas hasn't been modified recently,
+          // its contents won't be in memory and `createImageBitmap`
+          // will return a transparent imageBitmap
 
-            const context = canvas.getContext((canvas as ICanvas).__context) as
-              | WebGLRenderingContext
-              | WebGL2RenderingContext
-              | null;
-            if (
-              context?.getContextAttributes()?.preserveDrawingBuffer === false
-            ) {
-              // Hack to load canvas back into memory so `createImageBitmap` can grab it's contents.
-              // Context: https://twitter.com/Juice10/status/1499775271758704643
-              // Preferably we set `preserveDrawingBuffer` to true, but that's not always possible,
-              // especially when canvas is loaded before rrweb.
-              // This hack can wipe the background color of the canvas in the (unlikely) event that
-              // the canvas background was changed but clear was not called directly afterwards.
-              // Example of this hack having negative side effect: https://visgl.github.io/react-map-gl/examples/layers
-              context.clear(context.COLOR_BUFFER_BIT);
-            }
+          const context = canvas.getContext((canvas as ICanvas).__context) as
+            | WebGLRenderingContext
+            | WebGL2RenderingContext
+            | null;
+          if (
+            context?.getContextAttributes()?.preserveDrawingBuffer === false
+          ) {
+            // Hack to load canvas back into memory so `createImageBitmap` can grab it's contents.
+            // Context: https://twitter.com/Juice10/status/1499775271758704643
+            // Preferably we set `preserveDrawingBuffer` to true, but that's not always possible,
+            // especially when canvas is loaded before rrweb.
+            // This hack can wipe the background color of the canvas in the (unlikely) event that
+            // the canvas background was changed but clear was not called directly afterwards.
+            // Example of this hack having negative side effect: https://visgl.github.io/react-map-gl/examples/layers
+            context.clear(context.COLOR_BUFFER_BIT);
           }
+        }
+
+        callbackWrapper(async () => {
           const bitmap = await createImageBitmap(canvas);
           worker.postMessage(
             {
@@ -225,6 +227,7 @@ export class CanvasManager {
             [bitmap],
           );
         });
+      });
       rafId = requestAnimationFrame(takeCanvasSnapshots);
     };
 
