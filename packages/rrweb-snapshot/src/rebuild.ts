@@ -174,15 +174,18 @@ export function buildStyleNode(
     ) {
       cssTextSplits = n.attributes._cssTextSplits.split(' ');
     }
+    const lenCheckOk =
+      cssTextSplits.length &&
+      parseInt(cssTextSplits[cssTextSplits.length - 1]) === cssText.length;
     for (let j = n.childNodes.length - 1; j >= 0; j--) {
       const scn = n.childNodes[j];
       let ix = 0;
-      if (cssTextSplits.length > j && j > 0) {
-        ix = parseInt(cssTextSplits[j - 1]);
+      if (cssTextSplits.length >= j && j > 1) {
+        ix = parseInt(cssTextSplits[j - 2]);
       }
       if (scn.type === NodeType.Text) {
         let remainder = '';
-        if (ix !== 0) {
+        if (ix !== 0 && lenCheckOk) {
           remainder = cssText.substring(0, ix);
           cssText = cssText.substring(ix);
         } else if (j > 1) {
