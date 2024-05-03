@@ -352,6 +352,7 @@ describe('applyCssSplits css rejoiner', function () {
   });
 
   it('applies css splits correctly', () => {
+    // happy path
     applyCssSplits(
       sn,
       fullCssText,
@@ -363,5 +364,95 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn.childNodes[1] as textNode).textContent).toEqual(
       otherHalfCssText,
     );
+  });
+
+  it('applies css splits correctly even when there are too many child nodes', () => {
+    let sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+    applyCssSplits(
+      sn3,
+      fullCssText,
+      [halfCssText.length, fullCssText.length],
+      false,
+      mockLastUnusedArg,
+    );
+    expect((sn3.childNodes[0] as textNode).textContent).toEqual(halfCssText);
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      otherHalfCssText,
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual('');
+  });
+
+  it('maintains entire css text when there are too few child nodes', () => {
+    let sn1 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+    applyCssSplits(
+      sn1,
+      fullCssText,
+      [halfCssText.length, fullCssText.length],
+      false,
+      mockLastUnusedArg,
+    );
+    expect((sn1.childNodes[0] as textNode).textContent).toEqual(fullCssText);
+  });
+
+  it('ignores css splits correctly when there is a mismatch in length check', () => {
+    applyCssSplits(sn, fullCssText, [2, 3], false, mockLastUnusedArg);
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
+  });
+
+  it('ignores css splits correctly when we indicate a split is invalid with the zero marker', () => {
+    applyCssSplits(
+      sn,
+      fullCssText,
+      [0, fullCssText.length],
+      false,
+      mockLastUnusedArg,
+    );
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
+  });
+
+  it('ignores css splits correctly with negative splits', () => {
+    applyCssSplits(sn, fullCssText, [-2, -4], false, mockLastUnusedArg);
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
+  });
+
+  it('ignores css splits correctly with out of order splits', () => {
+    applyCssSplits(
+      sn,
+      fullCssText,
+      [fullCssText.length * 2, fullCssText.length],
+      false,
+      mockLastUnusedArg,
+    );
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
   });
 });
