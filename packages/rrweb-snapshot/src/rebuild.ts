@@ -171,7 +171,7 @@ export function applyCssSplits(
       if (ix !== 0 && lenCheckOk) {
         remainder = cssText.substring(0, ix);
         cssText = cssText.substring(ix);
-      } else if (j > 1) {
+      } else if (j > 0) {
         continue;
       }
       if (hackCss) {
