@@ -1135,7 +1135,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"attributes\\": {
                       \\"id\\": \\"dual-textContent\\",
                       \\"_cssText\\": \\"body { background-color: black; }body { color: orange !important; }\\",
-                      \\"_cssTextSplits\\": \\"33\\"
+                      \\"_cssTextSplits\\": \\"33 67\\"
                     },
                     \\"childNodes\\": [
                       {
