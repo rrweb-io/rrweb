@@ -624,6 +624,13 @@ function serializeElementNode(
     );
     if (cssText) {
       attributes._cssText = cssText;
+      if (n.childNodes.length > 1) {
+        const splits = findCssTextSplits(
+          attributes._cssText,
+          n as HTMLStyleElement,
+        );
+        attributes._cssTextSplits = splits.join(' ');
+      }
     }
   }
   // form fields
@@ -1094,13 +1101,6 @@ export function serializeNodeWithId(
         typeof serializedNode.attributes._cssText === 'string'
       ) {
         bypassOptions.blankTextNodes = true;
-        if (n.childNodes.length > 1) {
-          const splits = findCssTextSplits(
-            serializedNode.attributes._cssText,
-            n as HTMLStyleElement,
-          );
-          serializedNode.attributes._cssTextSplits = splits.join(' ');
-        }
       }
       for (const childN of Array.from(dom.childNodes(n))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
