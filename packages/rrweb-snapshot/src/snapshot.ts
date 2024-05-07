@@ -570,26 +570,10 @@ function serializeTextNode(
   } else if (!blankTextNodes) {
     textContent = n.textContent;
     if (isStyle && textContent) {
-      // This branch is solely for the use of mutation
-      if (n.nextSibling || n.previousSibling) {
-        // This is not the only child of the stylesheet.
-        // We can't read all of the sheet's .cssRules and expect them
-        // to _only_ include the current rule(s) added by the text node.
-        // So we'll be conservative and keep textContent as-is.
-      } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        try {
-          textContent = stringifyStylesheet(
-            (n.parentNode as HTMLStyleElement).sheet!,
-          );
-        } catch (err) {
-          console.warn(
-            `Cannot get CSS styles from text's parentNode. Error: ${
-              err as string
-            }`,
-            n,
-          );
-        }
-      }
+      // mutation only: we don't need to use stringifyStylesheet
+      // as a <style> text node mutation obliterates any previous
+      // programmatic rule manipulation (.insertRule etc.)
+      // so the current textContent represents the most up to date state
       textContent = absoluteToStylesheet(textContent, getHref(options.doc));
     }
   }
