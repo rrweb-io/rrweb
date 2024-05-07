@@ -147,6 +147,49 @@ export function createCache(): BuildCache {
 }
 
 /**
+ * undo findCssTextSplits
+ * (would move to utils.ts but uses `adaptCssForReplay`)
+ */
+export function applyCssSplits(
+  n: serializedElementNodeWithId,
+  cssText: string,
+  cssTextSplits: number[],
+  hackCss: boolean,
+  cache: BuildCache,
+): void {
+  const lenCheckOk =
+    cssTextSplits.length &&
+    cssTextSplits[cssTextSplits.length - 1] === cssText.length;
+  for (let j = n.childNodes.length - 1; j >= 0; j--) {
+    const scn = n.childNodes[j];
+    let ix = 0;
+    if (cssTextSplits.length > j && j > 0) {
+      ix = cssTextSplits[j - 1];
+    }
+    if (scn.type === NodeType.Text) {
+      let remainder = '';
+      if (ix !== 0 && lenCheckOk) {
+        remainder = cssText.substring(0, ix);
+        cssText = cssText.substring(ix);
+      } else if (j > 1) {
+        continue;
+      }
+      if (hackCss) {
+        cssText = adaptCssForReplay(cssText, cache);
+      }
+      // id will be assigned when these child nodes are
+      // iterated over in buildNodeWithSN
+      scn.textContent = cssText;
+      cssText = remainder;
+    }
+  }
+  if (cssText.length) {
+    // something has gone wrong
+    console.warn('Leftover css content after applyCssSplits:', cssText);
+  }
+}
+
+/**
  * Normally a <style> element has a single textNode containing the rules.
  * During serialization, we bypass this (`styleEl.sheet`) to get the rules the
  * browser sees and serialize this to a special _cssText attribute, blanking
@@ -157,7 +200,7 @@ export function createCache(): BuildCache {
  */
 export function buildStyleNode(
   n: serializedElementNodeWithId,
-  styleEl: HTMLStyleElement, // a <link type="styleshet"> also gets rebuilt as a <style>
+  styleEl: HTMLStyleElement, // when inlined, a <link type="stylesheet"> also gets rebuilt as a <style>
   cssText: string,
   options: {
     doc: Document;
@@ -167,40 +210,13 @@ export function buildStyleNode(
 ) {
   const { doc, hackCss, cache } = options;
   if (n.childNodes.length) {
-    let cssTextSplits: string[] = [];
-    if (
-      n.attributes._cssTextSplits &&
-      typeof n.attributes._cssTextSplits === 'string'
-    ) {
-      cssTextSplits = n.attributes._cssTextSplits.split(' ');
+    let cssTextSplits: number[] = [];
+    if (n.attributes._cssTextSplits) {
+      cssTextSplits = n.attributes._cssTextSplits
+        .split(' ')
+        .map((s) => parseInt(s));
     }
-    const lenCheckOk =
-      cssTextSplits.length &&
-      parseInt(cssTextSplits[cssTextSplits.length - 1]) === cssText.length;
-    for (let j = n.childNodes.length - 1; j >= 0; j--) {
-      const scn = n.childNodes[j];
-      let ix = 0;
-      if (cssTextSplits.length >= j && j > 1) {
-        ix = parseInt(cssTextSplits[j - 2]);
-      }
-      if (scn.type === NodeType.Text) {
-        let remainder = '';
-        if (ix !== 0 && lenCheckOk) {
-          remainder = cssText.substring(0, ix);
-          cssText = cssText.substring(ix);
-        } else if (j > 1) {
-          continue;
-        }
-        if (hackCss) {
-          cssText = adaptCssForReplay(cssText, cache);
-        }
-        // id will be assigned when these child nodes are
-        // iterated over in buildNodeWithSN
-        scn.textContent = cssText;
-
-        cssText = remainder;
-      }
-    }
+    applyCssSplits(n, cssText, cssTextSplits, hackCss, cache);
   } else {
     if (hackCss) {
       cssText = adaptCssForReplay(cssText, cache);
