@@ -20,9 +20,19 @@ export type documentTypeNode = {
   systemId: string;
 };
 
-export type attributes = {
-  [key: string]: string | number | true | null;
+type cssTextKeyAttr = {
+  _cssText?: string;
+  _cssTextSplits?: string;
 };
+
+export type attributes = cssTextKeyAttr & {
+  [key: string]:
+    | string
+    | number // properties e.g. rr_scrollLeft or rr_mediaCurrentTime
+    | true // e.g. checked  on <input type="radio">
+    | null; // an indication that an attribute was removed (during a mutation)
+};
+
 export type legacyAttributes = {
   /**
    * @deprecated old bug in rrweb was causing these to always be set

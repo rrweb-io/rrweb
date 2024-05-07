@@ -1,11 +1,18 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, beforeEach, expect } from 'vitest';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { findCssTextSplits, stringifyStylesheet } from './../src/utils';
+import { applyCssSplits } from './../src/rebuild';
+import {
+  NodeType,
+  serializedElementNodeWithId,
+  BuildCache,
+  textNode,
+} from '../src/types';
 
 describe('css parser', () => {
   function parse(plugin: AcceptedPlugin, input: string): string {
@@ -113,6 +120,7 @@ describe('css splitter', () => {
   transition: all 4s ease;
 }`),
       );
+      // TODO: findCssTextSplits can't handle it yet if both start with .x
       style.appendChild(
         JSDOM.fragment(`.y {
   -moz-transition: all 5s ease;
@@ -133,5 +141,44 @@ describe('css splitter', () => {
         browserSheet.length,
       ]);
     }
+  });
+});
+
+describe('applyCssSplits css rejoiner', function () {
+  const mockLastUnusedArg = null as unknown as BuildCache;
+  const halfCssText = '.a { background-color: red; }';
+  const otherHalfCssText = halfCssText.replace('.a', '.x');
+  const fullCssText = halfCssText + otherHalfCssText;
+  let sn: serializedElementNodeWithId;
+
+  beforeEach(() => {
+    sn = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+  });
+
+  it('applies css splits correctly', () => {
+    applyCssSplits(
+      sn,
+      fullCssText,
+      [halfCssText.length, fullCssText.length],
+      false,
+      mockLastUnusedArg,
+    );
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(halfCssText);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual(
+      otherHalfCssText,
+    );
   });
 });
