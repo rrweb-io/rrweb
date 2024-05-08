@@ -763,7 +763,7 @@ function serializeElementNode(
       } catch (err) {
         if (image.crossOrigin !== 'anonymous') {
           image.crossOrigin = 'anonymous';
-          recordInlineImage();
+          image.addEventListener('load', recordInlineImage);
           return;
         } else {
           console.warn(

@@ -7,6 +7,7 @@ import * as rollup from 'rollup';
 import * as typescript from 'rollup-plugin-typescript2';
 import * as assert from 'assert';
 import { waitForRAF } from './utils';
+import { setTimeout } from 'node:timers/promises';
 
 const _typescript = typescript as unknown as () => rollup.Plugin;
 
@@ -209,7 +210,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await waitForRAF(page);
+    await setTimeout(20); // need a small wait, as after the crossOrigin="anonymous" change, the snapshot triggers a reload of the image (which mutates the snapshot when loaded)
     const flat = (await page.evaluate(`
     let flat = [];
     function flatten(root) {
