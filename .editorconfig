@@ -8,3 +8,7 @@ end_of_line = lf
 indent_style = space
 indent_size = 2
 max_line_length = 80
+quote_type = single
+
+[.changeset/*.md]
+quote_type = double
