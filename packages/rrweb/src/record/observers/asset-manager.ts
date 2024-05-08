@@ -151,11 +151,9 @@ export default class AssetManager {
           this.capturingURLs.delete(url);
 
           if (cssText && typeof cssText === 'string') {
-            cssText = absoluteToStylesheet(cssText, sheetBaseHref);
-            let payload: SerializedCssTextArg;
-            payload = {
+            const payload: SerializedCssTextArg = {
               rr_type: 'CssText',
-              cssText,
+              cssTexts: [absoluteToStylesheet(cssText, sheetBaseHref)],
             };
             this.mutationCb({
               url,
@@ -179,11 +177,23 @@ export default class AssetManager {
       cssText = absoluteToStylesheet(cssText, sheetBaseHref);
       const payload: SerializedCssTextArg = {
         rr_type: 'CssText',
-        cssText,
+        cssTexts: [cssText],
       };
       if (styleId) {
         if (el.childNodes.length > 1) {
-          payload.splits = findCssTextSplits(cssText, el as HTMLStyleElement);
+          let cssTexts: string[] = [];
+          let lix = 0;
+          const split_ixs = findCssTextSplits(cssText, el as HTMLStyleElement);
+          for (const ix of split_ixs) {
+            if (ix === 0) {
+              // an error
+              cssTexts = [cssText];
+              break;
+            }
+            cssTexts.push(cssText.substring(lix, ix));
+            lix = ix;
+          }
+          payload.cssTexts = cssTexts;
         }
         this.mutationCb({
           url: `rr_css_text:${styleId}`,

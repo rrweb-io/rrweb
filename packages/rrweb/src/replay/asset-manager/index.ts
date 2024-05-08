@@ -19,8 +19,7 @@ import { updateSrcset } from './update-srcset';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
   private originalToObjectURLMap: Map<string, string> = new Map();
-  private urlToStylesheetMap: Map<string, string> = new Map();
-  private urlToStylesheetSplitsMap: Map<string, number[]> = new Map();
+  private urlToStylesheetMap: Map<string, string[]> = new Map();
   private nodeIdAttributeHijackedMap: Map<number, Map<string, string>> =
     new Map();
   private loadingURLs: Set<string> = new Set();
@@ -59,16 +58,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
     if (payload.rr_type === 'CssText') {
       const cssPayload = payload as SerializedCssTextArg;
-      this.urlToStylesheetMap.set(url, cssPayload.cssText);
-      if (cssPayload.splits) {
-        this.urlToStylesheetSplitsMap.set(url, cssPayload.splits);
-      }
+      this.urlToStylesheetMap.set(url, cssPayload.cssTexts);
       this.loadingURLs.delete(url);
       this.executeCallbacks(url, {
         status: 'loaded',
         url,
-        cssText: cssPayload.cssText,
-        cssTextSplits: cssPayload.splits,
+        cssTexts: cssPayload.cssTexts,
       });
     } else {
       // TODO: extract the logic only needed for assets from deserializeArg
@@ -129,17 +124,16 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   }
 
   public get(url: string): RebuildAssetManagerStatus {
-    let result = this.urlToStylesheetMap.get(url);
-    if (result) {
+    const cssResult = this.urlToStylesheetMap.get(url);
+    if (cssResult) {
       return {
         status: 'loaded',
         url,
-        cssText: result,
-        cssTextSplits: this.urlToStylesheetSplitsMap.get(url),
+        cssTexts: cssResult,
       };
     }
 
-    result = this.originalToObjectURLMap.get(url);
+    const result = this.originalToObjectURLMap.get(url);
 
     if (result) {
       return {
@@ -223,15 +217,15 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       });
     } else if (
       preloadedStatus.status === 'loaded' &&
-      preloadedStatus.cssText &&
+      preloadedStatus.cssTexts &&
       serializedNode
     ) {
       // this is the case with preloadAllAssets; we can build immediately as unlike images, there's no asynchronous rebuild step
       buildStyleNode(
         serializedNode,
         node as HTMLStyleElement,
-        preloadedStatus.cssText,
-        preloadedStatus.cssTextSplits || [],
+        preloadedStatus.cssTexts.join(''),
+        this.splitIndices(preloadedStatus.cssTexts),
         {
           hackCss: true, // seems to be always true in this package
           cache: this.cache,
@@ -269,12 +263,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
             if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
           }
-          if (status.cssText) {
+          if (status.cssTexts) {
             buildStyleNode(
               serializedNode || (node as HTMLStyleElement),
               node as HTMLStyleElement,
-              status.cssText,
-              status.cssTextSplits || [],
+              status.cssTexts.join(''),
+              this.splitIndices(status.cssTexts),
               {
                 hackCss: true, // seems to be always true in this package
                 cache: this.cache,
@@ -290,13 +284,22 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     return Promise.all(promises);
   }
 
+  private splitIndices(cssTexts: string[]): number[] {
+    return cssTexts
+      .reduce(
+        (acc: number[], curr: string): number[] =>
+          acc.concat([curr.length + acc[acc.length - 1]]),
+        [0],
+      )
+      .slice(1);
+  }
+
   public reset(): void {
     this.originalToObjectURLMap.forEach((objectURL) => {
       URL.revokeObjectURL(objectURL);
     });
     this.originalToObjectURLMap.clear();
     this.urlToStylesheetMap.clear();
-    this.urlToStylesheetSplitsMap.clear();
     this.loadingURLs.clear();
     this.failedURLs.clear();
     this.nodeIdAttributeHijackedMap.clear();

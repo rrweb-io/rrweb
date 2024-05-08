@@ -1284,10 +1284,9 @@ exports[`record integration tests can record and replay style mutations 1`] = `
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"body { background-color: black; }body { color: orange !important; }\\",
-        \\"splits\\": [
-          33,
-          67
+        \\"cssTexts\\": [
+          \\"body { background-color: black; }\\",
+          \\"body { color: orange !important; }\\"
         ]
       }
     }
@@ -1298,7 +1297,9 @@ exports[`record integration tests can record and replay style mutations 1`] = `
       \\"url\\": \\"rr_css_text:2\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"a:hover { outline: red solid 1px; }\\"
+        \\"cssTexts\\": [
+          \\"a:hover { outline: red solid 1px; }\\"
+        ]
       }
     }
   },
@@ -1308,7 +1309,9 @@ exports[`record integration tests can record and replay style mutations 1`] = `
       \\"url\\": \\"rr_css_text:3\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"a:hover { outline: blue solid 1px; }\\"
+        \\"cssTexts\\": [
+          \\"a:hover { outline: blue solid 1px; }\\"
+        ]
       }
     }
   },
@@ -6021,7 +6024,9 @@ exports[`record integration tests mutations should work when blocked class is un
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
+        \\"cssTexts\\": [
+          \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
+        ]
       }
     }
   },
@@ -8629,7 +8634,9 @@ exports[`record integration tests should nest record iframe 1`] = `
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
+        \\"cssTexts\\": [
+          \\"iframe { width: 500px; height: 500px; }\\"
+        ]
       }
     }
   },
@@ -12743,7 +12750,9 @@ exports[`record integration tests should record dynamic CSS changes 1`] = `
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\".ixzlRK { font-size: 1.5em; text-align: center; color: palevioletred; }.eOXmez { font-size: 1.5em; text-align: center; color: rebeccapurple; }.bJCmFu { padding: 4em; background: papayawhip; }\\"
+        \\"cssTexts\\": [
+          \\".ixzlRK { font-size: 1.5em; text-align: center; color: palevioletred; }.eOXmez { font-size: 1.5em; text-align: center; color: rebeccapurple; }.bJCmFu { padding: 4em; background: papayawhip; }\\"
+        ]
       }
     }
   },
@@ -16286,7 +16295,9 @@ exports[`record integration tests should record shadow DOM 1`] = `
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+        \\"cssTexts\\": [
+          \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+        ]
       }
     }
   },
@@ -16296,7 +16307,9 @@ exports[`record integration tests should record shadow DOM 1`] = `
       \\"url\\": \\"rr_css_text:2\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+        \\"cssTexts\\": [
+          \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+        ]
       }
     }
   },
