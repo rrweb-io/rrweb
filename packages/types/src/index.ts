@@ -498,8 +498,7 @@ export enum CanvasContext {
 
 export type SerializedCssTextArg = {
   rr_type: 'CssText';
-  cssTexts: string[];
-  splits?: number[]; // usually just a single item
+  cssTexts: string[]; // normally a single string, except for <style> with multiple child nodes
 };
 
 export type SerializedBlobArg = {
@@ -849,8 +848,7 @@ export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
 export type RebuildAssetManagerLoadedStatus = {
   status: 'loaded';
   url: string;
-  cssText?: string;
-  cssTextSplits?: number[];
+  cssTexts?: string[];
 };
 export type RebuildAssetManagerFailedStatus = { status: 'failed' };
 export type RebuildAssetManagerFinalStatus =
