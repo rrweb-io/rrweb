@@ -30,7 +30,7 @@ describe('AssetManager', () => {
 
   const exampleCssPayload: SerializedCssTextArg = {
     rr_type: 'CssText',
-    cssText: 'body { background: red; }',
+    cssTexts: ['body { background: red; }'],
   };
 
   beforeAll(() => {
@@ -464,7 +464,7 @@ describe('AssetManager', () => {
 
       // no need for deserializeArg so should be loaded immediately
       expect(assetManager.get(url)).toEqual({
-        cssText: 'body { background: red; }',
+        cssTexts: ['body { background: red; }'],
         status: 'loaded',
         url,
       });
