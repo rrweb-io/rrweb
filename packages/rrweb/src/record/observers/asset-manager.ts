@@ -205,6 +205,10 @@ export default class AssetManager {
       if (el.tagName === 'STYLE') {
         // mark it so mutations on it can be ignored until processed
         (el as any).rr_processingStylesheet = true;
+        // process inline style elements before external links
+        // as they are more integral to the page and more likely
+        // to only appear on this page (can't be reconstructed if lost)
+        timeout = Math.floor(timeout / 2);
       }
       // try not to clog up main thread
       requestIdleCallback(processStylesheet, {
