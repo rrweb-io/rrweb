@@ -763,8 +763,10 @@ export const sampleStyleSheetAssetRemoveEvents: eventWithTime[] = [
       url: 'rr_css_text:1',
       payload: {
         rr_type: 'CssText',
-        cssText: '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
-      }
+        cssTexts: [
+          '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
+        ],
+      },
     },
     timestamp: now + 2001, // not unexpected for the asset to be emitted after a mutation which removes it
   },
