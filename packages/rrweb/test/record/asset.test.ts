@@ -727,7 +727,7 @@ describe('asset capturing', function (this: ISuite) {
             url: `https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css`,
             payload: {
               rr_type: 'CssText',
-              cssText: expect.stringContaining('body'),
+              cssTexts: [expect.stringContaining('body')],
             },
           },
         }),
@@ -764,7 +764,7 @@ describe('asset capturing', function (this: ISuite) {
             url: expect.stringContaining('2.85.0'),
             payload: {
               rr_type: 'CssText',
-              cssText: expect.stringContaining('body'),
+              cssTexts: [expect.stringContaining('body')],
             },
           },
         },
@@ -774,7 +774,7 @@ describe('asset capturing', function (this: ISuite) {
             url: expect.stringContaining('2.67.0'),
             payload: {
               rr_type: 'CssText',
-              cssText: expect.stringContaining('body'),
+              cssTexts: [expect.stringContaining('body')],
             },
           },
         },

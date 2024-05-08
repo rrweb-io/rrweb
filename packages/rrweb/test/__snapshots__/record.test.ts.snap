@@ -272,7 +272,9 @@ exports[`record > captures CORS stylesheets as assets 1`] = `
       \\"url\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"body{\\\\n\\\\tfont-family:\\\\\\"verdana\\\\\\", \\\\\\"helvetica\\\\\\", \\\\\\"arial\\\\\\";\\\\n}\\\\n\\\\n.exampleList{margin:0; padding:0; list-style-type:none;}\\\\n\\\\nh3{margin:1em 0 .3em;float:left;clear:both;}\\\\na{\\\\n\\\\tcolor:#369;\\\\n\\\\ttext-decoration:none;\\\\n\\\\toutline: none;\\\\n\\\\tpadding:0 .5em;\\\\n}\\\\na:hover{\\\\n\\\\tbackground:#369;\\\\n\\\\tcolor:#FFF;\\\\n}\\\\n\\\\n.run, .debug{ display:block; float:left;margin:1.3em 0 0 1em;}\\\\n\\\\n.sources, .template{clear:both;padding:1em;background:#DEF;margin:0 0  0 1em;overflow:auto;}\\\\n#chooseLib a{\\\\n\\\\tfont-size:.8em;\\\\n\\\\tbackground:#FFB;\\\\n\\\\tpadding:.3em;\\\\n\\\\ttext-decoration:underline;\\\\n}\\\\n#chooseLib a:hover{\\\\n\\\\tbackground:#369;\\\\n}\\\\n#examples{display:none;}\\\\n#chooseLib{\\\\n\\\\tline-height:1.5em;\\\\n\\\\tborder:solid 1px #CCC;\\\\n\\\\tpadding:1em;\\\\n\\\\tbackground:#FFC;\\\\n}\\\\ninput.lib{\\\\n\\\\tfont-weight:bold;\\\\n}\\\\n.note{\\\\n\\\\tcolor:#999;\\\\n\\\\tfont-size:.75em;\\\\n}\\\\npre{\\\\n\\\\tfont-family:Monaco,\\\\\\"Courier New\\\\\\",monospace;\\\\n\\\\tcolor:#444444;\\\\n\\\\tfont-size:75%;\\\\n}\\\\n#sourceCodes{\\\\n\\\\tclear:both;\\\\n}\\\\n.sourceCode{\\\\n\\\\tbackground:#EEF;\\\\n\\\\tborder:solid 1px #CCC;\\\\n\\\\tpadding:1%;\\\\n\\\\tmargin:1%;\\\\n\\\\toverflow:auto;\\\\n\\\\tmax-height:300px;\\\\n}\\\\n.sourceCode pre{\\\\n}\\\\n.cols2 .sourceCode{\\\\n\\\\tfloat:left;\\\\n\\\\twidth:44%;\\\\n}\\\\n.cols3 .sourceCode{\\\\n\\\\tfloat:left;\\\\n\\\\twidth:27%;\\\\n}\\\\n/* ex 4 */ \\\\n.playerList td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n.odd td{\\\\n\\\\tbackground:#FFF;\\\\n}\\\\n/* ex 5 */ \\\\n.partialTable td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n/* ex 6 */ \\\\n.teamPlace table{\\\\n\\\\twidth:100%;\\\\n}\\\\n.scoreBoard td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n\\"
+        \\"cssTexts\\": [
+          \\"body{\\\\n\\\\tfont-family:\\\\\\"verdana\\\\\\", \\\\\\"helvetica\\\\\\", \\\\\\"arial\\\\\\";\\\\n}\\\\n\\\\n.exampleList{margin:0; padding:0; list-style-type:none;}\\\\n\\\\nh3{margin:1em 0 .3em;float:left;clear:both;}\\\\na{\\\\n\\\\tcolor:#369;\\\\n\\\\ttext-decoration:none;\\\\n\\\\toutline: none;\\\\n\\\\tpadding:0 .5em;\\\\n}\\\\na:hover{\\\\n\\\\tbackground:#369;\\\\n\\\\tcolor:#FFF;\\\\n}\\\\n\\\\n.run, .debug{ display:block; float:left;margin:1.3em 0 0 1em;}\\\\n\\\\n.sources, .template{clear:both;padding:1em;background:#DEF;margin:0 0  0 1em;overflow:auto;}\\\\n#chooseLib a{\\\\n\\\\tfont-size:.8em;\\\\n\\\\tbackground:#FFB;\\\\n\\\\tpadding:.3em;\\\\n\\\\ttext-decoration:underline;\\\\n}\\\\n#chooseLib a:hover{\\\\n\\\\tbackground:#369;\\\\n}\\\\n#examples{display:none;}\\\\n#chooseLib{\\\\n\\\\tline-height:1.5em;\\\\n\\\\tborder:solid 1px #CCC;\\\\n\\\\tpadding:1em;\\\\n\\\\tbackground:#FFC;\\\\n}\\\\ninput.lib{\\\\n\\\\tfont-weight:bold;\\\\n}\\\\n.note{\\\\n\\\\tcolor:#999;\\\\n\\\\tfont-size:.75em;\\\\n}\\\\npre{\\\\n\\\\tfont-family:Monaco,\\\\\\"Courier New\\\\\\",monospace;\\\\n\\\\tcolor:#444444;\\\\n\\\\tfont-size:75%;\\\\n}\\\\n#sourceCodes{\\\\n\\\\tclear:both;\\\\n}\\\\n.sourceCode{\\\\n\\\\tbackground:#EEF;\\\\n\\\\tborder:solid 1px #CCC;\\\\n\\\\tpadding:1%;\\\\n\\\\tmargin:1%;\\\\n\\\\toverflow:auto;\\\\n\\\\tmax-height:300px;\\\\n}\\\\n.sourceCode pre{\\\\n}\\\\n.cols2 .sourceCode{\\\\n\\\\tfloat:left;\\\\n\\\\twidth:44%;\\\\n}\\\\n.cols3 .sourceCode{\\\\n\\\\tfloat:left;\\\\n\\\\twidth:27%;\\\\n}\\\\n/* ex 4 */ \\\\n.playerList td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n.odd td{\\\\n\\\\tbackground:#FFF;\\\\n}\\\\n/* ex 5 */ \\\\n.partialTable td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n/* ex 6 */ \\\\n.teamPlace table{\\\\n\\\\twidth:100%;\\\\n}\\\\n.scoreBoard td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n\\"
+        ]
       }
     }
   }
@@ -1551,10 +1553,9 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"div { color: red; }section { color: blue; }\\",
-        \\"splits\\": [
-          19,
-          43
+        \\"cssTexts\\": [
+          \\"div { color: red; }\\",
+          \\"section { color: blue; }\\"
         ]
       }
     }
@@ -2683,7 +2684,9 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
       \\"url\\": \\"blob:null/...\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"body { color: pink; }\\"
+        \\"cssTexts\\": [
+          \\"body { color: pink; }\\"
+        ]
       }
     }
   }
@@ -2781,7 +2784,9 @@ exports[`record > doesn't duplicate assets and mutations 1`] = `
       \\"url\\": \\"rr_css_text:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
-        \\"cssText\\": \\"span { color: orange; }\\"
+        \\"cssTexts\\": [
+          \\"span { color: orange; }\\"
+        ]
       }
     }
   }
