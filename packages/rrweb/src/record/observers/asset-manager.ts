@@ -18,7 +18,7 @@ import {
   shouldCaptureAsset,
   stringifyStylesheet,
   absolutifyURLs,
-  findCssTextSplits,
+  splitCssText,
 } from 'rrweb-snapshot';
 
 export default class AssetManager {
@@ -151,11 +151,9 @@ export default class AssetManager {
           this.capturingURLs.delete(url);
 
           if (cssText && typeof cssText === 'string') {
-            cssText = absolutifyURLs(cssText, sheetBaseHref);
-            let payload: SerializedCssTextArg;
-            payload = {
+            const payload: SerializedCssTextArg = {
               rr_type: 'CssText',
-              cssText,
+              cssTexts: [absolutifyURLs(cssText, sheetBaseHref)],
             };
             this.mutationCb({
               url,
@@ -179,11 +177,11 @@ export default class AssetManager {
       cssText = absolutifyURLs(cssText, sheetBaseHref);
       const payload: SerializedCssTextArg = {
         rr_type: 'CssText',
-        cssText,
+        cssTexts: [cssText],
       };
       if (styleId) {
         if (el.childNodes.length > 1) {
-          payload.splits = findCssTextSplits(cssText, el as HTMLStyleElement);
+          payload.cssTexts = splitCssText(cssText, el as HTMLStyleElement);;
         }
         this.mutationCb({
           url: `rr_css_text:${styleId}`,
