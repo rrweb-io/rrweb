@@ -211,38 +211,28 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false
     })`);
     await setTimeout(20); // need a small wait, as after the crossOrigin="anonymous" change, the snapshot triggers a reload of the image (which mutates the snapshot when loaded)
-    const flat = (await page.evaluate(`
-    let flat = [];
-    function flatten(root) {
-      flat.push(root);
-      if (!root.childNodes) return;
-      for (let cn of root.childNodes) {
-        flatten(cn);
-      }
-      delete root.childNodes;
-    }
-    flatten(snapshot);
-    flat;
+    const bodyChildren = (await page.evaluate(`
+      snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
 `)) as any[];
-    expect(flat).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          tagName: 'img',
-          attributes: {
-            src: expect.stringMatching(/images\/robot.png$/),
-            alt: 'This is a robot',
-            rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
-          },
-        }),
-        expect.objectContaining({
-          tagName: 'img',
-          attributes: {
-            src: 'https://avatars.githubusercontent.com/u/43396833?s=20&v=4',
-            alt: 'CORS restricted but has access-control-allow-origin: *',
-            rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
-          },
-        }),
-      ]),
+    expect(bodyChildren[1]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: {
+          src: expect.stringMatching(/images\/robot.png$/),
+          alt: 'This is a robot',
+          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+        },
+      }),
+    );
+    expect(bodyChildren[2]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: {
+          src: 'https://avatars.githubusercontent.com/u/43396833?s=20&v=4',
+          alt: 'CORS restricted but has access-control-allow-origin: *',
+          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+        },
+      }),
     );
   });
 
