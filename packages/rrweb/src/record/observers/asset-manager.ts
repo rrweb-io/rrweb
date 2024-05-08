@@ -197,14 +197,18 @@ export default class AssetManager {
         delete el.rr_processingStylesheet;
       }
     };
-    if (window.requestIdleCallback !== undefined) {
+    let timeout = this.config.processStylesheetsWithin;
+    if (!timeout && timeout !== 0) {
+      timeout = 2000;
+    }
+    if (window.requestIdleCallback !== undefined && timeout > 0) {
       if (el.tagName === 'STYLE') {
         // mark it so mutations on it can be ignored until processed
         (el as any).rr_processingStylesheet = true;
       }
       // try not to clog up main thread
       requestIdleCallback(processStylesheet, {
-        timeout: this.config.processStylesheetsWithin || 2000,
+        timeout,
       });
       return { status: 'capturing' }; // 'processing' ?
     } else {
