@@ -233,6 +233,14 @@ iframe.contentDocument.querySelector('center').clientHeight
             rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
           },
         }),
+        expect.objectContaining({
+          tagName: 'img',
+          attributes: {
+            src: 'https://avatars.githubusercontent.com/u/43396833?s=20&v=4',
+            alt: 'CORS restricted but has access-control-allow-origin: *',
+            rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+          },
+        }),
       ]),
     );
   });
