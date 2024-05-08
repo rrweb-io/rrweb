@@ -210,11 +210,31 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false
     })`);
     await waitForRAF(page);
-    const snapshot = (await page.evaluate(
-      'JSON.stringify(snapshot, null, 2);',
-    )) as string;
-    assert(snapshot.includes('"rr_dataURL"'));
-    assert(snapshot.includes('data:image/webp;base64,'));
+    const flat = (await page.evaluate(`
+    let flat = [];
+    function flatten(root) {
+      flat.push(root);
+      if (!root.childNodes) return;
+      for (let cn of root.childNodes) {
+        flatten(cn);
+      }
+      delete root.childNodes;
+    }
+    flatten(snapshot);
+    flat;
+`)) as any[];
+    expect(flat).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          tagName: 'img',
+          attributes: {
+            src: expect.stringMatching(/images\/robot.png$/),
+            alt: 'This is a robot',
+            rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+          },
+        }),
+      ]),
+    );
   });
 
   it('correctly saves blob:images offline', async () => {
