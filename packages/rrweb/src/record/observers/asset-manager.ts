@@ -58,7 +58,7 @@ export default class AssetManager {
 
     const urlObjectMap = this.urlObjectMap;
 
-    if (this.config.objectURLs || this.config.inlineImages) {
+    if (this.config.objectURLs || this.config.images) {
       try {
         // monkeypatching allows us to store object blobs when they are created
         // so that we don't have to perform a slower `fetch` in order to serialize them

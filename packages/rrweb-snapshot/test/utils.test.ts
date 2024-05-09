@@ -339,19 +339,19 @@ describe('utils', () => {
       expect(
         shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
           ...ca,
-          inlineStylesheet: false,
+          stylesheets: false,
         }),
       ).toBe(false);
       expect(
         shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
           ...ca,
-          inlineStylesheet: true,
+          stylesheets: true,
         }),
       ).toBe(false); // this is false for backwards compatibility
       expect(
         shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
           ...ca,
-          inlineStylesheet: 'all',
+          stylesheets: 'all',
         }),
       ).toBe(true);
     });
