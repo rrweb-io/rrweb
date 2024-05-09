@@ -639,10 +639,10 @@ export function shouldCaptureAsset(
     attribute === 'href' &&
     lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
   ) {
-    if (config.stylesheets === 'all' || !shouldIgnoreAsset(value, config)) {
+    if (config.stylesheets === true || !shouldIgnoreAsset(value, config)) {
       // we'll also try to fetch if there are CORs issues
       return true;
-    } else {
+    } else if (config.stylesheets === 'without-fetch') {
       // replicate legacy inlineStylesheet behaviour;
       // inline all stylesheets that are CORs accessible
       try {
@@ -652,6 +652,7 @@ export function shouldCaptureAsset(
       }
       return true;
     }
+    return false;
   } else if (
     config.images &&
     n.nodeName === 'IMG' &&

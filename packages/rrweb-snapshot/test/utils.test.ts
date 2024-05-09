@@ -391,13 +391,13 @@ describe('utils', () => {
       expect(
         shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
           ...ca,
-          stylesheets: true,
+          stylesheets: 'without-fetch',
         }),
       ).toBe(false); // this is false for backwards compatibility
       expect(
         shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
           ...ca,
-          stylesheets: 'all',
+          stylesheets: true,
         }),
       ).toBe(true);
     });

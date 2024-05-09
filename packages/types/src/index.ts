@@ -92,7 +92,7 @@ export type captureAssetsParam = Partial<{
   /**
    * capture stylesheets irrespective of origin (populated from inlineStylesheets setting)
    */
-  stylesheets: boolean | 'all';
+  stylesheets: boolean | 'without-fetch';
 }>;
 
 export type assetEvent = {
