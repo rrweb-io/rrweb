@@ -108,10 +108,8 @@ function record<T = eventWithTime>(
     errorHandler,
   } = options;
 
-  // handle deprecated `inlineImages` option
   if (inlineImages) {
-    captureAssets.objectURLs = true;
-    captureAssets.origins = true;
+    captureAssets.inlineImages = inlineImages;
   }
 
   registerErrorHandler(errorHandler);

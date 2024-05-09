@@ -85,6 +85,10 @@ export type captureAssetsParam = Partial<{
    * in time
    */
   processStylesheetsWithin: number;
+  /**
+   * capture images irrespective of origin
+   */
+  inlineImages: boolean;
 }>;
 
 export type assetEvent = {
