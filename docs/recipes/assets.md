@@ -2,9 +2,10 @@
 
 [rrweb](https://rrweb.io/) is a JavaScript library that allows you to record and replay user interactions on your website. It provides various configuration options for capturing assets (such as images) during the recording process. In this document, we will explore the different asset capture methods and their configuration options in rrweb.
 
-## Inline Images (Deprecated)
+## Inline Images
 
-The `inlineImages` configuration option is deprecated and should not be used anymore. The previous implementation had some issues, namely rewriting events that are already emitted which might make you miss the inlined image if the event has already been sent to the server. Currently it just turns on `captureAssets`, so use please directly use the `captureAssets` option to configure asset capture.
+The `inlineImages` configuration option has been updated to use the asset system. This option now turns on asset capturing for all images irrespective of their origin. The previous version had issues, namely rewriting events that are already emitted which might make you miss the inlined image if the event has already been sent to the server.  In the absence of this configuration option, images will still be captured if their src url matches the `origins` setting below.
+
 
 ## Inline Stylesheets
 
@@ -17,7 +18,7 @@ The `captureAssets` configuration option allows you to customize the asset captu
 - `objectURLs` (default: `true`): This property specifies whether to capture same-origin `blob:` assets using object URLs. Object URLs are created using the `URL.createObjectURL()` method. Setting `objectURLs` to `true` enables the capture of object URLs.
 
 - `origins` (default: `false`): This property determines which origins to capture assets from. It can have the following values:
-  - `false` or `[]`: Disables capturing any assets apart from object URLs.
+  - `false` or `[]`: Disables capturing any assets apart from object URLs or inlineImages (if that setting is turned on).
   - `true`: Captures assets from all origins.
   - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
 
@@ -34,7 +35,7 @@ export type recordOptions<T> = {
     objectURLs: boolean;
     origins: string[] | true | false;
   };
-  inlineImages?: boolean; // Deprecated, don't use it anymore
+  inlineImages?: boolean;
   // Other configuration options...
 };
 ```
