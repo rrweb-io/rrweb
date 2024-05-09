@@ -314,7 +314,7 @@ export default class MutationBuffer {
         maskTextSelector: this.maskTextSelector,
         skipChild: true,
         newlyAddedElement: true,
-        inlineStylesheet: this.inlineStylesheet,
+        inlineStylesheet: Boolean(this.inlineStylesheet),
         maskInputOptions: this.maskInputOptions,
         maskTextFn: this.maskTextFn,
         maskInputFn: this.maskInputFn,
@@ -652,7 +652,6 @@ export default class MutationBuffer {
               attributeName,
               transformedValue,
               this.captureAssets,
-              this.inlineStylesheet,
             )
           ) {
             this.assetManager.capture({

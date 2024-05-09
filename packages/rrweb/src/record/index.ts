@@ -111,6 +111,9 @@ function record<T = eventWithTime>(
   if (inlineImages) {
     captureAssets.inlineImages = inlineImages;
   }
+  if (inlineStylesheet) {
+    captureAssets.inlineStylesheet = inlineStylesheet;
+  }
 
   registerErrorHandler(errorHandler);
 
@@ -399,7 +402,7 @@ function record<T = eventWithTime>(
       blockSelector,
       maskTextClass,
       maskTextSelector,
-      inlineStylesheet,
+      inlineStylesheet: Boolean(inlineStylesheet), // 'all' value can be discarded as has already been transferred into `captureAssets`
       maskAllInputs: maskInputOptions,
       maskTextFn,
       slimDOM: slimDOMOptions,
