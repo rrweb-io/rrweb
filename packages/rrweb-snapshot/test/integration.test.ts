@@ -201,6 +201,8 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('correctly saves images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
+    // console for debug
+    page.on('console', (msg) => console.log(msg.text()));
 
     await page.goto('http://localhost:3030/html/picture.html', {
       waitUntil: 'load',
@@ -333,7 +335,6 @@ iframe.contentDocument.querySelector('center').clientHeight
         },
         captureAssets: {
           origins: false,
-          objectURLs: false
         }
     })`);
     await waitForRAF(page);
