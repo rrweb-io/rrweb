@@ -309,8 +309,7 @@ export default class AssetManager {
     attribute: string,
     value: string,
     config: captureAssetsParam,
-    inlineStylesheet: string | boolean,
   ): boolean {
-    return shouldCaptureAsset(n, attribute, value, config, inlineStylesheet);
+    return shouldCaptureAsset(n, attribute, value, config);
   }
 }
