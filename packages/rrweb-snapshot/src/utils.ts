@@ -634,12 +634,12 @@ export function shouldCaptureAsset(
   config: captureAssetsParam,
 ): boolean {
   if (
-    config.inlineStylesheet &&
+    config.stylesheets &&
     n.nodeName === 'LINK' &&
     attribute === 'href' &&
     lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
   ) {
-    if (config.inlineStylesheet === 'all' || !shouldIgnoreAsset(value, config)) {
+    if (config.stylesheets === 'all' || !shouldIgnoreAsset(value, config)) {
       // we'll also try to fetch if there are CORs issues
       return true;
     } else {
@@ -653,7 +653,7 @@ export function shouldCaptureAsset(
       return true;
     }
   } else if (
-    config.inlineImages &&
+    config.images &&
     n.nodeName === 'IMG' &&
     ['src', 'srcset'].includes(attribute)
   ) {
@@ -705,7 +705,7 @@ function shouldIgnoreAsset(url: string, config: captureAssetsParam): boolean {
   const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
 
   // Check if url is a blob and we should ignore blobs
-  // BUT: if config.inlineImages == true, we should not ignore these on <img> elements
+  // BUT: if config.images == true, we should not ignore these on <img> elements
   // so this function should not be used in the absence of that context
   if (urlIsBlob) return !config.objectURLs;
 
