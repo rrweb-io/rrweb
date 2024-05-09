@@ -928,14 +928,14 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
-  it('[DEPRECATED] should record images with blob url', async () => {
+  it('should record images with blob url if inlineImages is on', async () => {
     const page: puppeteer.Page = await browser.newPage();
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     page.setContent(
       getHtml.call(this, 'image-blob-url.html', {
         inlineImages: true,
-        captureAssets: { objectURLs: false, origins: false },
+        captureAssets: { origins: false }, // override the default, leaving objectUrls unspecified
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
@@ -948,14 +948,14 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
-  it('[DEPRECATED] should record images inside iframe with blob url', async () => {
+  it('should record images inside iframe with blob url if inlineImages is on', async () => {
     const page: puppeteer.Page = await browser.newPage();
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
       getHtml.call(this, 'frame-image-blob-url.html', {
         inlineImages: true,
-        captureAssets: { objectURLs: false, origins: false },
+        captureAssets: { origins: false }, // override the default, leaving objectUrls unspecified
       }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
@@ -968,14 +968,14 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
-  it('[DEPRECATED] should record images inside iframe with blob url after iframe was reloaded', async () => {
+  it('should record images inside iframe with blob url after iframe was reloaded if inlineImages is on', async () => {
     const page: puppeteer.Page = await browser.newPage();
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
       getHtml.call(this, 'frame2.html', {
         inlineImages: true,
-        captureAssets: { objectURLs: false, origins: false },
+        captureAssets: { origins: false }, // override the default, leaving objectUrls unspecified
       }),
     );
     await page.waitForSelector('iframe'); // wait for iframe to get added
