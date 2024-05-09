@@ -56,7 +56,9 @@ export function getNative<T>(
 
 export const nativeSetTimeout =
   typeof window !== 'undefined'
-    ? getNative<typeof window.setTimeout>('setTimeout')
+    ? (getNative<typeof window.setTimeout>('setTimeout').bind(
+        window,
+      ) as typeof window.setTimeout)
     : global.setTimeout;
 
 /**
