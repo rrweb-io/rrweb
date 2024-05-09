@@ -763,7 +763,9 @@ function serializeElementNode(
       } catch (err) {
         if (image.crossOrigin !== 'anonymous') {
           image.crossOrigin = 'anonymous';
-          image.addEventListener('load', recordInlineImage);
+          if (image.complete && image.naturalWidth !== 0)
+            recordInlineImage(); // too early due to image reload
+          else image.addEventListener('load', recordInlineImage);
           return;
         } else {
           console.warn(
