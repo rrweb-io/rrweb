@@ -773,8 +773,9 @@ function serializeElementNode(
     }
   }
 
-  // `inlineImages` is deprecated and will be removed in rrweb 3.x.
-  if (tagName === 'img' && inlineImages) {
+  if (tagName === 'img' && inlineImages && !onAssetDetected) {
+    // this is a previous method and is now supported for the purposes
+    // of taking a static snapshot only (in the absence of an rrweb recording)
     if (!canvasService) {
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
@@ -993,7 +994,7 @@ export function serializeNodeWithId(
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
     /**
-     * @deprecated please use `captureAssets` instead
+     * @deprecated when called from rrweb/record in favour of `captureAssets.inlineImages`
      */
     inlineImages?: boolean;
     captureAssets?: captureAssetsParam;
@@ -1049,6 +1050,10 @@ export function serializeNodeWithId(
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
+
+  if (inlineImages) {
+    captureAssets.inlineImages = true;
+  }
 
   if (!needsMask) {
     // perf: if needsMask = true, children won't also need to check
@@ -1331,7 +1336,7 @@ function snapshot(
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     /**
-     * @deprecated please use `captureAssets` instead
+     * @deprecated when called from rrweb in favour of `captureAssets.inlineImages`
      */
     inlineImages?: boolean;
     captureAssets?: captureAssetsParam;
