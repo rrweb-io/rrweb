@@ -110,10 +110,10 @@ function record<T = eventWithTime>(
   } = options;
 
   if (inlineImages) {
-    captureAssets.inlineImages = inlineImages;
+    captureAssets.images = inlineImages;
   }
   if (inlineStylesheet) {
-    captureAssets.inlineStylesheet = inlineStylesheet;
+    captureAssets.stylesheets = inlineStylesheet;
   }
 
   registerErrorHandler(errorHandler);
