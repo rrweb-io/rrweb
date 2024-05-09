@@ -632,15 +632,14 @@ export function shouldCaptureAsset(
   attribute: string,
   value: string,
   config: captureAssetsParam,
-  inlineStylesheet: string | boolean,
 ): boolean {
   if (
-    inlineStylesheet &&
+    config.inlineStylesheet &&
     n.nodeName === 'LINK' &&
     attribute === 'href' &&
     lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
   ) {
-    if (inlineStylesheet === 'all' || !shouldIgnoreAsset(value, config)) {
+    if (config.inlineStylesheet === 'all' || !shouldIgnoreAsset(value, config)) {
       // we'll also try to fetch if there are CORs issues
       return true;
     } else {
