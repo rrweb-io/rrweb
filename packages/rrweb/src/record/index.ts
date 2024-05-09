@@ -112,8 +112,15 @@ function record<T = eventWithTime>(
   if (inlineImages) {
     captureAssets.images = inlineImages;
   }
-  if (inlineStylesheet) {
-    captureAssets.stylesheets = inlineStylesheet;
+  if (captureAssets.stylesheets === undefined) {
+    if (inlineStylesheet === 'all') {
+      captureAssets.stylesheets = true;
+    } else if (inlineStylesheet) {
+      // the prior default setting
+      captureAssets.stylesheets = 'without-fetch';
+    } else {
+      captureAssets.stylesheets = false;
+    }
   }
 
   registerErrorHandler(errorHandler);
