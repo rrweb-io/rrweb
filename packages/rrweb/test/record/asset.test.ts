@@ -783,7 +783,7 @@ describe('asset capturing', function (this: ISuite) {
     });
   });
 
-  describe('inlineStylesheet=true', () => {
+  describe('stylesheets=true', () => {
     const ctx: ISuite = setup.call(
       this,
       `
@@ -797,7 +797,7 @@ describe('asset capturing', function (this: ISuite) {
         captureAssets: {
           origins: [],
           objectURLs: false,
-          inlineStylesheet: true,
+          stylesheets: true,
         },
       },
     );

@@ -60,8 +60,7 @@ export type recordOptions<T> = {
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
   /**
-   * @deprecated Since 2.0.0. This option is still supported, but is planned to
-   * be superseded by future captureAssets asset recording APIs.
+   * @deprecated please use `captureAssets.stylesheets` instead
    */
   inlineStylesheet?: boolean | 'all';
   hooks?: hooksParam;
@@ -75,7 +74,7 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   /**
-   * @deprecated Since 2.0.0. please use `captureAssets` instead (captureAssets.images)
+   * @deprecated please use `captureAssets.images` instead
    */
   inlineImages?: boolean;
   captureAssets?: captureAssetsParam;

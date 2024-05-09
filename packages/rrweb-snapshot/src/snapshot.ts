@@ -1017,7 +1017,7 @@ export function serializeNodeWithId(
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
     /**
-     * @deprecated when called from rrweb/record in favour of `captureAssets.inlineImages`
+     * @deprecated when called from rrweb/record in favour of `captureAssets.images`
      */
     inlineImages?: boolean;
     captureAssets?: captureAssetsParam;
@@ -1075,7 +1075,7 @@ export function serializeNodeWithId(
   let { preserveWhiteSpace = true } = options;
 
   if (inlineImages) {
-    captureAssets.inlineImages = true;
+    captureAssets.images = true;
   }
 
   if (!needsMask) {
@@ -1359,7 +1359,7 @@ function snapshot(
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     /**
-     * @deprecated when called from rrweb in favour of `captureAssets.inlineImages`
+     * @deprecated when called from rrweb in favour of `captureAssets.images`
      */
     inlineImages?: boolean;
     captureAssets?: captureAssetsParam;
