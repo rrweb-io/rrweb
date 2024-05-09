@@ -18,7 +18,7 @@ The `captureAssets` configuration option allows you to customize the asset captu
 - `objectURLs` (default: `true`): This property specifies whether to capture same-origin `blob:` assets using object URLs. Object URLs are created using the `URL.createObjectURL()` method. Setting `objectURLs` to `true` enables the capture of object URLs.
 
 - `origins` (default: `false`): This property determines which origins to capture assets from. It can have the following values:
-  - `false` or `[]`: Disables capturing any assets apart from object URLs or inlineImages (if that setting is turned on).
+  - `false` or `[]`: Disables capturing any assets apart from object URLs, inlineImages (if that setting is turned on) and inlineStylesheets (true by default).
   - `true`: Captures assets from all origins.
   - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
 

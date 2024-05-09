@@ -383,13 +383,22 @@ describe('utils', () => {
         origins: false,
       };
       expect(
-        shouldCaptureAsset(element, 'href', 'https://example.com', ca, false),
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          inlineStylesheet: false,
+        }),
       ).toBe(false);
       expect(
-        shouldCaptureAsset(element, 'href', 'https://example.com', ca, true),
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          inlineStylesheet: true,
+        }),
       ).toBe(false); // this is false for backwards compatibility
       expect(
-        shouldCaptureAsset(element, 'href', 'https://example.com', ca, 'all'),
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          inlineStylesheet: 'all',
+        }),
       ).toBe(true);
     });
   });
