@@ -1,3 +1,4 @@
+# list of old changeset files that were mutated to use single quotes by a previous version of prettier:
 .changeset/attribute-text-reductions.md
 .changeset/avoid-costly-createlement.md
 .changeset/brave-numbers-joke.md
