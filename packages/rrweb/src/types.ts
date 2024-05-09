@@ -58,6 +58,9 @@ export type recordOptions<T> = {
   maskTextFn?: MaskTextFn;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
+  /**
+   * @deprecated please use `captureAssets.stylesheets` instead
+   */
   inlineStylesheet?: boolean | 'all';
   hooks?: hooksParam;
   packFn?: PackFn;
@@ -70,7 +73,7 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   /**
-   * @deprecated please use `captureAssets` instead
+   * @deprecated please use `captureAssets.images` instead
    */
   inlineImages?: boolean;
   captureAssets?: captureAssetsParam;
