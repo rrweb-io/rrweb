@@ -634,7 +634,7 @@ export function shouldCaptureAsset(
   config: captureAssetsParam,
 ): boolean {
   if (
-    config.stylesheets &&
+    config.stylesheets !== false &&
     n.nodeName === 'LINK' &&
     attribute === 'href' &&
     lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'

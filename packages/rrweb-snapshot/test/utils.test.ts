@@ -355,5 +355,34 @@ describe('utils', () => {
         }),
       ).toBe(true);
     });
+
+    it(`should correctly identify stylesheet as capturable due to origin match, but respect a hard stylesheets=false`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+      const ca = {
+        objectURLs: false,
+        origins: ['https://example.com'],
+      };
+      expect(
+        shouldCaptureAsset(
+          element,
+          'href',
+          'https://example.com/style.css',
+          ca, // stylesheets undefined (not actually possible from rrweb)
+        ),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: 'without-fetch', // the default from rrweb
+        }),
+      ).toBe(true); // because of origins
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: false, // explicit off, override origins
+        }),
+      ).toBe(false);
+    });
   });
 });
