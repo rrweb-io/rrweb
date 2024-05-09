@@ -653,6 +653,12 @@ export function shouldCaptureAsset(
       }
       return true;
     }
+  } else if (
+    config.inlineImages &&
+    n.nodeName === 'IMG' &&
+    ['src', 'srcset'].includes(attribute)
+  ) {
+    return true;
   }
   return (
     isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)
@@ -695,14 +701,13 @@ export function isAttributeCapturable(n: Element, attribute: string): boolean {
   return acceptedAttributesSet.has(attribute);
 }
 
-export function shouldIgnoreAsset(
-  url: string,
-  config: captureAssetsParam,
-): boolean {
+function shouldIgnoreAsset(url: string, config: captureAssetsParam): boolean {
   const originsToIgnore = ['data:'];
   const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
 
   // Check if url is a blob and we should ignore blobs
+  // BUT: if config.inlineImages == true, we should not ignore these on <img> elements
+  // so this function should not be used in the absence of that context
   if (urlIsBlob) return !config.objectURLs;
 
   // Check if url matches any ignorable origins

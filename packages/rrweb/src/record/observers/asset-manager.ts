@@ -16,7 +16,6 @@ import type { recordOptions, assetStatus } from '../../types';
 import {
   getSourcesFromSrcset,
   shouldCaptureAsset,
-  shouldIgnoreAsset,
   stringifyStylesheet,
   absolutifyURLs,
   findCssTextSplits,
@@ -59,7 +58,7 @@ export default class AssetManager {
 
     const urlObjectMap = this.urlObjectMap;
 
-    if (this.config.objectURLs) {
+    if (this.config.objectURLs || this.config.inlineImages) {
       try {
         const restoreHandler = patch(
           win.URL,
@@ -93,10 +92,6 @@ export default class AssetManager {
         console.error('failed to patch URL.revokeObjectURL');
       }
     }
-  }
-
-  public shouldIgnore(url: string): boolean {
-    return shouldIgnoreAsset(url, this.config);
   }
 
   public async getURLObject(
@@ -219,11 +214,6 @@ export default class AssetManager {
   }
 
   private captureUrl(url: string): assetStatus {
-    if (this.shouldIgnore(url)) {
-      console.warn(`snapshot.ts should know to ignore ${url}`);
-      return { status: 'refused' };
-    }
-
     if (this.capturedURLs.has(url)) {
       return { status: 'captured' };
     } else if (this.capturingURLs.has(url)) {
