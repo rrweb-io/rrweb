@@ -358,6 +358,12 @@ describe('onAssetDetected callback', () => {
 <link rel="stylesheet" href="https://example.com/css/style.css" />
 </div>`);
 
+    // pretend it has loaded but isn't CORS accessible
+    let linkEl = el.querySelector('link');
+    Object.defineProperty(linkEl, 'sheet', {
+      value: true,
+    });
+
     const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toBeCalledTimes(1);

@@ -28,7 +28,10 @@ export class StylesheetManager {
     childSn: serializedNodeWithId,
   ) {
     // a mutation rather than an asset event so that we record the timestamp that the stylesheet was loaded
-    if ('_cssText' in (childSn as elementNode).attributes)
+    if (
+      '_cssText' in (childSn as elementNode).attributes ||
+      'rr_captured_href' in (childSn as elementNode).attributes
+    ) {
       this.mutationCb({
         adds: [],
         removes: [],
@@ -41,6 +44,7 @@ export class StylesheetManager {
           },
         ],
       });
+    }
 
     this.trackLinkElement(linkEl);
   }
