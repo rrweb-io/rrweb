@@ -85,6 +85,11 @@ export type captureAssetsParam = Partial<{
    * in time
    */
   processStylesheetsWithin: number;
+  /*
+   * if set, process stylesheets with less than this number of css rules immediately/synchronously,
+   * and include directly in the snapshot without a separate asset event
+   */
+  stylesheetsRuleThreshold: number;
   /**
    * capture images irrespective of origin (populated from inlineImages setting)
    */
