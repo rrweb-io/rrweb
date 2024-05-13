@@ -218,7 +218,7 @@ exports[`record > captures CORS stylesheets as assets 1`] = `
                     \\"tagName\\": \\"link\\",
                     \\"attributes\\": {
                       \\"rel\\": \\"stylesheet\\",
-                      \\"rr_captured_href\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\"
+                      \\"href\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 5
@@ -264,6 +264,24 @@ exports[`record > captures CORS stylesheets as assets 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 5,
+          \\"attributes\\": {
+            \\"rel\\": \\"stylesheet\\",
+            \\"rr_captured_href\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\"
+          }
+        }
+      ]
     }
   },
   {
