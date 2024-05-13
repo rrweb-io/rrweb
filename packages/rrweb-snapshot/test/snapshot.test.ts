@@ -259,6 +259,7 @@ describe('onAssetDetected callback', () => {
     node: Node,
     onAssetDetected: (result: asset) => void,
     inlineImages?: boolean,
+    stylesheetsRuleThreshold?: number,
   ): serializedNodeWithId | null => {
     return serializeNodeWithId(node, {
       doc: document,
@@ -277,6 +278,7 @@ describe('onAssetDetected callback', () => {
       captureAssets: {
         objectURLs: true,
         origins: ['https://example.com'],
+        stylesheetsRuleThreshold,
       },
       onAssetDetected,
     });
@@ -356,7 +358,7 @@ describe('onAssetDetected callback', () => {
 <link rel="stylesheet" href="https://example.com/css/style.css" />
 </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toBeCalledTimes(1);
     expect(callback).toHaveBeenCalledWith({
@@ -371,7 +373,7 @@ describe('onAssetDetected callback', () => {
 <link rel="stylesheet" href="https://rrweb.com/css/style.css" />
 </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toBeCalledTimes(0);
   });
@@ -381,7 +383,7 @@ describe('onAssetDetected callback', () => {
 <link rel="stylesheet" href="https://rrweb.com/css/style.css" />
 </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     const inlineImages = true;
     serializeNode(el, callback, inlineImages);
     expect(callback).toBeCalledTimes(0);
@@ -394,7 +396,7 @@ describe('onAssetDetected callback', () => {
 </style>
 </div>`);
 
-    const callback = jest.fn();
+    const callback = vi.fn();
     serializeNode(el, callback);
     expect(callback).toBeCalledTimes(1);
     expect(callback).toHaveBeenCalledWith({
@@ -404,4 +406,24 @@ describe('onAssetDetected callback', () => {
       value: 'http://localhost/',
     });
   });
+
+  it("should detect style depending on if stylesheetsRuleThreshold is met", () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+<style>
+      body { background: pink; }
+      div { background: pink; }
+      span { background: pink; }
+</style>
+</div>`);
+
+    const callback = vi.fn();
+    const stylesheetsRuleThreshold = 2;
+    const inlineImages = undefined;
+    serializeNode(el, callback, inlineImages, stylesheetsRuleThreshold);
+    expect(callback).toBeCalledTimes(1);
+  });
+
 });
