@@ -338,10 +338,12 @@ exports[`integration tests [html file]: mask-text.html 1`] = `
 exports[`integration tests [html file]: picture.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <picture>
+      <!-- these are 404 - not sure if that's intentional -->
       <source type=\\"image/webp\\" srcset=\\"http://localhost:3030/assets/img/characters/robot.webp\\" />
       <img src=\\"http://localhost:3030/assets/img/characters/robot.png\\" />
     </picture>
     <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" />
+    <img src=\\"https://avatars.githubusercontent.com/u/43396833?s=20&amp;v=4\\" alt=\\"CORS restricted but has access-control-allow-origin: *\\" />
   </body></html>"
 `;
 
