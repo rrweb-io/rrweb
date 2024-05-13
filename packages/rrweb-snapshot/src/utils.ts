@@ -109,14 +109,16 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules, stringifyRule).join(''),
-        )
-      : null;
+    return rules ? stringifyCssRules(rules) : null;
   } catch (error) {
     return null;
   }
+}
+
+export function stringifyCssRules(rules: CSSRuleList): string {
+  return fixBrowserCompatibilityIssuesInCSS(
+    Array.from(rules, stringifyRule).join(''),
+  );
 }
 
 export function stringifyRule(rule: CSSRule): string {

@@ -25,7 +25,7 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  stringifyStylesheet,
+  stringifyCssRules,
   getInputType,
   toLowerCase,
   lowerIfExists,
@@ -619,7 +619,7 @@ function serializeTextNode(
   } else if (!cssCaptured) {
     textContent = n.textContent;
     if (isStyle && textContent) {
-      // mutation only: we don't need to use stringifyStylesheet
+      // mutation only: we don't need to use stringifyCssRules
       // as a <style> text node mutation obliterates any previous
       // programmatic rule manipulation (.insertRule etc.)
       // so the current textContent represents the most up to date state
@@ -691,18 +691,28 @@ function serializeElementNode(
   let attributes: attributes = {};
   const len = n.attributes.length;
 
-  // legacy, the stringifyStylesheet badly blocks the main thread as web page loads when taking an initial snapshot
+  // legacy, the stringifyCssRules badly blocks the main thread as web page loads when taking an initial snapshot
   // prefer to capture as an asset instead
-  if (
-    tagName === 'link' &&
-    inlineStylesheet &&
-    (!onAssetDetected || captureAssets._fromMutation)
-  ) {
+  if (tagName === 'link' && inlineStylesheet) {
     const l = n as HTMLLinkElement;
     if (l.href && lowerIfExists(l.rel) === 'stylesheet' && l.sheet) {
-      const cssText = stringifyStylesheet(l.sheet);
-      if (cssText) {
-        attributes._cssText = absoluteToStylesheet(cssText, l.href);
+      let sheetRules;
+      try {
+        sheetRules = l.sheet.cssRules;
+      } catch (e) {
+        // not accessible. inlineStylesheet config doesn't attempt anything further
+      }
+      if (
+        sheetRules &&
+        (!onAssetDetected ||
+          captureAssets._fromMutation ||
+          (captureAssets.stylesheetsRuleThreshold !== undefined &&
+            sheetRules.length < captureAssets.stylesheetsRuleThreshold))
+      ) {
+        attributes._cssText = absoluteToStylesheet(
+          stringifyCssRules(sheetRules),
+          l.href,
+        );
       }
     }
   }
@@ -737,15 +747,20 @@ function serializeElementNode(
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
+    const styleEl = n as HTMLStyleElement;
     const sheetBaseHref = getHref(doc);
-    if (!onAssetDetected || captureAssets._fromMutation) {
-      let cssText = stringifyStylesheet(
-        (n as HTMLStyleElement).sheet as CSSStyleSheet,
-      );
+    const styleRules = styleEl.sheet!.cssRules;
+    if (
+      !onAssetDetected ||
+      captureAssets._fromMutation ||
+      (captureAssets.stylesheetsRuleThreshold !== undefined &&
+        styleRules.length < captureAssets.stylesheetsRuleThreshold)
+    ) {
+      let cssText = stringifyCssRules(styleRules);
       if (cssText) {
         cssText = absoluteToStylesheet(cssText, sheetBaseHref);
-        if (n.childNodes.length > 1) {
-          cssText = markCssSplits(cssText, n as HTMLStyleElement);
+        if (styleEl.childNodes.length > 1) {
+          cssText = markCssSplits(cssText, styleEl);
         }
       }
       attributes._cssText = cssText;
