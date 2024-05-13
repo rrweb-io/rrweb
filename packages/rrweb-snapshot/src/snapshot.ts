@@ -1311,7 +1311,10 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
-            captureAssets,
+            captureAssets: {
+              ...captureAssets,
+              _fromMutation: true, // assets captured in the iframe can be inlined (if possible) as iframe will be emitted as a mutation in rrweb/**/iframe-manager.ts
+            },
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1319,6 +1322,7 @@ export function serializeNodeWithId(
             iframeLoadTimeout,
             onStylesheetLoad,
             stylesheetLoadTimeout,
+            onAssetDetected,
             keepIframeSrcFn,
           });
 
@@ -1344,11 +1348,12 @@ export function serializeNodeWithId(
         typeof serializedNode.attributes.href === 'string' &&
         extractFileExtension(serializedNode.attributes.href) === 'css'))
   ) {
-    // this isn't executed for stylesheet assets as we've replaced `href` with `rr_captured_href`
+    // this isn't executed for already loaded stylesheet assets as we've replaced `href` with `rr_captured_href`
     onceStylesheetLoaded(
       n as HTMLLinkElement,
       () => {
         if (onStylesheetLoad) {
+          // reserialize the node to generate either _cssText or rr_captured_href now that the .sheet is available
           const serializedLinkNode = serializeNodeWithId(n, {
             doc,
             mirror,
@@ -1365,7 +1370,10 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
-            captureAssets,
+            captureAssets: {
+              ...captureAssets,
+              _fromMutation: true, // it is emitted as a mutation in rrweb/**/stylesheet-manager.ts
+            },
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1373,6 +1381,7 @@ export function serializeNodeWithId(
             iframeLoadTimeout,
             onStylesheetLoad,
             stylesheetLoadTimeout,
+            onAssetDetected,
             keepIframeSrcFn,
           });
 

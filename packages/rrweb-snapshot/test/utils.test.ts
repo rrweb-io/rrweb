@@ -332,6 +332,12 @@ describe('utils', () => {
     it(`should correctly identify <link href rel="stylesheet"> as capturable if inlineStylesheet == 'all'`, () => {
       const element = document.createElement('link');
       element.setAttribute('rel', 'StyleSheet');
+
+      // pretend it has loaded but isn't CORS accessible
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
       const ca = {
         objectURLs: false,
         origins: false,
@@ -356,9 +362,27 @@ describe('utils', () => {
       ).toBe(true);
     });
 
+    it(`should not identify <link href rel="stylesheet"> as capturable if it hasn't loaded yet`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          objectURLs: false,
+          origins: false,
+          stylesheets: true,
+        }),
+      ).toBe(false); // will capture as mutation when it loads
+    });
+
     it(`should correctly identify stylesheet as capturable due to origin match, but respect a hard stylesheets=false`, () => {
       const element = document.createElement('link');
       element.setAttribute('rel', 'StyleSheet');
+
+      // pretend it has loaded but isn't CORS accessible
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
       const ca = {
         objectURLs: false,
         origins: ['https://example.com'],

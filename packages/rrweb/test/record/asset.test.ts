@@ -3,7 +3,7 @@ import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import type { recordOptions } from '../../src/types';
 import type { listenerHandler, eventWithTime, assetEvent } from '@rrweb/types';
-import { EventType } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
 import {
   getServerURL,
   launchPuppeteer,
@@ -755,6 +755,38 @@ describe('asset capturing', function (this: ISuite) {
       const events = await ctx.page?.evaluate(
         () => (window as unknown as IWindow).snapshots,
       );
+
+      const mutationEvents = events.filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          e.data.source === IncrementalSource.Mutation,
+      );
+      expect(mutationEvents[0]).toMatchObject({
+        data: {
+          adds: [
+            {
+              node: {
+                attributes: {
+                  href: expect.stringContaining('2.67.0'), // not rr_captured_href
+                },
+              },
+            },
+          ],
+        },
+      });
+
+      expect(mutationEvents[1]).toMatchObject({
+        data: {
+          attributes: [
+            {
+              attributes: {
+                rr_captured_href: expect.stringContaining('2.67.0'), // this signals that the stylesheet has has loaded
+              },
+            },
+          ],
+        },
+      });
+
       const assetEvents = events.filter((e) => e.type === EventType.Asset);
       expect(assetEvents.length).toEqual(2); // both should be present as both were present on the page (albeit momentarily)
       const expected: assetEvent[] = [
