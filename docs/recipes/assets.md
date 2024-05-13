@@ -22,6 +22,9 @@ The `captureAssets` configuration option allows you to customize the asset captu
   - `true`: Captures assets from all origins.
   - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
 
+
+- `stylesheetsRuleThreshold` (default: `0`): only invoke the asset system for stylesheets with more than this number of rules. Defaults to zero (rather than say 100) as it only looks at the 'outer' rules (e.g. could have a single media rule which nests 1000s of sub rules).
+
 - `processStylesheetsWithin` (default: `2000`): This property defines the maximum time in milliseconds that the browser should  delay before processing stylesheets. Inline `<style>` elements will be processed within half this value. Lower this value if you wish to improve the odds that short 'bounce' visits will emit the asset before visitor unloads page.  Set to zero or a negative number to process stylesheets synchronously, which can cause poor scores on e.g. https://pagespeed.web.dev/ ("Third-party code blocked the main thread").
 
 ## TypeScript Type Definition

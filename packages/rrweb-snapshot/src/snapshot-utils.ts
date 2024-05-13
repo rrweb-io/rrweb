@@ -13,7 +13,7 @@ export {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  stringifyStylesheet,
+  stringifyCssRules,
   getInputType,
   toLowerCase,
   extractFileExtension,
