@@ -16,7 +16,7 @@ import type { recordOptions, assetStatus } from '../../types';
 import {
   getSourcesFromSrcset,
   shouldCaptureAsset,
-  stringifyStylesheet,
+  stringifyCssRules,
   absoluteToStylesheet,
   findCssTextSplits,
 } from 'rrweb-snapshot';
@@ -127,8 +127,9 @@ export default class AssetManager {
     el: HTMLLinkElement | HTMLStyleElement,
     styleId?: number,
   ): assetStatus {
+    let cssRules: CSSRuleList;
     try {
-      el.sheet!.cssRules;
+      cssRules = el.sheet!.cssRules;
     } catch (e) {
       if (el.tagName === 'STYLE') {
         // sheetBaseHref represents the document url the style element is embedded in so can't be fetched
@@ -165,16 +166,10 @@ export default class AssetManager {
       return { status: 'capturing' }; // 'processing' ?
     }
     const processStylesheet = () => {
-      if (!el.sheet) {
-        // this `if` is to satisfy typescript; we already know sheet is accessible
-        return;
-      }
-      let cssText = stringifyStylesheet(el.sheet);
-      if (!cssText) {
-        console.warn(`empty stylesheet; CORs issue? ${sheetBaseHref}`);
-        return;
-      }
-      cssText = absoluteToStylesheet(cssText, sheetBaseHref);
+      const cssText = absoluteToStylesheet(
+        stringifyCssRules(el.sheet!.cssRules),
+        sheetBaseHref,
+      );
       const payload: SerializedCssTextArg = {
         rr_type: 'CssText',
         cssTexts: [cssText],

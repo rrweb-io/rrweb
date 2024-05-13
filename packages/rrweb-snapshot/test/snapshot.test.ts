@@ -268,6 +268,7 @@ describe('onAssetDetected callback', () => {
     node: Node,
     onAssetDetected: (result: asset) => void,
     inlineImages?: boolean,
+    stylesheetsRuleThreshold?: number,
   ): serializedNodeWithId | null => {
     return serializeNodeWithId(node, {
       doc: document,
@@ -286,6 +287,7 @@ describe('onAssetDetected callback', () => {
       captureAssets: {
         objectURLs: true,
         origins: ['https://example.com'],
+        stylesheetsRuleThreshold,
       },
       onAssetDetected,
     });
@@ -413,4 +415,24 @@ describe('onAssetDetected callback', () => {
       value: 'http://localhost/',
     });
   });
+
+  it("should detect style depending on if stylesheetsRuleThreshold is met", () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+<style>
+      body { background: pink; }
+      div { background: pink; }
+      span { background: pink; }
+</style>
+</div>`);
+
+    const callback = jest.fn();
+    const stylesheetsRuleThreshold = 2;
+    const inlineImages = undefined;
+    serializeNode(el, callback, inlineImages, stylesheetsRuleThreshold);
+    expect(callback).toBeCalledTimes(1);
+  });
+
 });
