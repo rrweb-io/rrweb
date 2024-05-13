@@ -123,13 +123,17 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
       // an inline <style> element
       sheetHref = s.ownerNode.baseURI;
     }
-    const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
-      stringifyRule(rule, sheetHref),
-    ).join('');
-    return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
+    return stringifyCssRules(rules, sheetHref);
   } catch (error) {
     return null;
   }
+}
+
+export function stringifyCssRules(rules: CSSRuleList, sheetHref: string | null): string {
+  const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
+    stringifyRule(rule, sheetHref),
+  ).join('');
+  return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);  
 }
 
 export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
