@@ -643,18 +643,24 @@ export function shouldCaptureAsset(
     attribute === 'href' &&
     lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
   ) {
-    if (config.stylesheets === true || !shouldIgnoreAsset(value, config)) {
+    const linkEl = n as HTMLLinkElement;
+    if (!linkEl.sheet) {
+      // capture with an onload mutation instead so that we get an accurate timestamp for it's appearance
+      return false;
+    } else if (
+      config.stylesheets === true ||
+      !shouldIgnoreAsset(value, config)
+    ) {
       // we'll also try to fetch if there are CORs issues
       return true;
     } else if (config.stylesheets === 'without-fetch') {
       // replicate legacy inlineStylesheet behaviour;
       // inline all stylesheets that are CORs accessible
       try {
-        (n as HTMLLinkElement)!.sheet!.cssRules;
+        return linkEl!.sheet!.cssRules !== undefined;
       } catch (e) {
         return false;
       }
-      return true;
     }
     return false;
   } else if (

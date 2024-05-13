@@ -936,6 +936,7 @@ describe('record', function (this: ISuite) {
 
     await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
     await waitForRAF(ctx.page); // wait for rrweb to emit events
+    await ctx.page.waitForTimeout(50); // a further allowance for asset event to appear as it depends on the mutation showing up
 
     await assertSnapshot(ctx.events);
   });
