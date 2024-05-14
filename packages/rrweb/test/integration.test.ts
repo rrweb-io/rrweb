@@ -236,13 +236,9 @@ describe('record integration tests', function (this: ISuite) {
       if (styleEl) {
         styleEl.childNodes.forEach((cn) => {
           if (cn.textContent) {
-            cn.textContent = cn.textContent.replace(
-              'black',
-              'black !important',
-            ).replace(
-              '/rel',
-              '/rel2',
-            );
+            cn.textContent = cn.textContent
+              .replace('black', 'black !important')
+              .replace('/rel', '/rel2');
           }
         });
       }

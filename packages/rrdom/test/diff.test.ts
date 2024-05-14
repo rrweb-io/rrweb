@@ -535,7 +535,11 @@ describe('diff algorithm for rrdom', () => {
         const sn2 = Object.assign({}, elementSn, { tagName });
         rrDocument.mirror.add(rrNode, sn2);
 
-        rrNode.attributes = { rr_captured_href: 'https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css', class: 'node' };
+        rrNode.attributes = {
+          rr_captured_href:
+            'https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css',
+          class: 'node',
+        };
         diff(node, rrNode, replayer);
         expect(assetManager.manageAttribute).toHaveBeenCalledWith(
           node,
