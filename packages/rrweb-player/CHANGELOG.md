@@ -1,11 +1,11 @@
 # rrweb-player
 
-## 2.0.0-alpha.14
+## 2.0.0-alpha.15
 
 ### Patch Changes
 
 - Updated dependencies [[`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216)]:
-  - rrweb@2.0.0-alpha.14
+  - rrweb@2.0.0-alpha.15
 
 ## 2.0.0-alpha.12
 
