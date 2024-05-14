@@ -24,6 +24,9 @@ dist
 .cache/*
 !.gitkeep
 
+# emacs working files end in a tilde
+*~
+
 # `.yarn/install-state.gz` is an optimization file that you shouldn't ever have to commit. 
 # It simply stores the exact state of your project so that the next commands can boot without having to resolve your workspaces all over again.
 .yarn/install-state.gz
