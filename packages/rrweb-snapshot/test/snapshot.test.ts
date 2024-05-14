@@ -419,7 +419,7 @@ describe('onAssetDetected callback', () => {
     });
   });
 
-  it("should detect style depending on if stylesheetsRuleThreshold is met", () => {
+  it('should detect style depending on if stylesheetsRuleThreshold is met', () => {
     const el = render(`<div>
 <style>
       body { background: pink; }
@@ -437,5 +437,4 @@ describe('onAssetDetected callback', () => {
     serializeNode(el, callback, inlineImages, stylesheetsRuleThreshold);
     expect(callback).toBeCalledTimes(1);
   });
-
 });
