@@ -229,7 +229,9 @@ describe('replayer', function () {
   });
 
   it('can handle removing style elements which were emitted as an asset', async () => {
-    await page.evaluate(`events = ${JSON.stringify(styleSheetAssetRemoveEvents)}`);
+    await page.evaluate(
+      `events = ${JSON.stringify(styleSheetAssetRemoveEvents)}`,
+    );
     const actionLength = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
