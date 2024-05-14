@@ -33,6 +33,7 @@ clear and has sufficient instructions to be able to reproduce the issue.
 - Build individual packages: `yarn build` or `yarn dev`
 - Test: `yarn test` or `yarn test:watch`
 - Lint: `yarn lint`
+- Rewrite files with prettier: `yarn format` or `yarn format:head`
 
 ## Coding style
 
