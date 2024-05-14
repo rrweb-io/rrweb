@@ -1,5 +1,5 @@
 {
-  "name": "howdygo-howdygo-rrdom-nodejs",
+  "name": "howdygo-rrdom-nodejs",
   "version": "2.0.0-alpha.15",
   "scripts": {
     "dev": "rollup -c -w",
@@ -12,11 +12,11 @@
   },
   "keywords": [
     "howdygo-rrweb",
-    "howdygo-howdygo-rrdom-nodejs"
+    "howdygo-rrdom-nodejs"
   ],
   "license": "MIT",
-  "main": "lib/howdygo-howdygo-rrdom-nodejs.cjs",
-  "module": "es/howdygo-howdygo-rrdom-nodejs.js",
+  "main": "lib/howdygo-rrdom-nodejs.cjs",
+  "module": "es/howdygo-rrdom-nodejs.js",
   "typings": "es",
   "files": [
     "dist",

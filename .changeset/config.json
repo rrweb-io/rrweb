@@ -4,14 +4,14 @@
   "commit": false,
   "fixed": [
     [
-      "rrweb",
-      "rrweb-snapshot",
-      "rrdom",
+      "howdygo-rrweb",
+      "howdygo-rrweb-snapshot",
+      "howdygo-rrdom",
       "howdygo-rrdom-nodejs",
-      "rrweb-player",
+      "howdygo-rrweb-player",
       "howdygo-rrweb-types",
-      "@rrweb/web-extension",
-      "rrvideo"
+      "howdygo-rrweb-web-extension",
+      "howdygo-rrvideo"
     ]
   ],
   "linked": [],
