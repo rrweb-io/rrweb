@@ -50,6 +50,10 @@ export class IframeManager {
     }
   }
 
+  public setTakeFullSnapshot (takeFullSnapshot: (isCheckout?: boolean) => void) {
+    this.takeFullSnapshot = takeFullSnapshot;
+  }
+
   public addIframe(iframeEl: HTMLIFrameElement) {
     this.iframes.set(iframeEl, true);
     if (iframeEl.contentWindow)
