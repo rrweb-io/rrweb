@@ -75,9 +75,13 @@ export type captureAssetsParam = Partial<{
    */
   origins: string[] | true | false;
   /**
-   * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
+   * capture images irrespective of origin (populated from inlineImages setting)
    */
-  _fromMutation: true;
+  images: boolean;
+  /**
+   * capture stylesheets irrespective of origin (populated from inlineStylesheets setting)
+   */
+  stylesheets: boolean | 'without-fetch';
   /*
    * in milliseconds, default 2000
    * stylesheets are captured as assets in order to take their processing off the main thread
@@ -91,13 +95,9 @@ export type captureAssetsParam = Partial<{
    */
   stylesheetsRuleThreshold: number;
   /**
-   * capture images irrespective of origin (populated from inlineImages setting)
+   * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
    */
-  images: boolean;
-  /**
-   * capture stylesheets irrespective of origin (populated from inlineStylesheets setting)
-   */
-  stylesheets: boolean | 'without-fetch';
+  _fromMutation: true;
 }>;
 
 export type assetEvent = {
