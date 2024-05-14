@@ -1,6 +1,6 @@
 ---
-'rrweb-snapshot': major
-'@rrweb/types': patch
+"rrweb-snapshot": major
+"@rrweb/types": patch
 ---
 
 `NodeType` enum was moved from rrweb-snapshot to @rrweb/types

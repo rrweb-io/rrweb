@@ -749,10 +749,7 @@ function serializeElementNode(
     ) {
       const cssText = stringifyCssRules(styleRules);
       if (cssText) {
-        attributes._cssText = absoluteToStylesheet(
-          cssText,
-          sheetBaseHref,
-        );
+        attributes._cssText = absoluteToStylesheet(cssText, sheetBaseHref);
         if (styleEl.childNodes.length > 1) {
           const splits = findCssTextSplits(
             attributes._cssText,
