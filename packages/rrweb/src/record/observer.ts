@@ -296,20 +296,24 @@ function initMouseInteractionObserver({
       }
       const id = mirror.getId(target);
       const { clientX, clientY } = e;
-      let element: HTMLElement | null = null
+      let boundingRect: DOMRect | null = null
+      // Check if node is an element
       if (target.nodeType === 1) {
-        element = target as HTMLElement;
+        boundingRect = (target as Element).getBoundingClientRect()
       } else {
-        // Use logic like the client to use parentElement if no element specified
-        element = target.parentElement;
+        // Otherwise use logic like the client with nodeRange
+        const nodeRange = doc.createRange();
+        nodeRange.selectNodeContents(target);
+        boundingRect = nodeRange.getBoundingClientRect();
       }
+
       callbackWrapper(mouseInteractionCb)({
         type: MouseInteractions[thisEventKey],
         id,
         x: clientX,
         y: clientY,
-        xOffset: element ? clientX - (target as Element).getBoundingClientRect().left : undefined,
-        yOffset: element ? clientY - (target as Element).getBoundingClientRect().top : undefined,
+        xOffset: boundingRect ? clientX - boundingRect.left : undefined,
+        yOffset: boundingRect ? clientY - boundingRect.top : undefined,
         ...(pointerType !== null && { pointerType }),
       });
     };
