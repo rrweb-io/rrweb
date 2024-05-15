@@ -1043,7 +1043,7 @@ export class Replayer {
         );
         const commands =
           'commands' in event.data ? event.data.commands : [event.data];
-        commands.forEach((c) => {
+        commands.forEach((c: any) => {
           this.preloadImages(c, event);
         });
       }
