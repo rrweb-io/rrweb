@@ -1,6 +1,6 @@
 # rrweb
 
-## 2.0.0-alpha.15
+## 2.0.0-alpha.16
 
 ### Minor Changes
 
@@ -15,9 +15,9 @@
 - [#1445](https://github.com/rrweb-io/rrweb/pull/1445) [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216) Thanks [@daibhin](https://github.com/daibhin)! - fix: protect against missing parentNode
 
 - Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf)]:
-  - rrdom@2.0.0-alpha.15
-  - rrweb-snapshot@2.0.0-alpha.15
-  - @rrweb/types@2.0.0-alpha.15
+  - rrdom@2.0.0-alpha.16
+  - rrweb-snapshot@2.0.0-alpha.16
+  - @rrweb/types@2.0.0-alpha.16
 
 ## 2.0.0-alpha.12
 
