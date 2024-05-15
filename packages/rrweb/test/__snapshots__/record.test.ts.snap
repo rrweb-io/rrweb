@@ -3443,7 +3443,6 @@ exports[`record loading stylesheets captures stylesheets that are preloaded 1`] 
         {
           \\"id\\": 18,
           \\"attributes\\": {
-            \\"as\\": \\"style\\",
             \\"_cssText\\": \\"body { color: pink; }\\"
           }
         }

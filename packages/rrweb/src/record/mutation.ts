@@ -333,9 +333,6 @@ export default class MutationBuffer {
           this.iframeManager.attachIframe(iframe, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
-        onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachLinkElement(link, childSn);
-        },
       });
       if (sn) {
         adds.push({
@@ -663,6 +660,14 @@ export default class MutationBuffer {
                 item.styleDiff[pname] = false; // delete
               }
             }
+          } else if (
+            attributeName === 'rel' &&
+            value === 'stylesheet' &&
+            m.target.tagName === 'LINK'
+          ) {
+            this.stylesheetManager.trackLinkElement(
+              m.target as HTMLLinkElement,
+            );
           }
         }
         break;

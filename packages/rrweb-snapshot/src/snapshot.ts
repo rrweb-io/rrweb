@@ -211,7 +211,7 @@ function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
-function getHref(doc: Document, customHref?: string) {
+export function getHref(doc: Document, customHref?: string) {
   let a = cachedDocument.get(doc);
   if (!a) {
     a = doc.createElement('a');

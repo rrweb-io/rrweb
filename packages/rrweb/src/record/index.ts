@@ -282,6 +282,7 @@ function record<T = eventWithTime>(
     });
 
   const stylesheetManager = new StylesheetManager({
+    mirror,
     mutationCb: wrappedMutationEmit,
     adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
   });
@@ -395,9 +396,6 @@ function record<T = eventWithTime>(
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
         shadowDomManager.observeAttachShadow(iframe);
-      },
-      onStylesheetLoad: (linkEl, childSn) => {
-        stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
     });

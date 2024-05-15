@@ -1,4 +1,6 @@
 import snapshot, {
+  absoluteToStylesheet,
+  getHref,
   serializeNodeWithId,
   transformAttribute,
   ignoreAttribute,
@@ -18,6 +20,8 @@ export * from './types';
 export * from './utils';
 
 export {
+  absoluteToStylesheet,
+  getHref,
   snapshot,
   serializeNodeWithId,
   rebuild,
