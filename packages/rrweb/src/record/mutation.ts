@@ -669,6 +669,11 @@ export default class MutationBuffer {
             value.toLowerCase() === 'stylesheet' &&
             m.target.tagName === 'LINK'
           ) {
+            if (m.target.sheet) {
+              console.warn(
+                'have we missed the onload event due to delayed mutation?',
+              );
+            }
             this.stylesheetManager.trackLinkElement(
               m.target as HTMLLinkElement,
             );

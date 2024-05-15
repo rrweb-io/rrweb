@@ -70,6 +70,7 @@ export class StylesheetManager {
     // if <link> is already loaded, it will have .sheet available and that
     // will get serialized in the snapshot. The following is for when that doesn't happen
     linkEl.addEventListener('load', () => {
+      console.log('load');
       if (!linkEl.sheet) {
         return;
       }
@@ -80,6 +81,7 @@ export class StylesheetManager {
       }
       let _cssText = stringifyStylesheet(linkEl.sheet);
       if (_cssText) {
+        console.log('load emit');
         _cssText = absoluteToStylesheet(
           _cssText,
           getHref(linkEl.ownerDocument),
