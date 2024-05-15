@@ -815,6 +815,27 @@ describe('record', function (this: ISuite) {
       assertSnapshot(ctx.events);
     });
 
+    it('respects inlineStylesheet=false for late loading stylesheets', async () => {
+      ctx.page.evaluate((serverURL) => {
+        const { record } = (window as unknown as IWindow).rrweb;
+
+        record({
+          inlineStylesheet: false,
+          emit: (window as unknown as IWindow).emit,
+        });
+
+        const link1 = document.createElement('link');
+        link1.setAttribute('rel', 'stylesheet');
+        link1.setAttribute('href', `${serverURL}/html/assets/style.css`);
+        document.head.appendChild(link1);
+      }, serverURL);
+
+      await ctx.page.waitForResponse(`${serverURL}/html/assets/style.css`);
+      await waitForRAF(ctx.page);
+
+      assertSnapshot(ctx.events);
+    });
+
     it('captures stylesheets in iframes that are still loading', async () => {
       ctx.page.evaluate(() => {
         const iframe = document.createElement('iframe');

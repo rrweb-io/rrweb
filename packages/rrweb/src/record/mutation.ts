@@ -320,7 +320,10 @@ export default class MutationBuffer {
           if (isSerializedIframe(currentN, this.mirror)) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
-          if (isSerializedStylesheet(currentN, this.mirror)) {
+          if (
+            this.inlineStylesheet &&
+            isSerializedStylesheet(currentN, this.mirror)
+          ) {
             this.stylesheetManager.trackLinkElement(
               currentN as HTMLLinkElement,
             );
@@ -661,8 +664,9 @@ export default class MutationBuffer {
               }
             }
           } else if (
+            this.inlineStylesheet &&
             attributeName === 'rel' &&
-            value === 'stylesheet' &&
+            value.toLowerCase() === 'stylesheet' &&
             m.target.tagName === 'LINK'
           ) {
             this.stylesheetManager.trackLinkElement(

@@ -386,7 +386,7 @@ function record<T = eventWithTime>(
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
         }
-        if (isSerializedStylesheet(n, mirror)) {
+        if (inlineStylesheet && isSerializedStylesheet(n, mirror)) {
           stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
