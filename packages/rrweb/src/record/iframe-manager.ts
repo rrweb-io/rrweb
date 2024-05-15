@@ -50,7 +50,7 @@ export class IframeManager {
     }
   }
 
-  public setTakeFullSnapshot (takeFullSnapshot: (isCheckout?: boolean) => void) {
+  public setTakeFullSnapshot(takeFullSnapshot: (isCheckout?: boolean) => void) {
     this.takeFullSnapshot = takeFullSnapshot;
   }
 
