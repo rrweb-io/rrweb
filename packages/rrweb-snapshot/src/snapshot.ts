@@ -1209,37 +1209,28 @@ export function serializeNodeWithId(
       n as HTMLLinkElement,
       () => {
         if (onStylesheetLoad) {
-          const serializedLinkNode = serializeNodeWithId(n, {
-            doc,
-            mirror,
-            blockClass,
-            blockSelector,
-            needsMask,
-            maskTextClass,
-            maskTextSelector,
-            skipChild: false,
-            inlineStylesheet,
-            maskInputOptions,
-            maskTextFn,
-            maskInputFn,
-            slimDOMOptions,
-            dataURLOptions,
-            inlineImages,
-            recordCanvas,
-            preserveWhiteSpace,
-            onSerialize,
-            onIframeLoad,
-            iframeLoadTimeout,
-            onStylesheetLoad,
-            stylesheetLoadTimeout,
-            keepIframeSrcFn,
-          });
+          const serializedLinkNode = serializeElementNode(
+            n as HTMLLinkElement,
+            {
+              doc,
+              blockClass,
+              blockSelector,
+              inlineStylesheet,
+              maskInputOptions,
+              maskInputFn,
+              dataURLOptions,
+              inlineImages,
+              recordCanvas,
+              keepIframeSrcFn,
+              rootId: getRootId(doc, mirror),
+            },
+          );
 
           if (serializedLinkNode) {
-            onStylesheetLoad(
-              n as HTMLLinkElement,
-              serializedLinkNode as serializedElementNodeWithId,
-            );
+            const serializedLinkNodeWithId =
+              serializedLinkNode as serializedElementNodeWithId;
+            serializedLinkNodeWithId.id = serializedNode.id;
+            onStylesheetLoad(n as HTMLLinkElement, serializedLinkNodeWithId);
           }
         }
       },

@@ -3449,24 +3449,6 @@ exports[`record loading stylesheets captures stylesheets that are preloaded 1`] 
         }
       ]
     }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"adds\\": [],
-      \\"removes\\": [],
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 18,
-          \\"attributes\\": {
-            \\"as\\": \\"style\\",
-            \\"_cssText\\": \\"body { color: pink; }\\"
-          }
-        }
-      ]
-    }
   }
 ]"
 `;
