@@ -657,7 +657,7 @@ export function shouldCaptureAsset(
       // replicate legacy inlineStylesheet behaviour;
       // inline all stylesheets that are CORs accessible
       try {
-        return linkEl!.sheet!.cssRules !== undefined;
+        return linkEl.sheet.cssRules !== undefined;
       } catch (e) {
         return false;
       }
