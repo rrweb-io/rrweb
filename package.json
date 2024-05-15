@@ -29,6 +29,8 @@
     "eslint-plugin-compat": "^4.2.0",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-tsdoc": "^0.2.17",
+    "git-format-staged": "^3.1.1",
+    "husky": "^9.0.11",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
@@ -47,7 +49,8 @@
     "live-stream": "cd packages/rrweb && yarn live-stream",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
     "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
-    "release": "yarn build:all && changeset publish"
+    "release": "yarn build:all && changeset publish",
+    "prepare": "husky"
   },
   "resolutions": {
     "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
