@@ -296,10 +296,10 @@ function initMouseInteractionObserver({
       }
       const id = mirror.getId(target);
       const { clientX, clientY } = e;
-      let boundingRect: DOMRect | null = null
+      let boundingRect: DOMRect | null = null;
       // Check if node is an element
       if (target.nodeType === 1) {
-        boundingRect = (target as Element).getBoundingClientRect()
+        boundingRect = (target as Element).getBoundingClientRect();
       } else {
         // Otherwise use logic like the client with nodeRange
         const nodeRange = doc.createRange();
