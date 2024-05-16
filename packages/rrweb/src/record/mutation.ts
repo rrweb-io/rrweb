@@ -35,6 +35,7 @@ import {
   getShadowHost,
   closestElementOfNode,
 } from '../utils';
+import { isProcessingStyleElement } from './observers/asset-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -471,7 +472,7 @@ export default class MutationBuffer {
               // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
               this.genTextAreaValueMutation(parentEl as HTMLTextAreaElement);
             } else if (parentEl.tagName === 'STYLE') {
-              if ('rr_processingStylesheet' in n.parentNode) {
+              if (isProcessingStyleElement(parentEl)) {
                 // stylesheet hasn't been captured as an asset yet, ignore this mutation
                 return { id: -1, value: null };
               } else {
@@ -728,11 +729,8 @@ export default class MutationBuffer {
           this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
           return; // any removedNodes won't have been in mirror either
         }
-        if (
-          (m.target as Element).tagName === 'STYLE' &&
-          'rr_processingStylesheet' in m.target
-        ) {
-          // stylesheet hasn't been captured as an asset yet
+        if (isProcessingStyleElement(m.target as HTMLElement)) {
+          // stylesheet hasn't been captured as an asset yet, don't need to record child mutations
           return;
         }
 
