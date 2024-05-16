@@ -147,13 +147,13 @@ export class Replayer {
   private newDocumentQueue: addedNodeMutation[] = [];
 
   // Map of pointer ID to the unique vars used to show gestures
-  private multiTouchMap: Record<
+  private pointers: Record<
     number,
     {
       touchActive: boolean | null;
-      mouse: HTMLDivElement;
+      pointerEl: HTMLDivElement;
       tailPositions: Array<{ x: number; y: number }>;
-      mousePos: mouseMovePos | null;
+      pointerPosition: mouseMovePos | null;
     }
   > = {};
   private lastMouseDownEvent: [Node, Event] | null = null;
@@ -299,29 +299,30 @@ export class Replayer {
         this.adoptedStyleSheets = [];
       }
 
-      for (const [pointerId, { mousePos, touchActive }] of Object.entries(
-        this.multiTouchMap,
-      )) {
+      for (const [
+        pointerId,
+        { pointerPosition, touchActive },
+      ] of Object.entries(this.pointers)) {
         if (touchActive === true) {
-          this.multiTouchMap[parseInt(pointerId)].mouse.classList.add(
+          this.pointers[parseInt(pointerId)].pointerEl.classList.add(
             'touch-active',
           );
         } else if (touchActive === false) {
-          this.multiTouchMap[parseInt(pointerId)].mouse.classList.remove(
+          this.pointers[parseInt(pointerId)].pointerEl.classList.remove(
             'touch-active',
           );
         }
-        this.multiTouchMap[parseInt(pointerId)].touchActive = null;
-        if (mousePos) {
+        this.pointers[parseInt(pointerId)].touchActive = null;
+        if (pointerPosition) {
           this.moveAndHover(
-            mousePos.x,
-            mousePos.y,
-            mousePos.id,
+            pointerPosition.x,
+            pointerPosition.y,
+            pointerPosition.id,
             true,
-            mousePos.debugData,
+            pointerPosition.debugData,
             parseInt(pointerId),
           );
-          this.multiTouchMap[parseInt(pointerId)].mousePos = null;
+          this.pointers[parseInt(pointerId)].pointerPosition = null;
         }
       }
 
@@ -422,12 +423,12 @@ export class Replayer {
         const pointerId =
           'pointerId' in d && d.pointerId !== undefined
             ? d.pointerId
-            : Object.keys(this.multiTouchMap).length;
+            : Object.keys(this.pointers).length;
 
-        if (!this.multiTouchMap[pointerId]) {
+        if (!this.pointers[pointerId]) {
           this.createNewTouch(pointerId);
         }
-        this.multiTouchMap[pointerId].mouse.classList.add('touch-device');
+        this.pointers[pointerId].pointerEl.classList.add('touch-device');
       }
     });
   }
@@ -435,11 +436,11 @@ export class Replayer {
   private createNewTouch(pointerId: number) {
     const newMouse = document.createElement('div');
     newMouse.classList.add('replayer-mouse');
-    this.multiTouchMap[pointerId] = {
+    this.pointers[pointerId] = {
       touchActive: null,
-      mouse: newMouse,
+      pointerEl: newMouse,
       tailPositions: [],
-      mousePos: null,
+      pointerPosition: null,
     };
     this.wrapper.appendChild(newMouse);
   }
@@ -583,11 +584,11 @@ export class Replayer {
       const pointerId =
         'pointerId' in d && d.pointerId !== undefined
           ? d.pointerId
-          : Object.keys(this.multiTouchMap).length;
-      if (!this.multiTouchMap[pointerId]) {
+          : Object.keys(this.pointers).length;
+      if (!this.pointers[pointerId]) {
         this.createNewTouch(pointerId);
       }
-      this.multiTouchMap[pointerId].mouse.classList.add('touch-device');
+      this.pointers[pointerId].pointerEl.classList.add('touch-device');
     }
     void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
@@ -617,10 +618,10 @@ export class Replayer {
     this.wrapper.classList.add('replayer-wrapper');
     this.config.root.appendChild(this.wrapper);
 
-    for (let [, { mouse }] of Object.entries(this.multiTouchMap)) {
-      mouse = document.createElement('div');
-      mouse.classList.add('replayer-mouse');
-      this.wrapper.appendChild(mouse);
+    for (let [, { pointerEl }] of Object.entries(this.pointers)) {
+      pointerEl = document.createElement('div');
+      pointerEl.classList.add('replayer-mouse');
+      this.wrapper.appendChild(pointerEl);
     }
 
     if (this.config.mouseTail !== false) {
@@ -1136,13 +1137,13 @@ export class Replayer {
         const pointerId =
           'pointerId' in d && d.pointerId !== undefined
             ? d.pointerId
-            : Object.keys(this.multiTouchMap).length;
-        if (!this.multiTouchMap[pointerId]) {
+            : Object.keys(this.pointers).length;
+        if (!this.pointers[pointerId]) {
           this.createNewTouch(pointerId);
         }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
-          this.multiTouchMap[pointerId].mousePos = {
+          this.pointers[pointerId].pointerPosition = {
             x: lastPosition.x,
             y: lastPosition.y,
             id: lastPosition.id,
@@ -1173,8 +1174,8 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseInteraction: {
-        const pointerId = d.pointerId ?? Object.keys(this.multiTouchMap).length;
-        if (!this.multiTouchMap[pointerId]) {
+        const pointerId = d.pointerId ?? Object.keys(this.pointers).length;
+        if (!this.pointers[pointerId]) {
           this.createNewTouch(pointerId);
         }
 
@@ -1214,10 +1215,10 @@ export class Replayer {
           case MouseInteractions.MouseUp:
             if (isSync) {
               if (d.type === MouseInteractions.TouchStart) {
-                this.multiTouchMap[pointerId].touchActive = true;
+                this.pointers[pointerId].touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
-                this.multiTouchMap[pointerId].touchActive = false;
-                this.multiTouchMap[pointerId].mouse.classList.remove(
+                this.pointers[pointerId].touchActive = false;
+                this.pointers[pointerId].pointerEl.classList.remove(
                   'replayer-mouse',
                 );
               }
@@ -1226,7 +1227,7 @@ export class Replayer {
               } else if (d.type === MouseInteractions.MouseUp) {
                 this.lastMouseDownEvent = null;
               }
-              this.multiTouchMap[pointerId].mousePos = {
+              this.pointers[pointerId].pointerPosition = {
                 x: d.x || 0,
                 y: d.y || 0,
                 id: d.id,
@@ -1235,7 +1236,7 @@ export class Replayer {
             } else {
               if (d.type === MouseInteractions.TouchStart) {
                 // don't draw a trail as user has lifted finger and is placing at a new point
-                this.multiTouchMap[pointerId].tailPositions.length = 0;
+                this.pointers[pointerId].tailPositions.length = 0;
               }
               this.moveAndHover(d.x || 0, d.y || 0, d.id, isSync, d, pointerId);
               if (d.type === MouseInteractions.Click) {
@@ -1247,19 +1248,19 @@ export class Replayer {
                  * removal and addition of .active class (along with void line to trigger repaint)
                  * triggers the 'click' css animation in styles/style.css
                  */
-                this.multiTouchMap[pointerId].mouse.classList.remove('active');
-                void this.multiTouchMap[pointerId].mouse.offsetWidth;
-                this.multiTouchMap[pointerId].mouse.classList.add('active');
+                this.pointers[pointerId].pointerEl.classList.remove('active');
+                void this.pointers[pointerId].pointerEl.offsetWidth;
+                this.pointers[pointerId].pointerEl.classList.add('active');
               } else if (d.type === MouseInteractions.TouchStart) {
-                void this.multiTouchMap[pointerId].mouse.offsetWidth; // needed for the position update of moveAndHover to apply without the .touch-active transition
-                this.multiTouchMap[pointerId].mouse.classList.add(
+                void this.pointers[pointerId].pointerEl.offsetWidth; // needed for the position update of moveAndHover to apply without the .touch-active transition
+                this.pointers[pointerId].pointerEl.classList.add(
                   'touch-active',
                 );
               } else if (d.type === MouseInteractions.TouchEnd) {
-                this.multiTouchMap[pointerId].mouse.classList.remove(
+                this.pointers[pointerId].pointerEl.classList.remove(
                   'touch-active',
                 );
-                this.multiTouchMap[pointerId].mouse.classList.remove(
+                this.pointers[pointerId].pointerEl.classList.remove(
                   'replayer-mouse',
                 );
               } else {
@@ -1270,9 +1271,9 @@ export class Replayer {
             break;
           case MouseInteractions.TouchCancel:
             if (isSync) {
-              this.multiTouchMap[pointerId].touchActive = false;
+              this.pointers[pointerId].touchActive = false;
             } else {
-              this.multiTouchMap[pointerId].mouse.classList.remove(
+              this.pointers[pointerId].pointerEl.classList.remove(
                 'touch-active',
               );
             }
@@ -2163,8 +2164,8 @@ export class Replayer {
     const _x = x * base.absoluteScale + base.x;
     const _y = y * base.absoluteScale + base.y;
 
-    this.multiTouchMap[pointerId].mouse.style.left = `${_x}px`;
-    this.multiTouchMap[pointerId].mouse.style.top = `${_y}px`;
+    this.pointers[pointerId].pointerEl.style.left = `${_x}px`;
+    this.pointers[pointerId].pointerEl.style.top = `${_y}px`;
     if (!isSync) {
       this.drawMouseTail({ x: _x, y: _y }, pointerId);
     }
@@ -2186,7 +2187,7 @@ export class Replayer {
         return;
       }
       const ctx = this.mouseTail.getContext('2d');
-      if (!ctx || !this.multiTouchMap[pointerId].tailPositions.length) {
+      if (!ctx || !this.pointers[pointerId].tailPositions.length) {
         return;
       }
       ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
@@ -2195,19 +2196,19 @@ export class Replayer {
       ctx.lineCap = lineCap;
       ctx.strokeStyle = strokeStyle;
       ctx.moveTo(
-        this.multiTouchMap[pointerId].tailPositions[0].x,
-        this.multiTouchMap[pointerId].tailPositions[0].y,
+        this.pointers[pointerId].tailPositions[0].x,
+        this.pointers[pointerId].tailPositions[0].y,
       );
-      this.multiTouchMap[pointerId].tailPositions.forEach((p) =>
+      this.pointers[pointerId].tailPositions.forEach((p) =>
         ctx.lineTo(p.x, p.y),
       );
       ctx.stroke();
     };
 
-    this.multiTouchMap[pointerId].tailPositions.push(position);
+    this.pointers[pointerId].tailPositions.push(position);
     draw();
     setTimeout(() => {
-      this.multiTouchMap[pointerId].tailPositions = this.multiTouchMap[
+      this.pointers[pointerId].tailPositions = this.pointers[
         pointerId
       ].tailPositions.filter((p) => p !== position);
       draw();
