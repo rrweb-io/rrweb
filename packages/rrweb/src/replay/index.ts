@@ -303,16 +303,7 @@ export class Replayer {
         pointerId,
         { pointerPosition, touchActive },
       ] of Object.entries(this.pointers)) {
-        if (touchActive === true) {
-          this.pointers[parseInt(pointerId)].pointerEl.classList.add(
-            'touch-active',
-          );
-        } else if (touchActive === false) {
-          this.pointers[parseInt(pointerId)].pointerEl.classList.remove(
-            'touch-active',
-          );
-        }
-        this.pointers[parseInt(pointerId)].touchActive = null;
+        const id = parseInt(pointerId);
         if (pointerPosition) {
           this.moveAndHover(
             pointerPosition.x,
@@ -320,10 +311,17 @@ export class Replayer {
             pointerPosition.id,
             true,
             pointerPosition.debugData,
-            parseInt(pointerId),
+            id,
           );
-          this.pointers[parseInt(pointerId)].pointerPosition = null;
+          this.pointers[id].pointerPosition = null;
         }
+
+        if (touchActive === true) {
+          this.pointers[id].pointerEl.classList.add('touch-active');
+        } else if (touchActive === false) {
+          this.pointers[id].pointerEl.classList.remove('touch-active');
+        }
+        this.pointers[id].touchActive = null;
       }
 
       if (this.lastMouseDownEvent) {
@@ -1218,9 +1216,6 @@ export class Replayer {
                 this.pointers[pointerId].touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.pointers[pointerId].touchActive = false;
-                this.pointers[pointerId].pointerEl.classList.remove(
-                  'replayer-mouse',
-                );
               }
               if (d.type === MouseInteractions.MouseDown) {
                 this.lastMouseDownEvent = [target, event];
@@ -1259,9 +1254,6 @@ export class Replayer {
               } else if (d.type === MouseInteractions.TouchEnd) {
                 this.pointers[pointerId].pointerEl.classList.remove(
                   'touch-active',
-                );
-                this.pointers[pointerId].pointerEl.classList.remove(
-                  'replayer-mouse',
                 );
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
