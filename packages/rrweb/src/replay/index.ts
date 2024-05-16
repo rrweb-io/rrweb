@@ -419,9 +419,25 @@ export class Replayer {
           'touchId' in d && d.touchId !== undefined
             ? d.touchId
             : Object.keys(this.multiTouchMap).length;
+
+        if (!this.multiTouchMap[touchId]) {
+          this.createNewTouch(touchId);
+        }
         this.multiTouchMap[touchId].mouse.classList.add('touch-device');
       }
     });
+  }
+
+  private createNewTouch(touchId: number) {
+    const newMouse = document.createElement('div');
+    newMouse.classList.add('replayer-mouse');
+    this.multiTouchMap[touchId] = {
+      touchActive: null,
+      mouse: newMouse,
+      tailPositions: [],
+      mousePos: null,
+    };
+    this.wrapper.appendChild(newMouse);
   }
 
   public on(event: string, handler: Handler) {
@@ -564,6 +580,9 @@ export class Replayer {
         'touchId' in d && d.touchId !== undefined
           ? d.touchId
           : Object.keys(this.multiTouchMap).length;
+      if (!this.multiTouchMap[touchId]) {
+        this.createNewTouch(touchId);
+      }
       this.multiTouchMap[touchId].mouse.classList.add('touch-device');
     }
     void Promise.resolve().then(() =>
@@ -1114,6 +1133,9 @@ export class Replayer {
           'touchId' in d && d.touchId !== undefined
             ? d.touchId
             : Object.keys(this.multiTouchMap).length;
+        if (!this.multiTouchMap[touchId]) {
+          this.createNewTouch(touchId);
+        }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
           this.multiTouchMap[touchId].mousePos = {
@@ -1148,6 +1170,10 @@ export class Replayer {
       }
       case IncrementalSource.MouseInteraction: {
         const touchId = d.touchId ?? Object.keys(this.multiTouchMap).length;
+        if (!this.multiTouchMap[touchId]) {
+          this.createNewTouch(touchId);
+        }
+
         /**
          * Same as the situation of missing input target.
          */
@@ -1186,6 +1212,7 @@ export class Replayer {
               if (d.type === MouseInteractions.TouchStart) {
                 this.multiTouchMap[touchId].touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
+                // delete this.multiTouchMap[touchId];
                 this.multiTouchMap[touchId].touchActive = false;
               }
               if (d.type === MouseInteractions.MouseDown) {
@@ -1224,6 +1251,10 @@ export class Replayer {
                 this.multiTouchMap[touchId].mouse.classList.remove(
                   'touch-active',
                 );
+                this.multiTouchMap[touchId].mouse.classList.remove(
+                  'replayer-mouse',
+                );
+                // delete this.multiTouchMap[touchId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
                 target.dispatchEvent(event);
