@@ -10,6 +10,7 @@ import {
 } from '../src/rebuild';
 import { NodeType } from '../src/types';
 import { createMirror, Mirror } from '../src/utils';
+import tailwindCssText from './tailwindCssText';
 
 function getDuration(hrtime: [number, number]) {
   const [seconds, nanoseconds] = hrtime;
@@ -203,4 +204,9 @@ ul li.specified c:hover img, ul li.specified c.\\:hover img {
       expect(getDuration(cachedEnd) * factor).toBeLessThan(getDuration(end));
     });
   });
+
+  it('should adapt some tricky css', () => {
+    expect(adaptCssForReplay(tailwindCssText, cache).length).toBeGreaterThan(1000);
+  });
+
 });
