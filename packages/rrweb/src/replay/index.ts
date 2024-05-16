@@ -300,14 +300,17 @@ export class Replayer {
       }
 
       for (const [touchId, value] of Object.entries(this.multiTouchMap)) {
-        const { mouse } = value;
-        let { mousePos, touchActive } = value;
+        const { mousePos, touchActive } = value;
         if (touchActive === true) {
-          mouse.classList.add('touch-active');
+          this.multiTouchMap[parseInt(touchId)].mouse.classList.add(
+            'touch-active',
+          );
         } else if (touchActive === false) {
-          mouse.classList.remove('touch-active');
+          this.multiTouchMap[parseInt(touchId)].mouse.classList.remove(
+            'touch-active',
+          );
         }
-        touchActive = null;
+        this.multiTouchMap[parseInt(touchId)].touchActive = null;
         if (mousePos) {
           this.moveAndHover(
             mousePos.x,
@@ -317,7 +320,7 @@ export class Replayer {
             mousePos.debugData,
             parseInt(touchId),
           );
-          mousePos = null;
+          this.multiTouchMap[parseInt(touchId)].mousePos = null;
         }
       }
 
@@ -1212,8 +1215,10 @@ export class Replayer {
               if (d.type === MouseInteractions.TouchStart) {
                 this.multiTouchMap[touchId].touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
-                // delete this.multiTouchMap[touchId];
                 this.multiTouchMap[touchId].touchActive = false;
+                this.multiTouchMap[touchId].mouse.classList.remove(
+                  'replayer-mouse',
+                );
               }
               if (d.type === MouseInteractions.MouseDown) {
                 this.lastMouseDownEvent = [target, event];
@@ -1254,7 +1259,6 @@ export class Replayer {
                 this.multiTouchMap[touchId].mouse.classList.remove(
                   'replayer-mouse',
                 );
-                // delete this.multiTouchMap[touchId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
                 target.dispatchEvent(event);
