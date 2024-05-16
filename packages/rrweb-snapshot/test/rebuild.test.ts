@@ -206,7 +206,8 @@ ul li.specified c:hover img, ul li.specified c.\\:hover img {
   });
 
   it('should adapt some tricky css', () => {
-    expect(adaptCssForReplay(tailwindCssText, cache).length).toBeGreaterThan(1000);
+    expect(adaptCssForReplay(tailwindCssText, cache).length).toBeGreaterThan(
+      1000,
+    );
   });
-
 });
