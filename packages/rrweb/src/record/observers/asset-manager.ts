@@ -12,7 +12,11 @@ import { encode } from 'base64-arraybuffer';
 
 import { patch } from '../../utils';
 
-import type { recordOptions, assetStatus } from '../../types';
+import type {
+  recordOptions,
+  assetStatus,
+  ProcessingStyleElement,
+} from '../../types';
 import {
   getSourcesFromSrcset,
   shouldCaptureAsset,
@@ -20,6 +24,12 @@ import {
   absolutifyURLs,
   splitCssText,
 } from 'rrweb-snapshot';
+
+export function isProcessingStyleElement(
+  el: Element,
+): el is ProcessingStyleElement {
+  return '__rrProcessingStylesheet' in el;
+}
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -189,8 +199,8 @@ export default class AssetManager {
           payload,
         });
       }
-      if ('rr_processingStylesheet' in el) {
-        delete el.rr_processingStylesheet;
+      if (isProcessingStyleElement(el)) {
+        delete el.__rrProcessingStylesheet;
       }
     };
     let timeout = this.config.processStylesheetsWithin;
@@ -200,7 +210,7 @@ export default class AssetManager {
     if (window.requestIdleCallback !== undefined && timeout > 0) {
       if (el.tagName === 'STYLE') {
         // mark it so mutations on it can be ignored until processed
-        (el as any).rr_processingStylesheet = true;
+        (el as ProcessingStyleElement).__rrProcessingStylesheet = true;
         // process inline style elements before external links
         // as they are more integral to the page and more likely
         // to only appear on this page (can't be reconstructed if lost)
