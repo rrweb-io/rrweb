@@ -41,8 +41,9 @@ import {
 } from './error-handler';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
-
-let takeFullSnapshot!: (isCheckout?: boolean) => void;
+let takeFullSnapshot: (isCheckout?: boolean) => void = () => {
+  /* no-op */
+};
 let canvasManager!: CanvasManager;
 let recording = false;
 
@@ -418,6 +419,7 @@ function record<T = eventWithTime>(
         mirror.getId(document),
       );
   };
+  iframeManager.setTakeFullSnapshot(takeFullSnapshot);
 
   try {
     const handlers: listenerHandler[] = [];
