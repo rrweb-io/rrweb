@@ -364,6 +364,12 @@ exports[`integration tests [html file]: picture-in-frame.html 1`] = `
   </body></html>"
 `;
 
+exports[`integration tests [html file]: picture-with-inline-onload.html 1`] = `
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" style=\\"opacity: 1;\\" _onload=\\"this.style.opacity=1\\" />
+  </body></html>"
+`;
+
 exports[`integration tests [html file]: preload.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
