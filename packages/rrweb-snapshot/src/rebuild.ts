@@ -1,4 +1,3 @@
-import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -57,85 +56,87 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-// based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-function escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+function splitSelector(selectorText: string): string[] {
+  const selectorList = [];
+  let currentSegment = '';
+  let depthParentheses = 0; // Track depth of parentheses
+  let depthBrackets = 0; // Track depth of square brackets
+  let currentStringChar = null;
+  for (const char of selectorText) {
+    const hasStringEscape = currentSegment.endsWith('\\');
+    if (currentStringChar) {
+      if (currentStringChar === char && !hasStringEscape) {
+        currentStringChar = null;
+      }
+    } else if (char === '(') {
+      depthParentheses++;
+    } else if (char === ')') {
+      depthParentheses--;
+    } else if (char === '[') {
+      depthBrackets++;
+    } else if (char === ']') {
+      depthBrackets--;
+    } else if ('\'"'.includes(char)) {
+      currentStringChar = char;
+    }
+    // Split point is a comma that is not inside parentheses or square brackets
+    if (char === ',' && depthParentheses === 0 && depthBrackets === 0) {
+      selectorList.push(currentSegment.trim());
+      currentSegment = '';
+    } else {
+      currentSegment += char;
+    }
+  }
+  // Add the last segment
+  if (currentSegment) {
+    selectorList.push(currentSegment.trim());
+  }
+  return selectorList;
 }
 
 const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
 const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
-export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
-  const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
-  if (cachedStyle) return cachedStyle;
-
-  const ast = parse(cssText, {
-    silent: true,
-  });
-
-  if (!ast.stylesheet) {
-    return cssText;
-  }
-
-  const selectors: string[] = [];
-  const medias: string[] = [];
-  function getSelectors(rule: Rule | Media | NodeWithRules) {
-    if ('selectors' in rule && rule.selectors) {
-      rule.selectors.forEach((selector: string) => {
-        if (HOVER_SELECTOR.test(selector)) {
-          selectors.push(selector);
-        }
-      });
+export function adaptStylesheetForReplay(cssRules: CSSRuleList) {
+  for (const cssRule of cssRules) {
+    if ('media' in cssRule) {
+      const cssMediaRule = cssRule as CSSMediaRule;
+      if (
+        cssMediaRule.media.mediaText &&
+        MEDIA_SELECTOR.test(cssMediaRule.media.mediaText)
+      ) {
+        // not attempting to maintain min-device-width along with min-width
+        // (it's non standard)
+        cssMediaRule.media.mediaText = cssMediaRule.media.mediaText.replace(
+          MEDIA_SELECTOR_GLOBAL,
+          '$1-$2',
+        );
+      }
+    } else if ('selectorText' in cssRule) {
+      const cssStyleRule = cssRule as CSSStyleRule;
+      if (
+        cssStyleRule.selectorText &&
+        HOVER_SELECTOR.test(cssStyleRule.selectorText)
+      ) {
+        cssStyleRule.selectorText = splitSelector(cssStyleRule.selectorText)
+          .map((selector) => {
+            if (!HOVER_SELECTOR.test(selector)) {
+              return selector;
+            }
+            const newSelector = selector.replace(
+              HOVER_SELECTOR_GLOBAL,
+              '$1.\\:hover',
+            );
+            return `${selector}, ${newSelector}`;
+          })
+          .join(', ');
+      }
     }
-    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
-      medias.push(rule.media);
-    }
-    if ('rules' in rule && rule.rules) {
-      rule.rules.forEach(getSelectors);
+    if ('cssRules' in cssRule) {
+      adaptStylesheetForReplay(cssRule.cssRules as CSSRuleList);
     }
   }
-  getSelectors(ast.stylesheet);
-
-  let result = cssText;
-  if (selectors.length > 0) {
-    const selectorMatcher = new RegExp(
-      selectors
-        .filter((selector, index) => selectors.indexOf(selector) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((selector) => {
-          return escapeRegExp(selector);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(selectorMatcher, (selector) => {
-      const newSelector = selector.replace(
-        HOVER_SELECTOR_GLOBAL,
-        '$1.\\:hover',
-      );
-      return `${selector}, ${newSelector}`;
-    });
-  }
-  if (medias.length > 0) {
-    const mediaMatcher = new RegExp(
-      medias
-        .filter((media, index) => medias.indexOf(media) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((media) => {
-          return escapeRegExp(media);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(mediaMatcher, (media) => {
-      // not attempting to maintain min-device-width along with min-width
-      // (it's non standard)
-      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
-    });
-  }
-  cache?.stylesWithHoverClass.set(cssText, result);
-  return result;
 }
 
 export function createCache(): BuildCache {
@@ -223,9 +224,6 @@ function buildNode(
 
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache);
-        }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
           node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
@@ -378,11 +376,7 @@ function buildNode(
       return node;
     }
     case NodeType.Text:
-      return doc.createTextNode(
-        n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache)
-          : n.textContent,
-      );
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:
@@ -512,6 +506,16 @@ export function buildNodeWithSN(
         }
       } else {
         node.appendChild(childNode);
+      }
+      if (
+        hackCss &&
+        childN.type === NodeType.Element &&
+        childN.tagName === 'STYLE'
+      ) {
+        const styleEl = childNode as HTMLStyleElement;
+        if (styleEl.sheet) {
+          adaptStylesheetForReplay(styleEl.sheet.cssRules);
+        }
       }
       if (afterAppend) {
         afterAppend(childNode, childN.id);

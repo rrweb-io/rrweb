@@ -9,11 +9,7 @@ import snapshot, {
   IGNORED_NODE,
   genId,
 } from './snapshot';
-import rebuild, {
-  buildNodeWithSN,
-  adaptCssForReplay,
-  createCache,
-} from './rebuild';
+import rebuild, { buildNodeWithSN, createCache } from './rebuild';
 export * from './types';
 export * from './utils';
 
@@ -22,7 +18,6 @@ export {
   serializeNodeWithId,
   rebuild,
   buildNodeWithSN,
-  adaptCssForReplay,
   createCache,
   transformAttribute,
   ignoreAttribute,

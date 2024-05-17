@@ -5,12 +5,46 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { describe, it, beforeEach, expect } from 'vitest';
 import {
-  adaptCssForReplay,
+  adaptStylesheetForReplay,
   buildNodeWithSN,
   createCache,
 } from '../src/rebuild';
 import { NodeType } from '../src/types';
-import { createMirror, Mirror } from '../src/utils';
+import type { BuildCache } from '../src/types';
+import { createMirror, Mirror, stringifyStylesheet } from '../src/utils';
+
+export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
+  let tempStyleSheet = new CSSStyleSheet();
+  if (tempStyleSheet.replaceSync) {
+    tempStyleSheet.replaceSync(cssText);
+  } else {
+    const style = document.createElement('style');
+    style.innerHTML = cssText;
+    document.head.appendChild(style);
+    if (style.sheet) {
+      tempStyleSheet = style.sheet;
+    } else {
+      return "error: can't find sheet";
+    }
+  }
+  adaptStylesheetForReplay(tempStyleSheet.cssRules);
+  let ss = stringifyStylesheet(tempStyleSheet);
+  if (!ss) {
+    return 'error' + tempStyleSheet.cssRules.length;
+  } else {
+    return norm(ss);
+  }
+}
+
+function norm(cssText: string): string {
+  cssText = cssText.replace(/([\S]){/g, '$1 {');
+  cssText = cssText.replace(/{([\S])/g, '{ $1');
+  cssText = cssText.replace(/;/g, ' ');
+  cssText = cssText.replace(/\n/g, ' ');
+  cssText = cssText.replace(/}}/g, '} }');
+  cssText = cssText.replace(/\s+/g, ' ');
+  return cssText;
+}
 
 function getDuration(hrtime: [number, number]) {
   const [seconds, nanoseconds] = hrtime;
@@ -86,20 +120,20 @@ describe('rebuild', function () {
   describe('add hover class to hover selector related rules', function () {
     it('will do nothing to css text without :hover', () => {
       const cssText = 'body { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(cssText);
+      expect(adaptCssForReplay(cssText, cache)).toEqual(norm(cssText));
     });
 
     it('can add hover class to css text', () => {
       const cssText = '.a:hover { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '.a:hover, .a.\\:hover { color: white }',
+        norm('.a:hover, .a.\\:hover { color: white }'),
       );
     });
 
     it('can correctly add hover when in middle of selector', () => {
       const cssText = 'ul li a:hover img { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        'ul li a:hover img, ul li a.\\:hover img { color: white }',
+        norm('ul li a:hover img, ul li a.\\:hover img { color: white }'),
       );
     });
 
@@ -112,50 +146,52 @@ ul li.specified c:hover img {
   color: white
 }`;
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        `ul li.specified a:hover img, ul li.specified a.\\:hover img,
+        norm(`ul li.specified a:hover img, ul li.specified a.\\:hover img,
 ul li.multiline
 b:hover
-img, ul li.multiline
+img,
+ul li.multiline
 b.\\:hover
 img,
-ul li.specified c:hover img, ul li.specified c.\\:hover img {
-  color: white
-}`,
+ul li.specified c:hover img,
+ul li.specified c.\\:hover img { color: white }`),
       );
     });
 
     it('can add hover class within media query', () => {
       const cssText = '@media screen { .m:hover { color: white } }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '@media screen { .m:hover, .m.\\:hover { color: white } }',
+        norm('@media screen { .m:hover, .m.\\:hover { color: white } }'),
       );
     });
 
     it('can add hover class when there is multi selector', () => {
       const cssText = '.a, .b:hover, .c { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '.a, .b:hover, .b.\\:hover, .c { color: white }',
+        norm('.a, .b:hover, .b.\\:hover, .c { color: white }'),
       );
     });
 
     it('can add hover class when there is a multi selector with the same prefix', () => {
       const cssText = '.a:hover, .a:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
+        norm(
+          '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
+        ),
       );
     });
 
     it('can add hover class when :hover is not the end of selector', () => {
       const cssText = 'div:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        'div:hover::after, div.\\:hover::after { color: white }',
+        norm('div:hover::after, div.\\:hover::after { color: white }'),
       );
     });
 
     it('can add hover class when the selector has multi :hover', () => {
       const cssText = 'a:hover b:hover { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        'a:hover b:hover, a.\\:hover b.\\:hover { color: white }',
+        norm('a:hover b:hover, a.\\:hover b.\\:hover { color: white }'),
       );
     });
 
@@ -168,7 +204,9 @@ ul li.specified c:hover img, ul li.specified c.\\:hover img {
       const cssText =
         '@media only screen and (min-device-width : 1200px) { .a { width: 10px; }}';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
+        norm(
+          '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
+        ),
       );
     });
 
