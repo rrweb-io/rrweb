@@ -118,7 +118,7 @@ export function diff(
 
   diffChildren(oldTree, newTree, replayer, rrnodeMirror);
 
-  diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+  diffAfterUpdatingChildren(oldTree, newTree, replayer);
 }
 
 /**
@@ -194,6 +194,15 @@ function diffBeforeUpdatingChildren(
           rrnodeMirror,
         );
       }
+      /**
+       * Attributes and styles of the old element need to be updated before updating its children because of an edge case:
+       * `applyScroll` may fail in `diffAfterUpdatingChildren` when the height of a node when `applyScroll` is called may be incorrect if
+       * 1. its parent node contains styles that affects the targeted node's height
+       * 2. the CSS selector is targeting an attribute of the parent node
+       * by running `diffProps` on the parent node before `diffChildren` is called,
+       * we can ensure that the correct attributes (and therefore styles) have applied to parent nodes
+       */
+      diffProps(oldElement, newRRElement, rrnodeMirror);
       break;
     }
   }
@@ -207,7 +216,6 @@ function diffAfterUpdatingChildren(
   oldTree: Node,
   newTree: IRRNode,
   replayer: ReplayerHandler,
-  rrnodeMirror: Mirror,
 ) {
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
@@ -218,7 +226,6 @@ function diffAfterUpdatingChildren(
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
-      diffProps(oldElement, newRRElement, rrnodeMirror);
       newRRElement.scrollData &&
         replayer.applyScroll(newRRElement.scrollData, true);
       /**
@@ -243,6 +250,8 @@ function diffAfterUpdatingChildren(
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
           if (newMediaRRElement.playbackRate !== undefined)
             oldMediaElement.playbackRate = newMediaRRElement.playbackRate;
+          if (newMediaRRElement.loop !== undefined)
+            oldMediaElement.loop = newMediaRRElement.loop;
           break;
         }
         case 'CANVAS': {

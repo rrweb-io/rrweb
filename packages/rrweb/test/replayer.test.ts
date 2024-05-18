@@ -12,10 +12,12 @@ import {
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
+import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
+import textareaEvents from './events/bad-textarea';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
@@ -401,6 +403,51 @@ describe('replayer', function () {
     // remove the "#container" element at 2000
     expect(await contentDocument!.$('#container')).toBeNull();
     expect(await contentDocument!.$('#block')).toBeNull();
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(0);
+  });
+
+  it('can fast forward scroll events w/ a parent node that affects a child nodes height', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(scrollWithParentStylesEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add the ".container" element at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('.container')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        '.container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(0);
+
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    await page.evaluate('replayer.pause(1050);');
+    // scroll the ".container" div' at 1000
+    expect(
+      await contentDocument!.$eval(
+        '.container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(800);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(2050);');
+    // remove the ".container" element at 2000
+    expect(await contentDocument!.$('.container')).toBeNull();
     expect(
       await page.$eval(
         'iframe',
@@ -1091,5 +1138,20 @@ describe('replayer', function () {
     // If the custom element is not defined, the display value will be 'none'.
     // If the custom element is defined, the display value will be 'block'.
     expect(displayValue).toEqual('block');
+  });
+
+  it('can deal with legacy duplicate/conflicting values on textareas', async () => {
+    await page.evaluate(`events = ${JSON.stringify(textareaEvents)}`);
+
+    const displayValue = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(100);
+      const textarea = replayer.iframe.contentDocument.querySelector('textarea');
+      textarea.value;
+    `);
+    // If the custom element is not defined, the display value will be 'none'.
+    // If the custom element is defined, the display value will be 'block'.
+    expect(displayValue).toEqual('this value is used for replay');
   });
 });

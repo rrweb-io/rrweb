@@ -263,7 +263,11 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                         \\"attributes\\": {
                           \\"controls\\": \\"\\",
                           \\"rr_mediaState\\": \\"paused\\",
-                          \\"rr_mediaCurrentTime\\": 0
+                          \\"rr_mediaCurrentTime\\": 0,
+                          \\"rr_mediaPlaybackRate\\": 1,
+                          \\"rr_mediaMuted\\": false,
+                          \\"rr_mediaLoop\\": false,
+                          \\"rr_mediaVolume\\": 1
                         },
                         \\"childNodes\\": [
                           {
@@ -327,7 +331,8 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
       \\"currentTime\\": 0,
       \\"volume\\": 1,
       \\"muted\\": false,
-      \\"playbackRate\\": 1
+      \\"playbackRate\\": 1,
+      \\"loop\\": false
     }
   }
 ]"
@@ -1586,9 +1591,25 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"rootId\\": 11,
                             \\"id\\": 73
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"value\\": \\"pre value\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 11,
+                            \\"id\\": 74
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 75
                           }
                         ],
                         \\"rootId\\": 11,
@@ -1598,7 +1619,7 @@ exports[`cross origin iframes form.html should map input events correctly 1`] = 
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
                         \\"rootId\\": 11,
-                        \\"id\\": 74
+                        \\"id\\": 76
                       }
                     ],
                     \\"rootId\\": 11,
@@ -2583,9 +2604,25 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"rootId\\": 11,
                             \\"id\\": 73
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"textarea\\",
+                            \\"attributes\\": {
+                              \\"value\\": \\"pre value\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 11,
+                            \\"id\\": 74
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 75
                           }
                         ],
                         \\"rootId\\": 11,
@@ -2595,7 +2632,7 @@ exports[`cross origin iframes form.html should map scroll events correctly 1`] =
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
                         \\"rootId\\": 11,
-                        \\"id\\": 74
+                        \\"id\\": 76
                       }
                     ],
                     \\"rootId\\": 11,

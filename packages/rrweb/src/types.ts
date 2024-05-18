@@ -170,6 +170,7 @@ export type playerConfig = {
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;
+  inactivePeriodThreshold: number;
   showWarning: boolean;
   showDebug: boolean;
   blockClass: string;
@@ -206,6 +207,7 @@ export type missingNodeMap = {
 declare global {
   interface Window {
     FontFace: typeof FontFace;
+    Array: typeof Array;
   }
 }
 

@@ -47,7 +47,6 @@ import {
   ReplayerEvents,
   Handler,
   Emitter,
-  MediaInteractions,
   metaEvent,
   mutationData,
   scrollData,
@@ -81,8 +80,8 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
+import { MediaManager } from './media';
 
-const SKIP_TIME_THRESHOLD = 10 * 1000;
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
@@ -143,6 +142,9 @@ export class Replayer {
   // Used to track StyleSheetObjects adopted on multiple document hosts.
   private styleMirror: StyleSheetMirror = new StyleSheetMirror();
 
+  // Used to track video & audio elements, and keep them in sync with general playback.
+  private mediaManager: MediaManager;
+
   private firstFullSnapshot: eventWithTime | true | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
@@ -179,6 +181,7 @@ export class Replayer {
       root: document.body,
       loadTimeout: 0,
       skipInactive: false,
+      inactivePeriodThreshold: 10 * 1000,
       showWarning: true,
       showDebug: false,
       blockClass: 'rr-block',
@@ -324,6 +327,7 @@ export class Replayer {
       this.firstFullSnapshot = null;
       this.mirror.reset();
       this.styleMirror.reset();
+      this.mediaManager.reset();
     });
 
     const timer = new Timer([], {
@@ -365,6 +369,13 @@ export class Replayer {
       this.emitter.emit(ReplayerEvents.StateChange, {
         speed: state,
       });
+    });
+    this.mediaManager = new MediaManager({
+      warn: this.warn.bind(this),
+      service: this.service,
+      speedService: this.speedService,
+      emitter: this.emitter,
+      getCurrentTime: this.getCurrentTime.bind(this),
     });
 
     // rebuild first full snapshot as the poster of the player
@@ -464,10 +475,16 @@ export class Replayer {
     };
   }
 
+  /**
+   * Get the actual time offset the player is at now compared to the first event.
+   */
   public getCurrentTime(): number {
     return this.timer.timeOffset + this.getTimeOffset();
   }
 
+  /**
+   * Get the time offset the player is at now compared to the first event, but without regard for the timer.
+   */
   public getTimeOffset(): number {
     const { baselineTime, events } = this.service.state.context;
     return baselineTime - events[0].timestamp;
@@ -527,6 +544,9 @@ export class Replayer {
    */
   public destroy() {
     this.pause();
+    this.mirror.reset();
+    this.styleMirror.reset();
+    this.mediaManager.reset();
     this.config.root.removeChild(this.wrapper);
     this.emitter.emit(ReplayerEvents.Destroy);
   }
@@ -667,9 +687,10 @@ export class Replayer {
             // Timer (requestAnimationFrame) can be faster than setTimeout(..., 1)
             this.firstFullSnapshot = true;
           }
+          this.mediaManager.reset();
+          this.styleMirror.reset();
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
-          this.styleMirror.reset();
         };
         break;
       case EventType.IncrementalSnapshot:
@@ -692,7 +713,7 @@ export class Replayer {
                 if (
                   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                   _event.delay! - event.delay! >
-                  SKIP_TIME_THRESHOLD *
+                  this.config.inactivePeriodThreshold *
                     this.speedService.state.context.timer.speed
                 ) {
                   this.nextUserInteractionEvent = _event;
@@ -778,6 +799,14 @@ export class Replayer {
     const collected: AppendedIframe[] = [];
     const afterAppend = (builtNode: Node, id: number) => {
       this.collectIframeAndAttachDocument(collected, builtNode);
+      if (this.mediaManager.isSupportedMediaElement(builtNode)) {
+        const { events } = this.service.state.context;
+        this.mediaManager.addMediaElements(
+          builtNode,
+          event.timestamp - events[0].timestamp,
+          this.mirror,
+        );
+      }
       for (const plugin of this.config.plugins || []) {
         if (plugin.onBuild)
           plugin.onBuild(builtNode, {
@@ -1161,8 +1190,8 @@ export class Replayer {
                 this.lastMouseDownEvent = null;
               }
               this.mousePos = {
-                x: d.x,
-                y: d.y,
+                x: d.x || 0,
+                y: d.y || 0,
                 id: d.id,
                 debugData: d,
               };
@@ -1171,7 +1200,7 @@ export class Replayer {
                 // don't draw a trail as user has lifted finger and is placing at a new point
                 this.tailPositions.length = 0;
               }
-              this.moveAndHover(d.x, d.y, d.id, isSync, d);
+              this.moveAndHover(d.x || 0, d.y || 0, d.id, isSync, d);
               if (d.type === MouseInteractions.Click) {
                 /*
                  * don't want target.click() here as could trigger an iframe navigation
@@ -1261,35 +1290,14 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
         const mediaEl = target as HTMLMediaElement | RRMediaElement;
-        try {
-          if (d.currentTime !== undefined) {
-            mediaEl.currentTime = d.currentTime;
-          }
-          if (d.volume !== undefined) {
-            mediaEl.volume = d.volume;
-          }
-          if (d.muted !== undefined) {
-            mediaEl.muted = d.muted;
-          }
-          if (d.type === MediaInteractions.Pause) {
-            mediaEl.pause();
-          }
-          if (d.type === MediaInteractions.Play) {
-            // remove listener for 'canplay' event because play() is async and returns a promise
-            // i.e. media will evntualy start to play when data is loaded
-            // 'canplay' event fires even when currentTime attribute changes which may lead to
-            // unexpeted behavior
-            void mediaEl.play();
-          }
-          if (d.type === MediaInteractions.RateChange) {
-            mediaEl.playbackRate = d.playbackRate;
-          }
-        } catch (error) {
-          this.warn(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
-            `Failed to replay media interactions: ${error.message || error}`,
-          );
-        }
+        const { events } = this.service.state.context;
+
+        this.mediaManager.mediaMutation({
+          target: mediaEl,
+          timeOffset: e.timestamp - events[0].timestamp,
+          mutation: d,
+        });
+
         break;
       }
       case IncrementalSource.StyleSheetRule:
@@ -1366,6 +1374,11 @@ export class Replayer {
     }
   }
 
+  /**
+   * Apply the mutation to the virtual dom or the real dom.
+   * @param d - The mutation data.
+   * @param isSync - Whether the mutation should be applied synchronously (while fast-forwarding).
+   */
   private applyMutation(d: mutationData, isSync: boolean) {
     // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
     if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
@@ -1564,6 +1577,8 @@ export class Replayer {
         const childNodeArray = Array.isArray(parent.childNodes)
           ? parent.childNodes
           : Array.from(parent.childNodes);
+        // This should be redundant now as we are either recording the value or the childNode, and not both
+        // keeping around for backwards compatibility with old bad double data, see
 
         // https://github.com/rrweb-io/rrweb/issues/745
         // parent is textarea, will only keep one child node as the value
@@ -1761,10 +1776,24 @@ export class Replayer {
                   // for safe
                 }
               }
-              (target as Element | RRElement).setAttribute(
-                attributeName,
-                value,
-              );
+              if (attributeName === 'value' && target.nodeName === 'TEXTAREA') {
+                // this may or may not have an effect on the value property (which is what is displayed)
+                // depending on whether the textarea has been modified by the user yet
+                // TODO: replaceChildNodes is not available in RRDom
+                const textarea = target as TNode;
+                textarea.childNodes.forEach((c) =>
+                  textarea.removeChild(c as TNode),
+                );
+                const tn = target.ownerDocument?.createTextNode(value);
+                if (tn) {
+                  textarea.appendChild(tn as TNode);
+                }
+              } else {
+                (target as Element | RRElement).setAttribute(
+                  attributeName,
+                  value,
+                );
+              }
             } catch (error) {
               this.warn(
                 'An error occurred may due to the checkout feature.',

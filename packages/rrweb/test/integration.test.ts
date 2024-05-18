@@ -105,6 +105,71 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
+  it('can record textarea mutations correctly', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'empty.html'));
+
+    await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
+
+    await page.evaluate(() => {
+      const ta = document.createElement('textarea');
+      ta.innerText = 'pre value';
+      document.body.append(ta);
+    });
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      const t = document.querySelector('textarea') as HTMLTextAreaElement;
+      t.innerText = 'ok'; // this mutation should be recorded
+    });
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      const t = document.querySelector('textarea') as HTMLTextAreaElement;
+      (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
+    });
+    await page.waitForTimeout(5);
+    await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      const t = document.querySelector('textarea') as HTMLTextAreaElement;
+      // user has typed so childNode content should now be ignored
+      (t.childNodes[0] as Text).data = 'igno';
+      (t.childNodes[0] as Text).appendData('re');
+      // this mutation is currently emitted, and shows up in snapshot
+      // but we will check that it doesn't have any effect on the value
+      // there is nothing explicit in rrweb which enforces this, but this test may protect against
+      // a future change where a mutation on a textarea incorrectly updates the .value
+    });
+    await page.waitForTimeout(5);
+    await page.type('textarea', '2'); // cursor is at index 1
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+
+    // check after each mutation and text input
+    const replayTextareaValues = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      const vals = [];
+      window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
+        replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
+        let ts = replayer.iframe.contentDocument.querySelector('textarea');
+        vals.push((e.data.source === 0 ? 'Mutation' : 'User') + ':' + ts.value);
+      });
+      vals;
+    `);
+    expect(replayTextareaValues).toEqual([
+      'Mutation:pre value',
+      'Mutation:ok',
+      'Mutation:ok3',
+      'User:1ok3',
+      'Mutation:1ok3', // if this gets set to 'ignore', it's an error, as the 'user' has modified the textarea
+      'User:12ok3',
+    ]);
+  });
+
   it('can record childList mutations', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -1205,6 +1270,45 @@ describe('record integration tests', function (this: ISuite) {
       ul.appendChild(li);
       li.innerText = 'new list item';
       p.innerText = 'mutated';
+    });
+
+    await page.evaluate(() => {
+      // generate a characterData mutation; innerText doesn't do that
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      (p.childNodes[0] as Text).insertData(0, 'doubly ');
+    });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('can mask character data mutations with regexp', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'mutation-observer.html', {
+        maskTextClass: /custom/,
+      }),
+    );
+
+    await page.evaluate(() => {
+      const li = document.createElement('li');
+      const ul = document.querySelector('ul') as HTMLUListElement;
+      const p = document.querySelector('p') as HTMLParagraphElement;
+      [ul, p].forEach((element) => {
+        element.className = 'custom-mask';
+      });
+      ul.appendChild(li);
+      li.innerText = 'new list item';
+      p.innerText = 'mutated';
+    });
+
+    await page.evaluate(() => {
+      // generate a characterData mutation; innerText doesn't do that
+      const li = document.querySelector('li:not(:empty)') as HTMLLIElement;
+      (li.childNodes[0] as Text).insertData(0, 'descendent should be masked ');
     });
 
     const snapshots = (await page.evaluate(

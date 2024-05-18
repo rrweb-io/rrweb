@@ -31,6 +31,7 @@ clear and has sufficient instructions to be able to reproduce the issue.
 - Run a cobrowsing/mirroring session locally: `yarn live-stream`
 - Test: `yarn test` or `yarn test:watch`
 - Lint: `yarn lint`
+- Rewrite files with prettier: `yarn format` or `yarn format:head`
 
 ## Coding style
 

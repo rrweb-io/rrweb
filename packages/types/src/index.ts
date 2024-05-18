@@ -163,7 +163,7 @@ export type incrementalData =
   | adoptedStyleSheetData
   | customElementData;
 
-export type event =
+export type eventWithoutTime =
   | domContentLoadedEvent
   | loadedEvent
   | fullSnapshotEvent
@@ -172,7 +172,13 @@ export type event =
   | customEvent
   | pluginEvent;
 
-export type eventWithTime = event & {
+/**
+ * @deprecated intended for internal use
+ * a synonym for eventWithoutTime
+ */
+export type event = eventWithoutTime;
+
+export type eventWithTime = eventWithoutTime & {
   timestamp: number;
   delay?: number;
 };
@@ -417,8 +423,8 @@ export type CanvasArg =
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   pointerType?: PointerTypes;
 };
 
@@ -573,6 +579,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  loop?: boolean;
   playbackRate?: number;
 };
 
@@ -653,6 +660,9 @@ export type Arguments<T> = T extends (...payload: infer U) => unknown
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
+  /**
+   * @deprecated use Play instead
+   */
   Resume = 'resume',
   Resize = 'resize',
   Finish = 'finish',
