@@ -78,7 +78,6 @@ describe('rebuild', function () {
         {
           doc: document,
           mirror,
-          hackCss: false,
           cache,
         },
       ) as HTMLImageElement;
@@ -109,7 +108,6 @@ describe('rebuild', function () {
         {
           doc: document,
           mirror,
-          hackCss: false,
           cache,
         },
       ) as HTMLDivElement;

@@ -153,11 +153,10 @@ function buildNode(
   n: serializedNodeWithId,
   options: {
     doc: Document;
-    hackCss: boolean;
     cache: BuildCache;
   },
 ): Node | null {
-  const { doc, hackCss, cache } = options;
+  const { doc, cache } = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -395,7 +394,6 @@ export function buildNodeWithSN(
     doc: Document;
     mirror: Mirror;
     skipChild?: boolean;
-    hackCss: boolean;
     /**
      * This callback will be called for each of this nodes' `.childNodes` after they are appended to _this_ node.
      * Caveat: This callback _doesn't_ get called when this node is appended to the DOM.
@@ -404,14 +402,7 @@ export function buildNodeWithSN(
     cache: BuildCache;
   },
 ): Node | null {
-  const {
-    doc,
-    mirror,
-    skipChild = false,
-    hackCss = true,
-    afterAppend,
-    cache,
-  } = options;
+  const { doc, mirror, skipChild = false, afterAppend, cache } = options;
   /**
    * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
    * This situation (duplicated nodes) can happen when recorder has some unfixed bugs and the same node is recorded twice. Or something goes wrong when saving or transferring event data.
@@ -425,7 +416,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, { doc, cache });
   if (!node) {
     return null;
   }
@@ -474,7 +465,6 @@ export function buildNodeWithSN(
         doc,
         mirror,
         skipChild: false,
-        hackCss,
         afterAppend,
         cache,
       });
@@ -575,7 +565,6 @@ function rebuild(
     doc,
     mirror,
     skipChild: false,
-    hackCss,
     afterAppend,
     cache,
   });
