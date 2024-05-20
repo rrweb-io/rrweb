@@ -136,7 +136,8 @@ export function adaptStylesheetForReplay(cssRules: CSSRuleList) {
       }
     }
     if ('cssRules' in cssRule) {
-      adaptStylesheetForReplay(cssRule.cssRules as CSSRuleList);
+      // could be a CSSKeyframesRule or CSSContainerRule either
+      adaptStylesheetForReplay((cssRule as CSSGroupingRule).cssRules);
     }
   }
 }
@@ -585,9 +586,9 @@ function rebuild(
     const n = mirror.getMeta(visitedNode);
     if (n?.type === NodeType.Element) {
       const el = visitedNode as HTMLElement;
-      handleScroll(el, n as serializedElementNodeWithId);
+      handleScroll(el, n);
       if (hackCss && el.tagName === 'STYLE') {
-        let styleEl = el as HTMLStyleElement;
+        const styleEl = el as HTMLStyleElement;
         if (styleEl.sheet) {
           // cssRules are always available on inline style elements
           adaptStylesheetForReplay(styleEl.sheet.cssRules);
