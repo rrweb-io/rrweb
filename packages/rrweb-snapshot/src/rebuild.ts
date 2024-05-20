@@ -1,5 +1,6 @@
 import {
   serializedNodeWithId,
+  serializedElementNodeWithId,
   NodeType,
   tagMap,
   elementNode,
@@ -99,6 +100,7 @@ const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
 export function adaptStylesheetForReplay(cssRules: CSSRuleList) {
+  // @ts-ignore ignore TS2488: Type 'CSSRuleList' must have a '[Symbol.iterator]()' method that returns an iterator ... it should be fixed in https://github.com/Microsoft/TypeScript/issues/23406
   for (const cssRule of cssRules) {
     if ('media' in cssRule) {
       const cssMediaRule = cssRule as CSSMediaRule;
@@ -507,16 +509,6 @@ export function buildNodeWithSN(
       } else {
         node.appendChild(childNode);
       }
-      if (
-        hackCss &&
-        childN.type === NodeType.Element &&
-        childN.tagName === 'STYLE'
-      ) {
-        const styleEl = childNode as HTMLStyleElement;
-        if (styleEl.sheet) {
-          adaptStylesheetForReplay(styleEl.sheet.cssRules);
-        }
-      }
       if (afterAppend) {
         afterAppend(childNode, childN.id);
       }
@@ -539,12 +531,7 @@ function visit(mirror: Mirror, onVisit: (node: Node) => void) {
   }
 }
 
-function handleScroll(node: Node, mirror: Mirror) {
-  const n = mirror.getMeta(node);
-  if (n?.type !== NodeType.Element) {
-    return;
-  }
-  const el = node as HTMLElement;
+function handleScroll(el: HTMLElement, n: serializedElementNodeWithId) {
   for (const name in n.attributes) {
     if (
       !(
@@ -595,7 +582,18 @@ function rebuild(
     if (onVisit) {
       onVisit(visitedNode);
     }
-    handleScroll(visitedNode, mirror);
+    const n = mirror.getMeta(visitedNode);
+    if (n?.type === NodeType.Element) {
+      const el = visitedNode as HTMLElement;
+      handleScroll(el, n as serializedElementNodeWithId);
+      if (hackCss && el.tagName === 'STYLE') {
+        let styleEl = el as HTMLStyleElement;
+        if (styleEl.sheet) {
+          // cssRules are always available on inline style elements
+          adaptStylesheetForReplay(styleEl.sheet.cssRules);
+        }
+      }
+    }
   });
   return node;
 }
