@@ -498,7 +498,7 @@ function serializeNode(
     newlyAddedElement?: boolean;
     cssCaptured?: boolean;
     /**
-     * Called when an asset is detected.
+     * Called when an asset is encountered while serializing
      * Example of assets:
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
@@ -662,7 +662,7 @@ function serializeElementNode(
     newlyAddedElement?: boolean;
     rootId: number | undefined;
     /**
-     * Called when an asset is detected.
+     * Called when an asset is encountered while serializing
      * Example of assets:
      *  - `src` attribute in `img` tags.
      *  - `srcset` attribute in `img` tags.
