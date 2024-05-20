@@ -156,4 +156,14 @@ describe('rebuild', function () {
       expect(getDuration(cachedEnd) * factor).toBeLessThan(getDuration(end));
     });
   });
+
+  it('should not incorrectly interpret escaped quotes', () => {
+    // the ':hover' in the below is a decoy which is not part of the selector,
+    // previously that part was being incorrectly consumed by the selector regex
+    const should_not_modify =
+      ".tailwind :is(.before\\:content-\\[\\'\\'\\])::before { --tw-content: \":hover\"; content: var(--tw-content); }.tailwind :is(.\\[\\&\\>li\\]\\:before\\:content-\\[\\'-\\'\\] > li)::before { color: pink; }";
+    expect(adaptCssForReplay(should_not_modify, cache)).toEqual(
+      should_not_modify,
+    );
+  });
 });
