@@ -24,6 +24,7 @@ import {
   getInputType,
   getInputValue,
   toLowerCase,
+  extractFileExtension,
   toUpperCase,
   shouldMaskInput,
 } from './utils';
@@ -732,7 +733,7 @@ function serializeTextNode(
 
   if (!isStyle && !isScript && !isTextarea && textContent && forceMask) {
     textContent = maskTextFn
-      ? maskTextFn(textContent)
+      ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
   }
   if (isTextarea && textContent && (maskInputOptions.textarea || forceMask)) {
@@ -1076,7 +1077,7 @@ function slimDOMExcluded(
         (sn.tagName === 'link' &&
           sn.attributes.rel === 'prefetch' &&
           typeof sn.attributes.href === 'string' &&
-          sn.attributes.href.endsWith('.js')))
+          extractFileExtension(sn.attributes.href) === 'js'))
     ) {
       return true;
     } else if (
@@ -1404,7 +1405,11 @@ export function serializeNodeWithId(
   if (
     serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'link' &&
-    serializedNode.attributes.rel === 'stylesheet'
+    typeof serializedNode.attributes.rel === 'string' &&
+    (serializedNode.attributes.rel === 'stylesheet' ||
+      (serializedNode.attributes.rel === 'preload' &&
+        typeof serializedNode.attributes.href === 'string' &&
+        extractFileExtension(serializedNode.attributes.href) === 'css'))
   ) {
     onceStylesheetLoaded(
       n as HTMLLinkElement,

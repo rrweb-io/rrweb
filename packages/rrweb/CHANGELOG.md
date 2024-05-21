@@ -1,5 +1,64 @@
 # rrweb
 
+## 2.0.0-alpha.13
+
+### Minor Changes
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Full overhawl of `video` and `audio` element playback. More robust and fixes lots of bugs related to pausing/playing/skipping/muting/playbackRate etc.
+
+### Patch Changes
+
+- [#1422](https://github.com/rrweb-io/rrweb/pull/1422) [`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812) Thanks [@marandaneto](https://github.com/marandaneto)! - fix: createImageBitmap throws DOMException if source is 0 width or height
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Record `loop` on `<audio>` & `<video>` elements.
+
+- [#1445](https://github.com/rrweb-io/rrweb/pull/1445) [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216) Thanks [@daibhin](https://github.com/daibhin)! - fix: protect against missing parentNode
+
+- Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf)]:
+  - rrdom@2.0.0-alpha.13
+  - rrweb-snapshot@2.0.0-alpha.13
+  - @rrweb/types@2.0.0-alpha.13
+
+## 2.0.0-alpha.12
+
+### Minor Changes
+
+- [#1310](https://github.com/rrweb-io/rrweb/pull/1310) [`7c0dc9d`](https://github.com/rrweb-io/rrweb/commit/7c0dc9dfe1564c9d6624557c5b394e7844955882) Thanks [@benjackwhite](https://github.com/benjackwhite)! - Extends maskTextFn to pass the HTMLElement to the deciding function
+
+### Patch Changes
+
+- [#1403](https://github.com/rrweb-io/rrweb/pull/1403) [`af0962c`](https://github.com/rrweb-io/rrweb/commit/af0962cc6c80b693bbc622520032d17342685cf6) Thanks [@pauldambra](https://github.com/pauldambra)! - safely capture BigInt values with the console log plugin"
+
+- [#1327](https://github.com/rrweb-io/rrweb/pull/1327) [`57a940a`](https://github.com/rrweb-io/rrweb/commit/57a940afac0bdd14cd82937915d53110b5311673) Thanks [@mydea](https://github.com/mydea)! - fix: Fix checking for `patchTarget` in `initAdoptedStyleSheetObserver`
+
+- [#1155](https://github.com/rrweb-io/rrweb/pull/1155) [`8aea5b0`](https://github.com/rrweb-io/rrweb/commit/8aea5b00a4dfe5a6f59bd2ae72bb624f45e51e81) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Feat: Add support for replaying :defined pseudo-class of custom elements
+
+- [#1340](https://github.com/rrweb-io/rrweb/pull/1340) [`9c6edfe`](https://github.com/rrweb-io/rrweb/commit/9c6edfe2261680b4e92284be69f9d183b1eca8f4) Thanks [@mydea](https://github.com/mydea)! - ref: Avoid unnecessary cloning of objects or arrays
+
+- [#1383](https://github.com/rrweb-io/rrweb/pull/1383) [`1e0b273`](https://github.com/rrweb-io/rrweb/commit/1e0b27382210db0168d2a79d82c13698082b0983) Thanks [@daibhin](https://github.com/daibhin)! - export the canvasMutation function
+
+- [#1324](https://github.com/rrweb-io/rrweb/pull/1324) [`1fe39ab`](https://github.com/rrweb-io/rrweb/commit/1fe39ab0db7f5d2b04f4a4f39fb5c0cfee33a1f8) Thanks [@Belen-Luo](https://github.com/Belen-Luo)! - export eventWithTime for consumption by typescript code
+
+- [#1343](https://github.com/rrweb-io/rrweb/pull/1343) [`05478c3`](https://github.com/rrweb-io/rrweb/commit/05478c36dde03a118099783d908bb3e465e9859c) Thanks [@mdellanoce](https://github.com/mdellanoce)! - use WeakMap for faster attributeCursor lookup while processing attribute mutations
+
+- [#1272](https://github.com/rrweb-io/rrweb/pull/1272) [`58c9104`](https://github.com/rrweb-io/rrweb/commit/58c9104eddc8b7994a067a97daae5684e42f892f) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Perf: Avoid creation of intermediary array when iterating over style rules
+
+- [#1311](https://github.com/rrweb-io/rrweb/pull/1311) [`980a38c`](https://github.com/rrweb-io/rrweb/commit/980a38c816d763833fc3491f56d03c959a41122d) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Add 'recordDOM' config option to turn off recording of DOM (making recordings unreplayable). Specialist use case e.g. only heatmap click/scroll recording
+
+- [#1351](https://github.com/rrweb-io/rrweb/pull/1351) [`a2be77b`](https://github.com/rrweb-io/rrweb/commit/a2be77b82826c4be0e7f3c7c9f7ee50476d5f6f8) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Don't double-record the values of <textarea>s when they already have some content prefilled #1301
+
+- [#1431](https://github.com/rrweb-io/rrweb/pull/1431) [`a7c33f2`](https://github.com/rrweb-io/rrweb/commit/a7c33f2093c4d92faf7ae25e8bb0e088d122c13b) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Ensure :hover works on replayer, even if a rule is behind a media query
+  Respect the intent behind max-device-width and min-device-width media queries so that their effects are apparent in the replayer context
+
+- [#1374](https://github.com/rrweb-io/rrweb/pull/1374) [`314a8dd`](https://github.com/rrweb-io/rrweb/commit/314a8dde5a13095873b89d07bac7c949918bf817) Thanks [@andrewpomeroy](https://github.com/andrewpomeroy)! - Capture stylesheets designated as `rel="preload"`
+
+- [#1349](https://github.com/rrweb-io/rrweb/pull/1349) [`07ac5c9`](https://github.com/rrweb-io/rrweb/commit/07ac5c9e1371824ec3ffb705f9250bbe10f4b73e) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Snapshot performance when masking text: Avoid the repeated calls to `closest` when recursing through the DOM
+
+- Updated dependencies [[`58c9104`](https://github.com/rrweb-io/rrweb/commit/58c9104eddc8b7994a067a97daae5684e42f892f), [`a2be77b`](https://github.com/rrweb-io/rrweb/commit/a2be77b82826c4be0e7f3c7c9f7ee50476d5f6f8), [`a7c33f2`](https://github.com/rrweb-io/rrweb/commit/a7c33f2093c4d92faf7ae25e8bb0e088d122c13b), [`8aea5b0`](https://github.com/rrweb-io/rrweb/commit/8aea5b00a4dfe5a6f59bd2ae72bb624f45e51e81), [`314a8dd`](https://github.com/rrweb-io/rrweb/commit/314a8dde5a13095873b89d07bac7c949918bf817), [`e607e83`](https://github.com/rrweb-io/rrweb/commit/e607e83b21d45131a56c1ff606e9519a5b475fc1), [`7c0dc9d`](https://github.com/rrweb-io/rrweb/commit/7c0dc9dfe1564c9d6624557c5b394e7844955882), [`07ac5c9`](https://github.com/rrweb-io/rrweb/commit/07ac5c9e1371824ec3ffb705f9250bbe10f4b73e)]:
+  - rrweb-snapshot@2.0.0-alpha.12
+  - rrdom@2.0.0-alpha.12
+  - @rrweb/types@2.0.0-alpha.12
+
 ## 2.0.0-alpha.11
 
 ### Patch Changes

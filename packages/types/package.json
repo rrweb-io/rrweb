@@ -1,6 +1,6 @@
 {
   "name": "@sentry-internal/rrweb-types",
-  "version": "2.11.0",
+  "version": "2.16.0",
   "publishConfig": {
     "access": "public"
   },
@@ -31,6 +31,7 @@
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/rrweb-types.js",
       "require": "./dist/rrweb-types.umd.cjs"
     }
@@ -44,7 +45,7 @@
     "vite-plugin-dts": "^1.7.3"
   },
   "dependencies": {
-    "@sentry-internal/rrweb-snapshot": "2.11.0"
+    "@sentry-internal/rrweb-snapshot": "2.16.0"
   },
   "browserslist": [
     "supports es6-class"

@@ -3,10 +3,10 @@ import {
   EventType,
   IncrementalSource,
   eventWithTime,
+  eventWithoutTime,
   MouseInteractions,
   Optional,
   mouseInteractionData,
-  event,
   pluginEvent,
 } from '@sentry-internal/rrweb-types';
 import type { recordOptions } from '../src/types';
@@ -230,7 +230,7 @@ function stringifySnapshots(
           }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
-        return s as event;
+        return s as eventWithoutTime;
       }),
     null,
     2,

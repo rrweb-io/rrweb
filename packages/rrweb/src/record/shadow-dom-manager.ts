@@ -9,7 +9,7 @@ import {
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { patch, inDom } from '../utils';
+import { patch, inDom, setTimeout } from '../utils';
 import type { Mirror } from '@sentry-internal/rrweb-snapshot';
 import { isNativeShadowDom } from '@sentry-internal/rrweb-snapshot';
 

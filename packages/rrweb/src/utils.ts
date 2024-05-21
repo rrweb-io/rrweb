@@ -220,6 +220,23 @@ export function getWindowWidth(): number {
 }
 
 /**
+ * Returns the given node as an HTMLElement if it is one, otherwise the parent node as an HTMLElement
+ * @param node - node to check
+ * @returns HTMLElement or null
+ */
+
+export function closestElementOfNode(node: Node | null): HTMLElement | null {
+  if (!node) {
+    return null;
+  }
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : node.parentElement;
+  return el;
+}
+
+/**
  * Checks if the given element set to be blocked by rrweb
  * @param node - node to check
  * @param blockClass - class name to check
@@ -237,11 +254,11 @@ export function isBlocked(
   if (!node) {
     return false;
   }
-  const el: HTMLElement | null =
-    node.nodeType === node.ELEMENT_NODE
-      ? (node as HTMLElement)
-      : node.parentElement;
-  if (!el) return false;
+  const el = closestElementOfNode(node);
+
+  if (!el) {
+    return false;
+  }
 
   const blockedPredicate = createMatchPredicate(blockClass, blockSelector);
 
@@ -590,45 +607,66 @@ export function inDom(n: Node): boolean {
   return doc.contains(n) || shadowHostInDom(n);
 }
 
-let cachedRequestAnimationFrameImplementation:
-  | undefined
-  | typeof requestAnimationFrame;
-
 /**
- * We generally want to use window.requestAnimationFrame.
+ * We generally want to use window.requestAnimationFrame / window.setTimeout / window.clearTimeout.
  * However, in some cases this may be wrapped (e.g. by Zone.js for Angular),
  * so we try to get an unpatched version of this from a sandboxed iframe.
  */
-function getRequestAnimationFrameImplementation(): typeof requestAnimationFrame {
-  if (cachedRequestAnimationFrameImplementation) {
-    return cachedRequestAnimationFrameImplementation;
+
+interface CacheableImplementations {
+  requestAnimationFrame: typeof requestAnimationFrame;
+  setTimeout: typeof setTimeout;
+  clearTimeout: typeof clearTimeout;
+}
+
+const cachedImplementations: Partial<CacheableImplementations> = {};
+
+function getImplementation<T extends keyof CacheableImplementations>(
+  name: T,
+): CacheableImplementations[T] {
+  const cached = cachedImplementations[name];
+  if (cached) {
+    return cached;
   }
 
   const document = window.document;
-  let requestAnimationFrameImplementation = window.requestAnimationFrame;
+  let impl = window[name] as CacheableImplementations[T];
   if (document && typeof document.createElement === 'function') {
     try {
       const sandbox = document.createElement('iframe');
       sandbox.hidden = true;
       document.head.appendChild(sandbox);
       const contentWindow = sandbox.contentWindow;
-      if (contentWindow && contentWindow.requestAnimationFrame) {
-        requestAnimationFrameImplementation =
+      if (contentWindow && contentWindow[name]) {
+        impl =
           // eslint-disable-next-line @typescript-eslint/unbound-method
-          contentWindow.requestAnimationFrame;
+          contentWindow[name] as CacheableImplementations[T];
       }
       document.head.removeChild(sandbox);
     } catch (e) {
-      // Could not create sandbox iframe, just use window.requestAnimationFrame
+      // Could not create sandbox iframe, just use window.xxx
     }
   }
 
-  return (cachedRequestAnimationFrameImplementation =
-    requestAnimationFrameImplementation.bind(window));
+  return (cachedImplementations[name] = impl.bind(
+    window,
+  ) as CacheableImplementations[T]);
 }
 
 export function onRequestAnimationFrame(
   ...rest: Parameters<typeof requestAnimationFrame>
 ): ReturnType<typeof requestAnimationFrame> {
-  return getRequestAnimationFrameImplementation()(...rest);
+  return getImplementation('requestAnimationFrame')(...rest);
+}
+
+export function setTimeout(
+  ...rest: Parameters<typeof window.setTimeout>
+): ReturnType<typeof window.setTimeout> {
+  return getImplementation('setTimeout')(...rest);
+}
+
+export function clearTimeout(
+  ...rest: Parameters<typeof window.clearTimeout>
+): ReturnType<typeof window.clearTimeout> {
+  return getImplementation('clearTimeout')(...rest);
 }

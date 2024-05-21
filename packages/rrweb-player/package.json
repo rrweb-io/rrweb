@@ -1,10 +1,10 @@
 {
   "name": "@sentry-internal/rrweb-player",
-  "version": "2.11.0",
+  "version": "2.16.0",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@sentry-internal/rrweb-types": "2.11.0",
+    "@sentry-internal/rrweb-types": "2.16.0",
     "@types/offscreencanvas": "^2019.6.4",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-svelte3": "^4.0.0",
@@ -22,7 +22,7 @@
     "tslib": "^2.0.0"
   },
   "dependencies": {
-    "@sentry-internal/rrweb": "2.11.0",
+    "@sentry-internal/rrweb": "2.16.0",
     "@tsconfig/svelte": "^1.0.0"
   },
   "scripts": {

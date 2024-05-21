@@ -64,6 +64,7 @@ export type recordOptions<T> = {
   maskAttributeFn?: MaskAttributeFn;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
+  maxCanvasSize?: [number, number];
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
   inlineStylesheet?: boolean;
@@ -71,6 +72,7 @@ export type recordOptions<T> = {
   packFn?: PackFn;
   sampling?: SamplingStrategy;
   dataURLOptions?: DataURLOptions;
+  recordDOM?: boolean;
   recordCanvas?: boolean;
   recordCrossOriginIframes?: boolean;
   recordAfter?: 'DOMContentLoaded' | 'load';
@@ -120,6 +122,7 @@ export type observerParam = {
   customElementCb: customElementCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
+  recordDOM: boolean;
   recordCanvas: boolean;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
@@ -194,6 +197,7 @@ export type playerConfig = {
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;
+  inactivePeriodThreshold: number;
   showWarning: boolean;
   showDebug: boolean;
   blockClass: string;
