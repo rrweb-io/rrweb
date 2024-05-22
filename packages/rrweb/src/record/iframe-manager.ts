@@ -2,7 +2,7 @@ import type { Mirror } from 'rrweb-snapshot';
 import { genId } from 'rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
-import {
+import type {
   EventType,
   NodeType,
   IncrementalSource,

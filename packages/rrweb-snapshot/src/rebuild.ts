@@ -1,3 +1,4 @@
+import type { Rule, Media, NodeWithRules } from './css';
 import {
   RebuildAssetManagerInterface,
   serializedNodeWithId,
@@ -6,7 +7,7 @@ import {
   NodeType,
   serializedElementNodeWithId,
 } from '@rrweb/types';
-import { Rule, Media, NodeWithRules, parse } from './css';
+import { parse } from './css';
 import { tagMap, BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual, lowerIfExists } from './utils';
 
