@@ -293,7 +293,7 @@ describe('record integration tests', function (this: ISuite) {
       vals.push(replayer.iframe.contentDocument.getElementById('hover-mutation').innerText);
       vals;
 `);
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     expect(replayStyleValues).toEqual([
       {
         'background-color': 'rgb(0, 100, 0)', // darkgreen
