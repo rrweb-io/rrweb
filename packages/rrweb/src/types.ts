@@ -209,6 +209,7 @@ export type missingNodeMap = {
 declare global {
   interface Window {
     FontFace: typeof FontFace;
+    Array: typeof Array;
   }
 }
 
