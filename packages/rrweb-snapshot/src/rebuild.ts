@@ -294,7 +294,7 @@ function buildNode(
         const value = specialAttributes[name];
         // handle internal attributes
         if (tagName === 'canvas' && name === 'rr_dataURL') {
-          const image = document.createElement('img');
+          const image = doc.createElement('img');
           image.onload = () => {
             const ctx = (node as HTMLCanvasElement).getContext('2d');
             if (ctx) {
