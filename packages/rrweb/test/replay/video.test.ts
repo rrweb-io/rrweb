@@ -11,12 +11,13 @@ import {
   fakeGoto,
 } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
+import { vi } from 'vitest';
 import videoPlaybackEvents from '../events/video-playback';
 import videoPlaybackOnFullSnapshotEvents from '../events/video-playback-on-full-snapshot';
 expect.extend({ toMatchImageSnapshot });
 
 describe('video', () => {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
   let code: ISuite['code'];
   let page: ISuite['page'];
   let browser: ISuite['browser'];
