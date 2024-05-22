@@ -10,6 +10,7 @@ import {
   waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
+import movingStyleSheetOnDiff from './events/moving-style-sheet-on-diff';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
@@ -175,6 +176,22 @@ describe('replayer', function () {
     await assertDomSnapshot(page);
   });
 
+  it('should persist StyleSheetRule changes when skipping triggers parent style element to move in diff', async () => {
+    await page.evaluate(`events = ${JSON.stringify(movingStyleSheetOnDiff)}`);
+
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(3000);
+      const rules = [...replayer.iframe.contentDocument.styleSheets].map(
+        (sheet) => [...sheet.rules],
+      ).flat();
+      rules.some((x) => x.cssText === '.target-element { background-color: teal; }');
+    `);
+
+    expect(result).toEqual(true);
+  });
+
   it('should apply fast forwarded StyleSheetRules that where added', async () => {
     await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
     const result = await page.evaluate(`
@@ -226,7 +243,7 @@ describe('replayer', function () {
     await waitForRAF(page);
 
     /** check the second selection event */
-    [startOffset, endOffset] = (await page.evaluate(`      
+    [startOffset, endOffset] = (await page.evaluate(`
       replayer.pause(410);
       var range = replayer.iframe.contentDocument.getSelection().getRangeAt(0);
       [range.startOffset, range.endOffset];
@@ -703,7 +720,7 @@ describe('replayer', function () {
       events = ${JSON.stringify(canvasInIframe)};
       const { Replayer } = rrweb;
       var replayer = new Replayer(events,{showDebug:true});
-      replayer.pause(550);            
+      replayer.pause(550);
     `);
     const replayerIframe = await page.$('iframe');
     const contentDocument = await replayerIframe!.contentFrame()!;
@@ -765,7 +782,7 @@ describe('replayer', function () {
       const replayer = new Replayer(events);
       replayer.play();
     `);
-    await page.waitForTimeout(50);
+    await waitForRAF(page);
 
     await assertDomSnapshot(page);
   });
@@ -789,7 +806,7 @@ describe('replayer', function () {
     await page.evaluate(`
       const { Replayer } = rrweb;
       let replayer = new Replayer(events);
-      replayer.play();      
+      replayer.play();
     `);
 
     const replayerWrapperClassName = 'replayer-wrapper';

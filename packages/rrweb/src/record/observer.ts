@@ -4,6 +4,9 @@ import {
   Mirror,
   getInputType,
   toLowerCase,
+  getNative,
+  nativeSetTimeout,
+  needMaskingText,
 } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
@@ -54,11 +57,6 @@ import { callbackWrapper } from './error-handler';
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
 };
-type WindowWithAngularZone = IWindow & {
-  Zone?: {
-    __symbol__?: (key: string) => string;
-  };
-};
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -93,7 +91,7 @@ export function initMutationObserver(
   // see mutation.ts for details
   mutationBuffer.init(options);
   let mutationObserverCtor =
-    window.MutationObserver ||
+    getNative<typeof MutationObserver>('MutationObserver') ||
     /**
      * Some websites may disable MutationObserver by removing it from the window object.
      * If someone is using rrweb to build a browser extention or things like it, they
@@ -103,19 +101,6 @@ export function initMutationObserver(
      * window.__rrMutationObserver = MutationObserver
      */
     (window as WindowWithStoredMutationObserver).__rrMutationObserver;
-  const angularZoneSymbol = (
-    window as WindowWithAngularZone
-  )?.Zone?.__symbol__?.('MutationObserver');
-  if (
-    angularZoneSymbol &&
-    (window as unknown as Record<string, typeof MutationObserver>)[
-      angularZoneSymbol
-    ]
-  ) {
-    mutationObserverCtor = (
-      window as unknown as Record<string, typeof MutationObserver>
-    )[angularZoneSymbol];
-  }
   const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
@@ -420,6 +405,8 @@ function initInputObserver({
   maskInputFn,
   sampling,
   userTriggeredOnInput,
+  maskTextClass,
+  maskTextSelector,
 }: observerParam): listenerHandler {
   function eventHandler(event: Event) {
     let target = getEventTarget(event) as HTMLElement | null;
@@ -452,11 +439,19 @@ function initInputObserver({
     let isChecked = false;
     const type: Lowercase<string> = getInputType(target) || '';
 
+    const needsMask = needMaskingText(
+      target as Node,
+      maskTextClass,
+      maskTextSelector,
+      true,
+    );
+
     if (type === 'radio' || type === 'checkbox') {
       isChecked = (target as HTMLInputElement).checked;
     } else if (
       maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-      maskInputOptions[type as keyof MaskInputOptions]
+      maskInputOptions[type as keyof MaskInputOptions] ||
+      needsMask
     ) {
       text = maskInputValue({
         element: target,
@@ -465,6 +460,7 @@ function initInputObserver({
         type,
         value: text,
         maskInputFn,
+        needsMask,
       });
     }
     cbWithDedup(
@@ -1105,7 +1101,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
     'add',
     function (original: (font: FontFace) => void) {
       return function (this: FontFaceSet, fontFace: FontFace) {
-        setTimeout(
+        nativeSetTimeout(
           callbackWrapper(() => {
             const p = fontMap.get(fontFace);
             if (p) {

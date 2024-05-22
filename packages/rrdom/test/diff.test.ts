@@ -23,6 +23,7 @@ import {
   ReplayerHandler,
   nodeMatching,
   sameNodeType,
+  handleInsertBefore,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
 import { Replayer } from 'rrweb';
@@ -1443,7 +1444,7 @@ describe('diff algorithm for rrdom', () => {
           const rrHtmlEl = rrDocument.createElement('html');
           rrDocument.mirror.add(rrHtmlEl, rrdom.getDefaultSN(rrHtmlEl, ${htmlElId}));
           rrIframeEl.contentDocument.appendChild(rrHtmlEl);
-          
+
           const replayer = {
             mirror: rrdom.createMirror(),
             applyCanvas: () => {},
@@ -1452,7 +1453,7 @@ describe('diff algorithm for rrdom', () => {
             applyStyleSheetMutation: () => {},
           };
           rrdom.diff(iframeEl, rrIframeEl, replayer);
-          
+
           iframeEl.contentDocument.documentElement.className =
             '${className.toLowerCase()}';
           iframeEl.contentDocument.childNodes.length === 2 &&
@@ -1972,6 +1973,71 @@ describe('diff algorithm for rrdom', () => {
       // Should return false when two elements have same tagNames and attributes but different children
       rrdomMirror.add(node2, getDefaultSN(node2, 2));
       expect(nodeMatching(node1, node2, NodeMirror, rrdomMirror)).toBeFalsy();
+    });
+  });
+
+  describe('test handleInsertBefore function', () => {
+    it('should insert nodeToMove before insertBeforeNode in oldTree for non-style elements', () => {
+      const oldTree = document.createElement('div');
+      const nodeToMove = document.createElement('div');
+      const insertBeforeNode = document.createElement('div');
+      oldTree.appendChild(insertBeforeNode);
+
+      expect(oldTree.children.length).toEqual(1);
+
+      handleInsertBefore(oldTree, nodeToMove, insertBeforeNode);
+
+      expect(oldTree.children.length).toEqual(2);
+      expect(oldTree.children[0]).toEqual(nodeToMove);
+    });
+
+    it('should not drop inserted styles when moving a style element with inserted styles', async () => {
+      function MockCSSStyleSheet() {
+        this.replaceSync = jest.fn();
+        this.cssRules = [{ cssText: baseStyle }];
+      }
+
+      jest
+        .spyOn(window, 'CSSStyleSheet')
+        .mockImplementationOnce(MockCSSStyleSheet as any);
+
+      const baseStyle = 'body {margin: 0;}';
+      const insertedStyle = 'div {display: flex;}';
+
+      document.write('<html></html>');
+
+      const insertBeforeNode = document.createElement('style');
+      document.documentElement.appendChild(insertBeforeNode);
+
+      const nodeToMove = document.createElement('style');
+      nodeToMove.appendChild(document.createTextNode(baseStyle));
+      document.documentElement.appendChild(nodeToMove);
+      nodeToMove.sheet?.insertRule(insertedStyle);
+
+      // validate dom prior to moving element
+      expect(document.documentElement.children.length).toEqual(4);
+      expect(document.documentElement.children[2]).toEqual(insertBeforeNode);
+      expect(document.documentElement.children[3]).toEqual(nodeToMove);
+      expect(nodeToMove.sheet?.cssRules.length).toEqual(2);
+      expect(nodeToMove.sheet?.cssRules[0].cssText).toEqual(insertedStyle);
+      expect(nodeToMove.sheet?.cssRules[1].cssText).toEqual(baseStyle);
+
+      // move the node
+      handleInsertBefore(
+        document.documentElement,
+        nodeToMove,
+        insertBeforeNode,
+      );
+
+      // nodeToMove was inserted before
+      expect(document.documentElement.children.length).toEqual(4);
+      expect(document.documentElement.children[2]).toEqual(nodeToMove);
+      expect(document.documentElement.children[3]).toEqual(insertBeforeNode);
+      // styles persisted on the moved element
+      // w/ document.documentElement.insertBefore(nodeToMove, insertBeforeNode) insertedStyle wouldn't be copied
+      expect(nodeToMove.sheet?.cssRules.length).toEqual(2);
+      expect(nodeToMove.sheet?.cssRules[0].cssText).toEqual(insertedStyle);
+      expect(nodeToMove.sheet?.cssRules[1].cssText).toEqual(baseStyle);
     });
   });
 });

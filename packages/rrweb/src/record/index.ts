@@ -41,8 +41,9 @@ import {
 } from './error-handler';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
-
-let takeFullSnapshot!: (isCheckout?: boolean) => void;
+let takeFullSnapshot: (isCheckout?: boolean) => void = () => {
+  /* no-op */
+};
 let canvasManager!: CanvasManager;
 let recording = false;
 
@@ -121,6 +122,11 @@ function record<T = eventWithTime>(
   // runtime checks for user options
   if (inEmittingFrame && !emit) {
     throw new Error('emit function is required');
+  }
+  if (!inEmittingFrame && !passEmitsToParent) {
+    return () => {
+      /* no-op since in this case we don't need to record anything from this frame in particular */
+    };
   }
   // move departed options to new options
   if (mousemoveWait !== undefined && sampling.mousemove === undefined) {
@@ -292,6 +298,7 @@ function record<T = eventWithTime>(
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
     wrappedEmit,
+    takeFullSnapshot,
   });
 
   /**
@@ -376,6 +383,7 @@ function record<T = eventWithTime>(
       maskTextSelector,
       inlineStylesheet,
       maskAllInputs: maskInputOptions,
+      maskInputFn,
       maskTextFn,
       slimDOM: slimDOMOptions,
       dataURLOptions,
@@ -425,6 +433,7 @@ function record<T = eventWithTime>(
         mirror.getId(document),
       );
   };
+  iframeManager.setTakeFullSnapshot(takeFullSnapshot);
 
   try {
     const handlers: listenerHandler[] = [];

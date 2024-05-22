@@ -1,16 +1,17 @@
 import {
+  documentNode,
+  documentTypeNode,
+  elementNode,
   idNodeMap,
+  IMirror,
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
-  IMirror,
-  serializedNodeWithId,
-  serializedNode,
   NodeType,
-  documentNode,
-  documentTypeNode,
+  serializedNode,
+  serializedNodeWithId,
   textNode,
-  elementNode,
+  IWindow,
 } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -29,6 +30,36 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
 export function isNativeShadowDom(shadowRoot: ShadowRoot) {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
+
+type WindowWithAngularZone = IWindow & {
+  Zone?: {
+    __symbol__?: (key: keyof IWindow) => string;
+  };
+  [key: string]: any;
+};
+
+export function getNative<T>(
+  symbolName: keyof IWindow,
+  windowObj: IWindow = window,
+): T {
+  const windowWithZone = windowObj as WindowWithAngularZone;
+  const angularZoneSymbol = windowWithZone?.Zone?.__symbol__?.(symbolName);
+  if (angularZoneSymbol) {
+    const zonelessImpl = windowWithZone[angularZoneSymbol] as T;
+    if (zonelessImpl) {
+      return zonelessImpl;
+    }
+  }
+
+  return windowWithZone[symbolName] as T;
+}
+
+export const nativeSetTimeout =
+  typeof window !== 'undefined'
+    ? (getNative<typeof window.setTimeout>('setTimeout').bind(
+        window,
+      ) as typeof window.setTimeout)
+    : global.setTimeout;
 
 /**
  * Browsers sometimes destructively modify the css rules they receive.
@@ -96,18 +127,60 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
+    const stringifiedRules = [] as string[];
+    for (let i = 0; i < rules.length; ++i) {
+      stringifiedRules.push(stringifyRule(rules[i]));
+    }
     return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules, stringifyRule).join(''),
-        )
+      ? fixBrowserCompatibilityIssuesInCSS(stringifiedRules.join(''))
       : null;
   } catch (error) {
     return null;
   }
 }
 
+function replaceChromeGridTemplateAreas(rule: CSSStyleRule): string {
+  const hasGridTemplateInCSSText = rule.cssText.includes('grid-template:');
+  const hasGridTemplateAreaInStyleRules =
+    rule.style.getPropertyValue('grid-template-areas') !== '';
+  const hasGridTemplateAreaInCSSText = rule.cssText.includes(
+    'grid-template-areas:',
+  );
+  if (
+    isCSSStyleRule(rule) &&
+    hasGridTemplateInCSSText &&
+    hasGridTemplateAreaInStyleRules &&
+    !hasGridTemplateAreaInCSSText
+  ) {
+    // chrome does not correctly provide the grid template areas in the rules cssText
+    // e.g. https://bugs.chromium.org/p/chromium/issues/detail?id=1303968
+    // we remove the grid-template rule from the text... so everything from grid-template: to the next semicolon
+    // and then add each grid-template-x rule into the css text because Chrome isn't doing this correctly
+    const parts = rule.cssText
+      .split(';')
+      .filter((s) => !s.includes('grid-template:'))
+      .map((s) => s.trim());
+
+    const gridStyles: string[] = [];
+
+    for (let i = 0; i < rule.style.length; i++) {
+      const styleName = rule.style[i];
+      if (styleName.startsWith('grid-template')) {
+        gridStyles.push(
+          `${styleName}: ${rule.style.getPropertyValue(styleName)}`,
+        );
+      }
+    }
+    parts.splice(parts.length - 1, 0, gridStyles.join('; '));
+    return parts.join('; ');
+  }
+  return rule.cssText;
+}
+
 export function stringifyRule(rule: CSSRule): string {
   let importStringified;
+  let gridTemplateFixed;
+
   if (isCSSImportRule(rule)) {
     try {
       importStringified =
@@ -125,7 +198,11 @@ export function stringifyRule(rule: CSSRule): string {
     return fixSafariColons(rule.cssText);
   }
 
-  return importStringified || rule.cssText;
+  if (isCSSStyleRule(rule)) {
+    gridTemplateFixed = replaceChromeGridTemplateAreas(rule);
+  }
+
+  return importStringified || gridTemplateFixed || rule.cssText;
 }
 
 export function fixSafariColons(cssStringified: string): string {
@@ -219,6 +296,7 @@ export function maskInputValue({
   type,
   value,
   maskInputFn,
+  needsMask,
 }: {
   element: HTMLElement;
   maskInputOptions: MaskInputOptions;
@@ -226,13 +304,15 @@ export function maskInputValue({
   type: string | null;
   value: string | null;
   maskInputFn?: MaskInputFn;
+  needsMask?: boolean;
 }): string {
   let text = value || '';
   const actualType = type && toLowerCase(type);
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
+    (actualType && maskInputOptions[actualType as keyof MaskInputOptions]) ||
+    needsMask
   ) {
     if (maskInputFn) {
       text = maskInputFn(text, element);

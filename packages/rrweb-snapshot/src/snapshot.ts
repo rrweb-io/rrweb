@@ -25,6 +25,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
+  nativeSetTimeout,
 } from './utils';
 
 let _id = 1;
@@ -280,7 +281,7 @@ export function _isBlockedElement(
       if (element.classList.contains(blockClass)) {
         return true;
       }
-    } else {
+    } else if (blockClass) {
       for (let eIndex = element.classList.length; eIndex--; ) {
         const className = element.classList[eIndex];
         if (blockClass.test(className)) {
@@ -304,6 +305,7 @@ export function classMatchesRegex(
   checkAncestors: boolean,
 ): boolean {
   if (!node) return false;
+  if (!regex) return false;
   if (node.nodeType !== node.ELEMENT_NODE) {
     if (!checkAncestors) return false;
     return classMatchesRegex(node.parentNode, regex, checkAncestors);
@@ -331,6 +333,7 @@ export function needMaskingText(
         ? (node as HTMLElement)
         : node.parentElement;
     if (el === null) return false;
+    if (maskTextSelector === '*') return true;
     if (typeof maskTextClass === 'string') {
       if (checkAncestors) {
         if (el.closest(`.${maskTextClass}`)) return true;
@@ -373,7 +376,7 @@ function onceIframeLoaded(
     return;
   }
   if (readyState !== 'complete') {
-    const timer = setTimeout(() => {
+    const timer = nativeSetTimeout(() => {
       if (!fired) {
         listener();
         fired = true;
@@ -395,7 +398,7 @@ function onceIframeLoaded(
   ) {
     // iframe was already loaded, make sure we wait to trigger the listener
     // till _after_ the mutation that found this iframe has had time to process
-    setTimeout(listener, 0);
+    nativeSetTimeout(listener, 0);
 
     return iframeEl.addEventListener('load', listener); // keep listing for future loads
   }
@@ -423,7 +426,7 @@ function onceStylesheetLoaded(
 
   if (styleSheetLoaded) return;
 
-  const timer = setTimeout(() => {
+  const timer = nativeSetTimeout(() => {
     if (!fired) {
       listener();
       fired = true;
@@ -513,12 +516,15 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        needsMask,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
         doc,
         needsMask,
         maskTextFn,
+        maskInputOptions,
+        maskInputFn,
         rootId,
       });
     case n.CDATA_SECTION_NODE:
@@ -550,16 +556,20 @@ function serializeTextNode(
     doc: Document;
     needsMask: boolean | undefined;
     maskTextFn: MaskTextFn | undefined;
+    maskInputOptions: MaskInputOptions;
+    maskInputFn: MaskInputFn | undefined;
     rootId: number | undefined;
   },
 ): serializedNode {
-  const { needsMask, maskTextFn, rootId } = options;
+  const { needsMask, maskTextFn, maskInputOptions, maskInputFn, rootId } =
+    options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
   let textContent = n.textContent;
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
+  const isTextarea = parentTagName === 'TEXTAREA' ? true : undefined;
   if (isStyle && textContent) {
     try {
       // try to read style sheet
@@ -589,6 +599,11 @@ function serializeTextNode(
       ? maskTextFn(textContent, n.parentElement)
       : textContent.replace(/[\S]/g, '*');
   }
+  if (isTextarea && textContent && maskInputOptions.textarea) {
+    textContent = maskInputFn
+      ? maskInputFn(textContent, n.parentNode as HTMLElement)
+      : textContent.replace(/[\S]/g, '*');
+  }
 
   return {
     type: NodeType.Text,
@@ -616,6 +631,7 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    needsMask?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -631,6 +647,7 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    needsMask,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
@@ -687,6 +704,8 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
+      const type = getInputType(n);
+
       attributes.value = maskInputValue({
         element: n,
         type: getInputType(n),
@@ -694,6 +713,7 @@ function serializeElementNode(
         value,
         maskInputOptions,
         maskInputFn,
+        needsMask,
       });
     } else if (checked) {
       attributes.checked = checked;
@@ -1258,7 +1278,7 @@ function snapshot(
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
-    maskInputFn?: MaskTextFn;
+    maskInputFn?: MaskInputFn;
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;

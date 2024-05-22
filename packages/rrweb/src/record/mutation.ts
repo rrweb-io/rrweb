@@ -50,6 +50,7 @@ class DoubleLinkedList {
   public length = 0;
   public head: DoubleLinkedListNode | null = null;
   public tail: DoubleLinkedListNode | null = null;
+  public reordered = false;
 
   public get(position: number) {
     if (position >= this.length) {
@@ -129,6 +130,36 @@ class DoubleLinkedList {
     }
     this.length--;
   }
+
+  public needsReorder(_node: DoubleLinkedListNode) {
+    if (
+      !this.reordered &&
+      _node.value.previousSibling &&
+      isNodeInLinkedList(_node.value.previousSibling) &&
+      _node.previous &&
+      _node.previous.value !== _node.value.previousSibling
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  public reorder() {
+    if (this.reordered) return false;
+    let current = this.tail;
+    const head = this.head;
+    while (current) {
+      const prev = current.previous;
+      this.removeNode(current.value);
+      this.addNode(current.value);
+      if (current === head) {
+        break;
+      }
+      current = prev;
+    }
+    this.reordered = true;
+    return true;
+  }
 }
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
@@ -144,6 +175,7 @@ export default class MutationBuffer {
   private attributes: attributeCursor[] = [];
   private attributeMap = new WeakMap<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
+  private removesMap = new Map<number, number>();
   private mapRemoves: Node[] = [];
 
   private movedMap: Record<string, true> = {};
@@ -353,7 +385,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n, this.mirror) &&
+        isParentRemoved(this.removesMap, n, this.mirror) &&
         !this.movedSet.has(n.parentNode!)
       ) {
         continue;
@@ -364,7 +396,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n, this.mirror)
+        !isParentRemoved(this.removesMap, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -394,9 +426,13 @@ export default class MutationBuffer {
             const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value);
 
-            if (nextId === -1) continue;
-            // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
+            if (nextId === -1) {
+              if (addList.needsReorder(_node) && addList.reorder()) {
+                tailNode = addList.tail;
+              }
+              continue;
+            } else if (parentId !== -1) {
+              // nextId !== -1 && parentId !== -1
               node = _node;
               break;
             }
@@ -503,6 +539,7 @@ export default class MutationBuffer {
     this.attributes = [];
     this.attributeMap = new WeakMap<Node, attributeCursor>();
     this.removes = [];
+    this.removesMap = new Map<number, number>();
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
@@ -566,6 +603,13 @@ export default class MutationBuffer {
         if (attributeName === 'value') {
           const type = getInputType(target);
 
+          const needsMask = needMaskingText(
+            m.target,
+            this.maskTextClass,
+            this.maskTextSelector,
+            true,
+          );
+
           value = maskInputValue({
             element: target,
             maskInputOptions: this.maskInputOptions,
@@ -573,6 +617,7 @@ export default class MutationBuffer {
             type,
             value,
             maskInputFn: this.maskInputFn,
+            needsMask,
           });
         }
         if (
@@ -726,6 +771,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            this.removesMap.set(nodeId, this.removes.length - 1);
           }
           this.mapRemoves.push(n);
         });
@@ -789,16 +835,16 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
 }
 
 function isParentRemoved(
-  removes: removedNodeMutation[],
+  removesMap: Map<number, number>,
   n: Node,
   mirror: Mirror,
 ): boolean {
-  if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
+  if (removesMap.size === 0) return false;
+  return _isParentRemoved(removesMap, n, mirror);
 }
 
 function _isParentRemoved(
-  removes: removedNodeMutation[],
+  removesMap: Map<number, number>,
   n: Node,
   mirror: Mirror,
 ): boolean {
@@ -807,10 +853,10 @@ function _isParentRemoved(
     return false;
   }
   const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
+  if (removesMap.has(parentId)) {
     return true;
   }
-  return _isParentRemoved(removes, parentNode, mirror);
+  return _isParentRemoved(removesMap, parentNode, mirror);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
