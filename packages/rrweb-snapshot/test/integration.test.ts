@@ -210,7 +210,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await setTimeout(20); // need a small wait, as after the crossOrigin="anonymous" change, the snapshot triggers a reload of the image (which mutates the snapshot when loaded)
+    await waitForRAF(page); // need a small wait, as after the crossOrigin="anonymous" change, the snapshot triggers a reload of the image (which mutates the snapshot when loaded)
     const bodyChildren = (await page.evaluate(`
       snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
 `)) as any[];
