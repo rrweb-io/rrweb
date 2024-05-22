@@ -1,6 +1,6 @@
 ---
-'rrweb-snapshot': major
-'rrweb': major
+"rrweb-snapshot": major
+"rrweb": major
 ---
 
 `inlineImages` recording option has been deprecated and is now an alias for `captureAssets: { objectURLs: true, origins: true }`.
