@@ -1,5 +1,26 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.14
+
+### Patch Changes
+
+- [#1464](https://github.com/rrweb-io/rrweb/pull/1464) [`03b5216`](https://github.com/rrweb-io/rrweb/commit/03b5216a9403f1509b4f69d1d71ef9874277fe91) Thanks [@colingm](https://github.com/colingm)! - better support for coexistence with older libraries (e.g. MooTools & Prototype.js) which modify the in-built `Array.from` function
+
+- [#1481](https://github.com/rrweb-io/rrweb/pull/1481) [`46f1b25`](https://github.com/rrweb-io/rrweb/commit/46f1b252a5919c68c68e825bd6089cc2e7d34e7c) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix and test for bug #1457 which was affecting replay of complex tailwind css
+
+- [#1476](https://github.com/rrweb-io/rrweb/pull/1476) [`cbbd1e5`](https://github.com/rrweb-io/rrweb/commit/cbbd1e55f1f7fa2eed9fa11e4152b509bdfd88f7) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fixup for multiple background-clip replacement
+
+- [#1387](https://github.com/rrweb-io/rrweb/pull/1387) [`5e7943d`](https://github.com/rrweb-io/rrweb/commit/5e7943dbae6e2cde76c484bdd26bc0b96f1b6dce) Thanks [@H4ad](https://github.com/H4ad)! - Avoid recreating the same element every time, instead, we cache and we just update the element.
+
+  Before: 779k ops/s
+  After: 860k ops/s
+
+  Benchmark: https://jsbench.me/ktlqztuf95/1
+
+- [#1440](https://github.com/rrweb-io/rrweb/pull/1440) [`c0f83af`](https://github.com/rrweb-io/rrweb/commit/c0f83afab8f1565633de0e986b7e96fa56f2d25c) Thanks [@daibhin](https://github.com/daibhin)! - better nested css selector splitting when commas or brackets happen to be in quoted text
+
+- [#1467](https://github.com/rrweb-io/rrweb/pull/1467) [`e96f668`](https://github.com/rrweb-io/rrweb/commit/e96f668c86bd0ab5dc190bb2957a170271bb2ebc) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Bugfix after #1434 perf improvements: fix that blob urls persist on the shared anchor element and can't be later modified
+
 ## 2.0.0-alpha.13
 
 ### Minor Changes
