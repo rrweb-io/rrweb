@@ -860,7 +860,17 @@ export function parse(css: string, options: ParserOptions = {}) {
    */
 
   function _compileAtrule(name: string) {
-    const re = new RegExp('^@' + name + '\\s*([^;]+);');
+    const re = new RegExp(
+      '^@' +
+        name +
+        '\\s*((?:' +
+        [
+          '(?<!\\\\)"(?:\\\\"|[^"])*"',
+          "(?<!\\\\)'(?:\\\\'|[^'])*'",
+          '[^;]',
+        ].join('|') +
+        ')+);',
+    );
     return () => {
       const pos = position();
       const m = match(re);
