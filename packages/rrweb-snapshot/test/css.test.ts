@@ -7,7 +7,7 @@ import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
-import {
+import type {
   serializedElementNodeWithId,
   BuildCache,
   textNode,
