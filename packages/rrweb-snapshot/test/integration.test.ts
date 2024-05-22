@@ -100,6 +100,9 @@ describe('integration tests', function (this: ISuite) {
     if (html.filePath.substring(html.filePath.length - 1) === '~') {
       continue;
     }
+    // monkey patching breaks rebuild code
+    if (html.filePath.includes('monkey-patched-elements.html')) continue;
+
     const title = '[html file]: ' + html.filePath;
     it(title, async () => {
       const page: puppeteer.Page = await browser.newPage();
@@ -385,6 +388,22 @@ iframe.contentDocument.querySelector('center').clientHeight
       'document.querySelector("img").onload.name',
     )) as string;
     assert(fnName === 'onload');
+  });
+
+  it('should be able to record elements even when .childNodes has been monkey patched', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`http://localhost:3030/html/monkey-patched-elements.html`, {
+      waitUntil: 'load',
+    });
+    await waitForRAF(page); // wait for page to render
+    const snapshotResult = JSON.stringify(
+      await page.evaluate(`${code};
+          rrweb.snapshot(document);
+        `),
+      null,
+      2,
+    );
+    expect(snapshotResult).toMatchSnapshot();
   });
 });
 

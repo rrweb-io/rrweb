@@ -31,6 +31,7 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
+  childNodes,
 } from '../utils';
 
 type DoubleLinkedListNode = {
@@ -524,7 +525,7 @@ export default class MutationBuffer {
       this.attributeMap.set(textarea, item);
     }
     item.attributes.value = Array.from(
-      textarea.childNodes,
+      childNodes(textarea),
       (cn) => cn.textContent || '',
     ).join('');
   };
@@ -766,9 +767,9 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
+      childNodes(n).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
+        childNodes(n.shadowRoot).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });
@@ -785,7 +786,7 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
+  childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
 function isParentRemoved(

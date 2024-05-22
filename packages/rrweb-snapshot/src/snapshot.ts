@@ -25,6 +25,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
+  childNodes,
 } from './utils';
 
 let _id = 1;
@@ -1008,7 +1009,7 @@ export function serializeNodeWithId(
 
   if (
     !needsMask &&
-    n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
+    childNodes(n).length // we can avoid the check on leaf elements, as masking is applied to child text nodes only
   ) {
     // perf: if needsMask = true, children won't also need to check
     const checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
@@ -1124,7 +1125,7 @@ export function serializeNodeWithId(
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
     } else {
-      for (const childN of Array.from(n.childNodes)) {
+      for (const childN of Array.from(childNodes(n))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
           serializedNode.childNodes.push(serializedChildNode);
@@ -1133,7 +1134,7 @@ export function serializeNodeWithId(
     }
 
     if (isElement(n) && n.shadowRoot) {
-      for (const childN of Array.from(n.shadowRoot.childNodes)) {
+      for (const childN of Array.from(childNodes(n.shadowRoot))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
           isNativeShadowDom(n.shadowRoot) &&
