@@ -6,6 +6,7 @@ import {
   absoluteToStylesheet,
   serializeNodeWithId,
   _isBlockedElement,
+  needMaskingText
 } from '../src/snapshot';
 import { serializedNodeWithId, elementNode } from '../src/types';
 import { Mirror } from '../src/utils';
@@ -257,3 +258,173 @@ describe('form', () => {
     expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
   });
 });
+
+describe('needMaskingText', () => {
+  const documentHtml = `
+  <div class="masked">
+    Some masked content
+    <p>Some more masked content</p>
+  </div>
+  <div class="unmasked">
+    Some unmasked content
+    <p>Some more unmasked content</p>
+  </div>
+  `
+
+  const maskTextClass = 'rrblock'
+  const maskTextSelector: string | null = null
+
+
+  const render = (html: string, selector: string): HTMLTextAreaElement => {
+    document.write(html);
+    return document.querySelector(selector)!;
+  };
+
+
+  function testNeedMaskingText(
+    title: string,
+    elementSelector: string,
+    maskTextClass: string | RegExp,
+    maskTextSelector: string | null,
+    checkAncestors: boolean,
+    expected: boolean
+  ) {
+    it(title, () => {
+      const element = render(documentHtml, elementSelector)
+
+      expect(needMaskingText(element, maskTextClass, maskTextSelector, checkAncestors)).toEqual(expected)
+    })
+  }
+
+  describe('when checkAncestors is false', () => {
+    const checkAncestors = false
+
+    describe('when maskTextClass is specified', () => {
+      const maskTextClass = 'masked'
+
+      testNeedMaskingText(
+        'returns true if the node has the given class',
+        'div.masked',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        true
+      )
+
+      testNeedMaskingText(
+        'returns false for the child of a matching element',
+        'div.masked p',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        false
+      )
+
+      testNeedMaskingText(
+        'returns false for elements not matching',
+        'div.unmasked',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        false
+      )
+    })
+
+    describe('when maskTextSelector is specified', () => {
+      const maskTextSelector = '.masked'
+
+      testNeedMaskingText(
+        'returns true if the node matches the selector',
+        'div.masked',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        true
+      )
+
+      testNeedMaskingText(
+        'returns false for the child of a matching element',
+        'div.masked p',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        false
+      )
+
+      testNeedMaskingText(
+        'returns false for elements not matching',
+        'div.unmasked',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        false
+      )
+    })
+  })
+
+  describe('when checkAncestors is true', () => {
+    const checkAncestors = true
+
+    describe('when maskTextClass is specified', () => {
+      const maskTextClass = 'masked'
+
+      testNeedMaskingText(
+        'returns true if the node has the given class',
+        'div.masked',
+        maskTextClass,
+        null,
+        checkAncestors,
+        true
+      )
+
+      testNeedMaskingText(
+        'returns true for the child of a matching element',
+        'div.masked p',
+        maskTextClass,
+        null,
+        checkAncestors,
+        true
+      )
+
+      testNeedMaskingText(
+        'returns false for elements not matching',
+        'div.unmasked',
+        maskTextClass,
+        null,
+        checkAncestors,
+        false
+      )
+    })
+
+    describe('when maskTextSelector is specified', () => {
+      const maskTextSelector = '.masked'
+
+      testNeedMaskingText(
+        'returns true if the node matches the selector',
+        'div.masked',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        true
+      )
+
+      testNeedMaskingText(
+        'returns true for the child of a matching element',
+        'div.masked p',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        true
+      )
+
+      testNeedMaskingText(
+        'returns false for elements not matching',
+        'div.unmasked',
+        maskTextClass,
+        maskTextSelector,
+        checkAncestors,
+        false
+      )
+    })
+  })
+})
