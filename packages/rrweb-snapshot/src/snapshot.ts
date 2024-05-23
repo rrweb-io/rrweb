@@ -323,6 +323,7 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  maskTextExcludeSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
   try {
@@ -346,6 +347,14 @@ export function needMaskingText(
       } else {
         if (el.matches(maskTextSelector)) return true;
       }
+    }
+    if (maskTextExcludeSelector) {
+      if (checkAncestors) {
+        if (el.closest(maskTextExcludeSelector)) return false;
+      } else {
+        if (el.matches(maskTextExcludeSelector)) return false;
+      }
+      return true
     }
   } catch (e) {
     //
@@ -957,6 +966,7 @@ export function serializeNodeWithId(
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
+    maskTextExcludeSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
@@ -990,6 +1000,7 @@ export function serializeNodeWithId(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    maskTextExcludeSelector,
     skipChild = false,
     inlineStylesheet = true,
     maskInputOptions = {},
@@ -1020,6 +1031,7 @@ export function serializeNodeWithId(
       n as Element,
       maskTextClass,
       maskTextSelector,
+      maskTextExcludeSelector,
       checkAncestors,
     );
   }
@@ -1103,6 +1115,7 @@ export function serializeNodeWithId(
       needsMask,
       maskTextClass,
       maskTextSelector,
+      maskTextExcludeSelector,
       skipChild,
       inlineStylesheet,
       maskInputOptions,
@@ -1173,6 +1186,7 @@ export function serializeNodeWithId(
             needsMask,
             maskTextClass,
             maskTextSelector,
+            maskTextExcludeSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1225,6 +1239,7 @@ export function serializeNodeWithId(
             needsMask,
             maskTextClass,
             maskTextSelector,
+            maskTextExcludeSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1266,6 +1281,7 @@ function snapshot(
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
+    maskTextExcludeSelector?: string | null;
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
@@ -1295,6 +1311,7 @@ function snapshot(
     blockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
+    maskTextExcludeSelector= null,
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,
@@ -1361,6 +1378,7 @@ function snapshot(
     blockSelector,
     maskTextClass,
     maskTextSelector,
+    maskTextExcludeSelector,
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,
