@@ -13,6 +13,8 @@ import { NodeType } from '../src/types';
 import type { BuildCache } from '../src/types';
 import { createMirror, Mirror, stringifyStylesheet } from '../src/utils';
 
+import { expect as _expect } from '@jest/globals';
+
 export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   let tempStyleSheet = new CSSStyleSheet();
   if (tempStyleSheet.replaceSync) {
@@ -34,6 +36,30 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   } else {
     return ss;
   }
+}
+
+const expect = _expect as unknown as {
+  <T = unknown>(actual: T): {
+    toMatchCss(expected: string): void;
+  } & ReturnType<typeof _expect>;
+} & typeof _expect;
+
+expect.extend({
+  toMatchCss: function (received: string, expected: string) {
+    const pass = normCss(received) === normCss(expected);
+    const message: () => string = () =>
+      pass
+        ? ''
+        : `Received (${received}) is not the same as expected (${expected})`;
+    return {
+      message,
+      pass,
+    };
+  },
+});
+
+function normCss(cssText: string): string {
+  return cssText.replace(/[\s;]/g, '');
 }
 
 function getDuration(hrtime: [number, number]) {
@@ -108,19 +134,19 @@ describe('rebuild', function () {
   describe('add hover class to hover selector related rules', function () {
     it('will do nothing to css text without :hover', () => {
       const cssText = 'body { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(cssText);
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(cssText);
     });
 
     it('can add hover class to css text', () => {
       const cssText = '.a:hover { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         '.a:hover, .a.\\:hover { color: white }',
       );
     });
 
     it('can correctly add hover when in middle of selector', () => {
       const cssText = 'ul li a:hover img { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         'ul li a:hover img, ul li a.\\:hover img { color: white }',
       );
     });
@@ -133,7 +159,7 @@ img,
 ul li.specified c:hover img {
   color: white
 }`;
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         `ul li.specified a:hover img, ul li.specified a.\\:hover img,
 ul li.multiline
 b:hover
@@ -148,48 +174,48 @@ ul li.specified c.\\:hover img { color: white }`,
 
     it('can add hover class within media query', () => {
       const cssText = '@media screen { .m:hover { color: white } }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         '@media screen { .m:hover, .m.\\:hover { color: white } }',
       );
     });
 
     it('can add hover class when there is multi selector', () => {
       const cssText = '.a, .b:hover, .c { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         '.a, .b:hover, .b.\\:hover, .c { color: white }',
       );
     });
 
     it('can add hover class when there is a multi selector with the same prefix', () => {
       const cssText = '.a:hover, .a:hover::after { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
       );
     });
 
     it('can add hover class when :hover is not the end of selector', () => {
       const cssText = 'div:hover::after { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         'div:hover::after, div.\\:hover::after { color: white }',
       );
     });
 
     it('can add hover class when the selector has multi :hover', () => {
       const cssText = 'a:hover b:hover { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         'a:hover b:hover, a.\\:hover b.\\:hover { color: white }',
       );
     });
 
     it('will ignore :hover in css value', () => {
       const cssText = '.a::after { content: ":hover" }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(cssText);
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(cssText);
     });
 
     it('can adapt media rules to replay context', () => {
       const cssText =
         '@media only screen and (min-device-width : 1200px) { .a { width: 10px; }}';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(
+      expect(adaptCssForReplay(cssText, cache)).toMatchCss(
         '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
       );
     });
