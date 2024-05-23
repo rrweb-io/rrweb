@@ -6,7 +6,7 @@ import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
 import * as typescript from 'rollup-plugin-typescript2';
 import * as assert from 'assert';
-import { waitForRAF } from './utils';
+import { waitForRAF, getServerURL } from './utils';
 
 const _typescript = typescript as unknown as () => rollup.Plugin;
 
@@ -209,12 +209,63 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await waitForRAF(page);
-    const snapshot = (await page.evaluate(
-      'JSON.stringify(snapshot, null, 2);',
-    )) as string;
-    assert(snapshot.includes('"rr_dataURL"'));
-    assert(snapshot.includes('data:image/webp;base64,'));
+    // don't wait, as we want to ensure that the same-origin image can be inlined immediately
+    const bodyChildren = (await page.evaluate(`
+      snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
+`)) as any[];
+    expect(bodyChildren[1]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: {
+          src: expect.stringMatching(/images\/robot.png$/),
+          alt: 'This is a robot',
+          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+        },
+      }),
+    );
+  });
+
+  it('correctly saves cross-origin images offline', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto('about:blank', {
+      waitUntil: 'load',
+    });
+    await page.setContent(
+      `
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <img src="${getServerURL(
+      server,
+    )}/images/rrweb-favicon-20x20.png" alt="CORS restricted but has access-control-allow-origin: *" />
+  </body>
+</html>
+`,
+      {
+        waitUntil: 'load',
+      },
+    );
+
+    await page.waitForSelector('img', { timeout: 1000 });
+    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false
+    })`);
+    await waitForRAF(page); // need a small wait, as after the crossOrigin="anonymous" change, the snapshot triggers a reload of the image (after which, the snapshot is mutated)
+    const bodyChildren = (await page.evaluate(`
+      snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
+`)) as any[];
+    expect(bodyChildren[0]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: {
+          src: getServerURL(server) + '/images/rrweb-favicon-20x20.png',
+          alt: 'CORS restricted but has access-control-allow-origin: *',
+          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+        },
+      }),
+    );
   });
 
   it('correctly saves blob:images offline', async () => {
