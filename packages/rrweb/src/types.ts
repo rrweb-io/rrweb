@@ -50,6 +50,7 @@ export type recordOptions<T> = {
   ignoreSelector?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
+  maskTextExcludeSelector?: string | null
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
@@ -90,6 +91,7 @@ export type observerParam = {
   ignoreSelector: string | null;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
+  maskTextExcludeSelector: string | null;
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;

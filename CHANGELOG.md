@@ -2,7 +2,7 @@
 
 ## v1.0.0
 
-### Featrues & Improvements
+### Features & Improvements
 
 - Support record same-origin non-sandboxed iframe.
 - Support record open-mode shadow DOM.
