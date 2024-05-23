@@ -32,18 +32,8 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   if (!ss) {
     return 'error' + tempStyleSheet.cssRules.length;
   } else {
-    return norm(ss);
+    return ss;
   }
-}
-
-function norm(cssText: string): string {
-  cssText = cssText.replace(/([\S]){/g, '$1 {');
-  cssText = cssText.replace(/{([\S])/g, '{ $1');
-  cssText = cssText.replace(/;/g, ' ');
-  cssText = cssText.replace(/\n/g, ' ');
-  cssText = cssText.replace(/}}/g, '} }');
-  cssText = cssText.replace(/\s+/g, ' ');
-  return cssText;
 }
 
 function getDuration(hrtime: [number, number]) {
@@ -118,20 +108,20 @@ describe('rebuild', function () {
   describe('add hover class to hover selector related rules', function () {
     it('will do nothing to css text without :hover', () => {
       const cssText = 'body { color: white }';
-      expect(adaptCssForReplay(cssText, cache)).toEqual(norm(cssText));
+      expect(adaptCssForReplay(cssText, cache)).toEqual(cssText);
     });
 
     it('can add hover class to css text', () => {
       const cssText = '.a:hover { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm('.a:hover, .a.\\:hover { color: white }'),
+        '.a:hover, .a.\\:hover { color: white }',
       );
     });
 
     it('can correctly add hover when in middle of selector', () => {
       const cssText = 'ul li a:hover img { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm('ul li a:hover img, ul li a.\\:hover img { color: white }'),
+        'ul li a:hover img, ul li a.\\:hover img { color: white }',
       );
     });
 
@@ -144,7 +134,7 @@ ul li.specified c:hover img {
   color: white
 }`;
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm(`ul li.specified a:hover img, ul li.specified a.\\:hover img,
+        `ul li.specified a:hover img, ul li.specified a.\\:hover img,
 ul li.multiline
 b:hover
 img,
@@ -152,44 +142,42 @@ ul li.multiline
 b.\\:hover
 img,
 ul li.specified c:hover img,
-ul li.specified c.\\:hover img { color: white }`),
+ul li.specified c.\\:hover img { color: white }`,
       );
     });
 
     it('can add hover class within media query', () => {
       const cssText = '@media screen { .m:hover { color: white } }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm('@media screen { .m:hover, .m.\\:hover { color: white } }'),
+        '@media screen { .m:hover, .m.\\:hover { color: white } }',
       );
     });
 
     it('can add hover class when there is multi selector', () => {
       const cssText = '.a, .b:hover, .c { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm('.a, .b:hover, .b.\\:hover, .c { color: white }'),
+        '.a, .b:hover, .b.\\:hover, .c { color: white }',
       );
     });
 
     it('can add hover class when there is a multi selector with the same prefix', () => {
       const cssText = '.a:hover, .a:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm(
-          '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
-        ),
+        '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
       );
     });
 
     it('can add hover class when :hover is not the end of selector', () => {
       const cssText = 'div:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm('div:hover::after, div.\\:hover::after { color: white }'),
+        'div:hover::after, div.\\:hover::after { color: white }',
       );
     });
 
     it('can add hover class when the selector has multi :hover', () => {
       const cssText = 'a:hover b:hover { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm('a:hover b:hover, a.\\:hover b.\\:hover { color: white }'),
+        'a:hover b:hover, a.\\:hover b.\\:hover { color: white }',
       );
     });
 
@@ -202,9 +190,7 @@ ul li.specified c.\\:hover img { color: white }`),
       const cssText =
         '@media only screen and (min-device-width : 1200px) { .a { width: 10px; }}';
       expect(adaptCssForReplay(cssText, cache)).toEqual(
-        norm(
-          '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
-        ),
+        '@media only screen and (min-width : 1200px) { .a { width: 10px; }}',
       );
     });
 
