@@ -6,7 +6,7 @@ import {
   absoluteToStylesheet,
   serializeNodeWithId,
   _isBlockedElement,
-  needMaskingText
+  needMaskingText,
 } from '../src/snapshot';
 import { serializedNodeWithId, elementNode } from '../src/types';
 import { Mirror } from '../src/utils';
@@ -272,17 +272,16 @@ describe('needMaskingText', () => {
     Some unmasked content
     <p>Some more unmasked content</p>
   </div>
-  `
+  `;
 
-  const maskTextClass = 'rrblock'
-  const maskTextSelector: string | null = null
-  const maskTextExcludeSelector: string | null = null
+  const maskTextClass = 'rrblock';
+  const maskTextSelector: string | null = null;
+  const maskTextExcludeSelector: string | null = null;
 
   const render = (html: string, selector: string): HTMLTextAreaElement => {
     document.write(html);
     return document.querySelector(selector)!;
   };
-
 
   function testNeedMaskingText(
     title: string,
@@ -291,20 +290,28 @@ describe('needMaskingText', () => {
     maskTextSelector: string | null,
     maskTextExcludeSelector: string | null,
     checkAncestors: boolean,
-    expected: boolean
+    expected: boolean,
   ) {
     it(title, () => {
-      const element = render(documentHtml, elementSelector)
+      const element = render(documentHtml, elementSelector);
 
-      expect(needMaskingText(element, maskTextClass, maskTextSelector, maskTextExcludeSelector, checkAncestors)).toEqual(expected)
-    })
+      expect(
+        needMaskingText(
+          element,
+          maskTextClass,
+          maskTextSelector,
+          maskTextExcludeSelector,
+          checkAncestors,
+        ),
+      ).toEqual(expected);
+    });
   }
 
   describe('when checkAncestors is false', () => {
-    const checkAncestors = false
+    const checkAncestors = false;
 
     describe('when maskTextClass is specified', () => {
-      const maskTextClass = 'masked'
+      const maskTextClass = 'masked';
 
       testNeedMaskingText(
         'returns true if the node has the given class',
@@ -313,8 +320,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns false for the child of a matching element',
@@ -323,8 +330,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
+        false,
+      );
 
       testNeedMaskingText(
         'returns false for elements not matching',
@@ -333,12 +340,12 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
-    })
+        false,
+      );
+    });
 
     describe('when maskTextSelector is specified', () => {
-      const maskTextSelector = '.masked'
+      const maskTextSelector = '.masked';
 
       testNeedMaskingText(
         'returns true if the node matches the selector',
@@ -347,8 +354,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns false for the child of a matching element',
@@ -357,8 +364,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
+        false,
+      );
 
       testNeedMaskingText(
         'returns false for elements not matching',
@@ -367,12 +374,12 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
-    })
+        false,
+      );
+    });
 
     describe('when maskTextExcludeSelector is specified', () => {
-      const maskTextExcludeSelector = '.unmasked'
+      const maskTextExcludeSelector = '.unmasked';
 
       testNeedMaskingText(
         'returns true if the node does not match the selector',
@@ -381,8 +388,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns false for elements not matching',
@@ -391,8 +398,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
+        false,
+      );
 
       testNeedMaskingText(
         'returns true for the child of a matching element',
@@ -401,16 +408,16 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
-    })
-  })
+        true,
+      );
+    });
+  });
 
   describe('when checkAncestors is true', () => {
-    const checkAncestors = true
+    const checkAncestors = true;
 
     describe('when maskTextClass is specified', () => {
-      const maskTextClass = 'masked'
+      const maskTextClass = 'masked';
 
       testNeedMaskingText(
         'returns true if the node has the given class',
@@ -419,8 +426,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns true for the child of a matching element',
@@ -429,8 +436,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns false for elements not matching',
@@ -439,12 +446,12 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
-    })
+        false,
+      );
+    });
 
     describe('when maskTextSelector is specified', () => {
-      const maskTextSelector = '.masked'
+      const maskTextSelector = '.masked';
 
       testNeedMaskingText(
         'returns true if the node matches the selector',
@@ -453,8 +460,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns true for the child of a matching element',
@@ -463,8 +470,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns false for elements not matching',
@@ -473,12 +480,12 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
-    })
+        false,
+      );
+    });
 
     describe('when maskTextExcludeSelector is specified', () => {
-      const maskTextExcludeSelector = '.unmasked'
+      const maskTextExcludeSelector = '.unmasked';
 
       testNeedMaskingText(
         'returns true if the node does not match the selector',
@@ -487,8 +494,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        true
-      )
+        true,
+      );
 
       testNeedMaskingText(
         'returns false for elements not matching',
@@ -497,8 +504,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
+        false,
+      );
 
       testNeedMaskingText(
         'returns false for the child of a matching element',
@@ -507,8 +514,8 @@ describe('needMaskingText', () => {
         maskTextSelector,
         maskTextExcludeSelector,
         checkAncestors,
-        false
-      )
-    })
-  })
-})
+        false,
+      );
+    });
+  });
+});

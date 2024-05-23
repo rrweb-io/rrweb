@@ -354,7 +354,7 @@ export function needMaskingText(
       } else {
         if (el.matches(maskTextExcludeSelector)) return false;
       }
-      return true
+      return true;
     }
   } catch (e) {
     //
@@ -1311,7 +1311,7 @@ function snapshot(
     blockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
-    maskTextExcludeSelector= null,
+    maskTextExcludeSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,

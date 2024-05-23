@@ -50,7 +50,7 @@ export type recordOptions<T> = {
   ignoreSelector?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
-  maskTextExcludeSelector?: string | null
+  maskTextExcludeSelector?: string | null;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
