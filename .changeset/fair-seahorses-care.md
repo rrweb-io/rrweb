@@ -1,5 +1,5 @@
 ---
-'rrweb': patch
+"rrweb": patch
 ---
 
 Use native setTimeout when zone.js is present

@@ -1716,29 +1716,34 @@ exports[`record integration tests can record clicks 1`] = `
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"link\\\\n  \\\\n    \\",
+                        \\"textContent\\": \\"link\\",
                         \\"id\\": 22
-                      },
-                      {
-                        \\"type\\": 2,
-                        \\"tagName\\": \\"script\\",
-                        \\"attributes\\": {},
-                        \\"childNodes\\": [
-                          {
-                            \\"type\\": 3,
-                            \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                            \\"id\\": 24
-                          }
-                        ],
-                        \\"id\\": 23
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                        \\"id\\": 25
                       }
                     ],
                     \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 23
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 25
+                      }
+                    ],
+                    \\"id\\": 24
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 26
                   }
                 ],
                 \\"id\\": 16
@@ -16356,7 +16361,7 @@ exports[`record integration tests should record shadow DOM 1`] = `
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n  \\\\n    \\",
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
                     \\"id\\": 39
                   },
                   {

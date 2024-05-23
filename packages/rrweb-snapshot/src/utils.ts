@@ -78,7 +78,7 @@ function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
     !cssText.includes(' -webkit-background-clip: text;')
   ) {
     cssText = cssText.replace(
-      ' background-clip: text;',
+      /\sbackground-clip:\s*text;/g,
       ' -webkit-background-clip: text; background-clip: text;',
     );
   }
