@@ -7,7 +7,6 @@ import * as rollup from 'rollup';
 import * as typescript from 'rollup-plugin-typescript2';
 import * as assert from 'assert';
 import { waitForRAF, getServerURL } from './utils';
-import { setTimeout } from 'node:timers/promises';
 
 const _typescript = typescript as unknown as () => rollup.Plugin;
 
