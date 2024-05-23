@@ -11,7 +11,11 @@ import {
 } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
 import type { BuildCache } from '../src/types';
-import type { NodeType, serializedElementNodeWithId, textNode } from '@rrweb/types';
+import type {
+  NodeType,
+  serializedElementNodeWithId,
+  textNode,
+} from '@rrweb/types';
 
 describe('css parser', () => {
   it('should save the filename and source', () => {
