@@ -1890,7 +1890,7 @@ describe('diff algorithm for rrdom', () => {
       handleInsertBefore(
         document.documentElement,
         nodeToMove,
-        insertBeforeNode
+        insertBeforeNode,
       );
 
       // nodeToMove was inserted before
