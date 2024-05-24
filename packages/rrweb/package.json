@@ -22,7 +22,7 @@
     "check-types": "tsc -noEmit",
     "prepublish": "npm run typings && npm run bundle",
     "lint": "yarn eslint src",
-    "benchmark": "jest test/benchmark"
+    "benchmark": "jest test/benchmark/dom-mutation"
   },
   "type": "module",
   "repository": {
