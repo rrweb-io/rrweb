@@ -20,6 +20,7 @@
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src",
+    "benchmark-dom-mutation": "vitest run --maxConcurrency 1 --no-file-parallelism -t 'deeply nested children' test/benchmark/dom-mutation"
     "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark"
   },
   "type": "module",
