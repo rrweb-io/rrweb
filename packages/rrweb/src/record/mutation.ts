@@ -688,12 +688,7 @@ export default class MutationBuffer {
 
           // iterate breadth first over new nodes (non recursive for performance)
           while (genAddsQueue.length) {
-            const next = genAddsQueue.pop();
-            if (!next) {
-              throw new Error(
-                'Add queue is corrupt, there is no next item to process',
-              );
-            }
+            const next = genAddsQueue.pop()!;
 
             // Since this is an extremely hot path, do not destructure next
             // in order to avoid invoking the iterator protocol
@@ -729,10 +724,16 @@ export default class MutationBuffer {
               continue;
             }
             n.childNodes.forEach((childN) => {
+              if (this.movedSet.has(childN) || this.addedSet.has(childN))
+                return;
+
               genAddsQueue.push([childN, undefined]);
             });
             if (hasShadowRoot(n)) {
               n.shadowRoot.childNodes.forEach((childN) => {
+                if (this.movedSet.has(childN) || this.addedSet.has(childN))
+                  return;
+
                 this.processedNodeManager.add(childN, this);
                 genAddsQueue.push([childN, n]);
               });
