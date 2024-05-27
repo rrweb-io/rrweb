@@ -7175,7 +7175,9 @@ exports[`record integration tests canvas should record canvas within shadow dom 
               ]
             },
             0,
-            0
+            0,
+            200,
+            200
           ]
         }
       ]
@@ -7216,7 +7218,9 @@ exports[`record integration tests canvas should record canvas within shadow dom 
               ]
             },
             0,
-            0
+            0,
+            200,
+            200
           ]
         }
       ]
