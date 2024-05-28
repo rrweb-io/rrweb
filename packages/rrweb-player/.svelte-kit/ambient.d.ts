@@ -25,6 +25,7 @@
  */
 declare module '$env/static/private' {
   export const GITHUB_STATE: string;
+  export const GIT_CLONE_PROTECTION_ACTIVE: string;
   export const npm_package_scripts_test_cross_platform_build: string;
   export const npm_package_devDependencies_rollup: string;
   export const npm_package_devDependencies__types_node: string;
@@ -128,6 +129,7 @@ declare module '$env/static/private' {
   export const npm_package_dependencies_kleur: string;
   export const npm_package_dependencies_devalue: string;
   export const npm_config_ignore_scripts: string;
+  export const STATS_BLT: string;
   export const GITHUB_WORKFLOW_REF: string;
   export const PERFLOG_LOCATION_SETTING: string;
   export const GITHUB_ACTION_REPOSITORY: string;
@@ -266,6 +268,7 @@ declare module '$env/static/public' {}
 declare module '$env/dynamic/private' {
   export const env: {
     GITHUB_STATE: string;
+    GIT_CLONE_PROTECTION_ACTIVE: string;
     npm_package_scripts_test_cross_platform_build: string;
     npm_package_devDependencies_rollup: string;
     npm_package_devDependencies__types_node: string;
@@ -369,6 +372,7 @@ declare module '$env/dynamic/private' {
     npm_package_dependencies_kleur: string;
     npm_package_dependencies_devalue: string;
     npm_config_ignore_scripts: string;
+    STATS_BLT: string;
     GITHUB_WORKFLOW_REF: string;
     PERFLOG_LOCATION_SETTING: string;
     GITHUB_ACTION_REPOSITORY: string;
