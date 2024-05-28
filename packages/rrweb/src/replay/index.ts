@@ -98,7 +98,7 @@ const defaultMouseTailConfig = {
   strokeStyle: 'red',
 } as const;
 
-export type incrementalSnapshotEventWithTime = incrementalSnapshotEvent & {
+type incrementalSnapshotEventWithTime = incrementalSnapshotEvent & {
   timestamp: number;
   delay?: number;
 };
@@ -153,7 +153,7 @@ export class Replayer {
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
-  // Map of pointer ID to the unique vars used to show gestures
+  // Map of pointer ID to the unique vars used to show pointers and their movements
   private pointers: Record<
     number,
     {
