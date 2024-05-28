@@ -1168,7 +1168,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseInteraction: {
-        const pointerId = d.pointerId ?? Object.keys(this.pointers).length;
+        const pointerId = d.pointerId ?? -1;
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
