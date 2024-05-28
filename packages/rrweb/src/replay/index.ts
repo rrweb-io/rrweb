@@ -1138,6 +1138,9 @@ export class Replayer {
             : -1;
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
+          if (indicatesTouchDevice(e)) {
+            this.pointers[pointerId].pointerEl.classList.add('touch-device');
+          }
         }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
@@ -1178,6 +1181,9 @@ export class Replayer {
             : -1;
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
+          if (indicatesTouchDevice(e)) {
+            this.pointers[pointerId].pointerEl.classList.add('touch-device');
+          }
         }
 
         /**
@@ -1258,7 +1264,10 @@ export class Replayer {
                 this.pointers[pointerId].pointerEl.classList.remove(
                   'touch-active',
                 );
-                // delete this.pointers[pointerId];
+                this.pointers[pointerId].pointerEl.classList.remove(
+                  'replayer-mouse',
+                );
+                delete this.pointers[pointerId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
                 target.dispatchEvent(event);
@@ -2204,10 +2213,12 @@ export class Replayer {
     this.pointers[pointerId].tailPositions.push(position);
     draw();
     setTimeout(() => {
-      this.pointers[pointerId].tailPositions = this.pointers[
-        pointerId
-      ].tailPositions.filter((p) => p !== position);
-      draw();
+      if (pointerId in this.pointers) {
+        this.pointers[pointerId].tailPositions = this.pointers[
+          pointerId
+        ].tailPositions.filter((p) => p !== position);
+        draw();
+      }
     }, duration / this.speedService.state.context.timer.speed);
   }
 
