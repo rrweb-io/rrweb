@@ -1,41 +1,111 @@
-export function getUntaintedChildNodesAccessor(): (
-  this: Node,
-) => NodeListOf<Node> {
-  const original = Object.getOwnPropertyDescriptor(
+let untaintedNodePrototype: typeof Node.prototype;
+export function getUntaintedNode(): (typeof Node)['prototype'] {
+  if (untaintedNodePrototype) return untaintedNodePrototype;
+
+  const isUntainted = Object.getOwnPropertyDescriptor(
     Node.prototype,
     'childNodes',
-  );
-  // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/no-non-null-assertion
-  const originalGetter = original?.get as (this: Node) => NodeListOf<Node>;
-  if (!originalGetter) throw new Error(`Failed to get original getter`);
+  )
+    ?.get?.toString()
+    .includes('[native code]');
+
+  if (isUntainted) return (untaintedNodePrototype = Node.prototype);
+
   try {
-    const isUntainted = originalGetter.toString().includes('[native code]');
-    if (isUntainted) return originalGetter;
     const iframeEl = document.createElement('iframe');
     document.body.appendChild(iframeEl);
     const win = iframeEl.contentWindow;
-    if (!win) return originalGetter;
+    if (!win) return Node.prototype;
 
-    const untainted = Object.getOwnPropertyDescriptor(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      (win as any).Node.prototype,
-      'childNodes',
-    );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    const untaintedNode = (win as any).Node.prototype as typeof Node.prototype;
     // cleanup
     document.body.removeChild(iframeEl);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const untaintedGetter = untainted?.get;
-    if (!untaintedGetter) throw new Error('Failed to get untainted getter');
-    return untaintedGetter;
+    if (!untaintedNode) return Node.prototype;
+
+    return (untaintedNodePrototype = untaintedNode);
   } catch {
-    return originalGetter;
+    return Node.prototype;
   }
 }
 
-let untaintedChildNodesAccessor: (this: Node) => NodeListOf<Node>;
-export function childNodes(n: Node): NodeListOf<Node> {
-  untaintedChildNodesAccessor ||= getUntaintedChildNodesAccessor();
+const untaintedAccessorCache: Record<
+  string,
+  (this: Node, ...args: unknown[]) => unknown
+> = {};
+function getUntaintedNodeAccessor<T extends keyof typeof Node.prototype>(
+  node: Node,
+  accessor: T,
+): (typeof Node.prototype)[T] {
+  if (untaintedAccessorCache[accessor])
+    return untaintedAccessorCache[accessor].call(
+      node,
+    ) as (typeof Node.prototype)[T];
 
-  return untaintedChildNodesAccessor.call(n);
+  const untaintedNode = getUntaintedNode();
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const untaintedAccessor = Object.getOwnPropertyDescriptor(
+    untaintedNode,
+    accessor,
+  )?.get;
+
+  if (!untaintedAccessor) return node[accessor];
+
+  untaintedAccessorCache[accessor] = untaintedAccessor;
+
+  return untaintedAccessor.call(node) as (typeof Node.prototype)[T];
 }
+
+// const untaintedPropertyCache: Record<
+//   string,
+//   (this: Node, ...args: unknown[]) => unknown
+// > = {};
+// // function getUntaintedNodeProperty<T extends keyof typeof Node.prototype>(
+// function getUntaintedNodeProperty<T extends 'contains'>(
+//   node: Node,
+//   key: T,
+//   ...argumentsList: unknown[]
+// ): ReturnType<(typeof Node.prototype)['contains']> {
+//   if (untaintedPropertyCache[key])
+//     return untaintedPropertyCache[key].call(
+//       node,
+//       ...argumentsList,
+//     ) as ReturnType<(typeof Node.prototype)[T]>;
+
+//   const untaintedNode = getUntaintedNode();
+//   // eslint-disable-next-line @typescript-eslint/unbound-method
+//   const untaintedProperty = Object.getOwnPropertyDescriptor(
+//     untaintedNode,
+//     key,
+//   )?.value;
+
+//   if (!untaintedProperty) return untaintedPropertyCache[key]?.call(node, ...argumentsList);
+
+//   untaintedPropertyCache[key] = untaintedProperty;
+
+//   return untaintedProperty.call(node, ...argumentsList) as ReturnType<
+//     (typeof Node.prototype)[T]
+//   >;
+// }
+
+export function childNodes(n: Node): NodeListOf<Node> {
+  // return n.childNodes;
+  return getUntaintedNodeAccessor(n, 'childNodes');
+}
+
+export function parentNode(n: Node): ParentNode | null {
+  return getUntaintedNodeAccessor(n, 'parentNode');
+}
+
+export function parentElement(n: Node): HTMLElement | null {
+  return getUntaintedNodeAccessor(n, 'parentElement');
+}
+
+export function textContent(n: Node): string | null {
+  return getUntaintedNodeAccessor(n, 'textContent');
+}
+
+// export function contains(n: Node, other: Node): boolean {
+//   return getUntaintedNodeProperty(n, 'contains', other);
+// }

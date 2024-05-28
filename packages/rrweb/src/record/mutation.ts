@@ -32,7 +32,7 @@ import {
   getShadowHost,
   closestElementOfNode,
 } from '../utils';
-import { childNodes } from '@rrweb/utils';
+import { childNodes, parentNode, textContent } from '@rrweb/utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -286,16 +286,13 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (
-        !n.parentNode ||
-        !inDom(n) ||
-        (n.parentNode as Element).tagName === 'TEXTAREA'
-      ) {
+      const parent = parentNode(n);
+      if (!parent || !inDom(n) || (parent as Element).tagName === 'TEXTAREA') {
         return;
       }
-      const parentId = isShadowRoot(n.parentNode)
+      const parentId = isShadowRoot(parent)
         ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
+        : this.mirror.getId(parent);
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
@@ -355,7 +352,7 @@ export default class MutationBuffer {
     for (const n of this.movedSet) {
       if (
         isParentRemoved(this.removes, n, this.mirror) &&
-        !this.movedSet.has(n.parentNode!)
+        !this.movedSet.has(parentNode(n)!)
       ) {
         continue;
       }
@@ -379,7 +376,7 @@ export default class MutationBuffer {
     while (addList.length) {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
-        const parentId = this.mirror.getId(candidate.value.parentNode);
+        const parentId = this.mirror.getId(parentNode(candidate.value));
         const nextId = getNextId(candidate.value);
         if (parentId !== -1 && nextId !== -1) {
           node = candidate;
@@ -392,7 +389,7 @@ export default class MutationBuffer {
           tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
+            const parentId = this.mirror.getId(parentNode(_node.value));
             const nextId = getNextId(_node.value);
 
             if (nextId === -1) continue;
@@ -404,14 +401,10 @@ export default class MutationBuffer {
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
               const unhandledNode = _node.value;
+              const parent = parentNode(unhandledNode);
               // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-              if (
-                unhandledNode.parentNode &&
-                unhandledNode.parentNode.nodeType ===
-                  Node.DOCUMENT_FRAGMENT_NODE
-              ) {
-                const shadowHost = (unhandledNode.parentNode as ShadowRoot)
-                  .host;
+              if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+                const shadowHost = (parent as ShadowRoot).host;
                 const parentId = this.mirror.getId(shadowHost);
                 if (parentId !== -1) {
                   node = _node;
@@ -442,12 +435,10 @@ export default class MutationBuffer {
       texts: this.texts
         .map((text) => {
           const n = text.node;
-          if (
-            n.parentNode &&
-            (n.parentNode as Element).tagName === 'TEXTAREA'
-          ) {
+          const parent = parentNode(n);
+          if (parent && (parent as Element).tagName === 'TEXTAREA') {
             // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
+            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
           }
           return {
             id: this.mirror.getId(n),
@@ -526,7 +517,7 @@ export default class MutationBuffer {
     }
     item.attributes.value = Array.from(
       childNodes(textarea),
-      (cn) => cn.textContent || '',
+      (cn) => textContent(cn) || '',
     ).join('');
   };
 
@@ -536,7 +527,7 @@ export default class MutationBuffer {
     }
     switch (m.type) {
       case 'characterData': {
-        const value = m.target.textContent;
+        const value = textContent(m.target);
 
         if (
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
@@ -803,15 +794,15 @@ function _isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
+  const parent = parentNode(n);
+  if (!parent) {
     return false;
   }
-  const parentId = mirror.getId(parentNode);
+  const parentId = mirror.getId(parent);
   if (removes.some((r) => r.id === parentId)) {
     return true;
   }
-  return _isParentRemoved(removes, parentNode, mirror);
+  return _isParentRemoved(removes, parent, mirror);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
@@ -820,12 +811,12 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
+  const parent = parentNode(n);
+  if (!parent) {
     return false;
   }
-  if (set.has(parentNode)) {
+  if (set.has(parent)) {
     return true;
   }
-  return _isAncestorInSet(set, parentNode);
+  return _isAncestorInSet(set, parent);
 }

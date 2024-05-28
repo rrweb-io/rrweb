@@ -50,6 +50,7 @@ import {
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
+import { parentElement } from '@rrweb/utils';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
@@ -431,7 +432,7 @@ function initInputObserver({
      * We can treat this change as a value change of the select element the current target belongs to.
      */
     if (target && tagName === 'OPTION') {
-      target = target.parentElement;
+      target = parentElement(target);
     }
     if (
       !target ||

@@ -12,6 +12,7 @@ import type {
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
+import { parentElement } from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -185,7 +186,7 @@ export function getWindowScroll(win: Window) {
       : win.pageXOffset !== undefined
       ? win.pageXOffset
       : doc?.documentElement.scrollLeft ||
-        doc?.body?.parentElement?.scrollLeft ||
+        parentElement(doc?.body)?.scrollLeft ||
         doc?.body?.scrollLeft ||
         0,
     top: doc.scrollingElement
@@ -193,7 +194,7 @@ export function getWindowScroll(win: Window) {
       : win.pageYOffset !== undefined
       ? win.pageYOffset
       : doc?.documentElement.scrollTop ||
-        doc?.body?.parentElement?.scrollTop ||
+        parentElement(doc?.body)?.scrollTop ||
         doc?.body?.scrollTop ||
         0,
   };
@@ -228,7 +229,7 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
-      : node.parentElement;
+      : parentElement(node);
   return el;
 }
 
@@ -322,6 +323,7 @@ export function polyfill(win = window) {
       .forEach as unknown as DOMTokenList['forEach'];
   }
 
+  // TODO: remove me `@rrweb/utils`'s `contains` should fix this.
   // https://github.com/Financial-Times/polyfill-service/pull/183
   if (!Node.prototype.contains) {
     Node.prototype.contains = (...args: unknown[]) => {
