@@ -1,0 +1,5 @@
+{
+  "name": "@rrweb/snapshot",
+  "version": "2.0.0-alpha.14",
+  "exports": "./src/index.ts"
+}
