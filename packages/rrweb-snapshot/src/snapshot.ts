@@ -25,8 +25,8 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
-  childNodes,
 } from './utils';
+import { childNodes } from '@rrweb/utils';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');

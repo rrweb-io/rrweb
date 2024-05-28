@@ -31,8 +31,8 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
-  childNodes,
 } from '../utils';
+import { childNodes } from '@rrweb/utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;

@@ -441,7 +441,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     await waitForRAF(page); // wait for page to render
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-          rrweb.snapshot(document);
+          rrwebSnapshot.snapshot(document);
         `),
       null,
       2,
