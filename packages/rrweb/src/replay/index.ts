@@ -98,7 +98,14 @@ const defaultMouseTailConfig = {
   strokeStyle: 'red',
 } as const;
 
-function indicatesTouchDevice(e: eventWithTime) {
+export type incrementalSnapshotEventWithTime = incrementalSnapshotEvent & {
+  timestamp: number;
+  delay?: number;
+};
+
+function indicatesTouchDevice(
+  e: eventWithTime,
+): e is incrementalSnapshotEventWithTime {
   return (
     e.type == EventType.IncrementalSnapshot &&
     (e.data.source == IncrementalSource.TouchMove ||
@@ -417,21 +424,19 @@ export class Replayer {
     }
     this.service.state.context.events.forEach((e: eventWithTime) => {
       if (indicatesTouchDevice(e)) {
-        const d = e.data as incrementalData;
+        const d = e.data;
         const pointerId =
-          'pointerId' in d && d.pointerId !== undefined
-            ? d.pointerId
-            : Object.keys(this.pointers).length;
+          'pointerId' in d && d.pointerId !== undefined ? d.pointerId : -1;
 
         if (!this.pointers[pointerId]) {
-          this.createNewTouch(pointerId);
+          this.createPointer(pointerId);
         }
         this.pointers[pointerId].pointerEl.classList.add('touch-device');
       }
     });
   }
 
-  private createNewTouch(pointerId: number) {
+  private createPointer(pointerId: number) {
     const newMouse = document.createElement('div');
     newMouse.classList.add('replayer-mouse');
     this.pointers[pointerId] = {
@@ -578,13 +583,11 @@ export class Replayer {
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
     if (indicatesTouchDevice(event)) {
-      const d = event.data as incrementalData;
+      const d = event.data;
       const pointerId =
-        'pointerId' in d && d.pointerId !== undefined
-          ? d.pointerId
-          : Object.keys(this.pointers).length;
+        'pointerId' in d && d.pointerId !== undefined ? d.pointerId : -1;
       if (!this.pointers[pointerId]) {
-        this.createNewTouch(pointerId);
+        this.createPointer(pointerId);
       }
       this.pointers[pointerId].pointerEl.classList.add('touch-device');
     }
@@ -615,12 +618,7 @@ export class Replayer {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
     this.config.root.appendChild(this.wrapper);
-
-    for (let [, { pointerEl }] of Object.entries(this.pointers)) {
-      pointerEl = document.createElement('div');
-      pointerEl.classList.add('replayer-mouse');
-      this.wrapper.appendChild(pointerEl);
-    }
+    // this.createPointer(-1);
 
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
@@ -1133,11 +1131,9 @@ export class Replayer {
       case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove: {
         const pointerId =
-          'pointerId' in d && d.pointerId !== undefined
-            ? d.pointerId
-            : Object.keys(this.pointers).length;
+          'pointerId' in d && d.pointerId !== undefined ? d.pointerId : -1;
         if (!this.pointers[pointerId]) {
-          this.createNewTouch(pointerId);
+          this.createPointer(pointerId);
         }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
@@ -1174,7 +1170,7 @@ export class Replayer {
       case IncrementalSource.MouseInteraction: {
         const pointerId = d.pointerId ?? Object.keys(this.pointers).length;
         if (!this.pointers[pointerId]) {
-          this.createNewTouch(pointerId);
+          this.createPointer(pointerId);
         }
 
         /**
@@ -1255,6 +1251,7 @@ export class Replayer {
                 this.pointers[pointerId].pointerEl.classList.remove(
                   'touch-active',
                 );
+                // delete this.pointers[pointerId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
                 target.dispatchEvent(event);
