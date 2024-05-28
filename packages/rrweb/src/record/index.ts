@@ -74,7 +74,6 @@ function record<T = eventWithTime>(
     ignoreSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
-    maskTextExcludeSelector = null,
     inlineStylesheet = true,
     maskAllInputs,
     maskInputOptions: _maskInputOptions,
@@ -99,6 +98,7 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
+    allowList = null
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -401,6 +401,7 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
+      allowList
     });
 
     if (!node) {
@@ -523,7 +524,6 @@ function record<T = eventWithTime>(
           ignoreSelector,
           maskTextClass,
           maskTextSelector,
-          maskTextExcludeSelector,
           maskInputOptions,
           inlineStylesheet,
           sampling,
@@ -561,6 +561,7 @@ function record<T = eventWithTime>(
                     },
                   }),
               })) || [],
+          allowList,
         },
         hooks,
       );

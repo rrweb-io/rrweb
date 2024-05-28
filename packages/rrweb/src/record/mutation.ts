@@ -174,7 +174,6 @@ export default class MutationBuffer {
   private blockSelector: observerParam['blockSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
-  private maskTextExcludeSelector: observerParam['maskTextExcludeSelector'];
   private inlineStylesheet: observerParam['inlineStylesheet'];
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
@@ -191,6 +190,7 @@ export default class MutationBuffer {
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+  private allowList: observerParam['allowList'];
   private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
@@ -307,7 +307,6 @@ export default class MutationBuffer {
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
-        maskTextExcludeSelector: this.maskTextExcludeSelector,
         skipChild: true,
         newlyAddedElement: true,
         inlineStylesheet: this.inlineStylesheet,
@@ -338,6 +337,7 @@ export default class MutationBuffer {
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
+        allowList: this.allowList
       });
       if (sn) {
         adds.push({
@@ -549,7 +549,7 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
-                this.maskTextExcludeSelector,
+                this.allowList,
                 true, // checkAncestors
               ) && value
                 ? this.maskTextFn

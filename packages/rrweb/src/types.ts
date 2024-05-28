@@ -50,7 +50,6 @@ export type recordOptions<T> = {
   ignoreSelector?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
-  maskTextExcludeSelector?: string | null;
   maskAllInputs?: boolean;
   maskInputOptions?: MaskInputOptions;
   maskInputFn?: MaskInputFn;
@@ -74,6 +73,7 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  allowList?: string | null;
 };
 
 export type observerParam = {
@@ -91,7 +91,6 @@ export type observerParam = {
   ignoreSelector: string | null;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
-  maskTextExcludeSelector: string | null;
   maskInputOptions: MaskInputOptions;
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
@@ -127,6 +126,7 @@ export type observerParam = {
     callback: (...arg: Array<unknown>) => void;
     options: unknown;
   }>;
+  allowList: string | null;
 };
 
 export type MutationBufferParam = Pick<

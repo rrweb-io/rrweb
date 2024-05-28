@@ -323,7 +323,7 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
-  maskTextExcludeSelector: string | null,
+  allowList: string | null,
   checkAncestors: boolean,
 ): boolean {
   try {
@@ -332,6 +332,8 @@ export function needMaskingText(
         ? (node as HTMLElement)
         : node.parentElement;
     if (el === null) return false;
+    if (allowList && elementMatchesCssClass(el, allowList, true)) return false
+
     if (typeof maskTextClass === 'string') {
       if (checkAncestors) {
         if (el.closest(`.${maskTextClass}`)) return true;
@@ -341,25 +343,20 @@ export function needMaskingText(
     } else {
       if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
     }
-    if (maskTextSelector) {
-      if (checkAncestors) {
-        if (el.closest(maskTextSelector)) return true;
-      } else {
-        if (el.matches(maskTextSelector)) return true;
-      }
-    }
-    if (maskTextExcludeSelector) {
-      if (checkAncestors) {
-        if (el.closest(maskTextExcludeSelector)) return false;
-      } else {
-        if (el.matches(maskTextExcludeSelector)) return false;
-      }
-      return true;
-    }
+    if (maskTextSelector && elementMatchesCssClass(el, maskTextSelector, checkAncestors)) return true
   } catch (e) {
     //
   }
   return false;
+}
+
+function elementMatchesCssClass(el: HTMLElement, selector: string, checkAncestors: boolean) {
+  if (checkAncestors) {
+    if (el.closest(selector)) return true;
+  } else {
+    if (el.matches(selector)) return true;
+  }
+  return false
 }
 
 // https://stackoverflow.com/a/36155560
@@ -966,7 +963,6 @@ export function serializeNodeWithId(
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
-    maskTextExcludeSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
     newlyAddedElement?: boolean;
@@ -991,6 +987,7 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
+    allowList: string | null;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1000,7 +997,6 @@ export function serializeNodeWithId(
     blockSelector,
     maskTextClass,
     maskTextSelector,
-    maskTextExcludeSelector,
     skipChild = false,
     inlineStylesheet = true,
     maskInputOptions = {},
@@ -1017,11 +1013,21 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
+    allowList
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
 
-  if (
+  if (allowList !== null) {
+    // With an exclusion list, we can have an unmasked element inside a masked element.
+    needsMask = needMaskingText(
+      n as Element,
+      maskTextClass,
+      maskTextSelector,
+      allowList,
+      true,
+    );
+  } else if (
     !needsMask &&
     n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
   ) {
@@ -1031,7 +1037,7 @@ export function serializeNodeWithId(
       n as Element,
       maskTextClass,
       maskTextSelector,
-      maskTextExcludeSelector,
+      allowList,
       checkAncestors,
     );
   }
@@ -1115,7 +1121,6 @@ export function serializeNodeWithId(
       needsMask,
       maskTextClass,
       maskTextSelector,
-      maskTextExcludeSelector,
       skipChild,
       inlineStylesheet,
       maskInputOptions,
@@ -1132,6 +1137,7 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
+      allowList
     };
 
     if (
@@ -1186,7 +1192,6 @@ export function serializeNodeWithId(
             needsMask,
             maskTextClass,
             maskTextSelector,
-            maskTextExcludeSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1203,6 +1208,7 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            allowList
           });
 
           if (serializedIframeNode) {
@@ -1239,7 +1245,6 @@ export function serializeNodeWithId(
             needsMask,
             maskTextClass,
             maskTextSelector,
-            maskTextExcludeSelector,
             skipChild: false,
             inlineStylesheet,
             maskInputOptions,
@@ -1256,6 +1261,7 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            allowList
           });
 
           if (serializedLinkNode) {
@@ -1281,7 +1287,6 @@ function snapshot(
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
-    maskTextExcludeSelector?: string | null;
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
@@ -1303,6 +1308,7 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    allowList?: string | null
   },
 ): serializedNodeWithId | null {
   const {
@@ -1311,7 +1317,6 @@ function snapshot(
     blockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
-    maskTextExcludeSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
     recordCanvas = false,
@@ -1327,6 +1332,7 @@ function snapshot(
     onStylesheetLoad,
     stylesheetLoadTimeout,
     keepIframeSrcFn = () => false,
+    allowList = null
   } = options || {};
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
@@ -1378,7 +1384,6 @@ function snapshot(
     blockSelector,
     maskTextClass,
     maskTextSelector,
-    maskTextExcludeSelector,
     skipChild: false,
     inlineStylesheet,
     maskInputOptions,
@@ -1396,6 +1401,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    allowList
   });
 }
 
