@@ -426,7 +426,9 @@ export class Replayer {
       if (indicatesTouchDevice(e)) {
         const d = e.data;
         const pointerId =
-          'pointerId' in d && d.pointerId !== undefined ? d.pointerId : -1;
+          'pointerId' in d && typeof d.pointerId === 'number'
+            ? d.pointerId
+            : -1;
 
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
@@ -585,7 +587,7 @@ export class Replayer {
     if (indicatesTouchDevice(event)) {
       const d = event.data;
       const pointerId =
-        'pointerId' in d && d.pointerId !== undefined ? d.pointerId : -1;
+        'pointerId' in d && typeof d.pointerId === 'number' ? d.pointerId : -1;
       if (!this.pointers[pointerId]) {
         this.createPointer(pointerId);
       }
@@ -1131,7 +1133,9 @@ export class Replayer {
       case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove: {
         const pointerId =
-          'pointerId' in d && d.pointerId !== undefined ? d.pointerId : -1;
+          'pointerId' in d && typeof d.pointerId === 'number'
+            ? d.pointerId
+            : -1;
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
@@ -1168,7 +1172,10 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseInteraction: {
-        const pointerId = d.pointerId ?? -1;
+        const pointerId =
+          'pointerId' in d && typeof d.pointerId === 'number'
+            ? d.pointerId
+            : -1;
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
