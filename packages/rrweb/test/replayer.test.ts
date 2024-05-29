@@ -11,6 +11,8 @@ import {
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
+import touchEvents from './events/touch-with-pointer-id';
+import mouseEvents from './events/mouse';
 import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import inputEvents from './events/input';
@@ -779,6 +781,30 @@ describe('replayer', function () {
       replayer.addEvent(events[events.length-1]);
     `);
     await page.waitForTimeout(50);
+
+    await assertDomSnapshot(page);
+  });
+
+  it('has a pointer for touch interactions with pointerIds', async () => {
+    await page.evaluate(`events = ${JSON.stringify(touchEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play();
+    `);
+    await page.waitForTimeout(50);
+
+    await assertDomSnapshot(page);
+  });
+
+  it('has a pointer for regular mouse interactions', async () => {
+    await page.evaluate(`events = ${JSON.stringify(mouseEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play();
+    `);
+    await page.waitForTimeout(160);
 
     await assertDomSnapshot(page);
   });
