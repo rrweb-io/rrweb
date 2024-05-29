@@ -37,6 +37,9 @@ export interface CanvasManagerInterface {
   lock(): void;
   unlock(): void;
   snapshot(canvasElement?: HTMLCanvasElement): void;
+  addWindow(win: IWindow): void;
+  addShadowRoot(shadowRoot: ShadowRoot): void;
+  resetShadowRoots(): void;
 }
 
 export interface CanvasManagerConstructorOptions {
@@ -73,6 +76,17 @@ export class CanvasManagerNoop implements CanvasManagerInterface {
   public snapshot() {
     // noop
   }
+  public addWindow() {
+    // noop
+  }
+
+  public addShadowRoot() {
+    // noop
+  }
+
+  public resetShadowRoots() {
+    // noop
+  }
 }
 
 export class CanvasManager implements CanvasManagerInterface {
@@ -81,14 +95,41 @@ export class CanvasManager implements CanvasManagerInterface {
   private options: CanvasManagerConstructorOptions;
   private mirror: Mirror;
 
+  private shadowDoms = new Set<WeakRef<ShadowRoot>>();
+  private windowsSet = new WeakSet<IWindow>();
+  private windows: WeakRef<IWindow>[] = [];
+
   private mutationCb: canvasMutationCallback;
-  private resetObservers?: listenerHandler;
+  private restoreHandlers: listenerHandler[] = [];
   private frozen = false;
   private locked = false;
 
+  private snapshotInProgressMap: Map<number, boolean> = new Map();
+  private worker: Worker | null = null;
+
   public reset() {
     this.pendingCanvasMutations.clear();
-    this.resetObservers && this.resetObservers();
+    this.restoreHandlers.forEach((handler) => {
+      try {
+        handler();
+      } catch (e) {
+        //
+      }
+    });
+    this.restoreHandlers = [];
+    this.windowsSet = new WeakSet();
+    this.windows = [];
+    this.shadowDoms = new Set();
+    this.worker?.terminate();
+    this.worker = null;
+    this.snapshotInProgressMap = new Map();
+    if (
+      (this.options.recordCanvas &&
+        typeof this.options.sampling === 'number') ||
+      this.options.enableManualSnapshot
+    ) {
+      this.worker = this.initFPSWorker();
+    }
   }
 
   public freeze() {
@@ -126,23 +167,23 @@ export class CanvasManager implements CanvasManagerInterface {
     if (errorHandler) {
       registerErrorHandler(errorHandler);
     }
-
+    if (
+      (recordCanvas && typeof sampling === 'number') ||
+      options.enableManualSnapshot
+    ) {
+      this.worker = this.initFPSWorker();
+    }
     if (options.enableManualSnapshot) {
       return;
     }
-
     callbackWrapper(() => {
-      if (recordCanvas && sampling === 'all')
-        this.initCanvasMutationObserver(
-          win,
-          blockClass,
-          blockSelector,
-          unblockSelector,
-        );
-      if (recordCanvas && typeof sampling === 'number')
+      if (recordCanvas && sampling === 'all') {
+        this.startRAFTimestamping();
+        this.startPendingCanvasMutationFlusher();
+      }
+      if (recordCanvas && typeof sampling === 'number') {
         this.initCanvasFPSObserver(
           sampling,
-          win,
           blockClass,
           blockSelector,
           unblockSelector,
@@ -151,137 +192,68 @@ export class CanvasManager implements CanvasManagerInterface {
             dataURLOptions,
           },
         );
+      }
     })();
+    this.addWindow(win);
   }
 
-  private processMutation: canvasManagerMutationCallback = (
-    target,
-    mutation,
-  ) => {
-    const newFrame =
-      this.rafStamps.invokeId &&
-      this.rafStamps.latestId !== this.rafStamps.invokeId;
-    if (newFrame || !this.rafStamps.invokeId)
-      this.rafStamps.invokeId = this.rafStamps.latestId;
+  public addWindow(win: IWindow) {
+    const {
+      sampling = 'all',
+      blockClass,
+      blockSelector,
+      unblockSelector,
+      recordCanvas,
+      enableManualSnapshot,
+    } = this.options;
+    if (this.windowsSet.has(win)) return;
 
-    if (!this.pendingCanvasMutations.has(target)) {
-      this.pendingCanvasMutations.set(target, []);
+    if (enableManualSnapshot) {
+      this.windowsSet.add(win);
+      this.windows.push(new WeakRef(win));
+      return;
     }
 
-    this.pendingCanvasMutations.get(target)!.push(mutation);
-  };
-
-  private initCanvasFPSObserver(
-    fps: number,
-    win: IWindow,
-    blockClass: blockClass,
-    blockSelector: string | null,
-    unblockSelector: string | null,
-    maxCanvasSize: [number, number] | null | undefined,
-    options: {
-      dataURLOptions: DataURLOptions;
-    },
-  ) {
-    const canvasContextReset = initCanvasContextObserver(
-      win,
-      blockClass,
-      blockSelector,
-      unblockSelector,
-      true,
-    );
-    const rafId = this.takeSnapshot(
-      false,
-      fps,
-      win,
-      blockClass,
-      blockSelector,
-      unblockSelector,
-      maxCanvasSize,
-      options.dataURLOptions,
-    );
-
-    this.resetObservers = () => {
-      canvasContextReset();
-      cancelAnimationFrame(rafId);
-    };
+    callbackWrapper(() => {
+      if (recordCanvas && sampling === 'all') {
+        this.initCanvasMutationObserver(
+          win,
+          blockClass,
+          blockSelector,
+          unblockSelector,
+        );
+      }
+      if (recordCanvas && typeof sampling === 'number') {
+        const canvasContextReset = initCanvasContextObserver(
+          win,
+          blockClass,
+          blockSelector,
+          unblockSelector,
+          true,
+        );
+        this.restoreHandlers.push(() => {
+          canvasContextReset();
+        });
+      }
+    })();
+    this.windowsSet.add(win);
+    this.windows.push(new WeakRef(win));
   }
 
-  private initCanvasMutationObserver(
-    win: IWindow,
-    blockClass: blockClass,
-    blockSelector: string | null,
-    unblockSelector: string | null,
-  ): void {
-    this.startRAFTimestamping();
-    this.startPendingCanvasMutationFlusher();
-
-    const canvasContextReset = initCanvasContextObserver(
-      win,
-      blockClass,
-      blockSelector,
-      unblockSelector,
-      false,
-    );
-    const canvas2DReset = initCanvas2DMutationObserver(
-      this.processMutation.bind(this),
-      win,
-      blockClass,
-      blockSelector,
-      unblockSelector,
-    );
-
-    const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
-      this.processMutation.bind(this),
-      win,
-      blockClass,
-      blockSelector,
-      unblockSelector,
-      this.mirror,
-    );
-
-    this.resetObservers = () => {
-      canvasContextReset();
-      canvas2DReset();
-      canvasWebGL1and2Reset();
-    };
+  public addShadowRoot(shadowRoot: ShadowRoot) {
+    this.shadowDoms.add(new WeakRef(shadowRoot));
   }
 
-  public snapshot(canvasElement?: HTMLCanvasElement) {
-    const { options } = this;
-    const rafId = this.takeSnapshot(
-      true,
-      options.sampling === 'all' ? 2 : options.sampling || 2,
-      options.win,
-      options.blockClass,
-      options.blockSelector,
-      options.unblockSelector,
-      options.maxCanvasSize,
-      options.dataURLOptions,
-      canvasElement,
-    );
-
-    this.resetObservers = () => {
-      cancelAnimationFrame(rafId);
-    };
+  public resetShadowRoots() {
+    this.shadowDoms = new Set();
   }
 
-  private takeSnapshot(
-    isManualSnapshot: boolean,
-    fps: number,
-    win: IWindow,
-    blockClass: blockClass,
-    blockSelector: string | null,
-    unblockSelector: string | null,
-    maxCanvasSize: [number, number] | null | undefined,
-    dataURLOptions: DataURLOptions,
-    canvasElement?: HTMLCanvasElement,
-  ) {
-    const snapshotInProgressMap: Map<number, boolean> = new Map();
+  private initFPSWorker(): Worker {
     const worker = new Worker(getImageBitmapDataUrlWorkerURL());
     worker.onmessage = (e) => {
       const data = e.data as ImageBitmapDataURLWorkerResponse;
       const { id } = data;
-      snapshotInProgressMap.set(id, false);
+      this.snapshotInProgressMap.set(id, false);
 
       if (!('base64' in data)) return;
 
@@ -318,7 +290,116 @@ export class CanvasManager implements CanvasManagerInterface {
         ],
       });
     };
+    return worker;
+  }
 
+  private processMutation: canvasManagerMutationCallback = (
+    target,
+    mutation,
+  ) => {
+    const newFrame =
+      this.rafStamps.invokeId &&
+      this.rafStamps.latestId !== this.rafStamps.invokeId;
+    if (newFrame || !this.rafStamps.invokeId)
+      this.rafStamps.invokeId = this.rafStamps.latestId;
+
+    if (!this.pendingCanvasMutations.has(target)) {
+      this.pendingCanvasMutations.set(target, []);
+    }
+
+    this.pendingCanvasMutations.get(target)!.push(mutation);
+  };
+
+  private initCanvasFPSObserver(
+    fps: number,
+    blockClass: blockClass,
+    blockSelector: string | null,
+    unblockSelector: string | null,
+    maxCanvasSize: [number, number] | null | undefined,
+    options: {
+      dataURLOptions: DataURLOptions;
+    },
+  ) {
+    const rafId = this.takeSnapshot(
+      false,
+      fps,
+      blockClass,
+      blockSelector,
+      unblockSelector,
+      maxCanvasSize,
+      options.dataURLOptions,
+    );
+
+    this.restoreHandlers.push(() => {
+      cancelAnimationFrame(rafId);
+    });
+  }
+
+  private initCanvasMutationObserver(
+    win: IWindow,
+    blockClass: blockClass,
+    blockSelector: string | null,
+    unblockSelector: string | null,
+  ): void {
+    const canvasContextReset = initCanvasContextObserver(
+      win,
+      blockClass,
+      blockSelector,
+      unblockSelector,
+      false,
+    );
+    const canvas2DReset = initCanvas2DMutationObserver(
+      this.processMutation.bind(this),
+      win,
+      blockClass,
+      blockSelector,
+      unblockSelector,
+    );
+
+    const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
+      this.processMutation.bind(this),
+      win,
+      blockClass,
+      blockSelector,
+      unblockSelector,
+      this.mirror,
+    );
+
+    this.restoreHandlers.push(() => {
+      canvasContextReset();
+      canvas2DReset();
+      canvasWebGL1and2Reset();
+    });
+  }
+
+  public snapshot(canvasElement?: HTMLCanvasElement) {
+    const { options } = this;
+    const rafId = this.takeSnapshot(
+      true,
+      options.sampling === 'all' ? 2 : options.sampling || 2,
+      options.blockClass,
+      options.blockSelector,
+      options.unblockSelector,
+      options.maxCanvasSize,
+      options.dataURLOptions,
+      canvasElement,
+    );
+
+    this.restoreHandlers.push(() => {
+      cancelAnimationFrame(rafId);
+    });
+  }
+
+  private takeSnapshot(
+    isManualSnapshot: boolean,
+    fps: number,
+    blockClass: blockClass,
+    blockSelector: string | null,
+    unblockSelector: string | null,
+    maxCanvasSize: [number, number] | null | undefined,
+    dataURLOptions: DataURLOptions,
+    canvasElement?: HTMLCanvasElement,
+  ) {
     const timeBetweenSnapshots = 1000 / fps;
     let lastSnapshotTime = 0;
     let rafId: number;
@@ -331,17 +412,38 @@ export class CanvasManager implements CanvasManagerInterface {
       }
 
       const matchedCanvas: HTMLCanvasElement[] = [];
-      win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (
-          !isBlocked(canvas, blockClass, blockSelector, unblockSelector, true)
-        ) {
-          matchedCanvas.push(canvas);
+
+      const searchCanvas = (root: Document | ShadowRoot) => {
+        root.querySelectorAll('canvas').forEach((canvas) => {
+          if (
+            !isBlocked(canvas, blockClass, blockSelector, unblockSelector, true)
+          ) {
+            matchedCanvas.push(canvas);
+          }
+        });
+      };
+
+      for (const item of this.windows) {
+        const window = item.deref();
+        if (window) {
+          searchCanvas(window.document);
         }
-      });
+      }
+
+      for (const item of this.shadowDoms) {
+        const shadowRoot = item.deref();
+        if (shadowRoot) {
+          searchCanvas(shadowRoot);
+        }
+      }
       return matchedCanvas;
     };
 
     const takeCanvasSnapshots = (timestamp: DOMHighResTimeStamp) => {
+      if (!this.windows.length) {
+        // exit loop if windows list is empty
+        return;
+      }
       if (
         lastSnapshotTime &&
         timestamp - lastSnapshotTime < timeBetweenSnapshots
@@ -352,14 +454,17 @@ export class CanvasManager implements CanvasManagerInterface {
       lastSnapshotTime = timestamp;
 
       getCanvas(canvasElement).forEach((canvas: HTMLCanvasElement) => {
+        if (!this.mirror.hasNode(canvas)) {
+          return;
+        }
         const id = this.mirror.getId(canvas);
-        if (snapshotInProgressMap.get(id)) return;
+        if (this.snapshotInProgressMap.get(id)) return;
 
         // Don't do anything if canvas height/width is 0, otherwise causes
         // `createImageBitmap()` to throw
         if (!canvas.width || !canvas.height) return;
 
-        snapshotInProgressMap.set(id, true);
+        this.snapshotInProgressMap.set(id, true);
         if (
           !isManualSnapshot &&
           ['webgl', 'webgl2'].includes((canvas as ICanvas).__context)
@@ -388,7 +493,7 @@ export class CanvasManager implements CanvasManagerInterface {
 
         createImageBitmap(canvas)
           .then((bitmap) => {
-            worker.postMessage(
+            this.worker?.postMessage(
               {
                 id,
                 bitmap,

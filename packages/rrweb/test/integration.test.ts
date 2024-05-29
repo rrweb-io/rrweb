@@ -11,6 +11,7 @@ import {
   replaceLast,
   generateRecordSnippet,
   ISuite,
+  stripBase64,
 } from './utils';
 import type { recordOptions } from '../src/types';
 import {
@@ -18,6 +19,7 @@ import {
   EventType,
   RecordPlugin,
   IncrementalSource,
+  CanvasContext,
 } from '@sentry-internal/rrweb-types';
 import { visitSnapshot, NodeType } from '@sentry-internal/rrweb-snapshot';
 
@@ -1062,6 +1064,138 @@ describe('record integration tests', function (this: ISuite) {
       'window.snapshots',
     )) as eventWithTime[];
     assertSnapshot(snapshots);
+  });
+
+  describe('canvas', function (this: ISuite) {
+    jest.setTimeout(10_000);
+    it('should record canvas within iframe', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-iframe.html', {
+          recordCanvas: true,
+        }),
+      );
+
+      const frameId = await waitForIFrameLoad(page, '#iframe-canvas');
+      await frameId.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            {
+              args: [200, 100],
+              property: 'lineTo',
+            },
+          ]),
+        }),
+      );
+      assertSnapshot(stripBase64(snapshots));
+    });
+
+    it('should record canvas within iframe with sampling', async () => {
+      const maxFPS = 60;
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-iframe.html', {
+          recordCanvas: true,
+          sampling: {
+            canvas: maxFPS,
+          },
+        }),
+      );
+
+      const frameId = await waitForIFrameLoad(page, '#iframe-canvas');
+      await frameId.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+      await page.waitForTimeout(1000 / maxFPS);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            expect.objectContaining({
+              property: 'drawImage',
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it('should record canvas within shadow dom', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-shadow-dom.html', {
+          recordCanvas: true,
+        }),
+      );
+
+      await page.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            {
+              args: [100, 100, 50, 50],
+              property: 'fillRect',
+            },
+          ]),
+        }),
+      );
+      assertSnapshot(stripBase64(snapshots));
+    });
+
+    it('should record canvas within shadow dom with sampling', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      await page.goto(`${serverURL}/html`);
+      await page.setContent(
+        getHtml.call(this, 'canvas-shadow-dom.html', {
+          recordCanvas: true,
+          sampling: {
+            canvas: 60,
+          },
+        }),
+      );
+
+      await page.waitForFunction('window.canvasMutationApplied');
+      await waitForRAF(page);
+
+      await page.waitForTimeout(50);
+
+      const snapshots = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      expect(snapshots[snapshots.length - 1].data).toEqual(
+        expect.objectContaining({
+          source: IncrementalSource.CanvasMutation,
+          type: CanvasContext['2D'],
+          commands: expect.arrayContaining([
+            expect.objectContaining({
+              property: 'drawImage',
+            }),
+          ]),
+        }),
+      );
+      assertSnapshot(stripBase64(snapshots));
+    });
   });
 
   it('should record images with blob url', async () => {

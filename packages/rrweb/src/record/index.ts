@@ -27,6 +27,7 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
+  IWindow,
 } from '@sentry-internal/rrweb-types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import {
@@ -444,6 +445,9 @@ function record<T = eventWithTime>(
       },
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
+        if (iframe.contentWindow) {
+          canvasManager.addWindow(iframe.contentWindow as IWindow);
+        }
         shadowDomManager.observeAttachShadow(iframe);
       },
       onStylesheetLoad: (linkEl, childSn) => {
