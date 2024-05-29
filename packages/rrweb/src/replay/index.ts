@@ -63,6 +63,8 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  mouseInteractionData,
+  mousemoveData,
 } from '@sentry-internal/rrweb-types';
 import {
   polyfill,
@@ -311,6 +313,8 @@ export class Replayer {
         { pointerPosition, touchActive },
       ] of Object.entries(this.pointers)) {
         const id = parseInt(pointerId);
+        const pointer = this.pointers[id];
+
         if (pointerPosition) {
           this.moveAndHover(
             pointerPosition.x,
@@ -320,15 +324,15 @@ export class Replayer {
             pointerPosition.debugData,
             id,
           );
-          this.pointers[id].pointerPosition = null;
+          pointer.pointerPosition = null;
         }
 
         if (touchActive === true) {
-          this.pointers[id].pointerEl.classList.add('touch-active');
+          pointer.pointerEl.classList.add('touch-active');
         } else if (touchActive === false) {
-          this.pointers[id].pointerEl.classList.remove('touch-active');
+          pointer.pointerEl.classList.remove('touch-active');
         }
-        this.pointers[id].touchActive = null;
+        pointer.touchActive = null;
       }
 
       if (this.lastMouseDownEvent) {
@@ -424,18 +428,23 @@ export class Replayer {
     }
     this.service.state.context.events.forEach((e: eventWithTime) => {
       if (indicatesTouchDevice(e)) {
-        const d = e.data;
-        const pointerId =
-          'pointerId' in d && typeof d.pointerId === 'number'
-            ? d.pointerId
-            : -1;
-
+        const pointerId = this.getPointerId(e.data);
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
-        this.pointers[pointerId].pointerEl.classList.add('touch-device');
+
+        const pointer = this.pointers[pointerId];
+        pointer.pointerEl.classList.add('touch-device');
       }
     });
+  }
+
+  private getPointerId(
+    d: incrementalData | mousemoveData | mouseInteractionData,
+  ): number {
+    const pointerId =
+      'pointerId' in d && typeof d.pointerId === 'number' ? d.pointerId : -1;
+    return pointerId;
   }
 
   private createPointer(pointerId: number) {
@@ -585,13 +594,13 @@ export class Replayer {
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
     if (indicatesTouchDevice(event)) {
-      const d = event.data;
-      const pointerId =
-        'pointerId' in d && typeof d.pointerId === 'number' ? d.pointerId : -1;
+      const pointerId = this.getPointerId(event.data);
       if (!this.pointers[pointerId]) {
         this.createPointer(pointerId);
       }
-      this.pointers[pointerId].pointerEl.classList.add('touch-device');
+
+      const pointer = this.pointers[pointerId];
+      pointer.pointerEl.classList.add('touch-device');
     }
     void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
@@ -1132,19 +1141,19 @@ export class Replayer {
       case IncrementalSource.Drag:
       case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove: {
-        const pointerId =
-          'pointerId' in d && typeof d.pointerId === 'number'
-            ? d.pointerId
-            : -1;
+        const pointerId = this.getPointerId(d);
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
-          if (indicatesTouchDevice(e)) {
-            this.pointers[pointerId].pointerEl.classList.add('touch-device');
-          }
+        }
+
+        const pointer = this.pointers[pointerId];
+
+        if (indicatesTouchDevice(e)) {
+          this.pointers[pointerId].pointerEl.classList.add('touch-device');
         }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
-          this.pointers[pointerId].pointerPosition = {
+          pointer.pointerPosition = {
             x: lastPosition.x,
             y: lastPosition.y,
             id: lastPosition.id,
@@ -1175,15 +1184,15 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseInteraction: {
-        const pointerId =
-          'pointerId' in d && typeof d.pointerId === 'number'
-            ? d.pointerId
-            : -1;
+        const pointerId = this.getPointerId(d);
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
-          if (indicatesTouchDevice(e)) {
-            this.pointers[pointerId].pointerEl.classList.add('touch-device');
-          }
+        }
+
+        const pointer = this.pointers[pointerId];
+
+        if (indicatesTouchDevice(e)) {
+          pointer.pointerEl.classList.add('touch-device');
         }
 
         /**
@@ -1222,16 +1231,16 @@ export class Replayer {
           case MouseInteractions.MouseUp:
             if (isSync) {
               if (d.type === MouseInteractions.TouchStart) {
-                this.pointers[pointerId].touchActive = true;
+                pointer.touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
-                this.pointers[pointerId].touchActive = false;
+                pointer.touchActive = false;
               }
               if (d.type === MouseInteractions.MouseDown) {
                 this.lastMouseDownEvent = [target, event];
               } else if (d.type === MouseInteractions.MouseUp) {
                 this.lastMouseDownEvent = null;
               }
-              this.pointers[pointerId].pointerPosition = {
+              pointer.pointerPosition = {
                 x: d.x || 0,
                 y: d.y || 0,
                 id: d.id,
@@ -1240,7 +1249,7 @@ export class Replayer {
             } else {
               if (d.type === MouseInteractions.TouchStart) {
                 // don't draw a trail as user has lifted finger and is placing at a new point
-                this.pointers[pointerId].tailPositions.length = 0;
+                pointer.tailPositions.length = 0;
               }
               this.moveAndHover(d.x || 0, d.y || 0, d.id, isSync, d, pointerId);
               if (d.type === MouseInteractions.Click) {
@@ -1252,21 +1261,15 @@ export class Replayer {
                  * removal and addition of .active class (along with void line to trigger repaint)
                  * triggers the 'click' css animation in styles/style.css
                  */
-                this.pointers[pointerId].pointerEl.classList.remove('active');
-                void this.pointers[pointerId].pointerEl.offsetWidth;
-                this.pointers[pointerId].pointerEl.classList.add('active');
+                pointer.pointerEl.classList.remove('active');
+                void pointer.pointerEl.offsetWidth;
+                pointer.pointerEl.classList.add('active');
               } else if (d.type === MouseInteractions.TouchStart) {
-                void this.pointers[pointerId].pointerEl.offsetWidth; // needed for the position update of moveAndHover to apply without the .touch-active transition
-                this.pointers[pointerId].pointerEl.classList.add(
-                  'touch-active',
-                );
+                void pointer.pointerEl.offsetWidth; // needed for the position update of moveAndHover to apply without the .touch-active transition
+                pointer.pointerEl.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
-                this.pointers[pointerId].pointerEl.classList.remove(
-                  'touch-active',
-                );
-                this.pointers[pointerId].pointerEl.classList.remove(
-                  'replayer-mouse',
-                );
+                pointer.pointerEl.classList.remove('touch-active');
+                pointer.pointerEl.classList.remove('replayer-mouse');
                 delete this.pointers[pointerId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
@@ -1276,11 +1279,9 @@ export class Replayer {
             break;
           case MouseInteractions.TouchCancel:
             if (isSync) {
-              this.pointers[pointerId].touchActive = false;
+              pointer.touchActive = false;
             } else {
-              this.pointers[pointerId].pointerEl.classList.remove(
-                'touch-active',
-              );
+              pointer.pointerEl.classList.remove('touch-active');
             }
             break;
           default:
@@ -2169,8 +2170,9 @@ export class Replayer {
     const _x = x * base.absoluteScale + base.x;
     const _y = y * base.absoluteScale + base.y;
 
-    this.pointers[pointerId].pointerEl.style.left = `${_x}px`;
-    this.pointers[pointerId].pointerEl.style.top = `${_y}px`;
+    const pointer = this.pointers[pointerId];
+    pointer.pointerEl.style.left = `${_x}px`;
+    pointer.pointerEl.style.top = `${_y}px`;
     if (!isSync) {
       this.drawMouseTail({ x: _x, y: _y }, pointerId);
     }
@@ -2187,12 +2189,14 @@ export class Replayer {
         ? defaultMouseTailConfig
         : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
 
+    const pointer = this.pointers[pointerId];
+
     const draw = () => {
       if (!this.mouseTail) {
         return;
       }
       const ctx = this.mouseTail.getContext('2d');
-      if (!ctx || !this.pointers[pointerId].tailPositions.length) {
+      if (!ctx || !pointer.tailPositions.length) {
         return;
       }
       ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
@@ -2200,23 +2204,18 @@ export class Replayer {
       ctx.lineWidth = lineWidth;
       ctx.lineCap = lineCap;
       ctx.strokeStyle = strokeStyle;
-      ctx.moveTo(
-        this.pointers[pointerId].tailPositions[0].x,
-        this.pointers[pointerId].tailPositions[0].y,
-      );
-      this.pointers[pointerId].tailPositions.forEach((p) =>
-        ctx.lineTo(p.x, p.y),
-      );
+      ctx.moveTo(pointer.tailPositions[0].x, pointer.tailPositions[0].y);
+      pointer.tailPositions.forEach((p) => ctx.lineTo(p.x, p.y));
       ctx.stroke();
     };
 
-    this.pointers[pointerId].tailPositions.push(position);
+    pointer.tailPositions.push(position);
     draw();
     setTimeout(() => {
       if (pointerId in this.pointers) {
-        this.pointers[pointerId].tailPositions = this.pointers[
-          pointerId
-        ].tailPositions.filter((p) => p !== position);
+        pointer.tailPositions = pointer.tailPositions.filter(
+          (p) => p !== position,
+        );
         draw();
       }
     }, duration / this.speedService.state.context.timer.speed);
