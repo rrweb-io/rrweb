@@ -620,7 +620,7 @@ export class Replayer {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
     this.config.root.appendChild(this.wrapper);
-    // this.createPointer(-1);
+    this.createPointer(-1);
 
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
