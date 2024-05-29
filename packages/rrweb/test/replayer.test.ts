@@ -11,7 +11,8 @@ import {
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
-import touchEvents from './events/touch-with-pointer-id';
+import touchAllPointerEvents from './events/touch-all-pointer-id';
+import touchSomePointerEvents from './events/touch-some-pointer-id';
 import mouseEvents from './events/mouse';
 import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
@@ -786,7 +787,20 @@ describe('replayer', function () {
   });
 
   it('has a pointer for touch interactions with pointerIds', async () => {
-    await page.evaluate(`events = ${JSON.stringify(touchEvents)}`);
+    await page.evaluate(`events = ${JSON.stringify(touchAllPointerEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play();
+    `);
+    await page.waitForTimeout(50);
+
+    await assertDomSnapshot(page);
+  });
+
+  // This should't happen, but we want to test/capture the behavior
+  it('has a pointer for touch interactions with some pointerIds', async () => {
+    await page.evaluate(`events = ${JSON.stringify(touchSomePointerEvents)}`);
     await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
