@@ -332,6 +332,7 @@ export function needMaskingText(
         ? (node as HTMLElement)
         : node.parentElement;
     if (el === null) return false;
+
     if (allowList && elementMatchesCssClass(el, allowList, true)) return false
 
     if (typeof maskTextClass === 'string') {
@@ -463,6 +464,7 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
+    allowList: string | null
   },
 ): serializedNode | false {
   const {
@@ -480,6 +482,7 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
+    allowList
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -519,6 +522,7 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        allowList
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -622,6 +626,7 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    allowList: string | null;
   },
 ): serializedNode | false {
   const {
@@ -637,6 +642,7 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    allowList
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
@@ -700,6 +706,7 @@ function serializeElementNode(
         value,
         maskInputOptions,
         maskInputFn,
+        allowList
       });
     } else if (checked) {
       attributes.checked = checked;
@@ -1057,6 +1064,7 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
+    allowList
   });
   if (!_serializedNode) {
     // TODO: dev only

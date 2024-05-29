@@ -576,6 +576,7 @@ export default class MutationBuffer {
             type,
             value,
             maskInputFn: this.maskInputFn,
+            allowList: this.allowList
           });
         }
         if (

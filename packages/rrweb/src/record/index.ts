@@ -343,6 +343,7 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
+      allowList
     },
     mirror,
   });
