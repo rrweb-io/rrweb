@@ -19,35 +19,41 @@ const suites: Array<
   //   times: 10,
   // },
   {
-    title: 'create 1000x10 DOM nodes',
-    html: 'benchmark-dom-mutation.html',
+    title: 'create 1000x 1 DOM nodes with deeply nested children',
+    html: 'benchmark-dom-mutation-deep-nested.html',
     eval: 'window.workload()',
     times: 10,
   },
-  {
-    title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
-    html: 'benchmark-dom-mutation-add-and-remove.html',
-    eval: 'window.workload()',
-    times: 10,
-  },
-  {
-    title: 'create 1000 DOM nodes and append into its previous looped node',
-    html: 'benchmark-dom-mutation-multiple-descendant-add.html',
-    eval: 'window.workload()',
-    times: 5,
-  },
-  {
-    title: 'create 10000 DOM nodes and move it to new container',
-    html: 'benchmark-dom-mutation-add-and-move.html',
-    eval: 'window.workload()',
-    times: 5,
-  },
-  {
-    title: 'modify attributes on 10000 DOM nodes',
-    html: 'benchmark-dom-mutation-attributes.html',
-    eval: 'window.workload()',
-    times: 10,
-  },
+  // {
+  //   title: 'create 1000x10 DOM nodes',
+  //   html: 'benchmark-dom-mutation.html',
+  //   eval: 'window.workload()',
+  //   times: 10,
+  // },
+  // {
+  //   title: 'create 1000x10x2 DOM nodes and remove a bunch of them',
+  //   html: 'benchmark-dom-mutation-add-and-remove.html',
+  //   eval: 'window.workload()',
+  //   times: 10,
+  // },
+  // {
+  //   title: 'create 1000 DOM nodes and append into its previous looped node',
+  //   html: 'benchmark-dom-mutation-multiple-descendant-add.html',
+  //   eval: 'window.workload()',
+  //   times: 5,
+  // },
+  // {
+  //   title: 'create 10000 DOM nodes and move it to new container',
+  //   html: 'benchmark-dom-mutation-add-and-move.html',
+  //   eval: 'window.workload()',
+  //   times: 5,
+  // },
+  // {
+  //   title: 'modify attributes on 10000 DOM nodes',
+  //   html: 'benchmark-dom-mutation-attributes.html',
+  //   eval: 'window.workload()',
+  //   times: 10,
+  // },
 ];
 
 function avg(v: number[]): number {

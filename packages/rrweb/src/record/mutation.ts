@@ -680,7 +680,65 @@ export default class MutationBuffer {
           return; // any removedNodes won't have been in mirror either
         }
 
-        m.addedNodes.forEach((n) => this.genAdds(n, m.target));
+        const genAddsQueue: [Node, Node | undefined][] = new Array<
+          [Node, Node | undefined]
+        >();
+        m.addedNodes.forEach((n) => {
+          genAddsQueue.push([n, m.target]);
+
+          // iterate breadth first over new nodes (non recursive for performance)
+          while (genAddsQueue.length) {
+            const next = genAddsQueue.pop()!;
+
+            // Since this is an extremely hot path, do not destructure next
+            // in order to avoid invoking the iterator protocol
+            const n = next[0];
+            const target = next[1];
+
+            // this node was already recorded in other buffer, ignore it
+            if (this.processedNodeManager.inOtherBuffer(n, this)) continue;
+
+            // if n is added to set, there is no need to travel it and its' children again
+            if (this.addedSet.has(n) || this.movedSet.has(n)) continue;
+
+            if (this.mirror.hasNode(n)) {
+              if (isIgnored(n, this.mirror)) {
+                continue;
+              }
+              this.movedSet.add(n);
+              let targetId: number | null = null;
+              if (target && this.mirror.hasNode(target)) {
+                targetId = this.mirror.getId(target);
+              }
+              if (targetId && targetId !== -1) {
+                this.movedMap[moveKey(this.mirror.getId(n), targetId)] = true;
+              }
+            } else {
+              this.addedSet.add(n);
+              this.droppedSet.delete(n);
+            }
+
+            if (isBlocked(n, this.blockClass, this.blockSelector, false)) {
+              // if this node is blocked `serializeNode` will turn it into a placeholder element
+              // but we have to ignore it's children otherwise they will be added as placeholders too
+              continue;
+            }
+            n.childNodes.forEach((childN) => {
+              if(this.movedSet.has(childN) || this.addedSet.has(childN)) return;
+              
+              genAddsQueue.push([childN, undefined]);
+            });
+            if (hasShadowRoot(n)) {
+              n.shadowRoot.childNodes.forEach((childN) => {
+                if(this.movedSet.has(childN) || this.addedSet.has(childN)) return;
+
+                this.processedNodeManager.add(childN, this);
+                genAddsQueue.push([childN, n]);
+              });
+            }
+          }
+        });
+
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
@@ -733,46 +791,6 @@ export default class MutationBuffer {
       }
       default:
         break;
-    }
-  };
-
-  /**
-   * Make sure you check if `n`'s parent is blocked before calling this function
-   * */
-  private genAdds = (n: Node, target?: Node) => {
-    // this node was already recorded in other buffer, ignore it
-    if (this.processedNodeManager.inOtherBuffer(n, this)) return;
-
-    // if n is added to set, there is no need to travel it and its' children again
-    if (this.addedSet.has(n) || this.movedSet.has(n)) return;
-
-    if (this.mirror.hasNode(n)) {
-      if (isIgnored(n, this.mirror)) {
-        return;
-      }
-      this.movedSet.add(n);
-      let targetId: number | null = null;
-      if (target && this.mirror.hasNode(target)) {
-        targetId = this.mirror.getId(target);
-      }
-      if (targetId && targetId !== -1) {
-        this.movedMap[moveKey(this.mirror.getId(n), targetId)] = true;
-      }
-    } else {
-      this.addedSet.add(n);
-      this.droppedSet.delete(n);
-    }
-
-    // if this node is blocked `serializeNode` will turn it into a placeholder element
-    // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
-      if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
-          this.processedNodeManager.add(childN, this);
-          this.genAdds(childN, n);
-        });
-      }
     }
   };
 }
