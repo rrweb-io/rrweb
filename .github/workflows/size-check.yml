@@ -30,9 +30,9 @@ jobs:
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
       - name: Check bundle sizes
-        uses: getsentry/size-limit-action@runForBranch
+        uses: getsentry/size-limit-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           skip_step: build
           main_branch: sentry-v2
-        
+          run_for_branch: true
