@@ -8,7 +8,6 @@ exports[`replayer can fast forward past StyleSheetRule changes on virtual elemen
   </head>
   <body>
     <div class=\\"replayer-wrapper\\">
-      <div class=\\"replayer-mouse\\"></div>
       <canvas
         class=\\"replayer-mouse-tail\\"
         width=\\"1000\\"
@@ -88,7 +87,6 @@ exports[`replayer can fast forward past StyleSheetRule deletion on virtual eleme
   </head>
   <body>
     <div class=\\"replayer-wrapper\\">
-      <div class=\\"replayer-mouse\\"></div>
       <canvas
         class=\\"replayer-mouse-tail\\"
         width=\\"1000\\"
@@ -166,7 +164,6 @@ exports[`replayer can handle removing style elements 1`] = `
   </head>
   <body>
     <div class=\\"replayer-wrapper\\">
-      <div class=\\"replayer-mouse\\"></div>
       <canvas
         class=\\"replayer-mouse-tail\\"
         width=\\"1000\\"
@@ -214,7 +211,6 @@ exports[`replayer replays same timestamp events in correct order (with addAction
   </head>
   <body>
     <div class=\\"replayer-wrapper\\">
-      <div class=\\"replayer-mouse\\"></div>
       <canvas
         class=\\"replayer-mouse-tail\\"
         width=\\"1000\\"
@@ -265,7 +261,6 @@ exports[`replayer replays same timestamp events in correct order 1`] = `
   </head>
   <body>
     <div class=\\"replayer-wrapper\\">
-      <div class=\\"replayer-mouse\\"></div>
       <canvas
         class=\\"replayer-mouse-tail\\"
         width=\\"1000\\"
