@@ -1,4 +1,6 @@
 import snapshot, {
+  absoluteToStylesheet,
+  getHref,
   serializeNodeWithId,
   transformAttribute,
   ignoreAttribute,
@@ -8,16 +10,20 @@ import snapshot, {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  getSourcesFromSrcset,
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,
+  buildStyleNode,
 } from './rebuild';
 export * from './types';
 export * from './utils';
 
 export {
+  absoluteToStylesheet,
+  getHref,
   snapshot,
   serializeNodeWithId,
   rebuild,
@@ -32,4 +38,6 @@ export {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  getSourcesFromSrcset,
+  buildStyleNode,
 };

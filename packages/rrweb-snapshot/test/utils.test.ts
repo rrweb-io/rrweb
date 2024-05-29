@@ -1,9 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType, serializedNode } from '../src/types';
-import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
-import { serializedNodeWithId } from 'rrweb-snapshot';
+import {
+  extractFileExtension,
+  isAttributeCapturable,
+  shouldCaptureAsset,
+  isNodeMetaEqual,
+} from '../src/utils';
+import { NodeType, serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
@@ -196,6 +200,132 @@ describe('utils', () => {
       const path = 'https://example.com/scripts/app.min.js?version=1.0';
       const extension = extractFileExtension(path);
       expect(extension).toBe('js');
+    });
+  });
+
+  describe('isAttributeCapturable()', () => {
+    const validAttributeCombinations = [
+      ['img', ['src', 'srcset']],
+      ['video', ['src']],
+      ['audio', ['src']],
+      ['embed', ['src']],
+      ['source', ['src']],
+      ['track', ['src']],
+      ['input', ['src']],
+      ['object', ['src']],
+    ] as const;
+
+    const invalidAttributeCombinations = [
+      ['img', ['href']],
+      ['script', ['href']],
+      ['link', ['src']],
+      ['video', ['href']],
+      ['audio', ['href']],
+      ['div', ['src']],
+      ['source', ['href']],
+      ['track', ['href']],
+      ['input', ['href']],
+      ['iframe', ['href']],
+      ['object', ['href']],
+      ['link', ['href']], // without rel="stylesheet"
+    ] as const;
+
+    validAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(true);
+        });
+      });
+    });
+
+    invalidAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as NOT capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(false);
+        });
+      });
+    });
+
+    it(`should correctly identify <link href rel="stylesheet"> as capturable if inlineStylesheet == 'all'`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+
+      // pretend it has loaded but isn't CORS accessible
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
+      const ca = {
+        objectURLs: false,
+        origins: false,
+      };
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: false,
+        }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: 'without-fetch',
+        }),
+      ).toBe(false); // this is false for backwards compatibility
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: true,
+        }),
+      ).toBe(true);
+    });
+
+    it(`should not identify <link href rel="stylesheet"> as capturable if it hasn't loaded yet`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          objectURLs: false,
+          origins: false,
+          stylesheets: true,
+        }),
+      ).toBe(false); // will capture as mutation when it loads
+    });
+
+    it(`should correctly identify stylesheet as capturable due to origin match, but respect a hard stylesheets=false`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+
+      // pretend it has loaded but isn't CORS accessible
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
+      const ca = {
+        objectURLs: false,
+        origins: ['https://example.com'],
+      };
+      expect(
+        shouldCaptureAsset(
+          element,
+          'href',
+          'https://example.com/style.css',
+          ca, // stylesheets undefined (not actually possible from rrweb)
+        ),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: 'without-fetch', // the default from rrweb
+        }),
+      ).toBe(true); // because of origins
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: false, // explicit off, override origins
+        }),
+      ).toBe(false);
     });
   });
 });

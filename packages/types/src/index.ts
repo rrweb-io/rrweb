@@ -1,10 +1,3 @@
-import type {
-  serializedNodeWithId,
-  Mirror,
-  INode,
-  DataURLOptions,
-} from 'rrweb-snapshot';
-
 export enum EventType {
   DomContentLoaded,
   Load,
@@ -13,6 +6,7 @@ export enum EventType {
   Meta,
   Custom,
   Plugin,
+  Asset,
 }
 
 export type domContentLoadedEvent = {
@@ -64,6 +58,58 @@ export type pluginEvent<T = unknown> = {
     plugin: string;
     payload: T;
   };
+};
+
+export type captureAssetsParam = Partial<{
+  /**
+   * Captures object URLs (blobs, files, media sources).
+   * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+   */
+  objectURLs: boolean;
+  /**
+   * Allowlist of origins to capture object URLs from.
+   * [origin, origin, ...] to capture from specific origins.
+   *   e.g. ['https://example.com', 'https://www.example.com']
+   * Set to `true` to capture from all origins.
+   * Set to `false` or `[]` to disable capturing from any origin (apart from object URLs or when inlineStylesheet=='all')
+   */
+  origins: string[] | true | false;
+  /**
+   * capture images irrespective of origin (populated from inlineImages setting)
+   */
+  images: boolean;
+  /**
+   * capture stylesheets irrespective of origin (populated from inlineStylesheets setting)
+   */
+  stylesheets: boolean | 'without-fetch';
+  /*
+   * in milliseconds, default 2000
+   * stylesheets are captured as assets in order to take their processing off the main thread
+   * this number may need to be reduced to ensure that stylesheet assets are emitted
+   * in time
+   */
+  processStylesheetsWithin: number;
+  /*
+   * if set, process stylesheets with less than this number of css rules immediately/synchronously,
+   * and include directly in the snapshot without a separate asset event
+   */
+  stylesheetsRuleThreshold: number;
+  /**
+   * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
+   */
+  _fromMutation: true;
+}>;
+
+export type assetEvent = {
+  type: EventType.Asset;
+  data: assetParam;
+};
+
+export type asset = {
+  element: HTMLElement;
+  attr: string;
+  value: string;
+  styleId?: number;
 };
 
 export enum IncrementalSource {
@@ -170,7 +216,8 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
-  | pluginEvent;
+  | pluginEvent
+  | assetEvent;
 
 /**
  * @deprecated intended for internal use
@@ -254,7 +301,7 @@ export type RecordPlugin<TOptions = unknown> = {
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
   getMirror?: (mirrors: {
-    nodeMirror: Mirror;
+    nodeMirror: IMirror<Node>;
     crossOriginIframeMirror: ICrossOriginIframeMirror;
     crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
   }) => void;
@@ -389,16 +436,23 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedCssTextArg = {
+  rr_type: 'CssText';
+  cssTexts: string[]; // normally a single string, except for <style> with multiple child nodes
+};
+
+export type SerializedBlobArg = {
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+};
+
 export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
     }
-  | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  | SerializedBlobArg
   | {
       rr_type: string;
       src: string; // url of image
@@ -615,6 +669,28 @@ export type customElementParam = {
 
 export type customElementCallback = (c: customElementParam) => void;
 
+export type assetParam =
+  | {
+      url: string;
+      payload: SerializedCanvasArg | SerializedCssTextArg;
+    }
+  | {
+      url: string;
+      failed: {
+        status?: number;
+        message: string;
+      };
+    };
+
+export type assetCallback = (d: assetParam) => void;
+
+/**
+ *  @deprecated
+ */
+interface INode extends Node {
+  __sn: serializedNodeWithId;
+}
+
 export type DeprecatedMirror = {
   map: {
     [key: number]: INode;
@@ -704,3 +780,162 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+export type RebuildAssetManagerResetStatus = { status: 'reset' };
+export type RebuildAssetManagerUnknownStatus = { status: 'unknown' };
+export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
+export type RebuildAssetManagerLoadedStatus = {
+  status: 'loaded';
+  url: string;
+  cssTexts?: string[];
+};
+export type RebuildAssetManagerFailedStatus = { status: 'failed' };
+export type RebuildAssetManagerFinalStatus =
+  | RebuildAssetManagerLoadedStatus
+  | RebuildAssetManagerFailedStatus
+  | RebuildAssetManagerResetStatus;
+export type RebuildAssetManagerStatus =
+  | RebuildAssetManagerUnknownStatus
+  | RebuildAssetManagerLoadingStatus
+  | RebuildAssetManagerFinalStatus;
+
+export declare abstract class RebuildAssetManagerInterface {
+  constructor(
+    playerConfig: { liveMode: boolean },
+    assetManagerConfig?: captureAssetsParam | undefined,
+  );
+  abstract add(event: assetEvent): Promise<void>;
+  abstract get(url: string): RebuildAssetManagerStatus;
+  abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
+  abstract reset(config?: captureAssetsParam | undefined): void;
+  abstract manageAttribute(
+    n: Element,
+    id: number,
+    attribute: string,
+    originalValue: string | number,
+    serializedNode?: serializedElementNodeWithId,
+  ): void;
+}
+
+export enum NodeType {
+  Document,
+  DocumentType,
+  Element,
+  Text,
+  CDATA,
+  Comment,
+}
+
+export type documentNode = {
+  type: NodeType.Document;
+  childNodes: serializedNodeWithId[];
+  compatMode?: string;
+};
+
+export type documentTypeNode = {
+  type: NodeType.DocumentType;
+  name: string;
+  publicId: string;
+  systemId: string;
+};
+
+type cssTextKeyAttr = {
+  _cssText?: string;
+  _cssTextSplits?: string;
+};
+
+export type attributes = cssTextKeyAttr & {
+  [key: string]:
+    | string
+    | number // properties e.g. rr_scrollLeft or rr_mediaCurrentTime
+    | true // e.g. checked  on <input type="radio">
+    | null; // an indication that an attribute was removed (during a mutation)
+};
+
+export type legacyAttributes = {
+  /**
+   * @deprecated old bug in rrweb was causing these to always be set
+   * @see https://github.com/rrweb-io/rrweb/pull/651
+   */
+  selected: false;
+};
+
+export type elementNode = {
+  type: NodeType.Element;
+  tagName: string;
+  attributes: attributes;
+  childNodes: serializedNodeWithId[];
+  isSVG?: true;
+  needBlock?: boolean;
+  /**
+   * This is a custom element or not.
+   */
+  isCustom?: true;
+};
+
+export type textNode = {
+  type: NodeType.Text;
+  textContent: string;
+  /**
+   * @deprecated styles are now always snapshotted against parent <style> element
+   * style mutations can still happen via an added textNode, but they don't need this attribute for correct replay
+   */
+  isStyle?: true;
+};
+
+export type cdataNode = {
+  type: NodeType.CDATA;
+  textContent: '';
+};
+
+export type commentNode = {
+  type: NodeType.Comment;
+  textContent: string;
+};
+
+export type serializedNode = (
+  | documentNode
+  | documentTypeNode
+  | elementNode
+  | textNode
+  | cdataNode
+  | commentNode
+) & {
+  rootId?: number;
+  isShadowHost?: boolean;
+  isShadow?: boolean;
+};
+
+export type serializedNodeWithId = serializedNode & { id: number };
+
+export type serializedElementNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Element>
+>;
+
+export interface IMirror<TNode> {
+  getId(n: TNode | undefined | null): number;
+
+  getNode(id: number): TNode | null;
+
+  getIds(): number[];
+
+  getMeta(n: TNode): serializedNodeWithId | null;
+
+  removeNodeFromMap(n: TNode): void;
+
+  has(id: number): boolean;
+
+  hasNode(node: TNode): boolean;
+
+  add(n: TNode, meta: serializedNodeWithId): void;
+
+  replace(id: number, n: TNode): void;
+
+  reset(): void;
+}
+
+export type DataURLOptions = Partial<{
+  type: string;
+  quality: number;
+}>;

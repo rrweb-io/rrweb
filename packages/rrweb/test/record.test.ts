@@ -439,9 +439,33 @@ describe('record', function (this: ISuite) {
       record({
         emit: (window as unknown as IWindow).emit,
       });
+    });
+    await ctx.page.waitForTimeout(30); // give time for the style asset to be captured before mutations
+    await ctx.page.evaluate(() => {
+      let styleEl = document.querySelector('head > style');
+      if (styleEl) {
+        styleEl.append(document.createTextNode('span { color: orange; }'));
+        styleEl.append(document.createTextNode('h1 { color: pink; }'));
+      }
+    });
+    await waitForRAF(ctx.page);
+    assertSnapshot(ctx.events);
+  });
 
+  it("doesn't duplicate assets and mutations", async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+
+      const styleEl = document.createElement(`style`);
+      document.head.appendChild(styleEl);
+
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+
+      // this will show up as an Asset due to the processing delay, but showing up as
+      // a mutation is also correct
       styleEl.append(document.createTextNode('span { color: orange; }'));
-      styleEl.append(document.createTextNode('h1 { color: pink; }'));
     });
     await waitForRAF(ctx.page);
     assertSnapshot(ctx.events);
@@ -842,6 +866,31 @@ describe('record', function (this: ISuite) {
       link1.setAttribute('rel', 'stylesheet');
       link1.setAttribute('href', corsStylesheetURL);
       document.head.appendChild(link1);
+    }, corsStylesheetURL);
+
+    await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
+    await waitForRAF(ctx.page); // wait for rrweb to emit events
+    await ctx.page.waitForTimeout(50); // a further allowance for asset event to appear as it depends on the mutation showing up
+
+    assertSnapshot(ctx.events);
+  });
+
+  it('captures CORS stylesheets as assets', async () => {
+    const corsStylesheetURL =
+      'https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css';
+
+    ctx.page.evaluate((corsStylesheetURL) => {
+      const link1 = document.createElement('link');
+      link1.setAttribute('rel', 'stylesheet');
+      link1.setAttribute('href', corsStylesheetURL);
+      document.head.appendChild(link1);
+
+      const { record } = (window as unknown as IWindow).rrweb;
+
+      record({
+        inlineStylesheet: 'all',
+        emit: (window as unknown as IWindow).emit,
+      });
     }, corsStylesheetURL);
 
     await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded

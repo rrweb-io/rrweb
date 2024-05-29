@@ -1,6 +1,7 @@
-import type { elementNode, serializedNodeWithId } from 'rrweb-snapshot';
 import { stringifyRule } from 'rrweb-snapshot';
 import type {
+  elementNode,
+  serializedNodeWithId,
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
   attributeMutation,
@@ -26,7 +27,11 @@ export class StylesheetManager {
     linkEl: HTMLLinkElement,
     childSn: serializedNodeWithId,
   ) {
-    if ('_cssText' in (childSn as elementNode).attributes)
+    // a mutation rather than an asset event so that we record the timestamp that the stylesheet was loaded
+    if (
+      '_cssText' in (childSn as elementNode).attributes ||
+      'rr_captured_href' in (childSn as elementNode).attributes
+    ) {
       this.mutationCb({
         adds: [],
         removes: [],
@@ -39,6 +44,7 @@ export class StylesheetManager {
           },
         ],
       });
+    }
 
     this.trackLinkElement(linkEl);
   }

@@ -4,6 +4,7 @@
     "module": "ESNext",
     "target": "ES6",
     "moduleResolution": "Node",
+    "esModuleInterop": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "removeComments": true,
@@ -14,5 +15,9 @@
   },
   "exclude": ["test"],
   "include": ["src"],
-  "references": []
+  "references": [
+    {
+      "path": "../types"
+    }
+  ]
 }

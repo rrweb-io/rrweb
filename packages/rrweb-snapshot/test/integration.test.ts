@@ -4,10 +4,12 @@ import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
 import * as rollup from 'rollup';
-import * as typescript from 'rollup-plugin-typescript2';
-import * as assert from 'assert';
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from 'rollup-plugin-typescript2';
+import assert from 'assert';
 import { waitForRAF, getServerURL } from './utils';
 
+const _resolve = resolve as unknown as () => rollup.Plugin;
 const _typescript = typescript as unknown as () => rollup.Plugin;
 
 const htmlFolder = path.join(__dirname, 'html');
@@ -74,7 +76,7 @@ describe('integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
+      plugins: [_resolve(), _typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -199,6 +201,8 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('correctly saves images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
+    // console for debug
+    page.on('console', (msg) => console.log(msg.text()));
 
     await page.goto('http://localhost:3030/html/picture.html', {
       waitUntil: 'load',
@@ -313,7 +317,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('data:image/webp;base64,'));
   });
 
-  it('correctly saves blob:images in iframes offline', async () => {
+  it('[deprecated] correctly saves blob:images in iframes offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
     await page.goto('http://localhost:3030/html/picture-blob-in-frame.html', {
@@ -328,6 +332,9 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false,
         onIframeLoad: function(iframe, sn) {
           window.snapshot = sn;
+        },
+        captureAssets: {
+          origins: false,
         }
     })`);
     await waitForRAF(page);
@@ -392,7 +399,7 @@ describe('iframe integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
+      plugins: [_resolve(), _typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -440,7 +447,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
 
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
+      plugins: [_resolve(), _typescript()],
     });
     const {
       output: [{ code: _code }],
@@ -471,5 +478,58 @@ describe('shadow DOM integration tests', function (this: ISuite) {
       2,
     );
     expect(snapshotResult).toMatchSnapshot();
+  });
+});
+
+describe('stylesheet asset tests', function (this: ISuite) {
+  jest.setTimeout(30_000);
+  let server: ISuite['server'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
+
+  beforeAll(async () => {
+    server = await startServer();
+    browser = await puppeteer.launch({
+      // headless: false,
+    });
+
+    const bundle = await rollup.rollup({
+      input: path.resolve(__dirname, '../src/index.ts'),
+      plugins: [_resolve(), _typescript()],
+    });
+    const {
+      output: [{ code: _code }],
+    } = await bundle.generate({
+      name: 'rrweb',
+      format: 'iife',
+    });
+    code = _code;
+  });
+
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
+  });
+
+  it('omits css contents for asset managed stylesheet', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    // console for debug
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`http://localhost:3030/html/with-style-sheet.html`, {
+      waitUntil: 'load',
+    });
+    // presence of onAssetDetected means we should get
+    // rr_captured_href (with contents promised later - i.e. using rrweb/record)
+    const snapshotResult = JSON.stringify(
+      await page.evaluate(`${code};
+rrweb.snapshot(document, {
+inlineStylesheet: true,
+onAssetDetected: () => { /* throw away */ },
+});
+    `),
+      null,
+      2,
+    );
+    expect(snapshotResult).toMatchSnapshot(); // overkill? we just want to check for rr_captured_href and absence of _cssText
   });
 });

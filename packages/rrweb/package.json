@@ -5,7 +5,8 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run bundle",
-    "retest": "jest --testPathIgnorePatterns test/benchmark",
+    "retest": "PUPPETEER_HEADLESS=true yarn retest:headful",
+    "retest:headful": "jest --testPathIgnorePatterns test/benchmark",
     "build-and-test": "yarn bundle:browser && yarn retest",
     "test:headless": "PUPPETEER_HEADLESS=true yarn build-and-test",
     "test:headful": "PUPPETEER_HEADLESS=false yarn build-and-test",
@@ -69,7 +70,7 @@
     "jest-environment-jsdom": "^29.6.0",
     "jest-image-snapshot": "^6.2.0",
     "jest-snapshot": "^29.6.2",
-    "puppeteer": "^20.9.0",
+    "puppeteer": "^21.7.0",
     "rollup": "^2.68.0",
     "rollup-plugin-esbuild": "^4.9.1",
     "rollup-plugin-postcss": "^3.1.1",

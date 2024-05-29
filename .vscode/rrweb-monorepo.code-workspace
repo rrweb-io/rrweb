@@ -36,6 +36,7 @@
       " rrweb monorepo",
       "rrweb-player (package)",
       "@rrweb/types"
-    ]
+    ],
+    "typescript.tsdk": " rrweb monorepo/node_modules/typescript/lib"
   }
 }

@@ -27,6 +27,8 @@ import {
   scrollCallback,
   canvasMutationParam,
   adoptedStyleSheetParam,
+  assetParam,
+  asset,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -39,11 +41,13 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import AssetManager from './observers/asset-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
+let assetManager!: AssetManager;
 let recording = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
@@ -94,11 +98,29 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
   } = options;
+
+  if (inlineImages) {
+    captureAssets.images = inlineImages;
+  }
+  if (captureAssets.stylesheets === undefined) {
+    if (inlineStylesheet === 'all') {
+      captureAssets.stylesheets = true;
+    } else if (inlineStylesheet) {
+      // the prior default setting
+      captureAssets.stylesheets = 'without-fetch';
+    } else {
+      captureAssets.stylesheets = false;
+    }
+  }
 
   registerErrorHandler(errorHandler);
 
@@ -277,6 +299,12 @@ function record<T = eventWithTime>(
       },
     });
 
+  const wrappedAssetEmit = (p: assetParam) =>
+    wrappedEmit({
+      type: EventType.Asset,
+      data: p,
+    });
+
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
@@ -325,6 +353,12 @@ function record<T = eventWithTime>(
     dataURLOptions,
   });
 
+  assetManager = new AssetManager({
+    mutationCb: wrappedAssetEmit,
+    win: window,
+    captureAssets,
+  });
+
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
@@ -336,10 +370,10 @@ function record<T = eventWithTime>(
       inlineStylesheet,
       maskInputOptions,
       dataURLOptions,
+      captureAssets,
       maskTextFn,
       maskInputFn,
       recordCanvas,
-      inlineImages,
       sampling,
       slimDOMOptions,
       iframeManager,
@@ -347,6 +381,7 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
+      assetManager,
     },
     mirror,
   });
@@ -379,13 +414,13 @@ function record<T = eventWithTime>(
       blockSelector,
       maskTextClass,
       maskTextSelector,
-      inlineStylesheet,
+      inlineStylesheet: Boolean(inlineStylesheet), // 'all' value can be discarded as has already been transferred into `captureAssets`
       maskAllInputs: maskInputOptions,
       maskTextFn,
       slimDOM: slimDOMOptions,
       dataURLOptions,
+      captureAssets,
       recordCanvas,
-      inlineImages,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
@@ -403,6 +438,9 @@ function record<T = eventWithTime>(
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
+      },
+      onAssetDetected: (asset: asset) => {
+        assetManager.capture(asset);
       },
       keepIframeSrcFn,
     });
@@ -532,7 +570,6 @@ function record<T = eventWithTime>(
           sampling,
           recordDOM,
           recordCanvas,
-          inlineImages,
           userTriggeredOnInput,
           collectFonts,
           doc,
@@ -541,6 +578,7 @@ function record<T = eventWithTime>(
           keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
+          captureAssets,
           dataURLOptions,
           mirror,
           iframeManager,
@@ -548,6 +586,7 @@ function record<T = eventWithTime>(
           shadowDomManager,
           processedNodeManager,
           canvasManager,
+          assetManager,
           ignoreCSSAttributes,
           plugins:
             plugins

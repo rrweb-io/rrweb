@@ -1,13 +1,10 @@
 import {
   rebuild,
   buildNodeWithSN,
-  NodeType,
   BuildCache,
   createCache,
   Mirror,
   createMirror,
-  attributes,
-  serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
 import {
@@ -34,6 +31,8 @@ import { Timer } from './timer';
 import { createPlayerService, createSpeedService } from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
+  NodeType,
+  attributes,
   EventType,
   IncrementalSource,
   fullSnapshotEvent,
@@ -62,6 +61,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  serializedElementNodeWithId,
 } from '@rrweb/types';
 import {
   polyfill,
@@ -81,6 +81,7 @@ import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
 import { MediaManager } from './media';
+import AssetManager from './asset-manager';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
@@ -135,6 +136,9 @@ export class Replayer {
   private cache: BuildCache = createCache();
 
   private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
+
+  private assetManager: AssetManager;
+
   private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
   private mirror: Mirror = createMirror();
@@ -195,6 +199,10 @@ export class Replayer {
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    this.assetManager = new AssetManager({
+      liveMode: this.config.liveMode,
+      cache: this.cache,
+    });
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -214,6 +222,7 @@ export class Replayer {
       if (this.usingVirtualDom) {
         const replayerHandler: ReplayerHandler = {
           mirror: this.mirror,
+          assetManager: this.assetManager,
           applyCanvas: (
             canvasEvent: canvasEventWithTime,
             canvasMutationData: canvasMutationData,
@@ -638,6 +647,7 @@ export class Replayer {
         case EventType.DomContentLoaded:
         case EventType.Load:
         case EventType.Custom:
+        case EventType.Asset:
           continue;
         case EventType.FullSnapshot:
         case EventType.Meta:
@@ -669,11 +679,12 @@ export class Replayer {
         };
         break;
       case EventType.Meta:
-        castFn = () =>
+        castFn = () => {
           this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
           });
+        };
         break;
       case EventType.FullSnapshot:
         castFn = () => {
@@ -735,6 +746,11 @@ export class Replayer {
               this.emitter.emit(ReplayerEvents.SkipStart, payload);
             }
           }
+        };
+        break;
+      case EventType.Asset:
+        castFn = () => {
+          void this.assetManager.add(event);
         };
         break;
       default:
@@ -816,6 +832,8 @@ export class Replayer {
       }
     };
 
+    void this.preloadAllAssets(event.timestamp, this.config.liveMode);
+
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
      * But if the order of data events has some issues, it might be possible.
@@ -832,6 +850,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
+      assetManager: this.assetManager,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
@@ -868,6 +887,9 @@ export class Replayer {
       injectStylesRules.push(
         'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',
       );
+    }
+    if (!injectStylesRules.length) {
+      return;
     }
     if (this.usingVirtualDom) {
       const styleEl = this.virtualDom.createElement('style');
@@ -938,6 +960,7 @@ export class Replayer {
       skipChild: false,
       afterAppend,
       cache: this.cache,
+      assetManager: this.assetManager,
     });
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
@@ -1023,15 +1046,30 @@ export class Replayer {
   }
 
   /**
+   * Process all asset events and preload them
+   */
+  private async preloadAllAssets(
+    timestamp: number,
+    liveMode: boolean,
+  ): Promise<void[]> {
+    const promises: Promise<void>[] = [];
+    for (const event of this.service.state.context.events) {
+      if (event.timestamp <= timestamp) continue;
+      if (event.type === EventType.Meta && event.timestamp !== timestamp) break;
+      if (event.type === EventType.Asset) {
+        promises.push(this.assetManager.add(event));
+      }
+    }
+    if (!liveMode) {
+      this.assetManager.allAdded = true;
+    }
+    return Promise.all(promises);
+  }
+
+  /**
    * pause when there are some canvas drawImage args need to be loaded
    */
   private async preloadAllImages(): Promise<void[]> {
-    let beforeLoadState = this.service.state;
-    const stateHandler = () => {
-      beforeLoadState = this.service.state;
-    };
-    this.emitter.on(ReplayerEvents.Start, stateHandler);
-    this.emitter.on(ReplayerEvents.Pause, stateHandler);
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (
@@ -1546,6 +1584,7 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
         cache: this.cache,
+        assetManager: this.assetManager,
         /**
          * caveat: `afterAppend` only gets called on child nodes of target
          * we have to call it again below when this target was added to the DOM
@@ -1735,8 +1774,9 @@ export class Replayer {
         return this.warnNodeNotFound(d, mutation.id);
       }
       for (const attributeName in mutation.attributes) {
+        const value = mutation.attributes[attributeName];
+        const targetEl = target as Element | RRElement;
         if (typeof attributeName === 'string') {
-          const value = mutation.attributes[attributeName];
           if (value === null) {
             (target as Element | RRElement).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
@@ -1760,6 +1800,7 @@ export class Replayer {
                     skipChild: true,
                     hackCss: true,
                     cache: this.cache,
+                    assetManager: this.assetManager,
                   });
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;
@@ -1788,11 +1829,15 @@ export class Replayer {
                 if (tn) {
                   textarea.appendChild(tn as TNode);
                 }
-              } else {
-                (target as Element | RRElement).setAttribute(
-                  attributeName,
+              } else if (attributeName.startsWith('rr_captured_') && value) {
+                void this.assetManager.manageAttribute(
+                  targetEl,
+                  mutation.id,
+                  attributeName.substring('rr_captured_'.length),
                   value,
                 );
+              } else {
+                targetEl.setAttribute(attributeName, value);
               }
             } catch (error) {
               this.warn(
@@ -1815,6 +1860,13 @@ export class Replayer {
               }
             }
           }
+        } else if (
+          typeof value === 'number' &&
+          attributeName === 'rr_css_text'
+        ) {
+          this.warn(
+            `rr_css_text is only intended for snapshot and shouldn't be present in a mutation`,
+          );
         }
       }
     });

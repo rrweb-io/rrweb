@@ -1,4 +1,4 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType } from '@rrweb/types';
 import {
   EventType,
   IncrementalSource,
@@ -44,13 +44,14 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort: number = 3031) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
       '.js': 'text/javascript',
       '.css': 'text/css',
       '.webm': 'video/webm',
+      '.pdf': 'application/pdf',
     };
     const s = http.createServer((req, res) => {
       const parsedUrl = url.parse(req.url!);
@@ -131,6 +132,9 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
         ) {
           delete (s.data as Optional<mouseInteractionData, 'x'>).x;
           delete (s.data as Optional<mouseInteractionData, 'y'>).y;
+        }
+        if (s.type === EventType.Asset) {
+          s.data.url = s.data.url.replace(/\/[a-f0-9\-]+$/, '/...');
         }
         if (
           s.type === EventType.IncrementalSnapshot &&
@@ -232,28 +236,35 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
       }),
     null,
     2,
-  ).replace(
-    // servers might get run on a random port,
-    // so we need to normalize the port number
-    /http:\/\/localhost:\d+/g,
-    'http://localhost:3030',
-  );
+  )
+    .replace(
+      // servers might get run on a random port,
+      // so we need to normalize the port number
+      /http:\/\/localhost:\d+/g,
+      'http://localhost:3030',
+    )
+    .replace(
+      // stripBlobURLsFromAttributes would have to recursively
+      // examine fullsnapshots to do this 'properly'
+      /href": "blob:null\/[^"]+"/g,
+      'href": "blob:null/..."',
+    );
 }
 
 function stripBlobURLsFromAttributes(node: {
   attributes: {
-    src?: string;
+    [key: string]: any;
   };
 }) {
-  if (
-    'src' in node.attributes &&
-    node.attributes.src &&
-    typeof node.attributes.src === 'string' &&
-    node.attributes.src.startsWith('blob:')
-  ) {
-    node.attributes.src = node.attributes.src
-      .replace(/[\w-]+$/, '...')
-      .replace(/:[0-9]+\//, ':xxxx/');
+  for (const attr in node.attributes) {
+    if (
+      typeof node.attributes[attr] === 'string' &&
+      node.attributes[attr].startsWith('blob:')
+    ) {
+      node.attributes[attr] = node.attributes[attr]
+        .replace(/[\w-]+$/, '...')
+        .replace(/:[0-9]+\//, ':xxxx/');
+    }
   }
 }
 
@@ -553,6 +564,114 @@ export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
   },
 ];
 
+export const sampleStyleSheetAssetRemoveEvents: eventWithTime[] = [
+  {
+    type: EventType.DomContentLoaded,
+    data: {},
+    timestamp: now,
+  },
+  {
+    type: EventType.Load,
+    data: {},
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.Meta,
+    data: {
+      href: 'http://localhost',
+      width: 1000,
+      height: 800,
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.FullSnapshot,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'html',
+            attributes: {},
+            childNodes: [
+              {
+                type: 2,
+                tagName: 'head',
+                attributes: {},
+                childNodes: [
+                  {
+                    type: 2,
+                    tagName: 'style',
+                    attributes: {
+                      'data-jss': '',
+                      'data-meta': 'OverlayDrawer',
+                      rr_css_text: 1,
+                    },
+                    childNodes: [
+                      {
+                        type: 3,
+                        textContent: '\n',
+                        isStyle: true,
+                        id: 5,
+                      },
+                    ],
+                    id: 4,
+                  },
+                ],
+                id: 3,
+              },
+              {
+                type: 2,
+                tagName: 'body',
+                attributes: {},
+                childNodes: [],
+                id: 6,
+              },
+            ],
+            id: 2,
+          },
+        ],
+        id: 1,
+      },
+      initialOffset: {
+        top: 0,
+        left: 0,
+      },
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [
+        {
+          parentId: 3,
+          id: 4,
+        },
+      ],
+      adds: [],
+    },
+    timestamp: now + 2000,
+  },
+  {
+    type: EventType.Asset,
+    data: {
+      url: 'rr_css_text:1',
+      payload: {
+        rr_type: 'CssText',
+        cssTexts: [
+          '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
+        ],
+      },
+    },
+    timestamp: now + 2001, // not unexpected for the asset to be emitted after a mutation which removes it
+  },
+];
+
 export const polyfillWebGLGlobals = () => {
   // polyfill as jsdom does not have support for these classes
   // consider replacing with https://www.npmjs.com/package/canvas
@@ -701,7 +820,8 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
     recordCanvas: ${options.recordCanvas},
     recordAfter: '${options.recordAfter || 'load'}',
     inlineImages: ${options.inlineImages},
-    plugins: ${options.plugins}
+    plugins: ${options.plugins},
+    captureAssets: ${JSON.stringify(options.captureAssets)},
   });
   `;
 }

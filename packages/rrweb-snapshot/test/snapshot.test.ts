@@ -7,7 +7,7 @@ import {
   serializeNodeWithId,
   _isBlockedElement,
 } from '../src/snapshot';
-import { serializedNodeWithId, elementNode } from '../src/types';
+import { serializedNodeWithId, elementNode, asset } from '@rrweb/types';
 import { Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
@@ -161,22 +161,27 @@ describe('style elements', () => {
   it('should serialize all rules of stylesheet when the sheet has a single child node', () => {
     const styleEl = render(`<style>body { color: red; }</style>`);
     styleEl.sheet?.insertRule('section { color: blue; }');
-    expect(serializeNode(styleEl.childNodes[0])).toMatchObject({
-      isStyle: true,
+    expect(serializeNode(styleEl)).toMatchObject({
       rootId: undefined,
-      textContent: 'section {color: blue;}body {color: red;}',
-      type: 3,
+      attributes: {
+        _cssText: 'section {color: blue;}body {color: red;}',
+      },
+      type: 2,
     });
   });
 
-  it('should serialize individual text nodes on stylesheets with multiple child nodes', () => {
+  it('should serialize all rules on stylesheets with mix of insertion type', () => {
     const styleEl = render(`<style>body { color: red; }</style>`);
+    styleEl.sheet?.insertRule('section.lost { color: unseeable; }'); // browser throws this away after append
     styleEl.append(document.createTextNode('section { color: blue; }'));
-    expect(serializeNode(styleEl.childNodes[1])).toMatchObject({
-      isStyle: true,
+    styleEl.sheet?.insertRule('section.working { color: pink; }');
+    expect(serializeNode(styleEl)).toMatchObject({
       rootId: undefined,
-      textContent: 'section { color: blue; }',
-      type: 3,
+      attributes: {
+        _cssText:
+          'section.working {color: pink;}body {color: red;}section {color: blue;}',
+      },
+      type: 2,
     });
   });
 });
@@ -205,7 +210,7 @@ describe('scrollTop/scrollLeft', () => {
   };
 
   it('should serialize scroll positions', () => {
-    const el = render(`<div stylel='overflow: auto; width: 1px; height: 1px;'>
+    const el = render(`<div style='overflow: auto; width: 1px; height: 1px;'>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </div>`);
     el.scrollTop = 10;
@@ -255,5 +260,184 @@ describe('form', () => {
       },
     });
     expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
+  });
+});
+
+describe('onAssetDetected callback', () => {
+  const serializeNode = (
+    node: Node,
+    onAssetDetected: (result: asset) => void,
+    inlineImages?: boolean,
+    stylesheetsRuleThreshold?: number,
+  ): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+      inlineImages: Boolean(inlineImages),
+      captureAssets: {
+        objectURLs: true,
+        origins: ['https://example.com'],
+        stylesheetsRuleThreshold,
+      },
+      onAssetDetected,
+    });
+  };
+
+  const render = (html: string): HTMLDivElement => {
+    document.write(html);
+    return document.querySelector('div')!;
+  };
+
+  it('should detect `src` attribute in image', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
+  });
+
+  it('should detect `set` attribute in image with ObjectURL', () => {
+    const el = render(`<div>
+      <img src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
+    });
+  });
+  it('should detect `srcset` attribute in image', () => {
+    const el = render(`<div>
+      <img srcset="https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x" />
+    </div>`);
+
+    // this used to trigger two calls, but now AssetManager is responsible for parsing the args
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'srcset',
+      value:
+        'https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x',
+    });
+  });
+
+  it('should detect `src` attribute in two images', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+      <img src="https://example.com/image2.png" />
+    </div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(2);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelectorAll('img')[0],
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelectorAll('img')[1],
+      attr: 'src',
+      value: 'https://example.com/image2.png',
+    });
+  });
+
+  it('should detect link stylesheet as asset', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://example.com/css/style.css" />
+</div>`);
+
+    // pretend it has loaded but isn't CORS accessible
+    let linkEl = el.querySelector('link');
+    Object.defineProperty(linkEl, 'sheet', {
+      value: true,
+    });
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('link'),
+      attr: 'href',
+      value: 'https://example.com/css/style.css',
+    });
+  });
+
+  it('should not detect different origin stylesheet as asset', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://rrweb.com/css/style.css" />
+</div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(0);
+  });
+
+  it('should not confuse inlineImages=true with capturing all stylesheets', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://rrweb.com/css/style.css" />
+</div>`);
+
+    const callback = jest.fn();
+    const inlineImages = true;
+    serializeNode(el, callback, inlineImages);
+    expect(callback).toBeCalledTimes(0);
+  });
+
+  it('should detect style element as asset', () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+</div>`);
+
+    const callback = jest.fn();
+    serializeNode(el, callback);
+    expect(callback).toBeCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith({
+      element: el.querySelector('style'),
+      attr: 'css_text',
+      styleId: 1,
+      value: 'http://localhost/',
+    });
+  });
+
+  it('should detect style depending on if stylesheetsRuleThreshold is met', () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+<style>
+      body { background: pink; }
+      div { background: pink; }
+      span { background: pink; }
+</style>
+</div>`);
+
+    const callback = jest.fn();
+    const stylesheetsRuleThreshold = 2;
+    const inlineImages = undefined;
+    serializeNode(el, callback, inlineImages, stylesheetsRuleThreshold);
+    expect(callback).toBeCalledTimes(1);
   });
 });

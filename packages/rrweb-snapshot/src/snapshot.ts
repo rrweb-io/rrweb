@@ -1,19 +1,23 @@
 import {
-  serializedNode,
-  serializedNodeWithId,
-  NodeType,
-  attributes,
   MaskInputOptions,
   SlimDOMOptions,
-  DataURLOptions,
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
-  elementNode,
-  serializedElementNodeWithId,
   type mediaAttributes,
 } from './types';
+import {
+  serializedNode,
+  serializedNodeWithId,
+  serializedElementNodeWithId,
+  NodeType,
+  attributes,
+  elementNode,
+  asset,
+  DataURLOptions,
+  captureAssetsParam,
+} from '@rrweb/types';
 import {
   Mirror,
   is2DCanvasBlank,
@@ -21,10 +25,13 @@ import {
   isShadowRoot,
   maskInputValue,
   isNativeShadowDom,
-  stringifyStylesheet,
+  stringifyCssRules,
   getInputType,
   toLowerCase,
+  lowerIfExists,
   extractFileExtension,
+  findCssTextSplits,
+  shouldCaptureAsset,
 } from './utils';
 
 let _id = 1;
@@ -34,6 +41,11 @@ export const IGNORED_NODE = -2;
 
 export function genId(): number {
   return _id++;
+}
+
+let _style_id = 1;
+export function genStyleId(): number {
+  return _style_id++;
 }
 
 function getValidTagName(element: HTMLElement): Lowercase<string> {
@@ -122,7 +134,11 @@ export function absoluteToStylesheet(
 const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/; // Don't use \s, to avoid matching non-breaking space
 // eslint-disable-next-line no-control-regex
 const SRCSET_COMMAS_OR_SPACES = /^[, \t\n\r\u000c]+/;
-function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+function parseSrcsetString(
+  doc: Document,
+  attributeValue: string,
+  urlCallback: (doc: Document, url: string) => string,
+) {
   /*
     run absoluteToDoc over every url in the srcset
 
@@ -159,13 +175,13 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     let url = collectCharacters(SRCSET_NOT_SPACES);
     if (url.slice(-1) === ',') {
       // aside: according to spec more than one comma at the end is a parse error, but we ignore that
-      url = absoluteToDoc(doc, url.substring(0, url.length - 1));
+      url = urlCallback(doc, url.substring(0, url.length - 1));
       // the trailing comma splits the srcset, so the interpretion is that
       // another url will follow, and the descriptor is empty
       output.push(url);
     } else {
       let descriptorsStr = '';
-      url = absoluteToDoc(doc, url);
+      url = urlCallback(doc, url);
       let inParens = false;
       // eslint-disable-next-line no-constant-condition
       while (true) {
@@ -196,6 +212,21 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   return output.join(', ');
 }
 
+function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+  return parseSrcsetString(doc, attributeValue, (doc, url) =>
+    absoluteToDoc(doc, url),
+  );
+}
+
+export function getSourcesFromSrcset(attributeValue: string): string[] {
+  const urls = new Set<string>();
+  parseSrcsetString(document, attributeValue, (_, url) => {
+    urls.add(url);
+    return url;
+  });
+  return Array.from(urls);
+}
+
 const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
 
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
@@ -210,7 +241,7 @@ function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
-function getHref(doc: Document, customHref?: string) {
+export function getHref(doc: Document, customHref?: string) {
   let a = cachedDocument.get(doc);
   if (!a) {
     a = doc.createElement('a');
@@ -403,11 +434,6 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
-function isStylesheetLoaded(link: HTMLLinkElement) {
-  if (!link.getAttribute('href')) return true; // nothing to load
-  return link.sheet !== null;
-}
-
 function onceStylesheetLoaded(
   link: HTMLLinkElement,
   listener: () => unknown,
@@ -450,13 +476,25 @@ function serializeNode(
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
-    inlineImages: boolean;
+    /**
+     * @deprecated please use `captureAssets` instead
+     */
+    inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
+    blankTextNodes?: boolean;
+    /**
+     * Called when an asset is encountered while serializing
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -471,9 +509,12 @@ function serializeNode(
     maskInputFn,
     dataURLOptions = {},
     inlineImages,
+    captureAssets = {},
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
+    blankTextNodes = false,
+    onAssetDetected,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -509,10 +550,12 @@ function serializeNode(
         maskInputFn,
         dataURLOptions,
         inlineImages,
+        captureAssets,
         recordCanvas,
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        onAssetDetected,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -520,6 +563,7 @@ function serializeNode(
         needsMask,
         maskTextFn,
         rootId,
+        blankTextNodes,
       });
     case n.CDATA_SECTION_NODE:
       return {
@@ -551,38 +595,27 @@ function serializeTextNode(
     needsMask: boolean | undefined;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
+    blankTextNodes?: boolean;
   },
 ): serializedNode {
-  const { needsMask, maskTextFn, rootId } = options;
+  const { needsMask, maskTextFn, rootId, blankTextNodes } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
-  let textContent = n.textContent;
+  let textContent: string | null = '';
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
-  if (isStyle && textContent) {
-    try {
-      // try to read style sheet
-      if (n.nextSibling || n.previousSibling) {
-        // This is not the only child of the stylesheet.
-        // We can't read all of the sheet's .cssRules and expect them
-        // to _only_ include the current rule(s) added by the text node.
-        // So we'll be conservative and keep textContent as-is.
-      } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStylesheet(
-          (n.parentNode as HTMLStyleElement).sheet!,
-        );
-      }
-    } catch (err) {
-      console.warn(
-        `Cannot get CSS styles from text's parentNode. Error: ${err as string}`,
-        n,
-      );
-    }
-    textContent = absoluteToStylesheet(textContent, getHref(options.doc));
-  }
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
+  } else if (!blankTextNodes) {
+    textContent = n.textContent;
+    if (isStyle && textContent) {
+      // mutation only: we don't need to use stringifyCssRules
+      // as a <style> text node mutation obliterates any previous
+      // programmatic rule manipulation (.insertRule etc.)
+      // so the current textContent represents the most up to date state
+      textContent = absoluteToStylesheet(textContent, getHref(options.doc));
+    }
   }
   if (!isStyle && !isScript && textContent && needsMask) {
     textContent = maskTextFn
@@ -593,7 +626,6 @@ function serializeTextNode(
   return {
     type: NodeType.Text,
     textContent: textContent || '',
-    isStyle,
     rootId,
   };
 }
@@ -608,7 +640,11 @@ function serializeElementNode(
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
-    inlineImages: boolean;
+    /**
+     * @deprecated please use `captureAssets` instead
+     */
+    inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -616,6 +652,13 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    /**
+     * Called when an asset is encountered while serializing
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -627,53 +670,103 @@ function serializeElementNode(
     maskInputFn,
     dataURLOptions = {},
     inlineImages,
+    captureAssets = {},
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    onAssetDetected = false,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
   const len = n.attributes.length;
+
+  // legacy, the stringifyCssRules badly blocks the main thread as web page loads when taking an initial snapshot
+  // prefer to capture as an asset instead
+  if (tagName === 'link' && inlineStylesheet) {
+    const l = n as HTMLLinkElement;
+    if (l.href && lowerIfExists(l.rel) === 'stylesheet' && l.sheet) {
+      let sheetRules;
+      try {
+        sheetRules = l.sheet.cssRules;
+      } catch (e) {
+        // not accessible. inlineStylesheet config doesn't attempt anything further
+      }
+      if (
+        sheetRules &&
+        (!onAssetDetected ||
+          captureAssets._fromMutation ||
+          (captureAssets.stylesheetsRuleThreshold !== undefined &&
+            sheetRules.length < captureAssets.stylesheetsRuleThreshold))
+      ) {
+        attributes._cssText = absoluteToStylesheet(
+          stringifyCssRules(sheetRules),
+          l.href,
+        );
+      }
+    }
+  }
+
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
-    if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      attributes[attr.name] = transformAttribute(
+    if (attributes._cssText && ['href', 'rel'].includes(attr.name)) {
+      // ignore in snapshot, and no need to try to asset capture the href (already done)
+    } else if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+      const value = transformAttribute(
         doc,
         tagName,
         toLowerCase(attr.name),
         attr.value,
       );
+      let { name } = attr;
+      // onAssetDetected present: save media and stylesheets asynchronously without blocking this snapshot
+      if (
+        value &&
+        typeof value === 'string' &&
+        onAssetDetected &&
+        shouldCaptureAsset(n, attr.name, value, captureAssets)
+      ) {
+        onAssetDetected({
+          element: n,
+          attr: attr.name,
+          value,
+        });
+        name = `rr_captured_${name}`;
+      }
+      attributes[name] = value;
     }
   }
-  // remote css
-  if (tagName === 'link' && inlineStylesheet) {
-    const stylesheet = Array.from(doc.styleSheets).find((s) => {
-      return s.href === (n as HTMLLinkElement).href;
-    });
-    let cssText: string | null = null;
-    if (stylesheet) {
-      cssText = stringifyStylesheet(stylesheet);
-    }
-    if (cssText) {
-      delete attributes.rel;
-      delete attributes.href;
-      attributes._cssText = absoluteToStylesheet(cssText, stylesheet!.href!);
-    }
-  }
-  // dynamic stylesheet
-  if (
-    tagName === 'style' &&
-    (n as HTMLStyleElement).sheet &&
-    // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
-    !(n.innerText || n.textContent || '').trim().length
-  ) {
-    const cssText = stringifyStylesheet(
-      (n as HTMLStyleElement).sheet as CSSStyleSheet,
-    );
-    if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref(doc));
+  if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
+    const styleEl = n as HTMLStyleElement;
+    const sheetBaseHref = getHref(doc);
+    const styleRules = styleEl.sheet!.cssRules;
+    if (
+      !onAssetDetected ||
+      captureAssets._fromMutation ||
+      (captureAssets.stylesheetsRuleThreshold !== undefined &&
+        styleRules.length < captureAssets.stylesheetsRuleThreshold)
+    ) {
+      const cssText = stringifyCssRules(styleRules);
+      if (cssText) {
+        attributes._cssText = absoluteToStylesheet(cssText, sheetBaseHref);
+        if (styleEl.childNodes.length > 1) {
+          const splits = findCssTextSplits(
+            attributes._cssText,
+            n as HTMLStyleElement,
+          );
+          attributes._cssTextSplits = splits.join(' ');
+        }
+      }
+    } else {
+      const styleId = genStyleId();
+      onAssetDetected({
+        element: n,
+        attr: 'css_text',
+        value: sheetBaseHref,
+        styleId,
+      });
+      attributes.rr_css_text = styleId;
     }
   }
   // form fields
@@ -740,8 +833,10 @@ function serializeElementNode(
       }
     }
   }
-  // save image offline
-  if (tagName === 'img' && inlineImages) {
+
+  if (tagName === 'img' && inlineImages && !onAssetDetected) {
+    // this is a previous method and is now supported for the purposes
+    // of taking a static snapshot only (in the absence of an rrweb recording)
     if (!canvasService) {
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
@@ -818,7 +913,11 @@ function serializeElementNode(
     };
   }
   // iframe
-  if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
+  if (
+    tagName === 'iframe' &&
+    attributes.src &&
+    !keepIframeSrcFn(attributes.src as string)
+  ) {
     if (!(n as HTMLIFrameElement).contentDocument) {
       // we can't record it directly as we can't see into it
       // preserve the src attribute so a decision can be taken at replay time
@@ -844,16 +943,6 @@ function serializeElementNode(
     rootId,
     isCustom: isCustomElement,
   };
-}
-
-function lowerIfExists(
-  maybeAttr: string | number | boolean | undefined | null,
-): string {
-  if (maybeAttr === undefined || maybeAttr === null) {
-    return '';
-  } else {
-    return (maybeAttr as string).toLowerCase();
-  }
 }
 
 function slimDOMExcluded(
@@ -967,7 +1056,11 @@ export function serializeNodeWithId(
     slimDOMOptions: SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    /**
+     * @deprecated when called from rrweb/record in favour of `captureAssets.images`
+     */
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
@@ -981,6 +1074,14 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
+    blankTextNodes?: boolean;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     */
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -998,6 +1099,7 @@ export function serializeNodeWithId(
     slimDOMOptions,
     dataURLOptions = {},
     inlineImages = false,
+    captureAssets = {},
     recordCanvas = false,
     onSerialize,
     onIframeLoad,
@@ -1006,9 +1108,15 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
+    blankTextNodes = false,
+    onAssetDetected,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
+
+  if (inlineImages) {
+    captureAssets.images = true;
+  }
 
   if (
     !needsMask &&
@@ -1036,9 +1144,12 @@ export function serializeNodeWithId(
     maskInputFn,
     dataURLOptions,
     inlineImages,
+    captureAssets,
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
+    blankTextNodes,
+    onAssetDetected,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1054,7 +1165,6 @@ export function serializeNodeWithId(
     slimDOMExcluded(_serializedNode, slimDOMOptions) ||
     (!preserveWhiteSpace &&
       _serializedNode.type === NodeType.Text &&
-      !_serializedNode.isStyle &&
       !_serializedNode.textContent.replace(/^\s+|\s+$/gm, '').length)
   ) {
     id = IGNORED_NODE;
@@ -1111,6 +1221,7 @@ export function serializeNodeWithId(
       slimDOMOptions,
       dataURLOptions,
       inlineImages,
+      captureAssets,
       recordCanvas,
       preserveWhiteSpace,
       onSerialize,
@@ -1119,6 +1230,8 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
+      blankTextNodes: false,
+      onAssetDetected,
     };
 
     if (
@@ -1127,7 +1240,21 @@ export function serializeNodeWithId(
       (serializedNode as elementNode).attributes.value !== undefined
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
+    } else if (
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'iframe' &&
+      (serializedNode as elementNode).attributes.rr_captured_src !== undefined
+    ) {
+      // even though we might be able to recurse into it (e.g. browser renders a document with an <embed>)
+      // we will instead capture it using asset management
     } else {
+      if (
+        serializedNode.type === NodeType.Element &&
+        (serializedNode.attributes.rr_css_text ||
+          serializedNode.attributes._cssText)
+      ) {
+        bypassOptions.blankTextNodes = true;
+      }
       for (const childN of Array.from(n.childNodes)) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
@@ -1158,7 +1285,8 @@ export function serializeNodeWithId(
 
   if (
     serializedNode.type === NodeType.Element &&
-    serializedNode.tagName === 'iframe'
+    serializedNode.tagName === 'iframe' &&
+    (serializedNode as elementNode).attributes.rr_captured_src === undefined // already captured as e.g. a PDF asset
   ) {
     onceIframeLoaded(
       n as HTMLIFrameElement,
@@ -1181,6 +1309,10 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
+            captureAssets: {
+              ...captureAssets,
+              _fromMutation: true, // assets captured in the iframe can be inlined (if possible) as iframe will be emitted as a mutation in rrweb/**/iframe-manager.ts
+            },
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1188,6 +1320,7 @@ export function serializeNodeWithId(
             iframeLoadTimeout,
             onStylesheetLoad,
             stylesheetLoadTimeout,
+            onAssetDetected,
             keepIframeSrcFn,
           });
 
@@ -1213,10 +1346,12 @@ export function serializeNodeWithId(
         typeof serializedNode.attributes.href === 'string' &&
         extractFileExtension(serializedNode.attributes.href) === 'css'))
   ) {
+    // this isn't executed for already loaded stylesheet assets as we've replaced `href` with `rr_captured_href`
     onceStylesheetLoaded(
       n as HTMLLinkElement,
       () => {
         if (onStylesheetLoad) {
+          // reserialize the node to generate either _cssText or rr_captured_href now that the .sheet is available
           const serializedLinkNode = serializeNodeWithId(n, {
             doc,
             mirror,
@@ -1233,6 +1368,10 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
+            captureAssets: {
+              ...captureAssets,
+              _fromMutation: true, // it is emitted as a mutation in rrweb/**/stylesheet-manager.ts
+            },
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1240,6 +1379,7 @@ export function serializeNodeWithId(
             iframeLoadTimeout,
             onStylesheetLoad,
             stylesheetLoadTimeout,
+            onAssetDetected,
             keepIframeSrcFn,
           });
 
@@ -1272,7 +1412,11 @@ function snapshot(
     maskInputFn?: MaskTextFn;
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
+    /**
+     * @deprecated when called from rrweb in favour of `captureAssets.images`
+     */
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
@@ -1287,6 +1431,15 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    /**
+     * Called when an asset is detected.
+     * Example of assets:
+     *  - `src` attribute in `img` tags.
+     *  - `srcset` attribute in `img` tags.
+     *  - `href` attribute on a `link rel=stylesheet` tag.
+     *  - css contents of a `style` element.
+     */
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1297,6 +1450,7 @@ function snapshot(
     maskTextSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
+    captureAssets = {},
     recordCanvas = false,
     maskAllInputs = false,
     maskTextFn,
@@ -1309,6 +1463,7 @@ function snapshot(
     iframeLoadTimeout,
     onStylesheetLoad,
     stylesheetLoadTimeout,
+    onAssetDetected,
     keepIframeSrcFn = () => false,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
@@ -1369,6 +1524,7 @@ function snapshot(
     slimDOMOptions,
     dataURLOptions,
     inlineImages,
+    captureAssets,
     recordCanvas,
     preserveWhiteSpace,
     onSerialize,
@@ -1378,6 +1534,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    onAssetDetected,
   });
 }
 
