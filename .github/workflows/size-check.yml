@@ -29,6 +29,7 @@ jobs:
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+
       - name: Check bundle sizes
         uses: getsentry/size-limit-action@master
         with:

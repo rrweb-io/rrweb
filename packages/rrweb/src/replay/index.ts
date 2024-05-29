@@ -1149,7 +1149,7 @@ export class Replayer {
         const pointer = this.pointers[pointerId];
 
         if (indicatesTouchDevice(e)) {
-          this.pointers[pointerId].pointerEl.classList.add('touch-device');
+          pointer.pointerEl.classList.add('touch-device');
         }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
