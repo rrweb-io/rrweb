@@ -241,18 +241,17 @@ export function maskInputValue({
   return text;
 }
 
-function inputNeedsMasking(
+export function inputNeedsMasking(
   element: HTMLElement,
   maskInputOptions: MaskInputOptions,
   allowList: string | null,
   tagName: string,
   type: string | null,
 ) : boolean {
-  console.log({ allowList, tagName, type })
-
-  if (allowList !== null && element.closest(allowList)) return false
-
   const actualType = type && toLowerCase(type);
+
+  if (allowList !== null && element.closest(allowList) && actualType !== 'password') return false
+
   return (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
     (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
