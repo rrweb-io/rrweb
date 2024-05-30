@@ -465,6 +465,7 @@ function initInputObserver({
         type,
         value: text,
         maskInputFn,
+        allowList: this.allowList
       });
     }
     cbWithDedup(

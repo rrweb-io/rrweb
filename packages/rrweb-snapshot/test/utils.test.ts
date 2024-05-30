@@ -2,7 +2,11 @@
  * @jest-environment jsdom
  */
 import { NodeType, serializedNode } from '../src/types';
-import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
+import {
+  extractFileExtension,
+  inputNeedsMasking,
+  isNodeMetaEqual
+} from '../src/utils';
 import { serializedNodeWithId } from 'rrweb-snapshot';
 
 describe('utils', () => {
@@ -198,4 +202,51 @@ describe('utils', () => {
       expect(extension).toBe('js');
     });
   });
+
+  describe('inputNeedsMasking', () => {
+    const textarea = window.document.createElement('textarea')
+    const input = window.document.createElement('input')
+
+
+    it('returns the value set for the tag in maskInputOptions', () => {
+      expect(inputNeedsMasking(textarea, { textarea: true }, null, 'textarea', null)).toEqual(true)
+      expect(inputNeedsMasking(textarea, { textarea: false }, null, 'textarea', null)).toEqual(false)
+    })
+
+    it('returns false if the tagname is not specified in maskInputOptions', () => {
+      expect(inputNeedsMasking(textarea, { }, null, 'textarea', null)).toEqual(false)
+    })
+
+    it('uses the type of the input if available', () => {
+      expect(inputNeedsMasking(input, { text: true }, null, 'input', 'text')).toEqual(true)
+      expect(inputNeedsMasking(input, { text: false }, null, 'input', 'text')).toEqual(false)
+    })
+
+    it('returns false if the type is not specified in maskInputOptions', () => {
+      expect(inputNeedsMasking(input, { }, null, 'input', 'text')).toEqual(false)
+    })
+
+    describe('when an allowList is specified', () => {
+      it('returns false even if maskInputOptions says otherwise', () => {
+        const allowListContainer = window.document.createElement('fieldset')
+        allowListContainer.appendChild(textarea)
+
+        expect(inputNeedsMasking(textarea, { textarea: true }, 'fieldset', 'textarea', null)).toEqual(false)
+      })
+
+      it('does not override values for password fields', () => {
+        const allowListContainer = window.document.createElement('fieldset')
+        allowListContainer.appendChild(input)
+
+        expect(inputNeedsMasking(input, { password: true }, 'fieldset', 'input', 'password')).toEqual(true)
+      })
+
+      it('uses the default behaviour if the element is not contained in an element matching the allowList', () => {
+        const allowListContainer = window.document.createElement('fieldset')
+        allowListContainer.appendChild(textarea)
+
+        expect(inputNeedsMasking(textarea, { textarea: true }, 'fieldset.allowList', 'textarea', null)).toEqual(true)
+      })
+    })
+  })
 });

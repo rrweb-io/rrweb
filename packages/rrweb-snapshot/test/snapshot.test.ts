@@ -6,6 +6,7 @@ import {
   absoluteToStylesheet,
   serializeNodeWithId,
   _isBlockedElement,
+  needMaskingText,
 } from '../src/snapshot';
 import { serializedNodeWithId, elementNode } from '../src/types';
 import { Mirror } from '../src/utils';
@@ -111,8 +112,8 @@ describe('absolute url to stylesheet', () => {
 });
 
 describe('isBlockedElement()', () => {
-  const subject = (html: string, opt: any = {}) =>
-    _isBlockedElement(render(html), 'rr-block', opt.blockSelector);
+  const subject = (html: string, opt: Partial<{blockSelector: string, allowList: string | null}> = {}) =>
+    _isBlockedElement(render(html), 'rr-block', opt.blockSelector ?? null, opt.allowList ?? null);
 
   const render = (html: string): HTMLElement =>
     JSDOM.fragment(html).querySelector('div')!;
@@ -134,6 +135,12 @@ describe('isBlockedElement()', () => {
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
   });
+
+  it('does not block blocked selector inside the allow list', () => {
+    expect(
+      subject('<div class="allow"></div><div data-rr-block /></div>', { blockSelector: '[data-rr-block]', allowList: '.allow' }),
+    ).toEqual(false);
+  });
 });
 
 describe('style elements', () => {
@@ -150,6 +157,7 @@ describe('style elements', () => {
       maskTextFn: undefined,
       maskInputFn: undefined,
       slimDOMOptions: {},
+      allowList: null,
     });
   };
 
@@ -196,6 +204,7 @@ describe('scrollTop/scrollLeft', () => {
       maskInputFn: undefined,
       slimDOMOptions: {},
       newlyAddedElement: false,
+      allowList: null,
     });
   };
 
@@ -234,6 +243,7 @@ describe('form', () => {
       maskInputFn: undefined,
       slimDOMOptions: {},
       newlyAddedElement: false,
+      allowList: null,
     });
   };
 
@@ -256,4 +266,189 @@ describe('form', () => {
     });
     expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
   });
+});
+
+describe('needMaskingText', () => {
+  const documentHtml = `
+  <div class="main">
+    <div class="masked">
+      Some masked content
+      <p>Some more masked content</p>
+    </div>
+    <div class="unmasked">
+      Some unmasked content
+      <p>Some more unmasked content</p>
+    </div>  
+  </div>
+  `;
+
+  const maskTextClass = 'rrblock';
+  const maskTextSelector: string | null = null;
+  const allowList: string | null = null;
+
+  const render = (html: string, selector: string): HTMLTextAreaElement => {
+    document.write(html);
+    return document.querySelector(selector)!;
+  };
+
+  function testNeedMaskingText(
+    title: string,
+    elementSelector: string,
+    maskTextClass: string | RegExp,
+    maskTextSelector: string | null,
+    allowList: string | null,
+    checkAncestors: boolean,
+    expected: boolean,
+  ) {
+    it(title, () => {
+      const element = render(documentHtml, elementSelector);
+
+      expect(
+        needMaskingText(
+          element,
+          maskTextClass,
+          maskTextSelector,
+          allowList,
+          checkAncestors,
+        ),
+      ).toEqual(expected);
+    });
+  }
+
+  describe('when using maskTextClass', () => {
+    testNeedMaskingText(
+      'returns true if the element has a class matching the regexp',
+      'div.masked',
+      /mask/,
+      null,
+      null,
+      false,
+      true
+    )
+
+    testNeedMaskingText(
+      'returns true if the element has the CSS class',
+      'div.masked',
+      'masked',
+      null,
+      null,
+      false,
+      true
+    )
+
+    testNeedMaskingText(
+      'returns true if the element is an child of a matching element and checkAncestors is true',
+      'div.masked p',
+      /masked/,
+      null,
+      null,
+      true,
+      true
+    )
+
+    testNeedMaskingText(
+      'returns true if the element is an child of a matching element and checkAncestors is true',
+      'div.masked p',
+      'masked',
+      null,
+      null,
+      true,
+      true
+    )
+
+    testNeedMaskingText(
+      'returns false if the element does not have a class matching the regexp',
+      'div.masked',
+      /whatever/,
+      null,
+      null,
+      false,
+      false
+    )
+
+    testNeedMaskingText(
+      'returns false if the element does not have the CSS class',
+      'div.masked',
+      'whatever',
+      null,
+      null,
+      false,
+      false
+    )
+
+    testNeedMaskingText(
+      'returns false if the element is an child of a matching element and checkAncestors is false',
+      'div.masked p',
+      '.masked',
+      null,
+      null,
+      false,
+      false
+    )
+
+    testNeedMaskingText(
+      'returns false if the element is an child of a matching element and checkAncestors is false',
+      'div.masked p',
+      /masked/,
+      null,
+      null,
+      false,
+      false
+    )
+  })
+
+  describe('when using maskTextSelector', () => {
+    testNeedMaskingText(
+      'returns true if the element matches the selector',
+      'div.masked',
+      'rr-block',
+      '.masked',
+      null,
+      false,
+      true
+    )
+
+    testNeedMaskingText(
+      'returns true if the element is an child of a matching element and checkAncestors is true',
+      'div.masked p',
+      'rr-block',
+      '.masked',
+      null,
+      true,
+      true
+    )
+
+    testNeedMaskingText(
+      'returns false if the element does not match the selector',
+      'div.unmasked',
+      'rr-block',
+      '.masked',
+      null,
+      false,
+      false
+    )
+
+
+    testNeedMaskingText(
+      'returns false if the element is an child of a matching element and checkAncestors is false',
+      'div.masked p',
+      'rr-block',
+      '.masked',
+      null,
+      false,
+      false
+    )
+  })
+
+  describe('when allowList is specified', () => {
+    testNeedMaskingText(
+      'returns false even if the element matches matchTextClass',
+      'div.masked',
+      /masked/,
+      null,
+      '.main',
+      false,
+      false
+    )
+  })
 });

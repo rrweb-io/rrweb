@@ -274,6 +274,7 @@ export function _isBlockedElement(
   element: HTMLElement,
   blockClass: string | RegExp,
   blockSelector: string | null,
+  allowList: string | null
 ): boolean {
   try {
     if (typeof blockClass === 'string') {
@@ -288,6 +289,8 @@ export function _isBlockedElement(
         }
       }
     }
+    if (allowList && element.closest(allowList)) return false
+
     if (blockSelector) {
       return element.matches(blockSelector);
     }
@@ -323,6 +326,7 @@ export function needMaskingText(
   node: Node,
   maskTextClass: string | RegExp,
   maskTextSelector: string | null,
+  allowList: string | null,
   checkAncestors: boolean,
 ): boolean {
   try {
@@ -331,6 +335,9 @@ export function needMaskingText(
         ? (node as HTMLElement)
         : node.parentElement;
     if (el === null) return false;
+
+    if (allowList && elementMatchesCssClass(el, allowList, true)) return false
+
     if (typeof maskTextClass === 'string') {
       if (checkAncestors) {
         if (el.closest(`.${maskTextClass}`)) return true;
@@ -340,17 +347,20 @@ export function needMaskingText(
     } else {
       if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
     }
-    if (maskTextSelector) {
-      if (checkAncestors) {
-        if (el.closest(maskTextSelector)) return true;
-      } else {
-        if (el.matches(maskTextSelector)) return true;
-      }
-    }
+    if (maskTextSelector && elementMatchesCssClass(el, maskTextSelector, checkAncestors)) return true
   } catch (e) {
     //
   }
   return false;
+}
+
+function elementMatchesCssClass(el: HTMLElement, selector: string, checkAncestors: boolean) {
+  if (checkAncestors) {
+    if (el.closest(selector)) return true;
+  } else {
+    if (el.matches(selector)) return true;
+  }
+  return false
 }
 
 // https://stackoverflow.com/a/36155560
@@ -457,6 +467,8 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
+    allowList: string | null,
+    blockExtraStyle: string | null
   },
 ): serializedNode | false {
   const {
@@ -474,6 +486,8 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
+    allowList,
+    blockExtraStyle
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -513,6 +527,8 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        allowList,
+        blockExtraStyle
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -616,6 +632,8 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    allowList: string | null;
+    blockExtraStyle: string | null;
   },
 ): serializedNode | false {
   const {
@@ -631,8 +649,10 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    allowList,
+    blockExtraStyle
   } = options;
-  const needBlock = _isBlockedElement(n, blockClass, blockSelector);
+  const needBlock = _isBlockedElement(n, blockClass, blockSelector, allowList);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
   const len = n.attributes.length;
@@ -694,6 +714,7 @@ function serializeElementNode(
         value,
         maskInputOptions,
         maskInputFn,
+        allowList
       });
     } else if (checked) {
       attributes.checked = checked;
@@ -813,6 +834,7 @@ function serializeElementNode(
     const { width, height } = n.getBoundingClientRect();
     attributes = {
       class: attributes.class,
+      style: [attributes.style, blockExtraStyle].filter(e => typeof e === 'string').join(' '),
       rr_width: `${width}px`,
       rr_height: `${height}px`,
     };
@@ -981,6 +1003,8 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
+    allowList: string | null;
+    blockExtraStyle: string | null;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1006,11 +1030,22 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
+    allowList,
+    blockExtraStyle
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
 
-  if (
+  if (allowList !== null) {
+    // With an exclusion list, we can have an unmasked element inside a masked element.
+    needsMask = needMaskingText(
+      n as Element,
+      maskTextClass,
+      maskTextSelector,
+      allowList,
+      true,
+    );
+  } else if (
     !needsMask &&
     n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
   ) {
@@ -1020,6 +1055,7 @@ export function serializeNodeWithId(
       n as Element,
       maskTextClass,
       maskTextSelector,
+      allowList,
       checkAncestors,
     );
   }
@@ -1039,6 +1075,8 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
+    allowList,
+    blockExtraStyle
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1119,6 +1157,8 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
+      allowList,
+      blockExtraStyle
     };
 
     if (
@@ -1189,6 +1229,8 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            allowList,
+            blockExtraStyle
           });
 
           if (serializedIframeNode) {
@@ -1241,6 +1283,8 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            allowList,
+            blockExtraStyle
           });
 
           if (serializedLinkNode) {
@@ -1287,6 +1331,8 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    allowList?: string | null;
+    blockExtraStyle: string | null;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1310,6 +1356,8 @@ function snapshot(
     onStylesheetLoad,
     stylesheetLoadTimeout,
     keepIframeSrcFn = () => false,
+    allowList = null,
+    blockExtraStyle = null
   } = options || {};
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
@@ -1378,6 +1426,8 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    allowList,
+    blockExtraStyle
   });
 }
 

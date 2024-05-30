@@ -73,6 +73,8 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  allowList?: string | null;
+  blockExtraStyle?: string | null;
 };
 
 export type observerParam = {
@@ -125,6 +127,8 @@ export type observerParam = {
     callback: (...arg: Array<unknown>) => void;
     options: unknown;
   }>;
+  allowList: string | null;
+  blockExtraStyle: string | null;
 };
 
 export type MutationBufferParam = Pick<
@@ -150,6 +154,8 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'allowList'
+  | 'blockExtraStyle'
 >;
 
 export type ReplayPlugin = {
