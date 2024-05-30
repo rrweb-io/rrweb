@@ -112,8 +112,8 @@ describe('absolute url to stylesheet', () => {
 });
 
 describe('isBlockedElement()', () => {
-  const subject = (html: string, opt: any = {}) =>
-    _isBlockedElement(render(html), 'rr-block', opt.blockSelector);
+  const subject = (html: string, opt: Partial<{blockSelector: string, allowList: string | null}> = {}) =>
+    _isBlockedElement(render(html), 'rr-block', opt.blockSelector ?? null, opt.allowList ?? null);
 
   const render = (html: string): HTMLElement =>
     JSDOM.fragment(html).querySelector('div')!;
@@ -134,6 +134,12 @@ describe('isBlockedElement()', () => {
     expect(
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
+  });
+
+  it('does not block blocked selector inside the allow list', () => {
+    expect(
+      subject('<div class="allow"></div><div data-rr-block /></div>', { blockSelector: '[data-rr-block]', allowList: '.allow' }),
+    ).toEqual(false);
   });
 });
 

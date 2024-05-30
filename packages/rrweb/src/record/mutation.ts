@@ -191,6 +191,7 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private allowList: observerParam['allowList'];
+  private blockExtraStyle: observerParam['blockExtraStyle']
   private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
@@ -217,7 +218,8 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
-        'allowList'
+        'allowList',
+        'blockExtraStyle'
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
@@ -338,7 +340,8 @@ export default class MutationBuffer {
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
-        allowList: this.allowList
+        allowList: this.allowList,
+        blockExtraStyle: this.blockExtraStyle,
       });
       if (sn) {
         adds.push({

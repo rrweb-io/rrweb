@@ -98,7 +98,8 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
-    allowList = null
+    allowList = null,
+    blockExtraStyle = null
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -343,7 +344,8 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
-      allowList
+      allowList,
+      blockExtraStyle
     },
     mirror,
   });
@@ -402,7 +404,8 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
-      allowList
+      allowList,
+      blockExtraStyle
     });
 
     if (!node) {
@@ -563,6 +566,7 @@ function record<T = eventWithTime>(
                   }),
               })) || [],
           allowList,
+          blockExtraStyle
         },
         hooks,
       );

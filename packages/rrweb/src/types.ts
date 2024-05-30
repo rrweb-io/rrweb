@@ -74,6 +74,7 @@ export type recordOptions<T> = {
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
   allowList?: string | null;
+  blockExtraStyle?: string | null;
 };
 
 export type observerParam = {
@@ -127,6 +128,7 @@ export type observerParam = {
     options: unknown;
   }>;
   allowList: string | null;
+  blockExtraStyle: string | null;
 };
 
 export type MutationBufferParam = Pick<
@@ -153,6 +155,7 @@ export type MutationBufferParam = Pick<
   | 'canvasManager'
   | 'processedNodeManager'
   | 'allowList'
+  | 'blockExtraStyle'
 >;
 
 export type ReplayPlugin = {
