@@ -116,6 +116,14 @@ function indicatesTouchDevice(
   );
 }
 
+function getPointerId(
+  d: incrementalData | mousemoveData | mouseInteractionData,
+): number {
+  const pointerId =
+    'pointerId' in d && typeof d.pointerId === 'number' ? d.pointerId : -1;
+  return pointerId;
+}
+
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
@@ -428,7 +436,7 @@ export class Replayer {
     }
     this.service.state.context.events.forEach((e: eventWithTime) => {
       if (indicatesTouchDevice(e)) {
-        const pointerId = this.getPointerId(e.data);
+        const pointerId = getPointerId(e.data);
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
@@ -437,14 +445,6 @@ export class Replayer {
         pointer.pointerEl.classList.add('touch-device');
       }
     });
-  }
-
-  private getPointerId(
-    d: incrementalData | mousemoveData | mouseInteractionData,
-  ): number {
-    const pointerId =
-      'pointerId' in d && typeof d.pointerId === 'number' ? d.pointerId : -1;
-    return pointerId;
   }
 
   private createPointer(pointerId: number) {
@@ -594,7 +594,7 @@ export class Replayer {
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
     if (indicatesTouchDevice(event)) {
-      const pointerId = this.getPointerId(event.data);
+      const pointerId = getPointerId(event.data);
       if (!this.pointers[pointerId]) {
         this.createPointer(pointerId);
       }
@@ -1140,7 +1140,7 @@ export class Replayer {
       case IncrementalSource.Drag:
       case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove: {
-        const pointerId = this.getPointerId(d);
+        const pointerId = getPointerId(d);
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
@@ -1183,7 +1183,7 @@ export class Replayer {
         break;
       }
       case IncrementalSource.MouseInteraction: {
-        const pointerId = this.getPointerId(d);
+        const pointerId = getPointerId(d);
         if (!this.pointers[pointerId]) {
           this.createPointer(pointerId);
         }
