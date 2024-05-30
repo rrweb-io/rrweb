@@ -1,4 +1,5 @@
 import {
+  EventType,
   IncrementalSource,
   MouseInteractions,
 } from '@sentry-internal/rrweb-types';
@@ -169,6 +170,11 @@ const events: eventWithTime[] = [
       pointerId: 1,
     },
     timestamp: 155,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: { source: IncrementalSource.Scroll, id: 1, x: 0, y: 250 },
+    timestamp: 220,
   },
 ];
 

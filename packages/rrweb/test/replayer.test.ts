@@ -39,7 +39,7 @@ type IWindow = Window &
   typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
-  jest.setTimeout(300_000);
+  jest.setTimeout(10_000);
 
   let code: ISuite['code'];
   let browser: ISuite['browser'];
@@ -797,7 +797,7 @@ describe('replayer', function () {
     // No active pointers should exist
     await expect(
       await page.evaluate(
-        () => document.querySelectorAll('.replayer-mouse')!.length,
+        () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(0);
 
@@ -808,14 +808,15 @@ describe('replayer', function () {
     // 2 pointers should exist
     await expect(
       await page.evaluate(
-        () => document.querySelectorAll('.replayer-mouse')!.length,
+        () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(2);
 
     await page.evaluate(`
-      replayer.pause(160);
       replayer.play();
     `);
+
+    await page.waitForTimeout(160);
 
     // Both pointers should be removed after the TouchEnd event
     await expect(
@@ -826,7 +827,7 @@ describe('replayer', function () {
   });
 
   // This should't happen, but we want to test/capture the behavior
-  it.only('has a pointer for touch interactions with some pointerIds', async () => {
+  it('has a pointer for touch interactions with some pointerIds', async () => {
     await page.evaluate(`events = ${JSON.stringify(touchSomePointerEvents)}`);
     await page.evaluate(`
       const { Replayer } = rrweb;
@@ -837,26 +838,26 @@ describe('replayer', function () {
     // No active pointers should exist
     await expect(
       await page.evaluate(
-        () => document.querySelectorAll('.replayer-mouse')!.length,
+        () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(0);
 
     await page.evaluate(`
       replayer.pause(101);
-      window.pointers = replayer.pointers;
     `);
 
     // 2 pointers should exist
     await expect(
       await page.evaluate(
-        () => document.querySelectorAll('.replayer-mouse')!.length,
+        () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(2);
 
     await page.evaluate(`
-      replayer.pause(200);
       replayer.play();
     `);
+
+    await page.waitForTimeout(220);
 
     // Both pointers should be removed after the TouchEnd event
     await expect(
