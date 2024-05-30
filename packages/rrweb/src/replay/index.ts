@@ -1267,8 +1267,7 @@ export class Replayer {
                 void pointer.pointerEl.offsetWidth; // needed for the position update of moveAndHover to apply without the .touch-active transition
                 pointer.pointerEl.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
-                pointer.pointerEl.classList.remove('touch-active');
-                pointer.pointerEl.classList.remove('replayer-mouse');
+                pointer.pointerEl.remove();
                 delete this.pointers[pointerId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
