@@ -803,7 +803,7 @@ function _isParentRemoved(
   mirror: Mirror,
 ): boolean {
   let node: ParentNode | null = n.parentNode;
-  while(node) {
+  while (node) {
     const parentId = mirror.getId(node);
     if (removes.some((r) => r.id === parentId)) {
       return true;
