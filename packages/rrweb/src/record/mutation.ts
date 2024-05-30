@@ -802,15 +802,15 @@ function _isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
+  let node: ParentNode | null = n.parentNode;
+  while(node) {
+    const parentId = mirror.getId(node);
+    if (removes.some((r) => r.id === parentId)) {
+      return true;
+    }
+    node = node.parentNode;
   }
-  const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
-    return true;
-  }
-  return _isParentRemoved(removes, parentNode, mirror);
+  return false;
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
