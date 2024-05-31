@@ -829,7 +829,6 @@ describe('replayer', function () {
     await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
-      replayer.play();
     `);
 
     // No active pointers should exist
@@ -867,7 +866,6 @@ describe('replayer', function () {
     await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
-      replayer.play();
     `);
 
     // No pointer should exist yet
