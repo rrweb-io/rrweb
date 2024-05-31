@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.17.0
+
+### Various fixes & improvements
+
+- rm play() from tests (#190) by @michellewzhang
+- add touch-device class inside createPointer (#190) by @michellewzhang
+- rm code for creating pointers upfront (#190) by @michellewzhang
+- tests that pass (#190) by @michellewzhang
+- TESTS. (#190) by @michellewzhang
+- move func out of the class (#190) by @michellewzhang
+- :white-check-mark: add test (#190) by @michellewzhang
+- add tests (#190) by @michellewzhang
+- update snapshots for failing tests (#190) by @michellewzhang
+- rm -1 (#190) by @michellewzhang
+- optimizations (#190) by @michellewzhang
+- feat(ci): Add `Replayer` to size limit check (#192) by @billyvg
+- add size limit entry for Replayer (#190) by @michellewzhang
+- Update packages/rrweb/src/replay/index.ts (#190) by @michellewzhang
+- turn "run for branch" on for size limit GHA (#190) by @michellewzhang
+- fix delete (#190) by @michellewzhang
+- ts (#190) by @michellewzhang
+- rm changes to package.json and yarn.lock (#190) by @michellewzhang
+- rm export (#190) by @michellewzhang
+- forgot a spot (#190) by @michellewzhang
+- some fixes (#190) by @michellewzhang
+- update snapshots (#168) by @p-mazhnik
+- types (#190) by @michellewzhang
+- name changes (#190) by @michellewzhang
+
+_Plus 24 more_
+
 ## 2.16.0
 
 ### Various fixes & improvements
