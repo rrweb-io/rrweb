@@ -434,17 +434,6 @@ export class Replayer {
         );
       }, 1);
     }
-    this.service.state.context.events.forEach((e: eventWithTime) => {
-      if (indicatesTouchDevice(e)) {
-        const pointerId = getPointerId(e.data);
-        if (!this.pointers[pointerId]) {
-          this.createPointer(pointerId);
-        }
-
-        const pointer = this.pointers[pointerId];
-        pointer.pointerEl.classList.add('touch-device');
-      }
-    });
   }
 
   private createPointer(pointerId: number) {
@@ -1233,6 +1222,8 @@ export class Replayer {
                 pointer.touchActive = true;
               } else if (d.type === MouseInteractions.TouchEnd) {
                 pointer.touchActive = false;
+                pointer.pointerEl.remove();
+                delete this.pointers[pointerId];
               }
               if (d.type === MouseInteractions.MouseDown) {
                 this.lastMouseDownEvent = [target, event];

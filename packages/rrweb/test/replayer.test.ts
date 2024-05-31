@@ -791,13 +791,12 @@ describe('replayer', function () {
     await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
-      replayer.play();
     `);
 
     // No active pointers should exist
-    await expect(
+    expect(
       await page.evaluate(
-        () => document.querySelectorAll('.touch-active')!.length,
+        () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
     ).toEqual(0);
 
@@ -806,20 +805,18 @@ describe('replayer', function () {
     `);
 
     // 2 pointers should exist
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(2);
 
     await page.evaluate(`
-      replayer.play();
+      replayer.pause(220);
     `);
 
-    await page.waitForTimeout(160);
-
     // Both pointers should be removed after the TouchEnd event
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
@@ -836,9 +833,9 @@ describe('replayer', function () {
     `);
 
     // No active pointers should exist
-    await expect(
+    expect(
       await page.evaluate(
-        () => document.querySelectorAll('.touch-active')!.length,
+        () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
     ).toEqual(0);
 
@@ -847,20 +844,18 @@ describe('replayer', function () {
     `);
 
     // 2 pointers should exist
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(2);
 
     await page.evaluate(`
-      replayer.play();
+      replayer.pause(220);
     `);
 
-    await page.waitForTimeout(220);
-
     // Both pointers should be removed after the TouchEnd event
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
@@ -897,7 +892,7 @@ describe('replayer', function () {
       replayer.pause(160);
     `);
 
-    // Pointers should still exist after all events execute
+    // Pointer should still exist after all events execute
     await expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
