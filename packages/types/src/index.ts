@@ -96,6 +96,7 @@ export type mousemoveData = {
     | IncrementalSource.TouchMove
     | IncrementalSource.Drag;
   positions: mousePosition[];
+  pointerId?: number;
 };
 
 export type mouseInteractionData = {
@@ -427,6 +428,7 @@ type mouseInteractionParam = {
   x?: number;
   y?: number;
   pointerType?: PointerTypes;
+  pointerId?: number;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;

@@ -11,6 +11,9 @@ import {
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
+import touchAllPointerEvents from './events/touch-all-pointer-id';
+import touchSomePointerEvents from './events/touch-some-pointer-id';
+import mouseEvents from './events/mouse';
 import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import inputEvents from './events/input';
@@ -781,6 +784,118 @@ describe('replayer', function () {
     await page.waitForTimeout(50);
 
     await assertDomSnapshot(page);
+  });
+
+  it('has a pointer for touch interactions with pointerIds', async () => {
+    await page.evaluate(`events = ${JSON.stringify(touchAllPointerEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+    `);
+
+    // No active pointers should exist
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+
+    await page.evaluate(`
+      replayer.pause(101);
+    `);
+
+    // 2 pointers should exist
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.touch-active')!.length,
+      ),
+    ).toEqual(2);
+
+    await page.evaluate(`
+      replayer.pause(220);
+    `);
+
+    // Both pointers should be removed after the TouchEnd event
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+  });
+
+  // This should't happen, but we want to test/capture the behavior
+  it('has a pointer for touch interactions with some pointerIds', async () => {
+    await page.evaluate(`events = ${JSON.stringify(touchSomePointerEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+    `);
+
+    // No active pointers should exist
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+
+    await page.evaluate(`
+      replayer.pause(101);
+    `);
+
+    // 2 pointers should exist
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.touch-active')!.length,
+      ),
+    ).toEqual(2);
+
+    await page.evaluate(`
+      replayer.pause(220);
+    `);
+
+    // Both pointers should be removed after the TouchEnd event
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+  });
+
+  it('has a pointer for regular mouse interactions', async () => {
+    await page.evaluate(`events = ${JSON.stringify(mouseEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+    `);
+
+    // No pointer should exist yet
+    await expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+
+    await page.evaluate(`
+      replayer.pause(101);
+    `);
+
+    // One mouse pointer should exist
+    await expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(1);
+
+    await page.evaluate(`
+      replayer.pause(160);
+    `);
+
+    // Pointer should still exist after all events execute
+    await expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(1);
   });
 
   it('should destroy the replayer after calling destroy()', async () => {
