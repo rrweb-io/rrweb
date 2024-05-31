@@ -436,7 +436,7 @@ export class Replayer {
     }
   }
 
-  private createPointer(pointerId: number) {
+  private createPointer(pointerId: number, event: eventWithTime) {
     const newMouse = document.createElement('div');
     newMouse.classList.add('replayer-mouse');
     this.pointers[pointerId] = {
@@ -445,6 +445,9 @@ export class Replayer {
       tailPositions: [],
       pointerPosition: null,
     };
+    if (indicatesTouchDevice(event)) {
+      newMouse.classList.add('touch-device');
+    }
     this.wrapper.appendChild(newMouse);
   }
 
@@ -582,15 +585,7 @@ export class Replayer {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
-    if (indicatesTouchDevice(event)) {
-      const pointerId = getPointerId(event.data);
-      if (!this.pointers[pointerId]) {
-        this.createPointer(pointerId);
-      }
 
-      const pointer = this.pointers[pointerId];
-      pointer.pointerEl.classList.add('touch-device');
-    }
     void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
@@ -1131,14 +1126,11 @@ export class Replayer {
       case IncrementalSource.MouseMove: {
         const pointerId = getPointerId(d);
         if (!this.pointers[pointerId]) {
-          this.createPointer(pointerId);
+          this.createPointer(pointerId, e);
         }
 
         const pointer = this.pointers[pointerId];
 
-        if (indicatesTouchDevice(e)) {
-          pointer.pointerEl.classList.add('touch-device');
-        }
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
           pointer.pointerPosition = {
@@ -1174,14 +1166,10 @@ export class Replayer {
       case IncrementalSource.MouseInteraction: {
         const pointerId = getPointerId(d);
         if (!this.pointers[pointerId]) {
-          this.createPointer(pointerId);
+          this.createPointer(pointerId, e);
         }
 
         const pointer = this.pointers[pointerId];
-
-        if (indicatesTouchDevice(e)) {
-          pointer.pointerEl.classList.add('touch-device');
-        }
 
         /**
          * Same as the situation of missing input target.
