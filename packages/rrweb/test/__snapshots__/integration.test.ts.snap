@@ -9219,15 +9219,6 @@ exports[`record integration tests should not record input values if dynamically 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 3,
-      \\"id\\": 21,
-      \\"x\\": 2,
-      \\"y\\": 0
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
       \\"id\\": 21
