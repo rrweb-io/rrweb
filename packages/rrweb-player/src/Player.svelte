@@ -12,6 +12,7 @@
   } from './utils';
   import Controller from './Controller.svelte';
 
+  export let playerClassName: string = '';
   export let width = 1024;
   export let height = 576;
   export let maxScale = 1;
@@ -213,14 +214,16 @@
     transform-origin: top left;
     left: 50%;
     top: 50%;
+    height: 100%;
   }
 
   .replayer-wrapper > iframe {
     border: none;
+    height: 100%;
   }
 </style>
 
-<div class="rr-player" bind:this={player} style={playerStyle}>
+<div class="{['rr-player', playerClassName].join(' ').trim()}" bind:this={player} style={playerStyle}>
   <div class="rr-player__frame" bind:this={frame} {style} />
   {#if replayer}
     <Controller
