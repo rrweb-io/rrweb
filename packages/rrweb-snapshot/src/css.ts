@@ -432,8 +432,8 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
       whitespace();
     }
 
-    // Use match logic from https://github.com/NxtChg/pieces/blob/3eb39c8287a97632e9347a24f333d52d916bc816/js/css_parser/css_parse.js#L46C1-L47C1
-    const m = match(/^(((?<!\\)"(?:\\"|[^"])*"|(?<!\\)'(?:\\'|[^'])*'|[^{])+)/);
+    // originally from https://github.com/NxtChg/pieces/blob/3eb39c8287a97632e9347a24f333d52d916bc816/js/css_parser/css_parse.js#L46C1-L47C1
+    const m = match(/^(([^\\]"(?:\\"|[^"])*"|[^\\]'(?:\\'|[^'])*'|[^{])+)/);
     if (!m) {
       return;
     }
@@ -869,8 +869,8 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
         name +
         '\\s*((?:' +
         [
-          '(?<!\\\\)"(?:\\\\"|[^"])*"',
-          "(?<!\\\\)'(?:\\\\'|[^'])*'",
+          '[^\\\\]"(?:\\\\"|[^"])*"', // consume any quoted parts (checking that the double quote isn't itself escaped)
+          "[^\\\\]'(?:\\\\'|[^'])*'", // same but for single quotes
           '[^;]',
         ].join('|') +
         ')+);',
