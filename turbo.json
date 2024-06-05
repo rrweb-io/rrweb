@@ -1,10 +1,10 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "baseBranch": "origin/master",
-  "pipeline": {
+  "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish"],
-      "outputs": ["lib/**", "es/**", "dist/**", "typings/**"]
+      "outputs": ["lib/**", "es/**", "dist/**", "typings/**", ".svelte-kit/**"]
     },
     "test": {
       "dependsOn": ["^prepublish"]
@@ -15,9 +15,12 @@
     "test:update": {},
     "dev": {
       "dependsOn": ["^prepublish"],
+      "cache": false,
       "persistent": true
     },
     "lint": {},
-    "check-types": {}
+    "check-types": {
+      "dependsOn": ["^prepublish"]
+    }
   }
 }
