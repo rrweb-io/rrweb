@@ -12,7 +12,7 @@ import type {
 import type { IMirror, Mirror } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
-import { parentElement } from '@rrweb/utils';
+import { contains, getRootNode, parentElement } from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -322,25 +322,6 @@ export function polyfill(win = window) {
     win.DOMTokenList.prototype.forEach = Array.prototype
       .forEach as unknown as DOMTokenList['forEach'];
   }
-
-  // TODO: remove me `@rrweb/utils`'s `contains` should fix this.
-  // https://github.com/Financial-Times/polyfill-service/pull/183
-  if (!Node.prototype.contains) {
-    Node.prototype.contains = (...args: unknown[]) => {
-      let node = args[0] as Node | null;
-      if (!(0 in args)) {
-        throw new TypeError('1 argument is required');
-      }
-
-      do {
-        if (this === node) {
-          return true;
-        }
-      } while ((node = node && node.parentNode));
-
-      return false;
-    };
-  }
 }
 
 type ResolveTree = {
@@ -558,10 +539,10 @@ export class StyleSheetMirror {
 export function getShadowHost(n: Node): Element | null {
   let shadowHost: Element | null = null;
   if (
-    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    (n.getRootNode() as ShadowRoot).host
+    getRootNode(n)?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    (getRootNode(n) as ShadowRoot).host
   )
-    shadowHost = (n.getRootNode() as ShadowRoot).host;
+    shadowHost = (getRootNode(n) as ShadowRoot).host;
   return shadowHost;
 }
 
@@ -583,11 +564,11 @@ export function shadowHostInDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
-  return doc.contains(shadowHost);
+  return contains(doc, shadowHost);
 }
 
 export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
-  return doc.contains(n) || shadowHostInDom(n);
+  return contains(doc, n) || shadowHostInDom(n);
 }

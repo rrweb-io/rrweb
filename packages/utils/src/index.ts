@@ -57,6 +57,29 @@ function getUntaintedNodeAccessor<T extends keyof typeof Node.prototype>(
   return untaintedAccessor.call(node) as (typeof Node.prototype)[T];
 }
 
+type NodeMethod = (this: Node, ...args: unknown[]) => unknown;
+
+const untaintedMethodCache: Record<string, NodeMethod> = {};
+function getUntaintedNodeMethod<T extends keyof typeof Node.prototype>(
+  node: Node,
+  method: T,
+): (typeof Node.prototype)[T] {
+  if (untaintedMethodCache[method as string])
+    return untaintedMethodCache[method as string].bind(
+      node,
+    ) as (typeof Node.prototype)[T];
+
+  const untaintedNode = getUntaintedNode();
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const untaintedMethod = untaintedNode[method];
+
+  if (typeof untaintedMethod !== 'function') return node[method];
+
+  untaintedMethodCache[method as string] = untaintedMethod as NodeMethod;
+
+  return untaintedMethod.bind(node) as (typeof Node.prototype)[T];
+}
+
 // const untaintedPropertyCache: Record<
 //   string,
 //   (this: Node, ...args: unknown[]) => unknown
@@ -106,6 +129,30 @@ export function textContent(n: Node): string | null {
   return getUntaintedNodeAccessor(n, 'textContent');
 }
 
+export function contains(n: Node, other: Node): boolean {
+  return getUntaintedNodeMethod(n, 'contains')(other);
+}
+
+export function getRootNode(n: Node): Node {
+  return getUntaintedNodeMethod(n, 'getRootNode')();
+}
+
+// TODO: add these:
+//  * ShadowRoot#host
+//  * ShadowRoot#styleSheets
+//  * ShadowRoot#getSelection
+//  * Element#shadowRoot
+//  * Element#querySelector
+//  * Element#querySelectorAll
+
+// TODO: maybe add these:
+// * MutationObserver
+// * ShadowRoot
+
 // export function contains(n: Node, other: Node): boolean {
 //   return getUntaintedNodeProperty(n, 'contains', other);
+// }
+
+// export function getRootNode(n: Node): Node {
+//   return getUntaintedNodeAccessor(n, 'getRootNode');
 // }
