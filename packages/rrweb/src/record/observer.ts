@@ -4,6 +4,8 @@ import {
   Mirror,
   getInputType,
   toLowerCase,
+  getNative,
+  nativeSetTimeout,
 } from 'rrweb-snapshot';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
@@ -54,11 +56,6 @@ import { callbackWrapper } from './error-handler';
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;
 };
-type WindowWithAngularZone = IWindow & {
-  Zone?: {
-    __symbol__?: (key: string) => string;
-  };
-};
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -92,8 +89,8 @@ export function initMutationObserver(
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  let mutationObserverCtor =
-    window.MutationObserver ||
+  const mutationObserverCtor =
+    getNative<typeof MutationObserver>('MutationObserver') ||
     /**
      * Some websites may disable MutationObserver by removing it from the window object.
      * If someone is using rrweb to build a browser extention or things like it, they
@@ -103,19 +100,6 @@ export function initMutationObserver(
      * window.__rrMutationObserver = MutationObserver
      */
     (window as WindowWithStoredMutationObserver).__rrMutationObserver;
-  const angularZoneSymbol = (
-    window as WindowWithAngularZone
-  )?.Zone?.__symbol__?.('MutationObserver');
-  if (
-    angularZoneSymbol &&
-    (window as unknown as Record<string, typeof MutationObserver>)[
-      angularZoneSymbol
-    ]
-  ) {
-    mutationObserverCtor = (
-      window as unknown as Record<string, typeof MutationObserver>
-    )[angularZoneSymbol];
-  }
   const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
@@ -1105,7 +1089,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
     'add',
     function (original: (font: FontFace) => void) {
       return function (this: FontFaceSet, fontFace: FontFace) {
-        setTimeout(
+        nativeSetTimeout(
           callbackWrapper(() => {
             const p = fontMap.get(fontFace);
             if (p) {
