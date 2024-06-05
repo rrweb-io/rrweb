@@ -19,6 +19,12 @@ const suites: Array<
   //   times: 10,
   // },
   {
+    title: 'create 1000x 1 DOM nodes with deeply nested children',
+    html: 'benchmark-dom-mutation-deep-nested.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
+  {
     title: 'create 1000x10 DOM nodes',
     html: 'benchmark-dom-mutation.html',
     eval: 'window.workload()',
