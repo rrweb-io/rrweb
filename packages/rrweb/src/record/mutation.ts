@@ -143,7 +143,7 @@ export default class MutationBuffer {
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
   private attributeMap = new WeakMap<Node, attributeCursor>();
-  private removes: removedNodeMutation[] = [];
+  private removes = new Map<number, removedNodeMutation>();
   private mapRemoves: Node[] = [];
 
   private movedMap: Record<string, true> = {};
@@ -485,7 +485,7 @@ export default class MutationBuffer {
         .filter((attribute) => !addedIds.has(attribute.id))
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
-      removes: this.removes,
+      removes: Array.from(this.removes.values()),
       adds,
     };
     // payload may be empty if the mutations happened in some blocked elements
@@ -502,7 +502,7 @@ export default class MutationBuffer {
     this.texts = [];
     this.attributes = [];
     this.attributeMap = new WeakMap<Node, attributeCursor>();
-    this.removes = [];
+    this.removes = new Map<number, removedNodeMutation>();
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
@@ -718,7 +718,7 @@ export default class MutationBuffer {
           ) {
             deepDelete(this.movedSet, n);
           } else {
-            this.removes.push({
+            this.removes.set(nodeId, {
               parentId,
               id: nodeId,
               isShadow:
@@ -789,16 +789,16 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
 }
 
 function isParentRemoved(
-  removes: removedNodeMutation[],
+  removes: Map<number, removedNodeMutation>,
   n: Node,
   mirror: Mirror,
 ): boolean {
-  if (removes.length === 0) return false;
+  if (removes.size === 0) return false;
   return _isParentRemoved(removes, n, mirror);
 }
 
 function _isParentRemoved(
-  removes: removedNodeMutation[],
+  removes: Map<number, removedNodeMutation>,
   n: Node,
   mirror: Mirror,
 ): boolean {
@@ -807,7 +807,7 @@ function _isParentRemoved(
     return false;
   }
   const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
+  if (removes.has(parentId)) {
     return true;
   }
   return _isParentRemoved(removes, parentNode, mirror);
