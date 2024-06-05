@@ -1,0 +1,1 @@
+yarn git-format-staged -f 'prettier --ignore-unknown --stdin-filepath "{}"' '*.ts' '*.md'
