@@ -25,6 +25,7 @@
  */
 declare module '$env/static/private' {
   export const GITHUB_STATE: string;
+  export const GIT_CLONE_PROTECTION_ACTIVE: string;
   export const npm_package_scripts_test_cross_platform_build: string;
   export const npm_package_devDependencies_rollup: string;
   export const npm_package_devDependencies__types_node: string;
@@ -266,6 +267,7 @@ declare module '$env/static/public' {}
 declare module '$env/dynamic/private' {
   export const env: {
     GITHUB_STATE: string;
+    GIT_CLONE_PROTECTION_ACTIVE: string;
     npm_package_scripts_test_cross_platform_build: string;
     npm_package_devDependencies_rollup: string;
     npm_package_devDependencies__types_node: string;
