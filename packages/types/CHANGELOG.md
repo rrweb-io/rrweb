@@ -1,5 +1,12 @@
 # @rrweb/types
 
+## 2.0.0-alpha.13
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.13
+
 ## 2.0.0-alpha.12
 
 ### Patch Changes

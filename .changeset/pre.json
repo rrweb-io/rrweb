@@ -13,6 +13,7 @@
   },
   "changesets": [
     "octopus-orange",
-    "popular-spies-fetch"
+    "popular-spies-fetch",
+    "short-masks-cross"
   ]
 }

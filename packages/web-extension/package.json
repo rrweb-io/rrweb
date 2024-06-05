@@ -1,7 +1,7 @@
 {
   "name": "@amplitude/rrweb-web-extension",
   "private": true,
-  "version": "2.0.0-alpha.12",
+  "version": "2.0.0-alpha.13",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "Amplitude Inc",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "prepublish": "npm run pack:chrome && npm run pack:firefox"
   },
   "devDependencies": {
-    "@amplitude/rrweb-types": "^2.0.0-alpha.12",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.13",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "@vitejs/plugin-react": "^2.1.0",
@@ -28,8 +28,8 @@
     "webextension-polyfill": "^0.10.0"
   },
   "dependencies": {
-    "@amplitude/rrweb": "^2.0.0-alpha.12",
-    "@amplitude/rrweb-player": "^2.0.0-alpha.12",
+    "@amplitude/rrweb": "^2.0.0-alpha.13",
+    "@amplitude/rrweb-player": "^2.0.0-alpha.13",
     "@chakra-ui/react": "^2.3.4",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
