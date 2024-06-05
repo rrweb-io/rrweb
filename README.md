@@ -164,7 +164,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/Juice10">
+      <a href="https://github.com/juice10">
         <img
           src="https://avatars.githubusercontent.com/u/4106?s=100"
           width="100px;"
