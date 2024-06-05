@@ -9,10 +9,12 @@ const _typescript = typescript as unknown as typeof typescript.default;
 export async function compileTSCode(inputFilePath: string) {
   const bundle = await rollup.rollup({
     input: inputFilePath,
+    cache: false,
     plugins: [
       resolve() as unknown as rollup.Plugin,
       _typescript({
         tsconfigOverride: { compilerOptions: { module: 'ESNext' } },
+        clean: true,
       }) as unknown as rollup.Plugin,
     ],
   });
