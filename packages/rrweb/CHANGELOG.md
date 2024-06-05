@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.13
+
+### Patch Changes
+
+- [#5](https://github.com/amplitude/rrweb/pull/5) [`8017f2a`](https://github.com/amplitude/rrweb/commit/8017f2a2901ab5c73b47952ad1fb012d37eb3efc) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - fix(rrweb-snapshot): pass maskInputFn correctly
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.13
+  - @amplitude/rrdom@2.0.0-alpha.13
+  - @amplitude/rrweb-types@2.0.0-alpha.13
+
 ## 2.0.0-alpha.12
 
 ### Patch Changes
