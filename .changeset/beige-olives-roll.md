@@ -3,5 +3,4 @@
 "rrweb": patch
 ---
 
-Fix maskInputFn is ignored during the creation of the full snapshot
-Fix maskInputFn type in `snapshot`
+Fix that the optional `maskInputFn` was being accidentally ignored during the creation of the full snapshot
