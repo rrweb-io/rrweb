@@ -2176,7 +2176,7 @@ export class Replayer {
       if (!ctx || !pointer.tailPositions.length) {
         return;
       }
-      ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
+      ctx.clearRect(0, 0, position.x, position.y);
       ctx.beginPath();
       ctx.lineWidth = lineWidth;
       ctx.lineCap = lineCap;
