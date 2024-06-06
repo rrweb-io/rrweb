@@ -668,7 +668,7 @@ function initStyleSheetObserver(
         try {
           return target.apply(thisArg, argumentsList);
         } catch (error) {
-          (error as Error & {_external_?:boolean})._external_ = true;
+          (error as Error & { _external_?: boolean })._external_ = true;
           throw error;
         }
       },
@@ -702,7 +702,7 @@ function initStyleSheetObserver(
         try {
           return target.apply(thisArg, argumentsList);
         } catch (error) {
-          (error as Error & {_external_?:boolean})._external_ = true;
+          (error as Error & { _external_?: boolean })._external_ = true;
           throw error;
         }
       },
