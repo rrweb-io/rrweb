@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.14
+
+### Patch Changes
+
+- [#8](https://github.com/amplitude/rrweb/pull/8) [`e8d02c7`](https://github.com/amplitude/rrweb/commit/e8d02c78153ed954dc7aa44c6c720c550e4e1252) Thanks [@jackson-amplitude](https://github.com/jackson-amplitude)! - fix(rrweb): external function errors should be tagged
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.14
+  - @amplitude/rrdom@2.0.0-alpha.14
+  - @amplitude/rrweb-types@2.0.0-alpha.14
+
 ## 2.0.0-alpha.13
 
 ### Patch Changes
