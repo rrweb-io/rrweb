@@ -47,7 +47,7 @@ import {
   patch,
   throttle,
 } from '../utils';
-import { callbackWrapper } from './error-handler';
+import { callbackWrapper, externalFunctionWrapper } from './error-handler';
 import MutationBuffer from './mutation';
 
 type WindowWithStoredMutationObserver = IWindow & {
@@ -665,7 +665,7 @@ function initStyleSheetObserver(
             adds: [{ rule, index }],
           });
         }
-        return target.apply(thisArg, argumentsList);
+        return externalFunctionWrapper(target.apply)(thisArg, argumentsList);
       },
     ),
   });
@@ -694,7 +694,7 @@ function initStyleSheetObserver(
             removes: [{ index }],
           });
         }
-        return target.apply(thisArg, argumentsList);
+        return externalFunctionWrapper(target.apply)(thisArg, argumentsList);
       },
     ),
   });
@@ -726,7 +726,7 @@ function initStyleSheetObserver(
               replace: text,
             });
           }
-          return target.apply(thisArg, argumentsList);
+          return externalFunctionWrapper(target.apply)(thisArg, argumentsList);
         },
       ),
     });
