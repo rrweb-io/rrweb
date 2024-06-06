@@ -665,7 +665,9 @@ function initStyleSheetObserver(
             adds: [{ rule, index }],
           });
         }
-        return externalFunctionWrapper(() => target.apply(thisArg, argumentsList))();
+        return externalFunctionWrapper(() =>
+          target.apply(thisArg, argumentsList),
+        )();
       },
     ),
   });
@@ -694,7 +696,9 @@ function initStyleSheetObserver(
             removes: [{ index }],
           });
         }
-        return externalFunctionWrapper(() => target.apply(thisArg, argumentsList))();
+        return externalFunctionWrapper(() =>
+          target.apply(thisArg, argumentsList),
+        )();
       },
     ),
   });
