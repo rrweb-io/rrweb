@@ -1,0 +1,4 @@
+#one.cant-access-inner-text-here {  /* like we could do .innerText for an inline <style> element */
+	animation: var(--animation-fade-in);
+	animation-delay: 0.2s;
+}

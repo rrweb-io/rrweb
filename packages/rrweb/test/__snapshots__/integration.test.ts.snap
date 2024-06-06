@@ -3604,6 +3604,204 @@ exports[`record integration tests can record node mutations 1`] = `
 ]"
 `;
 
+exports[`record integration tests can record shorthand properties defined via variables 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Animation defined via variable\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\":root { --duration-extra-long: 1.6s; --animation-fade-in: fadeIn var(--duration-extra-long) cubic-bezier(0, 0, .3, 1) forwards; }@keyframes fadeIn { \\\\n  0% { opacity: 0; }\\\\n  100% { opacity: 1; }\\\\n}#one { background-color: red; width: 200px; height: 200px; opacity: 0; }#one:not(.good) { animation: var(--animation-fade-in); animation-delay: 0.2s; }#one.ok { animation: var(--animation-fade-in); }\\",
+                        \\"isStyle\\": true,
+                        \\"id\\": 14
+                      }
+                    ],
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"link\\",
+                    \\"attributes\\": {
+                      \\"rel\\": \\"stylesheet\\",
+                      \\"type\\": \\"text/css\\",
+                      \\"href\\": \\"http://localhost:3030/assets/animation-var.css\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 17
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 18
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 20
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"one\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 21
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 24
+                      }
+                    ],
+                    \\"id\\": 23
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 25
+                  }
+                ],
+                \\"id\\": 19
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  }
+]"
+`;
+
 exports[`record integration tests can record style changes compactly and preserve css var() functions 1`] = `
 "[
   {
