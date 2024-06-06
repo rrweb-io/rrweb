@@ -665,7 +665,12 @@ function initStyleSheetObserver(
             adds: [{ rule, index }],
           });
         }
-        return target.apply(thisArg, argumentsList);
+        try {
+          return target.apply(thisArg, argumentsList);
+        } catch (error) {
+          (error as Error & {_external_?:boolean})._external_ = true;
+          throw error;
+        }
       },
     ),
   });
@@ -694,7 +699,12 @@ function initStyleSheetObserver(
             removes: [{ index }],
           });
         }
-        return target.apply(thisArg, argumentsList);
+        try {
+          return target.apply(thisArg, argumentsList);
+        } catch (error) {
+          (error as Error & {_external_?:boolean})._external_ = true;
+          throw error;
+        }
       },
     ),
   });
