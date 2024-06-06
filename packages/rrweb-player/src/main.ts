@@ -3,6 +3,8 @@ import _Player from './Player.svelte';
 
 type PlayerProps = {
   events: eventWithTime[];
+  width: number;
+  height:number;
 };
 
 class Player extends _Player {

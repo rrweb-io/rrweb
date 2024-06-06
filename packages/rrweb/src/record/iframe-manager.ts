@@ -9,6 +9,7 @@ import type {
   mutationCallBack,
 } from '@rrweb/types';
 import type { StylesheetManager } from './stylesheet-manager';
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
@@ -24,17 +25,19 @@ export class IframeManager {
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
-
+  private canvasManager : CanvasManager;
   constructor(options: {
     mirror: Mirror;
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
+    canvasManager : CanvasManager;
     recordCrossOriginIframes: boolean;
     wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
+    this.canvasManager = options.canvasManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
     this.crossOriginIframeStyleMirror = new CrossOriginIframeMirror(
       this.stylesheetManager.styleMirror.generateId.bind(
@@ -49,6 +52,7 @@ export class IframeManager {
 
   public addIframe(iframeEl: HTMLIFrameElement) {
     this.iframes.set(iframeEl, true);
+    this.canvasManager.addIFrame(iframeEl);
     if (iframeEl.contentWindow)
       this.crossOriginIframeMap.set(iframeEl.contentWindow, iframeEl);
   }

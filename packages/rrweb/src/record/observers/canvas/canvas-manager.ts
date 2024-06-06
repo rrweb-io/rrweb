@@ -55,6 +55,17 @@ export class CanvasManager {
     this.locked = false;
   }
 
+  private shadowDoms = new Set<WeakRef<ShadowRoot>>();
+  private iframes = new Set<WeakRef<HTMLIFrameElement>>();
+
+  public addshadowRoot(shadowroot:ShadowRoot){
+    this.shadowDoms.add(new WeakRef(shadowroot));
+  }
+
+  public addIFrame(iframeEl: HTMLIFrameElement){
+    this.iframes.add(new WeakRef(iframeEl));
+  }
+
   constructor(options: {
     recordCanvas: boolean;
     mutationCb: canvasMutationCallback;
@@ -158,14 +169,34 @@ export class CanvasManager {
     const timeBetweenSnapshots = 1000 / fps;
     let lastSnapshotTime = 0;
     let rafId: number;
-
+    const that=this;
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
-      win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (!isBlocked(canvas, blockClass, blockSelector, true)) {
-          matchedCanvas.push(canvas);
-        }
+      function collectWindowCanvas(win:Window){
+        win.document.querySelectorAll('canvas').forEach((canvas:HTMLCanvasElement) => {
+          if (!isBlocked(canvas, blockClass, blockSelector, true)) {
+            matchedCanvas.push(canvas);
+          }
+        });
+      }
+      // handle shadow root cases
+      that.shadowDoms.forEach(function(shadowroot:WeakRef<ShadowRoot>){
+        const sr=shadowroot.deref();
+        if (!sr) return;
+        sr.querySelectorAll('canvas').forEach((canvas:HTMLCanvasElement) => {
+          if (!isBlocked(canvas, blockClass, blockSelector, true)) {
+            matchedCanvas.push(canvas);
+          }
+        });
       });
+      collectWindowCanvas(win);
+      // handle iframe cases
+      that.iframes.forEach((iframeEl:WeakRef<HTMLIFrameElement>)=>{
+        const iframe=iframeEl.deref();
+        if (!iframe) return;
+        if (!iframe.contentWindow || !iframe.contentDocument) return;
+        collectWindowCanvas(iframe.contentWindow);
+      })
       return matchedCanvas;
     };
 
@@ -243,7 +274,7 @@ export class CanvasManager {
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
-
+    
     const canvasContextReset = initCanvasContextObserver(
       win,
       blockClass,

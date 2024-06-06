@@ -190,6 +190,7 @@ export class Replayer {
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
+      mouseCursor: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
       logger: console,
@@ -590,9 +591,11 @@ export class Replayer {
     this.wrapper.classList.add('replayer-wrapper');
     this.config.root.appendChild(this.wrapper);
 
-    this.mouse = document.createElement('div');
-    this.mouse.classList.add('replayer-mouse');
-    this.wrapper.appendChild(this.mouse);
+    if (this.config.mouseCursor !== false) {
+      this.mouse = document.createElement('div');
+      this.mouse.classList.add('replayer-mouse');
+      this.wrapper.appendChild(this.mouse);
+    }
 
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');

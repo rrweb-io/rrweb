@@ -2,7 +2,7 @@ import type { MutationBufferParam } from '../types';
 import type {
   mutationCallBack,
   scrollCallback,
-  SamplingStrategy,
+  SamplingStrategy
 } from '@rrweb/types';
 import {
   initMutationObserver,
@@ -12,7 +12,7 @@ import {
 import { patch, inDom } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
-
+import type { CanvasManager } from './observers/canvas/canvas-manager';
 type BypassOptions = Omit<
   MutationBufferParam,
   'doc' | 'mutationCb' | 'mirror' | 'shadowDomManager'
@@ -27,10 +27,12 @@ export class ShadowDomManager {
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
   private restoreHandlers: (() => void)[] = [];
+  private canvasManager: CanvasManager;
 
   constructor(options: {
     mutationCb: mutationCallBack;
     scrollCb: scrollCallback;
+    canvasManager : CanvasManager;
     bypassOptions: BypassOptions;
     mirror: Mirror;
   }) {
@@ -38,6 +40,7 @@ export class ShadowDomManager {
     this.scrollCb = options.scrollCb;
     this.bypassOptions = options.bypassOptions;
     this.mirror = options.mirror;
+    this.canvasManager = options.canvasManager;
 
     this.init();
   }
@@ -52,6 +55,7 @@ export class ShadowDomManager {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
+    this.canvasManager.addshadowRoot(shadowRoot);
     const observer = initMutationObserver(
       {
         ...this.bypassOptions,

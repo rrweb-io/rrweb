@@ -291,9 +291,21 @@ function record<T = eventWithTime>(
     adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
   });
 
+  canvasManager = new CanvasManager({
+    recordCanvas,
+    mutationCb: wrappedCanvasMutationEmit,
+    win: window,
+    blockClass,
+    blockSelector,
+    mirror,
+    sampling: sampling.canvas,
+    dataURLOptions,
+  });
+
   const iframeManager = new IframeManager({
     mirror,
     mutationCb: wrappedMutationEmit,
+    canvasManager: canvasManager,
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
     wrappedEmit,
@@ -314,20 +326,10 @@ function record<T = eventWithTime>(
 
   const processedNodeManager = new ProcessedNodeManager();
 
-  canvasManager = new CanvasManager({
-    recordCanvas,
-    mutationCb: wrappedCanvasMutationEmit,
-    win: window,
-    blockClass,
-    blockSelector,
-    mirror,
-    sampling: sampling.canvas,
-    dataURLOptions,
-  });
-
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
+    canvasManager: canvasManager,
     bypassOptions: {
       blockClass,
       blockSelector,
