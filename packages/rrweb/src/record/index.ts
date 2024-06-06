@@ -174,7 +174,7 @@ function record<T = eventWithTime>(
           // as they destroy some (hidden) info:
           headMetaAuthorship: _slimDOMOptions === 'all',
           headMetaDescKeywords: _slimDOMOptions === 'all',
-          headTitleMutations: _slimDOMOptions === 'all', // block title tag 'animation' which can generate a lot of mutations that aren't usually displayed in replayers
+          headTitleMutations: _slimDOMOptions === 'all',
         }
       : _slimDOMOptions
       ? _slimDOMOptions
