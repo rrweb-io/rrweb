@@ -1,5 +1,5 @@
 import { Emitter, MediaInteractions, ReplayerEvents } from '@rrweb/types';
-import type { RRMediaElement } from 'rrdom/es';
+import type { RRMediaElement } from 'rrdom';
 import type { createPlayerService, createSpeedService } from '../machine';
 import type { Mirror, mediaAttributes } from 'rrweb-snapshot';
 import type { mediaInteractionData } from '@rrweb/types';
@@ -50,7 +50,7 @@ export class MediaManager {
   }
 
   private syncAllMediaElements(options = { pause: false }) {
-    this.mediaMap.forEach((mediaState, target) => {
+    this.mediaMap.forEach((_mediaState, target) => {
       this.syncTargetWithState(target);
       if (options.pause) {
         target.pause();

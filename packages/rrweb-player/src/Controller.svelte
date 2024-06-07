@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { EventType } from 'rrweb';
-  import type { Replayer } from 'rrweb';
+  import { EventType } from '@rrweb/types';
   import type { playerMetaData } from '@rrweb/types';
   import type {
+    Replayer,
     PlayerMachineState,
     SpeedMachineState,
-  } from 'rrweb/typings/replay/machine';
+  } from '@rrweb/replay';
   import {
     onMount,
     onDestroy,
@@ -37,11 +37,10 @@
   }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
-  let step: HTMLElement;
   let finished: boolean;
 
   let pauseAt: number | false = false;
-  let onPauseHook: () => unknown | undefined = undefined;
+  let onPauseHook: (() => unknown) | null = null;
   let loop: {
     start: number;
     end: number;
@@ -234,7 +233,7 @@
     }
     currentTime = timeOffset;
     pauseAt = endTimeOffset;
-    onPauseHook = afterHook;
+    onPauseHook = afterHook || null;
     replayer.play(timeOffset);
   };
 
@@ -252,6 +251,17 @@
     }
     const timeOffset = meta.totalTime * percent;
     goto(timeOffset);
+  };
+
+  const handleProgressKeydown = (event: KeyboardEvent) => { 
+    if (speedState === 'skipping') {
+      return;
+    }
+    if (event.key === 'ArrowLeft') {
+      goto(currentTime - 5);
+    } else if (event.key === 'ArrowRight') {
+      goto(currentTime + 5);
+    }
   };
 
   export const setSpeed = (newSpeed: number) => {
@@ -281,8 +291,8 @@
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
-      (states: { player?: PlayerMachineState; speed?: SpeedMachineState }) => {
-        const { player, speed } = states;
+      (states) => {
+        const { player, speed } = states as { player?: PlayerMachineState; speed?: SpeedMachineState };
         if (player?.value && playerState !== player.value) {
           playerState = player.value;
           switch (playerState) {
@@ -428,10 +438,10 @@
         class:disabled={speedState === 'skipping'}
         bind:this={progress}
         on:click={handleProgressClick}
+        on:keydown={handleProgressKeydown}
       >
         <div
           class="rr-progress__step"
-          bind:this={step}
           style="width: {percentage}"
         />
         {#each inactivePeriods as period}
@@ -537,7 +547,6 @@
             48s-21.6 48-48 48l-224 0c-26.4 0-48-21.6-48-48l0-224c0-26.4 21.6-48
             48-48 26.4 0 48 21.6 48 48L164 792l253.6-253.6c18.4-18.4 48.8-18.4
             68 0 18.4 18.4 18.4 48.8 0 68L231.2 860z"
-            p-id="1286"
           />
         </svg>
       </button>

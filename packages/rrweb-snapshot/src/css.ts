@@ -259,6 +259,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
    */
 
   class Position {
+    public static content: string;
     public content!: string;
     public start!: Loc;
     public end!: Loc;
@@ -268,6 +269,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
       this.start = start;
       this.end = { line: lineno, column };
       this.source = options.source;
+      this.content = Position.content;
     }
   }
 
@@ -275,7 +277,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
    * Non-enumerable source string
    */
 
-  Position.prototype.content = css;
+  Position.content = css;
 
   const errorsList: ParserError[] = [];
 

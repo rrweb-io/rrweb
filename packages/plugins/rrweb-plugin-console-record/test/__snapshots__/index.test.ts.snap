@@ -1,0 +1,697 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rrweb-plugin-console-record > should handle recursive console messages 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"module\\",
+                      \\"src\\": \\"http://localhost:3030/@vite/client\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"ie=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Log record\\",
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"src\\": \\"http://localhost:3030/test/html/index.ts\\",
+                      \\"type\\": \\"module\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 18
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 19
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n\\",
+                    \\"id\\": 21
+                  }
+                ],
+                \\"id\\": 20
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:21:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"Proxied object:\\\\\\"\\",
+          \\"\\\\\\"[object Object]\\\\\\"\\"
+        ]
+      }
+    }
+  }
+]"
+`;
+
+exports[`rrweb-plugin-console-record > should record console messages 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"module\\",
+                      \\"src\\": \\"http://localhost:3030/@vite/client\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 11
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"http-equiv\\": \\"X-UA-Compatible\\",
+                      \\"content\\": \\"ie=edge\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Log record\\",
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"src\\": \\"http://localhost:3030/test/html/index.ts\\",
+                      \\"type\\": \\"module\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 18
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 19
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\n\\",
+                    \\"id\\": 21
+                  }
+                ],
+                \\"id\\": 20
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"assert\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:2:15\\"
+        ],
+        \\"payload\\": [
+          \\"true\\",
+          \\"\\\\\\"assert\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"count\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:3:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"count\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"countReset\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:4:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"count\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"debug\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:5:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"debug\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"dir\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:6:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"dir\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"dirxml\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:7:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"dirxml\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"group\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:8:15\\"
+        ],
+        \\"payload\\": []
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"groupCollapsed\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:9:15\\"
+        ],
+        \\"payload\\": []
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"info\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:10:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"info\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:11:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"log\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"table\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:12:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"table\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"time\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:13:15\\"
+        ],
+        \\"payload\\": []
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"timeEnd\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:14:15\\"
+        ],
+        \\"payload\\": []
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"timeLog\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:15:15\\"
+        ],
+        \\"payload\\": []
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"trace\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:16:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"trace\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"warn\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:17:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"warn\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"clear\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:18:15\\"
+        ],
+        \\"payload\\": []
+      }
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:19:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"TypeError: a message\\\\\\\\n    at __puppeteer_evaluation_script__:19:19\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
+        ]
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 20,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 22
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 0,
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"html\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"head\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 23,
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"body\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [],
+                    \\"rootId\\": 23,
+                    \\"id\\": 26
+                  }
+                ],
+                \\"rootId\\": 23,
+                \\"id\\": 24
+              }
+            ],
+            \\"compatMode\\": \\"BackCompat\\",
+            \\"id\\": 23
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"isAttachIframe\\": true
+    }
+  },
+  {
+    \\"type\\": 6,
+    \\"data\\": {
+      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"payload\\": {
+        \\"level\\": \\"log\\",
+        \\"trace\\": [
+          \\"__puppeteer_evaluation_script__:2:15\\"
+        ],
+        \\"payload\\": [
+          \\"\\\\\\"from iframe\\\\\\"\\"
+        ]
+      }
+    }
+  }
+]"
+`;

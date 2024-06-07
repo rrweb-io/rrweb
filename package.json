@@ -15,7 +15,8 @@
   "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/plugins/*"
   ],
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
@@ -25,6 +26,7 @@
     "@typescript-eslint/parser": "^5.62.0",
     "browserslist": "^4.22.1",
     "concurrently": "^7.1.0",
+    "esbuild-plugin-umd-wrapper": "^2.0.0",
     "eslint": "^8.53.0",
     "eslint-plugin-compat": "^4.2.0",
     "eslint-plugin-jest": "^27.6.0",
@@ -37,9 +39,10 @@
   },
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
-    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1'",
+    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1 --continue'",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
+    "check-types": "yarn turbo run check-types --continue",
     "format": "yarn prettier --write '**/*.{ts,md}'",
     "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs yarn prettier --write",
     "dev": "yarn turbo run dev",
@@ -50,7 +53,7 @@
     "release": "yarn build:all && changeset publish"
   },
   "resolutions": {
-    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
+    "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
     "**/@types/dom-webcodecs": "0.1.5"
   },
   "browserslist": [

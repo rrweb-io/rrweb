@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import {
   listenerHandler,
@@ -43,16 +44,15 @@ const setup = function (
 
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
-
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
-    ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
     ctx.page = await ctx.browser.newPage();
     await ctx.page.goto('about:blank');
     await ctx.page.setContent(content);
-    await ctx.page.evaluate(ctx.code);
+    await ctx.page.addScriptTag({
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+    });
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
@@ -87,7 +87,7 @@ const setup = function (
 };
 
 describe('record webgl', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,
@@ -269,7 +269,7 @@ describe('record webgl', function (this: ISuite) {
   });
 
   describe('recordCanvas FPS', function (this: ISuite) {
-    jest.setTimeout(10_000);
+    vi.setConfig({ testTimeout: 10_000 });
 
     const maxFPS = 60;
 

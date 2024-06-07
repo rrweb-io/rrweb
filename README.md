@@ -11,8 +11,8 @@
 
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
-![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js?compression=gzip&label=total%20gzip%20size)
-![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js?compression=gzip&label=recorder%20gzip%20size)
+![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.cjs?compression=gzip&label=total%20gzip%20size)
+![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.cjs?compression=gzip&label=recorder%20gzip%20size)
 [![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
 [中文文档](./README.zh_CN.md)
@@ -39,9 +39,7 @@ rrweb is mainly composed of 3 parts:
 
 ## Roadmap
 
-- rrdom: an ad-hoc DOM for rrweb session data [#419](https://github.com/rrweb-io/rrweb/issues/419)
 - storage engine: do deduplication on a large number of rrweb sessions
-- more end-to-end tests
 - compact mutation data in common patterns
 - provide plugins via the new plugin API, including:
   - XHR plugin
@@ -166,7 +164,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/Juice10">
+      <a href="https://github.com/juice10">
         <img
           src="https://avatars.githubusercontent.com/u/4106?s=100"
           width="100px;"
@@ -199,15 +197,15 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
     <td align="center">
-      <a href="https://cux.io" target="_blank">
-        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
+      <a href="https://recordonce.com/" target="_blank">
+        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
       </a>
     </td>
   </tr>
     <tr>
     <td align="center">
-      <a href="https://recordonce.com/" target="_blank">
-        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
+      <a href="https://cux.io" target="_blank">
+        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
       </a>
     </td>
     <td align="center">
