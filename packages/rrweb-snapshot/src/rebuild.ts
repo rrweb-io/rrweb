@@ -1,6 +1,7 @@
 import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
+  serializedElementNodeWithId,
   NodeType,
   tagMap,
   elementNode,
@@ -145,6 +146,89 @@ export function createCache(): BuildCache {
   };
 }
 
+/**
+ * undo findCssTextSplits
+ * (would move to utils.ts but uses `adaptCssForReplay`)
+ */
+export function applyCssSplits(
+  n: serializedElementNodeWithId,
+  cssText: string,
+  cssTextSplits: number[],
+  hackCss: boolean,
+  cache: BuildCache,
+): void {
+  const lenCheckOk =
+    cssTextSplits.length &&
+    cssTextSplits[cssTextSplits.length - 1] === cssText.length;
+  for (let j = n.childNodes.length - 1; j >= 0; j--) {
+    const scn = n.childNodes[j];
+    let ix = 0;
+    if (cssTextSplits.length > j && j > 0) {
+      ix = cssTextSplits[j - 1];
+    }
+    if (scn.type === NodeType.Text) {
+      let remainder = '';
+      if (ix !== 0 && lenCheckOk) {
+        remainder = cssText.substring(0, ix);
+        cssText = cssText.substring(ix);
+      } else if (j > 0) {
+        continue;
+      }
+      if (hackCss) {
+        cssText = adaptCssForReplay(cssText, cache);
+      }
+      // id will be assigned when these child nodes are
+      // iterated over in buildNodeWithSN
+      scn.textContent = cssText;
+      cssText = remainder;
+    }
+  }
+  if (cssText.length) {
+    // something has gone wrong
+    console.warn('Leftover css content after applyCssSplits:', cssText);
+  }
+}
+
+/**
+ * Normally a <style> element has a single textNode containing the rules.
+ * During serialization, we bypass this (`styleEl.sheet`) to get the rules the
+ * browser sees and serialize this to a special _cssText attribute, blanking
+ * out any text nodes. This function reverses that and also handles cases where
+ * there were no textNode children present (dynamic css/or a <link> element) as
+ * well as multiple textNodes (`cssTextSplits`), which need to be repopulated
+ * in case they are modified by subsequent mutations.
+ */
+export function buildStyleNode(
+  n: serializedElementNodeWithId,
+  styleEl: HTMLStyleElement, // when inlined, a <link type="stylesheet"> also gets rebuilt as a <style>
+  cssText: string,
+  options: {
+    doc: Document;
+    hackCss: boolean;
+    cache: BuildCache;
+  },
+) {
+  const { doc, hackCss, cache } = options;
+  if (n.childNodes.length) {
+    let cssTextSplits: number[] = [];
+    if (n.attributes._cssTextSplits) {
+      cssTextSplits = n.attributes._cssTextSplits
+        .split(' ')
+        .map((s) => parseInt(s));
+    }
+    applyCssSplits(n, cssText, cssTextSplits, hackCss, cache);
+  } else {
+    if (hackCss) {
+      cssText = adaptCssForReplay(cssText, cache);
+    }
+    /**
+       <link> element or dynamic <style> are serialized without any child nodes
+       we create the text node without an ID or presence in mirror as it can't
+    */
+    styleEl.appendChild(doc.createTextNode(cssText));
+  }
+}
+
 function buildNode(
   n: serializedNodeWithId,
   options: {
@@ -219,14 +303,17 @@ function buildNode(
         if (name.startsWith('rr_')) {
           specialAttributes[name] = value;
           continue;
+        } else if (name === '_cssTextSplits') {
+          continue;
         }
 
-        const isTextarea = tagName === 'textarea' && name === 'value';
-        const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache);
-        }
-        if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
+        if (typeof value !== 'string') {
+          // pass
+        } else if (tagName === 'style' && name === '_cssText') {
+          buildStyleNode(n, node as HTMLStyleElement, value, options);
+          continue; // no need to set _cssText as attribute
+        } else if (tagName === 'textarea' && name === 'value') {
+          // create without an ID or presence in mirror
           node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
           n.childNodes = []; // value overrides childNodes
@@ -378,11 +465,11 @@ function buildNode(
       return node;
     }
     case NodeType.Text:
-      return doc.createTextNode(
-        n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache)
-          : n.textContent,
-      );
+      if (n.isStyle && hackCss) {
+        // support legacy style
+        return doc.createTextNode(adaptCssForReplay(n.textContent, cache));
+      }
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:

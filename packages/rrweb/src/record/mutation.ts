@@ -320,7 +320,10 @@ export default class MutationBuffer {
           if (isSerializedIframe(currentN, this.mirror)) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
-          if (isSerializedStylesheet(currentN, this.mirror)) {
+          if (
+            this.inlineStylesheet &&
+            isSerializedStylesheet(currentN, this.mirror)
+          ) {
             this.stylesheetManager.trackLinkElement(
               currentN as HTMLLinkElement,
             );
@@ -332,9 +335,6 @@ export default class MutationBuffer {
         onIframeLoad: (iframe, childSn) => {
           this.iframeManager.attachIframe(iframe, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
-        },
-        onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachLinkElement(link, childSn);
         },
       });
       if (sn) {
@@ -663,6 +663,20 @@ export default class MutationBuffer {
                 item.styleDiff[pname] = false; // delete
               }
             }
+          } else if (
+            this.inlineStylesheet &&
+            attributeName === 'rel' &&
+            value.toLowerCase() === 'stylesheet' &&
+            m.target.tagName === 'LINK'
+          ) {
+            if (m.target.sheet) {
+              console.warn(
+                'have we missed the onload event due to delayed mutation?',
+              );
+            }
+            this.stylesheetManager.trackLinkElement(
+              m.target as HTMLLinkElement,
+            );
           }
         }
         break;

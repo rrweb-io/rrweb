@@ -93,6 +93,15 @@ export function escapeImportStatement(rule: CSSImportRule): string {
   return statement.join(' ') + ';';
 }
 
+/*
+ * serialize the css rules from the .sheet property
+ * for <link rel="stylesheet"> elements, this is the only way of getting the rules without a FETCH
+ * for <style> elements, this is less preferable to looking at childNodes[0].textContent
+ * (which will include vendor prefixed rules which may not be used or visible to the recorded browser,
+ * but which might be needed by the replayer browser)
+ * however, at snapshot time, we don't know whether the style element has suffered
+ * any programmatic manipulation prior to the snapshot, in which case the .sheet would be more up to date
+ */
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
@@ -350,4 +359,54 @@ export function extractFileExtension(
   const regex = /\.([0-9a-z]+)(?:$)/i;
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
+}
+
+function normalizeCssString(cssText: string): string {
+  // remove spaces
+  // TODO: normalize other differences between css as authored vs. stringifyStylesheet
+  return cssText.replace(/[\s]/g, '');
+}
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * performance is not considered as this is anticipated to be very much an edge case
+ * (javascript is needed to add extra text nodes to a <style>)
+ */
+export function findCssTextSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): number[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits = [];
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    const cssTextNorm = normalizeCssString(cssText);
+    for (let i = 1; i < childNodes.length; i++) {
+      let split = 0; // marker for 'no split found'
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        for (let j = 3; j < textContentNorm.length; j++) {
+          // find a  substring that appears only once
+          const bit = textContentNorm.substring(0, j);
+          if (cssTextNorm.split(bit).length === 2) {
+            const splitNorm = cssTextNorm.indexOf(bit);
+            // find the split point in the original text
+            for (let k = splitNorm; k < cssText.length; k++) {
+              if (
+                normalizeCssString(cssText.substring(0, k)).length === splitNorm
+              ) {
+                split = k;
+              }
+            }
+            break;
+          }
+        }
+      }
+      splits.push(split);
+    }
+  }
+  splits.push(cssText.length); // a check in case the cssText is altered in transit
+  return splits;
 }

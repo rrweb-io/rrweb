@@ -105,7 +105,7 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
-  it('can record textarea mutations correctly', async () => {
+  it('can record and replay textarea mutations correctly', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'empty.html'));
@@ -167,6 +167,101 @@ describe('record integration tests', function (this: ISuite) {
       'User:1ok3',
       'Mutation:1ok3', // if this gets set to 'ignore', it's an error, as the 'user' has modified the textarea
       'User:12ok3',
+    ]);
+  });
+
+  it('can record and replay style mutations', async () => {
+    // This test shows that the `isStyle` attribute on textContent is not needed in a mutation
+    // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(getHtml.call(this, 'style.html'));
+
+    await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
+
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style');
+      if (styleEl) {
+        styleEl.append(
+          document.createTextNode('body { background-color: darkgreen; }'),
+        );
+        styleEl.append(
+          document.createTextNode(
+            '.absolutify { background-image: url("./rel"); }',
+          ),
+        );
+      }
+    });
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('darkgreen', 'purple');
+            cn.textContent = cn.textContent.replace(
+              'orange !important',
+              'yellow',
+            );
+          }
+        });
+      }
+    });
+    await page.waitForTimeout(5);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace(
+              'black',
+              'black !important',
+            );
+          }
+        });
+      }
+    });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    // following ensures that the ./rel url has been absolutized (in a mutation)
+    assertSnapshot(snapshots);
+
+    // check after each mutation and text input
+    const replayStyleValues = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      const vals = [];
+      window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
+        replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
+        let bodyStyle = getComputedStyle(replayer.iframe.contentDocument.querySelector('body'))
+        vals.push({
+          'background-color': bodyStyle['background-color'],
+          'color': bodyStyle['color'],
+        });
+      });
+      vals.push(replayer.iframe.contentDocument.getElementById('single-textContent').innerText);
+      vals.push(replayer.iframe.contentDocument.getElementById('empty').innerText);
+      vals;
+`);
+
+    expect(replayStyleValues).toEqual([
+      {
+        'background-color': 'rgb(0, 100, 0)', // darkgreen
+        color: 'rgb(255, 165, 0)', // orange (from style.html)
+      },
+      {
+        'background-color': 'rgb(128, 0, 128)', // purple
+        color: 'rgb(255, 255, 0)', // yellow
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)', // black !important
+        color: 'rgb(255, 255, 0)', // yellow
+      },
+      'a:hover, a.\\:hover { outline: red solid 1px; }', // has run adaptCssForReplay
+      'a:hover, a.\\:hover { outline: blue solid 1px; }', // has run adaptCssForReplay
     ]);
   });
 
