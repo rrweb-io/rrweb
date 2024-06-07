@@ -3481,13 +3481,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/postcss-js@^4.0.4":
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/@types/postcss-js/-/postcss-js-4.0.4.tgz#4f0fafd7a0508c7edd33095f8743e8cf5c28ad78"
-  integrity sha512-j5+GMZVIPCJpRTwI/mO64mCzv7X+zAEq3JP0EV2lo/BrLWHAohEubUJimIAY23rH27+wKce0fXUYjAdBoqlaYw==
-  dependencies:
-    postcss "^8.3.3"
-
 "@types/prettier@^2.1.5":
   version "2.4.1"
   resolved "https://registry.npmjs.org/@types/prettier/-/prettier-2.4.1.tgz"
@@ -5571,9 +5564,14 @@ csso@^4.0.2:
   dependencies:
     css-tree "^1.1.2"
 
-cssom@^0.4.4, cssom@^0.5.0, "cssom@https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz":
+cssom@^0.4.4, "cssom@https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz":
   version "0.6.0"
   resolved "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz#ed298055b97cbddcdeb278f904857629dec5e0e1"
+
+cssom@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/cssom/-/cssom-0.5.0.tgz#d254fa92cd8b6fbd83811b9fbaed34663cc17c36"
+  integrity sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==
 
 cssom@~0.3.6:
   version "0.3.8"
@@ -12267,15 +12265,6 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.27:
     picocolors "^0.2.1"
     source-map "^0.6.1"
 
-postcss@^8.3.3, postcss@^8.4.38:
-  version "8.4.38"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.38.tgz#b387d533baf2054288e337066d81c6bee9db9e0e"
-  integrity sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==
-  dependencies:
-    nanoid "^3.3.7"
-    picocolors "^1.0.0"
-    source-map-js "^1.2.0"
-
 postcss@^8.4.16, postcss@^8.4.18:
   version "8.4.18"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.18.tgz#6d50046ea7d3d66a85e0e782074e7203bc7fbca2"
@@ -12284,6 +12273,15 @@ postcss@^8.4.16, postcss@^8.4.18:
     nanoid "^3.3.4"
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
+
+postcss@^8.4.38:
+  version "8.4.38"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.38.tgz#b387d533baf2054288e337066d81c6bee9db9e0e"
+  integrity sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==
+  dependencies:
+    nanoid "^3.3.7"
+    picocolors "^1.0.0"
+    source-map-js "^1.2.0"
 
 preferred-pm@^3.0.0:
   version "3.0.3"

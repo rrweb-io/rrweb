@@ -58,8 +58,7 @@
     "rollup-plugin-typescript2": "^0.31.2",
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
-    "tslib": "^1.9.3",
-    "@types/postcss-js": "^4.0.4"
+    "tslib": "^1.9.3"
   },
   "dependencies": {
     "postcss": "^8.4.38"
