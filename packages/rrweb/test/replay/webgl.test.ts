@@ -1,12 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
 import events from '../events/webgl';
 
 interface ISuite {
-  code: string;
   browser: puppeteer.Browser;
   page: puppeteer.Page;
 }
@@ -14,17 +14,13 @@ interface ISuite {
 expect.extend({ toMatchImageSnapshot });
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
-  let code: ISuite['code'];
   let browser: ISuite['browser'];
   let page: ISuite['page'];
 
   beforeAll(async () => {
     browser = await launchPuppeteer();
-
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
-    code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   beforeEach(async () => {
@@ -35,7 +31,9 @@ describe('replayer', function () {
     await page.addStyleTag({
       content: '.replayer-mouse-tail{display: none !important;}',
     });
-    await page.evaluate(code);
+    await page.addScriptTag({
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+    });
     await page.evaluate(`let events = ${JSON.stringify(events)}`);
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));

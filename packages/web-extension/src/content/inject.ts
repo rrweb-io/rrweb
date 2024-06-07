@@ -1,6 +1,6 @@
 import { record } from '@amplitude/rrweb';
 import type { eventWithTime } from '@amplitude/rrweb-types';
-import type { recordOptions } from '@amplitude/rrweb/typings/types';
+import type { recordOptions } from '@amplitude/rrweb';
 import { MessageName, RecordStartedMessage } from '~/types';
 import { isInCrossOriginIFrame } from '~/utils';
 

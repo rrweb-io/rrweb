@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import type { RRwebPlayerOptions } from '@amplitude/rrweb-player';
 import { ProgressBar } from '@open-tech-world/cli-progress-bar';
 import * as fs from 'fs';
 import minimist from 'minimist';
 import * as path from 'path';
+import type Player from '@amplitude/rrweb-player';
 import { transformToVideo } from './index';
 
 const argv = minimist(process.argv.slice(2));
@@ -20,7 +20,7 @@ if (argv.config) {
     ? configPathStr
     : path.resolve(process.cwd(), configPathStr);
   config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Omit<
-    RRwebPlayerOptions['props'],
+    ConstructorParameters<typeof Player>[0]['props'],
     'events'
   >;
 }

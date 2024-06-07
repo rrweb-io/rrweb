@@ -1,0 +1,58 @@
+{
+  "name": "@rrweb/rrweb-plugin-console-record",
+  "version": "2.0.0-alpha.14",
+  "description": "",
+  "type": "module",
+  "main": "./dist/rrweb-plugin-console-record.umd.cjs",
+  "module": "./dist/rrweb-plugin-console-record.js",
+  "unpkg": "./dist/rrweb-plugin-console-record.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-console-record.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-console-record.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "build": "tsc -noEmit && vite build",
+    "check-types": "tsc -noEmit",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "yanzhen@smartx.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "rrweb": "^2.0.0-alpha.14",
+    "typescript": "^4.7.3",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1",
+    "vitest": "^1.4.0",
+    "puppeteer": "^20.9.0"
+  },
+  "peerDependencies": {
+    "rrweb": "^2.0.0-alpha.14"
+  }
+}

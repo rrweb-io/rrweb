@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`iframe integration tests snapshot async iframes 1`] = `
+exports[`iframe integration tests > snapshot async iframes 1`] = `
 "{
   \\"type\\": 0,
   \\"childNodes\\": [
@@ -132,7 +132,7 @@ exports[`iframe integration tests snapshot async iframes 1`] = `
 }"
 `;
 
-exports[`integration tests [html file]: about-mozilla.html 1`] = `
+exports[`integration tests > [html file]: about-mozilla.html 1`] = `
 "<!DOCTYPE html><html><head>
   <title>The Book of Mozilla, 11:9</title>
   <style type=\\"text/css\\">html { background: maroon; color: white; font-style: italic; }#moztext { margin-top: 15%; font-size: 1.1em; font-family: serif; text-align: center; line-height: 1.5; }#from { font-size: 1.95em; font-family: serif; text-align: right; }em { font-size: 1.3em; line-height: 0; }a { text-decoration: none; color: white; }</style>
@@ -149,7 +149,7 @@ exports[`integration tests [html file]: about-mozilla.html 1`] = `
   </p></body></html>"
 `;
 
-exports[`integration tests [html file]: background-clip-text.html 1`] = `
+exports[`integration tests > [html file]: background-clip-text.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\" />
@@ -163,7 +163,7 @@ exports[`integration tests [html file]: background-clip-text.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: basic.html 1`] = `
+exports[`integration tests > [html file]: basic.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -173,7 +173,7 @@ exports[`integration tests [html file]: basic.html 1`] = `
   <h1>Title</h1></body></html>"
 `;
 
-exports[`integration tests [html file]: block-element.html 1`] = `
+exports[`integration tests > [html file]: block-element.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -188,7 +188,7 @@ exports[`integration tests [html file]: block-element.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: compat-mode.html 1`] = `
+exports[`integration tests > [html file]: compat-mode.html 1`] = `
 "<!-- no doctype! --><html><head>
   <title>Compat Mode; image resizing</title>
 </head>
@@ -202,7 +202,7 @@ exports[`integration tests [html file]: compat-mode.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: cors-style-sheet.html 1`] = `
+exports[`integration tests > [html file]: cors-style-sheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -214,7 +214,7 @@ exports[`integration tests [html file]: cors-style-sheet.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests [html file]: dynamic-stylesheet.html 1`] = `
+exports[`integration tests > [html file]: dynamic-stylesheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -228,7 +228,7 @@ exports[`integration tests [html file]: dynamic-stylesheet.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: form-fields.html 1`] = `
+exports[`integration tests > [html file]: form-fields.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -263,7 +263,7 @@ exports[`integration tests [html file]: form-fields.html 1`] = `
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
-exports[`integration tests [html file]: hover.html 1`] = `
+exports[`integration tests > [html file]: hover.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -275,7 +275,7 @@ exports[`integration tests [html file]: hover.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: iframe.html 1`] = `
+exports[`integration tests > [html file]: iframe.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -287,17 +287,17 @@ exports[`integration tests [html file]: iframe.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: iframe-inner.html 1`] = `
+exports[`integration tests > [html file]: iframe-inner.html 1`] = `
 "<html><head></head><body><button>inner iframe button</button>
 </body></html>"
 `;
 
-exports[`integration tests [html file]: invalid-attribute.html 1`] = `
+exports[`integration tests > [html file]: invalid-attribute.html 1`] = `
 "<html foo=\\"bar\\"><head></head><body>
 </body></html>"
 `;
 
-exports[`integration tests [html file]: invalid-doctype.html 1`] = `
+exports[`integration tests > [html file]: invalid-doctype.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -306,7 +306,7 @@ exports[`integration tests [html file]: invalid-doctype.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests [html file]: invalid-tagname.html 1`] = `
+exports[`integration tests > [html file]: invalid-tagname.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -320,7 +320,7 @@ exports[`integration tests [html file]: invalid-tagname.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: mask-text.html 1`] = `
+exports[`integration tests > [html file]: mask-text.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -335,7 +335,7 @@ exports[`integration tests [html file]: mask-text.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture.html 1`] = `
+exports[`integration tests > [html file]: picture.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <picture>
       <!-- these are 404 - not sure if that's intentional -->
@@ -346,32 +346,32 @@ exports[`integration tests [html file]: picture.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture-blob.html 1`] = `
+exports[`integration tests > [html file]: picture-blob.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <img src=\\"blob:http://localhost:xxxx/...\\" alt=\\"This is a robot\\" />
   
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
-exports[`integration tests [html file]: picture-blob-in-frame.html 1`] = `
+exports[`integration tests > [html file]: picture-blob-in-frame.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <iframe></iframe>
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture-in-frame.html 1`] = `
+exports[`integration tests > [html file]: picture-in-frame.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <iframe></iframe>
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture-with-inline-onload.html 1`] = `
+exports[`integration tests > [html file]: picture-with-inline-onload.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" style=\\"opacity: 1;\\" _onload=\\"this.style.opacity=1\\" />
   </body></html>"
 `;
 
-exports[`integration tests [html file]: preload.html 1`] = `
+exports[`integration tests > [html file]: preload.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -383,7 +383,7 @@ exports[`integration tests [html file]: preload.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests [html file]: shadow-dom.html 1`] = `
+exports[`integration tests > [html file]: shadow-dom.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -402,7 +402,7 @@ exports[`integration tests [html file]: shadow-dom.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: svg.html 1`] = `
+exports[`integration tests > [html file]: svg.html 1`] = `
 "<!DOCTYPE html><html><head>
     <title>IcoMoon - SVG Icons</title>
     <meta charset=\\"utf-8\\" />
@@ -435,7 +435,7 @@ exports[`integration tests [html file]: svg.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: video.html 1`] = `
+exports[`integration tests > [html file]: video.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -450,7 +450,7 @@ exports[`integration tests [html file]: video.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: with-relative-res.html 1`] = `
+exports[`integration tests > [html file]: with-relative-res.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -470,7 +470,7 @@ exports[`integration tests [html file]: with-relative-res.html 1`] = `
   <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/300,400/a.jpg 300w, http://localhost:3030/b.png\\" /></body></html>"
 `;
 
-exports[`integration tests [html file]: with-script.html 1`] = `
+exports[`integration tests > [html file]: with-script.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -481,7 +481,7 @@ exports[`integration tests [html file]: with-script.html 1`] = `
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
-exports[`integration tests [html file]: with-style-sheet.html 1`] = `
+exports[`integration tests > [html file]: with-style-sheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -492,7 +492,7 @@ exports[`integration tests [html file]: with-style-sheet.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: with-style-sheet-with-import.html 1`] = `
+exports[`integration tests > [html file]: with-style-sheet-with-import.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -503,7 +503,7 @@ exports[`integration tests [html file]: with-style-sheet-with-import.html 1`] = 
 </body></html>"
 `;
 
-exports[`shadow DOM integration tests snapshot shadow DOM 1`] = `
+exports[`shadow DOM integration tests > snapshot shadow DOM 1`] = `
 "{
   \\"type\\": 0,
   \\"childNodes\\": [

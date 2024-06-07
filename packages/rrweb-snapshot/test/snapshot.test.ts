@@ -1,7 +1,8 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
+import { describe, it, expect } from 'vitest';
 import {
   absoluteToStylesheet,
   serializeNodeWithId,

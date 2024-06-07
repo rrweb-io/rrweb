@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const emitter = new EventEmitter();
 
 function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+  const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
@@ -197,7 +197,7 @@ void (async () => {
     }
 
     await page.addStyleTag({
-      path: path.resolve(__dirname, '../dist/rrweb.css'),
+      path: path.resolve(__dirname, '../dist/style.css'),
     });
     await page.evaluate(`${code}
       const events = ${JSON.stringify(events)};
@@ -228,10 +228,10 @@ void (async () => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Record @${time}</title>
-    <link rel="stylesheet" href="../dist/rrweb.css" />
+    <link rel="stylesheet" href="../dist/style.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.js"></script>
+    <script src="../dist/rrweb.umd.cjs"></script>
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(

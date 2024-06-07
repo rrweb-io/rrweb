@@ -34,7 +34,6 @@ import {
   Handler,
   IWindow,
   IncrementalSource,
-  MediaInteractions,
   MouseInteractions,
   ReplayerEvents,
   addedNodeMutation,
@@ -76,14 +75,17 @@ import {
 } from '../utils';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
-import { createPlayerService, createSpeedService } from './machine';
+import { 
+  createPlayerService, 
+  createSpeedService,   
+  type PlayerMachineState,
+  type SpeedMachineState, 
+} from './machine';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import { Timer } from './timer';
 import { MediaManager } from './media';
-
-const SKIP_TIME_INTERVAL = 5 * 1000;
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 const mitt = mittProxy.default || mittProxy;
@@ -1017,12 +1019,6 @@ export class Replayer {
    * pause when there are some canvas drawImage args need to be loaded
    */
   private async preloadAllImages(): Promise<void[]> {
-    let beforeLoadState = this.service.state;
-    const stateHandler = () => {
-      beforeLoadState = this.service.state;
-    };
-    this.emitter.on(ReplayerEvents.Start, stateHandler);
-    this.emitter.on(ReplayerEvents.Pause, stateHandler);
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (
@@ -1051,8 +1047,6 @@ export class Replayer {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
-      let d = imgd?.data;
-      d = JSON.parse(data.args[0]) as Uint8ClampedArray;
       ctx?.putImageData(imgd!, 0, 0);
     }
   }
@@ -2221,3 +2215,5 @@ export class Replayer {
     this.config.logger.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }
+
+export { PlayerMachineState, SpeedMachineState, playerConfig };

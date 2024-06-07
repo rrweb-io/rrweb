@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    /**
+     * @see https://vitejs.dev/guide/features.html#target
+     */
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["es6", "dom"],
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "importsNotUsedAsValues": "error",
+    "strict": true,
+    "removeComments": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "preserveConstEnums": true,
+    "strictBindCallApply": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
+
+    // needed for vite
+    /**
+     * @see https://vitejs.dev/guide/features.html#isolatedmodules
+     */
+    "isolatedModules": true,
+
+    "types": [
+      "node",
+      /**
+       * needed as long as we have jest tests
+       * they add globals like `test` and `expect`
+       */
+      "jest",
+      /**
+       * @see https://vitejs.dev/guide/features.html#client-types
+       */
+      "vite/client",
+      "@types/dom-mediacapture-transform",
+      "@types/offscreencanvas"
+    ]
+  },
+  "exclude": ["**/vite.config.ts", "**/vitest.config.ts", "**/test"],
+  "compileOnSave": true
+}

@@ -1,12 +1,12 @@
-import type { RRwebPlayerOptions } from '@amplitude/rrweb-player';
 import { EventType, eventWithTime } from '@amplitude/rrweb-types';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium } from 'playwright';
+import type Player from '@amplitude/rrweb-player';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('@amplitude/rrweb-player'),
-  '../../dist/index.js',
+  '../../dist/rrweb-player.umd.cjs',
 );
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');
 const rrwebRaw = fs.readFileSync(rrwebScriptPath, 'utf-8');
@@ -22,7 +22,10 @@ type RRvideoConfig = {
   resolutionRatio?: number;
   // A callback function that will be called when the progress of the replay is updated.
   onProgressUpdate?: (percent: number) => void;
-  rrwebPlayer?: Omit<RRwebPlayerOptions['props'], 'events'>;
+  rrwebPlayer?: Omit<
+    ConstructorParameters<typeof Player>[0]['props'],
+    'events'
+  >;
 };
 
 const defaultConfig: Required<RRvideoConfig> = {
@@ -54,7 +57,7 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
       )};
       /*-->*/
       const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
-      window.replayer = new rrwebPlayer({
+      window.replayer = new rrwebPlayer.Player({
         target: document.body,
         width: userConfig.width,
         height: userConfig.height,

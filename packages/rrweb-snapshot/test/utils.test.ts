@@ -1,9 +1,10 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
-import { serializedNodeWithId } from '@amplitude/rrweb-snapshot';
+import type { serializedNodeWithId } from '@amplitude/rrweb-snapshot';
 import { NodeType, serializedNode } from '../src/types';
 import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
+import { describe, it, test, expect } from 'vitest';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

@@ -1,8 +1,9 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import { describe, it, beforeEach, expect } from 'vitest';
 import {
   adaptCssForReplay,
   buildNodeWithSN,
