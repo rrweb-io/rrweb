@@ -220,4 +220,23 @@ a.\\:hover b.\\:hover { color: white }`,
       expect(getDuration(cachedEnd) * factor).toBeLessThan(getDuration(end));
     });
   });
+
+  it('should not incorrectly interpret escaped quotes', () => {
+    // the ':hover' in the below is a decoy which is not part of the selector,
+    // previously that part was being incorrectly consumed by the selector regex
+    const should_not_modify =
+      ".tailwind :is(.before\\:content-\\[\\'\\'\\])::before { --tw-content: \":hover\"; content: var(--tw-content); }.tailwind :is(.\\[\\&\\>li\\]\\:before\\:content-\\[\\'-\\'\\] > li)::before { color: pink; }";
+    expect(adaptCssForReplay(should_not_modify, cache)).toEqual(
+      should_not_modify,
+    );
+  });
+
+  it('should not incorrectly interpret at rules', () => {
+    // the ':hover' in the below is a decoy which is not part of the selector,
+    const should_not_modify =
+      '@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,400&display=:hover");';
+    expect(adaptCssForReplay(should_not_modify, cache)).toEqual(
+      should_not_modify,
+    );
+  });
 });

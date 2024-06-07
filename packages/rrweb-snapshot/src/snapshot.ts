@@ -196,23 +196,33 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   return output.join(', ');
 }
 
+const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
+
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
   if (!attributeValue || attributeValue.trim() === '') {
     return attributeValue;
   }
-  const a: HTMLAnchorElement = doc.createElement('a');
-  a.href = attributeValue;
-  return a.href;
+
+  return getHref(doc, attributeValue);
 }
 
 function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
-function getHref() {
-  // return a href without hash
-  const a = document.createElement('a');
-  a.href = '';
+function getHref(doc: Document, customHref?: string) {
+  let a = cachedDocument.get(doc);
+  if (!a) {
+    a = doc.createElement('a');
+    cachedDocument.set(doc, a);
+  }
+  if (!customHref) {
+    customHref = '';
+  } else if (customHref.startsWith('blob:') || customHref.startsWith('data:')) {
+    return customHref;
+  }
+  // note: using `new URL` is slower. See #1434 or https://jsbench.me/uqlud17rxo/1
+  a.setAttribute('href', customHref);
   return a.href;
 }
 
@@ -244,7 +254,7 @@ export function transformAttribute(
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style') {
-    return absoluteToStylesheet(value, getHref());
+    return absoluteToStylesheet(value, getHref(doc));
   } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
   }
@@ -506,6 +516,7 @@ function serializeNode(
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
+        doc,
         needsMask,
         maskTextFn,
         rootId,
@@ -536,6 +547,7 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
 function serializeTextNode(
   n: Text,
   options: {
+    doc: Document;
     needsMask: boolean | undefined;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
@@ -567,7 +579,7 @@ function serializeTextNode(
         n,
       );
     }
-    textContent = absoluteToStylesheet(textContent, getHref());
+    textContent = absoluteToStylesheet(textContent, getHref(options.doc));
   }
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
@@ -661,7 +673,7 @@ function serializeElementNode(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref());
+      attributes._cssText = absoluteToStylesheet(cssText, getHref(doc));
     }
   }
   // form fields
@@ -714,7 +726,7 @@ function serializeElementNode(
       );
 
       // create blank canvas of same dimensions
-      const blankCanvas = document.createElement('canvas');
+      const blankCanvas = doc.createElement('canvas');
       blankCanvas.width = (n as HTMLCanvasElement).width;
       blankCanvas.height = (n as HTMLCanvasElement).height;
       const blankCanvasDataURL = blankCanvas.toDataURL(
@@ -735,8 +747,9 @@ function serializeElementNode(
       canvasCtx = canvasService.getContext('2d');
     }
     const image = n as HTMLImageElement;
-    const oldValue = image.crossOrigin;
-    image.crossOrigin = 'anonymous';
+    const imageSrc: string =
+      image.currentSrc || image.getAttribute('src') || '<unknown-src>';
+    const priorCrossOrigin = image.crossOrigin;
     const recordInlineImage = () => {
       image.removeEventListener('load', recordInlineImage);
       try {
@@ -748,13 +761,23 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       } catch (err) {
-        console.warn(
-          `Cannot inline img src=${image.currentSrc}! Error: ${err as string}`,
-        );
+        if (image.crossOrigin !== 'anonymous') {
+          image.crossOrigin = 'anonymous';
+          if (image.complete && image.naturalWidth !== 0)
+            recordInlineImage(); // too early due to image reload
+          else image.addEventListener('load', recordInlineImage);
+          return;
+        } else {
+          console.warn(
+            `Cannot inline img src=${imageSrc}! Error: ${err as string}`,
+          );
+        }
       }
-      oldValue
-        ? (attributes.crossOrigin = oldValue)
-        : image.removeAttribute('crossorigin');
+      if (image.crossOrigin === 'anonymous') {
+        priorCrossOrigin
+          ? (attributes.crossOrigin = priorCrossOrigin)
+          : image.removeAttribute('crossorigin');
+      }
     };
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
