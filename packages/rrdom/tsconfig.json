@@ -10,23 +10,21 @@
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": [
-      "es6",
-      "dom"
-    ],
+    "lib": ["es6", "dom"],
     "skipLibCheck": true,
     "declaration": true,
     "importsNotUsedAsValues": "error"
   },
   "references": [
     {
+      "path": "../rrweb-snapshot"
+    },
+    {
       "path": "../types"
     }
   ],
   "compileOnSave": true,
-  "exclude": [
-    "test"
-  ],
+  "exclude": ["test"],
   "include": [
     "src",
     "../rrweb/src/record/workers/workers.d.ts",

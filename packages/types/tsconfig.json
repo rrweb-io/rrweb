@@ -10,20 +10,17 @@
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "build",
-    "lib": [
-      "es6",
-      "dom"
-    ],
+    "lib": ["es6", "dom"],
     "skipLibCheck": true,
     "declaration": true,
     "importsNotUsedAsValues": "error"
   },
   "compileOnSave": true,
-  "exclude": [
-    "test"
-  ],
-  "include": [
-    "src"
-  ],
-  "references": []
+  "exclude": ["test"],
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../rrweb-snapshot"
+    }
+  ]
 }
