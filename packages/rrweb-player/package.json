@@ -1,8 +1,8 @@
 {
   "name": "@amplitude/rrweb-player",
-  "version": "2.0.0-alpha.13",
+  "version": "2.0.0-alpha.14",
   "devDependencies": {
-    "@amplitude/rrweb-types": "^2.0.0-alpha.13",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.14",
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@types/offscreencanvas": "^2019.6.4",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@amplitude/rrweb": "^2.0.0-alpha.13"
+    "@amplitude/rrweb": "^2.0.0-alpha.14"
   },
   "scripts": {
     "build": "rollup -c",

@@ -12,6 +12,7 @@
     "@amplitude/rrvideo": "2.0.0-alpha.11"
   },
   "changesets": [
+    "four-gifts-march",
     "octopus-orange",
     "popular-spies-fetch",
     "short-masks-cross"
