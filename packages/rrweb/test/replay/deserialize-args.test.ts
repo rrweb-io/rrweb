@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import { deserializeArg } from '../../src/replay/canvas/deserialize-args';

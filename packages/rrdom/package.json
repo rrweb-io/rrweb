@@ -3,48 +3,53 @@
   "version": "2.0.0-alpha.14",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
-  "main": "lib/rrdom.cjs",
-  "module": "es/rrdom.js",
-  "typings": "es",
-  "unpkg": "dist/rrdom.js",
+  "type": "module",
+  "main": "./dist/rrdom.cjs",
+  "module": "./dist/rrdom.js",
+  "unpkg": "./dist/rrdom.umd.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrdom.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrdom.cjs"
+      }
+    }
+  },
   "files": [
     "dist",
-    "lib",
-    "es",
-    "typings"
+    "package.json"
   ],
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "scripts": {
-    "dev": "rollup -c -w",
-    "bundle": "rollup --config",
-    "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
+    "dev": "vite build --watch",
+    "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
-    "test": "jest",
-    "prepublish": "npm run bundle",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^20.0.0",
     "@rrweb/types": "^2.0.0-alpha.14",
-    "@types/jest": "^27.4.1",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
     "eslint": "^8.15.0",
-    "jest": "^27.5.1",
     "puppeteer": "^17.1.3",
-    "rollup": "^2.56.3",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.31.2",
-    "rollup-plugin-web-worker-loader": "^1.6.1",
-    "ts-jest": "^27.1.3"
+    "typescript": "^4.9.0",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {
     "rrweb-snapshot": "^2.0.0-alpha.14"

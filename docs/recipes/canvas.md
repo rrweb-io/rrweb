@@ -40,5 +40,5 @@ replayer.play();
 
 **Enable replaying Canvas will remove the sandbox, which may cause a potential security issue.**
 
-Alternatively you can stream canvas elements via webrtc with the canvas-webrtc plugin.
-For more information see [canvas-webrtc documentation](../../packages/rrweb/src/plugins/canvas-webrtc/Readme.md)
+Alternatively you can stream canvas elements via webrtc with the [rrweb-plugin-canvas-webrtc-record](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/) & [rrweb-plugin-canvas-webrtc-replay](../../packages/plugins/rrweb-plugin-canvas-webrtc-replay) plugins.
+For more information see [canvas-webrtc documentation](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/Readme.md)

@@ -1,9 +1,9 @@
-import type { Plugin, Rule } from 'postcss';
+import type { AcceptedPlugin, Rule } from 'postcss';
 
 const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
 const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 
-const mediaSelectorPlugin: Plugin = {
+const mediaSelectorPlugin: AcceptedPlugin = {
   postcssPlugin: 'postcss-custom-selectors',
   prepare() {
     return {
@@ -18,7 +18,7 @@ const mediaSelectorPlugin: Plugin = {
 };
 
 // Adapted from https://github.com/giuseppeg/postcss-pseudo-classes/blob/master/index.js
-const pseudoClassPlugin: Plugin = {
+const pseudoClassPlugin: AcceptedPlugin = {
   postcssPlugin: 'postcss-hover-classes',
   prepare: function () {
     const fixed: Rule[] = [];

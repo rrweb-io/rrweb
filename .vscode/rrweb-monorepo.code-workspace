@@ -25,17 +25,75 @@
       "path": "../packages/rrweb-snapshot"
     },
     {
+      "name": "@rrweb/all",
+      "path": "../packages/all"
+    },
+    {
+      "name": "@rrweb/record",
+      "path": "../packages/record"
+    },
+    {
+      "name": "@rrweb/replay",
+      "path": "../packages/replay"
+    },
+    {
+      "name": "@rrweb/types",
+      "path": "../packages/types"
+    },
+    {
+      "name": "@rrweb/packer",
+      "path": "../packages/packer"
+    },
+    {
       "name": "web-extension (package)",
       "path": "../packages/web-extension"
     },
     { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
-    { "name": "@rrweb/types", "path": "../packages/types" }
+    {
+      "name": "@rrweb/rrweb-plugin-console-record",
+      "path": "../packages/plugins/rrweb-plugin-console-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-console-replay",
+      "path": "../packages/plugins/rrweb-plugin-console-replay"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-sequential-id-record",
+      "path": "../packages/plugins/rrweb-plugin-sequential-id-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-sequential-id-replay",
+      "path": "../packages/plugins/rrweb-plugin-sequential-id-replay"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-canvas-webrtc-record",
+      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
+      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-replay"
+    }
   ],
   "settings": {
+    "vitest.workspaceConfig": "../vitest.workspace.ts",
+    "vitest.commandLine": "yarn vitest",
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
+      "rrweb (package)",
       "rrweb-player (package)",
-      "@rrweb/types"
+      "rrweb-snapshot (package)",
+      "rrdom (package)",
+      "rrdom-nodejs (package)",
+      "@rrweb/all",
+      "@rrweb/record",
+      "@rrweb/replay",
+      "@rrweb/types",
+      "@rrweb/packer",
+      "@rrweb/rrweb-plugin-console-record",
+      "@rrweb/rrweb-plugin-console-replay",
+      "@rrweb/rrweb-plugin-sequential-id",
+      "@rrweb/rrweb-plugin-canvas-webrtc-record",
+      "@rrweb/rrweb-plugin-canvas-webrtc-replay"
     ]
   }
 }

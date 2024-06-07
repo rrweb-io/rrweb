@@ -1,9 +1,9 @@
+import { describe, it, expect } from 'vitest';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
-import { type Plugin } from 'postcss';
-const postcss = require('postcss');
+import postcss, { AcceptedPlugin } from 'postcss';
 
 describe('css parser', () => {
-  function parse(plugin: Plugin, input: string): string {
+  function parse(plugin: AcceptedPlugin, input: string): string {
     const ast = postcss([plugin]).process(input, {});
     return ast.css;
   }

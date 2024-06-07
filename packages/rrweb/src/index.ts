@@ -1,5 +1,10 @@
 import record from './record';
-import { Replayer } from './replay';
+import {
+  Replayer,
+  type playerConfig,
+  type PlayerMachineState,
+  type SpeedMachineState,
+} from './replay';
 import canvasMutation from './replay/canvas';
 import { _mirror } from './utils';
 import * as utils from './utils';
@@ -12,7 +17,7 @@ export {
   type eventWithTime,
 } from '@rrweb/types';
 
-export type { recordOptions } from './types';
+export type { recordOptions, ReplayPlugin } from './types';
 
 const { addCustomEvent } = record;
 const { freezePage } = record;
@@ -22,6 +27,9 @@ export {
   addCustomEvent,
   freezePage,
   Replayer,
+  playerConfig,
+  PlayerMachineState,
+  SpeedMachineState,
   canvasMutation,
   _mirror as mirror,
   utils,
