@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.18.0
+
+### Various fixes & improvements
+
+- Replace Array.from with clean implementation (#1464) by @billyvg
+- disable some tests that fail for our css parser (#195) by @billyvg
+- revert https://github.com/getsentry/rrweb/pull/182 (#195) by @billyvg
+- Revert "Fix some css issues with :hover and rewrite max-device-width (#1431)" (#195) by @billyvg
+
 ## 2.17.0
 
 ### Various fixes & improvements
