@@ -594,4 +594,28 @@ describe('same origin iframes', function (this: ISuite) {
     expect(events.length).toBe(4);
     assertSnapshot(events);
   });
+
+  it('should record cross-origin iframe in same-origin iframe', async () => {
+    const sameOriginIframe = ctx.page.mainFrame().childFrames()[0];
+    await sameOriginIframe.evaluate((serverUrl) => {
+      /**
+       * Create a cross-origin iframe in this same-origin iframe.
+       */
+      const crossOriginIframe = document.createElement('iframe');
+      document.body.appendChild(crossOriginIframe);
+      crossOriginIframe.src = `${serverUrl}/html/blank.html`;
+      return new Promise((resolve) => {
+        crossOriginIframe.onload = resolve;
+      });
+    }, ctx.serverURL);
+    const crossOriginIframe = sameOriginIframe.childFrames()[0];
+    // Inject recording script into this cross-origin iframe
+    await injectRecordScript(crossOriginIframe);
+
+    await waitForRAF(ctx.page);
+    const snapshots = (await ctx.page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
 });
