@@ -31,7 +31,12 @@ import type {
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
-import { createPlayerService, createSpeedService } from './machine';
+import {
+  createPlayerService,
+  createSpeedService,
+  type PlayerMachineState,
+  type SpeedMachineState,
+} from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
   EventType,
@@ -1026,12 +1031,6 @@ export class Replayer {
    * pause when there are some canvas drawImage args need to be loaded
    */
   private async preloadAllImages(): Promise<void[]> {
-    let beforeLoadState = this.service.state;
-    const stateHandler = () => {
-      beforeLoadState = this.service.state;
-    };
-    this.emitter.on(ReplayerEvents.Start, stateHandler);
-    this.emitter.on(ReplayerEvents.Pause, stateHandler);
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
       if (
@@ -1060,8 +1059,6 @@ export class Replayer {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
-      let d = imgd?.data;
-      d = JSON.parse(data.args[0]) as Uint8ClampedArray;
       ctx?.putImageData(imgd!, 0, 0);
     }
   }
@@ -2230,3 +2227,5 @@ export class Replayer {
     this.config.logger.log(REPLAY_CONSOLE_PREFIX, ...args);
   }
 }
+
+export { PlayerMachineState, SpeedMachineState, playerConfig };

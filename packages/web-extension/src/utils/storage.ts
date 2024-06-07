@@ -1,6 +1,6 @@
 import { openDB } from 'idb';
-import { eventWithTime } from '@rrweb/types';
-import { Session } from '~/types';
+import type { eventWithTime } from '@rrweb/types';
+import type { Session } from '~/types';
 
 /**
  * Storage related functions with indexedDB.

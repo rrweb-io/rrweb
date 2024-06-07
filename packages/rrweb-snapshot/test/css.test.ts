@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { parse, Rule, Media } from '../src/css';
 import {
   fixSafariColons,

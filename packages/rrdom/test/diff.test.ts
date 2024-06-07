@@ -1,13 +1,15 @@
 /**
  * @jest-environment jsdom
  */
+import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
+import { vi, MockInstance } from 'vitest';
 import {
   NodeType as RRNodeType,
-  serializedNodeWithId,
   createMirror,
   Mirror as NodeMirror,
+  serializedNodeWithId,
 } from 'rrweb-snapshot';
 import {
   buildFromDom,
@@ -26,15 +28,8 @@ import {
   handleInsertBefore,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
-import { Replayer } from 'rrweb';
-import type {
-  eventWithTime,
-  canvasMutationData,
-  styleDeclarationData,
-  styleSheetRuleData,
-} from '@rrweb/types';
+import type { canvasMutationData, styleSheetRuleData } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
-import { compileTSCode } from './utils';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -108,7 +103,7 @@ function shuffle(list: number[]) {
 describe('diff algorithm for rrdom', () => {
   let mirror: NodeMirror;
   let replayer: ReplayerHandler;
-  let warn: jest.SpyInstance;
+  let warn: MockInstance;
 
   beforeEach(() => {
     mirror = createMirror();
@@ -122,7 +117,7 @@ describe('diff algorithm for rrdom', () => {
     };
     document.write('<!DOCTYPE html><html><head></head><body></body></html>');
     // Mock the original console.warn function to make the test fail once console.warn is called.
-    warn = jest.spyOn(console, 'warn');
+    warn = vi.spyOn(console, 'warn');
   });
 
   afterEach(() => {
@@ -147,7 +142,7 @@ describe('diff algorithm for rrdom', () => {
         x: 0,
         y: 0,
       };
-      const applyScrollFn = jest.spyOn(replayer, 'applyScroll');
+      const applyScrollFn = vi.spyOn(replayer, 'applyScroll');
       diff(document, rrNode, replayer);
       expect(document.childNodes.length).toEqual(1);
       expect(document.childNodes[0]).toBeInstanceOf(DocumentType);
@@ -170,7 +165,7 @@ describe('diff algorithm for rrdom', () => {
         x: 0,
         y: 0,
       };
-      const applyScrollFn = jest.spyOn(replayer, 'applyScroll');
+      const applyScrollFn = vi.spyOn(replayer, 'applyScroll');
       diff(element, rrNode, replayer);
       expect(applyScrollFn).toHaveBeenCalledTimes(1);
       applyScrollFn.mockRestore();
@@ -186,7 +181,7 @@ describe('diff algorithm for rrdom', () => {
         id: 0,
         isChecked: false,
       };
-      replayer.applyInput = jest.fn();
+      replayer.applyInput = vi.fn();
       diff(element, rrNode, replayer);
       expect(replayer.applyInput).toHaveBeenCalledTimes(1);
     });
@@ -216,7 +211,7 @@ describe('diff algorithm for rrdom', () => {
         ],
       };
       rrStyle.rules = [styleData];
-      replayer.applyStyleSheetMutation = jest.fn();
+      replayer.applyStyleSheetMutation = vi.fn();
       diff(element, rrStyle, replayer);
       expect(replayer.applyStyleSheetMutation).toHaveBeenCalledTimes(1);
       expect(replayer.applyStyleSheetMutation).toHaveBeenCalledWith(
@@ -246,7 +241,7 @@ describe('diff algorithm for rrdom', () => {
           mutation: canvasMutation,
         }),
       );
-      replayer.applyCanvas = jest.fn();
+      replayer.applyCanvas = vi.fn();
       diff(element, rrCanvas, replayer);
       expect(replayer.applyCanvas).toHaveBeenCalledTimes(MutationNumber);
     });
@@ -275,7 +270,9 @@ describe('diff algorithm for rrdom', () => {
         expect(element.playbackRate).toEqual(1);
 
         const rrDocument = new RRDocument();
-        const rrMedia = rrDocument.createElement(tagName) as RRMediaElement;
+        const rrMedia = rrDocument.createElement(
+          tagName,
+        ) as unknown as RRMediaElement;
         rrMedia.volume = 0.5;
         rrMedia.currentTime = 100;
         rrMedia.muted = true;
@@ -425,7 +422,7 @@ describe('diff algorithm for rrdom', () => {
       const value = 'http://www.w3.org/2000/svg';
       node.attributes.xmlns = value;
 
-      jest.spyOn(Element.prototype, 'setAttributeNS');
+      vi.spyOn(Element.prototype, 'setAttributeNS');
       diff(element, node, replayer);
       expect((element as Node as SVGElement).getAttribute('xmlns')).toBe(value);
       expect(SVGElement.prototype.setAttributeNS).toHaveBeenCalledWith(
@@ -433,7 +430,7 @@ describe('diff algorithm for rrdom', () => {
         'xmlns',
         value,
       );
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('can diff properties for canvas', async () => {
@@ -444,11 +441,11 @@ describe('diff algorithm for rrdom', () => {
       rrDocument.mirror.add(rrCanvas, sn);
       rrCanvas.attributes['rr_dataURL'] = 'data:image/png;base64,';
 
-      jest.spyOn(document, 'createElement');
+      vi.spyOn(document, 'createElement');
 
       diff(element, rrCanvas, replayer);
       expect(document.createElement).toHaveBeenCalledWith('img');
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     it('can omit srcdoc attribute of iframe element', () => {
@@ -1170,7 +1167,7 @@ describe('diff algorithm for rrdom', () => {
   });
 
   describe('diff iframe elements', () => {
-    jest.setTimeout(60_000);
+    vi.setConfig({ testTimeout: 60_000 });
 
     it('should add an element to the contentDocument of an iframe element', () => {
       document.write('<html></html>');
@@ -1330,7 +1327,7 @@ describe('diff algorithm for rrdom', () => {
        * If not, the diff function will throw errors or warnings.
        */
       // Mock the original console.warn function to make the test fail once console.warn is called.
-      const warn = jest.spyOn(global.console, 'warn');
+      const warn = vi.spyOn(global.console, 'warn');
 
       document.write('<!DOCTYPE html><html><body></body></html>');
       const rrdom = new RRDocument();
@@ -1393,8 +1390,9 @@ describe('diff algorithm for rrdom', () => {
       await page.goto('about:blank');
 
       try {
-        const code = await compileTSCode(
-          path.resolve(__dirname, '../src/index.ts'),
+        const code = fs.readFileSync(
+          path.resolve(__dirname, '../dist/rrdom.umd.cjs'),
+          'utf8',
         );
         await page.evaluate(code);
 
@@ -1474,7 +1472,7 @@ describe('diff algorithm for rrdom', () => {
 
   describe('afterAppend callback', () => {
     it('should call afterAppend callback', () => {
-      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const afterAppendFn = vi.spyOn(replayer, 'afterAppend');
       const node = createTree(
         {
           tagName: 'div',
@@ -1513,7 +1511,7 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('should call afterAppend callback in the post traversal order', () => {
-      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const afterAppendFn = vi.spyOn(replayer, 'afterAppend');
       document.open();
 
       const rrdom = new RRDocument();
@@ -1586,7 +1584,7 @@ describe('diff algorithm for rrdom', () => {
     });
 
     it('should only call afterAppend for newly created nodes', () => {
-      const afterAppendFn = jest.spyOn(replayer, 'afterAppend');
+      const afterAppendFn = vi.spyOn(replayer, 'afterAppend');
       const rrdom = buildFromDom(document, replayer.mirror) as RRDocument;
 
       // Append 3 nodes to rrdom.
@@ -1664,9 +1662,7 @@ describe('diff algorithm for rrdom', () => {
       rrDocument.mirror.add(rrNode, getDefaultSN(rrNode, 3));
       expect(() =>
         createOrGetNode(rrNode, mirror, rrDocument.mirror),
-      ).toThrowErrorMatchingInlineSnapshot(
-        `"Cannot create CDATA sections in HTML documents"`,
-      );
+      ).toThrowErrorMatchingInlineSnapshot(`DOMException {}`);
     });
 
     it('create a DocumentType from RRDocumentType', () => {
@@ -1703,164 +1699,6 @@ describe('diff algorithm for rrdom', () => {
       expect(result).toEqual(text);
       // To make sure the existed text node is used.
       expect(mirror.getMeta(result)).toEqual(mirror.getMeta(text));
-    });
-  });
-
-  describe('apply virtual style rules to node', () => {
-    beforeEach(() => {
-      const dummyReplayer = new Replayer([
-        {
-          type: EventType.DomContentLoaded,
-          timestamp: 0,
-        },
-        {
-          type: EventType.Meta,
-          data: {
-            with: 1920,
-            height: 1080,
-          },
-          timestamp: 0,
-        },
-      ] as unknown as eventWithTime[]);
-      replayer.applyStyleSheetMutation = (
-        data: styleDeclarationData | styleSheetRuleData,
-        styleSheet: CSSStyleSheet,
-      ) => {
-        if (data.source === IncrementalSource.StyleSheetRule)
-          // Disable the ts check here because these two functions are private methods.
-          // @ts-ignore
-          dummyReplayer.applyStyleSheetRule(data, styleSheet);
-        else if (data.source === IncrementalSource.StyleDeclaration)
-          // @ts-ignore
-          dummyReplayer.applyStyleDeclaration(data, styleSheet);
-      };
-    });
-
-    it('should insert rule at index 0 in empty sheet', () => {
-      document.write('<style></style>');
-      const styleEl = document.getElementsByTagName('style')[0];
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        adds: [
-          {
-            rule: cssText,
-            index: 0,
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
-
-      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
-    });
-
-    it('should insert rule at index 0 and keep exsisting rules', () => {
-      document.write(`
-      <style>
-        a {color: blue}
-        div {color: black}
-      </style>
-    `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        adds: [
-          {
-            rule: cssText,
-            index: 0,
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
-
-      expect(styleEl.sheet?.cssRules?.length).toEqual(3);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual(cssText);
-    });
-
-    it('should delete rule at index 0', () => {
-      document.write(`
-        <style>
-          a {color: blue;}
-          div {color: black;}
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        removes: [
-          {
-            index: 0,
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
-
-      expect(styleEl.sheet?.cssRules?.length).toEqual(1);
-      expect(styleEl.sheet?.cssRules[0].cssText).toEqual('div {color: black;}');
-    });
-
-    it('should insert rule at index [0,0] and keep existing rules', () => {
-      document.write(`
-        <style>
-          @media {
-            a {color: blue}
-            div {color: black}
-          }
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-
-      const cssText = '.added-rule {border: 1px solid yellow;}';
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        adds: [
-          {
-            rule: cssText,
-            index: [0, 0],
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
-
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).toEqual(3);
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).toEqual(cssText);
-    });
-
-    it('should delete rule at index [0,1]', () => {
-      document.write(`
-        <style>
-          @media {
-            a {color: blue;}
-            div {color: black;}
-          }
-        </style>
-      `);
-      const styleEl = document.getElementsByTagName('style')[0];
-      const styleRuleData: styleSheetRuleData = {
-        source: IncrementalSource.StyleSheetRule,
-        removes: [
-          {
-            index: [0, 1],
-          },
-        ],
-      };
-      replayer.applyStyleSheetMutation(styleRuleData, styleEl.sheet!);
-
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules?.length,
-      ).toEqual(1);
-      expect(
-        (styleEl.sheet?.cssRules[0] as CSSMediaRule).cssRules[0].cssText,
-      ).toEqual('a {color: blue;}');
     });
   });
 

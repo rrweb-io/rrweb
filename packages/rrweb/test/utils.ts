@@ -44,7 +44,7 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort = 3030) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
@@ -59,8 +59,8 @@ export const startServer = (defaultPort: number = 3030) =>
         .replace(/^(\.\.[\/\\])+/, '');
 
       let pathname = path.join(__dirname, sanitizePath);
-      if (/^\/rrweb.*\.js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist`, sanitizePath);
+      if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
+        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
       }
 
       try {
@@ -105,7 +105,7 @@ export function getServerURL(server: http.Server): string {
  * Also remove timestamp from event.
  * @param snapshots incrementalSnapshotEvent[]
  */
-function stringifySnapshots(snapshots: eventWithTime[]): string {
+export function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
       .filter((s) => {

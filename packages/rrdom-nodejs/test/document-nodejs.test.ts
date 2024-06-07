@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { NodeType as RRNodeType } from 'rrweb-snapshot';
@@ -81,12 +82,12 @@ describe('RRDocument for nodejs environment', () => {
       expect(() =>
         rrdom.insertBefore(rrdom.createDocumentType('', '', ''), null),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRDoctype on RRDocument allowed."`,
+        `[Error: RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRDoctype on RRDocument allowed.]`,
       );
       expect(() =>
         rrdom.insertBefore(rrdom.createElement('div'), null),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRElement on RRDocument allowed."`,
+        `[Error: RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one RRElement on RRDocument allowed.]`,
       );
       const node = new RRDocument();
       const doctype = rrdom.createDocumentType('', '', '');
@@ -464,7 +465,7 @@ describe('RRDocument for nodejs environment', () => {
       expect(() =>
         node.insertBefore(node, child1),
       ).toThrowErrorMatchingInlineSnapshot(
-        `"Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode."`,
+        `[Error: Failed to execute 'insertBefore' on 'RRNode': The RRNode before which the new node is to be inserted is not a child of this RRNode.]`,
       );
       expect(node.insertBefore(child1, null)).toBe(child1);
       expect(node.childNodes[0]).toBe(child1);

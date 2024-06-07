@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`replayer can fast forward past StyleSheetRule changes on virtual elements 1`] = `
+exports[`replayer > can fast forward past StyleSheetRule changes on virtual elements 1`] = `
 "file-frame-4
 <html>
   <head>
@@ -80,7 +80,7 @@ file-cid-3
 "
 `;
 
-exports[`replayer can fast forward past StyleSheetRule deletion on virtual elements 1`] = `
+exports[`replayer > can fast forward past StyleSheetRule deletion on virtual elements 1`] = `
 "file-frame-4
 <html>
   <head>
@@ -158,7 +158,7 @@ file-cid-3
 "
 `;
 
-exports[`replayer can handle removing style elements 1`] = `
+exports[`replayer > can handle removing style elements 1`] = `
 "file-frame-1
 <html>
   <head>
@@ -206,7 +206,7 @@ html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { ani
 "
 `;
 
-exports[`replayer replays same timestamp events in correct order (with addAction) 1`] = `
+exports[`replayer > replays same timestamp events in correct order (with addAction) 1`] = `
 "file-frame-1
 <html>
   <head>
@@ -257,7 +257,7 @@ html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { ani
 "
 `;
 
-exports[`replayer replays same timestamp events in correct order 1`] = `
+exports[`replayer > replays same timestamp events in correct order 1`] = `
 "file-frame-1
 <html>
   <head>

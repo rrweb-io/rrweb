@@ -266,6 +266,7 @@ export function transformAttribute(
 export function ignoreAttribute(
   tagName: string,
   name: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _value: unknown,
 ): boolean {
   return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
@@ -404,11 +405,6 @@ function onceIframeLoaded(
   }
   // use default listener
   iframeEl.addEventListener('load', listener);
-}
-
-function isStylesheetLoaded(link: HTMLLinkElement) {
-  if (!link.getAttribute('href')) return true; // nothing to load
-  return link.sheet !== null;
 }
 
 function onceStylesheetLoaded(

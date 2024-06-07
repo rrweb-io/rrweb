@@ -9,7 +9,7 @@
     "@rrweb/types"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build --watch",
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
@@ -27,21 +27,27 @@
   "type": "module",
   "main": "./dist/types.umd.cjs",
   "module": "./dist/types.js",
+  "unpkg": "./dist/types.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/types.js",
-      "require": "./dist/types.umd.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/types.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/types.umd.cjs"
+      }
     }
   },
   "files": [
-    "build",
-    "dist"
+    "dist",
+    "package.json"
   ],
   "devDependencies": {
-    "vite": "^3.2.0-beta.2",
-    "vite-plugin-dts": "^1.7.3"
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {
     "rrweb-snapshot": "^2.0.0-alpha.14"

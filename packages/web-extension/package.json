@@ -5,6 +5,7 @@
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev:chrome": "cross-env TARGET_BROWSER=chrome vite dev",
     "dev:firefox": "cross-env TARGET_BROWSER=firefox vite dev",
@@ -13,18 +14,19 @@
     "pack:chrome": "cross-env TARGET_BROWSER=chrome ZIP=true vite build",
     "pack:firefox": "cross-env TARGET_BROWSER=firefox ZIP=true vite build",
     "check-types": "tsc -noEmit",
-    "prepublish": "npm run pack:chrome && npm run pack:firefox"
+    "build": "npm run pack:chrome && npm run pack:firefox",
+    "prepublish": "yarn build"
   },
   "devDependencies": {
     "@rrweb/types": "^2.0.0-alpha.14",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
-    "@vitejs/plugin-react": "^2.1.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "cross-env": "^7.0.3",
     "type-fest": "^2.19.0",
-    "vite": "^3.1.8",
-    "vite-plugin-web-extension": "^1.4.5",
-    "vite-plugin-zip-pack": "^1.0.5",
+    "vite": "^5.2.8",
+    "vite-plugin-web-extension": "^4.1.3",
+    "vite-plugin-zip-pack": "^1.2.2",
     "webextension-polyfill": "^0.10.0"
   },
   "dependencies": {

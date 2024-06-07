@@ -13,52 +13,48 @@ You are recommended to install rrweb via jsdelivr's CDN service:
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.min.cjs"></script>
 ```
 
 Also, you can link to a specific version number that you can update manually:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@0.7.0/dist/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
 ```
 
 #### Only include the recorder code
 
 rrweb's code includes both the record and the replay parts. Most of the time you only need to include the record part into your targeted web Apps.
-This also can be done by using the CDN service:
+This also can be done by using the `@rrweb/record` package and the CDN service:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.cjs"></script>
 ```
 
-#### Other bundles
+#### Other packages
 
-Besides the `record/rrweb-record.min.js` entry, rrweb also provides other bundles for different usage.
+Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other packages for different usage.
 
-```shell
-# Include record, replay, compression, and decompression.
-rrweb-all.js
-rrweb-all.min.js
-# Include record and replay.
-rrweb.js
-rrweb.min.js
-# Include the styles for replay.
-rrweb.min.css
-# Record
-record/rrweb-record.js
-record/rrweb-record.min.js
-# Data compression.
-record/rrweb-record-pack.js
-record/rrweb-record-pack.min.js
-# Replay
-replay/rrweb-replay.js
-replay/rrweb-replay.min.js
-# Data decompression.
-replay/rrweb-replay-unpack.js
-replay/rrweb-replay-unpack.min.js
-```
+- [rrweb](packages/rrweb): The core package of rrweb, including record and replay functions.
+- [rrweb-player](packages/rrweb-player): A GUI for rrweb, providing a timeline and buttons for things like pause, fast-forward, and speedup.
+- [rrweb-snapshot](packages/rrweb-snapshot): Handles snapshot and rebuilding features, converting the DOM and its state into a serializable data structure.
+- [rrdom](packages/rrdom): A virtual dom package rrweb.
+- [rrdom-nodejs](packages/rrdom-nodejs): The Node.js version of rrdom for server-side DOM operations.
+- [@rrweb/all](packages/all): A package that includes `rrweb` and `@rrweb/packer` for easy install.
+- [@rrweb/record](packages/record): A package for recording rrweb sessions.
+- [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
+- [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
+- [@rrweb/types](packages/types): Contains types shared across rrweb packages.
+- [web-extension](packages/web-extension): A web extension for rrweb.
+- [rrvideo](packages/rrvideo): A package for handling video operations in rrweb.
+- [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record): A plugin for recording console logs.
+- [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay): A plugin for replaying console logs.
+- [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record): A plugin for recording sequential IDs.
+- [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
+- [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
+- [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 
 ### NPM
 
@@ -76,7 +72,6 @@ rrweb does **not** support IE11 and below because it uses the `MutationObserver`
 
 ### Record
 
-**If you only included the record code with `<script>`**, then you must use the global variable `rrwebRecord` instead of `rrweb.record`.
 The following sample code will use the variable `rrweb` which is the default exporter of this library.
 
 ```js
@@ -257,7 +252,7 @@ You need to include the style sheet before replay:
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
 ```
 
@@ -319,7 +314,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 
 #### Use rrweb-player
 
-Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
+Since rrweb's replayer ([@rrweb/replay](packages/replay/)) only provides a basic UI, you can choose [rrweb-player](packages/rrweb-player/) which is based on rrweb's public APIs but has a feature-rich replayer UI.
 
 ##### Installation
 
