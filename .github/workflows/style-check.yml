@@ -93,3 +93,4 @@ jobs:
         with:
           commit_message: Apply formatting changes
           branch: ${{ github.head_ref }}
+          file_pattern: ':!packages/rrweb-player/.svelte-kit/ambient.d.ts'
