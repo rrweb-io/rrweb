@@ -103,6 +103,15 @@ export type mediaAttributes = {
   rr_mediaVolume?: number;
 };
 
+export type DialogAttributes =
+  // | {
+  //     open: '';
+  //   }
+  {
+    rr_open: 'modal';
+    // rr_open_index?: number;
+  };
+
 // @deprecated
 export interface INode extends Node {
   __sn: serializedNodeWithId;
