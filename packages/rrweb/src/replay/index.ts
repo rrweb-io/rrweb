@@ -500,19 +500,15 @@ export class Replayer {
           }
         }
       } else {
-        for (const [pointerId, { mouseTail }] of Object.entries(
-          this.pointers,
-        )) {
-          const id = parseInt(pointerId);
-          const tail = document.createElement('canvas');
+        for (let [, { mouseTail }] of Object.entries(this.pointers)) {
           if (!mouseTail) {
-            tail.width = Number.parseFloat(this.iframe.width);
-            tail.height = Number.parseFloat(this.iframe.height);
-            tail.classList.add('replayer-mouse-tail');
-            this.wrapper.insertBefore(tail, this.iframe);
-            this.pointers[id].mouseTail = tail;
+            mouseTail = document.createElement('canvas');
+            mouseTail.width = Number.parseFloat(this.iframe.width);
+            mouseTail.height = Number.parseFloat(this.iframe.height);
+            mouseTail.classList.add('replayer-mouse-tail');
+            this.wrapper.insertBefore(mouseTail, this.iframe);
           }
-          tail.style.display = 'inherit';
+          mouseTail.style.display = 'inherit';
         }
       }
     }
@@ -669,16 +665,6 @@ export class Replayer {
       }
       el.setAttribute('width', String(dimension.width));
       el.setAttribute('height', String(dimension.height));
-    }
-
-    for (const [, { mouseTail }] of Object.entries(this.pointers)) {
-      for (const el of [mouseTail, this.iframe]) {
-        if (!el) {
-          continue;
-        }
-        el.setAttribute('width', String(dimension.width));
-        el.setAttribute('height', String(dimension.height));
-      }
     }
   };
 
