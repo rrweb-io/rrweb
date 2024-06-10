@@ -1,5 +1,13 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.15
+
+### Patch Changes
+
+- Updated dependencies [[`942c7ce`](https://github.com/amplitude/rrweb/commit/942c7ce20446ffcd8cac52814fc7ea0501e82b20)]:
+  - @amplitude/rrweb@2.0.0-alpha.15
+  - @amplitude/rrweb-player@2.0.0-alpha.15
+
 ## 2.0.0-alpha.14
 
 ### Patch Changes
