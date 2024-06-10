@@ -21,12 +21,17 @@
       ]
     },
     "test": {
-      "dependsOn": ["^prepublish"]
+      "dependsOn": ["^prepublish"],
+      "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
     "test:watch": {
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
-    "test:update": {},
+    "test:update": {
+      "dependsOn": ["^prepublish"],
+      "passThroughEnv": ["PUPPETEER_HEADLESS"]
+    },
     "dev": {
       // "dependsOn": ["^prepublish"],
       "persistent": true,
