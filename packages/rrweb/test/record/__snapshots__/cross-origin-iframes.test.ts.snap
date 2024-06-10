@@ -5370,7 +5370,7 @@ exports[`same origin iframes > should emit contents of iframe once 1`] = `
 ]"
 `;
 
-exports[`same origin iframes should record cross-origin iframe in same-origin iframe 1`] = `
+exports[`same origin iframes > should record cross-origin iframe in same-origin iframe 1`] = `
 "[
   {
     \\"type\\": 4,
