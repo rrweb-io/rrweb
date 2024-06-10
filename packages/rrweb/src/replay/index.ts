@@ -437,10 +437,8 @@ export class Replayer {
 
   private createPointer(pointerId: number, event: eventWithTime) {
     const mouseTail = document.createElement('canvas');
-    mouseTail.width = Number.parseFloat(this.iframe.width);
-    mouseTail.height = Number.parseFloat(this.iframe.height);
     mouseTail.classList.add('replayer-mouse-tail');
-    this.wrapper.insertBefore(mouseTail, this.iframe);
+    this.wrapper.appendChild(mouseTail);
 
     if (this.config.mouseTail === false) {
       mouseTail.style.display = 'none';
@@ -500,15 +498,19 @@ export class Replayer {
           }
         }
       } else {
-        for (let [, { mouseTail }] of Object.entries(this.pointers)) {
+        for (const [pointerId, { mouseTail }] of Object.entries(
+          this.pointers,
+        )) {
+          const id = parseInt(pointerId);
+          const tail = document.createElement('canvas');
           if (!mouseTail) {
-            mouseTail = document.createElement('canvas');
-            mouseTail.width = Number.parseFloat(this.iframe.width);
-            mouseTail.height = Number.parseFloat(this.iframe.height);
-            mouseTail.classList.add('replayer-mouse-tail');
-            this.wrapper.insertBefore(mouseTail, this.iframe);
+            tail.width = Number.parseFloat(this.iframe.width);
+            tail.height = Number.parseFloat(this.iframe.height);
+            tail.classList.add('replayer-mouse-tail');
+            this.wrapper.insertBefore(tail, this.iframe);
+            this.pointers[id].mouseTail = tail;
           }
-          mouseTail.style.display = 'inherit';
+          tail.style.display = 'inherit';
         }
       }
     }
