@@ -1,5 +1,121 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`dialog integration tests > should capture open attribute for modal dialogs 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {},
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [],
+          \\"id\\": 3
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"dialog\\",
+              \\"attributes\\": {
+                \\"rr_open\\": \\"modal\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"I'm a dialog\\",
+                  \\"id\\": 7
+                }
+              ],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 8
+            }
+          ],
+          \\"id\\": 4
+        }
+      ],
+      \\"id\\": 2
+    }
+  ],
+  \\"compatMode\\": \\"BackCompat\\",
+  \\"id\\": 1
+}"
+`;
+
+exports[`dialog integration tests > should capture open attribute for non modal dialogs 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {},
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [],
+          \\"id\\": 3
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"dialog\\",
+              \\"attributes\\": {
+                \\"open\\": \\"\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"I'm a dialog\\",
+                  \\"id\\": 7
+                }
+              ],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 8
+            }
+          ],
+          \\"id\\": 4
+        }
+      ],
+      \\"id\\": 2
+    }
+  ],
+  \\"compatMode\\": \\"BackCompat\\",
+  \\"id\\": 1
+}"
+`;
+
 exports[`iframe integration tests > snapshot async iframes 1`] = `
 "{
   \\"type\\": 0,
@@ -212,6 +328,12 @@ exports[`integration tests > [html file]: cors-style-sheet.html 1`] = `
     <link rel=\\"stylesheet\\" href=\\"\\" />
   </head>
   <body></body></html>"
+`;
+
+exports[`integration tests > [html file]: dialog.html 1`] = `
+"<html><head></head><body>
+    <dialog>I'm a dialog</dialog>
+  </body></html>"
 `;
 
 exports[`integration tests > [html file]: dynamic-stylesheet.html 1`] = `

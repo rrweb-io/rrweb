@@ -6,6 +6,7 @@ import {
   MaskInputOptions,
   SlimDOMOptions,
   DataURLOptions,
+  DialogAttributes,
   MaskTextFn,
   MaskInputFn,
   KeepIframeSrcFn,
@@ -704,6 +705,16 @@ function serializeElementNode(
       delete attributes.selected;
     }
   }
+
+  if (
+    tagName === 'dialog' &&
+    (n as HTMLDialogElement).open &&
+    n.matches('dialog:modal')
+  ) {
+    (attributes as DialogAttributes).rr_open = 'modal';
+    delete attributes.open; // prevent default `show()` behavior which blocks `showModal()` from working
+  }
+
   // canvas image data
   if (tagName === 'canvas' && recordCanvas) {
     if ((n as ICanvas).__context === '2d') {

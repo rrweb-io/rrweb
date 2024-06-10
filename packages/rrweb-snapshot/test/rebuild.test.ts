@@ -3,7 +3,8 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { describe, it, beforeEach, expect } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import {
   adaptCssForReplay,
   buildNodeWithSN,
@@ -49,6 +50,31 @@ describe('rebuild', function () {
         },
       ) as HTMLImageElement;
       expect(node?.src).toBe(dataURI);
+    });
+  });
+
+  // this doesn't really test anything, maybe remove it?
+  // contemplate if rrweb-snapshot should trigger .showModal() on dialog elements on rebuild...
+  describe('rr_open', function () {
+    it('should call `show` on non-modal dialog', function () {
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'dialog',
+          type: NodeType.Element,
+          attributes: {
+            open: '',
+          },
+          childNodes: [],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLDialogElement;
+      expect(node?.open).toBe(true);
     });
   });
 
