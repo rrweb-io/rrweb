@@ -1,10 +1,24 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "baseBranch": "origin/master",
-  "pipeline": {
+  // These root workspace files are reused in workspaces and may affect their build output
+  "globalDependencies": [
+    ".eslintrc.js",
+    ".prettierrc",
+    "lerna.json",
+    "vite.config.defaults.ts",
+    "tsconfig.json"
+  ],
+  "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish"],
-      "outputs": ["lib/**", "es/**", "dist/**", "typings/**"]
+      "outputs": [
+        "lib/**",
+        "es/**",
+        "dist/**",
+        "typings/**",
+        ".svelte-kit/**",
+        "types/**"
+      ]
     },
     "test": {
       "dependsOn": ["^prepublish"]
@@ -14,8 +28,10 @@
     },
     "test:update": {},
     "dev": {
-      "dependsOn": ["^prepublish"],
-      "persistent": true
+      // "dependsOn": ["^prepublish"],
+      "persistent": true,
+      "cache": false,
+      "passThroughEnv": ["CLEAR_DIST_DIR"]
     },
     "lint": {},
     "check-types": {}
