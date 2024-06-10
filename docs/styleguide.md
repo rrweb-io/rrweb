@@ -62,6 +62,7 @@ There are a few style guidelines that aren't covered by the linter rules:
 ## Picking words
 
 - Use "will" over "would" when describing outcomes.
+- Don't use words such as "just" or "simply". If it needs to be explained then it is not self evident.
 
 ## Documentation translations
 
