@@ -111,12 +111,48 @@ const events: eventWithTime[] = [
     },
     timestamp: 1900000136,
   },
+  // open dialog with .show()
   {
     type: 3,
     data: {
       source: IncrementalSource.Mutation,
       adds: [],
       removes: [],
+      texts: [],
+      attributes: [
+        {
+          id: 27,
+          attributes: { open: '' },
+        },
+      ],
+    },
+    timestamp: 1900001500,
+  },
+  // close dialog with .close()
+  {
+    type: 3,
+    data: {
+      source: IncrementalSource.Mutation,
+      adds: [],
+      removes: [],
+      texts: [],
+      attributes: [
+        {
+          id: 27,
+          attributes: { open: null },
+        },
+      ],
+    },
+    timestamp: 1900002000,
+  },
+  // open dialog with .showModal()
+  {
+    type: 3,
+    data: {
+      source: IncrementalSource.Mutation,
+      adds: [],
+      removes: [],
+      texts: [],
       attributes: [
         {
           id: 27,
@@ -124,7 +160,7 @@ const events: eventWithTime[] = [
         },
       ],
     },
-    timestamp: 1900001500,
+    timestamp: 1900002500,
   },
 ];
 

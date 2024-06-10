@@ -547,6 +547,28 @@ export class BaseRRMediaElement extends BaseRRElement {
   }
 }
 
+export class BaseRRDialogElement extends BaseRRElement {
+  public readonly tagName = 'DIALOG' as const;
+  public readonly nodeName = 'DIALOG' as const;
+  public open: boolean = false;
+  private _isModal: boolean = false;
+  get isModal() {
+    return this._isModal;
+  }
+  public close() {
+    this.open = false;
+    this._isModal = false;
+  }
+  public show() {
+    this.open = true;
+    this._isModal = false;
+  }
+  public showModal() {
+    this.open = true;
+    this._isModal = true;
+  }
+}
+
 export class BaseRRText extends BaseRRNode implements IRRText {
   public readonly nodeType: number = NodeType.TEXT_NODE;
   public readonly nodeName = '#text' as const;

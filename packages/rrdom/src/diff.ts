@@ -21,6 +21,7 @@ import type {
 } from './document';
 import type {
   RRCanvasElement,
+  RRDialogElement,
   RRElement,
   RRIFrameElement,
   RRMediaElement,
@@ -285,6 +286,24 @@ function diffAfterUpdatingChildren(
             );
           break;
         }
+        case 'DIALOG': {
+          const dialog = oldElement as HTMLDialogElement;
+          const rrDialog = newRRElement as unknown as RRDialogElement;
+          const wasOpen = dialog.open;
+          const wasModal = dialog.matches('dialog:modal');
+          const isOpen = rrDialog.open;
+          const { isModal } = rrDialog;
+
+          const modeChanged = (wasModal && !isModal) || (!wasModal && isModal);
+
+          if (wasOpen && modeChanged) dialog.close();
+          if ((wasOpen && modeChanged) || (isOpen && !wasOpen)) {
+            if (isModal) dialog.showModal();
+            else dialog.show();
+          }
+
+          break;
+        }
       }
       break;
     }
@@ -330,12 +349,25 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
-    else oldTree.setAttribute(name, newValue);
+    else if (
+      newTree.tagName === 'DIALOG' &&
+      (name === 'rr_open' || name === 'open')
+    ) {
+      const rrDialog = newTree as RRDialogElement;
+      const isModal = newAttributes.rr_open === 'modal';
+      const isOpen = isModal || newAttributes.open === '';
+      if (isModal) rrDialog.showModal();
+      else if (isOpen) rrDialog.show();
+      else rrDialog.close();
+      continue;
+    } else oldTree.setAttribute(name, newValue);
   }
 
-  for (const { name } of Array.from(oldAttributes))
+  for (const { name } of Array.from(oldAttributes)) {
+    if (newTree.tagName === 'DIALOG' && (name === 'rr_open' || name === 'open'))
+      continue; // attributes are handled in diffAfterUpdatingChildren for Dialog elements
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
-
+  }
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }

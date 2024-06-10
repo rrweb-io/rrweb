@@ -14,12 +14,18 @@ import {
   waitForRAF,
 } from '../utils';
 
-// expect.extend({ toMatchImageSnapshot });
+expect.extend({ toMatchImageSnapshot });
 
 // TODO: test the following:
 // == on record ==
-// - dialog open
-// - dialog close
+// - dialog open (standard) full snapshot
+// - dialog open (standard) incremental (virtual dom)
+// - dialog open (standard) incremental (non virtual dom)
+// - dialog open (showModal) full snapshot
+// √ dialog open (showModal) incremental (virtual dom)
+// √ dialog open (showModal) incremental (non virtual dom)
+// √ dialog close (rrdom)
+// - dialog close (non virtual dom)
 // - dialog open and close (switching from modal to non modal and vise versa)
 // - multiple dialogs open, recording order
 // == on playback ==
@@ -58,6 +64,11 @@ describe('dialog', () => {
 
   beforeEach(async () => {
     page = await browser.newPage();
+    page.on('console', (msg) => {
+      for (let i = 0; i < msg.args().length; ++i) {
+        console.log(`${i}: ${msg.args()[i]}`);
+      }
+    });
 
     await fakeGoto(page, `${serverURL}/html/dialog.html`);
     await page.evaluate(code);
@@ -65,7 +76,7 @@ describe('dialog', () => {
     await hideMouseAnimation(page);
   });
 
-  it('will seek to the correct moment', async () => {
+  it('closed dialogs show nothing', async () => {
     await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
     await page.evaluate(`
       const { Replayer } = rrweb;
@@ -73,179 +84,76 @@ describe('dialog', () => {
     `);
     await waitForRAF(page);
 
-    // await page.waitForTimeout(50_000);
-
-    // const frameImage = await page!.screenshot();
-    // expect(frameImage).toMatchImageSnapshot({
-    //   failureThreshold: 0.05,
-    //   failureThresholdType: 'percent',
-    // });
+    const frameImage = await page!.screenshot();
+    expect(frameImage).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    });
   });
 
-  //   it('will seek to the correct moment without media interaction events', async () => {
-  //     await page.evaluate(`
-  //       let events = ${JSON.stringify(videoPlaybackOnFullSnapshotEvents)};
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events);
-  //       window.replayer.pause(6500);
-  //     `);
+  it('show show the dialog when open attribute gets added', async () => {
+    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer(events);
+      window.replayer.pause(1500);
+    `);
+    await waitForRAF(page);
 
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
+    const frameImage = await page!.screenshot();
+    expect(frameImage).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    });
+  });
 
-  //     const frameImage = await page!.screenshot();
-  //     await waitForRAF(page);
-  //     expect(frameImage).toMatchImageSnapshot({
-  //       failureThreshold: 0.05,
-  //       failureThresholdType: 'percent',
-  //     });
-  //   });
+  it('should close dialog again when open attribute gets removed', async () => {
+    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer(events);
+      window.replayer.pause(2000);
+    `);
+    await waitForRAF(page);
 
-  //   it("will be paused when the player wasn't started yet", async () => {
-  //     await page.evaluate(`
-  //       let events = ${JSON.stringify(videoPlaybackEvents)};
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events);
-  //     `);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
+    const frameImage = await page!.screenshot();
+    expect(frameImage).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    });
+  });
 
-  //     const frameImage = await page!.screenshot();
+  it('should open dialog with showModal', async () => {
+    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer(events);
+      window.replayer.pause(2500);
+    `);
+    await waitForRAF(page);
 
-  //     await waitForRAF(page);
-  //     expect(frameImage).toMatchImageSnapshot({
-  //       failureThreshold: 0.05,
-  //       failureThresholdType: 'percent',
-  //     });
-  //   });
+    const frameImage = await page!.screenshot();
+    expect(frameImage).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    });
+  });
 
-  //   it('will play from the correct moment', async () => {
-  //     await page.evaluate(`let events = ${JSON.stringify(videoPlaybackEvents)}`);
-  //     await page.evaluate(`
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events, {
-  //         UNSAFE_replayCanvas: true,
-  //       });
-  //     `);
-  //     await waitForRAF(page);
-  //     await page.evaluate(`
-  //       window.replayer.play(6500);
-  //     `);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
+  it('should open dialog with showModal (without virtual dom)', async () => {
+    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer(events, { useVirtualDom: false });
+      window.replayer.pause(2500);
+    `);
+    await waitForRAF(page);
 
-  //     const frameImage = await page!.screenshot();
-  //     await waitForRAF(page);
-  //     expect(frameImage).toMatchImageSnapshot({
-  //       failureThreshold: 0.05,
-  //       failureThresholdType: 'percent',
-  //     });
+    // await page.waitForTimeout(30000);
 
-  //     // TODO: check to see if video is same as basic replay
-  //   });
-
-  //   it('should play from the start', async () => {
-  //     await page.evaluate(`let events = ${JSON.stringify(videoPlaybackEvents)}`);
-  //     await page.evaluate(`
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events);
-  //       window.replayer.play();
-  //     `);
-  //     await waitForRAF(page);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
-
-  //     const isPlaying = await page.evaluate(`
-  //       !document.querySelector('iframe').contentDocument.querySelector('video').paused &&
-  //       document.querySelector('iframe').contentDocument.querySelector('video').currentTime !== 0 &&
-  //       !document.querySelector('iframe').contentDocument.querySelector('video').ended;
-  //     `);
-  //     expect(isPlaying).toBe(true);
-  //   });
-
-  //   it('should play from the start without media events', async () => {
-  //     await page.evaluate(
-  //       `let events = ${JSON.stringify(videoPlaybackOnFullSnapshotEvents)}`,
-  //     );
-  //     await page.evaluate(`
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events);
-  //       window.replayer.play();
-  //     `);
-  //     await waitForRAF(page);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
-
-  //     const isPlaying = await page.evaluate(`
-  //       !document.querySelector('iframe').contentDocument.querySelector('video').paused &&
-  //       document.querySelector('iframe').contentDocument.querySelector('video').currentTime !== 0 &&
-  //       !document.querySelector('iframe').contentDocument.querySelector('video').ended;
-  //     `);
-  //     expect(isPlaying).toBe(true);
-  //   });
-
-  //   it('should report the correct time for looping videos that have passed their total time', async () => {
-  //     await page.evaluate(
-  //       `let events = ${JSON.stringify(videoPlaybackOnFullSnapshotEvents)}`,
-  //     );
-  //     await page.evaluate(`
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events);
-  //     `);
-  //     await waitForRAF(page);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
-  //     await page.evaluate(`
-  //     window.replayer.pause(25000); // 5 seconds after the video started a new loop
-  //     `);
-  //     await waitForRAF(page);
-
-  //     const time = await page.evaluate(`
-  //       document.querySelector('iframe').contentDocument.querySelector('video').currentTime;
-  //     `);
-  //     expect(time).toBeCloseTo(5, 0);
-  //   });
-
-  //   it('should set the correct time on loading videos', async () => {
-  //     await page.evaluate(
-  //       `let events = ${JSON.stringify(videoPlaybackOnFullSnapshotEvents)}`,
-  //     );
-  //     await page.evaluate(`
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events);
-  //       window.replayer.pause(25000); // 5 seconds after the video started a new loop
-  //     `);
-  //     await waitForRAF(page);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
-
-  //     const time = await page.evaluate(`
-  //       document.querySelector('iframe').contentDocument.querySelector('video').currentTime;
-  //     `);
-  //     expect(time).toBeCloseTo(5, 0);
-  //   });
-
-  //   it('should set the correct playbackRate on faster playback', async () => {
-  //     page.on('console', (msg) => {
-  //       console.log(msg.text());
-  //     });
-  //     await page.evaluate(
-  //       `let events = ${JSON.stringify(videoPlaybackOnFullSnapshotEvents)}`,
-  //     );
-  //     await page.evaluate(`
-  //       const { Replayer } = rrweb;
-  //       window.replayer = new Replayer(events, {
-  //         speed: 8,
-  //       });
-  //       window.replayer.play();
-  //     `);
-  //     await waitForRAF(page);
-  //     await page.waitForNetworkIdle();
-  //     await waitForRAF(page);
-
-  //     const time = await page.evaluate(`
-  //       document.querySelector('iframe').contentDocument.querySelector('video').playbackRate;
-  //     `);
-  //     expect(time).toBe(8);
-  //   });
+    const frameImage = await page!.screenshot();
+    expect(frameImage).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    });
+  });
 });

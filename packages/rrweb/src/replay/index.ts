@@ -1791,6 +1791,14 @@ export class Replayer {
                   value,
                 );
               }
+
+              if (
+                attributeName === 'rr_open' &&
+                target.nodeName === 'DIALOG' &&
+                value === 'modal'
+              ) {
+                triggerShowModalForModals(target);
+              }
             } catch (error) {
               this.warn(
                 'An error occurred may due to the checkout feature.',
