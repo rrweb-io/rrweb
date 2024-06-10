@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrdom",
-  "version": "2.0.0-alpha.14",
+  "version": "2.0.0-alpha.15",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "main": "lib/rrdom.cjs",
@@ -31,7 +31,7 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
-    "@amplitude/rrweb-types": "^2.0.0-alpha.14",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.15",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@types/jest": "^27.4.1",
     "@types/puppeteer": "^5.4.4",
@@ -47,6 +47,6 @@
     "ts-jest": "^27.1.3"
   },
   "dependencies": {
-    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.14"
+    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.15"
   }
 }

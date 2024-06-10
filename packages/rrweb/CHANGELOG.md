@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.15
+
+### Patch Changes
+
+- [#14](https://github.com/amplitude/rrweb/pull/14) [`942c7ce`](https://github.com/amplitude/rrweb/commit/942c7ce20446ffcd8cac52814fc7ea0501e82b20) Thanks [@jxiwang](https://github.com/jxiwang)! - Fix css parsing errors
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.15
+  - @amplitude/rrdom@2.0.0-alpha.15
+  - @amplitude/rrweb-types@2.0.0-alpha.15
+
 ## 2.0.0-alpha.14
 
 ### Patch Changes
