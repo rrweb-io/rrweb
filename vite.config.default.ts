@@ -6,6 +6,9 @@ import glob from 'fast-glob';
 import { build, Format } from 'esbuild';
 import { resolve } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
+
+const emptyOutDir = process.env.CLEAR_DIST_DIR !== 'false';
+
 function minifyAndUMDPlugin({
   name,
   outDir,
@@ -107,7 +110,7 @@ export default function (
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
 
-  return defineConfig({
+  return defineConfig(() => ({
     build: {
       // See https://vitejs.dev/guide/build.html#library-mode
       lib: {
@@ -122,7 +125,7 @@ export default function (
 
       outDir,
 
-      emptyOutDir: true,
+      emptyOutDir,
 
       // Leaving this unminified so you can see what exactly gets included in
       // the bundles
@@ -155,5 +158,5 @@ export default function (
       minifyAndUMDPlugin({ name, outDir }),
       ...plugins,
     ],
-  });
+  }));
 }
