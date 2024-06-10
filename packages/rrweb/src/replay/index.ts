@@ -438,7 +438,9 @@ export class Replayer {
   private createPointer(pointerId: number, event: eventWithTime) {
     const mouseTail = document.createElement('canvas');
     mouseTail.classList.add('replayer-mouse-tail');
-    this.wrapper.appendChild(mouseTail);
+    mouseTail.width = Number.parseFloat(this.iframe.width);
+    mouseTail.height = Number.parseFloat(this.iframe.height);
+    this.wrapper.insertBefore(mouseTail, this.iframe);
 
     if (this.config.mouseTail === false) {
       mouseTail.style.display = 'none';
@@ -655,6 +657,19 @@ export class Replayer {
 
   private handleResize = (dimension: viewportResizeDimension) => {
     this.iframe.style.display = 'inherit';
+
+    for (const el of [
+      Object.values(this.pointers)
+        .map((a) => a.mouseTail)
+        .flat(),
+      this.iframe,
+    ].flat()) {
+      if (!el) {
+        continue;
+      }
+      el.setAttribute('width', String(dimension.width));
+      el.setAttribute('height', String(dimension.height));
+    }
 
     for (const [, { mouseTail }] of Object.entries(this.pointers)) {
       for (const el of [mouseTail, this.iframe]) {
