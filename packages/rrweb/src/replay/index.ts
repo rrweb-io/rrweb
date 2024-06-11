@@ -652,9 +652,9 @@ export class Replayer {
     this.iframe.style.display = 'inherit';
 
     for (const el of [
-      Object.values(this.pointers).flatMap((a) => a.mouseTail),
+      ...Object.values(this.pointers).flatMap((a) => a.mouseTail),
       this.iframe,
-    ].flat()) {
+    ]) {
       if (!el) {
         continue;
       }
