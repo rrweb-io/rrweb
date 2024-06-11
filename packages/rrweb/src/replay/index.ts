@@ -1222,6 +1222,9 @@ export class Replayer {
               } else if (d.type === MouseInteractions.TouchEnd) {
                 pointer.touchActive = false;
                 pointer.pointerEl.remove();
+                if (pointer.mouseTail) {
+                  pointer.mouseTail.remove();
+                }
                 delete this.pointers[pointerId];
               }
               if (d.type === MouseInteractions.MouseDown) {
@@ -1258,6 +1261,9 @@ export class Replayer {
                 pointer.pointerEl.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
                 pointer.pointerEl.remove();
+                if (pointer.mouseTail) {
+                  pointer.mouseTail.remove();
+                }
                 delete this.pointers[pointerId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
