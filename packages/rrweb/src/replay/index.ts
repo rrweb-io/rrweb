@@ -140,8 +140,6 @@ export class Replayer {
   public usingVirtualDom = false;
   public virtualDom: RRDocument = new RRDocument();
 
-  private mouseTail: HTMLCanvasElement | null = null;
-
   private emitter: Emitter = mitt();
 
   private nextUserInteractionEvent: eventWithTime | null;
@@ -171,6 +169,7 @@ export class Replayer {
       pointerEl: HTMLDivElement;
       tailPositions: Array<{ x: number; y: number }>;
       pointerPosition: mouseMovePos | null;
+      mouseTail: HTMLCanvasElement | null;
     }
   > = {};
   private lastMouseDownEvent: [Node, Event] | null = null;
@@ -437,6 +436,15 @@ export class Replayer {
   }
 
   private createPointer(pointerId: number, event: eventWithTime) {
+    const mouseTail = document.createElement('canvas');
+    mouseTail.classList.add('replayer-mouse-tail');
+    mouseTail.width = Number.parseFloat(this.iframe.width);
+    mouseTail.height = Number.parseFloat(this.iframe.height);
+    this.wrapper.insertBefore(mouseTail, this.iframe);
+
+    mouseTail.style.display =
+      this.config.mouseTail === false ? 'none' : 'inherit';
+
     const newMouse = document.createElement('div');
     newMouse.classList.add('replayer-mouse');
     this.pointers[pointerId] = {
@@ -444,7 +452,9 @@ export class Replayer {
       pointerEl: newMouse,
       tailPositions: [],
       pointerPosition: null,
+      mouseTail,
     };
+
     if (indicatesTouchDevice(event)) {
       newMouse.classList.add('touch-device');
     }
@@ -481,18 +491,22 @@ export class Replayer {
     }
     if (typeof config.mouseTail !== 'undefined') {
       if (config.mouseTail === false) {
-        if (this.mouseTail) {
-          this.mouseTail.style.display = 'none';
+        for (const { mouseTail } of Object.values(this.pointers)) {
+          if (mouseTail) {
+            mouseTail.style.display = 'none';
+          }
         }
       } else {
-        if (!this.mouseTail) {
-          this.mouseTail = document.createElement('canvas');
-          this.mouseTail.width = Number.parseFloat(this.iframe.width);
-          this.mouseTail.height = Number.parseFloat(this.iframe.height);
-          this.mouseTail.classList.add('replayer-mouse-tail');
-          this.wrapper.insertBefore(this.mouseTail, this.iframe);
+        for (let { mouseTail } of Object.values(this.pointers)) {
+          if (!mouseTail) {
+            mouseTail = document.createElement('canvas');
+            mouseTail.width = Number.parseFloat(this.iframe.width);
+            mouseTail.height = Number.parseFloat(this.iframe.height);
+            mouseTail.classList.add('replayer-mouse-tail');
+            this.wrapper.insertBefore(mouseTail, this.iframe);
+          }
+          mouseTail.style.display = 'inherit';
         }
-        this.mouseTail.style.display = 'inherit';
       }
     }
   }
@@ -614,13 +628,6 @@ export class Replayer {
     this.wrapper.classList.add('replayer-wrapper');
     this.config.root.appendChild(this.wrapper);
 
-    if (this.config.mouseTail !== false) {
-      this.mouseTail = document.createElement('canvas');
-      this.mouseTail.classList.add('replayer-mouse-tail');
-      this.mouseTail.style.display = 'inherit';
-      this.wrapper.appendChild(this.mouseTail);
-    }
-
     this.iframe = document.createElement('iframe');
     const attributes = ['allow-same-origin'];
     if (this.config.UNSAFE_replayCanvas) {
@@ -643,7 +650,11 @@ export class Replayer {
 
   private handleResize = (dimension: viewportResizeDimension) => {
     this.iframe.style.display = 'inherit';
-    for (const el of [this.mouseTail, this.iframe]) {
+
+    for (const el of [
+      ...Object.values(this.pointers).flatMap((a) => a.mouseTail),
+      this.iframe,
+    ]) {
       if (!el) {
         continue;
       }
@@ -1211,6 +1222,9 @@ export class Replayer {
               } else if (d.type === MouseInteractions.TouchEnd) {
                 pointer.touchActive = false;
                 pointer.pointerEl.remove();
+                if (pointer.mouseTail) {
+                  pointer.mouseTail.remove();
+                }
                 delete this.pointers[pointerId];
               }
               if (d.type === MouseInteractions.MouseDown) {
@@ -1247,6 +1261,9 @@ export class Replayer {
                 pointer.pointerEl.classList.add('touch-active');
               } else if (d.type === MouseInteractions.TouchEnd) {
                 pointer.pointerEl.remove();
+                if (pointer.mouseTail) {
+                  pointer.mouseTail.remove();
+                }
                 delete this.pointers[pointerId];
               } else {
                 // for MouseDown & MouseUp also invoke default behavior
@@ -2157,7 +2174,9 @@ export class Replayer {
   }
 
   private drawMouseTail(position: { x: number; y: number }, pointerId: number) {
-    if (!this.mouseTail) {
+    const pointer = this.pointers[pointerId];
+
+    if (!pointer.mouseTail) {
       return;
     }
 
@@ -2166,17 +2185,17 @@ export class Replayer {
         ? defaultMouseTailConfig
         : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
 
-    const pointer = this.pointers[pointerId];
-
     const draw = () => {
-      if (!this.mouseTail) {
+      if (!pointer.mouseTail) {
         return;
       }
-      const ctx = this.mouseTail.getContext('2d');
+      const mouseTail = pointer.mouseTail;
+
+      const ctx = mouseTail.getContext('2d');
       if (!ctx || !pointer.tailPositions.length) {
         return;
       }
-      ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
+      ctx.clearRect(0, 0, mouseTail.width, mouseTail.height);
       ctx.beginPath();
       ctx.lineWidth = lineWidth;
       ctx.lineCap = lineCap;
