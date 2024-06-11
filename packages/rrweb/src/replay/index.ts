@@ -491,13 +491,13 @@ export class Replayer {
     }
     if (typeof config.mouseTail !== 'undefined') {
       if (config.mouseTail === false) {
-        for (const [, { mouseTail }] of Object.entries(this.pointers)) {
+        for (const { mouseTail } of Object.values(this.pointers)) {
           if (mouseTail) {
             mouseTail.style.display = 'none';
           }
         }
       } else {
-        for (let [, { mouseTail }] of Object.entries(this.pointers)) {
+        for (let { mouseTail } of Object.values(this.pointers)) {
           if (!mouseTail) {
             mouseTail = document.createElement('canvas');
             mouseTail.width = Number.parseFloat(this.iframe.width);
