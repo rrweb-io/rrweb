@@ -353,6 +353,8 @@ function buildNode(
           (node as HTMLMediaElement).loop = value;
         } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
           (node as HTMLMediaElement).volume = value;
+        } else if (name === 'rr_open') {
+          (node as HTMLDialogElement).setAttribute('rr_open', value as string); // keep this attribute for rrweb to trigger showModal
         }
       }
 
