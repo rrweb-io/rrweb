@@ -442,11 +442,8 @@ export class Replayer {
     mouseTail.height = Number.parseFloat(this.iframe.height);
     this.wrapper.insertBefore(mouseTail, this.iframe);
 
-    if (this.config.mouseTail === false) {
-      mouseTail.style.display = 'none';
-    } else {
-      mouseTail.style.display = 'inherit';
-    }
+    mouseTail.style.display =
+      this.config.mouseTail === false ? 'none' : 'inherit';
 
     const newMouse = document.createElement('div');
     newMouse.classList.add('replayer-mouse');
@@ -455,7 +452,7 @@ export class Replayer {
       pointerEl: newMouse,
       tailPositions: [],
       pointerPosition: null,
-      mouseTail: mouseTail,
+      mouseTail,
     };
 
     if (indicatesTouchDevice(event)) {
@@ -655,9 +652,7 @@ export class Replayer {
     this.iframe.style.display = 'inherit';
 
     for (const el of [
-      Object.values(this.pointers)
-        .map((a) => a.mouseTail)
-        .flat(),
+      Object.values(this.pointers).flatMap((a) => a.mouseTail),
       this.iframe,
     ].flat()) {
       if (!el) {
