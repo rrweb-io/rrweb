@@ -821,6 +821,12 @@ describe('replayer', function () {
         () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
     ).toEqual(0);
+
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse-tail')!.length,
+      ),
+    ).toEqual(0);
   });
 
   // This should't happen, but we want to test/capture the behavior
@@ -857,6 +863,12 @@ describe('replayer', function () {
     expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse-tail')!.length,
       ),
     ).toEqual(0);
   });
