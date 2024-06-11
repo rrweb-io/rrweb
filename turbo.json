@@ -8,7 +8,7 @@
     "vite.config.defaults.ts",
     "tsconfig.json"
   ],
-  "globalPassThroughEnv": ["CLEAR_DIST_DIR", "PUPPETEER_HEADLESS"],
+  "globalPassThroughEnv": ["PUPPETEER_HEADLESS"],
   "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish"],
