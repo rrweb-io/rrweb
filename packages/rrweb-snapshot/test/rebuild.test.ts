@@ -53,31 +53,6 @@ describe('rebuild', function () {
     });
   });
 
-  // this doesn't really test anything, maybe remove it?
-  // contemplate if rrweb-snapshot should trigger .showModal() on dialog elements on rebuild...
-  describe('rr_open', function () {
-    it('should call `show` on non-modal dialog', function () {
-      const node = buildNodeWithSN(
-        {
-          id: 1,
-          tagName: 'dialog',
-          type: NodeType.Element,
-          attributes: {
-            open: '',
-          },
-          childNodes: [],
-        },
-        {
-          doc: document,
-          mirror,
-          hackCss: false,
-          cache,
-        },
-      ) as HTMLDialogElement;
-      expect(node?.open).toBe(true);
-    });
-  });
-
   describe('shadowDom', function () {
     it('rebuild shadowRoot without siblings', function () {
       const node = buildNodeWithSN(

@@ -23,10 +23,10 @@ import { recordOptions } from '../../src/types';
 // √ dialog show
 // √ dialog showModal
 // √ dialog close
-// - dialog open and close
-// - dialog showModal and switch to show
+// √ dialog open and close
+// √ dialog showModal and switch to show
 // √ dialog show and switch to showModal
-// - dialog add and showModal
+// √ dialog add and showModal
 // - multiple dialogs open, playback order
 
 interface IWindow extends Window {
@@ -182,9 +182,42 @@ describe('dialog', () => {
     });
 
     await assertSnapshot(events);
+  });
 
-    // const lastEvent = events[events.length - 1];
+  it('switch to show dialog', async () => {
+    await page.evaluate(() => {
+      const dialog = document.querySelector('dialog') as HTMLDialogElement;
+      dialog.showModal();
+    });
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      const dialog = document.querySelector('dialog') as HTMLDialogElement;
+      dialog.close();
+      dialog.show();
+    });
 
-    // expect(lastEvent).toMatchObject(attributeMutationFactory({ open: null }));
+    await assertSnapshot(events);
+  });
+
+  it('add dialog and showModal', async () => {
+    await page.evaluate(() => {
+      const dialog = document.createElement('dialog') as HTMLDialogElement;
+      document.body.appendChild(dialog);
+      dialog.showModal();
+    });
+    await waitForRAF(page);
+
+    await assertSnapshot(events);
+  });
+
+  it('add dialog and show', async () => {
+    await page.evaluate(() => {
+      const dialog = document.createElement('dialog') as HTMLDialogElement;
+      document.body.appendChild(dialog);
+      dialog.show();
+    });
+    await waitForRAF(page);
+
+    await assertSnapshot(events);
   });
 });
