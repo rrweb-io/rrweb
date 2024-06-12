@@ -62,7 +62,7 @@ describe('diff algorithm for rrdom', () => {
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.attributes = { rr_open: 'modal' };
+      rrNode.attributes = { rr_open: 'modal', open: '' };
 
       mirror.add(node, elementSn);
       rrDocument.mirror.add(rrNode, elementSn);
@@ -75,7 +75,6 @@ describe('diff algorithm for rrdom', () => {
       const tagName = 'DIALOG';
       const node = document.createElement(tagName) as HTMLDialogElement;
       node.showModal();
-      console.log('node', { x: node.getAttribute('open') });
       vi.spyOn(node, 'matches').mockReturnValue(true); // matches is used to check if the dialog was opened with showModal
       const closeFn = vi.spyOn(node, 'close');
 
@@ -93,13 +92,14 @@ describe('diff algorithm for rrdom', () => {
     it('should not trigger `close` on rr_open is kept', () => {
       const tagName = 'DIALOG';
       const node = document.createElement(tagName) as HTMLDialogElement;
+      vi.spyOn(node, 'matches').mockReturnValue(true); // matches is used to check if the dialog was opened with showModal
       node.setAttribute('rr_open', 'modal');
       node.setAttribute('open', '');
       const closeFn = vi.spyOn(node, 'close');
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.attributes = { rr_open: 'modal' };
+      rrNode.attributes = { rr_open: 'modal', open: '' };
 
       mirror.add(node, elementSn);
       rrDocument.mirror.add(rrNode, elementSn);

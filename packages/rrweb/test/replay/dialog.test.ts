@@ -27,7 +27,7 @@ import {
 expect.extend({ toMatchImageSnapshot });
 
 // TODO: test the following:
-// == on record ==
+// == on playback ==
 // - dialog open (standard) full snapshot
 // √ dialog open (standard) incremental (virtual dom)
 // √ dialog open (standard) incremental (non virtual dom)
@@ -41,11 +41,6 @@ expect.extend({ toMatchImageSnapshot });
 // √ dialog open and close (switching from modal to non modal)
 // √ dialog open and close (switching from non modal to modal)
 // - multiple dialogs open, recording order
-// == on playback ==
-// - dialog open
-// - dialog close
-// - dialog open and close (switching from modal to non modal and vise versa)
-// - multiple dialogs open, playback order
 // == on rrdom ==
 // - that the modal modes are recorded...
 

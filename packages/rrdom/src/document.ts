@@ -474,7 +474,7 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
   }
 
   public getAttribute(name: string): string | null {
-    return this.attributes[name] || null;
+    return this.attributes[name] ?? null;
   }
 
   public setAttribute(name: string, attribute: string) {

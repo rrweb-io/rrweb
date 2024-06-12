@@ -706,13 +706,13 @@ function serializeElementNode(
     }
   }
 
-  if (
-    tagName === 'dialog' &&
-    (n as HTMLDialogElement).open &&
-    n.matches('dialog:modal')
-  ) {
-    (attributes as DialogAttributes).rr_open = 'modal';
-    delete attributes.open; // prevent default `show()` behavior which blocks `showModal()` from working
+  if (tagName === 'dialog' && (n as HTMLDialogElement).open) {
+    // register what type of dialog is this
+    // `modal` or `non-modal`
+    // this is used to trigger `showModal()` or `show()` on replay (outside of rrweb-snapshot, in rrweb)
+    (attributes as DialogAttributes).rr_open = n.matches('dialog:modal')
+      ? 'modal'
+      : 'non-modal';
   }
 
   // canvas image data

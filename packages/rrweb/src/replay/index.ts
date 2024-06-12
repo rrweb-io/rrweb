@@ -1743,10 +1743,10 @@ export class Replayer {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
           if (value === null) {
-            (target as Element | RRElement).removeAttribute(attributeName);
-            if (attributeName === 'rr_open') {
+            if (attributeName === 'open') {
               triggerCloseForModals(target, mutation);
             }
+            (target as Element | RRElement).removeAttribute(attributeName);
           } else if (typeof value === 'string') {
             try {
               // When building snapshot, some link styles haven't loaded. Then they are loaded, they will be inlined as incremental mutation change of attribute. We need to replace the old elements whose styles aren't inlined.
@@ -1803,12 +1803,8 @@ export class Replayer {
                 );
               }
 
-              if (
-                attributeName === 'rr_open' &&
-                target.nodeName === 'DIALOG' &&
-                value === 'modal'
-              ) {
-                triggerShowModalForModals(target);
+              if (attributeName === 'rr_open' && target.nodeName === 'DIALOG') {
+                triggerShowModalForModals(target, mutation);
               }
             } catch (error) {
               this.warn(

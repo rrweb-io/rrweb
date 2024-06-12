@@ -132,7 +132,7 @@ const events: eventWithTime[] = [
       attributes: [
         {
           id: 27,
-          attributes: { open: '' },
+          attributes: { open: '', rr_open: 'non-modal', class: 'show' },
         },
       ],
     },
@@ -149,7 +149,7 @@ const events: eventWithTime[] = [
       attributes: [
         {
           id: 27,
-          attributes: { open: null },
+          attributes: { open: null, class: 'closed' },
         },
       ],
     },
@@ -166,7 +166,7 @@ const events: eventWithTime[] = [
       attributes: [
         {
           id: 27,
-          attributes: { rr_open: 'modal' },
+          attributes: { rr_open: 'modal', open: '', class: 'showModal' },
         },
       ],
     },
@@ -184,8 +184,7 @@ const events: eventWithTime[] = [
         {
           id: 27,
           attributes: {
-            rr_open: null,
-            open: '',
+            rr_open: 'non-modal',
             class: 'switched-from-show-modal-to-show',
           },
         },
@@ -206,7 +205,6 @@ const events: eventWithTime[] = [
         {
           id: 27,
           attributes: {
-            open: null,
             rr_open: 'modal',
             class: 'switched-from-show-to-show-modal',
           },
@@ -287,6 +285,7 @@ const events: eventWithTime[] = [
                     tagName: 'dialog',
                     attributes: {
                       open: '',
+                      rr_open: 'non-modal',
                       style: 'outline: blue solid 1px;',
                     },
                     childNodes: [{ type: 3, textContent: 'Dialog 1', id: 25 }],
@@ -386,7 +385,9 @@ const events: eventWithTime[] = [
                     tagName: 'dialog',
                     attributes: {
                       rr_open: 'modal',
+                      open: '',
                       style: 'outline: blue solid 1px;',
+                      class: 'existing-1',
                     },
                     childNodes: [{ type: 3, textContent: 'Dialog 1', id: 25 }],
                     id: 24,
@@ -397,6 +398,7 @@ const events: eventWithTime[] = [
                     tagName: 'dialog',
                     attributes: {
                       style: 'outline: red solid 1px;',
+                      class: 'existing-2',
                     },
                     childNodes: [{ type: 3, textContent: 'Dialog 2', id: 28 }],
                     id: 27,
@@ -423,14 +425,16 @@ const events: eventWithTime[] = [
       adds: [
         {
           parentId: 22,
-          previousId: 27,
-          nextId: 31,
+          previousId: 23,
+          nextId: 24,
           node: {
             type: 2,
             tagName: 'dialog',
             attributes: {
               rr_open: 'modal',
+              open: '',
               style: 'outline: orange solid 1px;',
+              class: 'new-dialog',
             },
             childNodes: [],
             id: 32,

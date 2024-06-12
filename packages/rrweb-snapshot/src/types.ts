@@ -103,14 +103,17 @@ export type mediaAttributes = {
   rr_mediaVolume?: number;
 };
 
-export type DialogAttributes =
-  // | {
-  //     open: '';
-  //   }
-  {
-    rr_open: 'modal';
-    // rr_open_index?: number;
-  };
+export type DialogAttributes = {
+  open: string;
+  /**
+   * Represents the dialog's open mode.
+   * `modal` means the dialog is opened with `showModal()`.
+   * `non-modal` means the dialog is opened with `show()` or
+   * by adding an `open` attribute.
+   */
+  rr_open: 'modal' | 'non-modal';
+  // rr_open_index?: number;
+};
 
 // @deprecated
 export interface INode extends Node {

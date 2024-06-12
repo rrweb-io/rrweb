@@ -291,15 +291,20 @@ function diffAfterUpdatingChildren(
           const rrDialog = newRRElement as unknown as RRDialogElement;
           const wasOpen = dialog.open;
           const wasModal = dialog.matches('dialog:modal');
-          const isOpen = rrDialog.open;
-          const { isModal } = rrDialog;
+          const isOpen = typeof rrDialog.getAttribute('open') === 'string';
+          const isModal = rrDialog.getAttribute('rr_open') === 'modal';
 
-          const modeChanged = (wasModal && !isModal) || (!wasModal && isModal);
+          const modeChanged = wasModal !== isModal;
+          const openChanged = wasOpen !== isOpen;
 
-          if (wasOpen && modeChanged) dialog.close();
-          if ((wasOpen && modeChanged) || (isOpen && !wasOpen)) {
-            if (isModal) dialog.showModal();
-            else dialog.show();
+          if (modeChanged || wasOpen !== isOpen) dialog.close();
+          if (isOpen && (openChanged || modeChanged)) {
+            try {
+              if (isModal) dialog.showModal();
+              else dialog.show();
+            } catch (e) {
+              console.warn(e);
+            }
           }
 
           break;
@@ -349,23 +354,10 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
-    else if (
-      newTree.tagName === 'DIALOG' &&
-      (name === 'rr_open' || name === 'open')
-    ) {
-      const rrDialog = newTree as RRDialogElement;
-      const isModal = newAttributes.rr_open === 'modal';
-      const isOpen = isModal || newAttributes.open === '';
-      if (isModal) rrDialog.showModal();
-      else if (isOpen) rrDialog.show();
-      else rrDialog.close();
-      continue;
-    } else oldTree.setAttribute(name, newValue);
+    else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes)) {
-    if (newTree.tagName === 'DIALOG' && (name === 'rr_open' || name === 'open'))
-      continue; // attributes are handled in diffAfterUpdatingChildren for Dialog elements
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
   }
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);

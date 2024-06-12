@@ -663,6 +663,12 @@ export default class MutationBuffer {
                 item.styleDiff[pname] = false; // delete
               }
             }
+          } else if (attributeName === 'open' && target.tagName === 'DIALOG') {
+            if (target.matches('dialog:modal')) {
+              item.attributes['rr_open'] = 'modal';
+            } else {
+              item.attributes['rr_open'] = 'non-modal';
+            }
           }
         }
         break;
