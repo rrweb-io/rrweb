@@ -30,6 +30,7 @@
     "@sentry-internal/rrweb-types": "2.19.0"
   },
   "devDependencies": {
+    "@types/css-font-loading-module": "0.0.7",
     "@types/jest": "^29.5.0",
     "jest": "^29.6.0",
     "ts-jest": "^29.1.1",

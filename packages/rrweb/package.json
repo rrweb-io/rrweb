@@ -16,7 +16,9 @@
     "build:tarball": "npm pack",
     "bundle:browser": "cross-env BROWSER_ONLY=true rollup --config",
     "bundle": "rollup --config",
-    "typings": "tsc -d --declarationDir typings",
+    "typings": "yarn typings:core && yarn typings:downlevel",
+    "typings:core": "tsc -d --declarationDir typings",
+    "typings:downlevel": "downlevel-dts typings typings-ts3.8 --to ts3.8",
     "prepare": "npm run typings && npm run bundle",
     "check-types": "tsc -noEmit",
     "lint": "yarn eslint src",
@@ -35,11 +37,19 @@
   "unpkg": "dist/rrweb.js",
   "sideEffects": false,
   "typings": "typings/entries/all.d.ts",
+  "typesVersions": {
+    "<3.9": {
+      "typings/entries/all.d.ts": [
+        "typings-ts3.8/entries/all.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist",
     "lib",
     "es",
-    "typings"
+    "typings",
+    "typings-ts3.8"
   ],
   "author": "yanzhen@smartx.com",
   "license": "MIT",
@@ -86,6 +96,7 @@
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
+    "downlevel-dts": "https://github.com/getsentry/downlevel-dts",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0"
   }

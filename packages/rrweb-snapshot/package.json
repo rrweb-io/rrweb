@@ -10,7 +10,9 @@
     "bundle": "rollup --config",
     "bundle:es-only": "cross-env ES_ONLY=true rollup --config",
     "dev": "yarn bundle:es-only --watch",
-    "typings": "tsc -d --declarationDir typings",
+    "typings": "yarn typings:core && yarn typings:downlevel",
+    "typings:core": "tsc -d --declarationDir typings",
+    "typings:downlevel": "downlevel-dts typings typings-ts3.8 --to ts3.8",
     "prepare": "yarn typings && yarn bundle",
     "lint": "yarn eslint src"
   },
@@ -28,6 +30,13 @@
   "module": "es/rrweb-snapshot.js",
   "unpkg": "dist/rrweb-snapshot.js",
   "typings": "typings/index.d.ts",
+  "typesVersions": {
+    "<3.9": {
+      "typings/index.d.ts": [
+        "typings-ts3.8/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist",
     "lib",
@@ -57,5 +66,8 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3"
+  },
+  "dependencies": {
+    "downlevel-dts": "https://github.com/getsentry/downlevel-dts"
   }
 }

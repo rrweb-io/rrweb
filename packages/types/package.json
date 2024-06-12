@@ -10,10 +10,13 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -noEmit && vite build",
-    "build:tarball": "npm pack",
+    "build": "yarn run typings",
+    "build:tarball": "yarn pack",
     "check-types": "tsc -noEmit",
-    "prepare": "npm run build",
+    "prepare": "yarn run build",
+    "typings": "yarn typings:core && yarn typings:downlevel",
+    "typings:core": "tsc -noEmit && vite build",
+    "typings:downlevel": "downlevel-dts dist dist-ts3.8 --to ts3.8",
     "lint": "yarn eslint src/**/*.ts"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
@@ -29,6 +32,13 @@
   "main": "./dist/rrweb-types.umd.cjs",
   "module": "./dist/rrweb-types.js",
   "typings": "dist/index.d.ts",
+  "typesVersions": {
+    "<3.9": {
+      "dist/index.d.ts": [
+        "dist-ts3.8/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -45,7 +55,9 @@
     "vite-plugin-dts": "^1.7.3"
   },
   "dependencies": {
-    "@sentry-internal/rrweb-snapshot": "2.19.0"
+    "@sentry-internal/rrweb-snapshot": "2.19.0",
+    "@types/css-font-loading-module": "0.0.7",
+    "downlevel-dts": "https://github.com/getsentry/downlevel-dts"
   },
   "browserslist": [
     "supports es6-class"
