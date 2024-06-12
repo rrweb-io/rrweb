@@ -1,20 +1,28 @@
 import type { attributeMutation } from '@rrweb/types';
 import { RRNode } from 'rrdom';
 
-export function triggerShowModalForModals(
+/**
+ * Checks if the dialog is a top level dialog and applies the dialog to the top level
+ * @param node - potential dialog element to apply top level `showModal()` to, or other node (which will be ignored)
+ * @param attributeMutation - the attribute mutation used to change the dialog (optional)
+ * @returns void
+ */
+export function applyDialogToTopLevel(
   node: HTMLDialogElement | Node | RRNode,
   attributeMutation?: attributeMutation,
-) {
+): void {
   if (node.nodeName !== 'DIALOG' || node instanceof RRNode) return;
   const dialog = node as HTMLDialogElement;
   const isOpen = dialog.open;
   const isModal = isOpen && dialog.matches('dialog:modal');
+  const rrOpen = dialog.getAttribute('rr_open');
 
   const shouldBeOpen =
     typeof attributeMutation?.attributes.open === 'string' ||
     typeof dialog.getAttribute('open') === 'string';
-  const shouldBeModal = dialog.getAttribute('rr_open') === 'modal';
-  const shouldBeNonModal = dialog.getAttribute('rr_open') === 'non-modal';
+  const shouldBeModal = rrOpen === 'modal';
+  const shouldBeNonModal = rrOpen === 'non-modal';
+
   const modeChanged =
     (isModal && shouldBeNonModal) || (!isModal && shouldBeModal);
 
@@ -26,17 +34,22 @@ export function triggerShowModalForModals(
   }
 
   if (isOpen) dialog.close();
-
   if (!shouldBeOpen) return;
 
   if (shouldBeModal) dialog.showModal();
   else dialog.show();
 }
 
-export function triggerCloseForModals(
+/**
+ * Check if the dialog is a top level dialog and removes the dialog from the top level if necessary
+ * @param node - potential dialog element to remove from top level, or other node (which will be ignored)
+ * @param attributeMutation - the attribute mutation used to change the dialog
+ * @returns void
+ */
+export function removeDialogFromTopLevel(
   node: HTMLDialogElement | Node | RRNode,
   attributeMutation: attributeMutation,
-) {
+): void {
   if (node.nodeName !== 'DIALOG' || node instanceof RRNode) return;
   const dialog = node as HTMLDialogElement;
 

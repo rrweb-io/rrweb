@@ -550,22 +550,24 @@ export class BaseRRMediaElement extends BaseRRElement {
 export class BaseRRDialogElement extends BaseRRElement {
   public readonly tagName = 'DIALOG' as const;
   public readonly nodeName = 'DIALOG' as const;
-  public open = false;
-  private _isModal = false;
+
   get isModal() {
-    return this._isModal;
+    return this.getAttribute('rr_open') === 'modal';
+  }
+  get open() {
+    return this.getAttribute('open') !== null;
   }
   public close() {
-    this.open = false;
-    this._isModal = false;
+    this.removeAttribute('open');
+    this.removeAttribute('rr_open');
   }
   public show() {
-    this.open = true;
-    this._isModal = false;
+    this.setAttribute('open', '');
+    this.setAttribute('rr_open', 'non-modal');
   }
   public showModal() {
-    this.open = true;
-    this._isModal = true;
+    this.setAttribute('open', '');
+    this.setAttribute('rr_open', 'modal');
   }
 }
 

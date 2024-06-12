@@ -86,7 +86,7 @@ import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
 import { MediaManager } from './media';
-import { triggerShowModalForModals, triggerCloseForModals } from './dialog';
+import { applyDialogToTopLevel, removeDialogFromTopLevel } from './dialog';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
@@ -246,7 +246,7 @@ export class Replayer {
               this.applyStyleDeclaration(data, styleSheet);
           },
           afterAppend: (node: Node, id: number) => {
-            triggerShowModalForModals(node);
+            applyDialogToTopLevel(node);
             for (const plugin of this.config.plugins || []) {
               if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
             }
@@ -853,7 +853,7 @@ export class Replayer {
     }
     const { documentElement, head } = this.iframe.contentDocument;
     this.insertStyleRules(documentElement, head);
-    collectedDialogs.forEach((d) => triggerShowModalForModals(d));
+    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
     if (!this.service.state.matches('playing')) {
       this.iframe.contentDocument
         .getElementsByTagName('html')[0]
@@ -916,10 +916,11 @@ export class Replayer {
     type TNode = typeof mirror extends Mirror ? Node : RRNode;
     type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
 
-    const collected: AppendedIframe[] = [];
+    const collectedIframes: AppendedIframe[] = [];
+    const collectedDialogs = new Set<HTMLDialogElement>();
     const afterAppend = (builtNode: Node, id: number) => {
-      triggerShowModalForModals(builtNode);
-      this.collectIframeAndAttachDocument(collected, builtNode);
+      if (builtNode.nodeName === 'DIALOG') collectedDialogs.add(builtNode as HTMLDialogElement);
+      this.collectIframeAndAttachDocument(collectedIframes, builtNode);
       const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
         sn?.type === NodeType.Element &&
@@ -953,7 +954,8 @@ export class Replayer {
     });
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
-    for (const { mutationInQueue, builtNode } of collected) {
+    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
+    for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
@@ -1539,7 +1541,7 @@ export class Replayer {
       const afterAppend = (node: Node | RRNode, id: number) => {
         // Skip the plugin onBuild callback for virtual dom
         if (this.usingVirtualDom) return;
-        triggerShowModalForModals(node);
+        applyDialogToTopLevel(node);
         for (const plugin of this.config.plugins || []) {
           if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
         }
@@ -1743,10 +1745,9 @@ export class Replayer {
         if (typeof attributeName === 'string') {
           const value = mutation.attributes[attributeName];
           if (value === null) {
-            if (attributeName === 'open') {
-              triggerCloseForModals(target, mutation);
-            }
             (target as Element | RRElement).removeAttribute(attributeName);
+            if (attributeName === 'open')
+              removeDialogFromTopLevel(target, mutation);
           } else if (typeof value === 'string') {
             try {
               // When building snapshot, some link styles haven't loaded. Then they are loaded, they will be inlined as incremental mutation change of attribute. We need to replace the old elements whose styles aren't inlined.
@@ -1804,7 +1805,7 @@ export class Replayer {
               }
 
               if (attributeName === 'rr_open' && target.nodeName === 'DIALOG') {
-                triggerShowModalForModals(target, mutation);
+                applyDialogToTopLevel(target, mutation);
               }
             } catch (error) {
               this.warn(
