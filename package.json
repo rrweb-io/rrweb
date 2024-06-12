@@ -1,4 +1,5 @@
 {
+  "name": "@rrweb/_monorepo",
   "description": "record and replay the web",
   "repository": {
     "type": "git",
@@ -15,16 +16,19 @@
   "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/plugins/*"
   ],
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
+    "@types/prettier": "2.7.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "browserslist": "^4.22.1",
     "concurrently": "^7.1.0",
+    "esbuild-plugin-umd-wrapper": "^2.0.0",
     "eslint": "^8.53.0",
     "eslint-plugin-compat": "^4.2.0",
     "eslint-plugin-jest": "^27.6.0",
@@ -32,16 +36,18 @@
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
-    "turbo": "^1.2.4",
+    "turbo": "^2.0.3",
     "typescript": "^4.9.5"
   },
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
-    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1'",
+    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1 --continue'",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
+    "check-types": "yarn turbo run check-types --continue",
     "format": "yarn prettier --write '**/*.{ts,md}'",
-    "dev": "yarn turbo run dev",
+    "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs yarn prettier --write",
+    "dev": "CLEAR_DIST_DIR=false yarn turbo run dev --concurrency=17",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
@@ -49,11 +55,12 @@
     "release": "yarn build:all && changeset publish"
   },
   "resolutions": {
-    "**/jsdom/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
+    "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
     "**/@types/dom-webcodecs": "0.1.5"
   },
   "browserslist": [
     "defaults",
     "not op_mini all"
-  ]
+  ],
+  "packageManager": "yarn@1.22.19"
 }

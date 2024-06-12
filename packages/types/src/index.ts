@@ -163,7 +163,7 @@ export type incrementalData =
   | adoptedStyleSheetData
   | customElementData;
 
-export type event =
+export type eventWithoutTime =
   | domContentLoadedEvent
   | loadedEvent
   | fullSnapshotEvent
@@ -172,7 +172,13 @@ export type event =
   | customEvent
   | pluginEvent;
 
-export type eventWithTime = event & {
+/**
+ * @deprecated intended for internal use
+ * a synonym for eventWithoutTime
+ */
+export type event = eventWithoutTime;
+
+export type eventWithTime = eventWithoutTime & {
   timestamp: number;
   delay?: number;
 };
@@ -559,7 +565,7 @@ export type inputValue = {
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
 
-export const enum MediaInteractions {
+export enum MediaInteractions {
   Play,
   Pause,
   Seeked,
@@ -573,6 +579,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  loop?: boolean;
   playbackRate?: number;
 };
 
@@ -653,6 +660,9 @@ export type Arguments<T> = T extends (...payload: infer U) => unknown
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
+  /**
+   * @deprecated use Play instead
+   */
   Resume = 'resume',
   Resize = 'resize',
   Finish = 'finish',
@@ -694,3 +704,7 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+// Types for @rrweb/packer
+export type PackFn = (event: eventWithTime) => string;
+export type UnpackFn = (raw: string) => eventWithTime;

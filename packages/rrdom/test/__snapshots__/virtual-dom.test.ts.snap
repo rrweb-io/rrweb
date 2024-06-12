@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`RRDocument for browser environment create a RRDocument from a html document can build from a common html 1`] = `
+exports[`RRDocument for browser environment > create a RRDocument from a html document > can build from a common html 1`] = `
 "-2 RRDocument
   -3 RRDocumentType
   -4 HTML lang=\\"en\\" 
@@ -54,7 +54,7 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
 "
 `;
 
-exports[`RRDocument for browser environment create a RRDocument from a html document can build from a html containing nested shadow doms 1`] = `
+exports[`RRDocument for browser environment > create a RRDocument from a html document > can build from a html containing nested shadow doms 1`] = `
 "-2 RRDocument
   -3 RRDocumentType
   -4 HTML lang=\\"en\\" 
@@ -89,14 +89,14 @@ exports[`RRDocument for browser environment create a RRDocument from a html docu
 "
 `;
 
-exports[`RRDocument for browser environment create a RRDocument from a html document can build from a xml page 1`] = `
+exports[`RRDocument for browser environment > create a RRDocument from a html document > can build from a xml page 1`] = `
 "-2 RRDocument
   -3 XML 
     -4 RRCDATASection data=\\"Some <CDATA> data & then some\\"
 "
 `;
 
-exports[`RRDocument for browser environment create a RRDocument from a html document can build from an iframe html  1`] = `
+exports[`RRDocument for browser environment > create a RRDocument from a html document > can build from an iframe html  1`] = `
 "-2 RRDocument
   -3 RRDocumentType
   -4 HTML lang=\\"en\\" 

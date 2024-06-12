@@ -121,31 +121,26 @@ export interface IRRCDATASection extends IRRNode {
   data: string;
 }
 
-type ConstrainedConstructor<T = Record<string, unknown>> = new (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...args: any[]
-) => T;
-
 /**
  * This is designed as an abstract class so it should never be instantiated.
  */
-export class BaseRRNode implements IRRNode {
+export abstract class BaseRRNode implements IRRNode {
   public parentElement: IRRNode | null = null;
   public parentNode: IRRNode | null = null;
-  public ownerDocument: IRRDocument;
+  public ownerDocument!: IRRDocument;
   public firstChild: IRRNode | null = null;
   public lastChild: IRRNode | null = null;
   public previousSibling: IRRNode | null = null;
   public nextSibling: IRRNode | null = null;
 
-  public textContent: string | null;
+  public abstract textContent: string | null;
 
   public readonly ELEMENT_NODE: number = NodeType.ELEMENT_NODE;
   public readonly TEXT_NODE: number = NodeType.TEXT_NODE;
   // corresponding nodeType value of standard HTML Node
-  public readonly nodeType: number;
-  public readonly nodeName: string;
-  public readonly RRNodeType: RRNodeType;
+  public readonly nodeType!: number;
+  public readonly nodeName!: string;
+  public readonly RRNodeType!: RRNodeType;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   constructor(..._args: any[]) {
@@ -200,475 +195,428 @@ export class BaseRRNode implements IRRNode {
   }
 }
 
-export function BaseRRDocumentImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>,
->(RRNodeClass: RRNode) {
-  return class BaseRRDocument extends RRNodeClass implements IRRDocument {
-    public readonly nodeType: number = NodeType.DOCUMENT_NODE;
-    public readonly nodeName: '#document' = '#document';
-    public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
-    public readonly RRNodeType = RRNodeType.Document;
+export class BaseRRDocument extends BaseRRNode implements IRRDocument {
+  public readonly nodeType: number = NodeType.DOCUMENT_NODE;
+  public readonly nodeName = '#document' as const;
+  public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
+  public readonly RRNodeType = RRNodeType.Document;
+  public textContent: string | null = null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(...args: any[]) {
-      super(args);
-      this.textContent = null;
-      this.ownerDocument = this;
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(...args: any[]) {
+    super(args);
+    this.ownerDocument = this;
+  }
 
-    public get documentElement(): IRRElement | null {
-      return (
-        (this.childNodes.find(
-          (node) =>
-            node.RRNodeType === RRNodeType.Element &&
-            (node as IRRElement).tagName === 'HTML',
-        ) as IRRElement) || null
-      );
-    }
+  public get documentElement(): IRRElement | null {
+    return (
+      (this.childNodes.find(
+        (node) =>
+          node.RRNodeType === RRNodeType.Element &&
+          (node as IRRElement).tagName === 'HTML',
+      ) as IRRElement) || null
+    );
+  }
 
-    public get body(): IRRElement | null {
-      return (
-        (this.documentElement?.childNodes.find(
-          (node) =>
-            node.RRNodeType === RRNodeType.Element &&
-            (node as IRRElement).tagName === 'BODY',
-        ) as IRRElement) || null
-      );
-    }
+  public get body(): IRRElement | null {
+    return (
+      (this.documentElement?.childNodes.find(
+        (node) =>
+          node.RRNodeType === RRNodeType.Element &&
+          (node as IRRElement).tagName === 'BODY',
+      ) as IRRElement) || null
+    );
+  }
 
-    public get head(): IRRElement | null {
-      return (
-        (this.documentElement?.childNodes.find(
-          (node) =>
-            node.RRNodeType === RRNodeType.Element &&
-            (node as IRRElement).tagName === 'HEAD',
-        ) as IRRElement) || null
-      );
-    }
+  public get head(): IRRElement | null {
+    return (
+      (this.documentElement?.childNodes.find(
+        (node) =>
+          node.RRNodeType === RRNodeType.Element &&
+          (node as IRRElement).tagName === 'HEAD',
+      ) as IRRElement) || null
+    );
+  }
 
-    public get implementation(): IRRDocument {
-      return this;
-    }
+  public get implementation(): IRRDocument {
+    return this;
+  }
 
-    public get firstElementChild(): IRRElement | null {
-      return this.documentElement;
-    }
+  public get firstElementChild(): IRRElement | null {
+    return this.documentElement;
+  }
 
-    public appendChild(newChild: IRRNode): IRRNode {
-      const nodeType = newChild.RRNodeType;
-      if (
-        nodeType === RRNodeType.Element ||
-        nodeType === RRNodeType.DocumentType
-      ) {
-        if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
-          throw new Error(
-            `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one ${
-              nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
-            } on RRDocument allowed.`,
-          );
-        }
-      }
-
-      const child = appendChild(this, newChild);
-      child.parentElement = null;
-      return child;
-    }
-
-    public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
-      const nodeType = newChild.RRNodeType;
-      if (
-        nodeType === RRNodeType.Element ||
-        nodeType === RRNodeType.DocumentType
-      ) {
-        if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
-          throw new Error(
-            `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one ${
-              nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
-            } on RRDocument allowed.`,
-          );
-        }
-      }
-
-      const child = insertBefore(this, newChild, refChild);
-      child.parentElement = null;
-      return child;
-    }
-
-    public removeChild(node: IRRNode): IRRNode {
-      return removeChild(this, node);
-    }
-
-    public open() {
-      this.firstChild = null;
-      this.lastChild = null;
-    }
-
-    public close() {
-      //
-    }
-
-    /**
-     * Adhoc implementation for setting xhtml namespace in rebuilt.ts (rrweb-snapshot).
-     * There are two lines used this function:
-     * 1. doc.write('\<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" ""\>')
-     * 2. doc.write('\<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" ""\>')
-     */
-    public write(content: string) {
-      let publicId;
-      if (
-        content ===
-        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">'
-      )
-        publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
-      else if (
-        content ===
-        '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">'
-      )
-        publicId = '-//W3C//DTD HTML 4.0 Transitional//EN';
-      if (publicId) {
-        const doctype = this.createDocumentType('html', publicId, '');
-        this.open();
-        this.appendChild(doctype);
+  public appendChild(newChild: IRRNode): IRRNode {
+    const nodeType = newChild.RRNodeType;
+    if (
+      nodeType === RRNodeType.Element ||
+      nodeType === RRNodeType.DocumentType
+    ) {
+      if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
+        throw new Error(
+          `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one ${
+            nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
+          } on RRDocument allowed.`,
+        );
       }
     }
 
-    createDocument(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _namespace: string | null,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _qualifiedName: string | null,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _doctype?: DocumentType | null,
-    ): IRRDocument {
-      return new BaseRRDocument();
+    const child = appendChild(this, newChild);
+    child.parentElement = null;
+    return child;
+  }
+
+  public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
+    const nodeType = newChild.RRNodeType;
+    if (
+      nodeType === RRNodeType.Element ||
+      nodeType === RRNodeType.DocumentType
+    ) {
+      if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
+        throw new Error(
+          `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one ${
+            nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
+          } on RRDocument allowed.`,
+        );
+      }
     }
 
-    createDocumentType(
-      qualifiedName: string,
-      publicId: string,
-      systemId: string,
-    ): IRRDocumentType {
-      const doctype = new (BaseRRDocumentTypeImpl(BaseRRNode))(
-        qualifiedName,
-        publicId,
-        systemId,
-      );
-      doctype.ownerDocument = this;
-      return doctype;
+    const child = insertBefore(this, newChild, refChild);
+    child.parentElement = null;
+    return child;
+  }
+
+  public removeChild(node: IRRNode): IRRNode {
+    return removeChild(this, node);
+  }
+
+  public open() {
+    this.firstChild = null;
+    this.lastChild = null;
+  }
+
+  public close() {
+    //
+  }
+
+  /**
+   * Adhoc implementation for setting xhtml namespace in rebuilt.ts (rrweb-snapshot).
+   * There are two lines used this function:
+   * 1. doc.write('\<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" ""\>')
+   * 2. doc.write('\<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" ""\>')
+   */
+  public write(content: string) {
+    let publicId;
+    if (
+      content ===
+      '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">'
+    )
+      publicId = '-//W3C//DTD XHTML 1.0 Transitional//EN';
+    else if (
+      content ===
+      '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">'
+    )
+      publicId = '-//W3C//DTD HTML 4.0 Transitional//EN';
+    if (publicId) {
+      const doctype = this.createDocumentType('html', publicId, '');
+      this.open();
+      this.appendChild(doctype);
     }
+  }
 
-    createElement(tagName: string): IRRElement {
-      const element = new (BaseRRElementImpl(BaseRRNode))(tagName);
-      element.ownerDocument = this;
-      return element;
-    }
-
-    createElementNS(_namespaceURI: string, qualifiedName: string): IRRElement {
-      return this.createElement(qualifiedName);
-    }
-
-    createTextNode(data: string): IRRText {
-      const text = new (BaseRRTextImpl(BaseRRNode))(data);
-      text.ownerDocument = this;
-      return text;
-    }
-
-    createComment(data: string): IRRComment {
-      const comment = new (BaseRRCommentImpl(BaseRRNode))(data);
-      comment.ownerDocument = this;
-      return comment;
-    }
-
-    createCDATASection(data: string): IRRCDATASection {
-      const CDATASection = new (BaseRRCDATASectionImpl(BaseRRNode))(data);
-      CDATASection.ownerDocument = this;
-      return CDATASection;
-    }
-
-    toString() {
-      return 'RRDocument';
-    }
-  };
-}
-
-export function BaseRRDocumentTypeImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>,
->(RRNodeClass: RRNode) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return class BaseRRDocumentType
-    extends RRNodeClass
-    implements IRRDocumentType
-  {
-    public readonly nodeType: number = NodeType.DOCUMENT_TYPE_NODE;
-    public readonly RRNodeType = RRNodeType.DocumentType;
-    public readonly nodeName: string;
-    public readonly name: string;
-    public readonly publicId: string;
-    public readonly systemId: string;
-
-    constructor(qualifiedName: string, publicId: string, systemId: string) {
-      super();
-      this.name = qualifiedName;
-      this.publicId = publicId;
-      this.systemId = systemId;
-      this.nodeName = qualifiedName;
-      this.textContent = null;
-    }
-
-    toString() {
-      return 'RRDocumentType';
-    }
-  };
-}
-
-export function BaseRRElementImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>,
->(RRNodeClass: RRNode) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return class BaseRRElement extends RRNodeClass implements IRRElement {
-    public readonly nodeType: number = NodeType.ELEMENT_NODE;
-    public readonly RRNodeType = RRNodeType.Element;
-    public readonly nodeName: string;
-    public tagName: string;
-    public attributes: Record<string, string> = {};
-    public shadowRoot: IRRElement | null = null;
-    public scrollLeft?: number;
-    public scrollTop?: number;
-
-    constructor(tagName: string) {
-      super();
-      this.tagName = tagName.toUpperCase();
-      this.nodeName = tagName.toUpperCase();
-    }
-
-    public get textContent(): string {
-      let result = '';
-      this.childNodes.forEach((node) => (result += node.textContent));
-      return result;
-    }
-
-    public set textContent(textContent: string) {
-      this.firstChild = null;
-      this.lastChild = null;
-      this.appendChild(this.ownerDocument.createTextNode(textContent));
-    }
-
-    public get classList(): ClassList {
-      return new ClassList(
-        this.attributes.class as string | undefined,
-        (newClassName) => {
-          this.attributes.class = newClassName;
-        },
-      );
-    }
-
-    public get id() {
-      return this.attributes.id || '';
-    }
-
-    public get className() {
-      return this.attributes.class || '';
-    }
-
-    public get style() {
-      const style = (
-        this.attributes.style ? parseCSSText(this.attributes.style) : {}
-      ) as CSSStyleDeclaration;
-      const hyphenateRE = /\B([A-Z])/g;
-      style.setProperty = (
-        name: string,
-        value: string | null,
-        priority?: string,
-      ) => {
-        if (hyphenateRE.test(name)) return;
-        const normalizedName = camelize(name);
-        if (!value) delete style[normalizedName];
-        else style[normalizedName] = value;
-        if (priority === 'important') style[normalizedName] += ' !important';
-        this.attributes.style = toCSSText(style);
-      };
-      style.removeProperty = (name: string) => {
-        if (hyphenateRE.test(name)) return '';
-        const normalizedName = camelize(name);
-        const value = style[normalizedName] || '';
-        delete style[normalizedName];
-        this.attributes.style = toCSSText(style);
-        return value;
-      };
-      return style;
-    }
-
-    public getAttribute(name: string) {
-      return this.attributes[name] || null;
-    }
-
-    public setAttribute(name: string, attribute: string) {
-      this.attributes[name] = attribute;
-    }
-
-    public setAttributeNS(
-      _namespace: string | null,
-      qualifiedName: string,
-      value: string,
-    ): void {
-      this.setAttribute(qualifiedName, value);
-    }
-
-    public removeAttribute(name: string) {
-      delete this.attributes[name];
-    }
-
-    public appendChild(newChild: IRRNode): IRRNode {
-      return appendChild(this, newChild);
-    }
-
-    public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
-      return insertBefore(this, newChild, refChild);
-    }
-
-    public removeChild(node: IRRNode): IRRNode {
-      return removeChild(this, node);
-    }
-
+  createDocument(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public attachShadow(_init: ShadowRootInit): IRRElement {
-      const shadowRoot = this.ownerDocument.createElement('SHADOWROOT');
-      this.shadowRoot = shadowRoot;
-      return shadowRoot;
-    }
-
+    _namespace: string | null,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public dispatchEvent(_event: Event) {
-      return true;
-    }
-
-    toString() {
-      let attributeString = '';
-      for (const attribute in this.attributes) {
-        attributeString += `${attribute}="${this.attributes[attribute]}" `;
-      }
-      return `${this.tagName} ${attributeString}`;
-    }
-  };
-}
-
-export function BaseRRMediaElementImpl<
-  RRElement extends ConstrainedConstructor<IRRElement>,
->(RRElementClass: RRElement) {
-  return class BaseRRMediaElement extends RRElementClass {
-    public currentTime?: number;
-    public volume?: number;
-    public paused?: boolean;
-    public muted?: boolean;
-    public playbackRate?: number;
+    _qualifiedName: string | null,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    attachShadow(_init: ShadowRootInit): IRRElement {
-      throw new Error(
-        `RRDomException: Failed to execute 'attachShadow' on 'RRElement': This RRElement does not support attachShadow`,
-      );
-    }
-    public play() {
-      this.paused = false;
-    }
-    public pause() {
-      this.paused = true;
-    }
-  };
+    _doctype?: DocumentType | null,
+  ): IRRDocument {
+    return new BaseRRDocument();
+  }
+
+  createDocumentType(
+    qualifiedName: string,
+    publicId: string,
+    systemId: string,
+  ): IRRDocumentType {
+    const doctype = new BaseRRDocumentType(qualifiedName, publicId, systemId);
+    doctype.ownerDocument = this;
+    return doctype;
+  }
+
+  createElement(tagName: string): IRRElement {
+    const element = new BaseRRElement(tagName);
+    element.ownerDocument = this;
+    return element;
+  }
+
+  createElementNS(_namespaceURI: string, qualifiedName: string): IRRElement {
+    return this.createElement(qualifiedName);
+  }
+
+  createTextNode(data: string): IRRText {
+    const text = new BaseRRText(data);
+    text.ownerDocument = this;
+    return text;
+  }
+
+  createComment(data: string): IRRComment {
+    const comment = new BaseRRComment(data);
+    comment.ownerDocument = this;
+    return comment;
+  }
+
+  createCDATASection(data: string): IRRCDATASection {
+    const CDATASection = new BaseRRCDATASection(data);
+    CDATASection.ownerDocument = this;
+    return CDATASection;
+  }
+
+  toString() {
+    return 'RRDocument';
+  }
 }
 
-export function BaseRRTextImpl<RRNode extends ConstrainedConstructor<IRRNode>>(
-  RRNodeClass: RRNode,
-) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return class BaseRRText extends RRNodeClass implements IRRText {
-    public readonly nodeType: number = NodeType.TEXT_NODE;
-    public readonly nodeName: '#text' = '#text';
-    public readonly RRNodeType = RRNodeType.Text;
-    public data: string;
+export class BaseRRDocumentType extends BaseRRNode implements IRRDocumentType {
+  public readonly nodeType: number = NodeType.DOCUMENT_TYPE_NODE;
+  public readonly RRNodeType = RRNodeType.DocumentType;
+  declare readonly nodeName: string;
+  public readonly name: string;
+  public readonly publicId: string;
+  public readonly systemId: string;
+  public textContent: string | null = null;
 
-    constructor(data: string) {
-      super();
-      this.data = data;
-    }
+  constructor(qualifiedName: string, publicId: string, systemId: string) {
+    super();
+    this.name = qualifiedName;
+    this.publicId = publicId;
+    this.systemId = systemId;
+    this.nodeName = qualifiedName;
+  }
 
-    public get textContent(): string {
-      return this.data;
-    }
-
-    public set textContent(textContent: string) {
-      this.data = textContent;
-    }
-
-    toString() {
-      return `RRText text=${JSON.stringify(this.data)}`;
-    }
-  };
+  toString() {
+    return 'RRDocumentType';
+  }
 }
 
-export function BaseRRCommentImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>,
->(RRNodeClass: RRNode) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return class BaseRRComment extends RRNodeClass implements IRRComment {
-    public readonly nodeType: number = NodeType.COMMENT_NODE;
-    public readonly nodeName: '#comment' = '#comment';
-    public readonly RRNodeType = RRNodeType.Comment;
-    public data: string;
+export class BaseRRElement extends BaseRRNode implements IRRElement {
+  public readonly nodeType: number = NodeType.ELEMENT_NODE;
+  public readonly RRNodeType = RRNodeType.Element;
+  declare readonly nodeName: string;
+  public tagName: string;
+  public attributes: Record<string, string> = {};
+  public shadowRoot: IRRElement | null = null;
+  public scrollLeft?: number;
+  public scrollTop?: number;
 
-    constructor(data: string) {
-      super();
-      this.data = data;
-    }
+  constructor(tagName: string) {
+    super();
+    this.tagName = tagName.toUpperCase();
+    this.nodeName = tagName.toUpperCase();
+  }
 
-    public get textContent(): string {
-      return this.data;
-    }
+  public get textContent(): string {
+    let result = '';
+    this.childNodes.forEach((node) => (result += node.textContent));
+    return result;
+  }
 
-    public set textContent(textContent: string) {
-      this.data = textContent;
-    }
+  public set textContent(textContent: string) {
+    this.firstChild = null;
+    this.lastChild = null;
+    this.appendChild(this.ownerDocument.createTextNode(textContent));
+  }
 
-    toString() {
-      return `RRComment text=${JSON.stringify(this.data)}`;
+  public get classList(): ClassList {
+    return new ClassList(
+      this.attributes.class as string | undefined,
+      (newClassName) => {
+        this.attributes.class = newClassName;
+      },
+    );
+  }
+
+  public get id() {
+    return this.attributes.id || '';
+  }
+
+  public get className() {
+    return this.attributes.class || '';
+  }
+
+  public get style() {
+    const style = (
+      this.attributes.style ? parseCSSText(this.attributes.style) : {}
+    ) as CSSStyleDeclaration;
+    const hyphenateRE = /\B([A-Z])/g;
+    style.setProperty = (
+      name: string,
+      value: string | null,
+      priority?: string | null,
+    ) => {
+      if (hyphenateRE.test(name)) return;
+      const normalizedName = camelize(name);
+      if (!value) delete style[normalizedName];
+      else style[normalizedName] = value;
+      if (priority === 'important') style[normalizedName] += ' !important';
+      this.attributes.style = toCSSText(style);
+    };
+    style.removeProperty = (name: string) => {
+      if (hyphenateRE.test(name)) return '';
+      const normalizedName = camelize(name);
+      const value = style[normalizedName] || '';
+      delete style[normalizedName];
+      this.attributes.style = toCSSText(style);
+      return value;
+    };
+    return style;
+  }
+
+  public getAttribute(name: string): string | null {
+    return this.attributes[name] || null;
+  }
+
+  public setAttribute(name: string, attribute: string) {
+    this.attributes[name] = attribute;
+  }
+
+  public setAttributeNS(
+    _namespace: string | null,
+    qualifiedName: string,
+    value: string,
+  ): void {
+    this.setAttribute(qualifiedName, value);
+  }
+
+  public removeAttribute(name: string) {
+    delete this.attributes[name];
+  }
+
+  public appendChild(newChild: IRRNode): IRRNode {
+    return appendChild(this, newChild);
+  }
+
+  public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
+    return insertBefore(this, newChild, refChild);
+  }
+
+  public removeChild(node: IRRNode): IRRNode {
+    return removeChild(this, node);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public attachShadow(_init: ShadowRootInit): IRRElement {
+    const shadowRoot = this.ownerDocument.createElement('SHADOWROOT');
+    this.shadowRoot = shadowRoot;
+    return shadowRoot;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public dispatchEvent(_event: Event) {
+    return true;
+  }
+
+  toString() {
+    let attributeString = '';
+    for (const attribute in this.attributes) {
+      attributeString += `${attribute}="${this.attributes[attribute]}" `;
     }
-  };
+    return `${this.tagName} ${attributeString}`;
+  }
 }
 
-export function BaseRRCDATASectionImpl<
-  RRNode extends ConstrainedConstructor<IRRNode>,
->(RRNodeClass: RRNode) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return class BaseRRCDATASection
-    extends RRNodeClass
-    implements IRRCDATASection
-  {
-    public readonly nodeName: '#cdata-section' = '#cdata-section';
-    public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
-    public readonly RRNodeType = RRNodeType.CDATA;
-    public data: string;
+export class BaseRRMediaElement extends BaseRRElement {
+  public currentTime?: number;
+  public volume?: number;
+  public paused?: boolean;
+  public muted?: boolean;
+  public playbackRate?: number;
+  public loop?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  attachShadow(_init: ShadowRootInit): IRRElement {
+    throw new Error(
+      `RRDomException: Failed to execute 'attachShadow' on 'RRElement': This RRElement does not support attachShadow`,
+    );
+  }
+  public play() {
+    this.paused = false;
+  }
+  public pause() {
+    this.paused = true;
+  }
+}
 
-    constructor(data: string) {
-      super();
-      this.data = data;
-    }
+export class BaseRRText extends BaseRRNode implements IRRText {
+  public readonly nodeType: number = NodeType.TEXT_NODE;
+  public readonly nodeName = '#text' as const;
+  public readonly RRNodeType = RRNodeType.Text;
+  public data: string;
 
-    public get textContent(): string {
-      return this.data;
-    }
+  constructor(data: string) {
+    super();
+    this.data = data;
+  }
 
-    public set textContent(textContent: string) {
-      this.data = textContent;
-    }
+  public get textContent(): string {
+    return this.data;
+  }
 
-    toString() {
-      return `RRCDATASection data=${JSON.stringify(this.data)}`;
-    }
-  };
+  public set textContent(textContent: string) {
+    this.data = textContent;
+  }
+
+  toString() {
+    return `RRText text=${JSON.stringify(this.data)}`;
+  }
+}
+
+export class BaseRRComment extends BaseRRNode implements IRRComment {
+  public readonly nodeType: number = NodeType.COMMENT_NODE;
+  public readonly nodeName = '#comment' as const;
+  public readonly RRNodeType = RRNodeType.Comment;
+  public data: string;
+
+  constructor(data: string) {
+    super();
+    this.data = data;
+  }
+
+  public get textContent(): string {
+    return this.data;
+  }
+
+  public set textContent(textContent: string) {
+    this.data = textContent;
+  }
+
+  toString() {
+    return `RRComment text=${JSON.stringify(this.data)}`;
+  }
+}
+
+export class BaseRRCDATASection extends BaseRRNode implements IRRCDATASection {
+  public readonly nodeName = '#cdata-section' as const;
+  public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
+  public readonly RRNodeType = RRNodeType.CDATA;
+  public data: string;
+
+  constructor(data: string) {
+    super();
+    this.data = data;
+  }
+
+  public get textContent(): string {
+    return this.data;
+  }
+
+  public set textContent(textContent: string) {
+    this.data = textContent;
+  }
+
+  toString() {
+    return `RRCDATASection data=${JSON.stringify(this.data)}`;
+  }
 }
 
 export class ClassList {

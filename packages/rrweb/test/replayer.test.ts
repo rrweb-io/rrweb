@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
 import {
   assertDomSnapshot,
@@ -12,6 +13,7 @@ import {
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
+import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import selectionEvents from './events/selection';
@@ -36,7 +38,7 @@ type IWindow = Window &
   typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   let code: ISuite['code'];
   let browser: ISuite['browser'];
@@ -45,7 +47,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -411,6 +413,51 @@ describe('replayer', function () {
     ).toEqual(0);
   });
 
+  it('can fast forward scroll events w/ a parent node that affects a child nodes height', async () => {
+    await page.evaluate(`
+      events = ${JSON.stringify(scrollWithParentStylesEvents)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events,{showDebug:true});
+      replayer.pause(550);
+    `);
+    // add the ".container" element at 500
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+    expect(await contentDocument!.$('.container')).not.toBeNull();
+    expect(
+      await contentDocument!.$eval(
+        '.container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(0);
+
+    // restart the replayer
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+
+    await page.evaluate('replayer.pause(1050);');
+    // scroll the ".container" div' at 1000
+    expect(
+      await contentDocument!.$eval(
+        '.container',
+        (element: Element) => element.scrollTop,
+      ),
+    ).toEqual(800);
+
+    await page.evaluate('replayer.play(0);');
+    await waitForRAF(page);
+    await page.evaluate('replayer.pause(2050);');
+    // remove the ".container" element at 2000
+    expect(await contentDocument!.$('.container')).toBeNull();
+    expect(
+      await page.$eval(
+        'iframe',
+        (element: Element) =>
+          (element as HTMLIFrameElement)!.contentWindow!.scrollY,
+      ),
+    ).toEqual(0);
+  });
+
   it('can fast forward input events', async () => {
     await page.evaluate(`
       events = ${JSON.stringify(inputEvents)};
@@ -534,7 +581,7 @@ describe('replayer', function () {
     expect(iframeTwoDocument).not.toBeNull();
     expect((await iframeTwoDocument!.$$('iframe')).length).toEqual(2);
     expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
-    let iframeThreeDocument = await (
+    const iframeThreeDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[0]!.contentFrame();
     let iframeFourDocument = await (
@@ -1002,9 +1049,9 @@ describe('replayer', function () {
     await page.evaluate(
       `events = ${JSON.stringify(documentReplacementEvents)}`,
     );
-    const warningThrown = jest.fn();
+    const warningThrown = vi.fn();
     page.on('console', warningThrown);
-    const errorThrown = jest.fn();
+    const errorThrown = vi.fn();
     page.on('pageerror', errorThrown);
     await page.evaluate(`
       const { Replayer } = rrweb;

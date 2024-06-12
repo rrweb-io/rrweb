@@ -3,12 +3,8 @@ import * as path from 'path';
 import * as http from 'http';
 import * as url from 'url';
 import * as puppeteer from 'puppeteer';
-import * as rollup from 'rollup';
-import * as typescript from 'rollup-plugin-typescript2';
-import * as assert from 'assert';
-import { waitForRAF } from './utils';
-
-const _typescript = typescript as unknown as () => rollup.Plugin;
+import { vi, assert, describe, it, beforeAll, afterAll, expect } from 'vitest';
+import { waitForRAF, getServerURL } from './utils';
 
 const htmlFolder = path.join(__dirname, 'html');
 const htmls = fs.readdirSync(htmlFolder).map((filePath) => {
@@ -23,7 +19,7 @@ interface IMimeType {
   [key: string]: string;
 }
 
-const startServer = () =>
+const startServer = (defaultPort: number = 3030) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
@@ -49,40 +45,50 @@ const startServer = () =>
         res.end();
       }
     });
-    s.listen(3030).on('listening', () => {
-      resolve(s);
-    });
+    s.listen(defaultPort)
+      .on('listening', () => {
+        resolve(s);
+      })
+      .on('error', (e) => {
+        s.listen().on('listening', () => {
+          resolve(s);
+        });
+      });
   });
+
+function sanitizeSnapshot(snapshot: string): string {
+  return snapshot.replace(/localhost:[0-9]+/g, 'localhost:3030');
+}
+
+function assertSnapshot(snapshot: string): void {
+  expect(sanitizeSnapshot(snapshot)).toMatchSnapshot();
+}
 
 interface ISuite {
   server: http.Server;
+  serverURL: string;
   browser: puppeteer.Browser;
   code: string;
 }
 
 describe('integration tests', function (this: ISuite) {
-  jest.setTimeout(30_000);
+  vi.setConfig({ testTimeout: 30_000 });
   let server: ISuite['server'];
+  let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
   let code: ISuite['code'];
 
   beforeAll(async () => {
     server = await startServer();
+    serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
     });
 
-    const bundle = await rollup.rollup({
-      input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
-    });
-    const {
-      output: [{ code: _code }],
-    } = await bundle.generate({
-      name: 'rrweb',
-      format: 'iife',
-    });
-    code = _code;
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      'utf-8',
+    );
   });
 
   afterAll(async () => {
@@ -102,7 +108,7 @@ describe('integration tests', function (this: ISuite) {
       if (html.filePath === 'iframe.html') {
         // loading directly is needed to ensure we don't trigger compatMode='BackCompat'
         // which happens before setContent can be called
-        await page.goto(`http://localhost:3030/html/${html.filePath}`, {
+        await page.goto(`${serverURL}/html/${html.filePath}`, {
           waitUntil: 'load',
         });
         const outerCompatMode = await page.evaluate('document.compatMode');
@@ -123,7 +129,7 @@ describe('integration tests', function (this: ISuite) {
         );
       } else {
         // loading indirectly is improtant for relative path testing
-        await page.goto(`http://localhost:3030/html`);
+        await page.goto(`${serverURL}/html`);
         await page.setContent(html.src, {
           waitUntil: 'load',
         });
@@ -132,8 +138,8 @@ describe('integration tests', function (this: ISuite) {
       const rebuildHtml = (
         (await page.evaluate(`${code}
         const x = new XMLSerializer();
-        const snap = rrweb.snapshot(document);
-        let out = x.serializeToString(rrweb.rebuild(snap, { doc: document }));
+        const snap = rrwebSnapshot.snapshot(document);
+        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document }));
         if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
           // this is just an artefact of serializeToString
           out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
@@ -146,7 +152,8 @@ describe('integration tests', function (this: ISuite) {
           /blob:http:\/\/localhost:\d+\/[0-9a-z\-]+/,
           'blob:http://localhost:xxxx/...',
         );
-      expect(rebuildHtml).toMatchSnapshot();
+
+      assertSnapshot(rebuildHtml);
     });
   }
 
@@ -155,7 +162,7 @@ describe('integration tests', function (this: ISuite) {
     // console for debug
     page.on('console', (msg) => console.log(msg.text()));
 
-    await page.goto('http://localhost:3030/html/compat-mode.html', {
+    await page.goto(`${serverURL}/html/compat-mode.html`, {
       waitUntil: 'load',
     });
     const compatMode = await page.evaluate('document.compatMode');
@@ -173,14 +180,14 @@ describe('integration tests', function (this: ISuite) {
       `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`,
     );
     const rebuildRenderedHeight = await page.evaluate(`${code}
-const snap = rrweb.snapshot(document);
+const snap = rrwebSnapshot.snapshot(document);
 const iframe = document.createElement('iframe');
 iframe.setAttribute('width', document.body.clientWidth)
 iframe.setAttribute('height', document.body.clientHeight)
 iframe.style.transform = 'scale(0.3)'; // mini-me
 document.body.appendChild(iframe);
 // magic here! rebuild in a new iframe
-const rebuildNode = rrweb.rebuild(snap, { doc: iframe.contentDocument })[0];
+const rebuildNode = rrwebSnapshot.rebuild(snap, { doc: iframe.contentDocument })[0];
 iframe.contentDocument.querySelector('center').clientHeight
 `);
     const rebuildCompatMode = await page.evaluate(
@@ -200,31 +207,83 @@ iframe.contentDocument.querySelector('center').clientHeight
   it('correctly saves images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto('http://localhost:3030/html/picture.html', {
+    await page.goto(`${serverURL}/html/picture.html`, {
       waitUntil: 'load',
     });
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
+    await page.evaluate(`${code}
+    var snapshot = rrwebSnapshot.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
         inlineImages: true,
         inlineStylesheet: false
     })`);
-    await waitForRAF(page);
-    const snapshot = (await page.evaluate(
-      'JSON.stringify(snapshot, null, 2);',
-    )) as string;
-    assert(snapshot.includes('"rr_dataURL"'));
-    assert(snapshot.includes('data:image/webp;base64,'));
+    // don't wait, as we want to ensure that the same-origin image can be inlined immediately
+    const bodyChildren = (await page.evaluate(`
+      snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
+`)) as any[];
+    expect(bodyChildren[1]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: {
+          src: expect.stringMatching(/images\/robot.png$/),
+          alt: 'This is a robot',
+          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+        },
+      }),
+    );
+  });
+
+  it('correctly saves cross-origin images offline', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+
+    await page.goto('about:blank', {
+      waitUntil: 'load',
+    });
+    await page.setContent(
+      `
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <img src="${getServerURL(
+      server,
+    )}/images/rrweb-favicon-20x20.png" alt="CORS restricted but has access-control-allow-origin: *" />
+  </body>
+</html>
+`,
+      {
+        waitUntil: 'load',
+      },
+    );
+
+    await page.waitForSelector('img', { timeout: 1000 });
+    await page.evaluate(`${code}var snapshot = rrwebSnapshot.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false
+    })`);
+    await waitForRAF(page); // need a small wait, as after the crossOrigin="anonymous" change, the snapshot triggers a reload of the image (after which, the snapshot is mutated)
+    const bodyChildren = (await page.evaluate(`
+      snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
+`)) as any[];
+    expect(bodyChildren[0]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: {
+          src: getServerURL(server) + '/images/rrweb-favicon-20x20.png',
+          alt: 'CORS restricted but has access-control-allow-origin: *',
+          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+        },
+      }),
+    );
   });
 
   it('correctly saves blob:images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto('http://localhost:3030/html/picture-blob.html', {
+    await page.goto(`${serverURL}/html/picture-blob.html`, {
       waitUntil: 'load',
     });
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
+    await page.evaluate(`${code}var snapshot = rrwebSnapshot.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
         inlineImages: true,
         inlineStylesheet: false
@@ -240,13 +299,13 @@ iframe.contentDocument.querySelector('center').clientHeight
   it('correctly saves images in iframes offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto('http://localhost:3030/html/picture-in-frame.html', {
+    await page.goto(`${serverURL}/html/picture-in-frame.html`, {
       waitUntil: 'load',
     });
     await page.waitForSelector('iframe', { timeout: 1000 });
     await waitForRAF(page); // wait for page to render
     await page.evaluate(`${code}
-        rrweb.snapshot(document, {
+        rrwebSnapshot.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
         inlineImages: true,
         inlineStylesheet: false,
@@ -265,13 +324,13 @@ iframe.contentDocument.querySelector('center').clientHeight
   it('correctly saves blob:images in iframes offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto('http://localhost:3030/html/picture-blob-in-frame.html', {
+    await page.goto(`${serverURL}/html/picture-blob-in-frame.html`, {
       waitUntil: 'load',
     });
     await page.waitForSelector('iframe', { timeout: 1000 });
     await waitForRAF(page); // wait for page to render
     await page.evaluate(`${code}
-        rrweb.snapshot(document, {
+        rrwebSnapshot.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
         inlineImages: true,
         inlineStylesheet: false,
@@ -294,7 +353,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     });
     await waitForRAF(page); // wait for page to render
     await page.evaluate(`${code}
-        window.snapshot = rrweb.snapshot(document, {
+        window.snapshot = rrwebSnapshot.snapshot(document, {
         inlineStylesheet: true,
     })`);
     await waitForRAF(page);
@@ -314,10 +373,12 @@ iframe.contentDocument.querySelector('center').clientHeight
       },
     );
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrweb.snapshot(document, {
-        dataURLOptions: { type: "image/webp", quality: 0.8 },
-        inlineImages: true,
-        inlineStylesheet: false
+    await page.evaluate(`${code}`);
+    await page.evaluate(`
+    var snapshot = rrwebSnapshot.snapshot(document, {
+      dataURLOptions: { type: "image/webp", quality: 0.8 },
+      inlineImages: true,
+      inlineStylesheet: false
     })`);
     await waitForRAF(page);
     const fnName = (await page.evaluate(
@@ -328,28 +389,23 @@ iframe.contentDocument.querySelector('center').clientHeight
 });
 
 describe('iframe integration tests', function (this: ISuite) {
-  jest.setTimeout(30_000);
+  vi.setConfig({ testTimeout: 30_000 });
   let server: ISuite['server'];
+  let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
   let code: ISuite['code'];
 
   beforeAll(async () => {
     server = await startServer();
+    serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
     });
 
-    const bundle = await rollup.rollup({
-      input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
-    });
-    const {
-      output: [{ code: _code }],
-    } = await bundle.generate({
-      name: 'rrweb',
-      format: 'iife',
-    });
-    code = _code;
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      'utf-8',
+    );
   });
 
   afterAll(async () => {
@@ -361,43 +417,38 @@ describe('iframe integration tests', function (this: ISuite) {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
     page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`http://localhost:3030/iframe-html/main.html`, {
+    await page.goto(`${serverURL}/iframe-html/main.html`, {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrweb.snapshot(document);
+      rrwebSnapshot.snapshot(document);
     `),
       null,
       2,
     );
-    expect(snapshotResult).toMatchSnapshot();
+    assertSnapshot(snapshotResult);
   });
 });
 
 describe('shadow DOM integration tests', function (this: ISuite) {
-  jest.setTimeout(30_000);
+  vi.setConfig({ testTimeout: 30_000 });
   let server: ISuite['server'];
+  let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
   let code: ISuite['code'];
 
   beforeAll(async () => {
     server = await startServer();
+    serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
     });
 
-    const bundle = await rollup.rollup({
-      input: path.resolve(__dirname, '../src/index.ts'),
-      plugins: [_typescript()],
-    });
-    const {
-      output: [{ code: _code }],
-    } = await bundle.generate({
-      name: 'rrweb',
-      format: 'iife',
-    });
-    code = _code;
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      'utf-8',
+    );
   });
 
   afterAll(async () => {
@@ -409,16 +460,16 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     const page: puppeteer.Page = await browser.newPage();
     // console for debug
     page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(`http://localhost:3030/html/shadow-dom.html`, {
+    await page.goto(`${serverURL}/html/shadow-dom.html`, {
       waitUntil: 'load',
     });
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrweb.snapshot(document);
+      rrwebSnapshot.snapshot(document);
     `),
       null,
       2,
     );
-    expect(snapshotResult).toMatchSnapshot();
+    assertSnapshot(snapshotResult);
   });
 });

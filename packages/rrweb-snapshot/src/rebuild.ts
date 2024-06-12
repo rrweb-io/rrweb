@@ -1,4 +1,4 @@
-import { parse } from './css';
+import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
   NodeType,
@@ -62,9 +62,11 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
+const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
-export function addHoverClass(cssText: string, cache: BuildCache): string {
+export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
@@ -77,35 +79,61 @@ export function addHoverClass(cssText: string, cache: BuildCache): string {
   }
 
   const selectors: string[] = [];
-  ast.stylesheet.rules.forEach((rule) => {
-    if ('selectors' in rule) {
-      (rule.selectors || []).forEach((selector: string) => {
+  const medias: string[] = [];
+  function getSelectors(rule: Rule | Media | NodeWithRules) {
+    if ('selectors' in rule && rule.selectors) {
+      rule.selectors.forEach((selector: string) => {
         if (HOVER_SELECTOR.test(selector)) {
           selectors.push(selector);
         }
       });
     }
-  });
-
-  if (selectors.length === 0) {
-    return cssText;
+    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
+      medias.push(rule.media);
+    }
+    if ('rules' in rule && rule.rules) {
+      rule.rules.forEach(getSelectors);
+    }
   }
+  getSelectors(ast.stylesheet);
 
-  const selectorMatcher = new RegExp(
-    selectors
-      .filter((selector, index) => selectors.indexOf(selector) === index)
-      .sort((a, b) => b.length - a.length)
-      .map((selector) => {
-        return escapeRegExp(selector);
-      })
-      .join('|'),
-    'g',
-  );
-
-  const result = cssText.replace(selectorMatcher, (selector) => {
-    const newSelector = selector.replace(HOVER_SELECTOR_GLOBAL, '$1.\\:hover');
-    return `${selector}, ${newSelector}`;
-  });
+  let result = cssText;
+  if (selectors.length > 0) {
+    const selectorMatcher = new RegExp(
+      selectors
+        .filter((selector, index) => selectors.indexOf(selector) === index)
+        .sort((a, b) => b.length - a.length)
+        .map((selector) => {
+          return escapeRegExp(selector);
+        })
+        .join('|'),
+      'g',
+    );
+    result = result.replace(selectorMatcher, (selector) => {
+      const newSelector = selector.replace(
+        HOVER_SELECTOR_GLOBAL,
+        '$1.\\:hover',
+      );
+      return `${selector}, ${newSelector}`;
+    });
+  }
+  if (medias.length > 0) {
+    const mediaMatcher = new RegExp(
+      medias
+        .filter((media, index) => medias.indexOf(media) === index)
+        .sort((a, b) => b.length - a.length)
+        .map((media) => {
+          return escapeRegExp(media);
+        })
+        .join('|'),
+      'g',
+    );
+    result = result.replace(mediaMatcher, (media) => {
+      // not attempting to maintain min-device-width along with min-width
+      // (it's non standard)
+      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
+    });
+  }
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
@@ -196,7 +224,7 @@ function buildNode(
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
         if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = addHoverClass(value, cache);
+          value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
           node.appendChild(doc.createTextNode(value));
@@ -266,7 +294,7 @@ function buildNode(
         const value = specialAttributes[name];
         // handle internal attributes
         if (tagName === 'canvas' && name === 'rr_dataURL') {
-          const image = document.createElement('img');
+          const image = doc.createElement('img');
           image.onload = () => {
             const ctx = (node as HTMLCanvasElement).getContext('2d');
             if (ctx) {
@@ -314,6 +342,17 @@ function buildNode(
               break;
             default:
           }
+        } else if (
+          name === 'rr_mediaPlaybackRate' &&
+          typeof value === 'number'
+        ) {
+          (node as HTMLMediaElement).playbackRate = value;
+        } else if (name === 'rr_mediaMuted' && typeof value === 'boolean') {
+          (node as HTMLMediaElement).muted = value;
+        } else if (name === 'rr_mediaLoop' && typeof value === 'boolean') {
+          (node as HTMLMediaElement).loop = value;
+        } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
+          (node as HTMLMediaElement).volume = value;
         }
       }
 
@@ -341,7 +380,7 @@ function buildNode(
     case NodeType.Text:
       return doc.createTextNode(
         n.isStyle && hackCss
-          ? addHoverClass(n.textContent, cache)
+          ? adaptCssForReplay(n.textContent, cache)
           : n.textContent,
       );
     case NodeType.CDATA:
@@ -500,6 +539,7 @@ function visit(mirror: Mirror, onVisit: (node: Node) => void) {
 
   for (const id of mirror.getIds()) {
     if (mirror.has(id)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       walk(mirror.getNode(id)!);
     }
   }

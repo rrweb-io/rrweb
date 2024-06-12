@@ -1,25 +1,18 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
+    "rootDir": ".",
     "baseUrl": ".",
-    "module": "ESNext",
-    "target": "es2016",
-    "lib": ["DOM", "ESNext"],
-    "strict": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "esModuleInterop": true,
     "incremental": true,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
     "paths": {
       "~/*": ["src/*"]
     },
     "jsx": "react-jsx"
   },
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "vite.config.ts"],
   "references": [
     {
       "path": "../rrweb"

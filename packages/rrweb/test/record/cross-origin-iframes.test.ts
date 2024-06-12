@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import type {
   listenerHandler,
@@ -15,7 +16,6 @@ import {
   startServer,
   waitForRAF,
 } from '../utils';
-import { unpack } from '../../src/packer/unpack';
 import type * as http from 'http';
 
 interface ISuite {
@@ -46,13 +46,21 @@ async function injectRecordScript(
   frame: puppeteer.Frame,
   options?: ExtraOptions,
 ) {
-  await frame.addScriptTag({
-    path: path.resolve(__dirname, '../../dist/rrweb-all.js'),
-  });
+  try {
+    await frame.addScriptTag({
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+    });
+  } catch (e) {
+    // we get this error: `Protocol error (DOM.resolveNode): Node with given id does not belong to the document`
+    // then the page wasn't loaded yet and we try again
+    if (!e.message.includes('DOM.resolveNode')) throw e;
+    await injectRecordScript(frame, options);
+    return;
+  }
   options = options || {};
   await frame.evaluate((options) => {
     (window as unknown as IWindow).snapshots = [];
-    const { record, pack } = (window as unknown as IWindow).rrweb;
+    const { record } = (window as unknown as IWindow).rrweb;
     const config: recordOptions<eventWithTime> = {
       recordCrossOriginIframes: true,
       recordCanvas: true,
@@ -61,9 +69,6 @@ async function injectRecordScript(
         (window as unknown as IWindow).emit(event);
       },
     };
-    if (options.usePackFn) {
-      config.packFn = pack;
-    }
     record(config);
   }, options);
 
@@ -89,7 +94,7 @@ const setup = function (
     ctx.serverB = await startServer();
     ctx.serverBURL = getServerURL(ctx.serverB);
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -126,7 +131,7 @@ const setup = function (
 };
 
 describe('cross origin iframes', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   describe('form.html', function (this: ISuite) {
     const ctx: ISuite = setup.call(
@@ -476,7 +481,7 @@ describe('cross origin iframes', function (this: ISuite) {
   });
 
   describe('audio.html', function (this: ISuite) {
-    jest.setTimeout(100_000);
+    vi.setConfig({ testTimeout: 100_000 });
 
     const ctx: ISuite = setup.call(
       this,
@@ -561,26 +566,11 @@ describe('cross origin iframes', function (this: ISuite) {
       )) as eventWithTime[];
       assertSnapshot(snapshots);
     });
-
-    describe('should support packFn option in record()', () => {
-      const ctx = setup.call(this, content, { usePackFn: true });
-      it('', async () => {
-        const frame = ctx.page.mainFrame().childFrames()[0];
-        await waitForRAF(frame);
-        const packedSnapshots = (await ctx.page.evaluate(
-          'window.snapshots',
-        )) as string[];
-        const unpackedSnapshots = packedSnapshots.map((packed) =>
-          unpack(packed),
-        ) as eventWithTime[];
-        assertSnapshot(unpackedSnapshots);
-      });
-    });
   });
 });
 
 describe('same origin iframes', function (this: ISuite) {
-  jest.setTimeout(100_000);
+  vi.setConfig({ testTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,
@@ -603,5 +593,29 @@ describe('same origin iframes', function (this: ISuite) {
     // and two (full snapshot + mutation) from iframe
     expect(events.length).toBe(4);
     assertSnapshot(events);
+  });
+
+  it('should record cross-origin iframe in same-origin iframe', async () => {
+    const sameOriginIframe = ctx.page.mainFrame().childFrames()[0];
+    await sameOriginIframe.evaluate((serverUrl) => {
+      /**
+       * Create a cross-origin iframe in this same-origin iframe.
+       */
+      const crossOriginIframe = document.createElement('iframe');
+      document.body.appendChild(crossOriginIframe);
+      crossOriginIframe.src = `${serverUrl}/html/blank.html`;
+      return new Promise((resolve) => {
+        crossOriginIframe.onload = resolve;
+      });
+    }, ctx.serverURL);
+    const crossOriginIframe = sameOriginIframe.childFrames()[0];
+    // Inject recording script into this cross-origin iframe
+    await injectRecordScript(crossOriginIframe);
+
+    await waitForRAF(ctx.page);
+    const snapshots = (await ctx.page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
   });
 });

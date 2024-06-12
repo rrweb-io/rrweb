@@ -1,0 +1,31 @@
+<html>
+  <body></body>
+  <script>
+    function init() {
+      const count = 100;
+
+      let roots = [];
+      for (let i = 0; i < count; ++i) {
+        const div = document.createElement('div');
+        document.body.appendChild(div);
+        roots.push(div);
+      }
+
+      let tree_depth = 256;
+      let children = [...roots];
+      while (tree_depth > 0) {
+        for (let i = 0; i < children.length; i++) {
+          const div = document.createElement('div');
+          children[i].appendChild(div);
+          children[i] = div;
+        }
+        tree_depth--;
+      }
+    }
+
+    window.workload = () => {
+        document.body.innerHTML = '';
+        init();
+    };
+  </script>
+</html>

@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from 'rrweb';
+import { EventType, IncrementalSource } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
@@ -68,6 +68,7 @@ export function openFullscreen(el: HTMLElement): Promise<void> {
     /* IE/Edge */
     return el.msRequestFullscreen();
   }
+  return Promise.resolve();
 }
 
 export function exitFullscreen(): Promise<void> {
@@ -83,16 +84,19 @@ export function exitFullscreen(): Promise<void> {
     /* IE/Edge */
     return document.msExitFullscreen();
   }
+  return Promise.resolve();
 }
 
 export function isFullscreen(): boolean {
   let fullscreen = false;
-  [
-    'fullscreen',
-    'webkitIsFullScreen',
-    'mozFullScreen',
-    'msFullscreenElement',
-  ].forEach((fullScreenAccessor) => {
+  (
+    [
+      'fullscreen',
+      'webkitIsFullScreen',
+      'mozFullScreen',
+      'msFullscreenElement',
+    ] as const
+  ).forEach((fullScreenAccessor) => {
     if (fullScreenAccessor in document) {
       fullscreen = fullscreen || Boolean(document[fullScreenAccessor]);
     }
@@ -140,9 +144,9 @@ export function typeOf(
     '[object Undefined]': 'undefined',
     '[object Null]': 'null',
     '[object Object]': 'object',
-  };
+  } as const;
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-  return map[toString.call(obj)];
+  return map[toString.call(obj) as keyof typeof map];
 }
 
 /**
@@ -161,20 +165,21 @@ function isUserInteraction(event: eventWithTime): boolean {
   );
 }
 
-// Forked from 'rrweb' replay/index.ts. A const threshold of inactive time.
-const SKIP_TIME_THRESHOLD = 10 * 1000;
-
 /**
  * Get periods of time when no user interaction happened from a list of events.
  * @param events - all events
+ * @param inactivePeriodThreshold - threshold of inactive time in milliseconds
  * @returns periods of time consist with [start time, end time]
  */
-export function getInactivePeriods(events: eventWithTime[]) {
+export function getInactivePeriods(
+  events: eventWithTime[],
+  inactivePeriodThreshold: number,
+) {
   const inactivePeriods: [number, number][] = [];
   let lastActiveTime = events[0].timestamp;
   for (const event of events) {
     if (!isUserInteraction(event)) continue;
-    if (event.timestamp - lastActiveTime > SKIP_TIME_THRESHOLD) {
+    if (event.timestamp - lastActiveTime > inactivePeriodThreshold) {
       inactivePeriods.push([lastActiveTime, event.timestamp]);
     }
     lastActiveTime = event.timestamp;

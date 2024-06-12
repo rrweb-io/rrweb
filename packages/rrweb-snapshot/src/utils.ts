@@ -26,7 +26,7 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
  * To fix the issue https://github.com/rrweb-io/rrweb/issues/933.
  * Some websites use polyfilled shadow dom and this function is used to detect this situation.
  */
-export function isNativeShadowDom(shadowRoot: ShadowRoot) {
+export function isNativeShadowDom(shadowRoot: ShadowRoot): boolean {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
 
@@ -47,7 +47,7 @@ function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
     !cssText.includes(' -webkit-background-clip: text;')
   ) {
     cssText = cssText.replace(
-      ' background-clip: text;',
+      /\sbackground-clip:\s*text;/g,
       ' -webkit-background-clip: text; background-clip: text;',
     );
   }

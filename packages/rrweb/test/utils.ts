@@ -3,10 +3,10 @@ import {
   EventType,
   IncrementalSource,
   eventWithTime,
+  eventWithoutTime,
   MouseInteractions,
   Optional,
   mouseInteractionData,
-  event,
   pluginEvent,
 } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
@@ -44,12 +44,13 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort = 3030) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
       '.js': 'text/javascript',
       '.css': 'text/css',
+      '.webm': 'video/webm',
     };
     const s = http.createServer((req, res) => {
       const parsedUrl = url.parse(req.url!);
@@ -58,8 +59,8 @@ export const startServer = (defaultPort: number = 3030) =>
         .replace(/^(\.\.[\/\\])+/, '');
 
       let pathname = path.join(__dirname, sanitizePath);
-      if (/^\/rrweb.*\.js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist`, sanitizePath);
+      if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
+        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
       }
 
       try {
@@ -69,6 +70,7 @@ export const startServer = (defaultPort: number = 3030) =>
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET');
         res.setHeader('Access-Control-Allow-Headers', 'Content-type');
+        if (ext === '.webm') res.setHeader('Accept-Ranges', 'bytes');
         setTimeout(() => {
           res.end(data);
           // mock delay
@@ -103,7 +105,7 @@ export function getServerURL(server: http.Server): string {
  * Also remove timestamp from event.
  * @param snapshots incrementalSnapshotEvent[]
  */
-function stringifySnapshots(snapshots: eventWithTime[]): string {
+export function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
       .filter((s) => {
@@ -226,7 +228,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
-        return s as event;
+        return s as eventWithoutTime;
       }),
     null,
     2,
@@ -703,3 +705,26 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
   });
   `;
 }
+
+export async function hideMouseAnimation(p: puppeteer.Page): Promise<void> {
+  await p.addStyleTag({
+    content: `.replayer-mouse-tail{display: none !important;}
+                html, body { margin: 0; padding: 0; }
+                iframe { border: none; }`,
+  });
+}
+
+export const fakeGoto = async (p: puppeteer.Page, url: string) => {
+  const intercept = async (request: puppeteer.HTTPRequest) => {
+    await request.respond({
+      status: 200,
+      contentType: 'text/html',
+      body: ' ', // non-empty string or page will load indefinitely
+    });
+  };
+  await p.setRequestInterception(true);
+  p.on('request', intercept);
+  await p.goto(url);
+  p.off('request', intercept);
+  await p.setRequestInterception(false);
+};

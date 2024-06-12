@@ -441,7 +441,10 @@ export default class MutationBuffer {
       texts: this.texts
         .map((text) => {
           const n = text.node;
-          if ((n.parentNode as Element).tagName === 'TEXTAREA') {
+          if (
+            n.parentNode &&
+            (n.parentNode as Element).tagName === 'TEXTAREA'
+          ) {
             // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
             this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
           }
@@ -799,15 +802,15 @@ function _isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
+  let node: ParentNode | null = n.parentNode;
+  while (node) {
+    const parentId = mirror.getId(node);
+    if (removes.some((r) => r.id === parentId)) {
+      return true;
+    }
+    node = node.parentNode;
   }
-  const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
-    return true;
-  }
-  return _isParentRemoved(removes, parentNode, mirror);
+  return false;
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
