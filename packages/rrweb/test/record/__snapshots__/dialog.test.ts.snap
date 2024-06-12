@@ -97,7 +97,8 @@ exports[`dialog > switch to showModal dialog 1`] = `
         {
           \\"id\\": 8,
           \\"attributes\\": {
-            \\"open\\": \\"\\"
+            \\"open\\": \\"\\",
+            \\"rr_open\\": \\"non-modal\\"
           }
         }
       ],

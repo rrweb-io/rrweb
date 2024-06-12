@@ -181,7 +181,7 @@ describe('dialog', () => {
       dialog.showModal();
     });
 
-    assertSnapshot(events);
+    await assertSnapshot(events);
 
     // const lastEvent = events[events.length - 1];
 
