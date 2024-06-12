@@ -112,6 +112,11 @@ export type DialogAttributes = {
    * by adding an `open` attribute.
    */
   rr_open: 'modal' | 'non-modal';
+  /**
+   * Currently unimplemented, but in future can be used to:
+   * Represents the order of which of the dialog was opened.
+   * This is useful for replaying the dialog `.showModal()` in the correct order.
+   */
   // rr_open_index?: number;
 };
 
