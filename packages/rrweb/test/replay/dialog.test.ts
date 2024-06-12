@@ -41,8 +41,6 @@ expect.extend({ toMatchImageSnapshot });
 // √ dialog open and close (switching from modal to non modal)
 // √ dialog open and close (switching from non modal to modal)
 // - multiple dialogs open, recording order
-// == on rrdom ==
-// - that the modal modes are recorded...
 
 describe('dialog', () => {
   vi.setConfig({ testTimeout: 100_000 });
