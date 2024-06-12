@@ -357,9 +357,8 @@ function diffProps(
     else oldTree.setAttribute(name, newValue);
   }
 
-  for (const { name } of Array.from(oldAttributes)) {
+  for (const { name } of Array.from(oldAttributes))
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
-  }
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }
