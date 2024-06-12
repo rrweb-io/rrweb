@@ -23,10 +23,10 @@ export function applyDialogToTopLevel(
   const shouldBeModal = rrOpen === 'modal';
   const shouldBeNonModal = rrOpen === 'non-modal';
 
-  const modeChanged =
+  const modalChanged =
     (isModal && shouldBeNonModal) || (!isModal && shouldBeModal);
 
-  if (isOpen && !modeChanged) return;
+  if (isOpen && !modalChanged) return;
   // complain if dialog is not attached to the dom
   if (!dialog.isConnected) {
     console.warn('dialog is not attached to the dom', dialog);

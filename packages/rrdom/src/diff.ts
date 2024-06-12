@@ -291,16 +291,16 @@ function diffAfterUpdatingChildren(
           const rrDialog = newRRElement as unknown as RRDialogElement;
           const wasOpen = dialog.open;
           const wasModal = dialog.matches('dialog:modal');
-          const isOpen = typeof rrDialog.getAttribute('open') === 'string';
-          const isModal = rrDialog.getAttribute('rr_open') === 'modal';
+          const shouldBeOpen = rrDialog.open;
+          const shouldBeModal = rrDialog.isModal;
 
-          const modeChanged = wasModal !== isModal;
-          const openChanged = wasOpen !== isOpen;
+          const modalChanged = wasModal !== shouldBeModal;
+          const openChanged = wasOpen !== shouldBeOpen;
 
-          if (modeChanged || wasOpen !== isOpen) dialog.close();
-          if (isOpen && (openChanged || modeChanged)) {
+          if (modalChanged || (wasOpen && openChanged)) dialog.close();
+          if (shouldBeOpen && (openChanged || modalChanged)) {
             try {
-              if (isModal) dialog.showModal();
+              if (shouldBeModal) dialog.showModal();
               else dialog.show();
             } catch (e) {
               console.warn(e);
