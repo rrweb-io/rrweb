@@ -40,6 +40,17 @@ import {
   unregisterErrorHandler,
 } from './error-handler';
 
+function debounce(fn: () => void, delay: number) {
+  let timeoutID: NodeJS.Timeout | null = null;
+  return function () {
+    if (timeoutID) {
+      clearTimeout(timeoutID);
+    }
+
+    timeoutID = setTimeout(() => fn(), delay);
+  };
+}
+
 function wrapEvent(e: event): eventWithTime {
   return {
     ...e,
@@ -187,6 +198,10 @@ function record<T = eventWithTime>(
     return e as unknown as T;
   };
   wrappedEmit = (e: eventWithTime, isCheckout?: boolean) => {
+    if (!!options.largeMutationsConfig && e.type === EventType.FullSnapshot) {
+      mutationBuffers.forEach((buf) => (buf.freezeMutations = false));
+    }
+
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -423,6 +438,10 @@ function record<T = eventWithTime>(
       );
   };
 
+  const debounceFullSnapshot =
+    options.largeMutationsConfig &&
+    debounce(() => takeFullSnapshot(), options.largeMutationsConfig.fullSnapshotDebounce);
+
   try {
     const handlers: listenerHandler[] = [];
 
@@ -522,6 +541,10 @@ function record<T = eventWithTime>(
                 },
               }),
             );
+          },
+          largeMutationsConfig: options.largeMutationsConfig && {
+            limit: options.largeMutationsConfig.limit,
+            fullSnapshotCb: debounceFullSnapshot,
           },
           blockClass,
           ignoreClass,

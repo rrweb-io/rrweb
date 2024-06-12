@@ -110,7 +110,7 @@ export function initMutationObserver(
   const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
-    callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
+    callbackWrapper((e) => mutationBuffer.processMutations(e, options.largeMutationsConfig)),
   );
   observer.observe(rootEl, {
     attributes: true,
