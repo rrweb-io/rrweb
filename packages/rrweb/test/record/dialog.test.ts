@@ -150,9 +150,7 @@ describe('dialog', () => {
 
     const lastEvent = events[events.length - 1];
 
-    expect(lastEvent).toMatchObject(
-      attributeMutationFactory({ rr_open: null }),
-    );
+    expect(lastEvent).toMatchObject(attributeMutationFactory({ open: null }));
   });
 
   it('show & close dialog', async () => {
