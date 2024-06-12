@@ -82,276 +82,76 @@ describe('dialog', () => {
     await hideMouseAnimation(page);
   });
 
+  [
+    {
+      name: 'show the dialog when open attribute gets added',
+      time: showIncrementalAttributeTime,
+    },
+    {
+      name: 'should close dialog again when open attribute gets removed',
+      time: closeIncrementalAttributeTime,
+    },
+    {
+      name: 'should open dialog with showModal',
+      time: showModalIncrementalAttributeTime,
+    },
+    {
+      name: 'should switch between showModal and show',
+      time: switchBetweenShowModalAndShowIncrementalAttributeTime,
+    },
+    {
+      name: 'should switch between show and showModal',
+      time: switchBetweenShowAndShowModalIncrementalAttributeTime,
+    },
+    {
+      name: 'should open dialog with show in full snapshot',
+      time: showFullSnapshotTime,
+    },
+    {
+      name: 'should open dialog with showModal in full snapshot',
+      time: showModalFullSnapshotTime,
+    },
+    {
+      name: 'should add an opened dialog with showModal in incremental snapshot',
+      time: showModalIncrementalAddTime,
+    },
+  ].forEach(({ name, time }) => {
+    [true, false].forEach((useVirtualDom) => {
+      it(`${name} (virtual dom: ${useVirtualDom})`, async () => {
+        await page.evaluate(
+          `let events = ${JSON.stringify(dialogPlaybackEvents)}`,
+        );
+        await page.evaluate(`
+          const { Replayer } = rrweb;
+          window.replayer = new Replayer(events, { useVirtualDom: ${useVirtualDom} });
+          window.replayer.pause(${time});
+        `);
+        await waitForRAF(page);
+
+        const frameImage = await page!.screenshot({
+          fullPage: false,
+        });
+        const defaultImageFilePrefix =
+          'dialog-test-ts-test-replay-dialog-test-ts-dialog';
+        const kebabCaseName = name
+          .replace(/ /g, '-')
+          .replace(/showModal/g, 'show-modal');
+        const imageFileName = `${defaultImageFilePrefix}-${kebabCaseName}`;
+        expect(frameImage).toMatchImageSnapshot({
+          customSnapshotIdentifier: imageFileName,
+          failureThreshold: 0.05,
+          failureThresholdType: 'percent',
+        });
+      });
+    });
+  });
+
   it('closed dialogs show nothing', async () => {
     await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
     await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
     `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('show show the dialog when open attribute gets added', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${showIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('show show the dialog when open attribute gets added (non virtual)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events, { useVirtualDom: false });
-      window.replayer.pause(${showIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should close dialog again when open attribute gets removed', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${closeIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should close dialog again when open attribute gets removed (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events, { useVirtualDom: false });
-      window.replayer.pause(${closeIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should open dialog with showModal', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${showModalIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should open dialog with showModal (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events, { useVirtualDom: false });
-      window.replayer.pause(${showModalIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should switch between showModal and show', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${switchBetweenShowModalAndShowIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should switch between showModal and show (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events, { useVirtualDom: false });
-      window.replayer.pause(${switchBetweenShowModalAndShowIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should switch between show and showModal', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${switchBetweenShowAndShowModalIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should switch between show and showModal (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events, { useVirtualDom: false });
-      window.replayer.pause(${switchBetweenShowAndShowModalIncrementalAttributeTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should open dialog with show in full snapshot', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${showFullSnapshotTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should open dialog with show in full snapshot (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events, { useVirtualDom: false });
-      window.replayer.pause(${showFullSnapshotTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should open dialog with showModal in full snapshot', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${showModalFullSnapshotTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should open dialog with showModal in full snapshot (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    try {
-      await page.evaluate(`
-        const { Replayer } = rrweb;
-        window.replayer = new Replayer(events, { useVirtualDom: false });
-        window.replayer.pause(${showModalFullSnapshotTime});
-      `);
-    } catch (e) {
-      console.log('error');
-    }
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should add an opened dialog with showModal in incremental snapshot', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    await page.evaluate(`
-      const { Replayer } = rrweb;
-      window.replayer = new Replayer(events);
-      window.replayer.pause(${showModalIncrementalAddTime});
-    `);
-    await waitForRAF(page);
-
-    const frameImage = await page!.screenshot();
-    expect(frameImage).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    });
-  });
-
-  it('should add an opened dialog with showModal in incremental snapshot (without virtual dom)', async () => {
-    await page.evaluate(`let events = ${JSON.stringify(dialogPlaybackEvents)}`);
-    try {
-      await page.evaluate(`
-        const { Replayer } = rrweb;
-        window.replayer = new Replayer(events, { useVirtualDom: false });
-        window.replayer.pause(${showModalIncrementalAddTime});
-      `);
-    } catch (e) {
-      console.log('error');
-    }
     await waitForRAF(page);
 
     const frameImage = await page!.screenshot();
