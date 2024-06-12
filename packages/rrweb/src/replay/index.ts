@@ -919,7 +919,8 @@ export class Replayer {
     const collectedIframes: AppendedIframe[] = [];
     const collectedDialogs = new Set<HTMLDialogElement>();
     const afterAppend = (builtNode: Node, id: number) => {
-      if (builtNode.nodeName === 'DIALOG') collectedDialogs.add(builtNode as HTMLDialogElement);
+      if (builtNode.nodeName === 'DIALOG')
+        collectedDialogs.add(builtNode as HTMLDialogElement);
       this.collectIframeAndAttachDocument(collectedIframes, builtNode);
       const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
