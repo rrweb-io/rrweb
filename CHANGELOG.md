@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.19.0
+
+### Various fixes & improvements
+
+- use object.values (#196) by @michellewzhang
+- use spread' (#196) by @michellewzhang
+- add test (#196) by @michellewzhang
+- remove canvas on touchEnd (#196) by @michellewzhang
+- use flatMap (#196) by @michellewzhang
+- modify tests (#196) by @michellewzhang
+- some ref (#196) by @michellewzhang
+- working tails (#196) by @michellewzhang
+- ref (#196) by @michellewzhang
+- mousetail for each pointer (#196) by @michellewzhang
+- fix(rrweb): allow for drawing multiple mousetails (#196) by @michellewzhang
+
 ## 2.18.0
 
 ### Various fixes & improvements
