@@ -550,8 +550,8 @@ export class BaseRRMediaElement extends BaseRRElement {
 export class BaseRRDialogElement extends BaseRRElement {
   public readonly tagName = 'DIALOG' as const;
   public readonly nodeName = 'DIALOG' as const;
-  public open: boolean = false;
-  private _isModal: boolean = false;
+  public open = false;
+  private _isModal = false;
   get isModal() {
     return this._isModal;
   }
