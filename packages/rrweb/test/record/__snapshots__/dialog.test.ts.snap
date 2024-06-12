@@ -115,7 +115,7 @@ exports[`dialog > switch to showModal dialog 1`] = `
         {
           \\"id\\": 8,
           \\"attributes\\": {
-            \\"open\\": null,
+            \\"open\\": \\"\\",
             \\"rr_open\\": \\"modal\\"
           }
         }
