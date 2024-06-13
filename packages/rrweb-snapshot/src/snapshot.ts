@@ -27,6 +27,8 @@ import {
   extractFileExtension,
   toUpperCase,
   shouldMaskInput,
+  setTimeout,
+  clearTimeout,
 } from './utils';
 
 let _id = 1;

@@ -388,3 +388,69 @@ export function extractFileExtension(
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
 }
+
+/**
+ * We generally want to use window.requestAnimationFrame / window.setTimeout / window.clearTimeout.
+ * However, in some cases this may be wrapped (e.g. by Zone.js for Angular),
+ * so we try to get an unpatched version of this from a sandboxed iframe.
+ *
+ * TODO(sentry): This is duplicated from rrweb utils, ideally we extract this to a new package.
+ */
+
+interface CacheableImplementations {
+  requestAnimationFrame: typeof requestAnimationFrame;
+  setTimeout: typeof setTimeout;
+  clearTimeout: typeof clearTimeout;
+}
+
+const cachedImplementations: Partial<CacheableImplementations> = {};
+
+function getImplementation<T extends keyof CacheableImplementations>(
+  name: T,
+): CacheableImplementations[T] {
+  const cached = cachedImplementations[name];
+  if (cached) {
+    return cached;
+  }
+
+  const document = window.document;
+  let impl = window[name] as CacheableImplementations[T];
+  if (document && typeof document.createElement === 'function') {
+    try {
+      const sandbox = document.createElement('iframe');
+      sandbox.hidden = true;
+      document.head.appendChild(sandbox);
+      const contentWindow = sandbox.contentWindow;
+      if (contentWindow && contentWindow[name]) {
+        impl =
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          contentWindow[name] as CacheableImplementations[T];
+      }
+      document.head.removeChild(sandbox);
+    } catch (e) {
+      // Could not create sandbox iframe, just use window.xxx
+    }
+  }
+
+  return (cachedImplementations[name] = impl.bind(
+    window,
+  ) as CacheableImplementations[T]);
+}
+
+export function onRequestAnimationFrame(
+  ...rest: Parameters<typeof requestAnimationFrame>
+): ReturnType<typeof requestAnimationFrame> {
+  return getImplementation('requestAnimationFrame')(...rest);
+}
+
+export function setTimeout(
+  ...rest: Parameters<typeof window.setTimeout>
+): ReturnType<typeof window.setTimeout> {
+  return getImplementation('setTimeout')(...rest);
+}
+
+export function clearTimeout(
+  ...rest: Parameters<typeof window.clearTimeout>
+): ReturnType<typeof window.clearTimeout> {
+  return getImplementation('clearTimeout')(...rest);
+}
