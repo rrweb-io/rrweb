@@ -2165,8 +2165,11 @@ export class Replayer {
     const _y = y * base.absoluteScale + base.y;
 
     const pointer = this.pointers[pointerId];
-    pointer.pointerEl.style.left = `${_x}px`;
-    pointer.pointerEl.style.top = `${_y}px`;
+    if (pointer.pointerEl) {
+      pointer.pointerEl.style.left = `${_x}px`;
+      pointer.pointerEl.style.top = `${_y}px`;
+    }
+
     if (!isSync) {
       this.drawMouseTail({ x: _x, y: _y }, pointerId);
     }
