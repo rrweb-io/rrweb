@@ -69,6 +69,7 @@
     "@types/offscreencanvas": "^2019.6.4",
     "construct-style-sheets-polyfill": "^3.1.0",
     "cross-env": "^5.2.0",
+    "downlevel-dts": "https://github.com/getsentry/downlevel-dts",
     "esbuild": "^0.14.38",
     "fast-mhtml": "^1.1.9",
     "identity-obj-proxy": "^3.0.0",
@@ -96,7 +97,6 @@
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
-    "downlevel-dts": "https://github.com/getsentry/downlevel-dts",
     "fflate": "^0.4.4",
     "mitt": "^3.0.0"
   }

@@ -57,6 +57,7 @@
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^1.12.4",
     "cross-env": "^5.2.0",
+    "downlevel-dts": "https://github.com/getsentry/downlevel-dts",
     "jest": "^27.2.4",
     "jest-snapshot": "^23.6.0",
     "jsdom": "^16.4.0",
@@ -67,8 +68,5 @@
     "ts-jest": "^27.0.5",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3"
-  },
-  "dependencies": {
-    "downlevel-dts": "https://github.com/getsentry/downlevel-dts"
   }
 }
