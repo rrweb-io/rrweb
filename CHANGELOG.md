@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.20.0
+
+### Various fixes & improvements
+
+- fix(rrweb): null check for pointerEl (#202) by @michellewzhang
+- fix(ts): Forgot to include 3.8 typings dirs in `files` (#199) by @billyvg
+- feat: Generate types for ts < 3.8 (#198) by @billyvg
+
 ## 2.19.0
 
 ### Various fixes & improvements
