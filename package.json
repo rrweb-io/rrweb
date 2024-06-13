@@ -28,7 +28,7 @@
     "concurrently": "^7.1.0",
     "esbuild-plugin-umd-wrapper": "^2.0.0",
     "eslint": "^8.53.0",
-    "eslint-plugin-compat": "^4.2.0",
+    "eslint-plugin-compat": "^5.0.0",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-tsdoc": "^0.2.17",
     "markdownlint": "^0.25.1",
