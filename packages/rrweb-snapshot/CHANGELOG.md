@@ -1,5 +1,21 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.15
+
+### Major Changes
+
+- [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Important: If you don't reference distributed files directly, for example you run `import rrweb from 'rrweb'` you won't notice a difference. If you include rrweb in a script tag and referred to a `.js` file, you'll now have to update that path to include a `.umd.cjs` file. Distributed files have new paths, filenames and extensions. All packages now no longer include a `.js` files, instead they include `.cjs`, `.umd.cjs` and `.mjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments. The `.mjs` files are ES modules that can be used in modern browsers, node.js and bundlers that support ES modules. The `.cjs` files are CommonJS modules that can be used in older Node.js environments.
+
+### Patch Changes
+
+- [#1468](https://github.com/rrweb-io/rrweb/pull/1468) [`4014305`](https://github.com/rrweb-io/rrweb/commit/40143059446cee5c042c007b1c2e976f36e172f5) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - inlineImages: during snapshot avoid adding an event listener for inlining of same-origin images (async listener mutates the snapshot which can be problematic)
+
+- [#1493](https://github.com/rrweb-io/rrweb/pull/1493) [`82f6fec`](https://github.com/rrweb-io/rrweb/commit/82f6fecf36413ecbc994a510144487f1de20d1d5) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Replay: Replace negative lookbehind in regexes from css parser as it causes issues with Safari 16
+
+- [#1482](https://github.com/rrweb-io/rrweb/pull/1482) [`f3cf092`](https://github.com/rrweb-io/rrweb/commit/f3cf0928df30d5ed5c0d573c524be6e744c0f8d3) Thanks [@AlfieJones](https://github.com/AlfieJones)! - (when `recordCanvas: true`): ensure we use doc.createElement instead of document.createElement to allow use in non-browser e.g. jsdom environments
+
+- [#760](https://github.com/rrweb-io/rrweb/pull/760) [`e08706a`](https://github.com/rrweb-io/rrweb/commit/e08706ae60268b6eb05c6292ef948c71bd423ce3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Add slimDOM option to block animation on <title> tag; enabled when the 'all' value is used for slimDOM
+
 ## 2.0.0-alpha.14
 
 ### Patch Changes
