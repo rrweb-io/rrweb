@@ -530,7 +530,7 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
-    if (isIgnored(m.target, this.mirror)) {
+    if (isIgnored(m.target, this.mirror, this.slimDOMOptions)) {
       return;
     }
     switch (m.type) {
@@ -688,7 +688,7 @@ export default class MutationBuffer {
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-            isIgnored(n, this.mirror) ||
+            isIgnored(n, this.mirror, this.slimDOMOptions) ||
             !isSerialized(n, this.mirror)
           ) {
             return;
@@ -747,7 +747,7 @@ export default class MutationBuffer {
     if (this.addedSet.has(n) || this.movedSet.has(n)) return;
 
     if (this.mirror.hasNode(n)) {
-      if (isIgnored(n, this.mirror)) {
+      if (isIgnored(n, this.mirror, this.slimDOMOptions)) {
         return;
       }
       this.movedSet.add(n);

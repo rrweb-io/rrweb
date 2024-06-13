@@ -1,5 +1,5 @@
 import type { RRIFrameElement, RRNode } from '@amplitude/rrdom';
-import type { IMirror, Mirror } from '@amplitude/rrweb-snapshot';
+import type { IMirror, Mirror, SlimDOMOptions } from '@amplitude/rrweb-snapshot';
 import {
   IGNORED_NODE,
   classMatchesRegex,
@@ -280,7 +280,17 @@ export function isSerialized(n: Node, mirror: Mirror): boolean {
   return mirror.getId(n) !== -1;
 }
 
-export function isIgnored(n: Node, mirror: Mirror): boolean {
+export function isIgnored(
+  n: Node,
+  mirror: Mirror,
+  slimDOMOptions: SlimDOMOptions,
+): boolean {
+  if ((n as Element).tagName === 'TITLE' && slimDOMOptions.headTitleMutations) {
+    // we do this check here but not in rrweb-snapshot
+    // to block mutations/animations on the title.
+    // the headTitleMutations option isn't intended to block recording of the initial value
+    return true;
+  }
   // The main part of the slimDOM check happens in
   // @amplitude/rrweb-snapshot::serializeNodeWithId
   return mirror.getId(n) === IGNORED_NODE;
