@@ -12,9 +12,27 @@ import {
 } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import { vi } from 'vitest';
+import { Replayer } from '../../src/replay';
 import videoPlaybackEvents from '../events/video-playback';
 import videoPlaybackOnFullSnapshotEvents from '../events/video-playback-on-full-snapshot';
 expect.extend({ toMatchImageSnapshot });
+
+type IWindow = typeof globalThis & Window & { replayer: Replayer };
+
+async function waitForVideoTo(triggerEventType: string, page: puppeteer.Page) {
+  await waitForRAF(page);
+  await page.evaluate(
+    (triggerEventType) =>
+      new Promise((resolve) => {
+        document
+          .querySelector('iframe')
+          ?.contentDocument?.querySelector('video')
+          ?.addEventListener(triggerEventType, resolve);
+      }),
+    triggerEventType,
+  );
+  await waitForRAF(page);
+}
 
 describe('video', () => {
   vi.setConfig({ testTimeout: 100_000 });
@@ -29,7 +47,7 @@ describe('video', () => {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -57,12 +75,11 @@ describe('video', () => {
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
     `);
-    await waitForRAF(page);
-    await page.evaluate(`
-      window.replayer.pause(6500);
-    `);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+    const wait = waitForVideoTo('seeked', page);
+    // seek replayer to 6.5s
+    await page.evaluate('window.replayer.pause(6500)');
+    // wait till video is done seeking
+    await wait;
 
     const frameImage = await page!.screenshot();
     await waitForRAF(page);
@@ -77,11 +94,13 @@ describe('video', () => {
       let events = ${JSON.stringify(videoPlaybackOnFullSnapshotEvents)};
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
-      window.replayer.pause(6500);
     `);
 
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+    const wait = waitForVideoTo('seeked', page);
+    // seek replayer to 6.5s
+    await page.evaluate('window.replayer.pause(6500)');
+    // wait till video is done seeking
+    await wait;
 
     const frameImage = await page!.screenshot();
     await waitForRAF(page);
@@ -97,8 +116,10 @@ describe('video', () => {
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
     `);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+    await waitForVideoTo('canplaythrough', page);
+
+    // loading indicator lingers quite often
+    await page.waitForTimeout(1000);
 
     const frameImage = await page!.screenshot();
 
@@ -118,10 +139,17 @@ describe('video', () => {
       });
     `);
     await waitForRAF(page);
-    await page.evaluate(`
-      window.replayer.play(6500);
-    `);
-    await page.waitForNetworkIdle();
+    await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          document
+            .querySelector('iframe')
+            ?.contentDocument?.querySelector('video')
+            ?.addEventListener('playing', resolve);
+          // play replayer at 6.5s
+          (window as IWindow).replayer.play(6500);
+        }),
+    );
     await waitForRAF(page);
 
     const frameImage = await page!.screenshot();
@@ -139,11 +167,10 @@ describe('video', () => {
     await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
-      window.replayer.play();
     `);
-    await waitForRAF(page);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+    const waitForPlaying = waitForVideoTo('playing', page);
+    await page.evaluate(`window.replayer.play()`);
+    await waitForPlaying;
 
     const isPlaying = await page.evaluate(`
       !document.querySelector('iframe').contentDocument.querySelector('video').paused && 
@@ -160,11 +187,11 @@ describe('video', () => {
     await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
-      window.replayer.play();
     `);
-    await waitForRAF(page);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+
+    const waitForPlaying = waitForVideoTo('playing', page);
+    await page.evaluate(`window.replayer.play()`);
+    await waitForPlaying;
 
     const isPlaying = await page.evaluate(`
       !document.querySelector('iframe').contentDocument.querySelector('video').paused && 
@@ -182,13 +209,10 @@ describe('video', () => {
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
     `);
-    await waitForRAF(page);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
-    await page.evaluate(`
-    window.replayer.pause(25000); // 5 seconds after the video started a new loop
-    `);
-    await waitForRAF(page);
+
+    const waitForSeek = waitForVideoTo('seeked', page);
+    await page.evaluate(`window.replayer.pause(25000);`); // 5 seconds after the video started a new loop
+    await waitForSeek;
 
     const time = await page.evaluate(`
       document.querySelector('iframe').contentDocument.querySelector('video').currentTime;
@@ -203,11 +227,11 @@ describe('video', () => {
     await page.evaluate(`
       const { Replayer } = rrweb;
       window.replayer = new Replayer(events);
-      window.replayer.pause(25000); // 5 seconds after the video started a new loop
     `);
-    await waitForRAF(page);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+
+    const waitForSeek = waitForVideoTo('seeked', page);
+    await page.evaluate(`window.replayer.pause(25000);`); // 5 seconds after the video started a new loop
+    await waitForSeek;
 
     const time = await page.evaluate(`
       document.querySelector('iframe').contentDocument.querySelector('video').currentTime;
@@ -227,11 +251,11 @@ describe('video', () => {
       window.replayer = new Replayer(events, {
         speed: 8,
       });
-      window.replayer.play();
     `);
-    await waitForRAF(page);
-    await page.waitForNetworkIdle();
-    await waitForRAF(page);
+
+    const waitForPlaying = waitForVideoTo('playing', page);
+    await page.evaluate(`window.replayer.play()`);
+    await waitForPlaying;
 
     const time = await page.evaluate(`
       document.querySelector('iframe').contentDocument.querySelector('video').playbackRate;

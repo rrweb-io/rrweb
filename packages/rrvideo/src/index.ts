@@ -57,7 +57,7 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
       )};
       /*-->*/
       const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
-      window.replayer = new rrwebPlayer({
+      window.replayer = new rrwebPlayer.Player({
         target: document.body,
         width: userConfig.width,
         height: userConfig.height,

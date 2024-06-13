@@ -522,7 +522,7 @@ export default class MutationBuffer {
   };
 
   private processMutation = (m: mutationRecord) => {
-    if (isIgnored(m.target, this.mirror)) {
+    if (isIgnored(m.target, this.mirror, this.slimDOMOptions)) {
       return;
     }
     switch (m.type) {
@@ -680,7 +680,7 @@ export default class MutationBuffer {
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-            isIgnored(n, this.mirror) ||
+            isIgnored(n, this.mirror, this.slimDOMOptions) ||
             !isSerialized(n, this.mirror)
           ) {
             return;
@@ -739,7 +739,7 @@ export default class MutationBuffer {
     if (this.addedSet.has(n) || this.movedSet.has(n)) return;
 
     if (this.mirror.hasNode(n)) {
-      if (isIgnored(n, this.mirror)) {
+      if (isIgnored(n, this.mirror, this.slimDOMOptions)) {
         return;
       }
       this.movedSet.add(n);
@@ -794,15 +794,15 @@ function _isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
-  const parent = parentNode(n);
-  if (!parent) {
-    return false;
+  let node: ParentNode | null = parentNode(n);
+  while (node) {
+    const parentId = mirror.getId(node);
+    if (removes.some((r) => r.id === parentId)) {
+      return true;
+    }
+    node = parentNode(node);
   }
-  const parentId = mirror.getId(parent);
-  if (removes.some((r) => r.id === parentId)) {
-    return true;
-  }
-  return _isParentRemoved(removes, parent, mirror);
+  return false;
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {

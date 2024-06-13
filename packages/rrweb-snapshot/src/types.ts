@@ -169,6 +169,10 @@ export type SlimDOMOptions = Partial<{
   headMetaHttpEquiv: boolean;
   headMetaAuthorship: boolean;
   headMetaVerification: boolean;
+  /**
+   * blocks title tag 'animations' which can generate a lot of mutations that aren't usually displayed in replayers
+   **/
+  headTitleMutations: boolean;
 }>;
 
 export type DataURLOptions = Partial<{

@@ -727,7 +727,7 @@ function serializeElementNode(
       );
 
       // create blank canvas of same dimensions
-      const blankCanvas = document.createElement('canvas');
+      const blankCanvas = doc.createElement('canvas');
       blankCanvas.width = (n as HTMLCanvasElement).width;
       blankCanvas.height = (n as HTMLCanvasElement).height;
       const blankCanvasDataURL = blankCanvas.toDataURL(
