@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.21.0
+
+### Various fixes & improvements
+
+- feat(snapshot): Check "blocked" status of iframes before accessing `contentDocument` (#201) by @billyvg
+- fix(canvas): Fix missing `addWindow` call when `enableManualSnapshot==true` (#203) by @billyvg
+- fix: Move `downlevel-dts` to devDeps (#204) by @billyvg
+- feat(snapshot): Use unpatched `setTimeout` and `clearTimeout` (#200) by @billyvg
+
 ## 2.20.0
 
 ### Various fixes & improvements

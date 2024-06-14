@@ -1,6 +1,6 @@
 {
   "name": "@sentry-internal/rrweb-types",
-  "version": "2.20.0",
+  "version": "2.21.0",
   "publishConfig": {
     "access": "public"
   },
@@ -56,7 +56,7 @@
     "vite-plugin-dts": "^1.7.3"
   },
   "dependencies": {
-    "@sentry-internal/rrweb-snapshot": "2.20.0",
+    "@sentry-internal/rrweb-snapshot": "2.21.0",
     "@types/css-font-loading-module": "0.0.7",
     "downlevel-dts": "https://github.com/getsentry/downlevel-dts"
   },
