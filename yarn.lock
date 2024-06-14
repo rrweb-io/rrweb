@@ -5897,7 +5897,7 @@ dotenv@~10.0.0:
 
 "downlevel-dts@https://github.com/getsentry/downlevel-dts":
   version "0.11.0"
-  resolved "https://github.com/getsentry/downlevel-dts#6e5cc7146f0bdd684d3a77ed184e0548e5e7d2a8"
+  resolved "https://github.com/getsentry/downlevel-dts#26342728379689259f494d79053272c6f2f0ea14"
   dependencies:
     semver "^7.3.2"
     shelljs "^0.8.3"
