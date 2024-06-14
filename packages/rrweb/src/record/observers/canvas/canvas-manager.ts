@@ -173,6 +173,7 @@ export class CanvasManager implements CanvasManagerInterface {
     ) {
       this.worker = this.initFPSWorker();
     }
+    this.addWindow(win);
     if (options.enableManualSnapshot) {
       return;
     }
@@ -194,7 +195,6 @@ export class CanvasManager implements CanvasManagerInterface {
         );
       }
     })();
-    this.addWindow(win);
   }
 
   public addWindow(win: IWindow) {
