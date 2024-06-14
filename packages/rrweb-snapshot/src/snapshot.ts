@@ -1021,7 +1021,9 @@ function serializeElementNode(
   }
   // iframe
   if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
-    if (!(n as HTMLIFrameElement).contentDocument) {
+    // Don't try to access `contentDocument` if iframe is blocked, otherwise it
+    // will trigger browser warnings.
+    if (!needBlock && !(n as HTMLIFrameElement).contentDocument) {
       // we can't record it directly as we can't see into it
       // preserve the src attribute so a decision can be taken at replay time
       attributes.rr_src = attributes.src;

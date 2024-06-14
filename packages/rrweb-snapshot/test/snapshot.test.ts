@@ -237,6 +237,56 @@ describe('style elements', () => {
   });
 });
 
+describe('iframe', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      unblockSelector: null,
+      maskAllText: false,
+      maskTextClass: 'maskmask',
+      unmaskTextClass: null,
+      maskTextSelector: null,
+      unmaskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskAttributeFn: undefined,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+    });
+  };
+
+  const render = (html: string): HTMLDivElement => {
+    document.write(html);
+    return document.querySelector('iframe')!;
+  };
+
+  it('serializes', () => {
+    // Not sure how to trigger condition where we can't access
+    // `iframe.contentDocument` due to CORS. Ideally it should have `rr_src`
+    // attribute
+    const el = render(`<iframe src="https://example.dev"/>`);
+    expect(serializeNode(el)).toMatchObject({
+      attributes: {},
+    });
+  });
+
+  it('can be blocked', () => {
+    const el = render(`<iframe class="blockblock" src="https://example.dev"/>`);
+    expect(serializeNode(el)).toMatchObject({
+      attributes: {
+        class: 'blockblock',
+        rr_height: '0px',
+        rr_width: '0px',
+      },
+    });
+  });
+});
+
 describe('scrollTop/scrollLeft', () => {
   const serializeNode = (node: Node): serializedNodeWithId | null => {
     return serializeNodeWithId(node, {
