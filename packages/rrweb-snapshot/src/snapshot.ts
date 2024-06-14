@@ -31,6 +31,7 @@ import {
   parentNode,
   parentElement,
   textContent,
+  shadowRoot,
 } from '@rrweb/utils';
 
 let _id = 1;
@@ -650,6 +651,7 @@ function serializeElementNode(
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
+    //TODO: maybe replace this `.styleSheets` with original one
     const stylesheet = Array.from(doc.styleSheets).find((s) => {
       return s.href === (n as HTMLLinkElement).href;
     });
@@ -1079,8 +1081,8 @@ export function serializeNodeWithId(
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
-    const shadowRoot = (n as HTMLElement).shadowRoot;
-    if (shadowRoot && isNativeShadowDom(shadowRoot))
+    const shadowRootEl = shadowRoot(n);
+    if (shadowRootEl && isNativeShadowDom(shadowRootEl))
       serializedNode.isShadowHost = true;
   }
   if (
@@ -1137,11 +1139,12 @@ export function serializeNodeWithId(
       }
     }
 
-    if (isElement(n) && n.shadowRoot) {
-      for (const childN of Array.from(childNodes(n.shadowRoot))) {
+    let shadowRootEl: ShadowRoot | null = null;
+    if (isElement(n) && (shadowRootEl = shadowRoot(n))) {
+      for (const childN of Array.from(childNodes(shadowRootEl))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          isNativeShadowDom(n.shadowRoot) &&
+          isNativeShadowDom(shadowRootEl) &&
             (serializedChildNode.isShadow = true);
           serializedNode.childNodes.push(serializedChildNode);
         }

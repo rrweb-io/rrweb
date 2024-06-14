@@ -1,83 +1,234 @@
-let untaintedNodePrototype: typeof Node.prototype;
-export function getUntaintedNode(): (typeof Node)['prototype'] {
-  if (untaintedNodePrototype) return untaintedNodePrototype;
+// type PrototypeOwnerType = Node | ShadowRoot | MutationObserver | Element;
+// type PrototypeType = typeof PrototypeOwnerType.prototype;
 
-  const isUntainted = Object.getOwnPropertyDescriptor(
-    Node.prototype,
-    'childNodes',
-  )
-    ?.get?.toString()
-    .includes('[native code]');
+// let untaintedBasePrototype = new Map<string, PrototypeOwnerType>();
 
-  if (isUntainted) return (untaintedNodePrototype = Node.prototype);
+type PrototypeOwner = Node | ShadowRoot | MutationObserver | Element;
+type TypeofPrototypeOwner =
+  | typeof Node
+  | typeof ShadowRoot
+  | typeof MutationObserver
+  | typeof Element;
+
+type BasePrototypeCache = {
+  Node: typeof Node.prototype;
+  ShadowRoot: typeof ShadowRoot.prototype;
+  MutationObserver: typeof MutationObserver.prototype;
+  Element: typeof Element.prototype;
+};
+
+// type BaseCache = {
+//   Node: typeof Node;
+//   ShadowRoot: typeof ShadowRoot;
+//   MutationObserver: typeof MutationObserver;
+//   Element: typeof Element;
+// };
+
+const testableAccessors = {
+  Node: ['childNodes', 'parentNode', 'parentElement', 'textContent'] as const,
+  ShadowRoot: ['host', 'styleSheets'] as const,
+  Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
+  MutationObserver: [] as const,
+} as const;
+
+const testableMethods = {
+  Node: ['contains', 'getRootNode'] as const,
+  ShadowRoot: ['getSelection'],
+  Element: [],
+  MutationObserver: ['constructor'],
+} as const;
+
+const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
+// const untaintedBase: Partial<BaseCache> = {};
+
+// export function getUntaintedBase<T extends keyof BaseCache>(
+//   key: T,
+// ): BaseCache[T] {
+//   console.log('xchecking', key, untaintedBase[key]);
+//   if (untaintedBase[key]) return untaintedBase[key] as BaseCache[T];
+
+//   console.log('xchecking2', key);
+//   const defaultObj = globalThis[key] as BaseCache[T];
+//   const defaultPrototype = defaultObj.prototype as BaseCache[T]['prototype'];
+
+//   console.log('xchecking3', key);
+//   // use list of testable accessors to check if the prototype is tainted
+//   const isUntaintedAccessors = Boolean(
+//     !(key in testableAccessors) ||
+//       // @ts-expect-error 2345
+//       testableAccessors[key].every(
+//         // @ts-expect-error 2345
+//         (accessor: keyof (typeof BaseCache)[T]['prototype']) =>
+//           Boolean(
+//             Object.getOwnPropertyDescriptor(defaultObj.prototype, accessor)
+//               ?.get?.toString()
+//               .includes('[native code]'),
+//           ),
+//       ),
+//   );
+//   console.log('xchecking4', key);
+
+//   const methodNames = key in testableMethods ? testableMethods[key] : undefined;
+//   const isUntaintedMethods = Boolean(
+//     !methodNames ||
+//       // @ts-expect-error 2345
+//       methodNames.every(
+//         (method: keyof (typeof defaultObj)['prototype']) =>
+//           typeof defaultPrototype[method] === 'function' &&
+//           defaultPrototype[method]?.toString().includes('[native code]'),
+//       ),
+//   );
+
+//   console.log('was untainted', key, isUntaintedAccessors, isUntaintedMethods);
+
+//   if (isUntaintedAccessors && isUntaintedMethods) {
+//     untaintedBase[key] = defaultObj;
+//     return defaultObj;
+//   }
+
+//   try {
+//     const iframeEl = document.createElement('iframe');
+//     document.body.appendChild(iframeEl);
+//     const win = iframeEl.contentWindow;
+//     if (!win) return defaultObj;
+
+//     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+//     const untaintedObject = (win as any)[key].prototype as BaseCache[T];
+//     // cleanup
+//     document.body.removeChild(iframeEl);
+
+//     if (!untaintedObject) return defaultObj;
+
+//     console.log('success');
+//     return (untaintedBase[key] = untaintedObject);
+//   } catch (e) {
+//     console.log(e);
+//     return defaultObj;
+//   }
+// }
+
+export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
+  key: T,
+): BasePrototypeCache[T] {
+  if (untaintedBasePrototype[key])
+    return untaintedBasePrototype[key] as BasePrototypeCache[T];
+
+  const defaultObj = globalThis[key] as TypeofPrototypeOwner;
+  const defaultPrototype = defaultObj.prototype as BasePrototypeCache[T];
+
+  // use list of testable accessors to check if the prototype is tainted
+  const accessorNames =
+    key in testableAccessors ? testableAccessors[key] : undefined;
+  const isUntaintedAccessors = Boolean(
+    accessorNames &&
+      // @ts-expect-error 2345
+      accessorNames.every((accessor: keyof typeof defaultPrototype) =>
+        Boolean(
+          Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
+            ?.get?.toString()
+            .includes('[native code]'),
+        ),
+      ),
+  );
+
+  const methodNames = key in testableMethods ? testableMethods[key] : undefined;
+  const isUntaintedMethods = Boolean(
+    methodNames &&
+      // @ts-expect-error 2345
+      methodNames.every(
+        (method: keyof typeof defaultPrototype) =>
+          typeof defaultPrototype[method] === 'function' &&
+          defaultPrototype[method]?.toString().includes('[native code]'),
+      ),
+  );
+
+  if (isUntaintedAccessors && isUntaintedMethods) {
+    untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
+    return defaultObj.prototype as BasePrototypeCache[T];
+  }
 
   try {
     const iframeEl = document.createElement('iframe');
     document.body.appendChild(iframeEl);
     const win = iframeEl.contentWindow;
-    if (!win) return Node.prototype;
+    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-    const untaintedNode = (win as any).Node.prototype as typeof Node.prototype;
+    const untaintedObject = (win as any)[key]
+      .prototype as BasePrototypeCache[T];
     // cleanup
     document.body.removeChild(iframeEl);
 
-    if (!untaintedNode) return Node.prototype;
+    if (!untaintedObject) return defaultPrototype;
 
-    return (untaintedNodePrototype = untaintedNode);
+    return (untaintedBasePrototype[key] = untaintedObject);
   } catch {
-    return Node.prototype;
+    return defaultPrototype;
   }
 }
 
 const untaintedAccessorCache: Record<
   string,
-  (this: Node, ...args: unknown[]) => unknown
+  (this: PrototypeOwner, ...args: unknown[]) => unknown
 > = {};
-function getUntaintedNodeAccessor<T extends keyof typeof Node.prototype>(
-  node: Node,
-  accessor: T,
-): (typeof Node.prototype)[T] {
-  if (untaintedAccessorCache[accessor])
-    return untaintedAccessorCache[accessor].call(
-      node,
-    ) as (typeof Node.prototype)[T];
 
-  const untaintedNode = getUntaintedNode();
+export function getUntaintedAccessor<
+  K extends keyof BasePrototypeCache,
+  T extends keyof BasePrototypeCache[K],
+>(
+  key: K,
+  instance: BasePrototypeCache[K],
+  accessor: T,
+): BasePrototypeCache[K][T] {
+  const cacheKey = `${key}.${String(accessor)}`;
+  if (untaintedAccessorCache[cacheKey])
+    return untaintedAccessorCache[cacheKey].call(
+      instance,
+    ) as BasePrototypeCache[K][T];
+
+  const untaintedPrototype = getUntaintedPrototype(key);
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const untaintedAccessor = Object.getOwnPropertyDescriptor(
-    untaintedNode,
+    untaintedPrototype,
     accessor,
   )?.get;
 
-  if (!untaintedAccessor) return node[accessor];
+  if (!untaintedAccessor) return instance[accessor];
 
-  untaintedAccessorCache[accessor] = untaintedAccessor;
+  untaintedAccessorCache[cacheKey] = untaintedAccessor;
 
-  return untaintedAccessor.call(node) as (typeof Node.prototype)[T];
+  return untaintedAccessor.call(instance) as BasePrototypeCache[K][T];
 }
 
-type NodeMethod = (this: Node, ...args: unknown[]) => unknown;
+type BaseMethod<K extends keyof BasePrototypeCache> = (
+  this: BasePrototypeCache[K],
+  ...args: unknown[]
+) => unknown;
 
-const untaintedMethodCache: Record<string, NodeMethod> = {};
-function getUntaintedNodeMethod<T extends keyof typeof Node.prototype>(
-  node: Node,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const untaintedMethodCache: Record<string, BaseMethod<any>> = {};
+export function getUntaintedMethod<
+  K extends keyof BasePrototypeCache,
+  T extends keyof BasePrototypeCache[K],
+>(
+  key: K,
+  instance: BasePrototypeCache[K],
   method: T,
-): (typeof Node.prototype)[T] {
-  if (untaintedMethodCache[method as string])
-    return untaintedMethodCache[method as string].bind(
-      node,
-    ) as (typeof Node.prototype)[T];
+): BasePrototypeCache[K][T] {
+  const cacheKey = `${key}.${String(method)}`;
+  if (untaintedMethodCache[cacheKey])
+    return untaintedMethodCache[cacheKey].bind(
+      instance,
+    ) as BasePrototypeCache[K][T];
 
-  const untaintedNode = getUntaintedNode();
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const untaintedMethod = untaintedNode[method];
+  const untaintedPrototype = getUntaintedPrototype(key);
+  const untaintedMethod = untaintedPrototype[method];
 
-  if (typeof untaintedMethod !== 'function') return node[method];
+  if (typeof untaintedMethod !== 'function') return instance[method];
 
-  untaintedMethodCache[method as string] = untaintedMethod as NodeMethod;
+  untaintedMethodCache[cacheKey] = untaintedMethod as BaseMethod<K>;
 
-  return untaintedMethod.bind(node) as (typeof Node.prototype)[T];
+  return untaintedMethod.bind(instance) as BasePrototypeCache[K][T];
 }
 
 // const untaintedPropertyCache: Record<
@@ -113,28 +264,47 @@ function getUntaintedNodeMethod<T extends keyof typeof Node.prototype>(
 // }
 
 export function childNodes(n: Node): NodeListOf<Node> {
-  // return n.childNodes;
-  return getUntaintedNodeAccessor(n, 'childNodes');
+  // return (n as Node).childNodes;
+  return getUntaintedAccessor('Node', n, 'childNodes');
 }
 
 export function parentNode(n: Node): ParentNode | null {
-  return getUntaintedNodeAccessor(n, 'parentNode');
+  return getUntaintedAccessor('Node', n, 'parentNode');
+  // return n.parentNode;
 }
 
 export function parentElement(n: Node): HTMLElement | null {
-  return getUntaintedNodeAccessor(n, 'parentElement');
+  return getUntaintedAccessor('Node', n, 'parentElement');
+  // return n.parentElement;
 }
 
 export function textContent(n: Node): string | null {
-  return getUntaintedNodeAccessor(n, 'textContent');
+  return getUntaintedAccessor('Node', n, 'textContent');
+  // return n.textContent;
 }
 
 export function contains(n: Node, other: Node): boolean {
-  return getUntaintedNodeMethod(n, 'contains')(other);
+  // return getUntaintedMethod('Node', n, 'contains')(other);
+  return n.contains(other);
 }
 
 export function getRootNode(n: Node): Node {
-  return getUntaintedNodeMethod(n, 'getRootNode')();
+  // return getUntaintedMethod('Node', n, 'getRootNode')();
+  return n.getRootNode();
+}
+
+export function host(n: ShadowRoot): Element | null {
+  if (!n || !('host' in n)) return null;
+  return getUntaintedAccessor('ShadowRoot', n, 'host');
+  // return n.host;
+}
+
+
+export function shadowRoot(n: Node): ShadowRoot | null {
+  if (!n || !('shadowRoot' in n)) return null;
+  return getUntaintedAccessor('Element', n as Element, 'shadowRoot');
+  // return (n as Element).shadowRoot;
+}
 }
 
 // TODO: add these:
@@ -146,8 +316,8 @@ export function getRootNode(n: Node): Node {
 //  * Element#querySelectorAll
 
 // TODO: maybe add these:
-// * MutationObserver
-// * ShadowRoot
+// √ MutationObserver
+// ~ ShadowRoot ~
 
 // export function contains(n: Node, other: Node): boolean {
 //   return getUntaintedNodeProperty(n, 'contains', other);

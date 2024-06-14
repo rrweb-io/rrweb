@@ -12,14 +12,16 @@ import {
   textNode,
   elementNode,
 } from './types';
+import { shadowRoot, host } from '@rrweb/utils';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
 }
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
-  const host: Element | null = (n as ShadowRoot)?.host;
-  return Boolean(host?.shadowRoot === n);
+  const hostEl: Element | null =
+    (n && 'host' in n && host(n as ShadowRoot)) || null;
+  return Boolean(hostEl && 'shadowRoot' in hostEl && shadowRoot(hostEl) === n);
 }
 
 /**
