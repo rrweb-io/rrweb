@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.22.0
+
+### Various fixes & improvements
+
+- fix: Missed downlevel-dts dep in types, update git sha (#206) by @billyvg
+
 ## 2.21.0
 
 ### Various fixes & improvements
