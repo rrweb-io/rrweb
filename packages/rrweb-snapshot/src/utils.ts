@@ -20,7 +20,9 @@ export function isElement(n: Node): n is Element {
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
   const hostEl: Element | null =
-    (n && 'host' in n && host(n as ShadowRoot)) || null;
+    // anchor and textarea elements also have a `host` property
+    // but only shadow roots have a `mode` property
+    (n && 'host' in n && 'mode' in n && host(n as ShadowRoot)) || null;
   return Boolean(hostEl && 'shadowRoot' in hostEl && shadowRoot(hostEl) === n);
 }
 
