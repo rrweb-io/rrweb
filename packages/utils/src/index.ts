@@ -299,12 +299,35 @@ export function host(n: ShadowRoot): Element | null {
   // return n.host;
 }
 
+export function styleSheets(n: ShadowRoot): StyleSheetList {
+  // return getUntaintedAccessor('ShadowRoot', n, 'styleSheets');
+  return n.styleSheets;
+}
+
+// export function getSelection(n: ShadowRoot): Selection | null {
+//   return getUntaintedMethod('ShadowRoot', n, 'getSelection');
+// }
 
 export function shadowRoot(n: Node): ShadowRoot | null {
   if (!n || !('shadowRoot' in n)) return null;
   return getUntaintedAccessor('Element', n as Element, 'shadowRoot');
   // return (n as Element).shadowRoot;
 }
+
+export function querySelector(n: Element, selectors: string): Element | null {
+  // return getUntaintedAccessor('Element', n, 'querySelector')(selectors);
+  return n.querySelector(selectors);
+}
+
+export function querySelectorAll(
+  n: Element,
+  selectors: string,
+): NodeListOf<Element> {
+  return getUntaintedAccessor('Element', n, 'querySelectorAll')(selectors);
+}
+
+export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['constructor'] {
+  return getUntaintedPrototype('MutationObserver').constructor;
 }
 
 // TODO: add these:
