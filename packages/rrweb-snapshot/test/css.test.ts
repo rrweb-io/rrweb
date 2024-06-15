@@ -8,11 +8,11 @@ import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
 import {
-  NodeType,
   serializedElementNodeWithId,
   BuildCache,
   textNode,
 } from '../src/types';
+import { NodeType } from '@rrweb/types';
 
 describe('css parser', () => {
   function parse(plugin: AcceptedPlugin, input: string): string {
