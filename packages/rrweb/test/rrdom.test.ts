@@ -3,7 +3,7 @@
  */
 import { EventType, IncrementalSource, Replayer, eventWithTime } from '../src';
 import { vi, type MockInstance } from 'vitest';
-import type { styleDeclarationData, styleSheetRuleData } from '@saola.ai/rrweb-types';
+import type { styleDeclarationData, styleSheetRuleData } from '@rrweb/types';
 import { createMirror, Mirror as NodeMirror } from '@saola.ai/rrweb-snapshot';
 import type { ReplayerHandler } from '@saola.ai/rrdom';
 

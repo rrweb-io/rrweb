@@ -3,7 +3,7 @@ import type { DataURLOptions } from '@saola.ai/rrweb-snapshot';
 import type {
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 
 const lastBlobMap: Map<number, string> = new Map();
 const transparentBlobMap: Map<string, string> = new Map();

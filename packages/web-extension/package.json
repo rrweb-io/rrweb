@@ -18,7 +18,7 @@
     "prepublish": "yarn build"
   },
   "devDependencies": {
-    "@saola.ai/rrweb-types": "^2.0.0-alpha.15",
+    "@rrweb/types": "^2.0.0-alpha.15",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "@vitejs/plugin-react": "^4.2.1",

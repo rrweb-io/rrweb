@@ -10,7 +10,7 @@ import type {
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import type {
   IRRCDATASection,
   IRRComment,

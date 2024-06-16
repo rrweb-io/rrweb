@@ -1,5 +1,5 @@
 import type { ICanvas } from '@saola.ai/rrweb-snapshot';
-import type { blockClass, IWindow, listenerHandler } from '@saola.ai/rrweb-types';
+import type { blockClass, IWindow, listenerHandler } from '@rrweb/types';
 import { isBlocked, patch } from '../../../utils';
 
 function getNormalizedContextName(contextType: string) {

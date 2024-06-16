@@ -3,7 +3,7 @@ import {
   eventWithTime,
   EventType,
   IncrementalSource,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 
 export class Timer {
   public timeOffset = 0;

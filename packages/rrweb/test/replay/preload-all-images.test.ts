@@ -11,7 +11,7 @@ import {
   IncrementalSource,
   EventType,
   eventWithTime,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 
 let replayer: Replayer;
 

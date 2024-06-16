@@ -2,9 +2,9 @@ import {
   LogLevel,
   LogData,
   PLUGIN_NAME,
-} from '@saola.ai/rrweb-plugin-console-record';
-import type { eventWithTime } from '@saola.ai/rrweb-types';
-import { EventType, IncrementalSource } from '@saola.ai/rrweb-types';
+} from '@rrweb/rrweb-plugin-console-record';
+import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
 import type { ReplayPlugin, Replayer } from '@saola.ai/rrweb';
 
 /**

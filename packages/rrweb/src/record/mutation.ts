@@ -19,7 +19,7 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import {
   isBlocked,
   isAncestorRemoved,

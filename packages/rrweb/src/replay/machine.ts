@@ -6,7 +6,7 @@ import {
   EventType,
   Emitter,
   IncrementalSource,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import { Timer, addDelay } from './timer';
 
 export type PlayerContext = {

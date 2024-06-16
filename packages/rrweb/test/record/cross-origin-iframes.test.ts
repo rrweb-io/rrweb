@@ -7,8 +7,8 @@ import type {
   listenerHandler,
   eventWithTime,
   mutationData,
-} from '@saola.ai/rrweb-types';
-import { EventType, IncrementalSource } from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
+import { EventType, IncrementalSource } from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,

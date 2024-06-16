@@ -4,7 +4,7 @@ import {
   canvasMutationCommand,
   canvasMutationData,
   canvasMutationParam,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
 

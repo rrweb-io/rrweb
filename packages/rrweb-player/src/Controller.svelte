@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { EventType } from '@saola.ai/rrweb-types';
-  import type { playerMetaData } from '@saola.ai/rrweb-types';
+  import { EventType } from '@rrweb/types';
+  import type { playerMetaData } from '@rrweb/types';
   import type {
     Replayer,
     PlayerMachineState,

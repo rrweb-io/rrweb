@@ -8,9 +8,9 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import { isBlocked } from '../../../utils';
-import { CanvasContext } from '@saola.ai/rrweb-types';
+import { CanvasContext } from '@rrweb/types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';

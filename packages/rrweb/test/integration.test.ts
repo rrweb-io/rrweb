@@ -14,7 +14,7 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@saola.ai/rrweb-types';
+import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
 import { visitSnapshot, NodeType } from '@saola.ai/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {

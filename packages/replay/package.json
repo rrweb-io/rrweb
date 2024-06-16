@@ -56,7 +56,7 @@
     "typescript": "^4.7.3"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.0-alpha.15",
+    "@rrweb/types": "^2.0.0-alpha.15",
     "@saola.ai/rrweb": "^2.0.0-alpha.15"
   },
   "browserslist": [

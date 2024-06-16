@@ -15,7 +15,7 @@ export {
   MouseInteractions,
   ReplayerEvents,
   type eventWithTime,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 
 export type { recordOptions, ReplayPlugin } from './types';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@saola.ai/rrweb-plugin-console-record",
+  "name": "@rrweb/rrweb-plugin-console-record",
   "version": "2.0.0-alpha.15",
   "description": "",
   "type": "module",

@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@saola.ai/rrweb-types';
+import type { eventWithTime } from '@rrweb/types';
 import { record } from '@saola.ai/rrweb';
 import { getRecordConsolePlugin } from '../../src/index';
 

@@ -1,4 +1,4 @@
-import type { ICrossOriginIframeMirror } from '@saola.ai/rrweb-types';
+import type { ICrossOriginIframeMirror } from '@rrweb/types';
 export default class CrossOriginIframeMirror
   implements ICrossOriginIframeMirror
 {

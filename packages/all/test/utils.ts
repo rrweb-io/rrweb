@@ -8,7 +8,7 @@ import {
   mouseInteractionData,
   event,
   pluginEvent,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import * as puppeteer from 'puppeteer';
 import * as path from 'path';
 import * as http from 'http';

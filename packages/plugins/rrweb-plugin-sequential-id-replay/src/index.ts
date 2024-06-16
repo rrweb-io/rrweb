@@ -1,6 +1,6 @@
-import type { SequentialIdOptions } from '@saola.ai/rrweb-plugin-sequential-id-record';
+import type { SequentialIdOptions } from '@rrweb/rrweb-plugin-sequential-id-record';
 import type { ReplayPlugin } from '@saola.ai/rrweb';
-import type { eventWithTime } from '@saola.ai/rrweb-types';
+import type { eventWithTime } from '@rrweb/types';
 
 type Options = SequentialIdOptions & {
   warnOnMissingId: boolean;

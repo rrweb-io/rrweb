@@ -11,14 +11,14 @@ import type {
   eventWithTime,
   listenerHandler,
   mutationData,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import { unpack } from '@saola.ai/rrweb-packer';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import type { recordOptions } from '@saola.ai/rrweb';
-import type {} from '@saola.ai/rrweb-types';
-import { EventType } from '@saola.ai/rrweb-types';
+import type {} from '@rrweb/types';
+import { EventType } from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,

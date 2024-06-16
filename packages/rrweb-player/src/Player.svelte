@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { Replayer } from '@saola.ai/replay';
   import { unpack } from '@saola.ai/rrweb-packer/unpack';
-  import type { eventWithTime } from '@saola.ai/rrweb-types';
+  import type { eventWithTime } from '@rrweb/types';
   import {
     inlineCss,
     openFullscreen,

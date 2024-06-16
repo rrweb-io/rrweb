@@ -11,7 +11,7 @@ import {
   IncrementalSource,
   styleSheetRuleData,
   selectionData,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,

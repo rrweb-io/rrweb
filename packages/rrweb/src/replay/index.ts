@@ -67,7 +67,7 @@ import {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import {
   polyfill,
   queueToResolveTrees,

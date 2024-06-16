@@ -4,7 +4,7 @@ import {
   canvasManagerMutationCallback,
   IWindow,
   listenerHandler,
-} from '@saola.ai/rrweb-types';
+} from '@rrweb/types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { serializeArgs } from './serialize-args';
 
