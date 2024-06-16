@@ -1,7 +1,7 @@
 import type { RRNode } from 'rrdom';
-import type { Mirror } from 'rrweb-snapshot';
+import type { Mirror } from '@saola.ai/rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
-import type { ReplayPlugin, Replayer } from 'rrweb';
+import type { ReplayPlugin, Replayer } from '@saola.ai/rrweb';
 import type { WebRTCDataChannel } from './types';
 
 // TODO: restrict callback to real nodes only, or make sure callback gets called when real node gets added to dom as well

@@ -1,4 +1,4 @@
-import type { ICanvas } from 'rrweb-snapshot';
+import type { ICanvas } from '@saola.ai/rrweb-snapshot';
 import type { blockClass, IWindow, listenerHandler } from '@rrweb/types';
 import { isBlocked, patch } from '../../../utils';
 

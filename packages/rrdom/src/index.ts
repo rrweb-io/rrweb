@@ -1,12 +1,12 @@
 import {
   NodeType as RRNodeType,
   createMirror as createNodeMirror,
-} from 'rrweb-snapshot';
+} from '@saola.ai/rrweb-snapshot';
 import type {
   Mirror as NodeMirror,
   IMirror,
   serializedNodeWithId,
-} from 'rrweb-snapshot';
+} from '@saola.ai/rrweb-snapshot';
 import type {
   canvasMutationData,
   canvasEventWithTime,

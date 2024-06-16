@@ -16,7 +16,7 @@ import {
   stripBase64,
   waitForRAF,
 } from '../utils';
-import type { ICanvas } from 'rrweb-snapshot';
+import type { ICanvas } from '@saola.ai/rrweb-snapshot';
 
 interface ISuite {
   code: string;

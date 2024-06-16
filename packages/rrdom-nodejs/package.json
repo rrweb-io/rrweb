@@ -56,7 +56,7 @@
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
     "rrdom": "^2.0.0-alpha.15",
-    "rrweb-snapshot": "^2.0.0-alpha.15"
+    "@saola.ai/rrweb-snapshot": "^2.0.0-alpha.15"
   },
   "browserslist": [
     "supports es6-class"

@@ -5,7 +5,7 @@ import {
 } from '@rrweb/rrweb-plugin-console-record';
 import type { eventWithTime } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
-import type { ReplayPlugin, Replayer } from 'rrweb';
+import type { ReplayPlugin, Replayer } from '@saola.ai/rrweb';
 
 /**
  * define an interface to replay log records

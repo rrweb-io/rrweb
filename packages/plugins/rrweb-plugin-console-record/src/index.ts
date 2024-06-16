@@ -1,5 +1,5 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
-import { utils } from 'rrweb';
+import { utils } from '@saola.ai/rrweb';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
 

@@ -1,5 +1,5 @@
-import { record } from 'rrweb';
-import type { recordOptions } from 'rrweb';
+import { record } from '@saola.ai/rrweb';
+import type { recordOptions } from '@saola.ai/rrweb';
 import type { eventWithTime } from '@rrweb/types';
 import { MessageName, RecordStartedMessage } from '~/types';
 import { isInCrossOriginIFrame } from '~/utils';

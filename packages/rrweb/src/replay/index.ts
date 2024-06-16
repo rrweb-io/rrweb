@@ -9,7 +9,7 @@ import {
   attributes,
   serializedElementNodeWithId,
   toLowerCase,
-} from 'rrweb-snapshot';
+} from '@saola.ai/rrweb-snapshot';
 import {
   RRDocument,
   createOrGetNode,

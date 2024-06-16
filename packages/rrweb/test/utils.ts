@@ -1,4 +1,4 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType } from '@saola.ai/rrweb-snapshot';
 import {
   EventType,
   IncrementalSource,

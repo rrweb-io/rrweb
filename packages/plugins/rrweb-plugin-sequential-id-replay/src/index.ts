@@ -1,5 +1,5 @@
 import type { SequentialIdOptions } from '@rrweb/rrweb-plugin-sequential-id-record';
-import type { ReplayPlugin } from 'rrweb';
+import type { ReplayPlugin } from '@saola.ai/rrweb';
 import type { eventWithTime } from '@rrweb/types';
 
 type Options = SequentialIdOptions & {

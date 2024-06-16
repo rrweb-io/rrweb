@@ -4,7 +4,7 @@
 import { describe, it, test, expect } from 'vitest';
 import { NodeType, serializedNode } from '../src/types';
 import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
-import type { serializedNodeWithId } from 'rrweb-snapshot';
+import type { serializedNodeWithId } from '@saola.ai/rrweb-snapshot';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

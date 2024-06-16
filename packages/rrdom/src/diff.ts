@@ -2,7 +2,7 @@ import {
   NodeType as RRNodeType,
   Mirror as NodeMirror,
   elementNode,
-} from 'rrweb-snapshot';
+} from '@saola.ai/rrweb-snapshot';
 import type {
   canvasMutationData,
   canvasEventWithTime,

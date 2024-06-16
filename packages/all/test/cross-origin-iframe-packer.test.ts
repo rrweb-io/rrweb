@@ -16,7 +16,7 @@ import { unpack } from '@rrweb/packer';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import type { recordOptions } from 'rrweb';
+import type { recordOptions } from '@saola.ai/rrweb';
 import type {} from '@rrweb/types';
 import { EventType } from '@rrweb/types';
 import {

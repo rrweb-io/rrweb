@@ -52,6 +52,6 @@
     "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.15"
+    "@saola.ai/rrweb-snapshot": "^2.0.0-alpha.15"
   }
 }

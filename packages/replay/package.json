@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@rrweb/types": "^2.0.0-alpha.15",
-    "rrweb": "^2.0.0-alpha.15"
+    "@saola.ai/rrweb": "^2.0.0-alpha.15"
   },
   "browserslist": [
     "supports es6-class"

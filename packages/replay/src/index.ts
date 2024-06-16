@@ -3,7 +3,7 @@ import {
   type playerConfig,
   type PlayerMachineState,
   type SpeedMachineState,
-} from 'rrweb';
-import 'rrweb/dist/style.css';
+} from '@saola.ai/rrweb';
+import '@saola.ai/rrweb/dist/style.css';
 
 export { Replayer, playerConfig, PlayerMachineState, SpeedMachineState };

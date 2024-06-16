@@ -9,8 +9,8 @@ import type {
   DeprecatedMirror,
   textMutation,
 } from '@rrweb/types';
-import type { IMirror, Mirror, SlimDOMOptions } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
+import type { IMirror, Mirror, SlimDOMOptions } from '@saola.ai/rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from '@saola.ai/rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
 
 export function on(
