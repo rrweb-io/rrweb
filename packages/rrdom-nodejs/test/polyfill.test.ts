@@ -9,7 +9,7 @@ import {
   polyfillDocument,
 } from '../src/polyfill';
 import { performance as nativePerformance } from 'perf_hooks';
-import { BaseRRNode } from 'rrdom';
+import { BaseRRNode } from '@saola.ai/rrdom';
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {

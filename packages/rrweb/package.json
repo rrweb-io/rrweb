@@ -85,7 +85,7 @@
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.15",
+    "@saola.ai/rrdom": "^2.0.0-alpha.15",
     "@saola.ai/rrweb-snapshot": "^2.0.0-alpha.15"
   }
 }

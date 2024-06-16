@@ -1,5 +1,5 @@
 import { Emitter, MediaInteractions, ReplayerEvents } from '@rrweb/types';
-import type { RRMediaElement } from 'rrdom';
+import type { RRMediaElement } from '@saola.ai/rrdom';
 import type { createPlayerService, createSpeedService } from '../machine';
 import type { Mirror, mediaAttributes } from '@saola.ai/rrweb-snapshot';
 import type { mediaInteractionData } from '@rrweb/types';

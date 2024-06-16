@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { Replayer } from '@rrweb/replay';
-  import { unpack } from '@rrweb/packer/unpack';
+  import { unpack } from '@saola.ai/rrweb-packer/unpack';
   import type { eventWithTime } from '@rrweb/types';
   import {
     inlineCss,

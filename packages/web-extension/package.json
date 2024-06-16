@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/web-extension",
+  "name": "@saola.ai/rrweb-web-extension",
   "private": true,
   "version": "2.0.0-alpha.15",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",

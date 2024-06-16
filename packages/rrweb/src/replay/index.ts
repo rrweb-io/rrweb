@@ -17,7 +17,7 @@ import {
   buildFromDom,
   diff,
   getDefaultSN,
-} from 'rrdom';
+} from '@saola.ai/rrdom';
 import type {
   RRNode,
   RRElement,
@@ -27,7 +27,7 @@ import type {
   RRCanvasElement,
   ReplayerHandler,
   Mirror as RRDOMMirror,
-} from 'rrdom';
+} from '@saola.ai/rrdom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';

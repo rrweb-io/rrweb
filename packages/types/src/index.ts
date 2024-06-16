@@ -705,6 +705,6 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
 
-// Types for @rrweb/packer
+// Types for @saola.ai/rrweb-packer
 export type PackFn = (event: eventWithTime) => string;
 export type UnpackFn = (raw: string) => eventWithTime;

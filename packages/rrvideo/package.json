@@ -1,5 +1,5 @@
 {
-  "name": "rrvideo",
+  "name": "@saola.ai/rrvideo",
   "version": "2.0.0-alpha.15",
   "description": "transform rrweb session into video",
   "main": "build/index.js",

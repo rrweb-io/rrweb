@@ -17,7 +17,7 @@ import {
   RRStyleElement,
   RRText,
 } from '../src/document-nodejs';
-import { buildFromDom } from 'rrdom';
+import { buildFromDom } from '@saola.ai/rrdom';
 
 describe('RRDocument for nodejs environment', () => {
   describe('RRDocument API', () => {

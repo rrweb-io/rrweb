@@ -12,7 +12,7 @@ import type {
   listenerHandler,
   mutationData,
 } from '@rrweb/types';
-import { unpack } from '@rrweb/packer';
+import { unpack } from '@saola.ai/rrweb-packer';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';

@@ -14,7 +14,7 @@ import {
   ClassList,
   IRRDocument,
   CSSStyleDeclaration,
-} from 'rrdom';
+} from '@saola.ai/rrdom';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const nwsapi = require('nwsapi');
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires

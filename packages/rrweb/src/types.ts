@@ -9,7 +9,7 @@ import type {
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom';
+import type { RRNode } from '@saola.ai/rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {

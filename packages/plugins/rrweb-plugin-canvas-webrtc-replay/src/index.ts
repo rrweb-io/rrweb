@@ -1,4 +1,4 @@
-import type { RRNode } from 'rrdom';
+import type { RRNode } from '@saola.ai/rrdom';
 import type { Mirror } from '@saola.ai/rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
 import type { ReplayPlugin, Replayer } from '@saola.ai/rrweb';

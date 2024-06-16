@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/packer",
+  "name": "@saola.ai/rrweb-packer",
   "version": "2.0.0-alpha.15",
   "publishConfig": {
     "access": "public"
@@ -17,7 +17,6 @@
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/packer#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },

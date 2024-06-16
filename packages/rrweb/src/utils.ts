@@ -11,7 +11,7 @@ import type {
 } from '@rrweb/types';
 import type { IMirror, Mirror, SlimDOMOptions } from '@saola.ai/rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from '@saola.ai/rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+import type { RRNode, RRIFrameElement } from '@saola.ai/rrdom';
 
 export function on(
   type: string,
