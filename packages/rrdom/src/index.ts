@@ -14,7 +14,7 @@ import type {
   scrollData,
   styleSheetRuleData,
   styleDeclarationData,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import {
   BaseRRNode as RRNode,
   BaseRRCDATASection,

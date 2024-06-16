@@ -27,7 +27,7 @@
     "@types/node": "^18.15.11",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
-    "@rrweb/types": "^2.0.0-alpha.15"
+    "@saola.ai/rrweb-types": "^2.0.0-alpha.15"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",

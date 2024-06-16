@@ -1,4 +1,4 @@
-import { IncrementalSource, MouseInteractions } from '@rrweb/types';
+import { IncrementalSource, MouseInteractions } from '@saola.ai/rrweb-types';
 import type { eventWithTime } from '../../../types/src';
 
 const events: eventWithTime[] = [

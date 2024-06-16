@@ -5,7 +5,7 @@ import type {
   adoptedStyleSheetParam,
   attributeMutation,
   mutationCallBack,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import { StyleSheetMirror } from '../utils';
 
 export class StylesheetManager {

@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@saola.ai/rrweb-types';
 
 const events: eventWithTime[] = [
   { type: 0, data: {}, timestamp: 1900000001 },

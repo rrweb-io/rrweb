@@ -8,7 +8,7 @@ import type {
   IWindow,
   DeprecatedMirror,
   textMutation,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import type { IMirror, Mirror, SlimDOMOptions } from '@saola.ai/rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from '@saola.ai/rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from '@saola.ai/rrdom';

@@ -1,5 +1,5 @@
 import { encode } from 'base64-arraybuffer';
-import type { IWindow, CanvasArg } from '@rrweb/types';
+import type { IWindow, CanvasArg } from '@saola.ai/rrweb-types';
 
 // TODO: unify with `replay/webgl.ts`
 type CanvasVarMap = Map<string, unknown[]>;

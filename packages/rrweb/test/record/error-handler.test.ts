@@ -3,7 +3,7 @@ import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
-import { listenerHandler, eventWithTime, EventType } from '@rrweb/types';
+import { listenerHandler, eventWithTime, EventType } from '@saola.ai/rrweb-types';
 import { launchPuppeteer } from '../utils';
 import {
   callbackWrapper,

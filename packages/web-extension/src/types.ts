@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@saola.ai/rrweb-types';
 
 export enum SyncDataKey {
   settings = 'settings',
