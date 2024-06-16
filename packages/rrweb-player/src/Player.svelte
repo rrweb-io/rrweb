@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Replayer } from '@rrweb/replay';
+  import { Replayer } from '@saola.ai/replay';
   import { unpack } from '@saola.ai/rrweb-packer/unpack';
   import type { eventWithTime } from '@rrweb/types';
   import {
@@ -195,7 +195,7 @@
 </script>
 
 <style global>
-  @import '@rrweb/replay/dist/style.css';
+  @import '@saola.ai/replay/dist/style.css';
 
   .rr-player {
     position: relative;

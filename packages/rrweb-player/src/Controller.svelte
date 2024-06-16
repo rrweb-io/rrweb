@@ -5,7 +5,7 @@
     Replayer,
     PlayerMachineState,
     SpeedMachineState,
-  } from '@rrweb/replay';
+  } from '@saola.ai/replay';
   import {
     onMount,
     onDestroy,

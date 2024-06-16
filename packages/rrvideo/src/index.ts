@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium } from 'playwright';
 import { EventType, eventWithTime } from '@rrweb/types';
-import type Player from 'rrweb-player';
+import type Player from '@saola.ai/rrweb-player';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),

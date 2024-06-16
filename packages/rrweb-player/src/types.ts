@@ -1,5 +1,5 @@
 import type { eventWithTime } from '@rrweb/types';
-import type { Replayer, playerConfig } from '@rrweb/replay';
+import type { Replayer, playerConfig } from '@saola.ai/replay';
 import type { Mirror } from '@saola.ai/rrweb-snapshot';
 
 export type RRwebPlayerOptions = {
