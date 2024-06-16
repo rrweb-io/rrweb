@@ -4,14 +4,14 @@
   "commit": false,
   "fixed": [
     [
-      "rrweb",
-      "rrweb-snapshot",
-      "rrdom",
-      "rrdom-nodejs",
-      "rrweb-player",
-      "@rrweb/types",
-      "@rrweb/web-extension",
-      "rrvideo"
+      "@saola.ai/rrweb",
+      "@saola.ai/rrweb-snapshot",
+      "@saola.ai/rrdom",
+      "@saola.ai/rrdom-nodejs",
+      "@saola.ai/rrweb-player",
+      "@saola.ai/rrweb-types",
+      "@saola.ai/rrweb-web-extension",
+      "@saola.ai/rrvideo"
     ]
   ],
   "linked": [],

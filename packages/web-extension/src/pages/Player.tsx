@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Replayer from 'rrweb-player';
+import Replayer from '@saola.ai/rrweb-player';
 import {
   Box,
   Breadcrumb,
